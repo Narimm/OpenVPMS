@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns:maven="jelly:maven"
+		 xmlns:j="jelly:core"
+		 xmlns:util="jelly:util"
+		 xmlns:ant="jelly:ant"
+		 default="mevenide:help">
+
+</project>

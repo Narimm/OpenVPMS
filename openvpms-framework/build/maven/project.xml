@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <pomVersion>3</pomVersion>
+    <groupId>openvpms</groupId>
+    <logo></logo>
+    <organization>
+        <name>OpenVPMS</name>
+        <url>http://www.openvpms.org/</url>
+        <logo></logo>
+    </organization>
+    <inceptionYear>2005</inceptionYear>
+    <package>org.openvpms</package>
+    <url>http://www.openvpms.org/${pom.artifactId}</url>
+    <issueTrackingUrl>http://jira.openvpms.org/jira/secure/Dashboard.jspa</issueTrackingUrl>
+    <siteAddress>www.openvpms.org</siteAddress>
+    <siteDirectory>/home/projects/openvpms/public_html/${pom.artifactId}</siteDirectory>
+    <distributionDirectory>/dist</distributionDirectory>
+
+    <licenses>
+      <license>
+      </license>
+    </licenses>
+
+    <repository>
+        <connection>scm:cvs:pserver:anonymous@cvs.mevenide.codehaus.org:/home/projects/mevenide/scm:${pom.artifactId}</connection>
+        <developerConnection>scm:cvs:ext:${maven.username}@cvs.mevenide.codehaus.org:/home/projects/mevenide/scm:${pom.artifactId}</developerConnection>
+        <url>http://cvs.openvpms.codehaus.org/${pom.artifactId}/</url>
+    </repository>
+
+    <mailingLists>
+        <mailingList>
+            <name>OpenVPMS Developers Mailing List</name>
+            <subscribe>http://lists.openvpms.org/mailman/listinfo/developers</subscribe>
+            <unsubscribe>http://lists.openvpms.org/mailman/listinfo/developers</unsubscribe>
+            <archive>http://lists.openvpms.org/mailman/public/developers/</archive>
+        </mailingList>
+        <mailingList>
+            <name>OpenVPMS Users Mailing List</name>
+            <subscribe>http://lists.openvpms.org/mailman/listinfo/users</subscribe>
+            <unsubscribe>http://lists.openvpms.org/mailman/listinfo/users</unsubscribe>
+            <archive>http://lists.openvpms.org/mailman/public/users/</archive>
+        </mailingList>
+        <mailingList>
+            <name>OpenVPMS Stakeholders List</name>
+            <subscribe>http://lists.openvpms.org/mailman/listinfo/stakeholders</subscribe>
+            <unsubscribe>http://lists.openvpms.org/mailman/listinfo/stakeholders</unsubscribe>
+            <archive>http://lists.openvpms.org/mailman/public/stakeholders/</archive>
+        </mailingList>
+    </mailingLists>
+
+    <developers>
+        <developer>
+            <name>Jim Alateras</name>
+            <id>jima</id>
+            <email>jima@bigpond.net.au</email>
+            <roles>
+                <role>Team Leader</role>
+            </roles>
+            <timezone>+10</timezone>
+        </developer>
+        <developer>
+            <name>Tony De Keizer</name>
+            <id>tde</id>
+            <email>tony@verticalconnect.net</email>
+            <roles>
+                <role>Project Manager</role>
+            </roles>
+            <timezone>+10</timezone>
+        </developer>
+    </developers>
+
+    <contributors>
+    </contributors>
+
+    <dependencies>
+    </dependencies>  
+
+    <build>
+        <nagEmailAddress>buildman@openvpms.org</nagEmailAddress>
+        <sourceDirectory>src/java</sourceDirectory>
+        <unitTestSourceDirectory>test/java</unitTestSourceDirectory>
+        <unitTest>
+            <includes>
+                <include>**/*Test.java</include>
+            </includes>
+            <resources>
+                <resource>
+                    <directory>${basedir}/conf</directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </resource>
+                <resource>
+                    <directory>${basedir}/test/conf</directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </resource>
+            </resources>
+        </unitTest>
+        <resources>
+        </resources>
+    </build>
+    
+    <reports>
+        <report>maven-jdepend-plugin</report>
+        <report>maven-pmd-plugin</report>
+        <report>maven-checkstyle-plugin</report>
+        <!--report>maven-simian-plugin</report-->
+        <!--report>maven-findbugs-plugin</report-->
+        <report>maven-changes-plugin</report>
+        <report>maven-changelog-plugin</report>
+        <report>maven-file-activity-plugin</report>
+        <report>maven-developer-activity-plugin</report>
+        <!--report>maven-statcvs-plugin</report-->
+        <report>maven-jxr-plugin</report>
+        <report>maven-junit-report-plugin</report>
+        <report>maven-jcoverage-plugin</report>
+        <report>maven-tasklist-plugin</report>
+        <report>maven-javadoc-plugin</report>
+        <report>maven-faq-plugin</report>
+        <!-- report>maven-linkcheck-plugin</report -->
+    </reports>
+</project>
+
