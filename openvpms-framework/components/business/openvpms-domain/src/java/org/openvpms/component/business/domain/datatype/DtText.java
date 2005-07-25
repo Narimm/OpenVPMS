@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Date$
  */
 
 package org.openvpms.component.business.domain.datatype;
