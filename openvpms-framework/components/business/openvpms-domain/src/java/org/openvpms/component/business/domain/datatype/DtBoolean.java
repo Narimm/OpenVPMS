@@ -21,14 +21,12 @@ package org.openvpms.component.business.domain.datatype;
 // commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * A representation of a boolean type.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $Revision$
+ * @version $LastDateChanged$
  */
 public class DtBoolean extends DtValue {
 
@@ -84,7 +82,8 @@ public class DtBoolean extends DtValue {
         }
         
         // ensure that types match
-        if (!(obj instanceof DtBoolean)) {
+        if ((obj == null) ||
+            !(obj instanceof DtBoolean)) {
             return false;
         }
 
@@ -104,12 +103,4 @@ public class DtBoolean extends DtValue {
         .toHashCode();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                ToStringStyle.MULTI_LINE_STYLE);
-    }
 }

@@ -13,7 +13,6 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Date$
  *  $Id$
  */
 
@@ -28,9 +27,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * A representation of a text type.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $Id$
- * 
- * $LastChangedDate$
+ * @version $LastDateChanged$
  * 
  */
 public class DtText extends DtValue {

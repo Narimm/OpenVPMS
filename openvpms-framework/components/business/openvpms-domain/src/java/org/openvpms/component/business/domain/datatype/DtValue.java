@@ -21,11 +21,14 @@ package org.openvpms.component.business.domain.datatype;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 /**
  * This is the base class of the OpenVPMS type system.
  *
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $Revision$
+ * @version  $LastDateChanged$
  */
 public class DtValue implements Serializable {
 
@@ -33,5 +36,10 @@ public class DtValue implements Serializable {
      * Geenrared SUID
      */
     private static final long serialVersionUID = 2810798004808380971L;
+
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this,
+                ToStringStyle.MULTI_LINE_STYLE);
+    }
 
 }

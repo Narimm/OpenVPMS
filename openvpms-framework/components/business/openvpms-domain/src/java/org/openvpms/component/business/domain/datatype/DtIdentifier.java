@@ -29,7 +29,7 @@ import org.safehaus.uuid.UUIDGenerator;
  * A system unique id
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $Revision$
+ * @version $LastDateChanged$
  */
 public class DtIdentifier extends DtValue {
 
