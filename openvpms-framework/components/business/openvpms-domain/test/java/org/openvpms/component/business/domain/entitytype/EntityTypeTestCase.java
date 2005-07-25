@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.datatype.DtText;
  * This will exercise the {@link EntityType} class
  * 
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version  $Revision$
+ * @version  $LastChangedDate$
  */
 public class EntityTypeTestCase extends TestCase {
 
