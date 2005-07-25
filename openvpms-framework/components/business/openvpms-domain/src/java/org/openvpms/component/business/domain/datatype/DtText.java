@@ -29,7 +29,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $Revision: 20 $
  * 
- * $Id$
+ * $LastChangedDate$
  */
 public class DtText extends DtValue {
 
