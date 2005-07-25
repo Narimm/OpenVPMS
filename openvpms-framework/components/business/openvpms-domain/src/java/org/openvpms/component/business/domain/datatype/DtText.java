@@ -14,6 +14,7 @@
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Date$
+ *  $Id$
  */
 
 package org.openvpms.component.business.domain.datatype;
@@ -30,6 +31,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @version $Revision: 20 $
  * 
  * $LastChangedDate$
+ * 
  */
 public class DtText extends DtValue {
 
