@@ -28,6 +28,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $Revision$
+ * 
+ * $Id$
  */
 public class DtText extends DtValue {
 
