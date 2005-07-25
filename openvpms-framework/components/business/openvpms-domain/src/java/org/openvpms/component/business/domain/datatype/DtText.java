@@ -22,8 +22,6 @@ package org.openvpms.component.business.domain.datatype;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * A representation of a text type.
@@ -95,7 +93,8 @@ public class DtText extends DtValue {
         }
         
         // ensure that types match
-        if (!(obj instanceof DtText)) {
+        if ((obj == null) ||
+            !(obj instanceof DtText)) {
             return false;
         }
 
@@ -113,14 +112,5 @@ public class DtText extends DtValue {
         return new HashCodeBuilder()
         .append(this.value)
         .toHashCode();
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                ToStringStyle.MULTI_LINE_STYLE);
     }
 }
