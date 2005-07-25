@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id:$
  */
 
 package org.openvpms.component.business.domain.entitytype;
@@ -70,7 +70,7 @@ public class PropertyType implements Serializable {
     private DtText description;
 
     /**
-     * The class name, which represents the property type.
+     * The fully-qualified class name, which represents the property type.
      */
     private DtText type;
 
