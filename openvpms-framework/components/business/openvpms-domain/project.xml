@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <extend>${basedir}/../build/maven/project.xml</extend>
+    <pomVersion>3</pomVersion>
+    <artifactId>openvpms-domain</artifactId>
+    <name>openvpms-aom</name>
+    <currentVersion>0.1</currentVersion>
+    <package>org.openvpms.openvpms-domain</package>
+    <description>OpenVPMS Domain Model for the Veterinary domain</description>
+    <build />
+    
+    <dependencies>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.0</version>
+            <url>http://jakarta.apache.org/commons/lang/</url>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.8</version>
+            <url>http://jakarta.apache.org/log4j/</url>
+        </dependency>
+        <dependency>
+            <groupId>commons-resources</groupId>
+            <artifactId>commons-resources</artifactId>
+            <version>1.0-dev</version>
+            <url>http://jakarta.apache.org/commons/resources/</url>
+        </dependency>
+    </dependencies>
+</project>
+
