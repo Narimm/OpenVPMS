@@ -28,7 +28,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * A representation of a text type.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $Revision: 20 $ $Id$
+ * @version $Id$
  * 
  * $LastChangedDate$
  * 
