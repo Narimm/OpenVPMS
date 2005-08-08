@@ -35,12 +35,12 @@ package org.openvpms.component.common.exception;
  * constructors to support this feature.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $Revision$
+ * @version $LastChangedDate$
  */
 public interface OpenVPMSException {
     /**
      * The base name of the resource file, which holds the error messages.
      */
-    public static final String ERRMESSAGES_FILE = "errmessages.properties";
+    public static final String ERRMESSAGES_FILE = "errmessages";
 
 }

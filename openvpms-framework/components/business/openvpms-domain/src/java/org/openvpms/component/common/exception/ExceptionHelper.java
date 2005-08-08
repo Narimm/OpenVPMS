@@ -24,7 +24,7 @@ import org.apache.commons.resources.Messages;
  * Provides some helper methods for exception handling
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $Revision$
+ * @version $LastChangedDate$
  */
 public final class ExceptionHelper {
     /**
