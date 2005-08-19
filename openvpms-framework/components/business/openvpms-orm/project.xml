@@ -23,6 +23,22 @@
     	  <type>jar</type>
 	      <url>http://www.springframework.org/</url>
 	    </dependency>
+
+    	<dependency>
+	      <groupId>springframework</groupId>
+    	  <artifactId>spring-beans</artifactId>
+    	  <version>1.2.3</version>
+    	  <type>jar</type>
+	      <url>http://www.springframework.org/</url>
+	    </dependency>
+
+    	<dependency>
+	      <groupId>springframework</groupId>
+    	  <artifactId>spring-dao</artifactId>
+    	  <version>1.2.3</version>
+    	  <type>jar</type>
+	      <url>http://www.springframework.org/</url>
+	    </dependency>
 	    
         <dependency>
             <groupId>acode</groupId>
@@ -38,6 +54,22 @@
             <version>1.1</version>
             <type>jar</type>
             <url>http://ehcache.sf.net</url>
+        </dependency>
+	    
+        <dependency>
+            <groupId>openvpms</groupId>
+            <artifactId>openvpms-common</artifactId>
+            <version>0.1</version>
+            <type>jar</type>
+            <url>http://www.openvpms.org</url>
+        </dependency>
+	    
+        <dependency>
+            <groupId>openvpms</groupId>
+            <artifactId>openvpms-domain</artifactId>
+            <version>0.1</version>
+            <type>jar</type>
+            <url>http://www.openvpms.org</url>
         </dependency>
     </dependencies>
     <build />
