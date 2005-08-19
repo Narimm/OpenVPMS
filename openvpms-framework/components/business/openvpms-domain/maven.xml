@@ -1,0 +1,6 @@
+<project default="jar:jar"
+  xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
+  xmlns:j="jelly:core"
+  xmlns:castor="castor">
+</project>

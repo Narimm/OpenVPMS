@@ -3,31 +3,47 @@
     <extend>${basedir}/../build/maven/project.xml</extend>
     <pomVersion>3</pomVersion>
     <artifactId>openvpms-domain</artifactId>
-    <name>openvpms-aom</name>
+    <name>openvpms-domain</name>
     <currentVersion>0.1</currentVersion>
-    <package>org.openvpms.openvpms-domain</package>
+    <package>org.openvpms.component</package>
     <description>OpenVPMS Domain Model for the Veterinary domain</description>
-    <build />
-    
     <dependencies>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.0</version>
-            <url>http://jakarta.apache.org/commons/lang/</url>
+            <groupId>jug</groupId>
+            <artifactId>jug</artifactId>
+            <version>2.0rc1</version>
+            <url>http://jug.safehaus.org/</url>
         </dependency>
+        
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.8</version>
-            <url>http://jakarta.apache.org/log4j/</url>
+            <groupId>acode</groupId>
+            <artifactId>openehr-kernel</artifactId>
+            <version>1.2.4</version>
+            <url>http://www.acode.se</url>
         </dependency>
-        <dependency>
-            <groupId>commons-resources</groupId>
-            <artifactId>commons-resources</artifactId>
-            <version>1.0-dev</version>
-            <url>http://jakarta.apache.org/commons/resources/</url>
-        </dependency>
-    </dependencies>
+        
+	    <dependency>
+	      <groupId>xerces</groupId>
+    	  <artifactId>xercesImpl</artifactId>
+	      <url>http://xml.apache.org/xerces2-j/</url>
+    	  <version>2.4.0</version>
+	    </dependency>
+	    
+	    <dependency>
+	      <groupId>xml-apis</groupId>
+    	  <artifactId>xml-apis</artifactId>
+	      <url>http://xml.apache.org/xerces2-j/</url>
+    	  <version>2.0.2</version>
+	    </dependency>
+	    
+	    <dependency>
+	      <groupId>openvpms</groupId>
+    	  <artifactId>openvpms-common</artifactId>
+    	  <version>0.1</version>
+    	  <type>jar</type>
+	      <url>http://www.openvpms.org/</url>
+	    </dependency>
+	  </dependencies>
+    <build />
 </project>
 
