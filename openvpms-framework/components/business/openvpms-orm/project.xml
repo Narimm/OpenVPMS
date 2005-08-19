@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <extend>${basedir}/../build/maven/project.xml</extend>
+    <pomVersion>3</pomVersion>
+    <artifactId>openvpms-orm</artifactId>
+    <name>openvpms-orm</name>
+    <currentVersion>0.1</currentVersion>
+    <package>org.openvpms.component.system.dao</package>
+    <description>OpenVPMS ORM Component</description>
+    <dependencies>
+    	<dependency>
+	      <groupId>springframework</groupId>
+    	  <artifactId>spring-hibernate</artifactId>
+    	  <version>1.2.3</version>
+    	  <type>jar</type>
+	      <url>http://www.springframework.org/</url>
+	    </dependency>
+
+    	<dependency>
+	      <groupId>springframework</groupId>
+    	  <artifactId>spring-core</artifactId>
+    	  <version>1.2.3</version>
+    	  <type>jar</type>
+	      <url>http://www.springframework.org/</url>
+	    </dependency>
+	    
+        <dependency>
+            <groupId>acode</groupId>
+            <artifactId>openehr-kernel</artifactId>
+            <version>1.2.4</version>
+            <type>jar</type>
+            <url>http://www.acode.se</url>
+        </dependency>
+	    
+        <dependency>
+            <groupId>ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>1.1</version>
+            <type>jar</type>
+            <url>http://ehcache.sf.net</url>
+        </dependency>
+    </dependencies>
+    <build />
+</project>
+
