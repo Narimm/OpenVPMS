@@ -27,7 +27,6 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.CacheManager;
 
 // openvpms-domain
-import org.openehr.rm.support.identification.ObjectID;
 import org.openvpms.component.business.domain.im.Entity;
 
 // openvpms-service
