@@ -1,0 +1,61 @@
+<?xml version ="1.0" encoding = "UTF-8"?>
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <params>
+  </params>
+  
+  <class name="CastorArchetypeRegistryTestCase">
+    <!-- Data for the testCreationWithValidFileContent method -->
+  	<method name="testCreationWithValidFileContent" test-case="valid-files">
+  		<params>
+  			<param name="files" type="java.util.Vector" value-type="java.lang.String">
+  				<param>/org/openvpms/component/business/service/archetype/castor/valid-registry-file-1.xml</param>
+  				<param>/org/openvpms/component/business/service/archetype/castor/valid-registry-file-2.xml</param>
+  				<param>/org/openvpms/component/business/service/archetype/castor/valid-registry-file-3.xml</param>
+  			</param>
+  		</params>
+  	</method>
+
+    <!-- Data for the testCreationWithValidFileContent method -->
+  	<method name="testCreationWithInvalidFileContent" test-case="invalid-files">
+  		<params>
+  			<param name="files" type="java.util.Vector" value-type="java.lang.String">
+  				<param>/org/openvpms/component/business/service/archetype/castor/invalid-registry-file-1.xml</param>
+  				<param>/org/openvpms/component/business/service/archetype/castor/invalid-registry-file-2.xml</param>
+  				<param>/org/openvpms/component/business/service/archetype/castor/invalid-registry-file-3.xml</param>
+  			</param>
+  		</params>
+  	</method>
+
+    <!-- Data for the testValidEntryRetrieval method -->
+  	<method name="testValidEntryRetrieval" test-case="valid-retrieval">
+  		<params>
+  			<param name="file" type="java.lang.String">
+  				/org/openvpms/component/business/service/archetype/castor/valid-registry-file-2.xml
+  			</param>	
+  			<param name="archetypes" type="java.util.Vector" value-type="java.lang.String">
+  				<param>party.customer</param>
+  				<param>party.animal</param>
+  				<param>party.supplier</param>
+  				<param>party.administrator</param>
+  			</param>
+  		</params>
+  	</method>
+
+    <!-- Data for the testInvalidEntryRetrieval method -->
+  	<method name="testInvalidEntryRetrieval" test-case="invalid-retrieval">
+  		<params>
+  			<param name="file" type="java.lang.String">
+  				/org/openvpms/component/business/service/archetype/castor/valid-registry-file-2.xml
+  			</param>	
+  			<param name="archetypes" type="java.util.Vector" value-type="java.lang.String">
+  				<param>party1.customer</param>
+  				<param>party1.animal</param>
+  				<param>party1.supplier</param>
+  				<param>party1.administrator</param>
+  			</param>
+  		</params>
+  	</method>
+  </class>
+</tests>
+
+

@@ -1,0 +1,11 @@
+<archetypes>
+	<archetypeEntry name="party.person.customer">
+		<archetypeId>openVPMS-VET-PARTY.person_customer.v1</archetypeId>
+		<infoModelVersion>openVPMS.v1</infoModelVersion>
+	</archetypeEntry>
+	<archetypeEntry>
+		<archetypeId>openVPMS-VET-PARTY.person_supplier.v1</archetypeId>
+		<infoModelVersion>openvpms.v1</infoModelVersion>
+		<infoModelClass>org.openvpms.component.business.domain.im.party.Person</infoModelClass>
+	</archetypeEntry>
+</archetypes>
