@@ -14,11 +14,11 @@
 	<classpathentry kind="var" path="MAVEN_REPO/log4j/jars/log4j-1.2.11.jar"/>
 	<classpathentry kind="lib" path="target/test-classes"/>
 	<classpathentry kind="var" path="MAVEN_REPO/jtestcase/jars/jtestcase-3.0.0.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/openvpms-common"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/openvpms-domain"/>
 	<classpathentry kind="var" path="MAVEN_REPO/acode/jars/openehr-kernel-1.2.4.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-orm-0.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-io/jars/commons-io-1.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/acode/jars/adl-parser-1.0.1.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-common-0.1.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-domain-0.1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

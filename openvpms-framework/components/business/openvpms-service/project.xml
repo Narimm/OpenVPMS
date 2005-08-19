@@ -2,8 +2,8 @@
 <project>
     <extend>${basedir}/../build/maven/project.xml</extend>
     <pomVersion>3</pomVersion>
-    <artifactId>openvpms-domain</artifactId>
-    <name>openvpms-domain</name>
+    <artifactId>openvpms-service</artifactId>
+    <name>openvpms-service</name>
     <currentVersion>0.1</currentVersion>
     <package>org.openvpms.component.business.service</package>
     <description>OpenVPMS Domain Model for the Veterinary domain</description>
