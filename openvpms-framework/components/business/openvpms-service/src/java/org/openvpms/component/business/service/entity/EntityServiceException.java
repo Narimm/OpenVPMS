@@ -31,7 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ServiceException extends RuntimeException implements
+public class EntityServiceException extends RuntimeException implements
         OpenVPMSException {
 
     /**
@@ -69,7 +69,7 @@ public class ServiceException extends RuntimeException implements
      * @param errorCode
      *            the error code
      */
-    public ServiceException(ErrorCode errorCode) {
+    public EntityServiceException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -84,7 +84,7 @@ public class ServiceException extends RuntimeException implements
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public ServiceException(ErrorCode errorCode, Object[] params) {
+    public EntityServiceException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -98,7 +98,7 @@ public class ServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public ServiceException(ErrorCode errorCode, Throwable cause) {
+    public EntityServiceException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -115,7 +115,7 @@ public class ServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public ServiceException(ErrorCode errorCode, Object[] params,
+    public EntityServiceException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

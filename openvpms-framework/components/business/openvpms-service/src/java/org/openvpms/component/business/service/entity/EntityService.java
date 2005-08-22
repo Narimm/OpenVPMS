@@ -43,7 +43,7 @@ import org.openvpms.component.system.dao.im.IEntityDAO;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityService<T extends Entity> implements IServiceInterface<T> {
+public class EntityService<T extends Entity> implements IEntityService<T> {
     /**
      * Cache a reference to an archetype registry. This is madatory for the 
      * service to operate correctly.
@@ -74,7 +74,7 @@ public class EntityService<T extends Entity> implements IServiceInterface<T> {
      * @param dao
      *            the reference to the data access object it will use for the 
      *            service             
-     * @throws ServiceException
+     * @throws UUIDServiceException
      *             a runtime exception tha is raised if the service cannot be
      *             instatiated
      */
@@ -88,7 +88,7 @@ public class EntityService<T extends Entity> implements IServiceInterface<T> {
      * 
      * @see org.openvpms.component.business.service.IServiceInterface#createEntity(java.lang.String)
      */
-    public T createEntity(String type) throws ServiceException {
+    public T createEntity(String type) throws EntityServiceException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -100,7 +100,7 @@ public class EntityService<T extends Entity> implements IServiceInterface<T> {
      *      java.lang.Object[])
      */
     public T[] findEntities(String searchCriteria, Object[] searchParams)
-            throws ServiceException {
+            throws EntityServiceException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -110,11 +110,11 @@ public class EntityService<T extends Entity> implements IServiceInterface<T> {
      * 
      * @see org.openvpms.component.business.service.IServiceInterface#removeEntity(T)
      */
-    public void removeEntity(T entity) throws ServiceException {
+    public void removeEntity(T entity) throws EntityServiceException {
         try {
             dao.delete(entity);
         } catch (Exception exception) {
-            throw new ServiceException(ServiceException.ErrorCode.FailedToDeleteEntity,
+            throw new EntityServiceException(EntityServiceException.ErrorCode.FailedToDeleteEntity,
                     new Object[] {entity.getClass().getName(), "removeEntity"}, 
                     exception);
         }
@@ -125,11 +125,11 @@ public class EntityService<T extends Entity> implements IServiceInterface<T> {
      * 
      * @see org.openvpms.component.business.service.IServiceInterface#updateEntity(T)
      */
-    public void updateEntity(T entity) throws ServiceException {
+    public void updateEntity(T entity) throws EntityServiceException {
         try {
             dao.update(entity);
         } catch (Exception exception) {
-            throw new ServiceException(ServiceException.ErrorCode.FailedToUpdateEntity,
+            throw new EntityServiceException(EntityServiceException.ErrorCode.FailedToUpdateEntity,
                     new Object[] {entity.getClass().getName(), "updateEntity"}, 
                     exception);
         }

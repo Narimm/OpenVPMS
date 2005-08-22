@@ -11,7 +11,7 @@
         <dependency>
             <groupId>jug</groupId>
             <artifactId>jug</artifactId>
-            <version>2.0rc1</version>
+            <version>2.0rc4</version>
             <url>http://jug.safehaus.org/</url>
         </dependency>
         

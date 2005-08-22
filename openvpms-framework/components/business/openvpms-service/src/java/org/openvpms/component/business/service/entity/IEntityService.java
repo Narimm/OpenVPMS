@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.Entity;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IServiceInterface<T extends Entity> {
+public interface IEntityService<T extends Entity> {
     /**
      * Create an entity of the specified type. The type defines the archetype
      * that will be created. An archetype restricts the instances of the domain
@@ -47,36 +47,36 @@ public interface IServiceInterface<T extends Entity> {
      * @param archetype
      *            the archetype to create
      * @return T a empty archetype with the appropriate default entries
-     * @throws ServiceException
+     * @throws UUIDServiceException
      *             a runtime exception
      * 
      */
-    public T createEntity(String archetype) throws ServiceException;
+    public T createEntity(String archetype) throws EntityServiceException;
 
     /**
      * Remove the specified entity. If the entity cannot be removed for whatever
-     * reason then raise a {@link ServiceException}
+     * reason then raise a {@link UUIDServiceException}
      * 
      * @param entity
      *            the entity to remove
-     * @throws ServiceException
+     * @throws UUIDServiceException
      *             a runtime exception
      */
-    public void removeEntity(T entity) throws ServiceException;
+    public void removeEntity(T entity) throws EntityServiceException;
 
     /**
      * Update the specified entity. The entity is validated against its
      * archetype before it is updated. If the entity is invalid or it cannot be 
-     * updated the {@link ServiceException} excpetion is thrown.
+     * updated the {@link UUIDServiceException} excpetion is thrown.
      * <p>
      * The updateEntity method implies both save and upate semantics
      * 
      * @param entity
      *            the entity to update
-     * @throws ServiceException
+     * @throws UUIDServiceException
      *             a runtime exception
      */
-    public void updateEntity(T entity) throws ServiceException;
+    public void updateEntity(T entity) throws EntityServiceException;
 
     /**
      * Retrieve all the entities that match the specified criteria. The criteria
@@ -87,16 +87,16 @@ public interface IServiceInterface<T extends Entity> {
      * specified criteria.
      * <p>
      * If there is an error in the query, or the passed in parameters or the
-     * query fails to execute then raise a {@link ServiceException}.
+     * query fails to execute then raise a {@link UUIDServiceException}.
      * 
      * @param searchCriteria
      *            the search crtieria or reference to a search
      * @param searchParams
      *            the parameters used to constrain the search
      * @return T[] an array (which may be empty} of matching entries
-     * @throws ServiceException
+     * @throws UUIDServiceException
      *             a runtime exception if the request cannot be serviced
      */
     public T[] findEntities(String searchCriteria, Object[] searchParams)
-            throws ServiceException;
+            throws EntityServiceException;
 }
