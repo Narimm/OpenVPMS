@@ -32,6 +32,8 @@ import org.openehr.rm.datatypes.text.DvText;
 import org.openehr.rm.support.identification.ObjectID;
 
 /**
+ * This class is used to broker the manay-to-many relationship between 
+ * {@link Entity} and {@link Classification}.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$

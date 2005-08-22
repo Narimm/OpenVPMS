@@ -51,6 +51,12 @@ public class Classification extends Locatable {
      * Holds the set of children classifications
      */
     private Set<Classification> children;
+    
+    /**
+     * Holds the set of {@link EntityClassifications} that this classification
+     * is a part off.
+     */
+    private Set<EntityClassification> entityClassifications;
 
     /**
      * Constructs an classification.
@@ -81,13 +87,7 @@ public class Classification extends Locatable {
         super(uid, archetypeNodeId, name, archetypeDetails, null, links);
         this.details = details;
         this.children = new HashSet<Classification>();
-    }
-
-    /**
-     * @return Returns the children.
-     */
-    public Set<Classification> getChildren() {
-        return children;
+        this.entityClassifications = new HashSet<EntityClassification>();
     }
 
     /**
@@ -104,6 +104,10 @@ public class Classification extends Locatable {
      * @param classification
      */
     public void addChildClassification(Classification classification) {
+        if (classification == null) {
+            throw new EntityException(
+                    EntityException.ErrorCode.NullChildClassificationSpecified);
+        }
         this.children.add(classification);
     }
     
@@ -114,6 +118,51 @@ public class Classification extends Locatable {
      */
     public void removeChildClassification(Classification classification) {
         this.children.remove(classification);
+    }
+    
+    /**
+     * Return the the children classifications
+     * 
+     * @return Classification[]
+     */
+    public Classification[] getChildClassifications() {
+        return (Classification[])this.children.toArray();
+    }
+    
+    /**
+     * Add an {@link EntityClassification} to this classification
+     * 
+     * @param entityClassification
+     *            the classification to add
+     */
+    public void addEntityClassification(EntityClassification entityClassification) {
+        if (entityClassification == null) {
+            throw new EntityException(
+                    EntityException.ErrorCode.NullEntityClassificationSpecified);
+        }
+        
+        this.entityClassifications.add(entityClassification);
+    }
+    
+    /**
+     * Remove the specified {@link EntityClassification} from this 
+     * classification
+     * 
+     * @param entityClassification
+     *            the entity classification to remove
+     */
+    public void removeEntityClassification(EntityClassification entityClassification) {
+        this.entityClassifications.remove(entityClassification);
+    }
+    
+    /**
+     * Retrueve the list of {@link EntityClassification} instances that this 
+     * classification is a part off.
+     * 
+     * @return EntityClassification[]
+     */
+    public EntityClassification[] getEntityClassifications() {
+        return (EntityClassification[])this.entityClassifications.toArray();
     }
     
     /**

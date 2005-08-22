@@ -22,6 +22,7 @@ package org.openvpms.component.business.domain.im;
 // openehr-java-kernel
 import java.util.Set;
 
+// openehr-java-kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
 import org.openehr.rm.common.archetyped.Archetyped;
@@ -31,6 +32,7 @@ import org.openehr.rm.datastructure.DataStructure;
 import org.openehr.rm.datatypes.basic.DvBoolean;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.DvOrdinal;
+import org.openehr.rm.datatypes.quantity.DvQuantity;
 import org.openehr.rm.datatypes.text.DvText;
 import org.openehr.rm.support.identification.ObjectID;
 
@@ -79,6 +81,11 @@ public class Participation extends Locatable {
      * in the {@link Act}.
      */
     private DvInterval timeInterval;
+    
+    /**
+     * The percentage of participation in the specified {@link Act}.
+     */
+    private DvQuantity percentage;
     
     /**
      * Reference to the entity participating in the act
@@ -230,6 +237,20 @@ public class Participation extends Locatable {
      */
     public Entity getEntity() {
         return entity;
+    }
+
+    /**
+     * @return Returns the percentage.
+     */
+    public DvQuantity getPercentage() {
+        return percentage;
+    }
+
+    /**
+     * @param percentage The percentage to set.
+     */
+    public void setPercentage(DvQuantity percentage) {
+        this.percentage = percentage;
     }
 
     /* (non-Javadoc)

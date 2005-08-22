@@ -56,11 +56,6 @@ public class EntityIdentity extends Locatable {
      */
     private ItemStructure details;
     
-    /**
-     * A reference to the {@link EntityRelationship} that this identiy 
-     * belongs too
-     */
-    private EntityRelationship owningRelationship;
 
     /**
      * Constructs a valid instance of an entity identity
@@ -75,11 +70,9 @@ public class EntityIdentity extends Locatable {
      *            descriptive meta data for the achetype
      * @param links
      *            null if not specified
-     * @param sourceEntity
-     *            the source entity of this relationship
-     * @param targetEntity
-     *            the target entity of this relationship                        
-     * @param details
+     * @param identity
+     *            the identity
+      * @param details
      *            a compound item that describes the details of this
      *            archetype.
      * @throws IllegalArgumentException
@@ -93,11 +86,9 @@ public class EntityIdentity extends Locatable {
             @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
             @Attribute(name = "links") Set<Link> links, 
             @Attribute(name = "identity", required=true) DvText identity,
-            @Attribute(name = "owningRelationship") EntityRelationship owningRelationship,
             @Attribute(name = "details") ItemStructure details) {
         super(uid, archetypeNodeId, name, archetypeDetails, null, links);
         this.identity = identity;
-        this.owningRelationship = owningRelationship;
         this.details = details;
     }
     
@@ -130,20 +121,6 @@ public class EntityIdentity extends Locatable {
         this.details = details;
     }
     
-    /**
-     * @return Returns the owningRelationship.
-     */
-    public EntityRelationship getOwningRelationship() {
-        return owningRelationship;
-    }
-
-    /**
-     * @param owningRelationship The owningRelationship to set.
-     */
-    public void setOwningRelationship(EntityRelationship owningRelationship) {
-        this.owningRelationship = owningRelationship;
-    }
-
     /*
      * (non-Javadoc)
      * 

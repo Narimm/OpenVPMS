@@ -55,12 +55,11 @@ public class Entity extends Locatable {
     private ItemStructure details;
     
     /**
-     * Return a set of {@link Classification} for this entity
+     * Return a set of {@link EntityClassification} for this entity. An 
+     * {@link Entity} can belong to zero, one or more {@link Classification}
      * 
-     * TODO We can probably remove this attribute from the class since
-     * it is now part of {@link EntityClassification}.
      */
-    private Set<Classification> classifications;
+    private Set<EntityClassification> classifications;
     
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
@@ -73,10 +72,16 @@ public class Entity extends Locatable {
     private Set<Participation> participations;
     
     /**
-     * Return a set of {@link EntityRelationships} that this entity is part 
-     * off.
+     * Return a set of {@link EntityRelationships} that this entity is the 
+     * source off.
      */
-    private Set<EntityRelationship> relationships;
+    private Set<EntityRelationship> sourceRelationships;
+    
+    /**
+     * The {@link EntityRelationship} instances where this entity is a
+     * target
+     */
+    private Set<EntityRelationship> targetRelationships;
 
     /**
      * Constructs an instance of a base entity.
@@ -123,14 +128,14 @@ public class Entity extends Locatable {
     /**
      * @return Returns the classifications.
      */
-    public Set<Classification> getClassifications() {
+    public Set<EntityClassification> getClassifications() {
         return classifications;
     }
 
     /**
      * @param classifications The classifications to set.
      */
-    public void setClassifications(Set<Classification> classifications) {
+    public void setClassifications(Set<EntityClassification> classifications) {
         this.classifications = classifications;
     }
 
@@ -163,17 +168,31 @@ public class Entity extends Locatable {
     }
 
     /**
-     * @return Returns the relationships.
+     * @return Returns the sourceRelationships.
      */
-    public Set<EntityRelationship> getRelationships() {
-        return relationships;
+    public Set<EntityRelationship> getSourceRelationships() {
+        return sourceRelationships;
     }
 
     /**
-     * @param relationships The relationships to set.
+     * @param sourceRelationships The sourceRelationships to set.
      */
-    public void setRelationships(Set<EntityRelationship> relationships) {
-        this.relationships = relationships;
+    public void setSourceRelationships(Set<EntityRelationship> relationships) {
+        this.sourceRelationships = relationships;
+    }
+
+    /**
+     * @return Returns the targetRelationships.
+     */
+    public Set<EntityRelationship> getTargetRelationships() {
+        return targetRelationships;
+    }
+
+    /**
+     * @param targetRelationships The targetRelationships to set.
+     */
+    public void setTargetRelationships(Set<EntityRelationship> targetRelationships) {
+        this.targetRelationships = targetRelationships;
     }
 
     /*

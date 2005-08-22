@@ -58,6 +58,14 @@ public class ActRelationship extends Locatable {
     private DvBoolean negationInd;
     
     /**
+     * Indicates whether the relationship is one of parent-child. This means
+     * that the parent is the owner of the relationship and is responsible for
+     * managing its lifecycle. When the parent is deleted then it will also
+     * delete the child
+     */
+    private DvBoolean parentChildRelationship;
+    
+    /**
      * Holds dynamic details about the act relationship
      */
     private ItemStructure details;
@@ -110,6 +118,7 @@ public class ActRelationship extends Locatable {
         this.sourceAct = sourceAct;
         this.targetAct = targetAct;
         this.details = details;
+        this.parentChildRelationship = new DvBoolean(false);
     }
     
     /**
@@ -119,16 +128,12 @@ public class ActRelationship extends Locatable {
         return details;
     }
 
-
-
     /**
      * @param details The details to set.
      */
     public void setDetails(ItemStructure details) {
         this.details = details;
     }
-
-
 
     /**
      * @return Returns the negationInd.
@@ -137,16 +142,12 @@ public class ActRelationship extends Locatable {
         return negationInd;
     }
 
-
-
     /**
      * @param negationInd The negationInd to set.
      */
     public void setNegationInd(DvBoolean negationInd) {
         this.negationInd = negationInd;
     }
-
-
 
     /**
      * @return Returns the sequence.
@@ -155,16 +156,12 @@ public class ActRelationship extends Locatable {
         return sequence;
     }
 
-
-
     /**
      * @param sequence The sequence to set.
      */
     public void setSequence(DvOrdinal sequence) {
         this.sequence = sequence;
     }
-
-
 
     /**
      * @return Returns the sourceAct.
@@ -173,16 +170,12 @@ public class ActRelationship extends Locatable {
         return sourceAct;
     }
 
-
-
     /**
      * @param sourceAct The sourceAct to set.
      */
     public void setSourceAct(Act sourceAct) {
         this.sourceAct = sourceAct;
     }
-
-
 
     /**
      * @return Returns the targetAct.
@@ -191,8 +184,6 @@ public class ActRelationship extends Locatable {
         return targetAct;
     }
 
-
-
     /**
      * @param targetAct The targetAct to set.
      */
@@ -200,7 +191,19 @@ public class ActRelationship extends Locatable {
         this.targetAct = targetAct;
     }
 
+    /**
+     * @return Returns the parentChildRelationship.
+     */
+    public DvBoolean getParentChildRelationship() {
+        return parentChildRelationship;
+    }
 
+    /**
+     * @param parentChildRelationship The parentChildRelationship to set.
+     */
+    public void setParentChildRelationship(DvBoolean parentChildRelationship) {
+        this.parentChildRelationship = parentChildRelationship;
+    }
 
     /* (non-Javadoc)
      * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
@@ -210,5 +213,4 @@ public class ActRelationship extends Locatable {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

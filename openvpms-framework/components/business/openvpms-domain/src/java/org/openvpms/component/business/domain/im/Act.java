@@ -20,6 +20,7 @@
 package org.openvpms.component.business.domain.im;
 
 // java core
+import java.util.HashSet;
 import java.util.Set;
 
 // openehr java kernel
@@ -163,8 +164,10 @@ public class Act extends Locatable {
             @Attribute(name = "details") ItemStructure details) {
         super(uid, archetypeNodeId, name, archetypeDetails, null, links);
         this.details = details;
+        this.participations = new HashSet<Participation>();
+        this.sourceActRelationships = new HashSet<ActRelationship>();
+        this.targetActRelationships = new HashSet<ActRelationship>();
     }
-    
 
     /**
      * @return Returns the activityTime.
@@ -173,14 +176,12 @@ public class Act extends Locatable {
         return activityTime;
     }
 
-
     /**
      * @param activityTime The activityTime to set.
      */
     public void setActivityTime(DvInterval activityTime) {
         this.activityTime = activityTime;
     }
-
 
     /**
      * @return Returns the descritpion.
@@ -189,14 +190,12 @@ public class Act extends Locatable {
         return descritpion;
     }
 
-
     /**
      * @param descritpion The descritpion to set.
      */
     public void setDescritpion(DvText descritpion) {
         this.descritpion = descritpion;
     }
-
 
     /**
      * @return Returns the details.
@@ -205,14 +204,12 @@ public class Act extends Locatable {
         return details;
     }
 
-
     /**
      * @param details The details to set.
      */
     public void setDetails(ItemStructure details) {
         this.details = details;
     }
-
 
     /**
      * @return Returns the effectiveTime.
@@ -221,14 +218,12 @@ public class Act extends Locatable {
         return effectiveTime;
     }
 
-
     /**
      * @param effectiveTime The effectiveTime to set.
      */
     public void setEffectiveTime(DvInterval effectiveTime) {
         this.effectiveTime = effectiveTime;
     }
-
 
     /**
      * @return Returns the mood.
@@ -237,14 +232,12 @@ public class Act extends Locatable {
         return mood;
     }
 
-
     /**
      * @param mood The mood to set.
      */
     public void setMood(DvText mood) {
         this.mood = mood;
     }
-
 
     /**
      * @return Returns the negationInd.
@@ -253,46 +246,11 @@ public class Act extends Locatable {
         return negationInd;
     }
 
-
     /**
      * @param negationInd The negationInd to set.
      */
     public void setNegationInd(DvBoolean negationInd) {
         this.negationInd = negationInd;
-    }
-
-
-    /**
-     * @return Returns the participations.
-     */
-    public Set<Participation> getParticipations() {
-        return participations;
-    }
-
-
-    /**
-     * @param participations The participations to set.
-     */
-    public void setParticipations(Set<Participation> participations) {
-        this.participations = participations;
-    }
-    
-    /**
-     * Add a {@link Participation}
-     * 
-     * @param participation 
-     */
-    public void addParticipation(Participation participation) {
-        this.participations.add(participation);
-    }
-
-    /**
-     * Remove a {@link Participation}
-     * 
-     * @param source
-     */
-    public void removeParticipation(Participation participation) {
-        this.participations.remove(participation);
     }
 
     /**
@@ -302,14 +260,12 @@ public class Act extends Locatable {
         return priority;
     }
 
-
     /**
      * @param priority The priority to set.
      */
     public void setPriority(DvText priority) {
         this.priority = priority;
     }
-
 
     /**
      * @return Returns the reason.
@@ -318,14 +274,12 @@ public class Act extends Locatable {
         return reason;
     }
 
-
     /**
      * @param reason The reason to set.
      */
     public void setReason(DvText reason) {
         this.reason = reason;
     }
-
 
     /**
      * @return Returns the repeatNumber.
@@ -334,7 +288,6 @@ public class Act extends Locatable {
         return repeatNumber;
     }
 
-
     /**
      * @param repeatNumber The repeatNumber to set.
      */
@@ -342,14 +295,40 @@ public class Act extends Locatable {
         this.repeatNumber = repeatNumber;
     }
 
+    /**
+     * @return Returns the status.
+     */
+    public DvText getStatus() {
+        return status;
+    }
+
+    /**
+     * @param status The status to set.
+     */
+    public void setStatus(DvText status) {
+        this.status = status;
+    }
+
+    /**
+     * @return Returns the title.
+     */
+    public DvText getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title The title to set.
+     */
+    public void setTitle(DvText title) {
+        this.title = title;
+    }
 
     /**
      * @return Returns the sourceActRelationships.
      */
-    public Set<ActRelationship> getSourceActRelationships() {
-        return sourceActRelationships;
+    public ActRelationship[] getSourceActRelationships() {
+        return (ActRelationship[])sourceActRelationships.toArray();
     }
-
 
     /**
      * @param sourceActRelationships The sourceActRelationships to set.
@@ -378,28 +357,11 @@ public class Act extends Locatable {
     }
 
     /**
-     * @return Returns the status.
-     */
-    public DvText getStatus() {
-        return status;
-    }
-
-
-    /**
-     * @param status The status to set.
-     */
-    public void setStatus(DvText status) {
-        this.status = status;
-    }
-
-
-    /**
      * @return Returns the targetActRelationships.
      */
-    public Set<ActRelationship> getTargetActRelationships() {
-        return targetActRelationships;
+    public ActRelationship[] getTargetActRelationships() {
+        return (ActRelationship[])targetActRelationships.toArray();
     }
-
 
     /**
      * @param targetActRelationships The targetActRelationships to set.
@@ -428,20 +390,38 @@ public class Act extends Locatable {
     }
 
     /**
-     * @return Returns the title.
+     * Return the associated {@link Participantion} instances
+     * 
+     * @return Participation
      */
-    public DvText getTitle() {
-        return title;
+    public Participation[] getParticipations() {
+        return (Participation[])this.participations.toArray();
     }
-
 
     /**
-     * @param title The title to set.
+     * @param participations The participations to set.
      */
-    public void setTitle(DvText title) {
-        this.title = title;
+    public void setParticipations(Set<Participation> participations) {
+        this.participations = participations;
+    }
+    
+    /**
+     * Add a {@link Participation}
+     * 
+     * @param participation 
+     */
+    public void addParticipation(Participation participation) {
+        this.participations.add(participation);
     }
 
+    /**
+     * Remove a {@link Participation}
+     * 
+     * @param source
+     */
+    public void removeParticipation(Participation participation) {
+        this.participations.remove(participation);
+    }
 
     /* (non-Javadoc)
      * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
@@ -451,5 +431,4 @@ public class Act extends Locatable {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

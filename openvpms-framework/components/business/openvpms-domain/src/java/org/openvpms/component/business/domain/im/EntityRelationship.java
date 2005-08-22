@@ -29,7 +29,6 @@ import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.DvOrdinal;
-import org.openehr.rm.datatypes.quantity.DvQuantity;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
 import org.openehr.rm.support.identification.ObjectID;
@@ -59,11 +58,6 @@ public class EntityRelationship extends Locatable {
     private DvText reason;
 
     /**
-     * TODO Definition for scrapQuantity
-     */
-    private DvQuantity scrapQuantity;
-
-    /**
      * Indicates the period that time interval that this relationship is valid.
      */
     private DvInterval<DvDateTime> activePeriod;
@@ -82,6 +76,11 @@ public class EntityRelationship extends Locatable {
      * Record the target entity in the relationship
      */
     private ObjectReference targetEntity;
+    
+    /**
+     * A relationship may also have an associated entity identity
+     */
+    private EntityIdentity entityIdentity;
 
     /**
      * Constructs a valid intance of an entity relationship
@@ -168,21 +167,6 @@ public class EntityRelationship extends Locatable {
     }
 
     /**
-     * @return Returns the scrapQuantity.
-     */
-    public DvQuantity getScrapQuantity() {
-        return scrapQuantity;
-    }
-
-    /**
-     * @param scrapQuantity
-     *            The scrapQuantity to set.
-     */
-    public void setScrapQuantity(DvQuantity scrapQuantity) {
-        this.scrapQuantity = scrapQuantity;
-    }
-
-    /**
      * @return Returns the sequence.
      */
     public DvOrdinal getSequence() {
@@ -236,4 +220,17 @@ public class EntityRelationship extends Locatable {
         this.targetEntity = targetEntity;
     }
 
+    /**
+     * @return Returns the entityIdentity.
+     */
+    public EntityIdentity getEntityIdentity() {
+        return entityIdentity;
+    }
+
+    /**
+     * @param entityIdentity The entityIdentity to set.
+     */
+    public void setEntityIdentity(EntityIdentity entityIdentity) {
+        this.entityIdentity = entityIdentity;
+    }
 }
