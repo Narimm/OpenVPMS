@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="MAVEN_REPO/acode/jars/openehr-kernel-1.2.4.jar"/>
+	<classpathentry sourcepath="/OPENEHR_SRC" kind="var" path="MAVEN_REPO/acode/jars/openehr-kernel-1.2.4.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-common-0.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/jug/jars/jug-2.0rc1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/xerces/jars/xercesImpl-2.4.0.jar"/>
