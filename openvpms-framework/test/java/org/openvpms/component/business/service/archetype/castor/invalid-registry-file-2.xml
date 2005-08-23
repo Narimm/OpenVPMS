@@ -1,0 +1,6 @@
+<archetypes>
+	<archetypeEntry name="party.person.customer">
+		<archetypeId>openVPMS-VET-PARTY.person_supplier.v1</archetypeId>
+		<infoModelVersion>openvpms.v1</infoModelVersion>
+	</archetypeEntry>
+</archetypes>
