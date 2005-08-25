@@ -50,7 +50,7 @@ public abstract class BaseTestCase extends LoggedTestCase {
      * Data that is relevant to the test case is loaded using jtestcase
      * library.
      */
-    private JTestCase testData;
+    protected JTestCase testData;
     
     /**
      * Delegate to the base class
@@ -73,11 +73,7 @@ public abstract class BaseTestCase extends LoggedTestCase {
      */
     @Override
     protected void setUp() throws Exception {
-        String dataFile = getPathToTestData();
-        debug("Trying to open " + dataFile +  " for " + 
-                this.getClass().getSimpleName());
-
-        testData = new JTestCase(dataFile, this.getClass().getSimpleName()); 
+        setUpTestData();
     }
 
     /* (non-Javadoc)
@@ -107,6 +103,22 @@ public abstract class BaseTestCase extends LoggedTestCase {
         String className = this.getClass().getName();
         String dataFile = className.substring(0, className.lastIndexOf(".") + 1); 
         return "/" + StringUtils.replaceChars(dataFile, '.', '/') + TEST_FILE;
+    }
+    
+    /**
+     * Set up the test data file.
+     * 
+     * @throws Exception
+     *            propagate exception to the caller
+     */
+    protected void setUpTestData()
+    throws Exception {
+        
+        String dataFile = getPathToTestData();
+        debug("Trying to open " + dataFile +  " for " + 
+                this.getClass().getSimpleName());
+
+        testData = new JTestCase(dataFile, this.getClass().getSimpleName()); 
     }
 
 }

@@ -18,17 +18,14 @@
 
 package org.openvpms.component.business.domain.im.party;
 
-// openehr-java-kernel
-import java.util.Set;
-
+// openehr kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
-import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
+
+// openvpms framework
+import org.openvpms.component.business.domain.im.InfoModelObject;
 
 /**
  * Address of a contact.
@@ -36,7 +33,7 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Address extends Locatable {
+public class Address extends InfoModelObject {
 
     /**
      * Generated SUID
@@ -49,30 +46,36 @@ public class Address extends Locatable {
     private ItemStructure details;
 
     /**
-     * Construct an address
+     * Define a protected default constructor
+     */
+    protected Address() {
+    }
+    
+    /**
+     * Construct an address.
      * 
      * @param uid
      *            unique identity for this field
      * @param archetypeNodeId
      *            the identity of the associated node in the archetype def
      * @param name
-     *            the name ?????
+     *            the type of address
      * @param archetypeDetails
      *            a reference ot the achetype definition
-     * @param links
-     *            TODO Need to resolv this
+     * @param details
+     *            The details of the addrss object
      * @throws IllegalArgumentException
      *             if the constructor pre-conditions are not satisfied.
      */
     @FullConstructor
     public Address(
-            @Attribute(name = "uid") ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
             @Attribute(name = "details", required = true) ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         if (details == null) {
             throw new IllegalArgumentException("null details");
         }
@@ -93,16 +96,4 @@ public class Address extends Locatable {
     public void setDetails(ItemStructure details) {
         this.details = details;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

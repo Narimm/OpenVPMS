@@ -49,7 +49,7 @@ public class Act extends Locatable {
     /**
      * Generated SUID.
      */
-    private static final long serialVersionUID = 9007260593488278053L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Text that defines the modality of the Act i.e Definition, Intent, 

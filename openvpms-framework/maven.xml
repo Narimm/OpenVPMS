@@ -11,4 +11,9 @@
             package="org.openvpms.component.business.service.archetype.castor"
             types="j2"/>
   	</preGoal>
+
+	<preGoal name="hibernate:schema-export">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+	</preGoal>
 </project>
