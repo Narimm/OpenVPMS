@@ -1,0 +1,16 @@
+<?xml version ="1.0" encoding = "UTF-8"?>
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <params>
+  </params>
+  
+  <class name="PersistentAddressTestCase">
+    <!-- Data for the testCreateMultipleAddresses method -->
+  	<method name="testCreateMultipleAddresses" test-case="normal">
+  		<params>
+  			<param name="count" type="java.lang.Integer">10</param>
+  		</params>
+  	</method>
+  </class>
+</tests>
+
+

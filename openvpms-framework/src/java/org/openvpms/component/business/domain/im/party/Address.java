@@ -18,6 +18,10 @@
 
 package org.openvpms.component.business.domain.im.party;
 
+// java core
+import java.util.HashSet;
+import java.util.Set;
+
 // openehr kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
@@ -40,6 +44,11 @@ public class Address extends InfoModelObject {
      */
     private static final long serialVersionUID = -2619257937834307246L;
 
+    /**
+     * The contact that owns this address
+     */
+    private Set<Contact> contacts;
+    
     /**
      * Address details specific, which is specified by the archetype definition
      */
@@ -80,6 +89,7 @@ public class Address extends InfoModelObject {
             throw new IllegalArgumentException("null details");
         }
         this.details = details;
+        this.contacts = new HashSet<Contact>();
     }
 
     /**
@@ -95,5 +105,58 @@ public class Address extends InfoModelObject {
      */
     public void setDetails(ItemStructure details) {
         this.details = details;
+    }
+    
+    /**
+     * Return the {@link Contact} that is associated with this address
+     * 
+     * @return Contact
+     */
+    public Contact[] getContactsAsArray() {
+        return (Contact[])contacts.toArray(new Contact[contacts.size()]);
+    }
+    
+    /**
+     * Convenience method that returns the number of {@link Contact) that this
+     * address is associated with.
+     * 
+     * @return int
+     */
+    public int getNumOfContacts() {
+        return contacts.size();
+    }
+    
+    /**
+     * @return Returns the contacts.
+     */
+    public Set<Contact> getContacts() {
+        return contacts;
+    }
+
+    /**
+     * @param contacts The contacts to set.
+     */
+    public void setContacts(Set<Contact> contacts) {
+        this.contacts = contacts;
+    }
+
+    /**
+     * Associated the address with a contact
+     * 
+     * @param contact 
+     *            the contract to associate it with
+     */
+    public void addContact(Contact contact) {
+        contacts.add(contact);
+    }
+    
+    /**
+     * Disassociate the address with the specified contact
+     * 
+     * @parm contact
+     *            the contact to disassociate
+     */
+    public void removeContact(Contact contact) {
+        contacts.remove(contact);
     }
 }

@@ -43,6 +43,12 @@ public abstract class InfoModelObject extends Locatable {
      * Indicates the version of this object
      */
     private long version;
+    
+    /**
+     * This is the native if for the objct. Not the same as the uid
+     */
+    private String id;
+    
 
     
     /**
@@ -98,23 +104,47 @@ public abstract class InfoModelObject extends Locatable {
     public void setVersion(long version) {
         this.version = version;
     }
-    
+
     /**
-     * Return the identity of this object
-     * 
-     * @return String
+     * @return Returns the id.
      */
     public String getId() {
-        return getUid().getValue();
+        return id;
     }
 
     /**
-     * Set the identity of this object
-     * 
-     * @param id 
-     *            the object identity
+     * @param id The id to set.
      */
     public void setId(String id) {
-        setUid(new IMObjectID(id));
+        this.id = id;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        
+        boolean result = false;
+        if (obj instanceof InfoModelObject) {
+            InfoModelObject imobj = (InfoModelObject)obj;
+            if (imobj.getUid().getValue().equals(this.getUid().getValue())) {
+                result = true;
+            }
+        }
+        
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return this.getUid().getValue().hashCode();
     }
 }
+

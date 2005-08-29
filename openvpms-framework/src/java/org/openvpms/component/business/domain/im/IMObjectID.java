@@ -35,6 +35,13 @@ public class IMObjectID extends ObjectID {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Default constructor
+     */
+    protected IMObjectID() {
+        // do nothing
+    }
+    
+    /**
      * @param value
      */
     public IMObjectID(String value) {

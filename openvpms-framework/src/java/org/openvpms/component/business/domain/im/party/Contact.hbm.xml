@@ -20,17 +20,17 @@
         "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
 <hibernate-mapping >
-    <class name="org.openvpms.component.business.domain.im.party.Address" table="address">
+    <class name="org.openvpms.component.business.domain.im.party.Contact" table="contact">
         <id name="id" type="string" access="field" unsaved-value="null">
-			<column name="id" length="32" index="address_id_idx" />
+			<column name="id" length="32" index="contact_id_idx" />
 			<generator class="uuid.hex"/>
 		</id>
 		<component name="uid" class="org.openvpms.component.business.domain.im.IMObjectID">
-			<property name="value" access="field" column="address_id" type="string" />
+			<property name="value" column="contact_id" type="string" />
 		</component>
         <component name="archetypeDetails">
         	<component name="archetypeID">
-        		<property name="value" column="archetype_id" type="string" />
+        		<property name="value" access="field" column="archetype_id" type="string" />
         	</component>
         	<property name="referenceModelVersion" column="rm_version" type="string" />
         </component>
@@ -38,33 +38,34 @@
         	<property name="value" column="name" type="string" />
         </component>
         <property name="archetypeNodeId" column="archetype_node_id" type="string"/>
-        <property name="details" column="details" length="5000"
-			type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
-        <set name="contacts" lazy="false" table="contact_address" inverse="false" cascade="none">
-            <key column="address_id" />
-            <many-to-many class="org.openvpms.component.business.domain.im.party.Contact"
-				column="contact_id" outer-join="auto"/>
+        <component name="activePeriod">
+			<component name="interval">
+				<component name="lower" class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
+					<property name="calendar" column="start_date" type="calendar" access="field"/>
+				</component>
+				<component name="upper" class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
+					<property name="calendar" column="end_date" type="calendar" access="field"/>
+				</component>
+			</component>
+		</component>
+        <set name="addresses" lazy="false" inverse="true" table="contact_address" cascade="none">
+            <key column="contact_id" />
+            <many-to-many class="org.openvpms.component.business.domain.im.party.Address"
+				column="address_id" outer-join="auto"/>
         </set>
 	</class>
 
-	<query name="address.getAddressById">
+	<query name="contact.getContactById">
 		<![CDATA[
-			from org.openvpms.component.business.domain.im.party.Address as 
-			address where address.id = :id
+			from org.openvpms.component.business.domain.im.party.Contact as
+			contact where contact.id = :id
 		]]>
 	</query>
 
-	<query name="address.getAllAddresses">
+	<query name="contact.getAllContacts">
 		<![CDATA[
-			from from org.openvpms.component.business.domain.im.party.Address as 
-			address
-		]]>
-	</query>
-
-	<query name="address.getRowCount">
-		<![CDATA[
-			select count(address) from org.openvpms.component.business.domain.im.party.Address as 
-			address
+			from org.openvpms.component.business.domain.im.party.Contact as 
+			contact
 		]]>
 	</query>
 </hibernate-mapping>
