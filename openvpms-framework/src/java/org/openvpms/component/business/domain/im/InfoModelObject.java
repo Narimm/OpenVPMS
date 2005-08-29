@@ -44,11 +44,6 @@ public abstract class InfoModelObject extends Locatable {
      */
     private long version;
     
-    /**
-     * This is the native if for the objct. Not the same as the uid
-     */
-    private String id;
-    
 
     
     /**
@@ -109,14 +104,14 @@ public abstract class InfoModelObject extends Locatable {
      * @return Returns the id.
      */
     public String getId() {
-        return id;
+        return getUid().getValue();
     }
 
     /**
      * @param id The id to set.
      */
     public void setId(String id) {
-        this.id = id;
+        this.setUid(new IMObjectID(id));
     }
 
     /* (non-Javadoc)

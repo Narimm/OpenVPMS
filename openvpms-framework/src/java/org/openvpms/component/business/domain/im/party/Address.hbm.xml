@@ -21,13 +21,10 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
 <hibernate-mapping >
     <class name="org.openvpms.component.business.domain.im.party.Address" table="address">
-        <id name="id" type="string" access="field" unsaved-value="null">
-			<column name="id" length="32" index="address_id_idx" />
-			<generator class="uuid.hex"/>
+        <id name="id" type="string" unsaved-value="null">
+			<column name="address_id" index="address_id_idx" />
+			<generator class="assigned"/>
 		</id>
-		<component name="uid" class="org.openvpms.component.business.domain.im.IMObjectID">
-			<property name="value" access="field" column="address_id" type="string" />
-		</component>
         <component name="archetypeDetails">
         	<component name="archetypeID">
         		<property name="value" column="archetype_id" type="string" />

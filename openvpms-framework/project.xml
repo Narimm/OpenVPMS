@@ -141,36 +141,11 @@
             <url>http://www.jaxen.org/</url>
         </dependency>
         <dependency>
-            <groupId>jug</groupId>
-            <artifactId>jug</artifactId>
-            <version>2.0rc1</version>
-            <url>http://jug.safehaus.org/</url>
-        </dependency>
-        <dependency>
             <groupId>acode</groupId>
             <artifactId>openehr-kernel</artifactId>
             <version>1.2.4</version>
             <url>http://www.acode.se</url>
         </dependency>
-	    <dependency>
-	      <groupId>xerces</groupId>
-    	  <artifactId>xercesImpl</artifactId>
-	      <url>http://xml.apache.org/xerces2-j/</url>
-    	  <version>2.4.0</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>xml-apis</groupId>
-    	  <artifactId>xml-apis</artifactId>
-	      <url>http://xml.apache.org/xerces2-j/</url>
-    	  <version>2.0.2</version>
-	    </dependency>
-	    <dependency>
-	      <groupId>openvpms</groupId>
-    	  <artifactId>openvpms-common</artifactId>
-    	  <version>0.1</version>
-    	  <type>jar</type>
-	      <url>http://www.openvpms.org/</url>
-	    </dependency>
     	<dependency>
 	      <groupId>springframework</groupId>
     	  <artifactId>spring-hibernate</artifactId>
