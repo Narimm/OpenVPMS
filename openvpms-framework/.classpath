@@ -27,7 +27,7 @@
 	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-hibernate-1.2.3.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/acode/jars/adl-parser-1.0.1.jar"/>
 	<classpathentry sourcepath="target/castor/src" kind="lib" path="target/classes"/>
-	<classpathentry kind="var" path="MAVEN_REPO/xstream/jars/xstream-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/hibernate/jars/hibernate-2.1.3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/xstream/jars/xstream-1.1.2.jar"/>
 	<classpathentry kind="output" path="target/eclispse-classes"/>
 </classpath>
