@@ -19,13 +19,13 @@
 package org.openvpms.component.business.domain.im.party;
 
 // java core
+import java.util.HashSet;
 import java.util.Set;
 
 // openehr-java-kernel
-import org.openehr.rm.common.archetyped.Archetyped;
+import org.openehr.rm.Attribute;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 import org.openvpms.component.business.domain.im.Entity;
 
 /**
@@ -50,28 +50,42 @@ public abstract class Party extends Entity {
     private Set<Contact> contacts;
 
     /**
+     * Default Constructor
+     */
+    protected Party() {
+        // do nothing
+    }
+    
+    /**
+     * Construct a Party object.
+     * 
      * @param uid
-     *            uniquely identifies this instance
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node within the archetype definition this refers too
+     *            the id of this node                        
      * @param name
-     *            the name
-     * @param archetypeDetails
-     *            a reference to the achetype definition
+     *            the name 
      * @param contacts
-     *            a list of contacts
-     * @param details
-     *            details of this party            
+     *            a collection of contacts for this actor            
+     * @param details 
+     *            actor details
+     * @throws IllegalArgumentException
+     *            if the preconditions for creation are not satisfied            
      */
     protected Party(
-            ObjectID uid, 
-            String archetypeNodeId, 
-            DvText name,
-            Archetyped archetypeDetails, 
-            Set<Contact> contacts,
-            ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, details);
-        this.contacts = contacts;
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
+            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "contacts") Set<Contact> contacts,
+            @Attribute(name = "details") ItemStructure details) {
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, null, details);
+        this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
     }
 
     /**

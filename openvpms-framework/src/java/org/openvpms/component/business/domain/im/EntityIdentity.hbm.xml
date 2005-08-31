@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+#  Version: 1.0
+#
+#  The contents of this file are subject to the OpenVPMS License Version
+#  1.0 (the 'License'); you may not use this file except in compliance with
+#  the License. You may obtain a copy of the License at
+#  http://www.openvpms.org/license/
+#
+#  Software distributed under the License is distributed on an 'AS IS' basis,
+#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+#  for the specific language governing rights and limitations under the
+#  License.
+#
+#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+#
+#  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+<hibernate-mapping >
+    <class name="org.openvpms.component.business.domain.im.EntityIdentity" table="entity_identity">
+        <id name="id" type="string" unsaved-value="null">
+			<column name="entity_identity_id" index="entity_identity_id_idx" />
+			<generator class="assigned"/>
+		</id>
+		<version name="version" access="field" type="long" />
+        <component name="archetypeDetails">
+        	<component name="archetypeID">
+        		<property name="value" column="archetype_id" type="string" />
+        	</component>
+        	<property name="referenceModelVersion" column="rm_version" type="string" />
+        </component>
+        <component name="name">
+        	<property name="value" column="name" type="string" />
+        </component>
+        <property name="archetypeNodeId" column="archetype_node_id" type="string"/>
+       	<property name="identity" type="string" column="identity" />
+        <property name="details" column="details" length="5000"
+			type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
+	</class>
+</hibernate-mapping>

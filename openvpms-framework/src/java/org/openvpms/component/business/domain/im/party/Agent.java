@@ -23,10 +23,8 @@ import java.util.Set;
 
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * Class that represents non-living, non organisational parties such as devices, 
@@ -43,16 +41,25 @@ public class Agent extends Actor {
     private static final long serialVersionUID = 6098322374242328182L;
 
     /**
+     * Default constructor
+     */
+    protected Agent() {
+        // do nothing
+    }
+    
+    /**
      * Constructs a location entity.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
+     *            the name 
      * @param contacts
      *            a collection of contacts for this actor            
      * @param roles
@@ -64,13 +71,14 @@ public class Agent extends Actor {
      */
     @FullConstructor
     public Agent(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
             @Attribute(name = "contacts") Set<Contact> contacts,
             @Attribute(name = "roles") Set<Role> roles,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, roles, details);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, roles, details);
     }
 }

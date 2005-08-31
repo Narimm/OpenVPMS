@@ -19,20 +19,18 @@
 package org.openvpms.component.business.domain.im;
 
 // openehr-java-kernel
-import java.util.Set;
 
+// openehr-kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.DvOrdinal;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
-import org.openehr.rm.support.identification.ObjectReference;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.im.support.IMObjectReference;
 
 /**
  * Describes the relationship between two entities.
@@ -40,22 +38,22 @@ import org.openehr.rm.support.identification.ObjectReference;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationship extends Locatable {
+public class EntityRelationship extends IMlObject {
 
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = -7721503029190016273L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * TODO Definition for sequence
      */
-    private DvOrdinal sequence;
+    private int sequence;
 
     /**
      * TODO Definition for reason
      */
-    private DvText reason;
+    private String reason;
 
     /**
      * Indicates the period that time interval that this relationship is valid.
@@ -70,12 +68,12 @@ public class EntityRelationship extends Locatable {
     /**
      * Record the source entity in the relationship
      */
-    private ObjectReference sourceEntity;
+    private IMObjectReference sourceEntity;
 
     /**
      * Record the target entity in the relationship
      */
-    private ObjectReference targetEntity;
+    private IMObjectReference targetEntity;
     
     /**
      * A relationship may also have an associated entity identity
@@ -86,36 +84,32 @@ public class EntityRelationship extends Locatable {
      * Constructs a valid intance of an entity relationship
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
-     * @param sourceEntity
-     *            the source entity of this relationship
-     * @param targetEntity
-     *            the target entity of this relationship                        
+     *            the name 
      * @param details
-     *            a compound item that describes the details of this
-     *            archetype.
+     *            The details of the addrss object
      * @throws IllegalArgumentException
-     *            thrown if the preconditions are not met.
+     *             if the constructor pre-conditions are not satisfied.
      */
     @FullConstructor
     public EntityRelationship(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "sourceEntity", required = true) ObjectReference sourceEntity,
-            @Attribute(name = "targetEntity", required = true) ObjectReference targetEntity,
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "sourceEntity", required = true) IMObjectReference sourceEntity,
+            @Attribute(name = "targetEntity", required = true) IMObjectReference targetEntity,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+        
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
         this.details = details;
@@ -154,7 +148,7 @@ public class EntityRelationship extends Locatable {
     /**
      * @return Returns the reason.
      */
-    public DvText getReason() {
+    public String getReason() {
         return reason;
     }
 
@@ -162,14 +156,14 @@ public class EntityRelationship extends Locatable {
      * @param reason
      *            The reason to set.
      */
-    public void setReason(DvText reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 
     /**
      * @return Returns the sequence.
      */
-    public DvOrdinal getSequence() {
+    public int getSequence() {
         return sequence;
     }
 
@@ -177,7 +171,7 @@ public class EntityRelationship extends Locatable {
      * @param sequence
      *            The sequence to set.
      */
-    public void setSequence(DvOrdinal sequence) {
+    public void setSequence(int sequence) {
         this.sequence = sequence;
     }
 
@@ -195,28 +189,28 @@ public class EntityRelationship extends Locatable {
     /**
      * @return Returns the sourceEntity.
      */
-    public ObjectReference getSourceEntity() {
+    public IMObjectReference getSourceEntity() {
         return sourceEntity;
     }
 
     /**
      * @param sourceEntity The sourceEntity to set.
      */
-    public void setSourceEntity(ObjectReference sourceEntity) {
+    public void setSourceEntity(IMObjectReference sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 
     /**
      * @return Returns the targetEntity.
      */
-    public ObjectReference getTargetEntity() {
+    public IMObjectReference getTargetEntity() {
         return targetEntity;
     }
 
     /**
      * @param targetEntity The targetEntity to set.
      */
-    public void setTargetEntity(ObjectReference targetEntity) {
+    public void setTargetEntity(IMObjectReference targetEntity) {
         this.targetEntity = targetEntity;
     }
 

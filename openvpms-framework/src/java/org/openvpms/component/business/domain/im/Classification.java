@@ -23,19 +23,17 @@ import java.util.Set;
 
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
+ * Provides a mechanism to define a hierarchy of classifications
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Classification extends Locatable {
+public class Classification extends IMlObject {
 
     /**
      * Generated SUID
@@ -53,41 +51,48 @@ public class Classification extends Locatable {
     private Set<Classification> children;
     
     /**
-     * Holds the set of {@link EntityClassifications} that this classification
-     * is a part off.
+     * This is a reference to the parent classification in the hierarchy.
      */
-    private Set<EntityClassification> entityClassifications;
+    private Classification parent;
 
+    /**
+     * Default constructor
+     */
+    public Classification() {
+        // do nothing
+    }
+    
     /**
      * Constructs an classification.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param details
-     *            a compound item that describes the details of this archetype.
+     *            the details of this classification
      * @throws IllegalArgumentException
      *             thrown if the preconditions are not met.
      */
     @FullConstructor
     public Classification(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "details") ItemStructure details,
+            @Attribute(name = "parent") Classification parent) {
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.details = details;
         this.children = new HashSet<Classification>();
-        this.entityClassifications = new HashSet<EntityClassification>();
+        this.parent = parent;
     }
 
     /**
@@ -103,7 +108,7 @@ public class Classification extends Locatable {
      * 
      * @param classification
      */
-    public void addChildClassification(Classification classification) {
+    public void addChild(Classification classification) {
         if (classification == null) {
             throw new EntityException(
                     EntityException.ErrorCode.NullChildClassificationSpecified);
@@ -116,7 +121,7 @@ public class Classification extends Locatable {
      * 
      * @return Classification
      */
-    public void removeChildClassification(Classification classification) {
+    public void removeChild(Classification classification) {
         this.children.remove(classification);
     }
     
@@ -125,46 +130,25 @@ public class Classification extends Locatable {
      * 
      * @return Classification[]
      */
-    public Classification[] getChildClassifications() {
-        return (Classification[])this.children.toArray();
+    public Classification[] getChildren() {
+        return (Classification[])this.children.toArray(
+                new Classification[children.size()]);
     }
     
     /**
-     * Add an {@link EntityClassification} to this classification
-     * 
-     * @param entityClassification
-     *            the classification to add
+     * @return Returns the parent.
      */
-    public void addEntityClassification(EntityClassification entityClassification) {
-        if (entityClassification == null) {
-            throw new EntityException(
-                    EntityException.ErrorCode.NullEntityClassificationSpecified);
-        }
-        
-        this.entityClassifications.add(entityClassification);
+    protected Classification getParent() {
+        return parent;
     }
-    
+
     /**
-     * Remove the specified {@link EntityClassification} from this 
-     * classification
-     * 
-     * @param entityClassification
-     *            the entity classification to remove
+     * @param parent The parent to set.
      */
-    public void removeEntityClassification(EntityClassification entityClassification) {
-        this.entityClassifications.remove(entityClassification);
+    protected void setParent(Classification parent) {
+        this.parent = parent;
     }
-    
-    /**
-     * Retrueve the list of {@link EntityClassification} instances that this 
-     * classification is a part off.
-     * 
-     * @return EntityClassification[]
-     */
-    public EntityClassification[] getEntityClassifications() {
-        return (EntityClassification[])this.entityClassifications.toArray();
-    }
-    
+
     /**
      * @return Returns the details.
      */

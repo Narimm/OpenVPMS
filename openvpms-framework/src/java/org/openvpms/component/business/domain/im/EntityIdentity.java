@@ -49,7 +49,7 @@ public class EntityIdentity extends Locatable {
     /**
      * The system identity
      */
-    private DvText identity;
+    private String identity;
     
     /**
      * Holds details about the entity identity
@@ -85,7 +85,7 @@ public class EntityIdentity extends Locatable {
             @Attribute(name = "name", required = true)DvText name, 
             @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
             @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "identity", required = true) DvText identity,
+            @Attribute(name = "identity", required = true) String identity,
             @Attribute(name = "details") ItemStructure details) {
         super(uid, archetypeNodeId, name, archetypeDetails, null, links);
         this.identity = identity;
@@ -95,14 +95,14 @@ public class EntityIdentity extends Locatable {
     /**
      * @return Returns the identity.
      */
-    public DvText getIdentity() {
+    public String getIdentity() {
         return identity;
     }
 
     /**
      * @param identity The identity to set.
      */
-    public void setIdentity(DvText identity) {
+    public void setIdentity(String identity) {
         this.identity = identity;
     }
 

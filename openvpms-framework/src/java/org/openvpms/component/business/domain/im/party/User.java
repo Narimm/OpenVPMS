@@ -23,13 +23,11 @@ import java.util.Set;
 
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.datetime.DvDate;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  *
@@ -46,12 +44,12 @@ public class User extends Role {
     /**
      * The identity the user uses to login to the system
      */
-    private DvText userId;
+    private String userId;
     
     /**
      * The user's password
      */
-    private DvText password;
+    private String password;
     
     /**
      * The last recorded login date
@@ -60,26 +58,26 @@ public class User extends Role {
     private DvDate lastLogin;
 
     /**
-     * Constructs an empoyee role.
+     * Constructs an employee.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param contacts
      *            the collection of contacts of this role
+     * @param activePeriod
+     *            the period that this role is valid                        
      * @param userId
      *            the identity of the user
      * @param password
      *            the associated user password
-     * @param activePeriod
-     *            the period that this role is valid                        
      * @param details
      *            dynamic properties for this role
      * @throws IllegalArgumentException
@@ -87,17 +85,17 @@ public class User extends Role {
      */
     @FullConstructor
     public User(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
             @Attribute(name = "contacts") Set<Contact> contacts,
-            @Attribute(name = "userId", required = true) DvText userId,
-            @Attribute(name = "password", required = true) DvText password,
+            @Attribute(name = "userId") String userId,
+            @Attribute(name = "password") String password,
             @Attribute(name = "activePeriod") DvInterval<DvDateTime> activePeriod,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, 
-                activePeriod, details);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, activePeriod, details);
         this.userId = userId;
         this.password = password;
     }
@@ -119,29 +117,28 @@ public class User extends Role {
     /**
      * @return Returns the password.
      */
-    public DvText getPassword() {
+    public String getPassword() {
         return password;
     }
 
     /**
      * @param password The password to set.
      */
-    public void setPassword(DvText password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
     /**
      * @return Returns the userId.
      */
-    public DvText getUserId() {
+    public String getUserId() {
         return userId;
     }
 
     /**
      * @param userId The userId to set.
      */
-    public void setUserId(DvText userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
-
 }

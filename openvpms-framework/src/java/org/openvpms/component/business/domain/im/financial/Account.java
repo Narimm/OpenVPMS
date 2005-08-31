@@ -23,12 +23,10 @@ import java.util.Set;
 
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Role;
 
@@ -43,36 +41,48 @@ public class Account extends Role {
     /**
      * Generated SUID.
      */
-    private static final long serialVersionUID = -3992622227129050495L;
+    private static final long serialVersionUID = 1L;
+    
+    
+    /**
+     * Default constructor
+     */
+    protected Account() {
+        // do nothing
+    }
 
     /**
      * Constructs an account.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
+     *            the name 
      * @param contacts
      *            the collection of contacts of this role
      * @param activePeriod
      *            the period that this role is valid                        
      * @param details
      *            dynamic properties for this role
+     * @throws IllegalArgumentException
+     *             thrown if the preconditions are not met.
      */
     @FullConstructor
     public Account(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
             @Attribute(name = "contacts") Set<Contact> contacts,
             @Attribute(name = "activePeriod") DvInterval<DvDateTime> activePeriod,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, 
-                activePeriod, details);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, activePeriod, details);
     }
 }

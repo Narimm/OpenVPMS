@@ -19,22 +19,15 @@
 
 package org.openvpms.component.business.domain.im;
 
-// openehr-java-kernel
-import java.util.Set;
 
 // openehr-java-kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.DataStructure;
-import org.openehr.rm.datatypes.basic.DvBoolean;
+import org.openehr.rm.datatypes.quantity.datetime.DvDate;
 import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.DvOrdinal;
-import org.openehr.rm.datatypes.quantity.DvQuantity;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * A class representing an {@link Entity}'s participantion in an {@link Act}.
@@ -47,7 +40,7 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Participation extends Locatable {
+public class Participation extends IMlObject {
 
     /**
      * Generated SUID
@@ -58,37 +51,39 @@ public class Participation extends Locatable {
      * An integer representing the relative order of the participantion in
      * relation to other participations of the same act.
      */
-    private DvOrdinal sequence;
+    private int sequence;
     
     /**
      * Description of the participation
      */
-    private DvText description;
+    private String description;
     
     /**
      * Indicates that a particular participation did not occur
      */
-    private DvBoolean negationInd;
+    private boolean negationInd;
     
     /**
      * Indicates the mode that the {@link Entity} is participating in the
      * {@link Act}
+     * 
+     * TODO Look at incorporating with the terminology service
      */
-    private DvText mode;
+    private String mode;
     
     /**
      * Indicates the time interval that the {@link Entity} was participating
      * in the {@link Act}.
      */
-    private DvInterval timeInterval;
+    private DvInterval<DvDate> timeInterval;
     
     /**
      * The percentage of participation in the specified {@link Act}.
      */
-    private DvQuantity percentage;
+    private int percentage;
     
     /**
-     * Reference to the entity participating in the act
+     * Reference to the associated entity
      */
     private Entity entity;
     
@@ -107,51 +102,48 @@ public class Participation extends Locatable {
      * Constructs a participantion between an {@link Entity} and an {@link Act}.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
-     * @param entity
-     *            the entity participating in the act
-     * @param act 
-     *            the associated act                   
+     *            the name 
      * @param details
-     *            a compound item that describes the details of this
-     *            archetype.
+     *            holds details about the participation.
      * @throws IllegalArgumentException
      *            thrown if the preconditions are not met.
      */
     @FullConstructor
     public Participation(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails")Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "entity", required = true) Entity entity,
-            @Attribute(name = "act", required = true) Act act,
+            @Attribute(name = "entity") Entity entity,
+            @Attribute(name = "act") Act act,
             @Attribute(name = "details") DataStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         
+        this.act = act;
+        this.entity = entity;
         this.details = details;
     }
     
     /**
      * @return Returns the description.
      */
-    public DvText getDescription() {
+    public String getDescription() {
         return description;
     }
 
     /**
      * @param description The description to set.
      */
-    public void setDescription(DvText description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -172,56 +164,56 @@ public class Participation extends Locatable {
     /**
      * @return Returns the mode.
      */
-    public DvText getMode() {
+    public String getMode() {
         return mode;
     }
 
     /**
      * @param mode The mode to set.
      */
-    public void setMode(DvText mode) {
+    public void setMode(String mode) {
         this.mode = mode;
     }
 
     /**
      * @return Returns the negationInd.
      */
-    public DvBoolean getNegationInd() {
+    public boolean getNegationInd() {
         return negationInd;
     }
 
     /**
      * @param negationInd The negationInd to set.
      */
-    public void setNegationInd(DvBoolean negationInd) {
+    public void setNegationInd(boolean negationInd) {
         this.negationInd = negationInd;
     }
 
     /**
      * @return Returns the sequence.
      */
-    public DvOrdinal getSequence() {
+    public int getSequence() {
         return sequence;
     }
 
     /**
      * @param sequence The sequence to set.
      */
-    public void setSequence(DvOrdinal sequence) {
+    public void setSequence(int sequence) {
         this.sequence = sequence;
     }
 
     /**
      * @return Returns the timeInterval.
      */
-    public DvInterval getTimeInterval() {
+    public DvInterval<DvDate> getTimeInterval() {
         return timeInterval;
     }
 
     /**
      * @param timeInterval The timeInterval to set.
      */
-    public void setTimeInterval(DvInterval timeInterval) {
+    public void setTimeInterval(DvInterval<DvDate> timeInterval) {
         this.timeInterval = timeInterval;
     }
 
@@ -242,14 +234,14 @@ public class Participation extends Locatable {
     /**
      * @return Returns the percentage.
      */
-    public DvQuantity getPercentage() {
+    public int getPercentage() {
         return percentage;
     }
 
     /**
      * @param percentage The percentage to set.
      */
-    public void setPercentage(DvQuantity percentage) {
+    public void setPercentage(int percentage) {
         this.percentage = percentage;
     }
 

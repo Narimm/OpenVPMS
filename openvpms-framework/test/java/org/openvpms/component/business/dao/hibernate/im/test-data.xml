@@ -1,0 +1,17 @@
+<?xml version ="1.0" encoding = "UTF-8"?>
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <params>
+  </params>
+  
+  <class name="PersistentClassficationTestCase">
+    <!-- Data for the testMultipleLevelClassificationHierarchy method -->
+  	<method name="testMultipleLevelClassificationHierarchy" test-case="normal">
+  		<params>
+  			<param name="levels" type="java.lang.Integer">4</param>
+  			<param name="childrenPerLevel" type="java.lang.Integer">4</param>
+  		</params>
+  	</method>
+  </class>
+</tests>
+
+

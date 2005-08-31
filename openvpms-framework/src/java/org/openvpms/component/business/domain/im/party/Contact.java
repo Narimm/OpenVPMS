@@ -33,7 +33,7 @@ import org.openehr.rm.datatypes.text.DvText;
 
 // openvpms framework
 import org.openvpms.component.business.domain.im.party.Address;
-import org.openvpms.component.business.domain.im.InfoModelObject;
+import org.openvpms.component.business.domain.im.IMlObject;
 
 /**
  * Defines a contact for a {@link Party}. 
@@ -41,7 +41,7 @@ import org.openvpms.component.business.domain.im.InfoModelObject;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Contact extends InfoModelObject {
+public class Contact extends IMlObject {
     /**
      * Generated SUID
      */
@@ -65,22 +65,20 @@ public class Contact extends InfoModelObject {
     }
     
     /**
-     * Constructs a Contact
+     * Constructs a Contact.
      * 
      * @param uid
      *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id within the archetype definition
+     *            the id of this node                        
      * @param name
      *            the name 
-     * @param archetypeDetails
-     *            reference to the archetype definition
-     * @param links
-     *            TODO What does this actually do
      * @param activePeriod
-     *            the period for which this contact is active
-     * @param addresses
-     *            not null
+     *            the active period for this contact
      * @throws IllegalArgumentException
      *             if name null or archetypeNodeId null, or links not null and
      *             empty, or addresses null or empty

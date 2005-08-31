@@ -238,7 +238,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         try {
             // first we need to delete all Address and 
             // Contacts
-            //HibernatePartyUtil.deleteAllContacts(session);
+            //HibernateEntityUtil.deleteAllContacts(session);
             
             
             tx = session.beginTransaction();

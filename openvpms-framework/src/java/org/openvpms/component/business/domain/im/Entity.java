@@ -21,14 +21,13 @@ package org.openvpms.component.business.domain.im;
 // java core
 import java.util.Set;
 
-//openehr java kernel
+//openehr kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
+
 
 /**
  * A class representing all namned things in the business.
@@ -36,17 +35,17 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Entity extends Locatable {
+public class Entity extends IMlObject {
 
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = -1885076845700353861L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Description of this entity
      */
-    private DvText description;
+    private String description;
     
     /**
      * A placeholder for all entity details, which denotes the dynamic and
@@ -84,44 +83,55 @@ public class Entity extends Locatable {
     private Set<EntityRelationship> targetRelationships;
 
     /**
+     * Default constructor
+     */
+    public Entity() {
+        // do nothing
+    }
+    
+    /**
      * Constructs an instance of a base entity.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
+     *            the name 
      * @param details
-     *            a compound item that describes the details of this
-     *            archetype.
+     *            details associated with the archetype.
      * @throws IllegalArgumentException
      *            thrown if the preconditions are not met.
      */
     @FullConstructor
     public Entity(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "description") String description,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, null);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+        this.description = description;
         this.details = details;
     }
 
     /**
      * @return Returns the description.
      */
-    public DvText getDescription() {
+    public String getDescription() {
         return description;
     }
 
     /**
      * @param description The description to set.
      */
-    public void setDescription(DvText description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 

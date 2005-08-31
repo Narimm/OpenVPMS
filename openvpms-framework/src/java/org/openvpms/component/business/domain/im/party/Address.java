@@ -29,7 +29,7 @@ import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
 
 // openvpms framework
-import org.openvpms.component.business.domain.im.InfoModelObject;
+import org.openvpms.component.business.domain.im.IMlObject;
 
 /**
  * Address of a contact.
@@ -37,7 +37,7 @@ import org.openvpms.component.business.domain.im.InfoModelObject;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Address extends InfoModelObject {
+public class Address extends IMlObject {
 
     /**
      * Generated SUID
@@ -64,13 +64,15 @@ public class Address extends InfoModelObject {
      * Construct an address.
      * 
      * @param uid
-     *            unique identity for this field
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the identity of the associated node in the archetype def
+     *            the id of this node                        
      * @param name
-     *            the type of address
-     * @param archetypeDetails
-     *            a reference ot the achetype definition
+     *            the name 
      * @param details
      *            The details of the addrss object
      * @throws IllegalArgumentException

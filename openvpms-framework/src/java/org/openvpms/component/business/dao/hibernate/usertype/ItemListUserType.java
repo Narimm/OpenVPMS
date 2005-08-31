@@ -133,6 +133,10 @@ public class ItemListUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#deepCopy(java.lang.Object)
      */
     public Object deepCopy(Object obj) throws HibernateException {
+        if (obj == null) {
+            return obj;
+        }
+        
         ItemList is = (ItemList)obj;
         return new ItemList(is.getArchetypeNodeId(), is.getName(), 
                 (Cluster)is.getRepresentation());

@@ -26,15 +26,11 @@ import java.util.Set;
 // openehr java kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.basic.DvBoolean;
+import org.openehr.rm.datatypes.quantity.datetime.DvDate;
 import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.DvQuantity;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * A class representing an activity that is being done, has been done, 
@@ -44,7 +40,7 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Act extends Locatable {
+public class Act extends IMlObject {
 
     /**
      * Generated SUID.
@@ -56,60 +52,64 @@ public class Act extends Locatable {
      * Event, Goal. The mood of an Act does not change. To describe the 
      * progression of an Act from defined through to executed you create 
      * different Acts connected via ActRelationships.
+     * 
+     * TODO Change to use terminology service
      */
-    private DvText mood;
+    private String mood;
     
     /**
      * Represents the title of the act.
+     * 
+     * TODO Change to use terminology service
      */
-    private DvText title;
+    private String title;
     
     /**
      * Description of the Act.
      */
-    private DvText descritpion;
+    private String descritpion;
     
     /**
      * Time interval representing the operative time of the Act.
      */
-    private DvInterval effectiveTime;
+    private DvInterval<DvDate> effectiveTime;
     
     /**
      * A time expression specifying when an Act occurs, is supposed to occur, 
      * is scheduled to occur etc.  For example an event may have occurred 3 
      * hours ago {@link effectiveTime} but we only recorded it now.
      */
-    private DvInterval activityTime;
+    private DvInterval<DvDate> activityTime;
     
     /**
      * The urgency under which the Act happened, can happen, is intended to 
      * happen.
      */
-    private DvText priority;
+    private String priority;
     
     /**
      * Text representing the reason for the Act. Often this is beter 
      * represented by a realtionship to another Act of type "has reason".
      */
-    private DvText reason;
+    private String reason;
     
     /**
      * An indicator specifiying that the Act statement is a negation of the 
      * Act as described by it's properties.  i.e Animal has NO hind limp.
      */
-    private DvBoolean negationInd;
+    private boolean negationInd;
     
     /**
      * An interval of integers stating the minimal and maximum nymber of Act 
      * repetitions. 
      */
-    private DvQuantity repeatNumber;
+    private int repeatNumber;
 
     /**
      * A String representing the status or state of the Act. (i.e  Normal, 
      * Aborted, Completed, Suspended, Cancelled etc
      */
-    private DvText status;
+    private String status;
     
     /**
      * Describes the specific details of the act, whether it is clinical,
@@ -139,28 +139,27 @@ public class Act extends Locatable {
      * object.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param details
-     *            a compound item that describes the details of this
-     *            archetype.
+     *            dynamic details of the act.
      */
     @FullConstructor
     public Act(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
+            @Attribute(name = "name", required = true) DvText name, 
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.details = details;
         this.participations = new HashSet<Participation>();
         this.sourceActRelationships = new HashSet<ActRelationship>();
@@ -170,28 +169,28 @@ public class Act extends Locatable {
     /**
      * @return Returns the activityTime.
      */
-    public DvInterval getActivityTime() {
+    public DvInterval<DvDate> getActivityTime() {
         return activityTime;
     }
 
     /**
      * @param activityTime The activityTime to set.
      */
-    public void setActivityTime(DvInterval activityTime) {
+    public void setActivityTime(DvInterval<DvDate> activityTime) {
         this.activityTime = activityTime;
     }
 
     /**
      * @return Returns the descritpion.
      */
-    public DvText getDescritpion() {
+    public String getDescritpion() {
         return descritpion;
     }
 
     /**
      * @param descritpion The descritpion to set.
      */
-    public void setDescritpion(DvText descritpion) {
+    public void setDescritpion(String descritpion) {
         this.descritpion = descritpion;
     }
 
@@ -212,112 +211,112 @@ public class Act extends Locatable {
     /**
      * @return Returns the effectiveTime.
      */
-    public DvInterval getEffectiveTime() {
+    public DvInterval<DvDate> getEffectiveTime() {
         return effectiveTime;
     }
 
     /**
      * @param effectiveTime The effectiveTime to set.
      */
-    public void setEffectiveTime(DvInterval effectiveTime) {
+    public void setEffectiveTime(DvInterval<DvDate> effectiveTime) {
         this.effectiveTime = effectiveTime;
     }
 
     /**
      * @return Returns the mood.
      */
-    public DvText getMood() {
+    public String getMood() {
         return mood;
     }
 
     /**
      * @param mood The mood to set.
      */
-    public void setMood(DvText mood) {
+    public void setMood(String mood) {
         this.mood = mood;
     }
 
     /**
      * @return Returns the negationInd.
      */
-    public DvBoolean getNegationInd() {
+    public boolean getNegationInd() {
         return negationInd;
     }
 
     /**
      * @param negationInd The negationInd to set.
      */
-    public void setNegationInd(DvBoolean negationInd) {
+    public void setNegationInd(boolean negationInd) {
         this.negationInd = negationInd;
     }
 
     /**
      * @return Returns the priority.
      */
-    public DvText getPriority() {
+    public String getPriority() {
         return priority;
     }
 
     /**
      * @param priority The priority to set.
      */
-    public void setPriority(DvText priority) {
+    public void setPriority(String priority) {
         this.priority = priority;
     }
 
     /**
      * @return Returns the reason.
      */
-    public DvText getReason() {
+    public String getReason() {
         return reason;
     }
 
     /**
      * @param reason The reason to set.
      */
-    public void setReason(DvText reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 
     /**
      * @return Returns the repeatNumber.
      */
-    public DvQuantity getRepeatNumber() {
+    public int getRepeatNumber() {
         return repeatNumber;
     }
 
     /**
      * @param repeatNumber The repeatNumber to set.
      */
-    public void setRepeatNumber(DvQuantity repeatNumber) {
+    public void setRepeatNumber(int repeatNumber) {
         this.repeatNumber = repeatNumber;
     }
 
     /**
      * @return Returns the status.
      */
-    public DvText getStatus() {
+    public String getStatus() {
         return status;
     }
 
     /**
      * @param status The status to set.
      */
-    public void setStatus(DvText status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
     /**
      * @return Returns the title.
      */
-    public DvText getTitle() {
+    public String getTitle() {
         return title;
     }
 
     /**
      * @param title The title to set.
      */
-    public void setTitle(DvText title) {
+    public void setTitle(String title) {
         this.title = title;
     }
 

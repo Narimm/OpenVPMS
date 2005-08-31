@@ -20,15 +20,14 @@
 package org.openvpms.component.business.domain.im.party;
 
 // java core
+import java.util.HashSet;
 import java.util.Set;
 
 // openehr-java-kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 
 /**
@@ -42,7 +41,7 @@ public abstract class Actor extends Party {
     /**
      * Generated SUID.
      */
-    private static final long serialVersionUID = 5527724522952769119L;
+    private static final long serialVersionUID = 1L;
     
     /**
      * The set of {@link Role}s supported by this actor.
@@ -50,16 +49,25 @@ public abstract class Actor extends Party {
     private Set<Role> roles;
 
     /**
+     * Default constructor
+     */
+    protected Actor() {
+        // do nothing
+    }
+    
+    /**
      * Constructs an actor.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
+     *            the name 
      * @param contacts
      *            a collection of contacts for this actor            
      * @param roles
@@ -71,15 +79,16 @@ public abstract class Actor extends Party {
      */
     @FullConstructor
     public Actor(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
             @Attribute(name = "contacts") Set<Contact> contacts,
             @Attribute(name = "roles") Set<Role> roles,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, details);
-        this.roles = roles;
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, details);
+        this.roles = (roles == null) ? new HashSet<Role>() : roles;
     }
     
     /**

@@ -19,17 +19,12 @@
 package org.openvpms.component.business.domain.im;
 
 // openehr java kernel
-import java.util.Set;
-
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * This class is used to broker the manay-to-many relationship between 
@@ -38,7 +33,7 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityClassification extends Locatable {
+public class EntityClassification extends IMlObject {
 
     /**
      * Generated SUID.
@@ -64,15 +59,15 @@ public class EntityClassification extends Locatable {
      * Constructs an entity classification.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param entity
      *            the associated {@link Entity}
      * @param classification
@@ -84,15 +79,15 @@ public class EntityClassification extends Locatable {
      */
     @FullConstructor
     public EntityClassification(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "entity", required = true) Entity entity,
-            @Attribute(name = "classification", required = true) Classification classification,
-            @Attribute(name = " activePeriod", required = true) DvInterval<DvDateTime> activePeriod) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "entity") Entity entity,
+            @Attribute(name = "classification") Classification classification,
+            @Attribute(name = " activePeriod") DvInterval<DvDateTime> activePeriod) {
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.entity = entity;
         this.classification = classification;
         this.activePeriod = activePeriod;

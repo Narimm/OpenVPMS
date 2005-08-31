@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<!--
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+<hibernate-mapping>
+  <class name="org.openvpms.component.business.domain.im.Entity"
+    table="entity">
+    <id name="id" type="string" unsaved-value="null">
+      <column name="entity_id" index="entity_id_idx" />
+      <generator class="assigned" />
+    </id>
+    <version name="version" access="field" type="long" />
+    <component name="archetypeDetails">
+      <component name="archetypeID">
+        <property name="value" column="archetype_id" type="string" />
+      </component>
+      <property name="referenceModelVersion" column="rm_version"
+        type="string" />
+    </component>
+    <component name="name">
+      <property name="value" column="name" type="string" />
+    </component>
+    <property name="archetypeNodeId" column="archetype_node_id"
+      type="string" />
+    <property name="description" column="description" type="string" />
+    <property name="details" column="details" length="5000"
+      not-null="false"
+      type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
+    <set name="classifications" access="field" lazy="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.EntityClassification" />
+    </set>
+    <set name="identities" access="field" lazy="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.EntityIdentity" />
+    </set>
+    <set name="sourceRelationships" access="field" lazy="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.EntityRelationship" />
+    </set>
+    <set name="participations" access="field" lazy="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.Participation" />
+    </set>
+
+    <!--  Mapping for the abstract Party class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.party.Party"
+      table="party">
+      <key column="entity_id" />
+      <set name="contacts" access="field" lazy="true">
+        <key column="party_id" />
+        <one-to-many
+          class="org.openvpms.component.business.domain.im.party.Contact" />
+      </set>
+
+      <!-- Mapping for the Role class -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Role"
+        table="role">
+        <key column="entity_id" />
+        <component name="activePeriod">
+          <component name="interval">
+            <component name="lower"
+              class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
+              <property name="calendar" column="active_start_datetime"
+                type="calendar" access="field" />
+            </component>
+            <component name="upper"
+              class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
+              <property name="calendar" column="active_end_datetime"
+                type="calendar" access="field" />
+            </component>
+          </component>
+        </component>
+
+        <!-- Mapping for User -->
+        <joined-subclass
+          name="org.openvpms.component.business.domain.im.party.User"
+          table="user">
+          <key column="entity_id" />
+          <property name="userId" access="field" column="user_id"
+            type="string" />
+          <property name="password" access="field" column="password"
+            type="string" />
+          <component name="lastLogin"
+            class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
+            <property name="calendar" column="last_login"
+              type="calendar" access="field" />
+          </component>
+        </joined-subclass>
+      </joined-subclass>
+    </joined-subclass>
+
+    <!--  Mapping for the abstract Actor class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.party.Actor"
+      table="actor">
+      <key column="entity_id" />
+      <set name="roles" access="field" lazy="true">
+        <key column="actor_id" />
+        <one-to-many
+          class="org.openvpms.component.business.domain.im.party.Role" />
+      </set>
+
+      <!-- Mapping for person -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Person"
+        table="person">
+        <key column="entity_id" />
+        <property name="title" access="field" column="title"
+          type="string" />
+        <property name="firstName" access="field" column="first_name"
+          type="string" />
+        <property name="lastName" access="field" column="last_name"
+          type="string" />
+        <property name="initials" access="field" column="initials"
+          type="string" />
+      </joined-subclass>
+
+      <!-- Mapping for animal -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Animal"
+        table="animal">
+        <key column="entity_id" />
+        <property name="species" access="field" column="species"
+          type="string" />
+        <property name="breed" access="field" column="breed"
+          type="string" />
+        <property name="colour" access="field" column="colour"
+          type="string" />
+        <property name="sex" access="field" column="sex" type="string" />
+        <property name="desexed" access="field" column="desexed"
+          type="boolean" />
+        <component name="dateOfBirth"
+          class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
+          <property name="calendar" column="date_of_birth"
+            type="calendar" access="field" />
+        </component>
+      </joined-subclass>
+    </joined-subclass>
+  </class>
+</hibernate-mapping>

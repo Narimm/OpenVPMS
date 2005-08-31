@@ -23,10 +23,8 @@ import java.util.Set;
 
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * A person is an {@link Entity} that can participate in {@link Act}s.
@@ -44,36 +42,43 @@ public class Person extends Actor {
     /**
      * The person's title
      */
-    private DvText title;
+    private String title;
     
     /**
      * The person's first name
      */
-    private DvText firstName;
+    private String firstName;
     
     /**
      * The person's last name
      */
-    private DvText lastName;
+    private String lastName;
     
     /**
      * The person's initials
      */
-    private DvText initials;
+    private String initials;
+    
+    /**
+     * Default constructor
+     */
+    protected Person() {
+        // do nothing
+    }
     
     /**
      * Constructs a person entity.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param title            
      *            the person's title
      * @param firstName 
@@ -93,18 +98,19 @@ public class Person extends Actor {
      */
     @FullConstructor
     public Person(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
-            @Attribute(name = "title") DvText title,
-            @Attribute(name = "firstName") DvText firstName,
-            @Attribute(name = "lastName") DvText lastName,
-            @Attribute(name = "initials") DvText initials,
+            @Attribute(name = "title") String title,
+            @Attribute(name = "firstName") String firstName,
+            @Attribute(name = "lastName") String lastName,
+            @Attribute(name = "initials") String initials,
             @Attribute(name = "contacts") Set<Contact> contacts,
             @Attribute(name = "roles") Set<Role> roles,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, roles, details);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, roles, details);
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -114,56 +120,56 @@ public class Person extends Actor {
     /**
      * @return Returns the firstName.
      */
-    public DvText getFirstName() {
+    public String getFirstName() {
         return firstName;
     }
 
     /**
      * @param firstName The firstName to set.
      */
-    public void setFirstName(DvText firstName) {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
     /**
      * @return Returns the initials.
      */
-    public DvText getInitials() {
+    public String getInitials() {
         return initials;
     }
 
     /**
      * @param initials The initials to set.
      */
-    public void setInitials(DvText initials) {
+    public void setInitials(String initials) {
         this.initials = initials;
     }
 
     /**
      * @return Returns the lastName.
      */
-    public DvText getLastName() {
+    public String getLastName() {
         return lastName;
     }
 
     /**
      * @param lastName The lastName to set.
      */
-    public void setLastName(DvText lastName) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
     /**
      * @return Returns the title.
      */
-    public DvText getTitle() {
+    public String getTitle() {
         return title;
     }
 
     /**
      * @param title The title to set.
      */
-    public void setTitle(DvText title) {
+    public void setTitle(String title) {
         this.title = title;
     }
 }

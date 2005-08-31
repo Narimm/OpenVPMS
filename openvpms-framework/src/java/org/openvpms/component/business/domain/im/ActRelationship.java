@@ -19,18 +19,12 @@
 
 package org.openvpms.component.business.domain.im;
 
-import java.util.Set;
-
+// openehr-kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.basic.DvBoolean;
-import org.openehr.rm.datatypes.quantity.DvOrdinal;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * A class that represents the directed association between Acts.  
@@ -38,24 +32,24 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ActRelationship extends Locatable {
+public class ActRelationship extends IMlObject {
 
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = -5338835987898861256L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * An integer representing the relative order of the relationship among 
      * other like typed relationships.
      */
-    private DvOrdinal sequence;
+    private int sequence;
     
     /**
      * Indicates that the target {@link Act} is NOT related to the source 
      * {@link Act}.
      */
-    private DvBoolean negationInd;
+    private boolean negationInd;
     
     /**
      * Indicates whether the relationship is one of parent-child. This means
@@ -63,7 +57,7 @@ public class ActRelationship extends Locatable {
      * managing its lifecycle. When the parent is deleted then it will also
      * delete the child
      */
-    private DvBoolean parentChildRelationship;
+    private boolean parentChildRelationship;
     
     /**
      * Holds dynamic details about the act relationship
@@ -82,43 +76,49 @@ public class ActRelationship extends Locatable {
     
     
     /**
+     * Default constructor
+     */
+    protected ActRelationship() {
+        // dop nothing
+    }
+    
+    /**
      * Constructs an instance of an act.
      * TODO Need to determine what constitutes a valid construction of this
      * object.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param details
-     *            a compound item that describes the details of this
-     *            archetype.
+     *            dynamic attrbiutes
      * @throws IllegalArgumentException
      *            thrown if the preconditions are not met.
      */
     @FullConstructor
     public ActRelationship(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "sourceAct", required = true) Act sourceAct,
-            @Attribute(name = "targetAct", required = true) Act targetAct,
-            @Attribute(name = "sequence") DvOrdinal sequence,
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "sourceAct") Act sourceAct,
+            @Attribute(name = "targetAct") Act targetAct,
+            @Attribute(name = "sequence") int sequence,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.sequence = sequence;
         this.sourceAct = sourceAct;
         this.targetAct = targetAct;
         this.details = details;
-        this.parentChildRelationship = new DvBoolean(false);
+        this.parentChildRelationship = false;
     }
     
     /**
@@ -138,28 +138,28 @@ public class ActRelationship extends Locatable {
     /**
      * @return Returns the negationInd.
      */
-    public DvBoolean getNegationInd() {
+    public boolean getNegationInd() {
         return negationInd;
     }
 
     /**
      * @param negationInd The negationInd to set.
      */
-    public void setNegationInd(DvBoolean negationInd) {
+    public void setNegationInd(boolean negationInd) {
         this.negationInd = negationInd;
     }
 
     /**
      * @return Returns the sequence.
      */
-    public DvOrdinal getSequence() {
+    public int getSequence() {
         return sequence;
     }
 
     /**
      * @param sequence The sequence to set.
      */
-    public void setSequence(DvOrdinal sequence) {
+    public void setSequence(int sequence) {
         this.sequence = sequence;
     }
 
@@ -194,14 +194,14 @@ public class ActRelationship extends Locatable {
     /**
      * @return Returns the parentChildRelationship.
      */
-    public DvBoolean getParentChildRelationship() {
+    public boolean getParentChildRelationship() {
         return parentChildRelationship;
     }
 
     /**
      * @param parentChildRelationship The parentChildRelationship to set.
      */
-    public void setParentChildRelationship(DvBoolean parentChildRelationship) {
+    public void setParentChildRelationship(boolean parentChildRelationship) {
         this.parentChildRelationship = parentChildRelationship;
     }
 

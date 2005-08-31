@@ -19,14 +19,19 @@
 
 package org.openvpms.component.business.dao.hibernate.im;
 
+// hibernate
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
 import net.sf.hibernate.cfg.Configuration;
 
+// openvpms-framework
+import org.openvpms.component.business.domain.im.Classification;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
+
+// jug
 import org.safehaus.uuid.UUIDGenerator;
 
 /**
@@ -83,6 +88,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         Configuration config = new Configuration();
         config.addClass(Address.class);
         config.addClass(Contact.class);
+        config.addClass(Classification.class);
         this.sessionFactory = config.buildSessionFactory();
     }
 

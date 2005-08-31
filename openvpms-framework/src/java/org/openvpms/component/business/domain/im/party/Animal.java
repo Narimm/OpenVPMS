@@ -24,13 +24,9 @@ import java.util.Set;
 // openehr java kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.basic.DvBoolean;
 import org.openehr.rm.datatypes.quantity.datetime.DvDate;
-import org.openehr.rm.datatypes.text.DvCodedText;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * Defines an {@link Entity} of type animal (i.e. non-human)
@@ -43,49 +39,61 @@ public class Animal extends Actor {
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = 9163075594646412781L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Indicates the type of specie
+     * 
+     * TODO Change when the terminology service has been created
      */
-    private DvCodedText species;
+    private String species;
 
     /**
      * Indicates the breed of the animal
      */
-    private DvCodedText breed;
+    private String breed;
 
     /**
      * Indicates the colour of the animal
      */
-    private DvCodedText colour;
+    private String colour;
 
     /**
      * The sex of the anumal
      */
-    private DvCodedText sex;
+    private String sex;
 
     /**
      * Indicates whether the animal has been desexed
      */
-    private DvBoolean desexed;
+    private boolean desexed;
 
     /**
      * Date of birth
      */
     private DvDate dateOfBirth;
 
+    
+    /**
+     * Default constructor
+     */
+    protected Animal() {
+        // do nothing
+    }
+    
     /**
      * Constructs an animal.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
+     *            the name 
      * @param contacts
      *            a collection of contacts for this actor            
      * @param roles
@@ -97,20 +105,21 @@ public class Animal extends Actor {
      */
     @FullConstructor
     public Animal(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
             @Attribute(name = "contacts") Set<Contact> contacts,
             @Attribute(name = "roles") Set<Role> roles,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, roles, details);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, roles, details);
     }
 
     /**
      * @return Returns the breed.
      */
-    public DvCodedText getBreed() {
+    public String getBreed() {
         return breed;
     }
 
@@ -118,14 +127,14 @@ public class Animal extends Actor {
      * @param breed
      *            The breed to set.
      */
-    public void setBreed(DvCodedText breed) {
+    public void setBreed(String breed) {
         this.breed = breed;
     }
 
     /**
      * @return Returns the colour.
      */
-    public DvCodedText getColour() {
+    public String getColour() {
         return colour;
     }
 
@@ -133,7 +142,7 @@ public class Animal extends Actor {
      * @param colour
      *            The colour to set.
      */
-    public void setColour(DvCodedText colour) {
+    public void setColour(String colour) {
         this.colour = colour;
     }
 
@@ -155,7 +164,7 @@ public class Animal extends Actor {
     /**
      * @return Returns the desexed.
      */
-    public DvBoolean getDesexed() {
+    public boolean getDesexed() {
         return desexed;
     }
 
@@ -163,14 +172,14 @@ public class Animal extends Actor {
      * @param desexed
      *            The desexed to set.
      */
-    public void setDesexed(DvBoolean desexed) {
+    public void setDesexed(boolean desexed) {
         this.desexed = desexed;
     }
 
     /**
      * @return Returns the sex.
      */
-    public DvCodedText getSex() {
+    public String getSex() {
         return sex;
     }
 
@@ -178,14 +187,14 @@ public class Animal extends Actor {
      * @param sex
      *            The sex to set.
      */
-    public void setSex(DvCodedText sex) {
+    public void setSex(String sex) {
         this.sex = sex;
     }
 
     /**
      * @return Returns the species.
      */
-    public DvCodedText getSpecies() {
+    public String getSpecies() {
         return species;
     }
 
@@ -193,7 +202,7 @@ public class Animal extends Actor {
      * @param species
      *            The species to set.
      */
-    public void setSpecies(DvCodedText species) {
+    public void setSpecies(String species) {
         this.species = species;
     }
 }

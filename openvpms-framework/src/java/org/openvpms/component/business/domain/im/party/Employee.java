@@ -23,12 +23,10 @@ import java.util.Set;
 
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * A {@link Person} working for a veterinary practice as in the {@link Role}
@@ -42,19 +40,30 @@ public class Employee extends Role {
     /**
      * Generate SUID
      */
-    private static final long serialVersionUID = -4909064373423295976L;
+    private static final long serialVersionUID = 1L;
 
+    
+    
+    /** 
+     * Default constuctor
+     */
+    public Employee() {
+        // do nothing
+    }
+    
     /**
-     * Constructs an empoyee role.
+     * Constructs an employee.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
+     *            the name 
      * @param contacts
      *            the collection of contacts of this role
      * @param activePeriod
@@ -66,14 +75,14 @@ public class Employee extends Role {
      */
     @FullConstructor
     public Employee(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails,
             @Attribute(name = "contacts") Set<Contact> contacts,
             @Attribute(name = "activePeriod") DvInterval<DvDateTime> activePeriod,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, contacts, 
-                activePeriod, details);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, activePeriod, details);
     }
 }
