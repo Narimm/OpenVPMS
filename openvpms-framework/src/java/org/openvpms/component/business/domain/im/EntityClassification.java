@@ -33,7 +33,7 @@ import org.openehr.rm.datatypes.text.DvText;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityClassification extends IMlObject {
+public class EntityClassification extends IMObject {
 
     /**
      * Generated SUID.
@@ -55,6 +55,14 @@ public class EntityClassification extends IMlObject {
      */
     private Classification classification;
 
+    
+    /**
+     * Default constructor
+     */
+    public EntityClassification() {
+        // default constructor 
+    }
+    
     /**
      * Constructs an entity classification.
      * 

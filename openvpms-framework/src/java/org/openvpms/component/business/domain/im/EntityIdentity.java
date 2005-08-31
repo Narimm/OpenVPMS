@@ -18,16 +18,12 @@
 
 package org.openvpms.component.business.domain.im;
 
-import java.util.Set;
-
+// openehr-kernel
 import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Link;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ObjectID;
 
 /**
  * A class representing the various internal and external identifiers for a 
@@ -39,7 +35,7 @@ import org.openehr.rm.support.identification.ObjectID;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityIdentity extends Locatable {
+public class EntityIdentity extends IMObject {
 
     /**
      * Generated SUID
@@ -56,38 +52,48 @@ public class EntityIdentity extends Locatable {
      */
     private ItemStructure details;
     
+    /**
+     * Reference the Entity that this object references
+     */
+    private Entity entity;
+    
+    /**
+     * Default constructor
+     */
+    public EntityIdentity() {
+        // do nothing
+    }
 
     /**
-     * Constructs a valid instance of an entity identity
+     * Constructs a valid instance of an entity identity.
      * 
      * @param uid
-     *            a unique object identity
+     *            uniquely identifies this object
+     * @param archetypeId
+     *            the archietype that is constraining this object
+     * @param imVersion
+     *            the version of the reference model
      * @param archetypeNodeId
-     *            the node id for this archetype
+     *            the id of this node                        
      * @param name
-     *            the name of this archetype
-     * @param archetypeDetails
-     *            descriptive meta data for the achetype
-     * @param links
-     *            null if not specified
+     *            the name 
      * @param identity
      *            the identity
-      * @param details
-     *            a compound item that describes the details of this
-     *            archetype.
+     * @param details
+     *            the details of this entty identity
      * @throws IllegalArgumentException
-     *            thrown if the preconditions are not met.
+     *             thrown if the preconditions are not met.
      */
     @FullConstructor
     public EntityIdentity(
-            @Attribute(name = "uid", required = true) ObjectID uid, 
+            @Attribute(name = "uid", required=true) String uid, 
+            @Attribute(name = "archetypeId", required=true) String archetypeId, 
+            @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true)DvText name, 
-            @Attribute(name = "archetypeDetails") Archetyped archetypeDetails, 
-            @Attribute(name = "links") Set<Link> links, 
-            @Attribute(name = "identity", required = true) String identity,
+            @Attribute(name = "name", required = true) DvText name, 
+            @Attribute(name = "identity") String identity,
             @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeNodeId, name, archetypeDetails, null, links);
+        super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.identity = identity;
         this.details = details;
     }
@@ -121,6 +127,20 @@ public class EntityIdentity extends Locatable {
         this.details = details;
     }
     
+    /**
+     * @return Returns the entity.
+     */
+    protected Entity getEntity() {
+        return entity;
+    }
+
+    /**
+     * @param entity The entity to set.
+     */
+    protected void setEntity(Entity entity) {
+        this.entity = entity;
+    }
+
     /*
      * (non-Javadoc)
      * 

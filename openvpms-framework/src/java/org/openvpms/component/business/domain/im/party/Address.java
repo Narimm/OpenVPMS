@@ -29,7 +29,7 @@ import org.openehr.rm.datastructure.itemstructure.ItemStructure;
 import org.openehr.rm.datatypes.text.DvText;
 
 // openvpms framework
-import org.openvpms.component.business.domain.im.IMlObject;
+import org.openvpms.component.business.domain.im.IMObject;
 
 /**
  * Address of a contact.
@@ -37,7 +37,7 @@ import org.openvpms.component.business.domain.im.IMlObject;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Address extends IMlObject {
+public class Address extends IMObject {
 
     /**
      * Generated SUID

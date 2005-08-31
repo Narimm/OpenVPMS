@@ -20,13 +20,21 @@
 package org.openvpms.component.business.dao.hibernate.im;
 
 // hibernate
-import java.io.File;
-
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
 import net.sf.hibernate.cfg.Configuration;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.Act;
+import org.openvpms.component.business.domain.im.ActRelationship;
+import org.openvpms.component.business.domain.im.Classification;
+import org.openvpms.component.business.domain.im.Entity;
+import org.openvpms.component.business.domain.im.EntityClassification;
+import org.openvpms.component.business.domain.im.EntityIdentity;
+import org.openvpms.component.business.domain.im.EntityRelationship;
+import org.openvpms.component.business.domain.im.Participation;
+import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
@@ -85,8 +93,16 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         
         // create the hibernate session factory
         Configuration config = new Configuration();
-        config.addDirectory(new File("target/classes/org/openvpms/component/business/domain/im"));
-        config.addDirectory(new File("target/classes/org/openvpms/component/business/domain/im/party"));
+        config.addClass(Address.class);
+        config.addClass(Contact.class);
+        config.addClass(Classification.class);
+        config.addClass(Entity.class);
+        config.addClass(EntityClassification.class);
+        config.addClass(Act.class);
+        config.addClass(ActRelationship.class);
+        config.addClass(Participation.class);
+        config.addClass(EntityRelationship.class);
+        config.addClass(EntityIdentity.class);
         this.sessionFactory = config.buildSessionFactory();
     }
 

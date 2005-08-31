@@ -33,7 +33,7 @@ import org.openehr.rm.datatypes.text.DvText;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Classification extends IMlObject {
+public class Classification extends IMObject {
 
     /**
      * Generated SUID

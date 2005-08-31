@@ -40,7 +40,7 @@ import org.openehr.rm.datatypes.text.DvText;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Participation extends IMlObject {
+public class Participation extends IMObject {
 
     /**
      * Generated SUID
@@ -97,6 +97,13 @@ public class Participation extends IMlObject {
      */
     private DataStructure details;
 
+    
+    /**
+     * Default constructor
+     */
+    protected Participation() {
+        // do nothing
+    }
 
     /**
      * Constructs a participantion between an {@link Entity} and an {@link Act}.

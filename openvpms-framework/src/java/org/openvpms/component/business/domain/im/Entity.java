@@ -19,6 +19,7 @@
 package org.openvpms.component.business.domain.im;
 
 // java core
+import java.util.HashSet;
 import java.util.Set;
 
 //openehr kernel
@@ -35,7 +36,7 @@ import org.openehr.rm.datatypes.text.DvText;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Entity extends IMlObject {
+public class Entity extends IMObject {
 
     /**
      * Generated SUID
@@ -118,6 +119,11 @@ public class Entity extends IMlObject {
             @Attribute(name = "details") ItemStructure details) {
         super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.description = description;
+        this.identities = new HashSet<EntityIdentity>();
+        this.classifications = new HashSet<EntityClassification>();
+        this.participations = new HashSet<Participation>();
+        this.sourceRelationships = new HashSet<EntityRelationship>();
+        this.targetRelationships = new HashSet<EntityRelationship>();
         this.details = details;
     }
 
@@ -204,7 +210,29 @@ public class Entity extends IMlObject {
     public void setTargetRelationships(Set<EntityRelationship> targetRelationships) {
         this.targetRelationships = targetRelationships;
     }
+    
+    /**
+     * Add a new {@link EntityIdentity}
+     * 
+     * @param entityIdentity
+     *            the entity identity to add
+     */
+    public void addEntityIdentity(EntityIdentity entityIdentity) {
+        entityIdentity.setEntity(this);
+        this.identities.add(entityIdentity);
+    }
 
+    /**
+     * Remove the specified {@link EntityIdentity}
+     * 
+     * @param entityIdentity
+     *          the identity to remove
+     */
+    public void removeEntityIdentity(EntityIdentity entityIdentity) {
+        entityIdentity.setEntity(null);
+        this.identities.remove(entityIdentity);
+    }
+    
     /*
      * (non-Javadoc)
      * 

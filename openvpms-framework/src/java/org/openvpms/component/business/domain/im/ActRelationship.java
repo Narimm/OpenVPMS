@@ -32,7 +32,7 @@ import org.openehr.rm.datatypes.text.DvText;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ActRelationship extends IMlObject {
+public class ActRelationship extends IMObject {
 
     /**
      * Generated SUID

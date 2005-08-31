@@ -32,7 +32,7 @@ import org.openehr.rm.support.identification.ArchetypeID;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class IMlObject extends Locatable {
+public abstract class IMObject extends Locatable {
 
     /**
      * SUID.
@@ -49,7 +49,7 @@ public abstract class IMlObject extends Locatable {
     /**
      * Default constructor
      */
-    public IMlObject() {
+    public IMObject() {
         // do nothing
     }
 
@@ -68,7 +68,7 @@ public abstract class IMlObject extends Locatable {
      * @param name
      *            the name of the object (or is it the type).
      */
-    public IMlObject(String uid, String archetypeId, String imVersion, 
+    public IMObject(String uid, String archetypeId, String imVersion, 
             String archetypeNodeId, DvText name) {
         super(archetypeNodeId, name);
         this.setArchetypeDetails(new Archetyped(new ArchetypeID(archetypeId),
@@ -124,8 +124,8 @@ public abstract class IMlObject extends Locatable {
         }
         
         boolean result = false;
-        if (obj instanceof IMlObject) {
-            IMlObject imobj = (IMlObject)obj;
+        if (obj instanceof IMObject) {
+            IMObject imobj = (IMObject)obj;
             if (imobj.getUid().getValue().equals(this.getUid().getValue())) {
                 result = true;
             }

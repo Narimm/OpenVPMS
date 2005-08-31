@@ -38,7 +38,7 @@ import org.openvpms.component.business.domain.im.support.IMObjectReference;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationship extends IMlObject {
+public class EntityRelationship extends IMObject {
 
     /**
      * Generated SUID
@@ -80,6 +80,13 @@ public class EntityRelationship extends IMlObject {
      */
     private EntityIdentity entityIdentity;
 
+    /**
+     * Default constructor
+     */
+    protected EntityRelationship() {
+        // do nothing
+    }
+    
     /**
      * Constructs a valid intance of an entity relationship
      * 

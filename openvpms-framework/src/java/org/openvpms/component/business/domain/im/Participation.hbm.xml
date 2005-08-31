@@ -55,8 +55,8 @@
 				</component>
 			</component>
 		</component>
-		<!-- many-to-one name="entity" column="entity_id" not-null="true" /-->
-		<many-to-one name="act" column="act_id" not-null="true" />
+		<many-to-one name="entity" access="field" column="entity_id" not-null="true" />
+		<many-to-one name="act" access="field" column="act_id" not-null="true" />
         <property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
 	</class>

@@ -127,7 +127,7 @@ public class HibernatePartyUtil {
      */
     public static int getRoleRowCount(Session session) 
     throws Exception {
-        return ((Integer)session.getNamedQuery("row.getRowCount")
+        return ((Integer)session.getNamedQuery("role.getRowCount")
                 .list().get(0)).intValue();
     }
 }

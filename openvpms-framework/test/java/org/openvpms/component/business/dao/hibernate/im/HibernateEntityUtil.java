@@ -48,4 +48,20 @@ public class HibernateEntityUtil {
                 .list().get(0)).intValue();
         
     }
+    
+    /**
+     * Return the number of rows in the entity identity table.
+     * 
+     * @param session
+     *            execute the request on this session
+     * @return int
+     * @throws Exception
+     *            propage exception to caller.            
+     */
+    public static int getEntityIdentityRowCount(Session session)
+    throws Exception {
+        return ((Integer)session.getNamedQuery("entityIdentity.getRowCount")
+                .list().get(0)).intValue();
+        
+    }
 }

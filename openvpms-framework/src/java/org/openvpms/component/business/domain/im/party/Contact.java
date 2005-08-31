@@ -33,7 +33,7 @@ import org.openehr.rm.datatypes.text.DvText;
 
 // openvpms framework
 import org.openvpms.component.business.domain.im.party.Address;
-import org.openvpms.component.business.domain.im.IMlObject;
+import org.openvpms.component.business.domain.im.IMObject;
 
 /**
  * Defines a contact for a {@link Party}. 
@@ -41,7 +41,7 @@ import org.openvpms.component.business.domain.im.IMlObject;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Contact extends IMlObject {
+public class Contact extends IMObject {
     /**
      * Generated SUID
      */

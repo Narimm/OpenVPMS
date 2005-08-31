@@ -57,6 +57,14 @@ public class User extends Role {
      */
     private DvDate lastLogin;
 
+    
+    /**
+     * Default constructor 
+     */
+    public User() {
+        // do nothing
+    }
+    
     /**
      * Constructs an employee.
      * 

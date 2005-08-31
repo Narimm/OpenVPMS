@@ -28,7 +28,7 @@ import org.openehr.rm.Attribute;
 import org.openehr.rm.FullConstructor;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.quantity.datetime.DvDate;
+import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.text.DvText;
 
@@ -40,7 +40,7 @@ import org.openehr.rm.datatypes.text.DvText;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Act extends IMlObject {
+public class Act extends IMObject {
 
     /**
      * Generated SUID.
@@ -72,14 +72,14 @@ public class Act extends IMlObject {
     /**
      * Time interval representing the operative time of the Act.
      */
-    private DvInterval<DvDate> effectiveTime;
+    private DvInterval<DvDateTime> effectiveTime;
     
     /**
      * A time expression specifying when an Act occurs, is supposed to occur, 
      * is scheduled to occur etc.  For example an event may have occurred 3 
      * hours ago {@link effectiveTime} but we only recorded it now.
      */
-    private DvInterval<DvDate> activityTime;
+    private DvInterval<DvDateTime> activityTime;
     
     /**
      * The urgency under which the Act happened, can happen, is intended to 
@@ -134,6 +134,13 @@ public class Act extends IMlObject {
     
 
     /**
+     * Default constructor
+     */
+    protected Act() {
+        // do nothing
+    }
+    
+    /**
      * Constructs an instance of an act.
      * TODO Need to determine what constitutes a valid construction of this
      * object.
@@ -169,14 +176,14 @@ public class Act extends IMlObject {
     /**
      * @return Returns the activityTime.
      */
-    public DvInterval<DvDate> getActivityTime() {
+    public DvInterval<DvDateTime> getActivityTime() {
         return activityTime;
     }
 
     /**
      * @param activityTime The activityTime to set.
      */
-    public void setActivityTime(DvInterval<DvDate> activityTime) {
+    public void setActivityTime(DvInterval<DvDateTime> activityTime) {
         this.activityTime = activityTime;
     }
 
@@ -211,14 +218,14 @@ public class Act extends IMlObject {
     /**
      * @return Returns the effectiveTime.
      */
-    public DvInterval<DvDate> getEffectiveTime() {
+    public DvInterval<DvDateTime> getEffectiveTime() {
         return effectiveTime;
     }
 
     /**
      * @param effectiveTime The effectiveTime to set.
      */
-    public void setEffectiveTime(DvInterval<DvDate> effectiveTime) {
+    public void setEffectiveTime(DvInterval<DvDateTime> effectiveTime) {
         this.effectiveTime = effectiveTime;
     }
 
