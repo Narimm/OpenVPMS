@@ -118,4 +118,16 @@ public class HibernatePartyUtil {
         return ((Integer)session.getNamedQuery("address.getRowCount")
                 .list().get(0)).intValue();
     }
+
+    /**
+     * Return the number of rows in the role table
+     * 
+     * @param session
+     * @return int
+     */
+    public static int getRoleRowCount(Session session) 
+    throws Exception {
+        return ((Integer)session.getNamedQuery("row.getRowCount")
+                .list().get(0)).intValue();
+    }
 }

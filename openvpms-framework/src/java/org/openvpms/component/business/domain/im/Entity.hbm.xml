@@ -161,4 +161,11 @@
       </joined-subclass>
     </joined-subclass>
   </class>
+
+  <query name="role.getRowCount">
+    <![CDATA[
+			select count(role) from org.openvpms.component.business.domain.im.party.Role as 
+			role
+		]]>
+  </query>
 </hibernate-mapping>
