@@ -58,6 +58,7 @@
 				</component>
 			</component>
 		</component>
+		<!-- 
 		<component name="sourceEntity">
 			<property name="namespace" type="string"
 				column="source_namespace" />
@@ -68,9 +69,19 @@
 				column="target_namespace" />
 			<property name="id" type="string" column="target_id" />
 		</component>
+		-->
+		<many-to-one name="sourceEntity" access="field" column="source_id" />
+		<many-to-one name="targetEntity" access="field" column="target_id" />
 		<many-to-one name="entityIdentity" access="field"
 			column="entity_identity_id" not-null="false" unique="true" />
 		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
 	</class>
+
+  <query name="entityRelationship.getRowCount">
+    <![CDATA[
+			select count(entityRelationship) from org.openvpms.component.business.domain.im.EntityRelationship as 
+			entityRelationship
+		]]>
+  </query>
 </hibernate-mapping>

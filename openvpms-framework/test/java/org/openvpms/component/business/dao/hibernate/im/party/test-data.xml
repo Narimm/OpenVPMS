@@ -11,6 +11,22 @@
   		</params>
   	</method>
   </class>
+  
+  <class name="PersistentRoleTestCase">
+    <!-- Data for the testAdditionRemoveEntityIdentities method -->
+  	<method name="testAdditionRemoveEntityIdentities" test-case="normal">
+  		<params>
+  			<param name="entityIdentityCount" type="java.lang.Integer">10</param>
+  		</params>
+  	</method>
+  	
+    <!-- Data for the testAdditionRemovalEntityClassification method -->
+  	<method name="testAdditionRemovalEntityClassification" test-case="normal">
+  		<params>
+  			<param name="entityClassificationCount" type="java.lang.Integer">10</param>
+  		</params>
+  	</method>
+  </class>
 </tests>
 
 

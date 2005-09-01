@@ -34,33 +34,21 @@ import net.sf.hibernate.Session;
  */
 public class HibernateEntityUtil {
     /**
-     * Return the number of rows in the classification table
-     * 
-     * @param session 
-     *            the session to use
-     * @return int
-     * @throws Exception
-     *            propagate exception to caller            
-     */
-    public static int getClassificationRowCount(Session session)
-    throws Exception {
-        return ((Integer)session.getNamedQuery("classification.getRowCount")
-                .list().get(0)).intValue();
-        
-    }
-    
-    /**
-     * Return the number of rows in the entity identity table.
+     * Return the number of rows in the specified table. It assumes that
+     * there is a query in the form of table.getRowCount defined.
      * 
      * @param session
      *            execute the request on this session
+     * @param table
+     *            the name of the table (not the SQL table name)                    
      * @return int
+     *            the number of rows
      * @throws Exception
      *            propage exception to caller.            
      */
-    public static int getEntityIdentityRowCount(Session session)
+    public static int getTableRowCount(Session session, String table)
     throws Exception {
-        return ((Integer)session.getNamedQuery("entityIdentity.getRowCount")
+        return ((Integer)session.getNamedQuery(table + ".getRowCount")
                 .list().get(0)).intValue();
         
     }

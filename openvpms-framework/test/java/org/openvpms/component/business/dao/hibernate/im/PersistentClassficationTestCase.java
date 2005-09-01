@@ -71,7 +71,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         Transaction tx = null;
 
         try {
-            int acount = HibernateEntityUtil.getClassificationRowCount(session);
+            int acount = HibernateEntityUtil.getTableRowCount(session, "classification");
 
             Classification classification = createClassification();
 
@@ -81,7 +81,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             // ensure that there is still one more address
             int acount1 = HibernateEntityUtil
-                    .getClassificationRowCount(session);
+                    .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
         } catch (Exception exception) {
             if (tx != null) {
@@ -101,7 +101,8 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         Transaction tx = null;
 
         try {
-            int acount = HibernateEntityUtil.getClassificationRowCount(session);
+            int acount = HibernateEntityUtil.getTableRowCount(
+                    session, "classification");
 
             Classification parent = createClassification();
             Classification child1 = createClassification();
@@ -120,7 +121,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             // ensure that there is still one more address
             int acount1 = HibernateEntityUtil
-                    .getClassificationRowCount(session);
+                    .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 4);
 
             // retrieve the classification and ensure there are three children
@@ -146,7 +147,8 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         Transaction tx = null;
 
         try {
-            int acount = HibernateEntityUtil.getClassificationRowCount(session);
+            int acount = HibernateEntityUtil
+            .getTableRowCount(session, "classification");
 
             Classification parent = createClassification();
             Classification child1 = createClassification();
@@ -165,7 +167,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             // ensure that there is still one more address
             int acount1 = HibernateEntityUtil
-                    .getClassificationRowCount(session);
+                    .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 4);
 
             // retrieve the classification and ensure there are three children
@@ -180,7 +182,8 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // check that there is one less entry than before
-            acount1 = HibernateEntityUtil.getClassificationRowCount(session);
+            acount1 = HibernateEntityUtil
+            .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 3);
 
             // no retrieve the classification again and check the number of

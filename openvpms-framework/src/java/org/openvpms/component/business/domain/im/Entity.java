@@ -59,7 +59,7 @@ public class Entity extends IMObject {
      * {@link Entity} can belong to zero, one or more {@link Classification}
      * 
      */
-    private Set<EntityClassification> classifications;
+    private Set<EntityClassification> entityClassifications;
     
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
@@ -120,7 +120,7 @@ public class Entity extends IMObject {
         super(uid, archetypeId, imVersion, archetypeNodeId, name);
         this.description = description;
         this.identities = new HashSet<EntityIdentity>();
-        this.classifications = new HashSet<EntityClassification>();
+        this.entityClassifications = new HashSet<EntityClassification>();
         this.participations = new HashSet<Participation>();
         this.sourceRelationships = new HashSet<EntityRelationship>();
         this.targetRelationships = new HashSet<EntityRelationship>();
@@ -142,34 +142,6 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @return Returns the classifications.
-     */
-    public Set<EntityClassification> getClassifications() {
-        return classifications;
-    }
-
-    /**
-     * @param classifications The classifications to set.
-     */
-    public void setClassifications(Set<EntityClassification> classifications) {
-        this.classifications = classifications;
-    }
-
-    /**
-     * @return Returns the identities.
-     */
-    public Set<EntityIdentity> getIdentities() {
-        return identities;
-    }
-
-    /**
-     * @param identities The identities to set.
-     */
-    public void setIdentities(Set<EntityIdentity> identities) {
-        this.identities = identities;
-    }
-
-    /**
      * @return Returns the participations.
      */
     public Set<Participation> getParticipations() {
@@ -181,20 +153,6 @@ public class Entity extends IMObject {
      */
     public void setParticipations(Set<Participation> participations) {
         this.participations = participations;
-    }
-
-    /**
-     * @return Returns the sourceRelationships.
-     */
-    public Set<EntityRelationship> getSourceRelationships() {
-        return sourceRelationships;
-    }
-
-    /**
-     * @param sourceRelationships The sourceRelationships to set.
-     */
-    public void setSourceRelationships(Set<EntityRelationship> relationships) {
-        this.sourceRelationships = relationships;
     }
 
     /**
@@ -231,6 +189,120 @@ public class Entity extends IMObject {
     public void removeEntityIdentity(EntityIdentity entityIdentity) {
         entityIdentity.setEntity(null);
         this.identities.remove(entityIdentity);
+    }
+    
+    /**
+     * Return the {@link EntityIdentity} as an array
+     * 
+     * @return EntityIdentity[]
+     */
+    public EntityIdentity[] getEntityIdentities() {
+        return (EntityIdentity[])identities.toArray(
+                new EntityIdentity[identities.size()]);
+    }
+
+    /**
+     * Add an {@link EntityRelationship} to this entity
+     * 
+     * @param entityRel 
+     *            the entity relationship to add
+     */
+    public void addSourceEntityRelationship(EntityRelationship entityRel) {
+        entityRel.setSourceEntity(this);
+        this.sourceRelationships.add(entityRel);
+    }
+    
+    /**
+     * Remove the {@link EntityRelationship} from this entity
+     * 
+     * TODO Don't think we need the remove and add source entity relationship
+     * methods.
+     * 
+     * @oparam entityRel
+     *            the entity relationship to remove
+     */
+    public void removeSourceEntityRelationship(EntityRelationship entityRel) {
+        entityRel.setSourceEntity(null);
+        this.sourceRelationships.remove(entityRel);
+    }
+    
+    /**
+     * Return all the {@link EntityRelationship} objects that this entity is 
+     * the source off
+     * 
+     * @return EntityRelationship[]
+     */
+    public EntityRelationship[] getSourceEntityRelationships() {
+        return (EntityRelationship[])sourceRelationships.toArray(
+                new EntityRelationship[sourceRelationships.size()]);
+    }
+    
+    /**
+     * Add a target {@link EntityRelationship} to this entity
+     * 
+     * @param entityRel 
+     *            the entity relationship to add
+     */
+    public void addTargetEntityRelationship(EntityRelationship entityRel) {
+        entityRel.setTargetEntity(this);
+        this.targetRelationships.add(entityRel);
+    }
+    
+    /**
+     * Remove the target {@link EntityRelationship} from this entity
+     * 
+     * TODO Don't think we need the remove and add source entity relationship
+     * methods.
+     * 
+     * @oparam entityRel
+     *            the entity relationship to remove
+     */
+    public void removeTargetEntityRelationship(EntityRelationship entityRel) {
+        entityRel.setTargetEntity(null);
+        this.targetRelationships.remove(entityRel);
+    }
+    
+    /**
+     * Return all the target {@link EntityRelationship} for this entity
+     * 
+     * @return EntityRelationship[]
+     */
+    public EntityRelationship[] getTargetEntityRelationships() {
+        return (EntityRelationship[])targetRelationships.toArray(
+                new EntityRelationship[targetRelationships.size()]);
+    }
+    
+    /**
+     * Add an {@link EntityClassification} to this entity
+     * 
+     * @param entityClass 
+     *            the entity classification to add
+     */
+    public void addEntityClassification(EntityClassification entityClass) {
+        entityClass.setEntity(this);
+        this.entityClassifications.add(entityClass);
+    }
+    
+    /**
+     * Remove the {@link EntityClassification} from this entity
+     * 
+     * @oparam entityClass
+     *            the entity classification to remove
+     */
+    public void removeEntityClassification(EntityClassification entityClass) {
+        entityClass.setEntity(null);
+        this.entityClassifications.remove(entityClass);
+    }
+    
+    /**
+     * Return all the {@link EntityClassification} objects that this entity is 
+     * the source off
+     * 
+     * @return EntityClassification[]
+     */
+    public EntityClassification[] getEntityClassifications() {
+        return (EntityClassification[])entityClassifications.toArray(
+                new EntityClassification[entityClassifications.size()]);
     }
     
     /*

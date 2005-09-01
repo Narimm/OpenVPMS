@@ -82,7 +82,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             HibernatePartyUtil.deleteAllContacts(session);
             
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getAddressRowCount(session);
+            int acount = HibernatePartyUtil.getTableRowCount(session, "address");
             // execute the test
             tx = session.beginTransaction();
             Address address = createAddress();
@@ -97,7 +97,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx.commit();
             
             // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getAddressRowCount(session);
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
             assertTrue(acount1 == acount + 1);
         } catch (Exception exception) { 
             if (tx != null) {
@@ -122,7 +122,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getAddressRowCount(session);
+            int acount = HibernatePartyUtil.getTableRowCount(session, "address");
             // execute the test
             tx = session.beginTransaction();
             
@@ -141,7 +141,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx.commit();
             
             // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getAddressRowCount(session);
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
             assertTrue(acount1 == acount + 1);
             
             // retrieve the contact and make sure there is only one address
@@ -171,7 +171,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getAddressRowCount(session);
+            int acount = HibernatePartyUtil.getTableRowCount(session, "address");
             // execute the test
             tx = session.beginTransaction();
             
@@ -195,7 +195,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx.commit();
             
             // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getAddressRowCount(session);
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
             assertTrue(acount1 == acount + 1);
             
             // retrieve the contact and check that the address is als

@@ -29,9 +29,6 @@ import org.openehr.rm.datatypes.quantity.DvInterval;
 import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
 import org.openehr.rm.datatypes.text.DvText;
 
-// openvpms-framework
-import org.openvpms.component.business.domain.im.support.IMObjectReference;
-
 /**
  * Describes the relationship between two entities.
  * 
@@ -68,12 +65,12 @@ public class EntityRelationship extends IMObject {
     /**
      * Record the source entity in the relationship
      */
-    private IMObjectReference sourceEntity;
+    private Entity sourceEntity;
 
     /**
      * Record the target entity in the relationship
      */
-    private IMObjectReference targetEntity;
+    private Entity targetEntity;
     
     /**
      * A relationship may also have an associated entity identity
@@ -112,8 +109,8 @@ public class EntityRelationship extends IMObject {
             @Attribute(name = "imVersion", required=true) String imVersion, 
             @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
             @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "sourceEntity", required = true) IMObjectReference sourceEntity,
-            @Attribute(name = "targetEntity", required = true) IMObjectReference targetEntity,
+            @Attribute(name = "sourceEntity", required = true) Entity sourceEntity,
+            @Attribute(name = "targetEntity", required = true) Entity targetEntity,
             @Attribute(name = "details") ItemStructure details) {
         super(uid, archetypeId, imVersion, archetypeNodeId, name);
         
@@ -196,28 +193,28 @@ public class EntityRelationship extends IMObject {
     /**
      * @return Returns the sourceEntity.
      */
-    public IMObjectReference getSourceEntity() {
+    public Entity getSourceEntity() {
         return sourceEntity;
     }
 
     /**
      * @param sourceEntity The sourceEntity to set.
      */
-    public void setSourceEntity(IMObjectReference sourceEntity) {
+    public void setSourceEntity(Entity sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 
     /**
      * @return Returns the targetEntity.
      */
-    public IMObjectReference getTargetEntity() {
+    public Entity getTargetEntity() {
         return targetEntity;
     }
 
     /**
      * @param targetEntity The targetEntity to set.
      */
-    public void setTargetEntity(IMObjectReference targetEntity) {
+    public void setTargetEntity(Entity targetEntity) {
         this.targetEntity = targetEntity;
     }
 

@@ -56,4 +56,11 @@
       </component>
     </component>
   </class>
+
+  <query name="entityClassification.getRowCount">
+    <![CDATA[
+			select count(entityClassificatio) from org.openvpms.component.business.domain.im.EntityClassification as 
+			entityClassificatio
+		]]>
+  </query>
 </hibernate-mapping>

@@ -27,6 +27,7 @@ import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
 // openvpms framework
+import org.openvpms.component.business.dao.hibernate.im.HibernateEntityUtil;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 
@@ -37,7 +38,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class HibernatePartyUtil {
+public class HibernatePartyUtil extends HibernateEntityUtil {
     /**
      * Retrieve all the persistent address instances
      * 
@@ -102,32 +103,5 @@ public class HibernatePartyUtil {
             session.delete(contact);
         }
         tx.commit();
-    }
-
-    /**
-     * Return the number of rows in the address table
-     * 
-     * @param session
-     *            the session to use
-     * @return int
-     * @throws Exception
-     *            propagate all the exceptions to the caller            
-     */
-    public static int getAddressRowCount(Session session) 
-    throws Exception {
-        return ((Integer)session.getNamedQuery("address.getRowCount")
-                .list().get(0)).intValue();
-    }
-
-    /**
-     * Return the number of rows in the role table
-     * 
-     * @param session
-     * @return int
-     */
-    public static int getRoleRowCount(Session session) 
-    throws Exception {
-        return ((Integer)session.getNamedQuery("role.getRowCount")
-                .list().get(0)).intValue();
     }
 }

@@ -23,6 +23,7 @@ import org.openehr.rm.common.archetyped.Archetyped;
 import org.openehr.rm.common.archetyped.Locatable;
 import org.openehr.rm.datatypes.text.DvText;
 import org.openehr.rm.support.identification.ArchetypeID;
+import org.openvpms.component.business.domain.im.support.IMObjectReference;
 
 /**
  * This is the base class for information model objects. It extends the
@@ -112,6 +113,15 @@ public abstract class IMObject extends Locatable {
      */
     public void setId(String id) {
         this.setUid(new IMObjectID(id));
+    }
+    
+    /**
+     * Return an {@link IMObjectReference} to this object
+     * 
+     * @return IMObjectReference
+     */
+    public IMObjectReference getObjectReference() {
+        return new IMObjectReference(this.getClass().getName(), getId());
     }
 
     /* (non-Javadoc)
