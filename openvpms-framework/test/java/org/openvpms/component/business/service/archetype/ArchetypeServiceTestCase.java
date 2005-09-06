@@ -17,16 +17,18 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.castor;
+package org.openvpms.component.business.service.archetype;
 
 
 // java-core
 import java.util.Iterator;
 import java.util.Vector;
 
-//openvpms-archetype-registry
+//openvpms-framework
 import org.openvpms.component.business.service.archetype.ArchetypeRecord;
+import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+
 
 // openvpms-test-component
 import org.openvpms.component.system.common.test.BaseTestCase;
@@ -37,21 +39,21 @@ import org.openvpms.component.system.common.test.BaseTestCase;
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class CastorArchetypeRegistryTestCase extends BaseTestCase {
+public class ArchetypeServiceTestCase extends BaseTestCase {
     
     /**
      * @param args
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(CastorArchetypeRegistryTestCase.class);
+        junit.textui.TestRunner.run(ArchetypeServiceTestCase.class);
     }
 
     /**
-     * Constructor for CastorArchetypeRegistryTestCase.
+     * Constructor for ArchetypeServiceTestCase.
      * 
      * @param name
      */
-    public CastorArchetypeRegistryTestCase(String name) {
+    public ArchetypeServiceTestCase(String name) {
         super(name);
     }
 
@@ -61,7 +63,7 @@ public class CastorArchetypeRegistryTestCase extends BaseTestCase {
     public void testCreationWithNullFileName() 
     throws Exception {
         try {
-            new CastorArchetypeRegistry(null);
+            new ArchetypeService(null);
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.NoFileSpecified);
@@ -74,7 +76,7 @@ public class CastorArchetypeRegistryTestCase extends BaseTestCase {
     public void testCreationWithInvalidFileName() 
     throws Exception {
         try {
-            new CastorArchetypeRegistry("file-does-not-exist");
+            new ArchetypeService("file-does-not-exist");
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.FailedToInitializeRegistry);
@@ -90,7 +92,7 @@ public class CastorArchetypeRegistryTestCase extends BaseTestCase {
                 "testCreationWithValidFileContent", "valid-files", "files");
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
-            new CastorArchetypeRegistry((String)iter.next());
+            new ArchetypeService((String)iter.next());
         }
     }
     
@@ -104,7 +106,7 @@ public class CastorArchetypeRegistryTestCase extends BaseTestCase {
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
             try {
-                new CastorArchetypeRegistry((String)iter.next());
+                new ArchetypeService((String)iter.next());
             } catch (ArchetypeServiceException exception) {
                 assertTrue(exception.getErrorCode() == 
                     ArchetypeServiceException.ErrorCode.FailedToInitializeRegistry);
@@ -122,13 +124,13 @@ public class CastorArchetypeRegistryTestCase extends BaseTestCase {
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testValidEntryRetrieval", "valid-retrieval", "archetypes");
         
-        CastorArchetypeRegistry registry = new CastorArchetypeRegistry(validFile);
+        ArchetypeService registry = new ArchetypeService(validFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             ArchetypeRecord record = registry.getArchetypeRecord((String)iter.next());
             assertTrue(record != null);
             assertTrue(record.getArchetypeId() != null);
-            assertTrue(record.getInfoModelVersion() != null);
+            assertTrue(record.getInfoModelClass() != null);
             assertTrue(record.getInfoModelClass() != null);
         }
     }
@@ -143,7 +145,7 @@ public class CastorArchetypeRegistryTestCase extends BaseTestCase {
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testInvalidEntryRetrieval", "invalid-retrieval", "archetypes");
         
-        CastorArchetypeRegistry registry = new CastorArchetypeRegistry(validFile);
+        ArchetypeService registry = new ArchetypeService(validFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             assertTrue(registry.getArchetypeRecord((String)iter.next()) == null);
