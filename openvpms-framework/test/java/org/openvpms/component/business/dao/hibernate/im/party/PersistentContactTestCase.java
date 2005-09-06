@@ -18,21 +18,21 @@
 
 package org.openvpms.component.business.dao.hibernate.im.party;
 
+// hjava core
 import java.util.List;
 
+// hibernate
 import net.sf.hibernate.Query;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
-import org.openehr.rm.datastructure.itemstructure.ItemList;
-import org.openehr.rm.datastructure.itemstructure.representation.Element;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.datetime.DvDate;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.support.ItemStructureUtil;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 
 /**
  * 
@@ -72,8 +72,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     public void testCreateSimpleContact() throws Exception {
         String id = getGenerator().nextId();
-        DvInterval<DvDate> activePeriod = new DvInterval<DvDate>(new DvDate(
-                1963, 12, 20), new DvDate(2005, 8, 25));
+        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -87,8 +86,8 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             Address address = createAddress();
             
-            Contact contact = new Contact(id, "openVPMS-CONTACT-GENERAL.draft.v1",
-                    "1.0", "at003", new DvText("contact.general"), activePeriod);
+            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
+                    "contact-draft", "1.0"), "contact.general", activePeriod);
             session.save(contact);
             
             // add the address
@@ -114,8 +113,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     public void testAddressAdditionForContact() throws Exception {
         String id = getGenerator().nextId();
-        DvInterval<DvDate> activePeriod = new DvInterval<DvDate>(new DvDate(
-                1963, 12, 20), new DvDate(2005, 8, 25));
+        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -126,13 +124,13 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, "openVPMS-CONTACT-GENERAL.draft.v1",
-                    "1.0", "at003", new DvText("contact.general"), activePeriod);
+            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
+                    "contact-draft", "1.0"), "contact.general", activePeriod);
             session.save(contact);
             tx.commit();
             
             // Retrieve the contact for a specified id
-            Contact rcontact = (Contact)session.get(Contact.class, contact.getId());
+            Contact rcontact = (Contact)session.get(Contact.class, contact.getUid());
 
             tx = session.beginTransaction();
             Address address = createAddress();
@@ -145,7 +143,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             assertTrue(acount1 == acount + 1);
             
             // retrieve the contact and make sure there is only one address
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
         } catch (Exception exception) { 
             if (tx != null) {
@@ -163,8 +161,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     public void testAddressDeleteForContact()
     throws Exception {
         String id = getGenerator().nextId();
-        DvInterval<DvDate> activePeriod = new DvInterval<DvDate>(new DvDate(
-                1963, 12, 20), new DvDate(2005, 8, 25));
+        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -175,8 +172,8 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, "openVPMS-CONTACT-GENERAL.draft.v1",
-                    "1.0", "at007", new DvText("contact.general"), activePeriod);
+            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
+                    "contact-draft", "1.0"), "contact.general", activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -185,7 +182,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // retrieve the contact again and make sure the address count
             // is null
             tx = session.beginTransaction();
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 0);
             
 
@@ -200,7 +197,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             // retrieve the contact and check that the address is als
             // retrieved
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
             // remove the address and save it
@@ -209,7 +206,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx.commit();
             
             // check that the address removal worked
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 0);
             
         } catch (Exception exception) { 
@@ -229,8 +226,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     public void testAddressUpdateForContact()
     throws Exception {
         String id = getGenerator().nextId();
-        DvInterval<DvDate> activePeriod = new DvInterval<DvDate>(new DvDate(
-                1963, 12, 20), new DvDate(2005, 8, 25));
+        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -242,8 +238,8 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             
             tx = session.beginTransaction();
-            Contact contact = new Contact(id, "openVPMS-CONTACT-GENERAL.draft.v1",
-                    "1.0", "at003", new DvText("contact.general"), activePeriod);
+            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
+                    "contact-draft", "1.0"), "contact.general", activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -254,13 +250,13 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx.commit();
             
             // ensure that there is still one more address
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
             // retrieve the contact and check that the address is also
             // retrieved
             tx = session.beginTransaction();
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
             // retrieve the first address
@@ -268,17 +264,14 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             assertTrue(theAddress != null);
             
             // add another element to the addresss
-            ItemList details = (ItemList)address.getDetails();
-            Element element = new Element("at0123", new DvText("mobile"), 
-                    new DvText("0422236861"));
-            details.items().add(element);
+            address.getDetails().setAttribute("mobile", "04222368612");
             
             // remove the address and save it
             session.update(address);
             tx.commit();
             
             // check that the address removal worked
-            contact = getContactById(session, contact.getId());
+            contact = getContactById(session, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
         } catch (Exception exception) { 
@@ -344,9 +337,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     private Address createAddress() throws Exception {
         return new Address(getGenerator().nextId(),
-                "openVPMS-ADDRESS-MAILING.draft.v1", "0.1", "at0002",
-                new DvText("address.mailing"), ItemStructureUtil
-                        .createItemList("at0003", new DvText(
-                                "address.mail.details")));
+                new ArchetypeId("openvpms", "address", "1.0"), "homeAddress",
+                createSimpleAttributeMap());
     }
 }

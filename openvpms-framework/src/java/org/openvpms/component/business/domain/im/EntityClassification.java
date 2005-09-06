@@ -18,13 +18,10 @@
 
 package org.openvpms.component.business.domain.im;
 
-// openehr java kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 
 /**
  * This class is used to broker the manay-to-many relationship between 
@@ -69,11 +66,7 @@ public class EntityClassification extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
      * @param entity
@@ -82,20 +75,11 @@ public class EntityClassification extends IMObject {
      *            the corresponding classification
      * @param activePeriod
      *            the period that this is active                        
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
      */
-    @FullConstructor
-    public EntityClassification(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "entity") Entity entity,
-            @Attribute(name = "classification") Classification classification,
-            @Attribute(name = " activePeriod") DvInterval<DvDateTime> activePeriod) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public EntityClassification(String uid, ArchetypeId archetypeId, 
+            String name, Entity entity, Classification classification,
+            DvInterval<DvDateTime> activePeriod) {
+        super(uid, archetypeId, name);
         this.entity = entity;
         this.classification = classification;
         this.activePeriod = activePeriod;
@@ -146,16 +130,4 @@ public class EntityClassification extends IMObject {
     public void setEntity(Entity entity) {
         this.entity = entity;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

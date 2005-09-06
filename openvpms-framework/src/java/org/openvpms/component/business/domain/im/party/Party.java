@@ -22,11 +22,10 @@ package org.openvpms.component.business.domain.im.party;
 import java.util.HashSet;
 import java.util.Set;
 
-// openehr-java-kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.Entity;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * The base class of all party types including real world entities and their
@@ -62,29 +61,20 @@ public abstract class Party extends Entity {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param description
+     *            the description of the party            
      * @param contacts
      *            a collection of contacts for this actor            
      * @param details 
-     *            actor details
-     * @throws IllegalArgumentException
-     *            if the preconditions for creation are not satisfied            
+     *            party details
      */
-    protected Party(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "contacts") Set<Contact> contacts,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name, null, details);
+    protected Party(String uid, ArchetypeId archetypeId, String name, 
+            String description, Set<Contact> contacts, 
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name, description, details);
         this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
     }
 
@@ -119,5 +109,4 @@ public abstract class Party extends Entity {
     public void removeContact(Contact contact) {
         this.contacts.remove(contact);
     }
-
 }

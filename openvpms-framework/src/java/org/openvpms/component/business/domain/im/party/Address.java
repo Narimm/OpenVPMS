@@ -22,14 +22,10 @@ package org.openvpms.component.business.domain.im.party;
 import java.util.HashSet;
 import java.util.Set;
 
-// openehr kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
-
-// openvpms framework
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * Address of a contact.
@@ -42,7 +38,7 @@ public class Address extends IMObject {
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = -2619257937834307246L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The contact that owns this address
@@ -52,7 +48,7 @@ public class Address extends IMObject {
     /**
      * Address details specific, which is specified by the archetype definition
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
 
     /**
      * Define a protected default constructor
@@ -66,30 +62,17 @@ public class Address extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
      * @param details
-     *            The details of the addrss object
+     *            The details of the address object
      * @throws IllegalArgumentException
      *             if the constructor pre-conditions are not satisfied.
      */
-    @FullConstructor
-    public Address(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "details", required = true) ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
-        if (details == null) {
-            throw new IllegalArgumentException("null details");
-        }
+    public Address(String uid, ArchetypeId archetypeId, String name,
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         this.details = details;
         this.contacts = new HashSet<Contact>();
     }
@@ -97,7 +80,7 @@ public class Address extends IMObject {
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
@@ -105,7 +88,7 @@ public class Address extends IMObject {
      * @param details
      *            The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
     

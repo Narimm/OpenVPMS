@@ -22,12 +22,9 @@ package org.openvpms.component.business.domain.im;
 import java.util.HashSet;
 import java.util.Set;
 
-//openehr kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
+//openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 
 /**
@@ -52,7 +49,7 @@ public class Entity extends IMObject {
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
     
     /**
      * Return a set of {@link EntityClassification} for this entity. An 
@@ -96,28 +93,17 @@ public class Entity extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param description
+     *            the description of the archetype            
      * @param details
-     *            details associated with the archetype.
-     * @throws IllegalArgumentException
-     *            thrown if the preconditions are not met.
+     *            dynamic details of the act.
      */
-    @FullConstructor
-    public Entity(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "description") String description,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public Entity(String uid, ArchetypeId archetypeId, String name, 
+            String description, DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         this.description = description;
         this.identities = new HashSet<EntityIdentity>();
         this.entityClassifications = new HashSet<EntityClassification>();
@@ -139,13 +125,6 @@ public class Entity extends IMObject {
      */
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    /**
-     * @return Returns the participations.
-     */
-    public Set<Participation> getParticipations() {
-        return participations;
     }
 
     /**
@@ -305,28 +284,50 @@ public class Entity extends IMObject {
                 new EntityClassification[entityClassifications.size()]);
     }
     
-    /*
-     * (non-Javadoc)
+    /**
+     * Add this entity to the specified participation
      * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
+     * @param participation
+     *            the participation to add  
      */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Implement this method
-        return null;
+    public void addParticipation(Participation participation) {
+        participation.setEntity(this);
+        participations.add(participation);
     }
-
+    
+    /**
+     * Remove the {@link Participation} from this entity
+     * 
+     * @oparam participation
+     *            the entity classification to remove
+     */
+    public void removeParticipation(Participation participation) {
+        participation.setEntity(null);
+        this.participations.remove(participation);
+    }
+    
+    /**
+     * Return all the {@link Participation} objects that this entity is 
+     * the associated with.
+     * 
+     * @return Participation[]
+     */
+    public Participation[] getParticipations() {
+        return (Participation[])participations.toArray(
+                new Participation[participations.size()]);
+    }
+    
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
 }

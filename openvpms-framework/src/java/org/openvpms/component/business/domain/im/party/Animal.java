@@ -21,12 +21,11 @@ package org.openvpms.component.business.domain.im.party;
 // java core
 import java.util.Set;
 
-// openehr java kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.quantity.datetime.DvDate;
-import org.openehr.rm.datatypes.text.DvText;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 
 /**
  * Defines an {@link Entity} of type animal (i.e. non-human)
@@ -71,7 +70,7 @@ public class Animal extends Actor {
     /**
      * Date of birth
      */
-    private DvDate dateOfBirth;
+    private DvDateTime dateOfBirth;
 
     
     /**
@@ -87,33 +86,22 @@ public class Animal extends Actor {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param description
+     *            the description of this entity            
      * @param contacts
      *            a collection of contacts for this actor            
      * @param roles
      *            the collection of roles it belongs too
      * @param details 
      *            actor details
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
      */
-    @FullConstructor
-    public Animal(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "contacts") Set<Contact> contacts,
-            @Attribute(name = "roles") Set<Role> roles,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, roles, details);
+    public Animal(String uid, ArchetypeId archetypeId, String name, 
+            String description, Set<Contact> contacts, Set<Role> roles, 
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name, description, contacts, roles, details);
     }
 
     /**
@@ -149,7 +137,7 @@ public class Animal extends Actor {
     /**
      * @return Returns the dateOfBirth.
      */
-    public DvDate getDateOfBirth() {
+    public DvDateTime getDateOfBirth() {
         return dateOfBirth;
     }
 
@@ -157,7 +145,7 @@ public class Animal extends Actor {
      * @param dateOfBirth
      *            The dateOfBirth to set.
      */
-    public void setDateOfBirth(DvDate dateOfBirth) {
+    public void setDateOfBirth(DvDateTime dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

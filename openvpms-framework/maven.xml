@@ -7,8 +7,8 @@
 	<preGoal name="java:compile">
     	<attainGoal name="castor:prepare-filesystem"/>
     	<castor:generate 
-    		schema="src/java/org/openvpms/component/business/service/archetype/castor/archetype-registry.xsd"
-            package="org.openvpms.component.business.service.archetype.castor"
+    		schema="src/java/org/openvpms/component/business/domain/archetype/archetype.xsd"
+            package="org.openvpms.component.business.domain.archetype"
             types="j2"/>
   	</preGoal>
 

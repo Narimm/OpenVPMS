@@ -19,15 +19,15 @@
 
 package org.openvpms.component.business.domain.im.party;
 
+// java core
+import java.util.Calendar;
 import java.util.Set;
 
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.datetime.DvDate;
-import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 
 /**
  *
@@ -39,7 +39,7 @@ public class User extends Role {
     /**
      * Geenrated SUID
      */
-    private static final long serialVersionUID = 7635011589554016052L;
+    private static final long serialVersionUID = 1L;
     
     /**
      * The identity the user uses to login to the system
@@ -55,7 +55,7 @@ public class User extends Role {
      * The last recorded login date
      * TODO Is this the best place to hold this information
      */
-    private DvDate lastLogin;
+    private Calendar lastLogin;
 
     
     /**
@@ -71,13 +71,11 @@ public class User extends Role {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param description
+     *            the description of this entity            
      * @param contacts
      *            the collection of contacts of this role
      * @param activePeriod
@@ -88,22 +86,12 @@ public class User extends Role {
      *            the associated user password
      * @param details
      *            dynamic properties for this role
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
      */
-    @FullConstructor
-    public User(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "contacts") Set<Contact> contacts,
-            @Attribute(name = "userId") String userId,
-            @Attribute(name = "password") String password,
-            @Attribute(name = "activePeriod") DvInterval<DvDateTime> activePeriod,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, activePeriod, details);
+    public User(String uid, ArchetypeId archetypeId, String name,
+            String description, Set<Contact> contacts, String userId, 
+            String password, DvInterval<DvDateTime> activePeriod,
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name, description, contacts, activePeriod, details);
         this.userId = userId;
         this.password = password;
     }
@@ -111,14 +99,14 @@ public class User extends Role {
     /**
      * @return Returns the lastLogin.
      */
-    public DvDate getLastLogin() {
+    public Calendar getLastLogin() {
         return lastLogin;
     }
 
     /**
      * @param lastLogin The lastLogin to set.
      */
-    public void setLastLogin(DvDate lastLogin) {
+    public void setLastLogin(Calendar lastLogin) {
         this.lastLogin = lastLogin;
     }
 

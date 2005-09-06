@@ -19,12 +19,12 @@
 
 package org.openvpms.component.business.domain.im.party;
 
+// java core
 import java.util.Set;
 
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * A person is an {@link Entity} that can participate in {@link Act}s.
@@ -37,7 +37,7 @@ public class Person extends Actor {
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = 7833616791459329772L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The person's title
@@ -72,13 +72,11 @@ public class Person extends Actor {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param description
+     *            the description of this entity            
      * @param title            
      *            the person's title
      * @param firstName 
@@ -93,24 +91,12 @@ public class Person extends Actor {
      *            the collection of roles it belongs too
      * @param details 
      *            actor details
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
      */
-    @FullConstructor
-    public Person(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "title") String title,
-            @Attribute(name = "firstName") String firstName,
-            @Attribute(name = "lastName") String lastName,
-            @Attribute(name = "initials") String initials,
-            @Attribute(name = "contacts") Set<Contact> contacts,
-            @Attribute(name = "roles") Set<Role> roles,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, roles, details);
+    public Person(String uid, ArchetypeId archetypeId, String name,
+            String description, String title, String firstName,
+            String lastName, String initials, Set<Contact> contacts,
+            Set<Role> roles, DynamicAttributeMap details) {
+        super(uid, archetypeId, name, description, contacts, roles, details);
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;

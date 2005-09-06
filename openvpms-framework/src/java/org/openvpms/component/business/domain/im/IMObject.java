@@ -18,22 +18,23 @@
 
 package org.openvpms.component.business.domain.im;
 
-// java openehr kernel
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datatypes.text.DvText;
-import org.openehr.rm.support.identification.ArchetypeID;
+// java core
+import java.io.Serializable;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.support.IMObjectReference;
 
 /**
- * This is the base class for information model objects. It extends the
- * {@link Locatable} class and adds some convenience functions and also some
- * methods to support persistence..
+ * This is the base class for information model objects. An {@link IMObject} 
+ * object is very generic and is constrained at runtime by applying constriants
+ * on the object. These constraints are the foundation of archetypes and 
+ * archetype languages such as ADL
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class IMObject extends Locatable {
+public abstract class IMObject implements Serializable {
 
     /**
      * SUID.
@@ -45,7 +46,20 @@ public abstract class IMObject extends Locatable {
      */
     private long version;
     
-
+    /**
+     * Uniquely identifies an instance of this class 
+     */
+    private String uid;
+    
+    /**
+     * The name of this object
+     */
+    private String  name;
+    
+    /**
+     * The archetype that is attached to this object
+     */
+    private ArchetypeId archetypeId;
     
     /**
      * Default constructor
@@ -69,24 +83,11 @@ public abstract class IMObject extends Locatable {
      * @param name
      *            the name of the object (or is it the type).
      */
-    public IMObject(String uid, String archetypeId, String imVersion, 
-            String archetypeNodeId, DvText name) {
-        super(archetypeNodeId, name);
-        this.setArchetypeDetails(new Archetyped(new ArchetypeID(archetypeId),
-                null, imVersion));
-        this.setUid(new IMObjectID(uid));
+    public IMObject(String uid, ArchetypeId archetypeId, String name) {
+        this.uid = uid;
+        this.archetypeId = archetypeId;
+        this.name = name;
     }
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     /**
      * @return Returns the version.
      */
@@ -104,24 +105,52 @@ public abstract class IMObject extends Locatable {
     /**
      * @return Returns the id.
      */
-    public String getId() {
-        return getUid().getValue();
+    public String getUid() {
+        return this.uid;
     }
 
     /**
      * @param id The id to set.
      */
-    public void setId(String id) {
-        this.setUid(new IMObjectID(id));
+    public void setUid(String id) {
+        this.uid = id;
     }
     
+    /**
+     * @return Returns the archetypeId.
+     */
+    protected ArchetypeId getArchetypeId() {
+        return archetypeId;
+    }
+
+    /**
+     * @param archetypeId The archetypeId to set.
+     */
+    protected void setArchetypeId(ArchetypeId archetypeId) {
+        this.archetypeId = archetypeId;
+    }
+
+    /**
+     * @return Returns the name.
+     */
+    protected String getName() {
+        return name;
+    }
+
+    /**
+     * @param name The name to set.
+     */
+    protected void setName(String name) {
+        this.name = name;
+    }
+
     /**
      * Return an {@link IMObjectReference} to this object
      * 
      * @return IMObjectReference
      */
     public IMObjectReference getObjectReference() {
-        return new IMObjectReference(this.getClass().getName(), getId());
+        return new IMObjectReference(this.getClass().getName(), getUid());
     }
 
     /* (non-Javadoc)
@@ -136,7 +165,7 @@ public abstract class IMObject extends Locatable {
         boolean result = false;
         if (obj instanceof IMObject) {
             IMObject imobj = (IMObject)obj;
-            if (imobj.getUid().getValue().equals(this.getUid().getValue())) {
+            if (imobj.getUid().equals(this.getUid())) {
                 result = true;
             }
         }
@@ -149,7 +178,7 @@ public abstract class IMObject extends Locatable {
      */
     @Override
     public int hashCode() {
-        return this.getUid().getValue().hashCode();
+        return this.getUid().hashCode();
     }
 }
 

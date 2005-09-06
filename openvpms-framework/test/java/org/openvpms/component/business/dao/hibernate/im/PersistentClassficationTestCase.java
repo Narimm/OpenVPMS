@@ -22,10 +22,8 @@ package org.openvpms.component.business.dao.hibernate.im;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
-// openenhr-kernel
-import org.openehr.rm.datatypes.text.DvText;
-
 // openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.Classification;
 
 /**
@@ -126,7 +124,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             // retrieve the classification and ensure there are three children
             Classification original = (Classification) session.load(
-                    Classification.class, parent.getId());
+                    Classification.class, parent.getUid());
             assertTrue(original.getChildren().length == 3);
         } catch (Exception exception) {
             if (tx != null) {
@@ -172,7 +170,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             // retrieve the classification and ensure there are three children
             Classification original = (Classification) session.load(
-                    Classification.class, parent.getId());
+                    Classification.class, parent.getUid());
             assertTrue(original.getChildren().length == 3);
 
             tx = session.beginTransaction();
@@ -189,7 +187,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             // no retrieve the classification again and check the number of
             // children
             original = (Classification) session.load(Classification.class,
-                    parent.getId());
+                    parent.getUid());
             assertTrue(original.getChildren().length == 2);
 
         } catch (Exception exception) {
@@ -222,7 +220,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // retrieve the root
-            root = (Classification)session.load(Classification.class, root.getId());
+            root = (Classification)session.load(Classification.class, root.getUid());
             assertTrue(getClassification(root, 0, levels - 1)
                     .getChildren().length == childrenPerLevel);
         } catch (Exception exception) {
@@ -243,8 +241,8 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
      */
     private Classification createClassification() throws Exception {
         return new Classification(getGenerator().nextId(),
-                "openVPMS-CLASSIFICATION-GENERAL.draft.v1", "1.0", "at003",
-                new DvText("classification.base"), null, null);
+                new ArchetypeId("openvpms", "classification", "1.0"),
+                "classification.base", null, null);
     }
 
     /**

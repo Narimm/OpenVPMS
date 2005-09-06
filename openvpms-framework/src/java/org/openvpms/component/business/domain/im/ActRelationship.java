@@ -19,12 +19,9 @@
 
 package org.openvpms.component.business.domain.im;
 
-// openehr-kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * A class that represents the directed association between Acts.  
@@ -62,7 +59,7 @@ public class ActRelationship extends IMObject {
     /**
      * Holds dynamic details about the act relationship
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
     
     /**
      * Reference to the source {@link Act}
@@ -79,41 +76,31 @@ public class ActRelationship extends IMObject {
      * Default constructor
      */
     protected ActRelationship() {
-        // dop nothing
+        // do nothing
     }
     
     /**
      * Constructs an instance of an act.
-     * TODO Need to determine what constitutes a valid construction of this
-     * object.
      * 
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param sequence
+     *            the associated sequence number
+     * @param sourceAct
+     *            the source act
+     * @param targetAct
+     *            the target act                                    
      * @param details
-     *            dynamic attrbiutes
-     * @throws IllegalArgumentException
-     *            thrown if the preconditions are not met.
+     *            dynamic details of the act relationship
      */
-    @FullConstructor
-    public ActRelationship(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "sourceAct") Act sourceAct,
-            @Attribute(name = "targetAct") Act targetAct,
-            @Attribute(name = "sequence") int sequence,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public ActRelationship(String uid, ArchetypeId archetypeId, String name, 
+            Act sourceAct, Act targetAct, int sequence,
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         this.sequence = sequence;
         this.sourceAct = sourceAct;
         this.targetAct = targetAct;
@@ -124,14 +111,14 @@ public class ActRelationship extends IMObject {
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
 
@@ -203,14 +190,5 @@ public class ActRelationship extends IMObject {
      */
     public void setParentChildRelationship(boolean parentChildRelationship) {
         this.parentChildRelationship = parentChildRelationship;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

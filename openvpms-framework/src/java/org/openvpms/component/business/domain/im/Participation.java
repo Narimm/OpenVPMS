@@ -19,15 +19,11 @@
 
 package org.openvpms.component.business.domain.im;
 
-
-// openehr-java-kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.DataStructure;
-import org.openehr.rm.datatypes.quantity.datetime.DvDate;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 
 /**
  * A class representing an {@link Entity}'s participantion in an {@link Act}.
@@ -75,7 +71,7 @@ public class Participation extends IMObject {
      * Indicates the time interval that the {@link Entity} was participating
      * in the {@link Act}.
      */
-    private DvInterval<DvDate> timeInterval;
+    private DvInterval<DvDateTime> timeInterval;
     
     /**
      * The percentage of participation in the specified {@link Act}.
@@ -95,7 +91,7 @@ public class Participation extends IMObject {
     /**
      * Holds details about the participation
      */
-    private DataStructure details;
+    private DynamicAttributeMap details;
 
     
     /**
@@ -111,29 +107,21 @@ public class Participation extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
-     *            the name 
+     *            the name of this object
+     * @param entity
+     *            the entity in the participation
+     * @param act
+     *            the act that this participation is associated with                        
      * @param details
-     *            holds details about the participation.
+     *            holds dynamic details about the participation.
      * @throws IllegalArgumentException
      *            thrown if the preconditions are not met.
      */
-    @FullConstructor
-    public Participation(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "entity") Entity entity,
-            @Attribute(name = "act") Act act,
-            @Attribute(name = "details") DataStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public Participation(String uid, ArchetypeId archetypeId, String name, 
+            Entity entity,Act act, DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         
         this.act = act;
         this.entity = entity;
@@ -157,14 +145,14 @@ public class Participation extends IMObject {
     /**
      * @return Returns the details.
      */
-    public DataStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(DataStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
 
@@ -213,14 +201,14 @@ public class Participation extends IMObject {
     /**
      * @return Returns the timeInterval.
      */
-    public DvInterval<DvDate> getTimeInterval() {
+    public DvInterval<DvDateTime> getTimeInterval() {
         return timeInterval;
     }
 
     /**
      * @param timeInterval The timeInterval to set.
      */
-    public void setTimeInterval(DvInterval<DvDate> timeInterval) {
+    public void setTimeInterval(DvInterval<DvDateTime> timeInterval) {
         this.timeInterval = timeInterval;
     }
 
@@ -252,13 +240,17 @@ public class Participation extends IMObject {
         this.percentage = percentage;
     }
 
-    /* (non-Javadoc)
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
+    /**
+     * @param act The act to set.
      */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO implement this method
-        return null;
+    public void setAct(Act act) {
+        this.act = act;
     }
 
+    /**
+     * @param entity The entity to set.
+     */
+    public void setEntity(Entity entity) {
+        this.entity = entity;
+    }
 }

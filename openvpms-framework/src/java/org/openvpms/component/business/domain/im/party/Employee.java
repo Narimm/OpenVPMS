@@ -19,14 +19,14 @@
 
 package org.openvpms.component.business.domain.im.party;
 
+// java core
 import java.util.Set;
 
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 
 /**
  * A {@link Person} working for a veterinary practice as in the {@link Role}
@@ -43,7 +43,6 @@ public class Employee extends Role {
     private static final long serialVersionUID = 1L;
 
     
-    
     /** 
      * Default constuctor
      */
@@ -52,37 +51,26 @@ public class Employee extends Role {
     }
     
     /**
-     * Constructs an employee.
+     * Constructs an employee role.
      * 
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param description
+     *            the description of this entity            
      * @param contacts
-     *            the collection of contacts of this role
+     *            a collection of contacts for this actor            
      * @param activePeriod
      *            the period that this role is valid                        
      * @param details
-     *            dynamic properties for this role
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
+     *            dynamic properties for this employee
      */
-    @FullConstructor
-    public Employee(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "contacts") Set<Contact> contacts,
-            @Attribute(name = "activePeriod") DvInterval<DvDateTime> activePeriod,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name, contacts, activePeriod, details);
+    public Employee(String uid, ArchetypeId archetypeId, String name, 
+            String description, Set<Contact> contacts,
+            DvInterval<DvDateTime> activePeriod, DynamicAttributeMap details) {
+        super(uid, archetypeId, name, description, contacts, activePeriod, details);
     }
 }

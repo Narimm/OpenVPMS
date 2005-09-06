@@ -32,14 +32,11 @@ import java.sql.Types;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.UserType;
 
-// xstream objects
-
-// java openehr kernel
-import org.openehr.rm.datastructure.itemstructure.ItemList;
-import org.openehr.rm.datastructure.itemstructure.representation.Cluster;
-
-// codehaus xstream
+//codehaus xstream
 import com.thoughtworks.xstream.XStream;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * This user type will stream an {@link ItemStructure} into an 
@@ -48,7 +45,7 @@ import com.thoughtworks.xstream.XStream;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ItemListUserType implements UserType, Serializable {
+public class DynamicAttributeMapUserType implements UserType, Serializable {
 
     /**
      * Default SUID
@@ -63,7 +60,7 @@ public class ItemListUserType implements UserType, Serializable {
     /**
      * Default constructor
      */
-    public ItemListUserType() {
+    public DynamicAttributeMapUserType() {
         super();
     }
 
@@ -78,7 +75,7 @@ public class ItemListUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#returnedClass()
      */
     public Class returnedClass() {
-        return ItemList.class;
+        return DynamicAttributeMap.class;
     }
 
     /* (non-Javadoc)
@@ -112,7 +109,7 @@ public class ItemListUserType implements UserType, Serializable {
             return null;
         }
         
-        return (ItemList)new XStream()
+        return (DynamicAttributeMap)new XStream()
             .fromXML(rs.getString(names[0]));
         
     }
@@ -137,9 +134,15 @@ public class ItemListUserType implements UserType, Serializable {
             return obj;
         }
         
-        ItemList is = (ItemList)obj;
-        return new ItemList(is.getArchetypeNodeId(), is.getName(), 
-                (Cluster)is.getRepresentation());
+        // create the new object
+        DynamicAttributeMap dam = (DynamicAttributeMap)obj;
+        DynamicAttributeMap copy = new DynamicAttributeMap();
+        
+        for (String key : dam.getAttributeNames()) {
+            copy.setAttribute(key, dam.getAttributeValue(key));
+        }
+        
+        return copy;
     }
 
     /* (non-Javadoc)

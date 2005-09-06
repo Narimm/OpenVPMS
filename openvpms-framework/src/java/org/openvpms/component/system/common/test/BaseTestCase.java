@@ -106,19 +106,16 @@ public abstract class BaseTestCase extends LoggedTestCase {
     }
     
     /**
-     * Set up the test data file.
+     * Set up the test data file, if the file exists.
      * 
      * @throws Exception
      *            propagate exception to the caller
      */
     protected void setUpTestData()
     throws Exception {
-        
         String dataFile = getPathToTestData();
         debug("Trying to open " + dataFile +  " for " + 
                 this.getClass().getSimpleName());
-
-        testData = new JTestCase(dataFile, this.getClass().getSimpleName()); 
+        testData = new JTestCase(dataFile, this.getClass().getSimpleName());
     }
-
 }

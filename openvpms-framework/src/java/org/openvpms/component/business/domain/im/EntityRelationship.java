@@ -18,16 +18,11 @@
 
 package org.openvpms.component.business.domain.im;
 
-// openehr-java-kernel
-
-// openehr-kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 
 /**
  * Describes the relationship between two entities.
@@ -60,7 +55,7 @@ public class EntityRelationship extends IMObject {
     /**
      * Records details of the relationship between the entities.
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
 
     /**
      * Record the source entity in the relationship
@@ -90,29 +85,22 @@ public class EntityRelationship extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
-     *            the name 
+     *            the name of this object
+     * @param sourceEntity
+     *            the relationship source
+     * @param targetEntity
+     *            the relationship target                       
      * @param details
-     *            The details of the addrss object
+     *            The details of the address object
      * @throws IllegalArgumentException
      *             if the constructor pre-conditions are not satisfied.
      */
-    @FullConstructor
-    public EntityRelationship(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "sourceEntity", required = true) Entity sourceEntity,
-            @Attribute(name = "targetEntity", required = true) Entity targetEntity,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public EntityRelationship(String uid, ArchetypeId archetypeId, 
+            String name, Entity sourceEntity, Entity targetEntity,
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;
@@ -137,7 +125,7 @@ public class EntityRelationship extends IMObject {
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
@@ -145,7 +133,7 @@ public class EntityRelationship extends IMObject {
      * @param details
      *            The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
 
@@ -177,17 +165,6 @@ public class EntityRelationship extends IMObject {
      */
     public void setSequence(int sequence) {
         this.sequence = sequence;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     /**

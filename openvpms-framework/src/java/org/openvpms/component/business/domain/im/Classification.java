@@ -21,11 +21,9 @@ package org.openvpms.component.business.domain.im;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * Provides a mechanism to define a hierarchy of classifications
@@ -43,7 +41,7 @@ public class Classification extends IMObject {
     /**
      * Indicates the details of the classification
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
 
     /**
      * Holds the set of children classifications
@@ -68,28 +66,17 @@ public class Classification extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
+     * @param parent
+     *            the parent classification, if one exists            
      * @param details
-     *            the details of this classification
-     * @throws IllegalArgumentException
-     *             thrown if the preconditions are not met.
+     *            dynamic details of the act.
      */
-    @FullConstructor
-    public Classification(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "details") ItemStructure details,
-            @Attribute(name = "parent") Classification parent) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public Classification(String uid, ArchetypeId archetypeId, String name, 
+            Classification parent, DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         this.details = details;
         this.children = new HashSet<Classification>();
         this.parent = parent;
@@ -152,7 +139,7 @@ public class Classification extends IMObject {
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
@@ -160,19 +147,7 @@ public class Classification extends IMObject {
      * @param details
      *            The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

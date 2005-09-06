@@ -18,10 +18,6 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// openehr-java-kernel
-import org.openehr.am.archetype.Archetype;
-import org.openehr.rm.common.archetyped.Archetyped;
-
 /**
  * This interface defines the services that are provided by the archetype
  * service. The client is able to return a archetype by name or by archetype
@@ -34,29 +30,12 @@ import org.openehr.rm.common.archetyped.Archetyped;
  */
 public interface IArchetypeService {
     /**
-     * Retrieve the {@link org.openehr.rm.common.archetyped.Archetyped} from a
-     * name. The mapping from name to the actual Archetyped instance is a
-     * deployment time issue.
-     * <p>
-     * If there is no Archetyped instance for the specified name then return 
-     * null. 
+     * Retrieve the {@link ArchetypeRecord} for the specified name. The name is 
+     * a short name.
      * 
      * @param name
-     *            the common name
-     * @return Archetyped
+     *            the short name
+     * @return ArchetypeRecord
      */
-    public Archetyped getArchetypeInfoForName(String name);
-    
-    /**
-     * Retrieve the {@link Archetype} definition for the specified name. The 
-     * mappinh between name and the archetype definition is a deployment time
-     * issue.
-     * <p>
-     * If the specified name cannot be mapped then return null.
-     * 
-     * @param name
-     *            the common name
-     * @param Archetype            
-     */
-    public Archetype getArchetypeForName(String name);
+    public ArchetypeRecord getArchetypeRecord(String name);
 }

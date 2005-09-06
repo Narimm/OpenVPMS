@@ -22,13 +22,14 @@ package org.openvpms.component.business.service.archetype;
 // java-core
 import java.io.Serializable;
 
-// openehr-java-kernel
-import org.openehr.rm.common.archetyped.Archetyped;
-import org.openehr.rm.support.identification.ArchetypeID;
+//openevpms-framework
+import org.openvpms.component.business.domain.archetype.Archetype;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 
 /**
- * This class maintains a mapping between an archetype name and the information
- * model verison number and class name. 
+ * This class maintains a mapping between a short name and an archetype 
+ * identity
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -41,81 +42,100 @@ public class ArchetypeRecord implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The record name
+     * The short name for this record
      */
-    private String name;
+    private String shortName;
     
     /**
      * The archetype identity
      */
-    private String archetypeId;
+    private ArchetypeId archetypeId;
     
     /**
-     * The information model version number
+     * The archetype details 
      */
-    private String infoModelVersion;
+    private Archetype archetype;
     
     /**
      * The information model class name
      */
-    private String infoModelClass;
+    private String imClass;
    
     
     /**
-     * Construct a record using a name and the associated id, version and 
-     * class names.
+     * Construct a record using a short name, ans archetype id and the 
+     * associated information model class
      * 
      * @param name
      *            the name of the record.
      * @param id
      *            the archetype id
-     * @param clazz
+     * @param imClass
      *            the info model class name
-     * @param version
-     *            the inform model version
+     * @param archetype
+     *            the archetype details            
      */
-    public ArchetypeRecord(String name, String id, String clazz, String version) {
-        this.name = name;
+    public ArchetypeRecord(String shortName, ArchetypeId id, String imClass,
+            Archetype archetype) {
+        this.shortName = shortName;
         this.archetypeId = id;
-        this.infoModelClass = clazz;
-        this.infoModelVersion = version;
+        this.imClass = imClass;
+        this.archetype = archetype;
     }
 
     /**
      * @return Returns the archetypeId.
      */
-    public String getArchetypeId() {
+    protected ArchetypeId getArchetypeId() {
         return archetypeId;
     }
 
     /**
-     * @return Returns the infoModelClass.
+     * @param archetypeId The archetypeId to set.
      */
-    public String getInfoModelClass() {
-        return infoModelClass;
+    protected void setArchetypeId(ArchetypeId archetypeId) {
+        this.archetypeId = archetypeId;
     }
 
     /**
-     * @return Returns the infoModelVersion.
+     * @return Returns the imClass.
      */
-    public String getInfoModelVersion() {
-        return infoModelVersion;
+    protected String getInfoModelClass() {
+        return imClass;
     }
 
     /**
-     * @return Returns the name.
+     * @param imClass The imClass to set.
      */
-    public String getName() {
-        return name;
+    protected void setInfoModelClass(String imClass) {
+        this.imClass = imClass;
     }
-    
+
     /**
-     * Construct and return and instance of {@link Archetyped}
-     * 
-     * @return Archetyped
+     * @return Returns the shortName.
      */
-    public Archetyped getArchetypeInfo() {
-        return new Archetyped(new ArchetypeID(archetypeId), null, 
-                infoModelVersion);
+    protected String getShortName() {
+        return shortName;
+    }
+
+    /**
+     * @param shortName The shortName to set.
+     */
+    protected void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    /**
+     * @return Returns the archetype.
+     */
+    protected Archetype getArchetype() {
+        return archetype;
+    }
+
+    /**
+     * @param archetype The archetype to set.
+     */
+    protected void setArchetype(Archetype archetype) {
+        this.archetype = archetype;
     }
 }

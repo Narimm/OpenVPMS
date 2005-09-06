@@ -23,14 +23,11 @@ package org.openvpms.component.business.domain.im;
 import java.util.HashSet;
 import java.util.Set;
 
-// openehr java kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.quantity.datetime.DvDateTime;
-import org.openehr.rm.datatypes.quantity.DvInterval;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 
 /**
  * A class representing an activity that is being done, has been done, 
@@ -115,7 +112,7 @@ public class Act extends IMObject {
      * Describes the specific details of the act, whether it is clinical,
      * financial or other.
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
     
     /**
      * The {@link Participations} for this act.
@@ -142,31 +139,19 @@ public class Act extends IMObject {
     
     /**
      * Constructs an instance of an act.
-     * TODO Need to determine what constitutes a valid construction of this
-     * object.
      * 
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
      * @param details
      *            dynamic details of the act.
      */
-    @FullConstructor
-    public Act(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public Act(String uid, ArchetypeId archetypeId, String name, 
+            DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         this.details = details;
         this.participations = new HashSet<Participation>();
         this.sourceActRelationships = new HashSet<ActRelationship>();
@@ -204,14 +189,14 @@ public class Act extends IMObject {
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
     /**
      * @param details The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
 
@@ -428,13 +413,5 @@ public class Act extends IMObject {
      */
     public void removeParticipation(Participation participation) {
         this.participations.remove(participation);
-    }
-
-    /* (non-Javadoc)
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

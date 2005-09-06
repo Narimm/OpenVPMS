@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:tns="http://www.openvpms.org/archetype/v1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.openvpms.org/archetype/v1">
+  <xsd:element name="archetypes">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+			A document can define one or more archetypes.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="tns:archetype" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="archetype">
+    <xsd:annotation>
+      <xsd:documentation>
+      An archetype has a name, version and is associated with a domain class. It
+      also has zero or more node elements, which encapsulates assertions on the 
+      domain class.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="tns:node" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+      <xsd:attribute name="shortName" type="xsd:string" use="required"/>
+      <xsd:attribute name="archetypeNamespace" type="xsd:string" use="required"/>
+      <xsd:attribute name="archetypeName" type="xsd:string" use="required"/>
+      <xsd:attribute name="version" type="xsd:string" use="required"/>
+      <xsd:attribute name="imClass" type="xsd:string" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="node">
+    <xsd:annotation>
+      <xsd:documentation>
+      The node define a list of assertions on a node in the domain class. The
+      node is defined by an xpath expression. The assertion can be one of the 
+      supplied types.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="tns:assertion" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+      <xsd:attribute name="path" type="xsd:string" use="required"/>
+      <xsd:attribute name="type" type="xsd:string" use="required"/>
+      <xsd:attribute name="minCardinality" type="xsd:int" default="0"/>
+      <xsd:attribute name="maxCardinality" type="xsd:int" default="1"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="assertion">
+    <xsd:annotation>
+      <xsd:documentation>
+      An assertion can be any of the following types
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:choice>
+        <xsd:element ref="tns:valueRangeAssertion" />
+        <xsd:element ref="tns:regexpAssertion" />
+        <xsd:element ref="tns:refDataAssertion" />
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+
+
+  <xsd:element name="valueRangeAssertion">
+    <xsd:annotation>
+      <xsd:documentation>
+      Define a range of values that a particular node can take
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="minValue" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="maxValue" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="errorMessage" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="regexpAssertion">
+    <xsd:annotation>
+      <xsd:documentation>
+      Defines a regular expression assertion that a node must match
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="matches" type="xsd:string" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="errorMessage" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="refDataAssertion">
+    <xsd:annotation>
+      <xsd:documentation>
+      Defines that the value at the specified node must be of the specified reference
+      data type. The restrictedBy element is used to define an xpath to a value that 
+      will restrict the range of reference data range that the value must match.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="refDataType" type="xsd:string" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="restrictedBy" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        <xsd:element name="errorMessage" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>
+

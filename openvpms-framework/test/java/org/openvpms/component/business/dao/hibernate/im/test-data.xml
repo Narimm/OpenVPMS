@@ -12,6 +12,15 @@
   		</params>
   	</method>
   </class>
+  
+  <class name="PersistentParticipationTestCase">
+    <!-- Data for the testCreateMultipleAddresses method -->
+  	<method name="testMultipleParticiaptionCreation" test-case="normal">
+  		<params>
+  			<param name="participationCreationCount" type="java.lang.Integer">5</param>
+  		</params>
+  	</method>
+  </class>
 </tests>
 
 

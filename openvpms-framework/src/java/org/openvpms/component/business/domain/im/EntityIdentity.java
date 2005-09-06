@@ -18,12 +18,9 @@
 
 package org.openvpms.component.business.domain.im;
 
-// openehr-kernel
-import org.openehr.rm.Attribute;
-import org.openehr.rm.FullConstructor;
-import org.openehr.rm.common.archetyped.Locatable;
-import org.openehr.rm.datastructure.itemstructure.ItemStructure;
-import org.openehr.rm.datatypes.text.DvText;
+// openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * A class representing the various internal and external identifiers for a 
@@ -40,7 +37,7 @@ public class EntityIdentity extends IMObject {
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = 2603291478704772424L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The system identity
@@ -50,7 +47,7 @@ public class EntityIdentity extends IMObject {
     /**
      * Holds details about the entity identity
      */
-    private ItemStructure details;
+    private DynamicAttributeMap details;
     
     /**
      * Reference the Entity that this object references
@@ -70,30 +67,19 @@ public class EntityIdentity extends IMObject {
      * @param uid
      *            uniquely identifies this object
      * @param archetypeId
-     *            the archietype that is constraining this object
-     * @param imVersion
-     *            the version of the reference model
-     * @param archetypeNodeId
-     *            the id of this node                        
+     *            the archetype id constraining this object
      * @param name
      *            the name 
      * @param identity
      *            the identity
      * @param details
-     *            the details of this entty identity
+     *            the details of this entity identity
      * @throws IllegalArgumentException
      *             thrown if the preconditions are not met.
      */
-    @FullConstructor
-    public EntityIdentity(
-            @Attribute(name = "uid", required=true) String uid, 
-            @Attribute(name = "archetypeId", required=true) String archetypeId, 
-            @Attribute(name = "imVersion", required=true) String imVersion, 
-            @Attribute(name = "archetypeNodeId", required = true) String archetypeNodeId, 
-            @Attribute(name = "name", required = true) DvText name, 
-            @Attribute(name = "identity") String identity,
-            @Attribute(name = "details") ItemStructure details) {
-        super(uid, archetypeId, imVersion, archetypeNodeId, name);
+    public EntityIdentity(String uid, ArchetypeId archetypeId,
+            String name, String identity, DynamicAttributeMap details) {
+        super(uid, archetypeId, name);
         this.identity = identity;
         this.details = details;
     }
@@ -115,7 +101,7 @@ public class EntityIdentity extends IMObject {
     /**
      * @return Returns the details.
      */
-    public ItemStructure getDetails() {
+    public DynamicAttributeMap getDetails() {
         return details;
     }
 
@@ -123,7 +109,7 @@ public class EntityIdentity extends IMObject {
      * @param details
      *            The details to set.
      */
-    public void setDetails(ItemStructure details) {
+    public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
     
@@ -140,16 +126,4 @@ public class EntityIdentity extends IMObject {
     protected void setEntity(Entity entity) {
         this.entity = entity;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openehr.rm.common.archetyped.Locatable#pathOfItem(org.openehr.rm.common.archetyped.Locatable)
-     */
-    @Override
-    public String pathOfItem(Locatable item) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

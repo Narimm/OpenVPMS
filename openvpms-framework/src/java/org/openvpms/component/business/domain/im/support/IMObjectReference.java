@@ -19,16 +19,18 @@
 
 package org.openvpms.component.business.domain.im.support;
 
-import org.openehr.rm.RMObject;
+// java core
+import java.io.Serializable;
+
 
 /**
- * This class holds a reference to another object. The reference consistss 
+ * This class holds a reference to another object. The reference consists 
  * of a namespace and a unique identity
  * 
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class IMObjectReference extends RMObject {
+public class IMObjectReference implements Serializable {
 
     /**
      * Generated SUID
@@ -44,7 +46,7 @@ public class IMObjectReference extends RMObject {
     /**
      * The unique identity of the object.
      */
-    private String id;
+    private String uid;
     
     /**
      * Default constructor
@@ -60,23 +62,23 @@ public class IMObjectReference extends RMObject {
      * @param id
      *            the unique identity                       
      */
-    public IMObjectReference(String namespace, String id) {
+    public IMObjectReference(String namespace, String uid) {
         this.namespace = namespace;
-        this.id = id;
+        this.uid = uid;
     }
 
     /**
-     * @return Returns the id.
+     * @return Returns the uid.
      */
-    protected String getId() {
-        return id;
+    protected String getUid() {
+        return uid;
     }
 
     /**
-     * @param id The id to set.
+     * @param uid The id to set.
      */
-    protected void setId(String id) {
-        this.id = id;
+    protected void setId(String uid) {
+        this.uid = uid;
     }
 
     /**

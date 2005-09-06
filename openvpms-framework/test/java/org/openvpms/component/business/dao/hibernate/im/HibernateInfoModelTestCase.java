@@ -19,7 +19,10 @@
 
 package org.openvpms.component.business.dao.hibernate.im;
 
-// hibernate
+// java core
+import java.util.Calendar;
+
+//hibernate
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
 import net.sf.hibernate.cfg.Configuration;
@@ -33,6 +36,9 @@ import org.openvpms.component.business.domain.im.EntityClassification;
 import org.openvpms.component.business.domain.im.EntityIdentity;
 import org.openvpms.component.business.domain.im.EntityRelationship;
 import org.openvpms.component.business.domain.im.Participation;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.test.BaseTestCase;
@@ -127,6 +133,11 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         return sessionFactory;
     }
 
+    /**
+     * 
+     * @return
+     * @throws Exception
+     */
     public Session currentSession() throws Exception {
         Session s = (Session) session.get();
         // Open a new Session, if this Thread has none yet
@@ -137,11 +148,41 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         return s;
     }
 
+    /**
+     * 
+     * @throws Exception
+     */
     public void closeSession() throws Exception {
         Session s = (Session) session.get();
         session.set(null);
         if (s != null)
             s.close();
     }
-
+    
+    /**
+     * Return a {@link DvDateTime} interval
+     * 
+     * @return DvInterval<DvDateTime>
+     */
+    protected DvInterval<DvDateTime> createTimeInterval() {
+        Calendar lower = Calendar.getInstance();
+        Calendar upper = Calendar.getInstance();
+        
+        lower.set(1963, 12, 20);
+        upper.set(1963, 12, 25);
+        return new DvInterval<DvDateTime>(new DvDateTime(lower), 
+                new DvDateTime(upper));
+    }
+    
+    /**
+     * Create a simple detail object
+     * 
+     * @return DynamicAttributeMap
+     */
+    protected DynamicAttributeMap createSimpleAttributeMap() {
+        DynamicAttributeMap map = new DynamicAttributeMap();
+        map.setAttribute("dummy", "dummy");
+        
+        return map;
+    }
 }

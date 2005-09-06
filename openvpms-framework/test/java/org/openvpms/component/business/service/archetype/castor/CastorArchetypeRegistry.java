@@ -30,6 +30,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 // openvpms-domain-registry
+import org.openvpms.component.business.domain.archetype.Archetype;
+import org.openvpms.component.business.domain.archetype.Archetypes;
 import org.openvpms.component.business.service.archetype.ArchetypeRecord;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeRegistry;
@@ -101,7 +103,7 @@ public class CastorArchetypeRegistry implements IArchetypeRegistry {
      */
     private Map<String, ArchetypeRecord> loadArchetypes(Archetypes archetypes) {
         HashMap<String, ArchetypeRecord> entries = new HashMap<String, ArchetypeRecord>();
-        for (ArchetypeEntry archetype : archetypes.getArchetypeEntry()) {
+        for (Archetype archetype : archetypes.getArchetype()) {
             ArchetypeRecord record = new ArchetypeRecord(archetype.getName(), 
                     archetype.getArchetypeId(), archetype.getInfoModelClass(), 
                     archetype.getInfoModelVersion());
