@@ -110,8 +110,9 @@ public class ArchetypeService implements IArchetypeRegistry,
                 logger.debug("Attempting to process records in " + afile);
             }
 
-            records = Archetypes.unmarshal(new InputStreamReader(this
-                    .getClass().getClassLoader().getResourceAsStream(afile)));
+            records = (Archetypes)Archetypes.unmarshal(
+                    new InputStreamReader(this.getClass().getClassLoader()
+                            .getResourceAsStream(afile)));
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToInitializeRegistry,

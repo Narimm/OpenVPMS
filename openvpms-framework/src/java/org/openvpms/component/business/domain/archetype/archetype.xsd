@@ -44,7 +44,9 @@
     <xsd:complexType>
       <xsd:sequence>
         <xsd:element ref="tns:assertion" minOccurs="0" maxOccurs="unbounded" />
+		<xsd:element ref="tns:node" minOccurs="0" maxOccurs="unbounded" />
       </xsd:sequence>
+      <xsd:attribute name="name" type="xsd:string" use="required"/>
       <xsd:attribute name="path" type="xsd:string" use="required"/>
       <xsd:attribute name="type" type="xsd:string" use="required"/>
       <xsd:attribute name="minCardinality" type="xsd:int" default="0"/>

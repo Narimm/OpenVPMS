@@ -195,11 +195,12 @@
         </dependency>
 	    <dependency>
     	  <groupId>castor</groupId>
-	      <artifactId>castor</artifactId>
-    	  <version>0.9.5</version>
+	      <artifactId>castor-xml</artifactId>
+    	  <version>0.9.7</version>
     	  <properties>
     	  	<classpath>true</classpath>
     	  </properties>
+          <url>http://castor.codehaus.org/</url>
 	    </dependency> 
 	    <dependency>
 	    	<groupId>xstream</groupId>
