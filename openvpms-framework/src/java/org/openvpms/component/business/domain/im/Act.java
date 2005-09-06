@@ -26,8 +26,8 @@ import java.util.Set;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
-import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * A class representing an activity that is being done, has been done, 

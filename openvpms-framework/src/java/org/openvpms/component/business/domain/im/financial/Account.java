@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Role;
 import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
-import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * An Account.

@@ -22,25 +22,22 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.Classification"
     table="classification">
-    <id name="id" type="string" unsaved-value="null">
+    <id name="uid" type="string" unsaved-value="null">
       <column name="classification_id" index="classification_id_idx" />
       <generator class="assigned" />
     </id>
     <version name="version" access="field" type="long" />
-    <component name="archetypeDetails">
-      <component name="archetypeID">
-        <property name="value" column="archetype_id" type="string" />
-      </component>
-      <property name="referenceModelVersion" column="rm_version"
+    <component name="archetypeId">
+      <property name="namespace" access="field"
+        column="archetype_namespace" type="string" />
+      <property name="name" access="field" column="archetype_name"
+        type="string" />
+      <property name="version" access="field" column="archetype_version"
         type="string" />
     </component>
-    <component name="name">
-      <property name="value" column="name" type="string" />
-    </component>
-    <property name="archetypeNodeId" column="archetype_node_id"
-      type="string" />
-    <property name="details" column="details" length="5000" not-null="false"
-      type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
+    <property name="name" access="field" column="name" type="string" />
+    <property name="details" column="details" length="5000"
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <many-to-one name="parent" cascade="none">
       <column name="parent_classification_id" not-null="false" />
     </many-to-one>

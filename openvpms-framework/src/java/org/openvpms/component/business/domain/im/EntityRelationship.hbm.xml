@@ -23,65 +23,50 @@
 	<class
 		name="org.openvpms.component.business.domain.im.EntityRelationship"
 		table="entity_relationship">
-		<id name="id" type="string" unsaved-value="null">
+		<id name="uid" type="string" unsaved-value="null">
 			<column name="entity_relationship_id"
 				index="entity_relationship_id_idx" />
 			<generator class="assigned" />
 		</id>
 		<version name="version" access="field" type="long" />
-		<component name="archetypeDetails">
-			<component name="archetypeID">
-				<property name="value" column="archetype_id"
-					type="string" />
-			</component>
-			<property name="referenceModelVersion" column="rm_version"
+		<component name="archetypeId">
+			<property name="namespace" access="field"
+				column="archetype_namespace" type="string" />
+			<property name="name" access="field" column="archetype_name"
 				type="string" />
+			<property name="version" access="field"
+				column="archetype_version" type="string" />
 		</component>
-		<component name="name">
-			<property name="value" column="name" type="string" />
-		</component>
-		<property name="archetypeNodeId" column="archetype_node_id"
+		<property name="name" access="field" column="name"
 			type="string" />
 		<property name="sequence" type="int" column="sequence" />
 		<property name="reason" type="string" column="reason" />
 		<component name="activePeriod">
-			<component name="interval">
-				<component name="lower"
-					class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-					<property name="calendar" column="start_date"
-						type="calendar" access="field" />
-				</component>
-				<component name="upper"
-					class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-					<property name="calendar" column="end_date"
-						type="calendar" access="field" />
-				</component>
+			<component name="lower" access="field"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="start_date"
+					type="calendar" access="field" />
+			</component>
+			<component name="upper" access="field"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="end_date"
+					type="calendar" access="field" />
 			</component>
 		</component>
-		<!-- 
-		<component name="sourceEntity">
-			<property name="namespace" type="string"
-				column="source_namespace" />
-			<property name="id" type="string" column="source_id" />
-		</component>
-		<component name="targetEntity">
-			<property name="namespace" type="string"
-				column="target_namespace" />
-			<property name="id" type="string" column="target_id" />
-		</component>
-		-->
-		<many-to-one name="sourceEntity" access="field" column="source_id" />
-		<many-to-one name="targetEntity" access="field" column="target_id" />
+		<many-to-one name="sourceEntity" access="field"
+			column="source_id" />
+		<many-to-one name="targetEntity" access="field"
+			column="target_id" />
 		<many-to-one name="entityIdentity" access="field"
 			column="entity_identity_id" not-null="false" unique="true" />
 		<property name="details" column="details" length="5000"
-			type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
+			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
 	</class>
 
-  <query name="entityRelationship.getRowCount">
-    <![CDATA[
+	<query name="entityRelationship.getRowCount">
+		<![CDATA[
 			select count(entityRelationship) from org.openvpms.component.business.domain.im.EntityRelationship as 
 			entityRelationship
 		]]>
-  </query>
+	</query>
 </hibernate-mapping>

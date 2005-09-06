@@ -23,36 +23,31 @@
 	<class
 		name="org.openvpms.component.business.domain.im.party.Contact"
 		table="contact">
-		<id name="id" type="string" unsaved-value="null">
+		<id name="uid" type="string" unsaved-value="null">
 			<column name="contact_id" index="contact_id_idx" />
 			<generator class="assigned" />
 		</id>
 		<version name="version" access="field" type="long" />
-		<component name="archetypeDetails">
-			<component name="archetypeID">
-				<property name="value" access="field"
-					column="archetype_id" type="string" />
-			</component>
-			<property name="referenceModelVersion" column="rm_version"
+		<component name="archetypeId">
+			<property name="namespace" access="field"
+				column="archetype_namespace" type="string" />
+			<property name="name" access="field" column="archetype_name"
 				type="string" />
+			<property name="version" access="field"
+				column="archetype_version" type="string" />
 		</component>
-		<component name="name">
-			<property name="value" column="name" type="string" />
-		</component>
-		<property name="archetypeNodeId" column="archetype_node_id"
+		<property name="name" access="field" column="name"
 			type="string" />
 		<component name="activePeriod">
-			<component name="interval">
-				<component name="lower"
-					class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-					<property name="calendar" column="start_date"
-						type="calendar" access="field" />
-				</component>
-				<component name="upper"
-					class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-					<property name="calendar" column="end_date"
-						type="calendar" access="field" />
-				</component>
+			<component name="lower" access="field"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="start_date"
+					type="calendar" access="field" />
+			</component>
+			<component name="upper" access="field"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="end_date"
+					type="calendar" access="field" />
 			</component>
 		</component>
 		<set name="addresses" lazy="false" inverse="true"

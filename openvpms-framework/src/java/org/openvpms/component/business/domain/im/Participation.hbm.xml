@@ -22,47 +22,43 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.Participation"
     table="participation">
-    <id name="id" type="string" unsaved-value="null">
+    <id name="uid" type="string" unsaved-value="null">
       <column name="participation_id" index="participation_id_idx" />
       <generator class="assigned" />
     </id>
     <version name="version" access="field" type="long" />
-    <component name="archetypeDetails">
-      <component name="archetypeID">
-        <property name="value" column="archetype_id" type="string" />
-      </component>
-      <property name="referenceModelVersion" column="rm_version"
+    <component name="archetypeId">
+      <property name="namespace" access="field"
+        column="archetype_namespace" type="string" />
+      <property name="name" access="field" column="archetype_name"
+        type="string" />
+      <property name="version" access="field" column="archetype_version"
         type="string" />
     </component>
-    <component name="name">
-      <property name="value" column="name" type="string" />
-    </component>
-    <property name="archetypeNodeId" column="archetype_node_id"
-      type="string" />
-    <property name="sequence" column="sequence" access="field" type="int" />
+    <property name="name" access="field" column="name" type="string" />
+    <property name="sequence" column="sequence" access="field"
+      type="int" />
     <property name="description" column="description" type="string" />
     <property name="negationInd" column="negationInd" type="boolean" />
     <property name="mode" column="mode" type="string" />
     <property name="percentage" column="percentage" type="int" />
     <component name="timeInterval">
-      <component name="interval">
-        <component name="lower"
-          class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-          <property name="calendar"
-            column="participation_start_datetime" type="calendar"
-            access="field" />
-        </component>
-        <component name="upper"
-          class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-          <property name="calendar" column="participation_end_datetime"
-            type="calendar" access="field" />
-        </component>
+      <component name="lower" access="field"
+        class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+        <property name="dateTime"
+          column="participation_start_datetime" type="calendar"
+          access="field" />
+      </component>
+      <component name="upper" access="field"
+        class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+        <property name="dateTime" column="participation_end_datetime"
+          type="calendar" access="field" />
       </component>
     </component>
     <many-to-one name="entity" access="field" column="entity_id" />
     <many-to-one name="act" access="field" column="act_id" />
     <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
   </class>
 
   <query name="participation.getRowCount">

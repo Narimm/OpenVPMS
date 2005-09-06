@@ -22,8 +22,8 @@ package org.openvpms.component.business.domain.im;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
-import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * A class representing an {@link Entity}'s participantion in an {@link Act}.

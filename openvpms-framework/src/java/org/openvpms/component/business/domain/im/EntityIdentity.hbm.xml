@@ -22,27 +22,24 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.EntityIdentity"
     table="entity_identity">
-    <id name="id" type="string">
+    <id name="uid" type="string">
       <column name="entity_identity_id" index="entity_identity_id_idx" />
       <generator class="assigned" />
     </id>
     <version name="version" access="field" type="long" />
-    <component name="archetypeDetails">
-      <component name="archetypeID">
-        <property name="value" column="archetype_id" type="string" />
-      </component>
-      <property name="referenceModelVersion" column="rm_version"
+    <component name="archetypeId">
+      <property name="namespace" access="field"
+        column="archetype_namespace" type="string" />
+      <property name="name" access="field" column="archetype_name"
+        type="string" />
+      <property name="version" access="field" column="archetype_version"
         type="string" />
     </component>
-    <component name="name">
-      <property name="value" column="name" type="string" />
-    </component>
-    <property name="archetypeNodeId" column="archetype_node_id"
-      type="string" />
+    <property name="name" access="field" column="name" type="string" />
     <property name="identity" type="string" column="identity" />
     <many-to-one name="entity" column="entity_id" />
     <property name="details" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
   </class>
 
   <query name="entityIdentity.getRowCount">

@@ -27,8 +27,8 @@ import java.util.Set;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * Defines a contact for a {@link Party}. 

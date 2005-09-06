@@ -22,28 +22,25 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.Entity"
     table="entity">
-    <id name="id" type="string" unsaved-value="null">
+    <id name="uid" type="string" unsaved-value="null">
       <column name="entity_id" index="entity_id_idx" />
       <generator class="assigned" />
     </id>
     <version name="version" access="field" type="long" />
-    <component name="archetypeDetails">
-      <component name="archetypeID">
-        <property name="value" column="archetype_id" type="string" />
-      </component>
-      <property name="referenceModelVersion" column="rm_version"
+    <component name="archetypeId">
+      <property name="namespace" access="field"
+        column="archetype_namespace" type="string" />
+      <property name="name" access="field" column="archetype_name"
+        type="string" />
+      <property name="version" access="field" column="archetype_version"
         type="string" />
     </component>
-    <component name="name">
-      <property name="value" column="name" type="string" />
-    </component>
-    <property name="archetypeNodeId" column="archetype_node_id"
-      type="string" />
+    <property name="name" access="field" column="name" type="string" />
     <property name="description" column="description" type="string" />
     <property name="details" column="details" length="5000"
-      not-null="false"
-      type="org.openvpms.component.business.dao.hibernate.usertype.ItemListUserType" />
-    <set name="entityClassifications" access="field" lazy="true" inverse="true">
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <set name="entityClassifications" access="field" lazy="true"
+      inverse="true">
       <key column="entity_id" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.EntityClassification" />
@@ -53,17 +50,20 @@
       <one-to-many
         class="org.openvpms.component.business.domain.im.EntityIdentity" />
     </set>
-    <set name="sourceRelationships" access="field" lazy="true" inverse="true">
+    <set name="sourceRelationships" access="field" lazy="true"
+      inverse="true">
       <key column="source_id" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.EntityRelationship" />
     </set>
-    <set name="targetRelationships" access="field" lazy="true" inverse="true">
+    <set name="targetRelationships" access="field" lazy="true"
+      inverse="true">
       <key column="target_id" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.EntityRelationship" />
     </set>
-    <set name="participations" access="field" lazy="true" inverse="true">
+    <set name="participations" access="field" lazy="true"
+      inverse="true">
       <key column="entity_id" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.Participation" />
@@ -86,17 +86,15 @@
         table="role">
         <key column="entity_id" />
         <component name="activePeriod">
-          <component name="interval">
-            <component name="lower"
-              class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-              <property name="calendar" column="active_start_datetime"
-                type="calendar" access="field" />
-            </component>
-            <component name="upper"
-              class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-              <property name="calendar" column="active_end_datetime"
-                type="calendar" access="field" />
-            </component>
+          <component name="lower" access="field"
+            class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+            <property name="dateTime" column="active_start_datetime"
+              type="calendar" access="field" />
+          </component>
+          <component name="upper" access="field"
+            class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+            <property name="dateTime" column="active_end_datetime"
+              type="calendar" access="field" />
           </component>
         </component>
 
@@ -109,11 +107,8 @@
             type="string" />
           <property name="password" access="field" column="password"
             type="string" />
-          <component name="lastLogin"
-            class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-            <property name="calendar" column="last_login"
-              type="calendar" access="field" />
-          </component>
+          <property name="lastLogin" column="last_login" type="calendar"
+            access="field" />
         </joined-subclass>
       </joined-subclass>
     </joined-subclass>
@@ -159,8 +154,8 @@
         <property name="desexed" access="field" column="desexed"
           type="boolean" />
         <component name="dateOfBirth"
-          class="org.openehr.rm.datatypes.quantity.datetime.DvDate">
-          <property name="calendar" column="date_of_birth"
+          class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+          <property name="dateTime" column="date_of_birth"
             type="calendar" access="field" />
         </component>
       </joined-subclass>

@@ -21,8 +21,8 @@ package org.openvpms.component.business.domain.im;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
-import org.openvpms.component.business.domain.im.datatypes.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
+import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * Describes the relationship between two entities.
