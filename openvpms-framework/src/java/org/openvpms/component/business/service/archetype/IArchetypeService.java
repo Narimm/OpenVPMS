@@ -18,6 +18,8 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 /**
  * This interface defines the services that are provided by the archetype
  * service. The client is able to return a archetype by name or by archetype
@@ -36,6 +38,44 @@ public interface IArchetypeService {
      * @param name
      *            the short name
      * @return ArchetypeRecord
+     * @thorws ArchetypeServiceException
+     *            if there is a problem creating the object.                        
      */
     public ArchetypeRecord getArchetypeRecord(String name);
+    
+    /**
+     * Retrieve the {@link ArchetypeRecord} for the specified {@link ArchetypeId}.
+     * 
+     * @param id
+     *            the archetype id
+     * @return ArchetypeRecord           
+     * @thorws ArchetypeServiceException
+     *            if there is a problem creating the object.                        
+     */
+    public ArchetypeRecord getArchetypeRecord(ArchetypeId id);
+    
+    /**
+     * Create a default domain object given a short name. The short name is
+     * a reference to an {@link ArchetypeRecord}. If the short name is not 
+     * known then return a null object.
+     * 
+     * @param name
+     *            the short name
+     * @preturn Object
+     * @thorws ArchetypeServiceException
+     *            if there is a problem creating the object.                        
+     */
+    public Object createDefaultObject(String name);
+    
+    /**
+     * Create a default domain object given an {@link ArchetypeId}. If the 
+     * archetype id is not defined then return null.
+     * 
+     * @param id
+     *            the archetype id
+     * @return Object
+     * @throws ArchetypeServiceException
+     *            if there is a problem creating the object.            
+     */
+    public Object createDefaultObject(ArchetypeId id);
 }

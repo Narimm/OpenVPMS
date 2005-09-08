@@ -1,0 +1,9 @@
+<archetypes>
+  <archetype shortName="party.person" archetypeNamespace="openvpms.org"
+    archetypeName="openvpms-person-contact-draft" version="1.0"
+    imClass="org.openvpms.component.business.domain.im.party.Person">
+    <node name="name" path="/name" type="java.lang.String"
+      minCardinality="1" />
+    <node />
+  </archetype>
+</archetypes>

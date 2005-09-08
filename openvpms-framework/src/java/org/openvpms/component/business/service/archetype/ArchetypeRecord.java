@@ -23,13 +23,16 @@ package org.openvpms.component.business.service.archetype;
 import java.io.Serializable;
 
 //openevpms-framework
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.Archetype;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.archetype.Node;
 
 
 /**
- * This class maintains a mapping between a short name and an archetype 
- * identity
+ * This class maintains a mapping between a short name, the archetype 
+ * identity and the archetype details. It also has some convenienc functions
+ * for retrieving details from the archetype details.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -137,5 +140,59 @@ public class ArchetypeRecord implements Serializable {
      */
     protected void setArchetype(Archetype archetype) {
         this.archetype = archetype;
+    }
+    
+    /**
+     * Retrieve the node for a particular path or null if one doesn't
+     * exist.
+     * 
+     * @param path
+     *            the path to search for
+     * @return Node            
+     */
+    public Node getNodeAt(String path) {
+        return recursivelySearchForNodeAt(getArchetype().getNode(), path);
+    }
+    
+    /**
+     * This is a reentrant method that searchs for a node with the specified
+     * path. This method will return the matching node or null if one is not
+     * found.
+     * 
+     * @param nodes
+     *            the array of nodes to search
+     * @param path
+     *            this is the path to search for
+     * @return Node                        
+     */
+    private Node recursivelySearchForNodeAt(Node[] nodes, String path) {
+        for (Node node : nodes) {
+            if (node.getPath().equals(path)) {
+                return node;
+            }
+            
+            if (node.getNode() != null) {
+                Node anode = recursivelySearchForNodeAt(node.getNode(), path);
+                if (anode != null) {
+                    return anode;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("shortName", shortName)
+            .append("archetypeId", archetypeId)
+            .append("imClass", imClass)
+            .toString();
     }
 }

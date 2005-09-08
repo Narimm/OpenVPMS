@@ -50,7 +50,10 @@ public class ArchetypeServiceException extends RuntimeException implements
         FailedToInitializeRegistry,
         FailedToCreateArchetype,
         InvalidFile,
-        NoFileSpecified
+        InvalidDir,
+        NoFileSpecified,
+        NoDirSpecified,
+        ArchetypeAlreadyDefined
     }
 
     /**

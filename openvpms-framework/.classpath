@@ -29,5 +29,6 @@
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-core-1.7.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-bean-collections-1.7.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/castor/jars/castor-xml-0.9.7.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/commons-jxpath/jars/commons-jxpath-1.2.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

@@ -79,7 +79,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
             new ArchetypeService("file-does-not-exist");
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
-                ArchetypeServiceException.ErrorCode.FailedToInitializeRegistry);
+                ArchetypeServiceException.ErrorCode.InvalidFile);
         }
     }
    
@@ -109,7 +109,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 new ArchetypeService((String)iter.next());
             } catch (ArchetypeServiceException exception) {
                 assertTrue(exception.getErrorCode() == 
-                    ArchetypeServiceException.ErrorCode.FailedToInitializeRegistry);
+                    ArchetypeServiceException.ErrorCode.InvalidFile);
             }
         }
     }
