@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE component-specification PUBLIC
+  "-//Apache Software Foundation//Tapestry Specification 3.0//EN"
+  "http://jakarta.apache.org/tapestry/dtd/Tapestry_3_0.dtd">
+
+<component-specification class="org.apache.tapestry.BaseComponent"
+    allow-body="yes"
+    allow-informal-parameters="no">
+    
+    <description>utility component to show some content inside a box</description>
+    
+    <parameter name="header" type="java.lang.String" required="yes" direction="in"/>  
+    
+     
+    
+</component-specification>

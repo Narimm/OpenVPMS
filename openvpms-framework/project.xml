@@ -168,6 +168,20 @@
     	  <type>jar</type>
 	      <url>http://www.springframework.org/</url>
 	    </dependency>
+    	<dependency>
+	      <groupId>springframework</groupId>
+    	  <artifactId>spring-context</artifactId>
+    	  <version>1.2.3</version>
+    	  <type>jar</type>
+	      <url>http://www.springframework.org/</url>
+	    </dependency>
+    	<dependency>
+	      <groupId>springframework</groupId>
+    	  <artifactId>spring-web</artifactId>
+    	  <version>1.2.3</version>
+    	  <type>jar</type>
+	      <url>http://www.springframework.org/</url>
+	    </dependency>
         <dependency>
             <groupId>ehcache</groupId>
             <artifactId>ehcache</artifactId>
@@ -195,8 +209,8 @@
         </dependency>
 	    <dependency>
     	  <groupId>castor</groupId>
-	      <artifactId>castor-xml</artifactId>
-    	  <version>0.9.7</version>
+	      <artifactId>castor</artifactId>
+    	  <version>0.9.7-xml</version>
     	  <properties>
     	  	<classpath>true</classpath>
     	  </properties>
@@ -269,6 +283,30 @@
             <url>http://sourceforge.net/projects/c3p0</url>
         </dependency>
         <dependency>
+            <groupId>tapestry</groupId>
+            <artifactId>tapestry</artifactId>
+            <version>3.0.3</version>
+            <url>http://jakarta.apache.org/tapestry</url>
+        </dependency>
+        <dependency>
+            <groupId>acegisecurity</groupId>
+            <artifactId>acegi-security</artifactId>
+            <version>0.8.1</version>
+            <url>http://www.springframework.org</url>
+        </dependency>
+        <dependency>
+            <groupId>servletapi</groupId>
+            <artifactId>servletapi</artifactId>
+            <version>2.4</version>
+            <url>http://java.sun.com</url>
+        </dependency>
+        <dependency>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+            <version>2.6.5</version>
+            <url>http://ognl.org</url>
+        </dependency>
+        <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
             <version>1.2</version>
@@ -279,6 +317,36 @@
             <artifactId>commons-beanutils-core</artifactId>
             <version>1.7.0</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils-bean-collections</artifactId>
+            <version>1.7.0</version>
+            <url>http://jakarta.apache.org/commons/jxpath/</url>
+        </dependency>
+        <dependency>
+            <groupId>tapestry</groupId>
+            <artifactId>tapestry</artifactId>
+            <version>3.0.3</version>
+            <url>http://jakarta.apache.org/tapestry</url>
+        </dependency>
+        <dependency>
+            <groupId>acegisecurity</groupId>
+            <artifactId>acegi-security</artifactId>
+            <version>0.8.1</version>
+            <url>http://www.springframework.org</url>
+        </dependency>
+        <dependency>
+            <groupId>servletapi</groupId>
+            <artifactId>servletapi</artifactId>
+            <version>2.4</version>
+            <url>http://java.sun.com</url>
+        </dependency>
+        <dependency>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+            <version>2.6.5</version>
+            <url>http://ognl.org</url>
         </dependency>
     </dependencies>  
 
@@ -326,6 +394,14 @@
 	            <directory>${basedir}/src/java</directory>
 	            <includes>
 	                <include>**/*.hbm.xml</include>
+	            </includes>
+	        </resource>
+	        <resource>
+	            <directory>${basedir}/src/java</directory>
+	            <includes>
+	                <include>**/*.library</include>
+	                <include>**/*.jwc</include>
+	                <include>**/*.html</include>
 	            </includes>
 	        </resource>
 	        <resource>
