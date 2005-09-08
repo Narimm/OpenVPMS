@@ -16,51 +16,49 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.im;
+package org.openvpms.component.business.dao.im.party;
 
 // openvpms-domain
-import org.openvpms.component.business.domain.im.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
- * This interface provides generic data access object (DAO) support for objects
- * of type {@link Entity}. The class includes the caoability to perform insert,
+ * This interface provides data access object (DAO) support for objects of 
+ * type {@link Party}. The class includes the capability to perform insert,
  * delete, update and remove data.
- * <p>
- * DAO's that require additional features should extend this class
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IEntityDAO<T extends Entity> {
+public interface IPartyDAO {
     /**
-     * Insert the specified {@link Entity}.
+     * Insert the specified {@link Party}.
      * 
-     * @param entity
-     *            the entity to insert
-     * @throws EntityDAOException
-     *             if the request cannot be completed
-     */
-    public void insert(T entity) throws EntityDAOException;
-
-    /**
-     * Update the specified {@link Entity}
-     * 
-     * @param entity
-     *            the entity to update
-     * @throws EntityDAOException
+     * @param party
+     *            the party to insert
+     * @throws PartyDAOException
      *             a runtime exception if the request cannot complete
      */
-    public void update(T entity) throws EntityDAOException;
+    public void insert(Party party);
 
     /**
-     * Delete the specified {@link Entity}
+     * Update the specified {@link Party}
      * 
-     * @param entity
-     *            the entity to delete
-     * @throws EntityDAOException
+     * @param party
+     *            the party to update
+     * @throws PartyDAOException
      *             a runtime exception if the request cannot complete
      */
-    public void delete(T entity) throws EntityDAOException;
+    public void update(Party party);
+
+    /**
+     * Delete the specified {@link Party}
+     * 
+     * @param party
+     *            the party to delete
+     * @throws PartyDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public void delete(Party party);
 
     /**
      * Retrieve the entity with the specified id
@@ -69,8 +67,8 @@ public interface IEntityDAO<T extends Entity> {
      *            the id of the entity to retrieve
      * @param return
      *            Entity
-     * @throws EntityDAOException
+     * @throws PartyDAOException
      *             a runtime exception if the request cannot complete
      */
-    public T findById(String id) throws EntityDAOException;
+    public Party findById(String id);
 }

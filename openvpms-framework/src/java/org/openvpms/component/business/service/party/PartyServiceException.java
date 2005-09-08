@@ -16,33 +16,39 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.im;
+package org.openvpms.component.business.service.party;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
+ * This exception is the base service exception. As with most excpetions
+ * in OpenVPMS it is a {@link java.lang.RuntimeException}. 
+ * <p>
+ * More specific service related exceptions should subclass from this 
+ * exception.
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityDAOException extends RuntimeException implements
+public class PartyServiceException extends RuntimeException implements
         OpenVPMSException {
 
     /**
-     * Generated SUID.
+     * Generated SUID
      */
-    private static final long serialVersionUID = 1403478672254798421L;
+    private static final long serialVersionUID = 2702065851372889620L;
 
     /**
-     * An enumeration of error codes.
+     * An enumeration of error codes
      */
     public enum ErrorCode {
-        FailedToInitializeService,
-        FailedToCreateEntity, 
-        FailedToDeleteEntity, 
-        FailedToUpdateEntity, 
-        FailedToFindEntities
+        FailedToCreateParty,
+        FailedToDeleteParty, 
+        FailedToUpdateParty,
+        FailedToFindParty,
+        FailedToLocateArchetype,
+        InvalidPartyObject
     }
 
     /**
@@ -55,7 +61,7 @@ public class EntityDAOException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.system.dao.im."
+            .getMessages("org.openvpms.component.business.service."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -65,7 +71,7 @@ public class EntityDAOException extends RuntimeException implements
      * @param errorCode
      *            the error code
      */
-    public EntityDAOException(ErrorCode errorCode) {
+    public PartyServiceException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -80,7 +86,7 @@ public class EntityDAOException extends RuntimeException implements
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public EntityDAOException(ErrorCode errorCode, Object[] params) {
+    public PartyServiceException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -94,7 +100,7 @@ public class EntityDAOException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public EntityDAOException(ErrorCode errorCode, Throwable cause) {
+    public PartyServiceException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -111,7 +117,7 @@ public class EntityDAOException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public EntityDAOException(ErrorCode errorCode, Object[] params,
+    public PartyServiceException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

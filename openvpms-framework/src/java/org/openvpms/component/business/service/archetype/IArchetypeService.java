@@ -18,7 +18,9 @@
 
 package org.openvpms.component.business.service.archetype;
 
+// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.IMObject;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -78,4 +80,17 @@ public interface IArchetypeService {
      *            if there is a problem creating the object.            
      */
     public Object createDefaultObject(ArchetypeId id);
+    
+    /**
+     * Validate the specified {@link IMObject}. To validate the object it will
+     * retrieve the archetype and iterate through the assertions
+     * 
+     * @param object
+     *            the object to validate
+     * @return boolean
+     *            true if the object is valid; false otherwise
+     * @throws ArchetypeServiceException
+     *            runtime exception, which is thrown when there is a problem                        
+     */
+    public boolean validateObject(IMObject object);
 }

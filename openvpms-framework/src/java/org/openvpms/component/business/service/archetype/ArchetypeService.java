@@ -37,7 +37,9 @@ import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.Archetype;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.archetype.Archetypes;
+import org.openvpms.component.business.domain.archetype.Assertion;
 import org.openvpms.component.business.domain.archetype.Node;
+import org.openvpms.component.business.domain.im.IMObject;
 
 
 /**
@@ -152,6 +154,61 @@ public class ArchetypeService implements IArchetypeService {
         } else {
             return null;
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.IMObject)
+     */
+    public boolean validateObject(IMObject object) {
+
+        // check that we can retrieve a valid archetype for this object
+        ArchetypeRecord record = getArchetypeRecord(object.getArchetypeId());
+        if (record == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
+                    new Object[]{object.getArchetypeId().toString()});
+        }
+        
+        // if there are nodes attached to the archetype then validate the 
+        // associated assertions
+        boolean result = true;
+        if (record.getArchetype().getNodeCount() > 0) {
+            JXPathContext context = JXPathContext.newContext(object);
+            result = validateObject(context, record.getArchetype().getNode());
+        }
+        
+        return result;
+    }
+
+    /**
+     * Iterate through all the nodes and ensure that the object meets all the
+     * specified assertions. The assertions are defined in the node and can
+     * be hierarchical, which means that this method is re-entrant.
+     * 
+     * @param context
+     *            holds the object to be validated        
+     * @param nodes
+     *            assertions are managed by the nodes object
+     * @return boolean
+     *            true if the object is valid; false otherwise
+     */
+    private boolean validateObject(JXPathContext context, Node[] nodes) {
+        for (Node node : nodes) {
+            Assertion[] assertions = node.getAssertion();
+            for (Assertion assertion : assertions) {
+                //TODO Iterate through all the assertions 
+            }
+            
+            // if this node has other nodes then re-enter this method
+            if ((node.getNodeCount() > 0) &&
+                !(validateObject(context, node.getNode()))) {
+                // if the object is invalid then ignore the 
+                // rest of the validation and return false.
+                return false;
+            }
+        }
+        
+        return false;
     }
 
     /**

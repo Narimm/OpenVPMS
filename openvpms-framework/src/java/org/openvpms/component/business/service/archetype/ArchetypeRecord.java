@@ -89,56 +89,56 @@ public class ArchetypeRecord implements Serializable {
     /**
      * @return Returns the archetypeId.
      */
-    protected ArchetypeId getArchetypeId() {
+    public ArchetypeId getArchetypeId() {
         return archetypeId;
     }
 
     /**
      * @param archetypeId The archetypeId to set.
      */
-    protected void setArchetypeId(ArchetypeId archetypeId) {
+    public void setArchetypeId(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
     }
 
     /**
      * @return Returns the imClass.
      */
-    protected String getInfoModelClass() {
+    public String getInfoModelClass() {
         return imClass;
     }
 
     /**
      * @param imClass The imClass to set.
      */
-    protected void setInfoModelClass(String imClass) {
+    public void setInfoModelClass(String imClass) {
         this.imClass = imClass;
     }
 
     /**
      * @return Returns the shortName.
      */
-    protected String getShortName() {
+    public String getShortName() {
         return shortName;
     }
 
     /**
      * @param shortName The shortName to set.
      */
-    protected void setShortName(String shortName) {
+    public void setShortName(String shortName) {
         this.shortName = shortName;
     }
 
     /**
      * @return Returns the archetype.
      */
-    protected Archetype getArchetype() {
+    public Archetype getArchetype() {
         return archetype;
     }
 
     /**
      * @param archetype The archetype to set.
      */
-    protected void setArchetype(Archetype archetype) {
+    public void setArchetype(Archetype archetype) {
         this.archetype = archetype;
     }
     

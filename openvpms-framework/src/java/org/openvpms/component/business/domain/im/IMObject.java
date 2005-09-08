@@ -119,28 +119,28 @@ public abstract class IMObject implements Serializable {
     /**
      * @return Returns the archetypeId.
      */
-    protected ArchetypeId getArchetypeId() {
+    public ArchetypeId getArchetypeId() {
         return archetypeId;
     }
 
     /**
      * @param archetypeId The archetypeId to set.
      */
-    protected void setArchetypeId(ArchetypeId archetypeId) {
+    public void setArchetypeId(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
     }
 
     /**
      * @return Returns the name.
      */
-    protected String getName() {
+    public String getName() {
         return name;
     }
 
     /**
      * @param name The name to set.
      */
-    protected void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
