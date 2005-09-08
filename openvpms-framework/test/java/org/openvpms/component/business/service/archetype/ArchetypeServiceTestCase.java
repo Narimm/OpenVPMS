@@ -34,7 +34,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
- * Test the {@link org.openvpms.component.business.service.archetype.IArchetypeRegistry}
+ * Test the {@link org.openvpms.component.business.service.archetype.IArchetypeService}
  *
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
