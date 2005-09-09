@@ -32,6 +32,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 
 // openvpms-test-component
 import org.openvpms.component.system.common.test.BaseTestCase;
+import org.openvpms.component.system.service.uuid.IUUIDGenerator;
+import org.openvpms.component.system.service.uuid.JUGGenerator;
+import org.safehaus.uuid.UUIDGenerator;
 
 /**
  * Test the {@link org.openvpms.component.business.service.archetype.IArchetypeService}
@@ -63,7 +66,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
     public void testCreationWithNullFileName() 
     throws Exception {
         try {
-            new ArchetypeService(null);
+            new ArchetypeService(null, null);
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.NoFileSpecified);
@@ -76,7 +79,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
     public void testCreationWithInvalidFileName() 
     throws Exception {
         try {
-            new ArchetypeService("file-does-not-exist");
+            new ArchetypeService(createUUIDGenerator(),"file-does-not-exist");
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.InvalidFile);
@@ -92,7 +95,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 "testCreationWithValidFileContent", "valid-files", "files");
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
-            new ArchetypeService((String)iter.next());
+            new ArchetypeService(createUUIDGenerator(),(String)iter.next());
         }
     }
     
@@ -106,7 +109,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
             try {
-                new ArchetypeService((String)iter.next());
+                new ArchetypeService(createUUIDGenerator(), (String)iter.next());
             } catch (ArchetypeServiceException exception) {
                 assertTrue(exception.getErrorCode() == 
                     ArchetypeServiceException.ErrorCode.InvalidFile);
@@ -124,7 +127,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testValidEntryRetrieval", "valid-retrieval", "archetypes");
         
-        ArchetypeService registry = new ArchetypeService(validFile);
+        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
+                validFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             ArchetypeRecord record = registry.getArchetypeRecord((String)iter.next());
@@ -145,10 +149,21 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testInvalidEntryRetrieval", "invalid-retrieval", "archetypes");
         
-        ArchetypeService registry = new ArchetypeService(validFile);
+        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(), 
+                validFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             assertTrue(registry.getArchetypeRecord((String)iter.next()) == null);
         }
+    }
+    
+    /**
+     * Create a UUID geenrator
+     * 
+     * @return IUUIDGenerator
+     */
+    private IUUIDGenerator createUUIDGenerator() {
+        return new JUGGenerator(UUIDGenerator.getInstance()
+               .getDummyAddress().toString());  
     }
 }

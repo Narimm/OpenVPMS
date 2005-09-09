@@ -28,10 +28,14 @@
 	<classpathentry kind="var" path="MAVEN_REPO/xstream/jars/xstream-1.1.2.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-core-1.7.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-bean-collections-1.7.0.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPO/castor/jars/castor-0.9.7-xml.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/castor/jars/castor-xml-0.9.7.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-jxpath/jars/commons-jxpath-1.2.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-mock-1.2.3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-context-1.2.3.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/acegisecurity/jars/acegi-security-0.8.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/ognl/jars/ognl-2.6.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/tapestry/jars/tapestry-3.0.3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/servletapi/jars/servletapi-2.4.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-web-1.2.3.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

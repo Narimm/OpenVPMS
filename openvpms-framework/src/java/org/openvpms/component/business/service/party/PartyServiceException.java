@@ -61,7 +61,7 @@ public class PartyServiceException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service."
+            .getMessages("org.openvpms.component.business.service.party."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**

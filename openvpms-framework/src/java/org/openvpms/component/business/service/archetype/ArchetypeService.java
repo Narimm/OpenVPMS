@@ -40,6 +40,7 @@ import org.openvpms.component.business.domain.archetype.Archetypes;
 import org.openvpms.component.business.domain.archetype.Assertion;
 import org.openvpms.component.business.domain.archetype.Node;
 import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.system.service.uuid.IUUIDGenerator;
 
 
 /**
@@ -65,6 +66,11 @@ public class ArchetypeService implements IArchetypeService {
             .getLogger(ArchetypeService.class);
 
     /**
+     * A reference to the UUIDGenerator, which it uses during the create
+     * process
+     */
+    private IUUIDGenerator uuidGenerator;
+    /**
      * In memory cache of the archetype definitions keyed on the short name.
      */
     private Map<String, ArchetypeRecord> archetypesByShortName;
@@ -82,15 +88,19 @@ public class ArchetypeService implements IArchetypeService {
      * similar constraint applies to the resourcr specified by adir, it must be
      * a valid path in the classpath.
      * 
+     * @param uuidGenerator
+     *            the uuid generator is used to assign ids during objct
+     *            creation        
      * @param afile
      *            the filename that holds all the archetype records.
      * @throws ArchetypeServiceException
      *             if it cannot successfully bootstrap the service. This is a
      *             runtime exception
      */
-    public ArchetypeService(String afile) {
-        archetypesByShortName = new HashMap<String, ArchetypeRecord>();
-        archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
+    public ArchetypeService(IUUIDGenerator uuidGenerator, String afile) {
+        this.uuidGenerator = uuidGenerator;
+        this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
+        this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
         
         loadArchetypeRecordsFromFile(afile, archetypesByShortName, 
                 archetypesById);
@@ -101,6 +111,9 @@ public class ArchetypeService implements IArchetypeService {
      * definitions in the specified directory. Only process files with the 
      * specified extensions
      * 
+     * @param uuidGenerator
+     *            the uuid generator is used to assign ids during object
+     *            creation            
      * @param adir
      *            the directory
      * @parsm extensions
@@ -109,9 +122,11 @@ public class ArchetypeService implements IArchetypeService {
      *            if there is a problem processing one or more files in the 
      *            directory                       
      */
-    public ArchetypeService(String adir, String[] extensions) {
-        archetypesByShortName = new HashMap<String, ArchetypeRecord>();
-        archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
+    public ArchetypeService(IUUIDGenerator uuidGenerator, String adir, 
+            String[] extensions) {
+        this.uuidGenerator = uuidGenerator;
+        this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
+        this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
 
         loadArchetypeRecordsInDir(adir, extensions, archetypesByShortName, 
                 archetypesById);
@@ -398,6 +413,18 @@ public class ArchetypeService implements IArchetypeService {
         try {
             Class domainClass = Class.forName(record.getArchetype().getImClass());
             obj = domainClass.newInstance();
+            
+            // the object must be an instance of {@link IMObject}
+            if (!(obj instanceof IMObject)) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.InvalidIMClass, 
+                        new Object[]{ record.getArchetype().getImClass()}); 
+            }
+            
+            // cast to imobject and set the archetype and the uuid.
+            IMObject imobj = (IMObject)obj;
+            imobj.setArchetypeId(record.getArchetypeId());
+            imobj.setUid(uuidGenerator.nextId());
             
             // first create a JXPath context and use it to process the nodes
             // in the archetype

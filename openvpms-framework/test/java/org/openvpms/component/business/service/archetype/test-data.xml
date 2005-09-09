@@ -8,9 +8,9 @@
   	<method name="testCreationWithValidFileContent" test-case="valid-files">
   		<params>
   			<param name="files" type="java.util.Vector" value-type="java.lang.String">
-  				<param>/org/openvpms/component/business/service/archetype/valid-archetype-file-1.xml</param>
-  				<param>/org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml</param>
-  				<param>/org/openvpms/component/business/service/archetype/valid-archetype-file-3.xml</param>
+  				<param>org/openvpms/component/business/service/archetype/valid-archetype-file-1.xml</param>
+  				<param>org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml</param>
+  				<param>org/openvpms/component/business/service/archetype/valid-archetype-file-3.xml</param>
   			</param>
   		</params>
   	</method>
@@ -19,9 +19,9 @@
   	<method name="testCreationWithInvalidFileContent" test-case="invalid-files">
   		<params>
   			<param name="files" type="java.util.Vector" value-type="java.lang.String">
-  				<param>/org/openvpms/component/business/service/archetype/invalid-archetype-file-1.xml</param>
-  				<param>/org/openvpms/component/business/service/archetype/invalid-archetype-file-2.xml</param>
-  				<param>/org/openvpms/component/business/service/archetype/invalid-archetype-file-3.xml</param>
+  				<param>org/openvpms/component/business/service/archetype/invalid-archetype-file-1.xml</param>
+  				<param>org/openvpms/component/business/service/archetype/invalid-archetype-file-2.xml</param>
+  				<param>org/openvpms/component/business/service/archetype/invalid-archetype-file-3.xml</param>
   			</param>
   		</params>
   	</method>
@@ -30,7 +30,7 @@
   	<method name="testValidEntryRetrieval" test-case="valid-retrieval">
   		<params>
   			<param name="file" type="java.lang.String">
-  				/org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
+  				org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
   			</param>	
   			<param name="archetypes" type="java.util.Vector" value-type="java.lang.String">
   				<param>party.customer</param>
@@ -45,7 +45,7 @@
   	<method name="testInvalidEntryRetrieval" test-case="invalid-retrieval">
   		<params>
   			<param name="file" type="java.lang.String">
-  				/org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
+  				org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
   			</param>	
   			<param name="archetypes" type="java.util.Vector" value-type="java.lang.String">
   				<param>party1.customer</param>

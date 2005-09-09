@@ -53,7 +53,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         InvalidDir,
         NoFileSpecified,
         NoDirSpecified,
-        ArchetypeAlreadyDefined
+        ArchetypeAlreadyDefined,
+        InvalidIMClass
     }
 
     /**

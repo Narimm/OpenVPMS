@@ -102,7 +102,7 @@ public abstract class BaseTestCase extends LoggedTestCase {
     protected String getPathToTestData() {
         String className = this.getClass().getName();
         String dataFile = className.substring(0, className.lastIndexOf(".") + 1); 
-        return "/" + StringUtils.replaceChars(dataFile, '.', '/') + TEST_FILE;
+        return "target/test-classes/" + StringUtils.replaceChars(dataFile, '.', '/') + TEST_FILE;
     }
     
     /**
