@@ -62,7 +62,7 @@ public class Person extends Actor {
     /**
      * Default constructor
      */
-    protected Person() {
+    public Person() {
         // do nothing
     }
     

@@ -54,7 +54,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         NoFileSpecified,
         NoDirSpecified,
         ArchetypeAlreadyDefined,
-        InvalidIMClass
+        InvalidIMClass,
+        FailedToCreateObject
     }
 
     /**
@@ -67,7 +68,7 @@ public class ArchetypeServiceException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service."
+            .getMessages("org.openvpms.component.business.service.archetype."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**

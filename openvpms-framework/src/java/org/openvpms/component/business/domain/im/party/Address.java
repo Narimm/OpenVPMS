@@ -53,7 +53,7 @@ public class Address extends IMObject {
     /**
      * Define a protected default constructor
      */
-    protected Address() {
+    public Address() {
     }
     
     /**

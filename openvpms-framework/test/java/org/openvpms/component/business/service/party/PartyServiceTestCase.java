@@ -18,7 +18,11 @@
 
 package org.openvpms.component.business.service.party;
 
+// spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+//openvpms-framework
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * 
@@ -47,7 +51,7 @@ public class PartyServiceTestCase extends
     /**
      * @param partyService The partyService to set.
      */
-    protected void setPartyService(PartyService partyService) {
+    public void setPartyService(PartyService partyService) {
         this.partyService = partyService;
     }
 
@@ -68,5 +72,24 @@ public class PartyServiceTestCase extends
      */
     public void testPartyObjectCreation()
     throws Exception {
+        for (int index = 0; index < 100; index++) {
+            Party party = partyService.createParty("party.person");
+            assertTrue(party != null);
+            
+            // insert the party object
+            partyService.insertParty(party);
+        }
     }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        
+        this.partyService = (PartyService)applicationContext.getBean(
+                "partyService");
+    }
+
 }

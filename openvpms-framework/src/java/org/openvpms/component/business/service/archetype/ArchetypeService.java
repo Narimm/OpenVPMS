@@ -433,6 +433,9 @@ public class ArchetypeService implements IArchetypeService {
             createDefaultObject(context, record.getArchetype().getNode());
         } catch (Exception exception) {
             // rethrow as a runtime exception
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToCreateObject,
+                    new Object[]{record.getShortName()}, exception);
         }
         
         return obj;
