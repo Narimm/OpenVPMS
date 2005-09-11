@@ -32,6 +32,10 @@
 
 #hibernate.show_sql=false
 
+#
+# Transaction locking ptroblems with mysql are resolved with this 
+# caching enabled.
+#
 #hibernate.c3p0.min_size=5
 #hibernate.c3p0.max_size=20
 #hibernate.c3p0.timeout=1800
