@@ -55,6 +55,31 @@
   			</param>
   		</params>
   	</method>
+  	
+  	<!--  Data for the testLoadingArchetypesFromDir method -->
+  	<method name="testLoadingArchetypesFromDir" test-case="normal">
+  		<params>
+  			<param name="dir" type="java.lang.String">
+  				target/classes/org/openvpms/archetype
+  			</param>
+  			<param name="extension" type="java.lang.String">adl</param>	
+  			<param name="recordCount1" type="java.lang.Integer">8</param>	
+  		</params>
+  	</method>
+  	
+  	<!--  Data for the testRetrievalThroughRegularExpression method -->
+  	<method name="testRetrievalThroughRegularExpression" test-case="normal">
+  		<params>
+  			<param name="dir" type="java.lang.String">
+  				target/classes/org/openvpms/archetype
+  			</param>
+  			<param name="extension" type="java.lang.String">adl</param>	
+  			<param name="recordCount1" type="java.lang.Integer">3</param>	
+  			<param name="recordCount2" type="java.lang.Integer">3</param>	
+  			<param name="recordCount3" type="java.lang.Integer">1</param>	
+  			<param name="recordCount4" type="java.lang.Integer">1</param>	
+  		</params>
+  	</method>
   </class>
 </tests>
 

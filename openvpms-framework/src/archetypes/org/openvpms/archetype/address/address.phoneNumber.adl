@@ -1,0 +1,7 @@
+<archetypes>
+  <archetype shortName="address.phoneNumber"
+    archetypeNamespace="org.openvpms.archetype.address"
+    archetypeName="phoneNumber" version="1.0"
+    imClass="org.openvpms.component.business.domain.im.party.Address">
+  </archetype>
+</archetypes>

@@ -1,0 +1,7 @@
+<archetypes>
+  <archetype shortName="entityRelationship.animalCarer"
+    archetypeNamespace="org.openvpms.archetype.entityRelationship"
+    archetypeName="animalCarer" version="1.0"
+    imClass="org.openvpms.component.business.domain.im.EntityRelationship">
+  </archetype>
+</archetypes>

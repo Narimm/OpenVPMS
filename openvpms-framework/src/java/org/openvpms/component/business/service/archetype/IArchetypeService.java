@@ -93,4 +93,25 @@ public interface IArchetypeService {
      *            runtime exception, which is thrown when there is a problem                        
      */
     public boolean validateObject(IMObject object);
+    
+    /**
+     * Return all the {@link ArchetypeRecord} managed by this service
+     * 
+     * @return ArchetypeRecord[]
+     * @throws ArchetypeServiceException
+     *            runtime error, which is thrown if the request cannot be completed
+     */
+    public ArchetypeRecord[] getArchetypeRecords(); 
+
+    /**
+     * Return all the {@link ArchetypeRecord} with the specified shortName. If 
+     * the short name is a regular expression then it will return all the 
+     * matching records.
+     * 
+     * @param shortName
+     *            the short name or a regular expression
+     * @return ArchetypeRecord[]
+     * @throws ArchetypeServiceException            
+     */
+    public ArchetypeRecord[] getArchetypeRecords(String shortName);
 }

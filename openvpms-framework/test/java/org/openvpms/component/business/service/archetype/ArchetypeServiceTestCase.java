@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype;
 
 
 // java-core
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -155,6 +156,56 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         while (iter.hasNext()) {
             assertTrue(registry.getArchetypeRecord((String)iter.next()) == null);
         }
+    }
+    
+    /**
+     * Test the creation on an archetype service using directory and extension
+     * arguments. This depends on the adl files being copied to the target
+     * directory
+     */
+    public void testLoadingArchetypesFromDir()
+    throws Exception {
+        String dir = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "dir");
+        String extension = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "extension");
+        int recordCount1 = ((Integer)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "recordCount1"))
+                .intValue();
+        
+        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
+                dir, new String[]{extension});
+        assertTrue(registry.getArchetypeRecords().length == recordCount1);
+    }
+    
+    /**
+     * Test the retrieval of archetypes using regular expression. IT uses the 
+     * adl files, which reside in src/archetypes/
+     */
+    public void testRetrievalThroughRegularExpression()
+    throws Exception {
+        Hashtable params = this.getTestData().getTestCaseParams(
+                "testRetrievalThroughRegularExpression", "normal");
+        
+        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
+                (String)params.get("dir"), 
+                new String[]{(String)params.get("extension")});
+
+        // test retrieval of all records that start with entityRelationship
+        assertTrue(registry.getArchetypeRecords("entityRelationship\\..*").length 
+                == ((Integer)params.get("recordCount1")).intValue());
+        
+        // test retrieval for anything with animal
+        assertTrue(registry.getArchetypeRecords(".*animal.*").length 
+                == ((Integer)params.get("recordCount2")).intValue());
+        
+        // test retrieval for anything that starts with person
+        assertTrue(registry.getArchetypeRecords("person.*").length 
+                == ((Integer)params.get("recordCount3")).intValue());
+        
+        // test retrieval for anything that matchers person\\.person
+        assertTrue(registry.getArchetypeRecords("person\\.person").length 
+                == ((Integer)params.get("recordCount4")).intValue());
     }
     
     /**

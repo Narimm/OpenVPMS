@@ -72,8 +72,8 @@ public class PartyServiceTestCase extends
      */
     public void testPartyObjectCreation()
     throws Exception {
-        for (int index = 0; index < 100; index++) {
-            Party party = partyService.createParty("party.person");
+        for (int index = 0; index < 5; index++) {
+            Party party = partyService.createParty("person.person");
             assertTrue(party != null);
             
             // insert the party object

@@ -22,9 +22,11 @@ package org.openvpms.component.business.service.archetype;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 // log4j
@@ -195,6 +197,30 @@ public class ArchetypeService implements IArchetypeService {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords()
+     */
+    public ArchetypeRecord[] getArchetypeRecords() {
+        return (ArchetypeRecord[])this.archetypesByShortName.values().toArray(
+                new ArchetypeRecord[this.archetypesByShortName.size()]);
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords(java.lang.String)
+     */
+    public ArchetypeRecord[] getArchetypeRecords(String shortName) {
+        List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
+        
+        for (String name : this.archetypesByShortName.keySet()) {
+            if (name.matches(shortName)) {
+                records.add(this.archetypesByShortName.get(name));
+            }
+        }
+        
+        return (ArchetypeRecord[])records.toArray(
+                new ArchetypeRecord[records.size()]);
+    }
+
     /**
      * Iterate through all the nodes and ensure that the object meets all the
      * specified assertions. The assertions are defined in the node and can
@@ -253,9 +279,9 @@ public class ArchetypeService implements IArchetypeService {
             if (logger.isDebugEnabled()) {
                 logger.debug("Attempting to process records in " + afile);
             }
-
             records = (Archetypes)Archetypes.unmarshal(
-                    new InputStreamReader(this.getClass().getClassLoader()
+                    new InputStreamReader(Thread.currentThread()
+                            .getContextClassLoader()
                             .getResourceAsStream(afile)));
         } catch (Exception exception) {
             throw new ArchetypeServiceException(

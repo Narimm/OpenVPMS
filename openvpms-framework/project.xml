@@ -436,6 +436,12 @@
           <include>hibernate.properties</include>
         </includes>
       </resource>
+      <resource>
+        <directory>${basedir}/src/archetypes</directory>
+        <includes>
+          <include>**/*.adl</include>
+        </includes>
+      </resource>
     </resources>
   </build>
 
