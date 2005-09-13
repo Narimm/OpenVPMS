@@ -1,0 +1,33 @@
+<body jwcid="$content$">
+<span jwcid="@Border">
+
+    
+<span jwcid="@ovpms:ContentBox" header="Party Manager" >    
+
+    <span jwcid="@Conditional" condition="ognl:isLoggedIn">
+        Someone is logged in. (<span jwcid="@Insert" value="ognl:userName"/>)<br>
+    </span>
+    
+    <span jwcid="@Conditional" condition="ognl:isAnonymous">
+           This is an anonymous Access.<br>
+    </span>
+    
+    <span jwcid="@Conditional" condition="ognl:userHasRole('admin')">
+        User is in admin role.<br>
+    </span>
+    <span jwcid="@Conditional" condition="ognl:!userHasRole('admin')">
+        User is _not_ in admin role.<br>
+    </span>
+    
+    <span jwcid="@Conditional" condition="ognl:userHasAnyRole('admin,manager,user')">
+        userHasAnyRole('admin,manager,user')  <br>
+    </span>
+
+    <span jwcid="@Conditional" condition="ognl:userHasAllRoles('manager,user')">
+        userHasAllRoles('manager,user')  <br>
+    </span>
+    
+</span>
+    
+</span>
+</body>

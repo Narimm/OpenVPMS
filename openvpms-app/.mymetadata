@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="openvpms-app"
+  id="myeclipse.1125632237553"
+  context-root="/openvpms"
+  j2ee-spec="1.4"
+  archive="openvpms-app.war">
+  <attributes>
+    <attribute name="webrootdir" value="context" />
+  </attributes>
+</project-module>
+

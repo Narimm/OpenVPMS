@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" 
+    "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- **************************************************************************
+  *   
+  *    Acegi Security applicationContext.
+  *    
+  *    Holds all security related configurations.
+  *
+  *    $Id: applicationContext-security.xml,v 1.5 2005/05/04 21:31:34 andyman232323 Exp $
+  *
+  *  **************************************************************************
+ -->
+
+<beans>
+
+   <!-- ======================== FILTER CHAIN ======================= -->
+
+	<!--  If you wish to use channel security, add "channelProcessingFilter," in front
+	      of "httpSessionContextIntegrationFilter" in the list below.
+	      The order of the filters is important, see Acegi reference for more 
+	      information   -->
+	<!--  httpSessionContextIntegrationFilter,authenticationProcessingFilter,basicProcessingFilter,rememberMeProcessingFilter,anonymousProcessingFilter,securityEnforcementFilter -->
+	<bean id="filterChainProxy" class="net.sf.acegisecurity.util.FilterChainProxy">
+      <property name="filterInvocationDefinitionSource">
+         <value>
+		    CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+		    PATTERN_TYPE_APACHE_ANT
+            /**=httpSessionContextIntegrationFilter,authenticationProcessingFilter,anonymousProcessingFilter,securityEnforcementFilter
+         </value>
+      </property>
+    </bean>
+
+   <!-- ======================== AUTHENTICATION ======================= -->
+
+   <!-- 1. step: create an authentificationManager
+        The authentificationManager's job is to coordinate the process of determing
+        a user's identity. ProviderManager is a concrete implemetation provided by 
+        Acegi security. The authenticationManager delegates the job of identifying 
+        the user to one or more authentificationProviders.
+    -->
+   <bean id="authenticationManager" class="net.sf.acegisecurity.providers.ProviderManager">
+      <property name="providers">
+         <list>
+            <ref local="daoAuthenticationProvider"/>
+            <ref local="anonymousAuthenticationProvider"/>
+             <!--  <ref local="rememberMeAuthenticationProvider"/> -->
+         </list>
+      </property>
+   </bean>
+
+
+    
+    
+    <!-- Using an password encoder is always a good idea, but all authentification sources
+         (the DAOs) must support this.
+    <bean id="passwordEncoder" class="net.sf.acegisecurity.providers.encoding.Md5PasswordEncoder"/>
+    -->
+
+
+    <!-- 2. step: configure each of the authentication providers that the 
+                  authenticationManager expects.
+                  There are several AuthentificationProvider types to choose from.
+                  See the Authentification provider as a subordinate
+                  of ProviderManager 
+    -->
+    <bean id="daoAuthenticationProvider" 
+         class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
+         <property name="authenticationDao">
+              <ref bean="authenticationDao"/>
+         </property>
+    </bean>   
+
+    
+   <!-- example of an JDBC authentication provider
+    <bean id="jdbcDaoImpl" class="net.sf.acegisecurity.providers.dao.jdbc.JdbcDaoImpl">
+       <property name="dataSource"><ref bean="dataSource"/></property>
+    </bean>
+ 
+    <bean id="daoAuthenticationProvider" class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
+       <property name="authenticationDao"><ref local="jdbcDaoImpl"/></property>
+       <property name="userCache"><ref local="userCache"/></property>
+       <property name="passwordEncoder"><ref local="passwordEncoder"/></property>
+    </bean>
+    -->
+
+    <!-- while developing, an InMemoryProvider should be sufficient;
+         in production, this  is most often not an apropriate option 
+    -->
+    <bean id="authenticationDao" 
+        class="net.sf.acegisecurity.providers.dao.memory.InMemoryDaoImpl">
+		<property name="userMap">
+			<value>
+				admin=admin,ROLE_ADMIN,ROLE_MANAGER,ROLE_USER
+				user=user,ROLE_USER
+				badguy=badguy,disabled,ROLE_MANAGER,ROLE_USER
+			</value>
+		</property>
+	</bean>
+
+
+   <!-- User objects should not be retrieved from the authentication source
+        on each request. Therefore a caching strategy is necessary.
+        Acegi supports EHCache out of the box, so that one should be easy
+   -->
+   <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"/>
+    
+   <bean id="userCacheBackend" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+      <property name="cacheManager">
+         <ref local="cacheManager"/>
+      </property>
+      <property name="cacheName">
+         <value>userCache</value>
+      </property>
+   </bean>
+   
+   <bean id="userCache" class="net.sf.acegisecurity.providers.dao.cache.EhCacheBasedUserCache">
+      <property name="cache"><ref local="userCacheBackend"/></property>
+   </bean>
+
+
+   <!-- Automatically receives AuthenticationEvent messages from DaoAuthenticationProvider -->
+   <bean id="loggerListener" class="net.sf.acegisecurity.providers.dao.event.LoggerListener"/>
+
+   <!-- basic authentication is Http standard mechanism, but form based auth is looking
+        nicer!
+   <bean id="basicProcessingFilter" class="net.sf.acegisecurity.ui.basicauth.BasicProcessingFilter">
+      <property name="authenticationManager"><ref local="authenticationManager"/></property>
+      <property name="authenticationEntryPoint"><ref local="basicProcessingFilterEntryPoint"/></property>
+   </bean>
+
+   <bean id="basicProcessingFilterEntryPoint" class="net.sf.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint">
+      <property name="realmName"><value>Contacts Realm</value></property>
+   </bean>
+   -->
+
+   <!-- As of Acegi version 0.8.1 an AnonymousAuthenticationProvider was included.
+        It sets a default principal and privileges for all unauthorized requests. 
+   -->
+   <bean id="anonymousAuthenticationProvider" class="net.sf.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider">
+      <property name="key"><value>foobar</value></property>
+   </bean>
+   <bean id="anonymousProcessingFilter" class="net.sf.acegisecurity.providers.anonymous.AnonymousProcessingFilter">
+      <property name="key"><value>foobar</value></property>
+      <property name="userAttribute"><value>anonymousUser,ROLE_ANONYMOUS</value></property>
+   </bean>
+   
+   <!--  After a succesful login, userdata needs to be stored in HttpSession.
+         On a subsequent request, Acegi is clever enough to reuse the results of
+         the previous authentication attempt.           
+   -->
+   <bean id="httpSessionContextIntegrationFilter" class="net.sf.acegisecurity.context.HttpSessionContextIntegrationFilter">
+      <property name="context"><value>net.sf.acegisecurity.context.security.SecureContextImpl</value></property>
+   </bean>
+
+   <!--  later 
+   <bean id="rememberMeProcessingFilter" class="net.sf.acegisecurity.ui.rememberme.RememberMeProcessingFilter">
+      <property name="rememberMeServices"><ref local="rememberMeServices"/></property>
+   </bean>
+   -->
+   
+   <!--  later 
+   <bean id="rememberMeServices" class="net.sf.acegisecurity.ui.rememberme.TokenBasedRememberMeServices">
+      <property name="authenticationDao"><ref local="jdbcDaoImpl"/></property>
+      <property name="key"><value>tashRocks</value></property>
+   </bean>
+   -->
+   
+   
+   <!--  later
+   <bean id="rememberMeAuthenticationProvider" class="net.sf.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider">
+      <property name="key"><value>springRocks</value></property>
+   </bean>
+   -->
+   
+    
+   <!-- ===================== HTTP CHANNEL REQUIREMENTS ==================== -->
+
+   <!-- You will need to uncomment the "Acegi Channel Processing Filter"
+        <filter-mapping> in web.xml for the following beans to be used -->
+
+   <bean id="channelProcessingFilter" class="net.sf.acegisecurity.securechannel.ChannelProcessingFilter">
+      <property name="channelDecisionManager"><ref local="channelDecisionManager"/></property>
+      <property name="filterInvocationDefinitionSource">
+         <value>
+			    CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+				\A/secure/.*\Z=REQUIRES_SECURE_CHANNEL
+         </value>
+      </property>
+   </bean>
+
+   <bean id="channelDecisionManager" class="net.sf.acegisecurity.securechannel.ChannelDecisionManagerImpl">
+      <property name="channelProcessors">
+         <list>
+            <ref local="secureChannelProcessor"/>
+            <ref local="insecureChannelProcessor"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="secureChannelProcessor" class="net.sf.acegisecurity.securechannel.SecureChannelProcessor"/>
+   <bean id="insecureChannelProcessor" class="net.sf.acegisecurity.securechannel.InsecureChannelProcessor"/>
+
+   <!-- ===================== HTTP REQUEST SECURITY ==================== -->
+
+   <bean id="securityEnforcementFilter" 
+      class="net.sf.acegisecurity.intercept.web.SecurityEnforcementFilter">
+      <property name="filterSecurityInterceptor"><ref local="filterInvocationInterceptor"/></property>
+      <property name="authenticationEntryPoint"><ref local="authenticationProcessingFilterEntryPoint"/></property>
+   </bean>
+
+   <!-- filter used for form based logins.
+        Make sure, that the login form's action is the same as the one given 
+        in "filterProcessesURL", otherwise authetication will not take place.
+        authenticationProcessingFilter is clever enough to redirect back to 
+        the originally requested protected resource after succesful authentication.
+        In case the user directly came to the login-form a defaultTargetURL is 
+        provided. 
+        Failure-URL: authenticationProcessingFilter redirects back to
+   -->
+   <bean id="authenticationProcessingFilter" 
+      class="net.sf.acegisecurity.ui.webapp.AuthenticationProcessingFilter">
+      <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+      <property name="authenticationFailureUrl"><value>/app?service=page/Login</value></property>
+      <property name="defaultTargetUrl"><value>/app</value></property>
+      <property name="filterProcessesUrl"><value>/j_acegi_security_check</value></property>
+      <!-- <property name="rememberMeServices"><ref local="rememberMeServices"/></property>  -->
+   </bean>
+
+   <!-- define an entry point, where authetication should begin, in case of
+        an unprivilleged attempt -->
+   <bean id="authenticationProcessingFilterEntryPoint" 
+       class="net.sf.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint">
+       <property name="loginFormUrl"><value>/app?service=page/Login</value></property>
+       <property name="forceHttps"><value>false</value></property>
+   </bean>
+   
+
+   <!-- A decisionManager is the instance that decides, wether access to a 
+        secured resource should be granted or not. It does not decide that
+        on it's own, but instead it utilizes one or more decisionVoters and
+        decides upon their votes.
+        Acegi comes with three implementations of a decisionManager:
+          - AffirmativeBased
+          - ConsensusBased
+          - UnanimousBased
+        It may happen that all voters abstain. In this case the decisionManager
+        makes it's decision depending on the allowIfAllAbstainDecisions policy
+        defined here.
+   -->
+   <bean id="httpRequestAccessDecisionManager" 
+      class="net.sf.acegisecurity.vote.AffirmativeBased">
+      <property name="allowIfAllAbstainDecisions"><value>false</value></property>
+      <property name="decisionVoters">
+         <list>
+            <ref bean="roleVoter"/>
+         </list>
+      </property>
+   </bean>
+
+
+   <!-- 
+   
+        Note the order that entries are placed against the objectDefinitionSource is critical.
+        The FilterSecurityInterceptor will work from the top of the list down to the FIRST pattern that matches the request URL.
+        Accordingly, you should place MOST SPECIFIC (ie a/b/c/d.*) expressions first, with LEAST SPECIFIC (ie a/.*) expressions last 
+        
+        It is important that the login page is visible ANONYMOUS (the first rule).
+        All app pages and services are protected (the second rule).
+        All images, css, scripts are not protected in this configuration (third rule)
+
+   -->
+   <bean id="filterInvocationInterceptor" 
+      class="net.sf.acegisecurity.intercept.web.FilterSecurityInterceptor">
+      <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+      <property name="accessDecisionManager"><ref local="httpRequestAccessDecisionManager"/></property>
+      <property name="objectDefinitionSource">
+        <value>
+	      CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+		  PATTERN_TYPE_APACHE_ANT
+		  /app?service?page/login=ROLE_ANONYMOUS
+		  /app?service?page/**=ROLE_ADMIN,ROLE_MANAGER,ROLE_USER
+		  /app**=ROLE_ADMIN,ROLE_MANAGER,ROLE_USER
+          /**=ROLE_ANONYMOUS,ROLE_ADMIN,ROLE_MANAGER,ROLE_USER
+        </value>
+      </property>
+   </bean>
+   
+   
+    <!-- An access decision voter that reads ROLE_* configuaration settings   
+    -->
+    <bean id="roleVoter" class="net.sf.acegisecurity.vote.RoleVoter"/> 
+   
+   
+
+</beans>
