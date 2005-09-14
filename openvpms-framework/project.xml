@@ -440,6 +440,7 @@
         <directory>${basedir}/src/archetypes</directory>
         <includes>
           <include>**/*.adl</include>
+          <include>**/*.xml</include>
         </includes>
       </resource>
     </resources>

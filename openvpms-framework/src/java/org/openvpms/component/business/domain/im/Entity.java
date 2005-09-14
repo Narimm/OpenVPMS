@@ -56,7 +56,7 @@ public class Entity extends IMObject {
      * {@link Entity} can belong to zero, one or more {@link Classification}
      * 
      */
-    private Set<EntityClassification> entityClassifications;
+    private Set<EntityClassification> classifications;
     
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
@@ -106,7 +106,7 @@ public class Entity extends IMObject {
         super(uid, archetypeId, name);
         this.description = description;
         this.identities = new HashSet<EntityIdentity>();
-        this.entityClassifications = new HashSet<EntityClassification>();
+        this.classifications = new HashSet<EntityClassification>();
         this.participations = new HashSet<Participation>();
         this.sourceRelationships = new HashSet<EntityRelationship>();
         this.targetRelationships = new HashSet<EntityRelationship>();
@@ -259,7 +259,7 @@ public class Entity extends IMObject {
      */
     public void addEntityClassification(EntityClassification entityClass) {
         entityClass.setEntity(this);
-        this.entityClassifications.add(entityClass);
+        this.classifications.add(entityClass);
     }
     
     /**
@@ -270,7 +270,7 @@ public class Entity extends IMObject {
      */
     public void removeEntityClassification(EntityClassification entityClass) {
         entityClass.setEntity(null);
-        this.entityClassifications.remove(entityClass);
+        this.classifications.remove(entityClass);
     }
     
     /**
@@ -279,9 +279,9 @@ public class Entity extends IMObject {
      * 
      * @return EntityClassification[]
      */
-    public EntityClassification[] getEntityClassifications() {
-        return (EntityClassification[])entityClassifications.toArray(
-                new EntityClassification[entityClassifications.size()]);
+    public EntityClassification[] getClassifications() {
+        return (EntityClassification[])classifications.toArray(
+                new EntityClassification[classifications.size()]);
     }
     
     /**

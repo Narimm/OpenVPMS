@@ -1,7 +1,42 @@
 <archetypes>
-  <archetype shortName="address.location"
-    archetypeNamespace="org.openvpms.archetype.address"
-    archetypeName="location" version="1.0"
-    imClass="org.openvpms.component.business.domain.im.party.Address">
-  </archetype>
+	<archetype shortName="address.location"
+		archetypeNamespace="org.openvpms.archetype.address"
+		archetypeName="location" version="1.0"
+		imClass="org.openvpms.component.business.domain.im.party.Address">
+		<node name="deails" path="/details"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="address" path="/details/address"
+				type="java.lang.String" minCardinality="1" />
+			<node name="suburb" path="/details/suburb"
+				type="java.lang.String">
+				<assertion type="refDataAssertion">
+					<property name="type" value="openvpms.suburb" />
+					<property name="state" value="/details/state" />
+				</assertion>
+			</node>
+			<node name="postcode" path="/details/postcode"
+				type="java.lang.String">
+				<assertion type="refDataAssertion">
+					<property name="override" value="true" />
+					<property name="type" value="openvpms.postcode" />
+					<property name="suburb" value="/details/suburb" />
+					<property name="state" value="/details/state" />
+				</assertion>
+			</node>
+			<node name="state" path="/details/state"
+				type="java.lang.String" defaultValue="Victoria" minCardinality="1">
+				<assertion type="refDataAssertion">
+					<property name="type" value="openvpms.state" />
+					<property name="country" value="/details/country" />
+				</assertion>
+			</node>
+			<node name="country" path="/details/country"
+				type="java.lang.String" defaultValue="Australia" minCardinality="1">
+				<assertion type="refDataAssertion">
+					<property name="type" value="openvpms.country" />
+				</assertion>
+			</node>
+		</node>
+	</archetype>
 </archetypes>

@@ -27,12 +27,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
  * This is the base exception thrown by the objects of type
- * {@link IArchetypeService} 
+ * {@link org.openvpms.component.business.service.archetype.AssertionTypeRecord} 
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeServiceException extends RuntimeException implements
+public class AssertionException extends RuntimeException implements
         OpenVPMSException {
 
     /**
@@ -44,21 +44,11 @@ public class ArchetypeServiceException extends RuntimeException implements
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        InvalidArchetypeDefDir,
-        FailedToLoadClass,
-        NoArchetypeDefinition,
-        FailedToInitializeRegistry,
-        FailedToCreateArchetype,
-        InvalidFile,
-        InvalidDir,
-        NoFileSpecified,
-        NoDirSpecified,
-        ArchetypeAlreadyDefined,
-        InvalidIMClass,
-        FailedToCreateObject,
-        NoAssertionTypeFileSpecified,
-        InvalidAssertionFile,
-        InvalidAssertionSpecified
+        NoAssertionTypeSpecified,
+        FailedtoApplyAssertion,
+        NoClassOrMethodSpecified,
+        FailedToLocateMethod,
+        FailedToApplyAssertion
     }
 
     /**
@@ -81,7 +71,7 @@ public class ArchetypeServiceException extends RuntimeException implements
      * @param errorCode
      *            the error code
      */
-    public ArchetypeServiceException(ErrorCode errorCode) {
+    public AssertionException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -96,7 +86,7 @@ public class ArchetypeServiceException extends RuntimeException implements
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public ArchetypeServiceException(ErrorCode errorCode, Object[] params) {
+    public AssertionException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -110,7 +100,7 @@ public class ArchetypeServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public ArchetypeServiceException(ErrorCode errorCode, Throwable cause) {
+    public AssertionException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -127,7 +117,7 @@ public class ArchetypeServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public ArchetypeServiceException(ErrorCode errorCode, Object[] params,
+    public AssertionException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

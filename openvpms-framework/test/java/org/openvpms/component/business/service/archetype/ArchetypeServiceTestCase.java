@@ -66,8 +66,10 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testCreationWithNullFileName() 
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testCreationWithNullFileName", "normal", "assertionFile");
         try {
-            new ArchetypeService(null, null);
+            new ArchetypeService(null, null, assertionFile);
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.NoFileSpecified);
@@ -79,8 +81,11 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testCreationWithInvalidFileName() 
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testCreationWithInvalidFileName", "normal", "assertionFile");
         try {
-            new ArchetypeService(createUUIDGenerator(),"file-does-not-exist");
+            new ArchetypeService(createUUIDGenerator(),"file-does-not-exist", 
+                    assertionFile);
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.InvalidFile);
@@ -92,11 +97,14 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testCreationWithValidFileContent()
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testCreationWithValidFileContent", "valid-files", "assertionFile");
         Vector testData = (Vector)this.getTestData().getTestCaseParameter(
                 "testCreationWithValidFileContent", "valid-files", "files");
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
-            new ArchetypeService(createUUIDGenerator(),(String)iter.next());
+            new ArchetypeService(createUUIDGenerator(),(String)iter.next(),
+                    assertionFile);
         }
     }
     
@@ -105,12 +113,15 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testCreationWithInvalidFileContent()
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testCreationWithInvalidFileContent", "invalid-files", "assertionFile");
         Vector testData = (Vector)this.getTestData().getTestCaseParameter(
                 "testCreationWithInvalidFileContent", "invalid-files", "files");
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
             try {
-                new ArchetypeService(createUUIDGenerator(), (String)iter.next());
+                new ArchetypeService(createUUIDGenerator(), (String)iter.next(), 
+                        assertionFile);
             } catch (ArchetypeServiceException exception) {
                 assertTrue(exception.getErrorCode() == 
                     ArchetypeServiceException.ErrorCode.InvalidFile);
@@ -123,13 +134,15 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testValidEntryRetrieval()
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testValidEntryRetrieval", "valid-retrieval", "assertionFile");
         String validFile = (String)this.getTestData().getTestCaseParameter(
                 "testValidEntryRetrieval", "valid-retrieval", "file");
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testValidEntryRetrieval", "valid-retrieval", "archetypes");
         
         ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
-                validFile);
+                validFile, assertionFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             ArchetypeRecord record = registry.getArchetypeRecord((String)iter.next());
@@ -145,13 +158,15 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testInvalidEntryRetrieval()
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testInvalidEntryRetrieval", "invalid-retrieval", "assertionFile");
         String validFile = (String)this.getTestData().getTestCaseParameter(
                 "testInvalidEntryRetrieval", "invalid-retrieval", "file");
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testInvalidEntryRetrieval", "invalid-retrieval", "archetypes");
         
         ArchetypeService registry = new ArchetypeService(createUUIDGenerator(), 
-                validFile);
+                validFile, assertionFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             assertTrue(registry.getArchetypeRecord((String)iter.next()) == null);
@@ -165,6 +180,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testLoadingArchetypesFromDir()
     throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "assertionFile");
         String dir = (String)this.getTestData().getTestCaseParameter(
                 "testLoadingArchetypesFromDir", "normal", "dir");
         String extension = (String)this.getTestData().getTestCaseParameter(
@@ -174,7 +191,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 .intValue();
         
         ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
-                dir, new String[]{extension});
+                dir, new String[]{extension}, assertionFile);
         assertTrue(registry.getArchetypeRecords().length == recordCount1);
     }
     
@@ -189,7 +206,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         
         ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
                 (String)params.get("dir"), 
-                new String[]{(String)params.get("extension")});
+                new String[]{(String)params.get("extension")},
+                (String)params.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
         assertTrue(registry.getArchetypeRecords("entityRelationship\\..*").length 

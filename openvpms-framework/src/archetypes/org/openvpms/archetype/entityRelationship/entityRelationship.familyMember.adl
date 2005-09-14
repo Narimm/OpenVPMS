@@ -1,7 +1,33 @@
 <archetypes>
-  <archetype shortName="entityRelationship.familyMember"
-    archetypeNamespace="org.openvpms.archetype.entityRelationship"
-    archetypeName="familyMember" version="1.0"
-    imClass="org.openvpms.component.business.domain.im.EntityRelationship">
-  </archetype>
+	<archetype shortName="entityRelationship.familyMember"
+		archetypeNamespace="org.openvpms.archetype.entityRelationship"
+		archetypeName="familyMember" version="1.0"
+		imClass="org.openvpms.component.business.domain.im.EntityRelationship">
+		<node name="sequence" path="/sequence" type="java.lang.Integer"
+			minCardinality="1" />
+		<node name="reason" path="/reason" type="java.lang.String" />
+		<node name="period" path="/period"
+			type="org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval"
+			minCardinality="1">
+			<node name="startPeriod" path="/period/lower"
+				defaultValue="now()" minCardinality="1"
+				type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime" />
+		</node>
+		<node name="source" path="/sourceEntity"
+			type="org.openvpms.component.business.domain.im.Entity">
+			<assertion type="archeTypeRangeAssertion">
+				<propertyArray name="archetypes">
+					<arrayElement value="person.person" />
+				</propertyArray>
+			</assertion>
+		</node>
+		<node name="target" path="/targetEntity"
+			type="org.openvpms.component.business.domain.im.Entity">
+			<assertion type="archeTypeRangeAssertion">
+				<propertyArray name="archetypes">
+					<arrayElement value="person.person" />
+				</propertyArray>
+			</assertion>
+		</node>
+	</archetype>
 </archetypes>

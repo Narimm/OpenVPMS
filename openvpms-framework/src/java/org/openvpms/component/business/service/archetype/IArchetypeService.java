@@ -114,4 +114,22 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException            
      */
     public ArchetypeRecord[] getArchetypeRecords(String shortName);
+    
+    /**
+     * Return the {@link AssertionTypeRecord} with the specified name.
+     * 
+     * @param name
+     *            the name of the assertion type
+     * @return AssertionTypeRecord
+     * @throws ArchetypeServiceException            
+     */
+    public AssertionTypeRecord getAssertionTypeRecord(String name);
+    
+    /**
+     * Return all the {@link AssertionTypeRecord} instances supported by this
+     * service
+     * 
+     * @return AssertionTypeRecord[]
+     */
+    public AssertionTypeRecord[] getAssertionTypeRecords();
 }

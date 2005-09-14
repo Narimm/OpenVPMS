@@ -1,85 +1,137 @@
 <?xml version ="1.0" encoding = "UTF-8"?>
 <tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <params>
-  </params>
-  
+  <params></params>
+
   <class name="ArchetypeServiceTestCase">
-    <!-- Data for the testCreationWithValidFileContent method -->
-  	<method name="testCreationWithValidFileContent" test-case="valid-files">
-  		<params>
-  			<param name="files" type="java.util.Vector" value-type="java.lang.String">
-  				<param>org/openvpms/component/business/service/archetype/valid-archetype-file-1.xml</param>
-  				<param>org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml</param>
-  				<param>org/openvpms/component/business/service/archetype/valid-archetype-file-3.xml</param>
-  			</param>
-  		</params>
-  	</method>
+    <!-- Data for the testCreationWithNullFileName method -->
+    <method name="testCreationWithNullFileName" test-case="normal">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+      </params>
+    </method>
+
+    <!-- Data for the testCreationWithInvalidFileName method -->
+    <method name="testCreationWithInvalidFileName" test-case="normal">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+      </params>
+    </method>
 
     <!-- Data for the testCreationWithValidFileContent method -->
-  	<method name="testCreationWithInvalidFileContent" test-case="invalid-files">
-  		<params>
-  			<param name="files" type="java.util.Vector" value-type="java.lang.String">
-  				<param>org/openvpms/component/business/service/archetype/invalid-archetype-file-1.xml</param>
-  				<param>org/openvpms/component/business/service/archetype/invalid-archetype-file-2.xml</param>
-  				<param>org/openvpms/component/business/service/archetype/invalid-archetype-file-3.xml</param>
-  			</param>
-  		</params>
-  	</method>
+    <method name="testCreationWithValidFileContent" test-case="valid-files">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+        <param name="files" type="java.util.Vector"
+          value-type="java.lang.String">
+          <param>
+            org/openvpms/component/business/service/archetype/valid-archetype-file-1.xml
+          </param>
+          <param>
+            org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
+          </param>
+          <param>
+            org/openvpms/component/business/service/archetype/valid-archetype-file-3.xml
+          </param>
+        </param>
+      </params>
+    </method>
+
+    <!-- Data for the testCreationWithValidFileContent method -->
+    <method name="testCreationWithInvalidFileContent"
+      test-case="invalid-files">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+        <param name="files" type="java.util.Vector"
+          value-type="java.lang.String">
+          <param>
+            org/openvpms/component/business/service/archetype/invalid-archetype-file-1.xml
+          </param>
+          <param>
+            org/openvpms/component/business/service/archetype/invalid-archetype-file-2.xml
+          </param>
+          <param>
+            org/openvpms/component/business/service/archetype/invalid-archetype-file-3.xml
+          </param>
+        </param>
+      </params>
+    </method>
 
     <!-- Data for the testValidEntryRetrieval method -->
-  	<method name="testValidEntryRetrieval" test-case="valid-retrieval">
-  		<params>
-  			<param name="file" type="java.lang.String">
-  				org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
-  			</param>	
-  			<param name="archetypes" type="java.util.Vector" value-type="java.lang.String">
-  				<param>party.customer</param>
-  				<param>party.animal</param>
-  				<param>party.supplier</param>
-  				<param>party.administrator</param>
-  			</param>
-  		</params>
-  	</method>
+    <method name="testValidEntryRetrieval" test-case="valid-retrieval">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+        <param name="file" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
+        </param>
+        <param name="archetypes" type="java.util.Vector"
+          value-type="java.lang.String">
+          <param>party.customer</param>
+          <param>party.animal</param>
+          <param>party.supplier</param>
+          <param>party.administrator</param>
+        </param>
+      </params>
+    </method>
 
     <!-- Data for the testInvalidEntryRetrieval method -->
-  	<method name="testInvalidEntryRetrieval" test-case="invalid-retrieval">
-  		<params>
-  			<param name="file" type="java.lang.String">
-  				org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
-  			</param>	
-  			<param name="archetypes" type="java.util.Vector" value-type="java.lang.String">
-  				<param>party1.customer</param>
-  				<param>party1.animal</param>
-  				<param>party1.supplier</param>
-  				<param>party1.administrator</param>
-  			</param>
-  		</params>
-  	</method>
-  	
-  	<!--  Data for the testLoadingArchetypesFromDir method -->
-  	<method name="testLoadingArchetypesFromDir" test-case="normal">
-  		<params>
-  			<param name="dir" type="java.lang.String">
-  				target/classes/org/openvpms/archetype
-  			</param>
-  			<param name="extension" type="java.lang.String">adl</param>	
-  			<param name="recordCount1" type="java.lang.Integer">8</param>	
-  		</params>
-  	</method>
-  	
-  	<!--  Data for the testRetrievalThroughRegularExpression method -->
-  	<method name="testRetrievalThroughRegularExpression" test-case="normal">
-  		<params>
-  			<param name="dir" type="java.lang.String">
-  				target/classes/org/openvpms/archetype
-  			</param>
-  			<param name="extension" type="java.lang.String">adl</param>	
-  			<param name="recordCount1" type="java.lang.Integer">3</param>	
-  			<param name="recordCount2" type="java.lang.Integer">3</param>	
-  			<param name="recordCount3" type="java.lang.Integer">1</param>	
-  			<param name="recordCount4" type="java.lang.Integer">1</param>	
-  		</params>
-  	</method>
+    <method name="testInvalidEntryRetrieval" test-case="invalid-retrieval">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+        <param name="file" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-archetype-file-2.xml
+        </param>
+        <param name="archetypes" type="java.util.Vector"
+          value-type="java.lang.String">
+          <param>party1.customer</param>
+          <param>party1.animal</param>
+          <param>party1.supplier</param>
+          <param>party1.administrator</param>
+        </param>
+      </params>
+    </method>
+
+    <!--  Data for the testLoadingArchetypesFromDir method -->
+    <method name="testLoadingArchetypesFromDir" test-case="normal">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+        <param name="dir" type="java.lang.String">
+          target/classes/org/openvpms/archetype
+        </param>
+        <param name="extension" type="java.lang.String">adl</param>
+        <param name="recordCount1" type="java.lang.Integer">8</param>
+      </params>
+    </method>
+
+    <!--  Data for the testRetrievalThroughRegularExpression method -->
+    <method name="testRetrievalThroughRegularExpression" test-case="normal">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/archetype/assertionTypes.xml
+        </param>
+        <param name="dir" type="java.lang.String">
+          target/classes/org/openvpms/archetype
+        </param>
+        <param name="extension" type="java.lang.String">adl</param>
+        <param name="recordCount1" type="java.lang.Integer">3</param>
+        <param name="recordCount2" type="java.lang.Integer">3</param>
+        <param name="recordCount3" type="java.lang.Integer">1</param>
+        <param name="recordCount4" type="java.lang.Integer">1</param>
+      </params>
+    </method>
   </class>
 </tests>
 

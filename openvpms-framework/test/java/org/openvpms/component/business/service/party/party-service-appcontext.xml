@@ -4,12 +4,11 @@
 
 <beans>
   <!--  Property configuration -->
-  <bean id="proprss"
+  <bean id="props"
     class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     <property name="locations">
       <list>
         <value>classpath:hibernate.properties</value>
-        <value>classpath:openvpms.test.properties</value>
       </list>
     </property>
   </bean>
@@ -78,6 +77,8 @@
         <value>adl</value>
       </list>
     </constructor-arg>
+    <constructor-arg index="3"
+      value="org/openvpms/archetype/assertionTypes.xml" />
   </bean>
 
   <!--  The Party DAO bean -->

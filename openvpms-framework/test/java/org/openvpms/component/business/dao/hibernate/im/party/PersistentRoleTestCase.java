@@ -398,7 +398,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // check that the role now has zero entity relationships
             session.flush();
             role = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role.getEntityClassifications().length == 1);
+            assertTrue(role.getClassifications().length == 1);
             assertTrue(role.getSourceEntityRelationships().length == 1);
         } catch (Exception exception) {
             if (tx != null) {
@@ -454,10 +454,10 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // do some checks
             session.flush();
             role = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role.getEntityClassifications().length == eccount);
+            assertTrue(role.getClassifications().length == eccount);
 
             tx = session.beginTransaction();
-            EntityClassification eclass = role.getEntityClassifications()[0];
+            EntityClassification eclass = role.getClassifications()[0];
             role.removeEntityClassification(eclass);
             session.delete(eclass);
             tx.commit();
@@ -466,7 +466,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "entityClassification");
             assertTrue(eclassCount1 == (eclassCount + eccount - 1));
             role = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role.getEntityClassifications().length == (eccount - 1));
+            assertTrue(role.getClassifications().length == (eccount - 1));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();

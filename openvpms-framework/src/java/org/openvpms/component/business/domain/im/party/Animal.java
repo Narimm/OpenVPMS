@@ -71,6 +71,11 @@ public class Animal extends Actor {
      * Date of birth
      */
     private DvDateTime dateOfBirth;
+    
+    /**
+     * The primary name of the animal
+     */
+    private String primaryName;
 
     
     /**
@@ -192,5 +197,19 @@ public class Animal extends Actor {
      */
     public void setSpecies(String species) {
         this.species = species;
+    }
+
+    /**
+     * @return Returns the primaryName.
+     */
+    public String getPrimaryName() {
+        return primaryName;
+    }
+
+    /**
+     * @param primaryName The primaryName to set.
+     */
+    public void setPrimaryName(String primaryName) {
+        this.primaryName = primaryName;
     }
 }

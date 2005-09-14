@@ -1,7 +1,54 @@
 <archetypes>
-  <archetype shortName="animal.animal"
-    archetypeNamespace="org.openvpms.archetype.animal"
-    archetypeName="animal" version="1.0"
-    imClass="org.openvpms.component.business.domain.im.party.Animal">
-  </archetype>
+	<archetype shortName="animal.animal"
+		archetypeNamespace="org.openvpms.archetype.animal"
+		archetypeName="animal" version="1.0"
+		imClass="org.openvpms.component.business.domain.im.party.Animal">
+		<node name="species" path="/species" type="java.lang.Integer"
+			minCardinality="1">
+			<assertion type="refDataAssertion">
+				<property name="type" value="openvpms.animal.species" />
+			</assertion>
+		</node>
+		<node name="breed" path="/breed" type="java.lang.String">
+			<assertion type="refDataAssertion">
+				<property name="type" value="openvpms.animal.breed" />
+				<property name="species" value="/species" />
+			</assertion>
+		</node>
+		<node name="colour" path="/colour" type="java.lang.String">
+			<assertion type="refDataAssertion">
+				<property name="type" value="openvpms.animal.colour" />
+				<property name="species" value="/species" />
+				<property name="breed" value="/breed" />
+			</assertion>
+		</node>
+		<node name="sex" path="/sex" type="java.lang.String">
+			<assertion type="localDataAssertion">
+				<property name="override" value="true" />
+				<propertyMap name="entries">
+					<mapElement key="male" value="male" />
+					<mapElement key="female" value="female" />
+					<mapElement key="unspecified" value="unspecified" />
+				</propertyMap>
+			</assertion>
+		</node>
+		<node name="desexed" path="/desexed" type="java.lang.Boolean" defaultValue="No" />
+		<node name="dateOfBirth" path="/dateOfBirth"
+			type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime"
+			minCardinality="1" />
+		<node name="primaryName" path="/primaryName"
+			type="java.lang.String" minCardinality="1" />
+		<node name="identities" path="/identities"
+			type="org.openvpms.component.business.domain.im.EntityIdentity">
+			<assertion type="archeTypeRangeAssertion">
+				<propertyArray name="archetypes">
+					<arrayElement value="entityIdentity.animalAlias" />
+				</propertyArray>
+			</assertion>
+		</node>
+		<node name="contacts" path="/contacts"
+			type="org.openvpms.component.business.domain.im.party.Contact"
+			maxCardinality="0" />
+
+	</archetype>
 </archetypes>

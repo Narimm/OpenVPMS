@@ -39,7 +39,7 @@
     <property name="description" column="description" type="string" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-    <set name="entityClassifications" access="field" lazy="true"
+    <set name="classifications" access="field" lazy="true"
       inverse="true">
       <key column="entity_id" />
       <one-to-many
