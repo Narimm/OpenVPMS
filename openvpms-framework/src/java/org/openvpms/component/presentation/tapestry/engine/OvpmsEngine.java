@@ -25,7 +25,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @author andyman
  *  
  */
-public class OpenVpmsEngine extends BaseEngine {
+public class OvpmsEngine extends BaseEngine {
     private static final long serialVersionUID = 3257288032683177524L;
     
     private static Logger log = Logger.getLogger(OpenVpmsEngine.class);

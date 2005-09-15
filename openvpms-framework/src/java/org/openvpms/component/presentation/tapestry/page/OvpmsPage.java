@@ -29,7 +29,7 @@ import org.apache.tapestry.html.BasePage;
  * @author andyman
  *  
  */
-public abstract class OpenVpmsPage extends BasePage {
+public abstract class OvpmsPage extends BasePage {
 
     /**
      * A property to be bound to all pages, used by the ShowMessage component

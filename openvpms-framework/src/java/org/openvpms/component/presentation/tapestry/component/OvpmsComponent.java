@@ -20,14 +20,8 @@ import org.apache.tapestry.BaseComponent;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class OpenvpmsComponent extends BaseComponent
+public class OvpmsComponent extends BaseComponent
 {
     public static String DEFAULT = "Default";
 
-    /**
-     * @param cycle
-     * @param postfix
-     * @param pageName
-     * @return
-     */
 }
