@@ -14,8 +14,7 @@
   </bean>
 
   <!--  The MySQL DataSource -->
-  <bean id="mySQLDataSource"
-    class="org.apache.commons.dbcp.BasicDataSource">
+  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
     <property name="driverClassName"
       value="${hibernate.connection.driver_class}" />
     <property name="url" value="${hibernate.connection.url}" />
@@ -33,15 +32,9 @@
       <props>
         <prop key="hibernate.dialect">${hibernate.dialect}</prop>
         <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-        <prop key="hibernate.c3p0.min_size">
-          ${hibernate.c3p0.min_size}
-        </prop>
-        <prop key="hibernate.c3p0.max_size">
-          ${hibernate.c3p0.max_size}
-        </prop>
-        <prop key="hibernate.c3p0.timeout">
-          ${hibernate.c3p0.timeout}
-        </prop>
+        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
         <prop key="hibernate.c3p0.max_statements">
           ${hibernate.c3p0.max_statements}
         </prop>
@@ -49,9 +42,7 @@
     </property>
     <property name="mappingDirectoryLocations">
       <list>
-        <value>
-          classpath:/org/openvpms/component/business/domain/im
-        </value>
+        <value>classpath:/org/openvpms/component/business/domain/im</value>
       </list>
     </property>
   </bean>
@@ -64,14 +55,21 @@
     </constructor-arg>
   </bean>
 
+  <!--  Need this bean to support database style assertions (i.e. reference data -->
+  <bean id="dbAssertion"
+    class="org.openvpms.component.business.service.archetype.assertion.DatabaseAssertions">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+  
   <!--  The Archetype Service -->
   <bean id="archetypeService"
     class="org.openvpms.component.business.service.archetype.ArchetypeService">
     <constructor-arg index="0">
       <ref bean="uuidService" />
     </constructor-arg>
-    <constructor-arg index="1"
-      value="target/classes/org/openvpms/archetype" />
+    <constructor-arg index="1" value="target/classes/org/openvpms/archetype" />
     <constructor-arg index="2">
       <list>
         <value>adl</value>
@@ -99,4 +97,5 @@
       <ref bean="partyDao" />
     </constructor-arg>
   </bean>
+
 </beans>
