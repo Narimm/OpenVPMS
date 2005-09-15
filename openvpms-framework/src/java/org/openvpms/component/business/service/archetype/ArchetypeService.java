@@ -46,18 +46,15 @@ import org.openvpms.component.business.domain.archetype.Node;
 import org.openvpms.component.business.domain.im.IMObject;
 import org.openvpms.component.system.service.uuid.IUUIDGenerator;
 
-
 /**
  * This basic implementation of an archetype service, which reads in the
- * archetypes from the specified XML document and creates an in memory 
- * registry.
+ * archetypes from the specified XML document and creates an in memory registry.
  * <p>
- * This implementation has the following constraints 
- * 1. All archetype definitions must be deployed in a single directory. 
- *    The name of hte directory is specified on construction 
- * 2. The archetype records must be stored in a single XML document and the 
- *    structure of the document must comply with XML Schema defined in 
- *    <b>archetype.xsd</b>.
+ * This implementation has the following constraints 1. All archetype
+ * definitions must be deployed in a single directory. The name of hte directory
+ * is specified on construction 2. The archetype records must be stored in a
+ * single XML document and the structure of the document must comply with XML
+ * Schema defined in <b>archetype.xsd</b>.
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -70,10 +67,10 @@ public class ArchetypeService implements IArchetypeService {
             .getLogger(ArchetypeService.class);
 
     /**
-     * A reference to the UUIDGenerator, which it uses during the create
-     * process
+     * A reference to the UUIDGenerator, which it uses during the create process
      */
     private IUUIDGenerator uuidGenerator;
+
     /**
      * In memory cache of the archetype definitions keyed on the short name.
      */
@@ -83,12 +80,11 @@ public class ArchetypeService implements IArchetypeService {
      * In memory cache of the archetype definitions keyed on archetype id.
      */
     private Map<ArchetypeId, ArchetypeRecord> archetypesById;
-    
+
     /**
      * Caches the varies assertion types
      */
     private Map<String, AssertionTypeRecord> assertionTypes;
-    
 
     /**
      * Construct an instance of this class by loading and parsing all the
@@ -99,47 +95,44 @@ public class ArchetypeService implements IArchetypeService {
      * a valid path in the classpath.
      * 
      * @param uuidGenerator
-     *            the uuid generator is used to assign ids during objct
-     *            creation        
+     *            the uuid generator is used to assign ids during objct creation
      * @param archeFile
      *            the file that holds all the archetype records.
-     * @param assertFile            
-     *            the file that holds the assertions 
+     * @param assertFile
+     *            the file that holds the assertions
      * @throws ArchetypeServiceException
      *             if it cannot successfully bootstrap the service. This is a
      *             runtime exception
      */
-    public ArchetypeService(IUUIDGenerator uuidGenerator, String archeFile, 
+    public ArchetypeService(IUUIDGenerator uuidGenerator, String archeFile,
             String assertFile) {
         this.uuidGenerator = uuidGenerator;
         this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
         this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
         this.assertionTypes = new HashMap<String, AssertionTypeRecord>();
-        
+
         loadAssertionTypeRecordsFromFile(assertFile);
         loadArchetypeRecordsFromFile(archeFile);
     }
-    
 
     /**
      * Construct the archetype service by loading and parsing all archetype
-     * definitions in the specified directory. Only process files with the 
+     * definitions in the specified directory. Only process files with the
      * specified extensions
      * 
      * @param uuidGenerator
      *            the uuid generator is used to assign ids during object
-     *            creation            
+     *            creation
      * @param archeDir
      *            the directory
-     * @parsm extensions
-     *            only process files with these extensions
-     * @param assertFile            
-     *            the file that holds the assertions 
+     * @parsm extensions only process files with these extensions
+     * @param assertFile
+     *            the file that holds the assertions
      * @throws ArchetypeServiceException
-     *            if there is a problem processing one or more files in the 
-     *            directory                       
+     *             if there is a problem processing one or more files in the
+     *             directory
      */
-    public ArchetypeService(IUUIDGenerator uuidGenerator, String archDir, 
+    public ArchetypeService(IUUIDGenerator uuidGenerator, String archDir,
             String[] extensions, String assertFile) {
         this.uuidGenerator = uuidGenerator;
         this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
@@ -148,7 +141,7 @@ public class ArchetypeService implements IArchetypeService {
 
         loadAssertionTypeRecordsFromFile(assertFile);
         loadArchetypeRecordsInDir(archDir, extensions);
-}
+    }
 
     /*
      * (non-Javadoc)
@@ -159,29 +152,37 @@ public class ArchetypeService implements IArchetypeService {
         return archetypesByShortName.get(name);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecord(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public ArchetypeRecord getArchetypeRecord(ArchetypeId id) {
         return archetypesById.get(id);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecord(java.lang.String)
      */
     public AssertionTypeRecord getAssertionTypeRecord(String name) {
         return assertionTypes.get(name);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecords()
      */
     public AssertionTypeRecord[] getAssertionTypeRecords() {
-        return (AssertionTypeRecord[])assertionTypes.values().toArray(
+        return (AssertionTypeRecord[]) assertionTypes.values().toArray(
                 new AssertionTypeRecord[assertionTypes.size()]);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public Object createDefaultObject(ArchetypeId id) {
@@ -192,7 +193,9 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(java.lang.String)
      */
     public Object createDefaultObject(String name) {
@@ -204,7 +207,9 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.IMObject)
      */
     public boolean validateObject(IMObject object) {
@@ -214,86 +219,120 @@ public class ArchetypeService implements IArchetypeService {
         if (record == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                    new Object[]{object.getArchetypeId().toString()});
+                    new Object[] { object.getArchetypeId().toString() });
         }
-        
-        // if there are nodes attached to the archetype then validate the 
+
+        // if there are nodes attached to the archetype then validate the
         // associated assertions
         boolean result = true;
         if (record.getArchetype().getNodeCount() > 0) {
             JXPathContext context = JXPathContext.newContext(object);
+            context.setLenient(true);
             result = validateObject(context, record.getArchetype().getNode());
         }
-        
+
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords()
      */
     public ArchetypeRecord[] getArchetypeRecords() {
-        return (ArchetypeRecord[])this.archetypesByShortName.values().toArray(
+        return (ArchetypeRecord[]) this.archetypesByShortName.values().toArray(
                 new ArchetypeRecord[this.archetypesByShortName.size()]);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords(java.lang.String)
      */
     public ArchetypeRecord[] getArchetypeRecords(String shortName) {
         List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
-        
+
         for (String name : this.archetypesByShortName.keySet()) {
             if (name.matches(shortName)) {
                 records.add(this.archetypesByShortName.get(name));
             }
         }
-        
-        return (ArchetypeRecord[])records.toArray(
-                new ArchetypeRecord[records.size()]);
+
+        return (ArchetypeRecord[]) records.toArray(new ArchetypeRecord[records
+                .size()]);
     }
 
     /**
      * Iterate through all the nodes and ensure that the object meets all the
-     * specified assertions. The assertions are defined in the node and can
-     * be hierarchical, which means that this method is re-entrant.
+     * specified assertions. The assertions are defined in the node and can be
+     * hierarchical, which means that this method is re-entrant.
      * 
      * @param context
-     *            holds the object to be validated        
+     *            holds the object to be validated
      * @param nodes
      *            assertions are managed by the nodes object
-     * @return boolean
-     *            true if the object is valid; false otherwise
+     * @return boolean true if the object is valid; false otherwise
      */
     private boolean validateObject(JXPathContext context, Node[] nodes) {
         boolean valid = true;
-        
+
         for (Node node : nodes) {
-            for (Assertion assertion : node.getAssertion()) {
-                AssertionTypeRecord assertionType = assertionTypes.get(
-                        assertion.getType());
-                 if (!assertionType.assertTrue(
-                         context.getValue(node.getPath()), assertion)) {
-                    valid = false;
-                    break;
+            Object value = null;
+            try {
+                value = context.getValue(node.getPath());
+            } catch (Exception ignore) {
+                // ignore since context.setLenient doesn't
+                // seem to be working.
+                // TODO Need to sort out a better way since this
+                // can also cause problems
+            }
+
+            // first check the cardinality
+            if ((node.getMinCardinality() == 1) && (value == null)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Validation failed for Node: " +
+                            node.getName() + " min cardinality violated");
+                }
+                
+                valid = false;
+                break;
+            }
+
+            if (value != null) {
+                // only check the assertions for non-null values
+                for (Assertion assertion : node.getAssertion()) {
+                    AssertionTypeRecord assertionType = assertionTypes
+                            .get(assertion.getType());
+    
+                    if (!assertionType.assertTrue(value, assertion)) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Assertion failed for Node: " +
+                                    node.getName() + " and Assertion " +
+                                    assertion.getType());
+                        }
+                        
+                        valid = false;
+                        break;
+                    }
                 }
             }
-            
+
             // if this node has other nodes then re-enter this method
-            if ((node.getNodeCount() > 0) &&
-                !(validateObject(context, node.getNode()))) {
-                // if the object is invalid then ignore the 
-                // rest of the validation and return false.
-                valid = false;
+            if (node.getNodeCount() > 0) {
+                if (!validateObject(context, node.getNode())) {
+                    // if the object is invalid then ignore the
+                    // rest of the validation and return false.
+                    valid = false;
+                }
             }
-            
+
             if (!valid) {
                 break;
             }
         }
-        
+
         return valid;
     }
-
 
     /**
      * Process the archetypes defined in the specified file. Te file must be
@@ -304,21 +343,20 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException
      */
     private void loadArchetypeRecordsFromFile(String afile) {
-        
+
         // check that a non-null file was specified
         if (StringUtils.isEmpty(afile)) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoFileSpecified);
         }
-        
+
         Archetypes records = null;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Attempting to process records in " + afile);
             }
-            records = (Archetypes)Archetypes.unmarshal(
-                    new InputStreamReader(Thread.currentThread()
-                            .getContextClassLoader()
+            records = (Archetypes) Archetypes.unmarshal(new InputStreamReader(
+                    Thread.currentThread().getContextClassLoader()
                             .getResourceAsStream(afile)));
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
@@ -334,14 +372,14 @@ public class ArchetypeService implements IArchetypeService {
 
         loadArchetypeRecords(records);
     }
-    
+
     /**
-     * Load and parse all the archetypes that are defined in the files of the 
-     * speciied directory. Only process files with the nominated extensions. If 
-     * the directory is invalid or if any of the files in the directory are 
+     * Load and parse all the archetypes that are defined in the files of the
+     * speciied directory. Only process files with the nominated extensions. If
+     * the directory is invalid or if any of the files in the directory are
      * invalid throw an exception.
      * <p>
-     * The archetypes will be cached in memory. 
+     * The archetypes will be cached in memory.
      * 
      * @param adir
      *            the directory to search
@@ -350,34 +388,35 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException
      */
     private void loadArchetypeRecordsInDir(String adir, String[] extensions) {
-        
+
         // check that a non-null directory was specified
         if (StringUtils.isEmpty(adir)) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDirSpecified);
         }
-        
+
         // check that a valid directory was specified
         File dir = new File(adir);
         if (!dir.isDirectory()) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.InvalidDir,
-                    new Object[]{ adir });
+                    new Object[] { adir });
         }
-        
+
         // process all the files in the directory, that match the filter
         Collection collection = FileUtils.listFiles(dir, extensions, true);
         Iterator files = collection.iterator();
         while (files.hasNext()) {
-            File file = (File)files.next();
+            File file = (File) files.next();
             Archetypes records = null;
             try {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Attempting to process records in " 
+                    logger.debug("Attempting to process records in "
                             + file.getName());
                 }
 
-                records = (Archetypes)Archetypes.unmarshal(new FileReader(file));
+                records = (Archetypes) Archetypes
+                        .unmarshal(new FileReader(file));
             } catch (Exception exception) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.InvalidFile,
@@ -391,17 +430,15 @@ public class ArchetypeService implements IArchetypeService {
             }
 
             loadArchetypeRecords(records);
-            
+
         }
-            
-        
 
     }
-    
+
     /**
      * Parse the specified file and load all the {@link ArchetypeRecord}
-     * instances in memory. The file must be accessible as a resource through the
-     * class path.
+     * instances in memory. The file must be accessible as a resource through
+     * the class path.
      * <p>
      * If there is a error parsing or loading the entries then the runtime
      * {@link ArchetypeServiceException} is raised.
@@ -412,25 +449,25 @@ public class ArchetypeService implements IArchetypeService {
      */
     private void loadArchetypeRecords(Archetypes records) {
         for (Archetype archetype : records.getArchetype()) {
-            ArchetypeRecord record = new ArchetypeRecord(archetype.getShortName(), 
-                    new ArchetypeId(archetype.getArchetypeNamespace(), 
-                            archetype.getArchetypeName(), archetype.getVersion()), 
-                    archetype.getImClass(), archetype);
-            
+            ArchetypeRecord record = new ArchetypeRecord(archetype
+                    .getShortName(), new ArchetypeId(archetype
+                    .getArchetypeNamespace(), archetype.getArchetypeName(),
+                    archetype.getVersion()), archetype.getImClass(), archetype);
+
             if (logger.isDebugEnabled()) {
-                logger.debug("Processing archetype record " 
+                logger.debug("Processing archetype record "
                         + archetype.getShortName());
             }
-            
+
             try {
                 // if the short name already exists then raise an
                 // exception
                 if (archetypesByShortName.containsKey(record.getShortName())) {
                     throw new ArchetypeServiceException(
                             ArchetypeServiceException.ErrorCode.ArchetypeAlreadyDefined,
-                            new Object[] { record.getShortName()});
+                            new Object[] { record.getShortName() });
                 }
-                
+
                 Thread.currentThread().getContextClassLoader().loadClass(
                         archetype.getImClass());
                 archetypesByShortName.put(record.getShortName(), record);
@@ -444,7 +481,7 @@ public class ArchetypeService implements IArchetypeService {
                         ArchetypeServiceException.ErrorCode.FailedToLoadClass,
                         new Object[] { record.getInfoModelClass() }, excpetion);
             }
-            
+
             // check that the assertions are specified correctly
             if (archetype.getNodeCount() > 0) {
                 checkAssertionsInNode(archetype.getNode());
@@ -453,60 +490,61 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Process all the assertions defined for a specified node. This is 
-     * a re-entrant method.
+     * Process all the assertions defined for a specified node. This is a
+     * re-entrant method.
      * 
      * @param node
      *            the node to process
      * @throws ArchetypeServiceException
-     *            runtime exception that is raised when the             
+     *             runtime exception that is raised when the
      */
     private void checkAssertionsInNode(Node[] nodes) {
         for (Node node : nodes) {
             for (Assertion assertion : node.getAssertion()) {
-               if (!assertionTypes.containsKey(assertion.getType())) {
-                   throw new ArchetypeServiceException(
-                           ArchetypeServiceException.ErrorCode.InvalidAssertionSpecified,
-                           new Object[] {assertion.getType()});
-               }
+                if (!assertionTypes.containsKey(assertion.getType())) {
+                    throw new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.InvalidAssertionSpecified,
+                            new Object[] { assertion.getType() });
+                }
             }
-            
+
             if (node.getNodeCount() > 0) {
                 checkAssertionsInNode(node.getNode());
             }
         }
     }
-    
+
     /**
      * This method will create a default object using the specified archetype
      * record. Fundamentally, it will set the default value when specified and
-     * it will also create an object through a default constructur if a 
+     * it will also create an object through a default constructur if a
      * cardinality constraint is specified.
      * 
      * @param record
      *            the archetype record
      * @return Object
      * @throws ArchetypeServiceException
-     *            if it failed to create the object                       
+     *             if it failed to create the object
      */
     private Object createDefaultObject(ArchetypeRecord record) {
         Object obj = null;
         try {
-            Class domainClass = Class.forName(record.getArchetype().getImClass());
+            Class domainClass = Class.forName(record.getArchetype()
+                    .getImClass());
             obj = domainClass.newInstance();
-            
+
             // the object must be an instance of {@link IMObject}
             if (!(obj instanceof IMObject)) {
                 throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.InvalidIMClass, 
-                        new Object[]{ record.getArchetype().getImClass()}); 
+                        ArchetypeServiceException.ErrorCode.InvalidIMClass,
+                        new Object[] { record.getArchetype().getImClass() });
             }
-            
+
             // cast to imobject and set the archetype and the uuid.
-            IMObject imobj = (IMObject)obj;
+            IMObject imobj = (IMObject) obj;
             imobj.setArchetypeId(record.getArchetypeId());
             imobj.setUid(uuidGenerator.nextId());
-            
+
             // first create a JXPath context and use it to process the nodes
             // in the archetype
             JXPathContext context = JXPathContext.newContext(obj);
@@ -516,20 +554,20 @@ public class ArchetypeService implements IArchetypeService {
             // rethrow as a runtime exception
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToCreateObject,
-                    new Object[]{record.getShortName()}, exception);
+                    new Object[] { record.getShortName() }, exception);
         }
-        
+
         return obj;
     }
 
     /**
-     * Iterate through all the nodes in the archetype definition and create
-     * the default object. 
+     * Iterate through all the nodes in the archetype definition and create the
+     * default object.
      * 
      * @param context
      *            the JXPath
      * @param nodes
-     *            the archetype nodes in the definition            
+     *            the archetype nodes in the definition
      */
     private void createDefaultObject(JXPathContext context, Node[] nodes) {
         for (Node node : nodes) {
@@ -543,18 +581,17 @@ public class ArchetypeService implements IArchetypeService {
             if (node.getDefaultValue() != null) {
                 context.setValue(node.getPath(), node.getDefaultValue());
             }
-            
-            // if this node has children then process them 
+
+            // if this node has children then process them
             // recursively
             if (node.getNodeCount() > 0) {
                 createDefaultObject(context, node.getNode());
             }
         }
     }
-    
+
     /**
-     * Process the file and load all the {@link AssertionTypeRecord}
-     * instances
+     * Process the file and load all the {@link AssertionTypeRecord} instances
      * 
      * @param assertFile
      *            the name of the file holding the assertion types
@@ -565,16 +602,16 @@ public class ArchetypeService implements IArchetypeService {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoAssertionTypeFileSpecified);
         }
-        
+
         AssertionTypes types = null;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Attempting to process file " + assertFile);
             }
-            types = (AssertionTypes)AssertionTypes.unmarshal(
-                    new InputStreamReader(Thread.currentThread()
-                            .getContextClassLoader()
-                            .getResourceAsStream(assertFile)));
+            types = (AssertionTypes) AssertionTypes
+                    .unmarshal(new InputStreamReader(Thread.currentThread()
+                            .getContextClassLoader().getResourceAsStream(
+                                    assertFile)));
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.InvalidAssertionFile,
@@ -588,11 +625,12 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         // process all the records
-        logger.debug("Number of assertion types : " + types.getAssertionTypeCount());
+        logger.debug("Number of assertion types : "
+                + types.getAssertionTypeCount());
         for (AssertionType atype : types.getAssertionType()) {
             AssertionTypeRecord record = new AssertionTypeRecord(atype);
             assertionTypes.put(atype.getName(), record);
-            
+
             if (logger.isDebugEnabled()) {
                 logger.debug("Loaded assertion " + atype.getName());
             }

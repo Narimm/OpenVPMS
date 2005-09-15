@@ -24,7 +24,6 @@
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
 			<assertion type="localDataAssertion">
-				<property name="override" value="true" />
 				<propertyMap name="entries">
 					<mapElement key="male" value="male" />
 					<mapElement key="female" value="female" />

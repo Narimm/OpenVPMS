@@ -114,7 +114,7 @@ public class PartyService implements IPartyService {
         } else {
             throw new PartyServiceException(
                     PartyServiceException.ErrorCode.InvalidPartyObject,
-                    new Object[]{party.toString()});
+                    new Object[]{party, party.getArchetypeId()});
         }
     }
 

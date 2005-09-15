@@ -16,7 +16,7 @@
 		<node name="source" path="/sourceEntity"
 			type="org.openvpms.component.business.domain.im.Entity">
 			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="archetypes">
+				<propertyArray name="shortNames">
 					<arrayElement value="person.person" />
 					<arrayElement value="organization.organization" />
 				</propertyArray>
@@ -25,7 +25,7 @@
 		<node name="target" path="/targetEntity"
 			type="org.openvpms.component.business.domain.im.Entity">
 			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="archetypes">
+				<propertyArray name="shortNames">
 					<arrayElement value="animal.animal" />
 				</propertyArray>
 			</assertion>

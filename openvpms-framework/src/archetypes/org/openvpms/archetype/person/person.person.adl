@@ -31,7 +31,7 @@
 		<node name="classifications" path="/classifications"
 			type="org.openvpms.component.business.domain.im.EntityClassification">
 			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="archetypes">
+				<propertyArray name="shortNames">
 					<arrayElement value="person.person" />
 					<arrayElement value="animal.animal" />
 				</propertyArray>

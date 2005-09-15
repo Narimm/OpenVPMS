@@ -21,8 +21,7 @@ package org.openvpms.component.business.service.party;
 // spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-//openvpms-framework
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.party.Person;
 
 /**
  * 
@@ -73,11 +72,16 @@ public class PartyServiceTestCase extends
     public void testPartyObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
-            Party party = partyService.createParty("person.person");
-            assertTrue(party != null);
+            Person person = (Person)partyService.createParty("person.person");
+            assertTrue(person != null);
+            
+            // set to meet the archetype requirements
+            person.setTitle("Mr");
+            person.setFirstName("jim");
+            person.setLastName("alateras");
             
             // insert the party object
-            partyService.insertParty(party);
+            partyService.insertParty(person);
         }
     }
 
