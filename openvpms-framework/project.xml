@@ -45,15 +45,11 @@
       <unsubscribe>
         http://lists.openvpms.org/mailman/listinfo/developers
       </unsubscribe>
-      <archive>
-        http://lists.openvpms.org/mailman/public/developers/
-      </archive>
+      <archive>http://lists.openvpms.org/mailman/public/developers/</archive>
     </mailingList>
     <mailingList>
       <name>OpenVPMS Users Mailing List</name>
-      <subscribe>
-        http://lists.openvpms.org/mailman/listinfo/users
-      </subscribe>
+      <subscribe>http://lists.openvpms.org/mailman/listinfo/users</subscribe>
       <unsubscribe>
         http://lists.openvpms.org/mailman/listinfo/users
       </unsubscribe>
@@ -67,9 +63,7 @@
       <unsubscribe>
         http://lists.openvpms.org/mailman/listinfo/stakeholders
       </unsubscribe>
-      <archive>
-        http://lists.openvpms.org/mailman/public/stakeholders/
-      </archive>
+      <archive>http://lists.openvpms.org/mailman/public/stakeholders/</archive>
     </mailingList>
   </mailingLists>
 
@@ -350,28 +344,28 @@
       <url>http://jakarta.apache.org/commons/jxpath/</url>
     </dependency>
     <dependency>
-        <groupId>tapestry</groupId>
-        <artifactId>tapestry</artifactId>
-        <version>3.0.3</version>
-        <url>http://jakarta.apache.org/tapestry</url>
+      <groupId>tapestry</groupId>
+      <artifactId>tapestry</artifactId>
+      <version>3.0.3</version>
+      <url>http://jakarta.apache.org/tapestry</url>
     </dependency>
     <dependency>
-        <groupId>acegisecurity</groupId>
-        <artifactId>acegi-security</artifactId>
-        <version>0.8.1</version>
-        <url>http://www.springframework.org</url>
+      <groupId>acegisecurity</groupId>
+      <artifactId>acegi-security</artifactId>
+      <version>0.8.1</version>
+      <url>http://www.springframework.org</url>
     </dependency>
     <dependency>
-        <groupId>servletapi</groupId>
-        <artifactId>servletapi</artifactId>
-        <version>2.4</version>
-        <url>http://java.sun.com</url>
+      <groupId>servletapi</groupId>
+      <artifactId>servletapi</artifactId>
+      <version>2.4</version>
+      <url>http://java.sun.com</url>
     </dependency>
     <dependency>
-        <groupId>ognl</groupId>
-        <artifactId>ognl</artifactId>
-        <version>2.6.5</version>
-        <url>http://ognl.org</url>
+      <groupId>ognl</groupId>
+      <artifactId>ognl</artifactId>
+      <version>2.6.5</version>
+      <url>http://ognl.org</url>
     </dependency>
   </dependencies>
 
@@ -409,6 +403,12 @@
       </resources>
     </unitTest>
     <resources>
+      <resource>
+        <directory>${basedir}/src/conf/log4j</directory>
+        <includes>
+          <include>log4j.properties</include>
+        </includes>
+      </resource>
       <resource>
         <directory>${basedir}/src/java</directory>
         <includes>

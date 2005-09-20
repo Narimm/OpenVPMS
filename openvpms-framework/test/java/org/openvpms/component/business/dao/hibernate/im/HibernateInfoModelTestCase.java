@@ -134,8 +134,9 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     }
 
     /**
+     * Get the current hibernate session
      * 
-     * @return
+     * @return Session
      * @throws Exception
      */
     public Session currentSession() throws Exception {
@@ -149,6 +150,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     }
 
     /**
+     * Close the current hibernate session
      * 
      * @throws Exception
      */

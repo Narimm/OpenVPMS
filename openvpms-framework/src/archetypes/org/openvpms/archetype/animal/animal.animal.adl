@@ -6,20 +6,26 @@
 		<node name="species" path="/species" type="java.lang.Integer"
 			minCardinality="1">
 			<assertion type="refDataAssertion">
-				<property name="type" value="openvpms.animal.species" />
+				<property name="namedQuery"
+					value="openvpms.animal.species" />
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
 			<assertion type="refDataAssertion">
-				<property name="type" value="openvpms.animal.breed" />
-				<property name="species" value="/species" />
+				<property name="namedQuery"
+					value="openvpms.animal.breed" />
+				<propertyMap name="queryParameters">
+					<mapElement key="species" value="/species" />
+				</propertyMap>
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
 			<assertion type="refDataAssertion">
-				<property name="type" value="openvpms.animal.colour" />
-				<property name="species" value="/species" />
-				<property name="breed" value="/breed" />
+				<property name="namedQuery" value="openvpms.animal.colour" />
+				<propertyMap name="queryParameters">
+					<property name="species" value="/species" />
+					<property name="breed" value="/breed" />
+				</propertyMap>
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
@@ -31,7 +37,8 @@
 				</propertyMap>
 			</assertion>
 		</node>
-		<node name="desexed" path="/desexed" type="java.lang.Boolean" defaultValue="No" />
+		<node name="desexed" path="/desexed" type="java.lang.Boolean"
+			defaultValue="No" />
 		<node name="dateOfBirth" path="/dateOfBirth"
 			type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime"
 			minCardinality="1" />
