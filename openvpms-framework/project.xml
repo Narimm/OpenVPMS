@@ -367,6 +367,12 @@
       <version>2.6.5</version>
       <url>http://ognl.org</url>
     </dependency>
+    <dependency>
+        <groupId>oro</groupId>
+        <artifactId>oro</artifactId>
+        <version>2.0.8</version>
+        <url>http://jakarta.apache.org</url>
+    </dependency>
   </dependencies>
 
   <build>
