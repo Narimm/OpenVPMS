@@ -16,17 +16,23 @@
  *  $Id$
  */
 
-package org.openvpms.component.presentation.tapestry.component;
+package org.openvpms.component.business.service.archetype;
 
-import org.apache.tapestry.BaseComponent;
-
-/**
-*
-* @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
-* @version  $LastChangedDate$
-*/
-
-public abstract class OvpmsComponent extends BaseComponent
+public interface IDescriptor extends Cloneable
 {
-    public static String DEFAULT = "Default";
+    /**
+     * @return
+     */
+    public boolean isHidden();
+    
+    public void setHidden(boolean hidden);
+    
+    /**
+     * @return
+     */
+    public String getDisplayName();
+    
+    public void setDisplayName(String displayName);
+    
+    public Object clone();
 }

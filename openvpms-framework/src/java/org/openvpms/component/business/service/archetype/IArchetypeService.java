@@ -132,4 +132,11 @@ public interface IArchetypeService {
      * @return AssertionTypeRecord[]
      */
     public AssertionTypeRecord[] getAssertionTypeRecords();
+
+    /**
+     * Return the {@link IArchetypeDescriptor} instance specified by the name.
+     * 
+     * @return IArchetypeDescriptor
+     */
+    public IArchetypeDescriptor getArchetypeDescriptor(String name);
 }

@@ -8,9 +8,9 @@
 <library-specification>
     <description>The OpenVPMS library</description>
 	<library id="contrib" specification-path="/org/apache/tapestry/contrib/Contrib.library"/>
-    <component-type type="Border" specification-path="/org/openvpms/component/presentation/tapestry/component/Border.jwc"/>
     <component-type type="ContentBox" specification-path="/org/openvpms/component/presentation/tapestry/component/ContentBox.jwc"/>
     <component-type type="ShowError" specification-path="/org/openvpms/component/presentation/tapestry/component/ShowError.jwc"/>
     <component-type type="ShowMessage" specification-path="/org/openvpms/component/presentation/tapestry/component/ShowMessage.jwc"/>
     <component-type type="MenuItem" specification-path="/org/openvpms/component/presentation/tapestry/component/MenuItem.jwc"/>
+    <component-type type="ArchetypeForm" specification-path="ArchetypeForm.jwc"/>
 </library-specification>

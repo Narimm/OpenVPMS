@@ -11,6 +11,10 @@
  */
 package org.openvpms.component.presentation.tapestry.component;
 
+import java.util.ArrayList;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.oro.text.perl.Perl5Util;
 import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.IPage;
 import org.apache.tapestry.IRequestCycle;
@@ -132,4 +136,22 @@ public class Utils
         }
         return pluralNoun;
     }
+    
+    public static String unCamelCase(String name)
+    {
+        ArrayList words = new ArrayList();
+        Perl5Util perl = new Perl5Util();
+    
+        while (perl.match("/(\\w+?)([A-Z].*)/", name))
+        {
+            String word = perl.group(1);
+            name = perl.group(2);
+            words.add(StringUtils.capitalise(word));
+        }
+    
+        words.add(StringUtils.capitalise(name));
+    
+        return StringUtils.join(words.iterator(), " ");
+    }
+
 }

@@ -18,15 +18,14 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-import org.apache.tapestry.BaseComponent;
+
 
 /**
-*
-* @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
-* @version  $LastChangedDate$
-*/
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
+ */
 
-public abstract class OvpmsComponent extends BaseComponent
+public abstract class ArchetypeActions extends ArchetypeEditComponent
 {
-    public static String DEFAULT = "Default";
 }

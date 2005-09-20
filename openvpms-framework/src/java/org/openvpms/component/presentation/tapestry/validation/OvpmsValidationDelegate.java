@@ -1,29 +1,41 @@
-/*
- * FormDelegate.java
- * Created on 06.04.2005 by andyman
- * project wirteverein-admin
- * 
- */
-
 package org.openvpms.component.presentation.tapestry.validation;
+
+import java.util.Iterator;
 
 import org.apache.tapestry.IMarkupWriter;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.form.IFormComponent;
+import org.apache.tapestry.valid.FieldTracking;
+import org.apache.tapestry.valid.IFieldTracking;
 import org.apache.tapestry.valid.IValidator;
+import org.apache.tapestry.valid.RenderString;
 import org.apache.tapestry.valid.ValidationDelegate;
+import org.apache.tapestry.valid.ValidatorException;
 
-/**
- * 
- * The delegate class used to provide the bells and whistles for the
- * applications form. Extends ValidationDelegate only to provide custom label
- * decorations and stuff like that.
- * 
- * 
- * @author andyman
- *  
- */
-public class FormDelegate extends ValidationDelegate {
+public class OvpmsValidationDelegate extends ValidationDelegate
+{
+    
+    public void record(ValidatorException ex)
+    {
+        FieldTracking tracking = findCurrentTracking();
+        tracking.setErrorRenderer(new RenderString(ex.getMessage()));
+        
+    }
+
+    public IFieldTracking getFieldTracking(String string)
+    {
+        if (getAssociatedTrackings() == null) {return null;}
+        for (Iterator iter = getAssociatedTrackings().iterator(); iter.hasNext();)
+        {
+            IFieldTracking tracking = (IFieldTracking) iter.next();
+            if (string.equals(tracking.getFieldName()))
+            {
+                return tracking;
+            }
+                    
+        }   
+        return null;
+    }
     
     public void writeLabelPrefix(IFormComponent component,
             IMarkupWriter writer, IRequestCycle cycle) {
