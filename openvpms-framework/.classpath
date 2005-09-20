@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="target/castor/src"/>
 	<classpathentry kind="src" path="test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-common-0.1.jar"/>
@@ -37,5 +38,6 @@
 	<classpathentry kind="var" path="MAVEN_REPO/tapestry/jars/tapestry-3.0.3.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/servletapi/jars/servletapi-2.4.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-web-1.2.3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/oro/jars/oro-2.0.8.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>
