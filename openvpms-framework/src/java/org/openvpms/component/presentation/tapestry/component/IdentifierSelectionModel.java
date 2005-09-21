@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: PartyService.java 108 2005-09-15 05:14:01Z jalateras $
+ *  $Id$
  */
 
 package org.openvpms.component.presentation.tapestry.component;
