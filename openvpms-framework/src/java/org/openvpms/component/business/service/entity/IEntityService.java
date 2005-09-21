@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: IPartyService.java 87 2005-09-08 11:07:07Z jalateras $
+ *  $Id$
  */
 
 package org.openvpms.component.business.service.entity;
@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.party.PartyServiceException;
  * delete) functionality.
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2005-09-08 21:07:07 +1000 (Thu, 08 Sep 2005) $
+ * @version $LastChangedDate$
  */
 public interface IEntityService {
     /**

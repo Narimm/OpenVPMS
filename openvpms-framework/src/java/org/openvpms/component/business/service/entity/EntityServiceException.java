@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: PartyServiceException.java 94 2005-09-09 04:52:18Z jalateras $
+ *  $Id$
  */
 
 package org.openvpms.component.business.service.entity;
@@ -29,7 +29,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * exception.
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2005-09-09 14:52:18 +1000 (Fri, 09 Sep 2005) $
+ * @version $LastChangedDate$
  */
 public class EntityServiceException extends RuntimeException implements
         OpenVPMSException {
