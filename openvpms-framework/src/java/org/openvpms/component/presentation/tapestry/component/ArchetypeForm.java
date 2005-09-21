@@ -28,5 +28,8 @@ package org.openvpms.component.presentation.tapestry.component;
 public abstract class ArchetypeForm extends OvpmsComponent {
     public abstract Object getModel();
 
+    /**
+     * @param model
+     */
     public abstract void setModel(Object model);
 }

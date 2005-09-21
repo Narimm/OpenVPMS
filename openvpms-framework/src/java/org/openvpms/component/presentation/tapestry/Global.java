@@ -1,32 +1,36 @@
 /*
- * Global.java
- * Created on 21.06.2004 by andyman
- * wirteverein-admin
- * 
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
  */
+
 package org.openvpms.component.presentation.tapestry;
 
 import org.springframework.context.ApplicationContext;
 
 /**
- * 
- * 
  * The tapestry applications Global object, common to all clients and all
  * components (pages). 
  * 
- * 
- * 
- * @author andyman
- * @version $Id: Global.java,v 1.1 2005/04/17 20:15:19 andyman232323 Exp $
- *  
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
 public class Global {
-
-
     
     /** the Springframework application context */
-    private ApplicationContext appContext;
-    
+    private ApplicationContext appContext;  
             
     /**
      * @return Returns the Springframeweork application context appContext.

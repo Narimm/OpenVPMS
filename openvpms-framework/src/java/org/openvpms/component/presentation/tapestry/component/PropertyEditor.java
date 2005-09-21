@@ -25,35 +25,31 @@ import org.apache.tapestry.valid.StringValidator;
 import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
-public abstract class PropertyEditor extends OvpmsComponent
-{
+public abstract class PropertyEditor extends OvpmsComponent {
     public abstract IPropertyDescriptor getDescriptor();
 
     public abstract void setDescriptor(IPropertyDescriptor Descriptor);
-    
+
     /**
-     * @param class1
+     * @param descriptor
      * @return
      */
-    public IValidator getValidator(IPropertyDescriptor descriptor)
-    {
+    public IValidator getValidator(IPropertyDescriptor descriptor) {
         BaseValidator validator = null;
 
-        if (descriptor.isNumeric())
-        {
+        if (descriptor.isNumeric()) {
             validator = new NumberValidator();
-            ((NumberValidator) validator).setValueTypeClass(descriptor.getPropertyType());
-        }else
-        {
+            ((NumberValidator) validator).setValueTypeClass(descriptor
+                    .getPropertyType());
+        } else {
             validator = new StringValidator();
         }
         validator.setRequired(descriptor.isRequired());
         return validator;
     }
-
 }

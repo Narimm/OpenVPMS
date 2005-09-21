@@ -1,8 +1,19 @@
 /*
- * Engine.java
- * Created on 06.04.2005 by andyman
- * project wirteverein-admin
- * Version $Id: SpringTapestryEngine.java,v 1.1 2005/04/17 20:15:19 andyman232323 Exp $
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
  */
 
 package org.openvpms.component.presentation.tapestry.engine;
@@ -22,8 +33,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * BaseEngine will be depreceated in Tapestry 3.1, so this will certainly
  * go away.
  * 
- * @author andyman
- *  
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
 public class OvpmsEngine extends BaseEngine {
     private static final long serialVersionUID = 3257288032683177524L;

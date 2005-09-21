@@ -18,14 +18,11 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-
-
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
-public abstract class ArchetypeActions extends ArchetypeEditComponent
-{
+public abstract class ArchetypeActions extends ArchetypeEditComponent {
 }

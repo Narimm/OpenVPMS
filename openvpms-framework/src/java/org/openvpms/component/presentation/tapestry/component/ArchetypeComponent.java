@@ -19,41 +19,49 @@
 package org.openvpms.component.presentation.tapestry.component;
 
 import java.util.List;
-
-import ognl.OgnlException;
-
 import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
 
-public abstract class ArchetypeComponent extends OvpmsComponent
-{
+/**
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public abstract class ArchetypeComponent extends OvpmsComponent {
 
-    public ArchetypeComponent()
-    {
+    public ArchetypeComponent() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
+    /**
+     * @return
+     */
     public abstract IArchetypeDescriptor getArchetypeDescriptor();
 
-    public abstract void setArchetypeDescriptor(IArchetypeDescriptor ArchetypeDescriptor);
+    /**
+     * @param ArchetypeDescriptor
+     */
+    public abstract void setArchetypeDescriptor(
+            IArchetypeDescriptor ArchetypeDescriptor);
 
+    /**
+     * @return
+     */
     public abstract String[] getPropertyNames();
 
+    /**
+     * @param PropertyNames
+     */
     public abstract void setPropertyNames(String[] PropertyNames);
 
     /**
      * @return
-     * @throws OgnlException
      */
-    public List getPropertyDescriptors()
-    {
-        if (getPropertyNames() == null || getPropertyNames().length == 0)
-        {
+    public List getPropertyDescriptors() {
+        if (getPropertyNames() == null || getPropertyNames().length == 0) {
             return getArchetypeDescriptor().getPropertyDescriptors();
-        }
-        else
-        {
-            return getArchetypeDescriptor().getPropertyDescriptors(getPropertyNames());
+        } else {
+            return getArchetypeDescriptor().getPropertyDescriptors(
+                    getPropertyNames());
         }
     }
 

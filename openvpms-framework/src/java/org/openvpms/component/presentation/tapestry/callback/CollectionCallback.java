@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $$Id$$
  */
 
 package org.openvpms.component.presentation.tapestry.callback;
@@ -22,83 +22,86 @@ import java.util.HashMap;
 
 import ognl.Ognl;
 import ognl.OgnlException;
-
 import org.apache.tapestry.ApplicationRuntimeException;
 
 /**
- * This guy is responsible for returning from an add or remove on a
- * collection.
+ * This guy is responsible for returning from an add or remove on a collection.
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class CollectionCallback extends EditCallback
-{
+public class CollectionCallback extends EditCallback {
+
+    private static final long serialVersionUID = 1L;
+
     private String addOgnlExpression;
-    
+
     private String removeOgnlExpression;
-	
-	private boolean childRelationship;
-    
+
+    private boolean childRelationship;
+
     /**
      * @param pageName
      * @param model
+     * @param addOgnl
+     * @param removeOgnl
      */
-    public CollectionCallback(String pageName, Object model, String addOgnl, String removeOgnl)
-    {
+    public CollectionCallback(String pageName, Object model, String addOgnl,
+            String removeOgnl) {
         super(pageName, model);
         this.addOgnlExpression = addOgnl;
         this.removeOgnlExpression = removeOgnl;
     }
 
-    public void add(Object newObject)
-    {
+    public void add(Object newObject) {
         executeOgnlExpression(addOgnlExpression, newObject);
     }
-    
-    public void remove(Object object)
-    {
+
+    public void remove(Object object) {
         executeOgnlExpression(removeOgnlExpression, object);
     }
-    
+
     /**
      * @param previousModel
      */
-    private void executeOgnlExpression(String ognlExpression, Object newObject)
-    {
+    @SuppressWarnings("unchecked")
+    private void executeOgnlExpression(String ognlExpression, Object newObject) {
         HashMap context = new HashMap();
         context.put("member", newObject);
 
-        try
-        {
+        try {
             Ognl.getValue(ognlExpression + "(#member)", context, model);
-        }catch (OgnlException e)
-        {
+        } catch (OgnlException e) {
             throw new ApplicationRuntimeException(e);
         }
     }
-    
+
     /**
      * @return Returns the addOgnlExpression.
      */
-    public String getAddOgnlExpression()
-    {
+    public String getAddOgnlExpression() {
         return addOgnlExpression;
     }
+
     /**
      * @return Returns the removeOgnlExpression.
      */
-    public String getRemoveOgnlExpression()
-    {
+    public String getRemoveOgnlExpression() {
         return removeOgnlExpression;
     }
 
-    public boolean isChildRelationship()
-    {
+    /**
+     * @return
+     */
+    public boolean isChildRelationship() {
         return childRelationship;
     }
-    
 
-    public void setChildRelationship(boolean child)
-    {
+    /**
+     * @param child
+     */
+    public void setChildRelationship(boolean child) {
         this.childRelationship = child;
     }
-    
+
 }

@@ -1,14 +1,21 @@
 /*
- * Copyright 2004 Chris Nelson
+ *  Version: 1.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations under the License.
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
  */
+
 package org.openvpms.component.presentation.tapestry.component;
 
 import java.util.ArrayList;
@@ -21,15 +28,18 @@ import org.apache.tapestry.IRequestCycle;
 
 
 /**
- * @author fus8882
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
 public class Utils
 {
     public static String DEFAULT = "Default";
 
+    /**
+     * @param className
+     * @return
+     */
     public static Class getClassForName(String className)
     {
         try
@@ -41,11 +51,21 @@ public class Utils
         }
     }
 
+    /**
+     * @param className
+     * @return
+     */
     public static String unqualify(String className)
     {
         return className.substring(className.lastIndexOf(".") + 1);
     }
 
+    /**
+     * @param cycle
+     * @param pageName
+     * @param postfix
+     * @return
+     */
     public static IPage findPage(IRequestCycle cycle, String pageName,
         String postfix)
     {
@@ -137,6 +157,10 @@ public class Utils
         return pluralNoun;
     }
     
+    /**
+     * @param name
+     * @return
+     */
     public static String unCamelCase(String name)
     {
         ArrayList words = new ArrayList();

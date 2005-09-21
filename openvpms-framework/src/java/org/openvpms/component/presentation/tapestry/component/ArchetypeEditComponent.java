@@ -23,59 +23,66 @@ import org.apache.tapestry.components.Block;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
 
 /**
- * @author fus8882
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public abstract class ArchetypeEditComponent extends ArchetypeComponent
-{
+public abstract class ArchetypeEditComponent extends ArchetypeComponent {
 
-    public boolean hasBlock(String propertyName)
-    {
-        if (getPage().getComponents().containsKey(propertyName))
-        {
+    /**
+     * @param propertyName
+     * @return
+     */
+    public boolean hasBlock(String propertyName) {
+        if (getPage().getComponents().containsKey(propertyName)) {
             return true;
-        }
-        else {
+        } else {
             IPage editPage = getEditPage();
-            if (editPage != null)
-            {
+            if (editPage != null) {
                 return editPage.getComponents().containsKey(propertyName);
             }
         }
         return false;
     }
 
-    protected EditPage getEditPage()
-    {
-        EditPage editPage = (EditPage)Utils.findPage(getPage().getRequestCycle(), 
-            Utils.unqualify(getModel().getClass().getName()) + "Edit",
-            "Edit");
+    /**
+     * @return
+     */
+    protected EditPage getEditPage() {
+        EditPage editPage = (EditPage) Utils.findPage(getPage()
+                .getRequestCycle(), Utils.unqualify(getModel().getClass()
+                .getName())
+                + "Edit", "Edit");
         return editPage;
     }
 
-    public Block getBlock(String propertyName)
-    {
-        if (getPage().getComponents().containsKey(propertyName))
-        {
-            return (Block)getPage().getComponent(propertyName);
+    /**
+     * @param propertyName
+     * @return
+     */
+    public Block getBlock(String propertyName) {
+        if (getPage().getComponents().containsKey(propertyName)) {
+            return (Block) getPage().getComponent(propertyName);
         }
         EditPage editPage = getEditPage();
-        if (editPage != null)
-        {
-            
-            if (editPage.getComponents().containsKey(propertyName))
-            {
+        if (editPage != null) {
+
+            if (editPage.getComponents().containsKey(propertyName)) {
                 editPage.setModel(getModel());
-                return (Block)editPage.getComponent(propertyName);
+                return (Block) editPage.getComponent(propertyName);
             }
         }
         return null;
     }
 
+    /**
+     * @return
+     */
     public abstract Object getModel();
 
+    /**
+     * @param model
+     */
     public abstract void setModel(Object model);
 
 }

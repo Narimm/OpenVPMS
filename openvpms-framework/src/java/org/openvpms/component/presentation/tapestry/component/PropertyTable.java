@@ -20,23 +20,14 @@ package org.openvpms.component.presentation.tapestry.component;
 
 import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
 
-/*
- * Created on Sep 30, 2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-
 /**
- * @author fus8882
- * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public abstract class PropertyTable extends ArchetypeEditComponent
-{
+public abstract class PropertyTable extends ArchetypeEditComponent {
     /**
-     * @return Returns the current property.
+     * @return
      */
     public abstract IPropertyDescriptor getProperty();
 

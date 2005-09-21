@@ -25,13 +25,11 @@ import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
 import org.apache.tapestry.event.PageRenderListener;
 import org.apache.tapestry.form.IPropertySelectionModel;
-import org.apache.tapestry.valid.ValidatorException;
 import org.openvpms.component.business.domain.im.Entity;
 import org.openvpms.component.business.domain.im.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
-import org.openvpms.component.business.service.entity.EntityServiceException;
 import org.openvpms.component.business.service.entity.IEntityService;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
@@ -40,9 +38,9 @@ import org.openvpms.component.presentation.tapestry.validation.OvpmsValidationDe
 
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public abstract class EditPage extends OvpmsPage implements PageRenderListener
 {
@@ -77,7 +75,9 @@ public abstract class EditPage extends OvpmsPage implements PageRenderListener
         save();       
     }
     
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.trails.page.TrailsPage#pushCallback()
      */
     public void pushCallback()
@@ -86,28 +86,9 @@ public abstract class EditPage extends OvpmsPage implements PageRenderListener
         visit.getCallbackStack().push(new EditCallback(getPageName(), getModel()));
     }
     
-    protected boolean save()
-    {
-        if (!getDelegate().getHasErrors())
-        {
-                getEntityService().updateEntity((Entity)getModel());
-            return true;
-        }
-        return false;
-    }
+    protected abstract boolean save();
 
-    public void remove(IRequestCycle cycle)
-    {
-        getEntityService().removeEntity((Entity)getModel());
-
-        Visit visit = (Visit)getVisit();
-        ICallback callback = (ICallback)visit.getCallbackStack().pop();
-        if (callback instanceof CollectionCallback)
-        {
-            ((CollectionCallback)callback).remove(getModel());
-        }
-        callback.performCallback(cycle);
-    }
+    public abstract void remove(IRequestCycle cycle);
 
     public void onFormSubmit(IRequestCycle cycle)
     {
@@ -127,12 +108,13 @@ public abstract class EditPage extends OvpmsPage implements PageRenderListener
 
     public IPropertySelectionModel getSelectionModel(IPropertyDescriptor descriptor)
     {
-        ArrayList instances = new ArrayList();
-//        instances.addAll(getEntityService().getAllInstances(descriptor.getPropertyType()));
-//        IdentifierSelectionModel selectionModel = new IdentifierSelectionModel(instances,
-//                getArchetypeService().getArchetypeDescriptor(descriptor.getPropertyType())
-//                    .getIdentifierDescriptor().getName(), 
-//                    !descriptor.isRequired());
+//        ArrayList instances = new ArrayList();
+// instances.addAll(getEntityService().getAllInstances(descriptor.getPropertyType()));
+// IdentifierSelectionModel selectionModel = new
+// IdentifierSelectionModel(instances,
+// getArchetypeService().getArchetypeDescriptor(descriptor.getPropertyType())
+// .getIdentifierDescriptor().getName(),
+// !descriptor.isRequired());
 
         return null;
     }

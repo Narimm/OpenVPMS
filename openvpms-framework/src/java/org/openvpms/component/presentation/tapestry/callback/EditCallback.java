@@ -23,33 +23,34 @@ import org.apache.tapestry.callback.ICallback;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
 
 /**
- * @author fus8882
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class EditCallback implements ICallback
-{
+public class EditCallback implements ICallback {
+    private static final long serialVersionUID = 1L;
+
     protected String pageName;
+
     protected Object model;
-    
+
     /**
-     * 
+     * @param pageName
+     * @param model
      */
-    public EditCallback(String pageName, Object model)
-    {
+    public EditCallback(String pageName, Object model) {
         this.pageName = pageName;
         this.model = model;
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.tapestry.callback.ICallback#performCallback(org.apache.tapestry.IRequestCycle)
      */
-    public void performCallback(IRequestCycle cycle)
-    {
-        EditPage editPage = (EditPage)cycle.getPage(pageName);
+    public void performCallback(IRequestCycle cycle) {
+        EditPage editPage = (EditPage) cycle.getPage(pageName);
         editPage.setModel(model);
         cycle.activate(editPage);
     }
-
 }
