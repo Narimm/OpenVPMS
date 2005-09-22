@@ -23,7 +23,7 @@ import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
 import org.apache.tapestry.event.PageRenderListener;
 import org.apache.tapestry.form.IPropertySelectionModel;
-import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
@@ -96,7 +96,7 @@ public abstract class EditPage extends OvpmsPage implements PageRenderListener
      */
     public IArchetypeDescriptor getArchetypeDescriptor()
     {
-        return getArchetypeService().getArchetypeDescriptor(((IMObject)getModel()).getName());
+        return getArchetypeService().getArchetypeDescriptor(((IMObject)getModel()).getArchetypeId().getConcept());
     }
 
     public IPropertySelectionModel getSelectionModel(IPropertyDescriptor descriptor)
