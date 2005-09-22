@@ -43,7 +43,7 @@ public class PartyDAOHibernate extends HibernateDaoSupport implements IPartyDAO 
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#delete(org.openvpms.component.business.domain.im.party.Party)
+     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#delete(org.openvpms.component.business.domain.im.common.party.Party)
      */
     public void delete(Party party) {
         try {
@@ -69,7 +69,7 @@ public class PartyDAOHibernate extends HibernateDaoSupport implements IPartyDAO 
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#insert(org.openvpms.component.business.domain.im.party.Party)
+     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#insert(org.openvpms.component.business.domain.im.common.party.Party)
      */
     public void insert(Party party) {
         try{
@@ -82,7 +82,7 @@ public class PartyDAOHibernate extends HibernateDaoSupport implements IPartyDAO 
 }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#update(org.openvpms.component.business.domain.im.party.Party)
+     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#update(org.openvpms.component.business.domain.im.common.party.Party)
      */
     public void update(Party party) {
         try {
