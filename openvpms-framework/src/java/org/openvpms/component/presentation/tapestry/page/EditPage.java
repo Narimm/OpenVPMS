@@ -18,19 +18,15 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
-import java.util.ArrayList;
-
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
 import org.apache.tapestry.event.PageRenderListener;
 import org.apache.tapestry.form.IPropertySelectionModel;
-import org.openvpms.component.business.domain.im.Entity;
 import org.openvpms.component.business.domain.im.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
-import org.openvpms.component.business.service.entity.IEntityService;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
@@ -61,10 +57,6 @@ public abstract class EditPage extends OvpmsPage implements PageRenderListener
 
     public abstract void setNextPage(ICallback NextPage);
 
-    public abstract IEntityService getEntityService();
-
-    public abstract void setEntityService(IEntityService esvc);
-
     public abstract IArchetypeService getArchetypeService();
 
     public abstract void setArchetypeService(
@@ -80,6 +72,7 @@ public abstract class EditPage extends OvpmsPage implements PageRenderListener
      * 
      * @see org.trails.page.TrailsPage#pushCallback()
      */
+    
     public void pushCallback()
     {
         Visit visit = (Visit)getVisit();
