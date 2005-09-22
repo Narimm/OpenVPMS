@@ -71,7 +71,6 @@ public class Country implements Serializable {
      * Default constructor
      */
     public Country() {
-        this.id = -1;
         states = new HashSet<State>();
     }
 
@@ -87,7 +86,6 @@ public class Country implements Serializable {
      *            the primary currency for the country 
      */
     public Country(String name, String code, String currency) {
-        this.id = -1;
         this.code = code;
         this.currency = currency;
         this.name = name;

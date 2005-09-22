@@ -74,7 +74,6 @@ public class Suburb implements Serializable {
     public Suburb(String name, String postCode) {
         this.name = name;
         this.postCode = postCode;
-        this.id = -1;
     }
 
     /**

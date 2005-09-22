@@ -63,7 +63,6 @@ public class State implements Serializable {
      * Default constructor
      */
     public State() {
-        this.id = -1;
     }
 
     /**
@@ -72,7 +71,6 @@ public class State implements Serializable {
      * @param name
      */
     public State(String state) {
-        this.id = -1;
         this.name = state;
         this.suburbs = new HashSet<Suburb>();
     }
