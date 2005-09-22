@@ -148,8 +148,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
             ArchetypeRecord record = registry.getArchetypeRecord((String)iter.next());
             assertTrue(record != null);
             assertTrue(record.getArchetypeId() != null);
-            assertTrue(record.getInfoModelClass() != null);
-            assertTrue(record.getInfoModelClass() != null);
+            assertTrue(record.getArchetype() != null);
         }
     }
 

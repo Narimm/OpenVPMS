@@ -42,7 +42,9 @@
     </property>
     <property name="mappingDirectoryLocations">
       <list>
-        <value>classpath:/org/openvpms/component/business/domain/im</value>
+        <value>classpath:/org/openvpms/component/business/domain/im/common</value>
+        <value>classpath:/org/openvpms/component/business/domain/im/party</value>
+        <value>classpath:/org/openvpms/component/business/domain/im/lookup</value>
       </list>
     </property>
   </bean>

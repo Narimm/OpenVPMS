@@ -1,8 +1,6 @@
 <archetypes>
-	<archetype shortName="organization.organization"
-		archetypeNamespace="org.openvpms.archetype.entityRelationship.organization"
-		archetypeName="organization" version="1.0"
-		imClass="org.openvpms.component.business.domain.im.party.Organization">
+	<archetype namespace="org.openvpms" rmName="organization"
+		concept="organization" imClass="party.Organization" version="1.0">
 		<node name="deails" path="/details"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">

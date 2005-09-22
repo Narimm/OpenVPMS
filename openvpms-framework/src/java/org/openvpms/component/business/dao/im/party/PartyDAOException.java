@@ -55,7 +55,7 @@ public class PartyDAOException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.system.dao.im."
+            .getMessages("org.openvpms.component.business.dao.im.party."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**

@@ -103,13 +103,13 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             assertTrue(lrcount1 == lrcount + 4);
             
             // now and retrieve the realtionships from the source side
-            Query query = session.getNamedQuery("lookupRelationship.getWhereSource");
+            Query query = session.getNamedQuery("lookupRelationship.getTargetLookups");
             query.setParameter("source", country.getUid());
             query.setParameter("type", "country.state");
             assertTrue(query.list().size() == 4);
             
             // now and retrieve the realtionships from the target side
-            query = session.getNamedQuery("lookupRelationship.getWhereTarget");
+            query = session.getNamedQuery("lookupRelationship.getSourceLookups");
             query.setParameter("target", state1.getUid());
             query.setParameter("type", "country.state");
             assertTrue(query.list().size() == 1);

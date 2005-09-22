@@ -1,8 +1,7 @@
 <archetypes>
-	<archetype shortName="entityRelationship.familyMember"
-		archetypeNamespace="org.openvpms.archetype.entityRelationship"
-		archetypeName="familyMember" version="1.0"
-		imClass="org.openvpms.component.business.domain.im.EntityRelationship">
+	<archetype namespace="org.openvpms" rmName="entityRelationship"
+		concept="familyMember" imClass="common.EntityRelationship"
+		version="1.0">
 		<node name="sequence" path="/sequence" type="java.lang.Integer"
 			minCardinality="1" />
 		<node name="reason" path="/reason" type="java.lang.String" />

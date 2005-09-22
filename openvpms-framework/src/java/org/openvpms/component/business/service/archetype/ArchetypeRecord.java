@@ -45,11 +45,6 @@ public class ArchetypeRecord implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The short name for this record
-     */
-    private String shortName;
-    
-    /**
      * The archetype identity
      */
     private ArchetypeId archetypeId;
@@ -58,12 +53,6 @@ public class ArchetypeRecord implements Serializable {
      * The archetype details 
      */
     private Archetype archetype;
-    
-    /**
-     * The information model class name
-     */
-    private String imClass;
-   
     
     /**
      * Construct a record using a short name, ans archetype id and the 
@@ -78,11 +67,8 @@ public class ArchetypeRecord implements Serializable {
      * @param archetype
      *            the archetype details            
      */
-    public ArchetypeRecord(String shortName, ArchetypeId id, String imClass,
-            Archetype archetype) {
-        this.shortName = shortName;
+    public ArchetypeRecord(ArchetypeId id, Archetype archetype) {
         this.archetypeId = id;
-        this.imClass = imClass;
         this.archetype = archetype;
     }
 
@@ -98,34 +84,6 @@ public class ArchetypeRecord implements Serializable {
      */
     public void setArchetypeId(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
-    }
-
-    /**
-     * @return Returns the imClass.
-     */
-    public String getInfoModelClass() {
-        return imClass;
-    }
-
-    /**
-     * @param imClass The imClass to set.
-     */
-    public void setInfoModelClass(String imClass) {
-        this.imClass = imClass;
-    }
-
-    /**
-     * @return Returns the shortName.
-     */
-    public String getShortName() {
-        return shortName;
-    }
-
-    /**
-     * @param shortName The shortName to set.
-     */
-    public void setShortName(String shortName) {
-        this.shortName = shortName;
     }
 
     /**
@@ -190,9 +148,7 @@ public class ArchetypeRecord implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .append("shortName", shortName)
             .append("archetypeId", archetypeId)
-            .append("imClass", imClass)
             .toString();
     }
 }

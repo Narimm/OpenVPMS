@@ -1,6 +1,6 @@
 <archetypes>
-  <archetype shortName="party.person" archetypeNamespace="openvpms.org"
-    archetypeName="openvpms-person-contact-draft" version="1.0">
+  <archetype namespace="org.openvpms" rmName="party" imClass="party.Person"
+    version="1.0">
     <node />
   </archetype>
 </archetypes>

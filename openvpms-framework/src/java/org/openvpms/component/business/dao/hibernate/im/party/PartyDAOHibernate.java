@@ -77,7 +77,7 @@ public class PartyDAOHibernate extends HibernateDaoSupport implements IPartyDAO 
         } catch (Exception exception) {
             throw new PartyDAOException(
                     PartyDAOException.ErrorCode.FailedToInsertParty,
-                    new Object[]{party});
+                    new Object[]{party}, exception);
         }
 }
 

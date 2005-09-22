@@ -29,8 +29,6 @@
 				<xsd:element ref="tns:node" minOccurs="0"
 					maxOccurs="unbounded" />
 			</xsd:sequence>
-			<xsd:attribute name="shortName" type="xsd:string"
-				use="required" />
 			<xsd:attribute name="namespace" type="xsd:string"
 				use="required" />
 			<xsd:attribute name="rmName" type="xsd:string"

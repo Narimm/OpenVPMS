@@ -1,8 +1,6 @@
 <archetypes>
-	<archetype shortName="animal.animal"
-		archetypeNamespace="org.openvpms.archetype.animal"
-		archetypeName="animal" version="1.0"
-		imClass="org.openvpms.component.business.domain.im.party.Animal">
+	<archetype namespace="org.openvpms" rmName="animal" concept="pet"
+		imClass="party.Animal" version="1.0">
 		<node name="species" path="/species" type="java.lang.Integer"
 			minCardinality="1">
 			<assertion type="refDataAssertion">
@@ -21,10 +19,11 @@
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
 			<assertion type="refDataAssertion">
-				<property name="namedQuery" value="openvpms.animal.colour" />
+				<property name="namedQuery"
+					value="openvpms.animal.colour" />
 				<propertyMap name="queryParameters">
-					<property name="species" value="/species" />
-					<property name="breed" value="/breed" />
+					<mapElement key="species" value="/species" />
+					<mapElement key="breed" value="/breed" />
 				</propertyMap>
 			</assertion>
 		</node>

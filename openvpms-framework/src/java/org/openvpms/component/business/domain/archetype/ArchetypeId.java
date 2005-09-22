@@ -209,6 +209,22 @@ public class ArchetypeId implements Serializable {
     }
 
     /**
+     * Return the fully qualified name of the matching java class
+     * 
+     * @return String
+     */
+    public String getJavaClassName() {
+        if (this.getNamespace().equals("org.openvpms")) {
+            return new StringBuilder()
+                .append("org.openvpms.component.business.domain.im.")
+                .append(this.getImClass())
+                .toString();
+        } else {
+            return this.getImClass();
+        }
+    }
+    
+    /**
      * Return the short name, which is the concatenation of the rmName and 
      * the concept
      * 

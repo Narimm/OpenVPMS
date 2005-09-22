@@ -457,39 +457,38 @@ public class ArchetypeService implements IArchetypeService {
      */
     private void loadArchetypeRecords(Archetypes records) {
         for (Archetype archetype : records.getArchetype()) {
-            ArchetypeRecord record = new ArchetypeRecord(
-                    archetype.getShortName(), new ArchetypeId(
-                    archetype.getNamespace(), archetype.getRmName(),
-                    archetype.getConcept(), archetype.getImClass(),
-                    archetype.getVersion()), 
-                    getClassNameFromArchetype(archetype), archetype);
+            ArchetypeId archId = new ArchetypeId(archetype.getNamespace(), 
+                    archetype.getRmName(), archetype.getConcept(), 
+                    archetype.getImClass(),archetype.getVersion());
+            
+            ArchetypeRecord record = new ArchetypeRecord(archId, archetype);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing archetype record "
-                        + archetype.getShortName());
+                        + archId.getShortName());
             }
 
             try {
                 // if the short name already exists then raise an
                 // exception
-                if (archetypesByShortName.containsKey(record.getShortName())) {
+                if (archetypesByShortName.containsKey(archId.getShortName())) {
                     throw new ArchetypeServiceException(
                             ArchetypeServiceException.ErrorCode.ArchetypeAlreadyDefined,
-                            new Object[] { record.getShortName() });
+                            new Object[] { archId.getShortName() });
                 }
 
                 Thread.currentThread().getContextClassLoader().loadClass(
-                        archetype.getImClass());
-                archetypesByShortName.put(record.getShortName(), record);
-                archetypesById.put(record.getArchetypeId(), record);
+                        archId.getJavaClassName());
+                archetypesByShortName.put(archId.getShortName(), record);
+                archetypesById.put(archId, record);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Loading [" + record.getShortName() + "] "
-                            + record.getArchetypeId().toString());
+                    logger.debug("Loading [" + archId.getShortName() + "] "
+                            + archId.toString());
                 }
             } catch (ClassNotFoundException excpetion) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.FailedToLoadClass,
-                        new Object[] { record.getInfoModelClass() }, excpetion);
+                        new Object[] { archId.getJavaClassName() }, excpetion);
             }
 
             // check that the assertions are specified correctly
@@ -539,15 +538,15 @@ public class ArchetypeService implements IArchetypeService {
     private Object createDefaultObject(ArchetypeRecord record) {
         Object obj = null;
         try {
-            Class domainClass = Class.forName(record.getArchetype()
-                    .getImClass());
+            Class domainClass = Class.forName(
+                    record.getArchetypeId().getJavaClassName());
             obj = domainClass.newInstance();
 
             // the object must be an instance of {@link IMObject}
             if (!(obj instanceof IMObject)) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.InvalidIMClass,
-                        new Object[] { record.getArchetype().getImClass() });
+                        new Object[] { record.getArchetypeId().getJavaClassName() });
             }
 
             // cast to imobject and set the archetype and the uuid.
@@ -564,7 +563,8 @@ public class ArchetypeService implements IArchetypeService {
             // rethrow as a runtime exception
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToCreateObject,
-                    new Object[] { record.getShortName() }, exception);
+                    new Object[] { record.getArchetypeId().getShortName() }, 
+                    exception);
         }
 
         return obj;
@@ -646,23 +646,4 @@ public class ArchetypeService implements IArchetypeService {
             }
         }
     }
-    
-    /**
-     * Return the fully qualified java class name from the archetype 
-     * 
-     * @param record
-     *            the archetype record
-     * @return String
-     *            the fully qualified class name
-     */
-    private String getClassNameFromArchetype(Archetype record) {
-        return new StringBuilder()
-            .append(record.getNamespace())
-            .append(".")
-            .append(record.getRmName())
-            .append(".")
-            .append(record.getImClass())
-            .toString() ;
-    }
-    
 }
