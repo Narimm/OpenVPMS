@@ -31,13 +31,15 @@
 		<component name="archetypeId">
 			<property name="namespace" access="field"
 				column="archetype_namespace" type="string" />
-			<property name="name" access="field" column="archetype_name"
-				type="string" />
+			<property name="rmName" access="field"
+				column="archetype_rm_name" type="string" />
+			<property name="concept" access="field"
+				column="archetype_concept" type="string" />
+			<property name="imClass" access="field"
+				column="archetype_im_class" type="string" />
 			<property name="version" access="field"
 				column="archetype_version" type="string" />
 		</component>
-		<property name="name" access="field" column="name"
-			type="string" />
 		<component name="activePeriod">
 			<component name="lower" access="field"
 				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">

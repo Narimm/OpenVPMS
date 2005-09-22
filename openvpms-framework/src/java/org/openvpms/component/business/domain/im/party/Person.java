@@ -73,8 +73,6 @@ public class Person extends Actor {
      *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
-     *            the name 
      * @param description
      *            the description of this entity            
      * @param title            
@@ -92,11 +90,11 @@ public class Person extends Actor {
      * @param details 
      *            actor details
      */
-    public Person(String uid, ArchetypeId archetypeId, String name,
+    public Person(String uid, ArchetypeId archetypeId, 
             String description, String title, String firstName,
             String lastName, String initials, Set<Contact> contacts,
             Set<Role> roles, DynamicAttributeMap details) {
-        super(uid, archetypeId, name, description, contacts, roles, details);
+        super(uid, archetypeId, description, contacts, roles, details);
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;

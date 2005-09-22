@@ -24,7 +24,7 @@ import java.util.Set;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.Entity;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
@@ -62,8 +62,6 @@ public abstract class Party extends Entity {
      *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
-     *            the name 
      * @param description
      *            the description of the party            
      * @param contacts
@@ -71,10 +69,10 @@ public abstract class Party extends Entity {
      * @param details 
      *            party details
      */
-    protected Party(String uid, ArchetypeId archetypeId, String name, 
+    protected Party(String uid, ArchetypeId archetypeId,  
             String description, Set<Contact> contacts, 
             DynamicAttributeMap details) {
-        super(uid, archetypeId, name, description, details);
+        super(uid, archetypeId, description, details);
         this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
     }
 

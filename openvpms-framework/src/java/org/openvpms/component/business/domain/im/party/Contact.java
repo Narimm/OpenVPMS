@@ -26,7 +26,7 @@ import java.util.Set;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
-import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
@@ -67,14 +67,12 @@ public class Contact extends IMObject {
      *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
-     *            the name 
      * @param activePeriod
      *            the active period for this contact
      */
-    public Contact(String uid, ArchetypeId archetypeId, String name, 
+    public Contact(String uid, ArchetypeId archetypeId,  
             DvInterval<DvDateTime> activePeriod) {
-        super(uid, archetypeId, name);
+        super(uid, archetypeId);
         this.activePeriod = activePeriod;
         this.addresses = new HashSet<Address>();
     }

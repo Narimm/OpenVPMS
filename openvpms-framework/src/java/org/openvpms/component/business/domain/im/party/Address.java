@@ -24,7 +24,7 @@ import java.util.Set;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
@@ -63,16 +63,14 @@ public class Address extends IMObject {
      *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
-     *            the name 
      * @param details
      *            The details of the address object
      * @throws IllegalArgumentException
      *             if the constructor pre-conditions are not satisfied.
      */
-    public Address(String uid, ArchetypeId archetypeId, String name,
+    public Address(String uid, ArchetypeId archetypeId,
             DynamicAttributeMap details) {
-        super(uid, archetypeId, name);
+        super(uid, archetypeId);
         this.details = details;
         this.contacts = new HashSet<Contact>();
     }

@@ -92,8 +92,6 @@ public class Animal extends Actor {
      *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
-     *            the name 
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -103,10 +101,10 @@ public class Animal extends Actor {
      * @param details 
      *            actor details
      */
-    public Animal(String uid, ArchetypeId archetypeId, String name, 
+    public Animal(String uid, ArchetypeId archetypeId,  
             String description, Set<Contact> contacts, Set<Role> roles, 
             DynamicAttributeMap details) {
-        super(uid, archetypeId, name, description, contacts, roles, details);
+        super(uid, archetypeId, description, contacts, roles, details);
     }
 
     /**
