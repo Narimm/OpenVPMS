@@ -100,7 +100,7 @@ public class PartyService implements IPartyService {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.party.IPartyService#insertParty(org.openvpms.component.business.domain.im.party.Party)
+     * @see org.openvpms.component.business.service.party.IPartyService#insertParty(org.openvpms.component.business.domain.im.common.party.Party)
      */
     public void insertParty(Party party) {
         if (archetypeService.validateObject(party)) {
@@ -127,7 +127,7 @@ public class PartyService implements IPartyService {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.party.IPartyService#removeParty(org.openvpms.component.business.domain.im.party.Party)
+     * @see org.openvpms.component.business.service.party.IPartyService#removeParty(org.openvpms.component.business.domain.im.common.party.Party)
      */
     public void removeParty(Party party) {
         try {
@@ -135,13 +135,13 @@ public class PartyService implements IPartyService {
         } catch (PartyDAOException exception) {
             throw new PartyServiceException(
                     PartyServiceException.ErrorCode.FailedToDeleteParty,
-                    new Object[]{party.getArchetypeId().getName(),
+                    new Object[]{party.getArchetypeId().toString(),
                                  party.toString()}, exception);
         }
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.party.IPartyService#updateParty(org.openvpms.component.business.domain.im.party.Party)
+     * @see org.openvpms.component.business.service.party.IPartyService#updateParty(org.openvpms.component.business.domain.im.common.party.Party)
      */
     public void updateParty(Party party) {
         if (archetypeService.validateObject(party)) {
@@ -155,7 +155,7 @@ public class PartyService implements IPartyService {
         } else {
             throw new PartyServiceException(
                     PartyServiceException.ErrorCode.FailedToUpdateParty,
-                    new Object[]{party.getArchetypeId().getName(),
+                    new Object[]{party.getArchetypeId().toString(),
                                  party.toString()});
         }
     }

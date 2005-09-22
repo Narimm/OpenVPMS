@@ -92,14 +92,14 @@ public interface IPartyService {
      * specified criteria.
      * <p>
      * If there is an error in the query, or the passed in parameters or the
-     * query fails to execute then raise a {@link PartyServiceException}.
+     * query fails to execute then raise a {@link ArchetypeIdException}.
      * 
      * @param searchCriteria
      *            the search crtieria or reference to a search
      * @param searchParams
      *            the parameters used to constrain the search
      * @return Party[] an array (which may be empty} of matching entries
-     * @throws PartyServiceException
+     * @throws ArchetypeIdException
      *             a runtime exception if the request cannot be serviced
      */
     public Party[] findParties(String searchCriteria, Object[] searchParams);
