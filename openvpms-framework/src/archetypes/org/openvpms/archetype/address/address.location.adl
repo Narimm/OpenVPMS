@@ -1,6 +1,8 @@
 <archetypes>
 	<archetype shortName="address.location"
-		archetypeNamespace="org.openvpms.archetype.address"
+		archetypeNamespace="org.openvpms.component.business.domain.im"
+		referenceModelName="party"
+		concept=""
 		archetypeName="location" version="1.0"
 		imClass="org.openvpms.component.business.domain.im.party.Address">
 		<node name="deails" path="/details"
