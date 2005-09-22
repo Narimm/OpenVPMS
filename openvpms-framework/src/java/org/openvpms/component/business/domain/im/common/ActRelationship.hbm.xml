@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+<hibernate-mapping>
+  <class name="org.openvpms.component.business.domain.im.common.ActRelationship"
+    table="act_relationship">
+    <id name="uid" type="string" unsaved-value="null">
+      <column name="act_relationship_id" index="act_relationship_id_idx" />
+      <generator class="assigned" />
+    </id>
+    <version name="version" access="field" type="long" />
+    <component name="archetypeId">
+      <property name="namespace" access="field" column="archetype_namespace"
+        type="string" />
+      <property name="rmName" access="field" column="archetype_rm_name"
+        type="string" />
+      <property name="concept" access="field" column="archetype_concept"
+        type="string" />
+      <property name="imClass" access="field" column="archetype_im_class"
+        type="string" />
+      <property name="version" access="field" column="archetype_version"
+        type="string" />
+    </component>
+    <property name="sequence" type="int" column="sequence" />
+    <property name="negationInd" type="boolean" column="negation_ind" />
+    <property name="parentChildRelationship" type="boolean"
+      column="parent_child_relationship" />
+    <many-to-one name="sourceAct" column="source_act_id" />
+    <many-to-one name="targetAct" column="target_act_id" />
+    <property name="details" column="details" length="5000"
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+  </class>
+</hibernate-mapping>

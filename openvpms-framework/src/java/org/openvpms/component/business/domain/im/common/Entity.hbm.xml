@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<!--
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+<hibernate-mapping>
+  <class name="org.openvpms.component.business.domain.im.common.Entity"
+    table="entity">
+    <id name="uid" type="string" unsaved-value="null">
+      <column name="entity_id" index="entity_id_idx" />
+      <generator class="assigned" />
+    </id>
+    <version name="version" access="field" type="long" />
+    <component name="archetypeId">
+      <property name="namespace" access="field" column="archetype_namespace"
+        type="string" />
+      <property name="rmName" access="field" column="archetype_rm_name"
+        type="string" />
+      <property name="concept" access="field" column="archetype_concept"
+        type="string" />
+      <property name="imClass" access="field" column="archetype_im_class"
+        type="string" />
+      <property name="version" access="field" column="archetype_version"
+        type="string" />
+    </component>
+    <property name="description" column="description" type="string" />
+    <property name="details" column="details" length="5000"
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <set name="classifications" access="field" lazy="true" inverse="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityClassification" />
+    </set>
+    <set name="identities" access="field" lazy="true" inverse="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
+    </set>
+    <set name="sourceRelationships" access="field" lazy="true" inverse="true">
+      <key column="source_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
+    </set>
+    <set name="targetRelationships" access="field" lazy="true" inverse="true">
+      <key column="target_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
+    </set>
+    <set name="participations" access="field" lazy="true" inverse="true">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.Participation" />
+    </set>
+
+    <!--  Mapping for the abstract Party class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.party.Party"
+      table="party">
+      <key column="entity_id" />
+      <set name="contacts" access="field" lazy="true">
+        <key column="party_id" />
+        <one-to-many
+          class="org.openvpms.component.business.domain.im.party.Contact" />
+      </set>
+
+      <!-- Mapping for the Role class -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Role"
+        table="role">
+        <key column="entity_id" />
+        <component name="activePeriod">
+          <component name="lower" access="field"
+            class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+            <property name="dateTime" column="active_start_datetime"
+              type="calendar" access="field" />
+          </component>
+          <component name="upper" access="field"
+            class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+            <property name="dateTime" column="active_end_datetime"
+              type="calendar" access="field" />
+          </component>
+        </component>
+
+        <!-- Mapping for User -->
+        <joined-subclass
+          name="org.openvpms.component.business.domain.im.party.User"
+          table="user">
+          <key column="entity_id" />
+          <property name="userId" access="field" column="user_id" type="string" />
+          <property name="password" access="field" column="password"
+            type="string" />
+          <property name="lastLogin" column="last_login" type="calendar"
+            access="field" />
+        </joined-subclass>
+      </joined-subclass>
+    </joined-subclass>
+
+    <!--  Mapping for the abstract Actor class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.party.Actor"
+      table="actor">
+      <key column="entity_id" />
+      <set name="roles" access="field" lazy="true">
+        <key column="actor_id" />
+        <one-to-many
+          class="org.openvpms.component.business.domain.im.party.Role" />
+      </set>
+
+      <!-- Mapping for person -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Person"
+        table="person">
+        <key column="entity_id" />
+        <property name="title" access="field" column="title" type="string" />
+        <property name="firstName" access="field" column="first_name"
+          type="string" />
+        <property name="lastName" access="field" column="last_name"
+          type="string" />
+        <property name="initials" access="field" column="initials"
+          type="string" />
+      </joined-subclass>
+
+      <!-- Mapping for animal -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Animal"
+        table="animal">
+        <key column="entity_id" />
+        <property name="species" access="field" column="species" type="string" />
+        <property name="breed" access="field" column="breed" type="string" />
+        <property name="colour" access="field" column="colour" type="string" />
+        <property name="sex" access="field" column="sex" type="string" />
+        <property name="desexed" access="field" column="desexed" type="boolean" />
+        <component name="dateOfBirth"
+          class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+          <property name="dateTime" column="date_of_birth" type="calendar"
+            access="field" />
+        </component>
+      </joined-subclass>
+    </joined-subclass>
+  </class>
+
+  <query name="role.getRowCount">
+    <![CDATA[
+			select count(role) from org.openvpms.component.business.domain.im.party.Role as 
+			role
+		]]>
+  </query>
+
+</hibernate-mapping>
