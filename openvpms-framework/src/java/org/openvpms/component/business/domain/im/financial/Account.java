@@ -57,8 +57,6 @@ public class Account extends Role {
      *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
-     *            the name 
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -68,9 +66,9 @@ public class Account extends Role {
      * @param details
      *            dynamic properties for this role
      */
-    public Account(String uid, ArchetypeId archetypeId, String name, 
+    public Account(String uid, ArchetypeId archetypeId, 
             String description, Set<Contact> contacts,
             DvInterval<DvDateTime> activePeriod, DynamicAttributeMap details) {
-        super(uid, archetypeId, name, description, contacts, activePeriod, details);
+        super(uid, archetypeId, description, contacts, activePeriod, details);
     }
 }
