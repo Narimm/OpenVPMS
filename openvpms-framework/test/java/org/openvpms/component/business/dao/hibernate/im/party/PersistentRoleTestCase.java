@@ -23,14 +23,14 @@ import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
 // openvpms-framework
-import org.openvpms.component.business.dao.hibernate.im.HibernateEntityUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.Classification;
-import org.openvpms.component.business.domain.im.Entity;
-import org.openvpms.component.business.domain.im.EntityClassification;
-import org.openvpms.component.business.domain.im.EntityIdentity;
-import org.openvpms.component.business.domain.im.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.Classification;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityClassification;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Role;
 
 /**
@@ -123,7 +123,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // now retrieve the role and add an entity identity
             tx = session.beginTransaction();
-            acount = HibernateEntityUtil.getTableRowCount(session,
+            acount = HibernateUtil.getTableRowCount(session,
                     "entityIdentity");
             Role role1 = (Role) session.load(Role.class, id);
             EntityIdentity eid = createEntityIdentity();
@@ -132,7 +132,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // check that the row has been added
-            acount1 = HibernateEntityUtil.getTableRowCount(session,
+            acount1 = HibernateUtil.getTableRowCount(session,
                     "entityIdentity");
             assertTrue(acount1 == (acount + 1));
         } catch (Exception exception) {
@@ -154,7 +154,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
         try {
             // get the initial row count in the role table
-            int acount = HibernateEntityUtil.getTableRowCount(session,
+            int acount = HibernateUtil.getTableRowCount(session,
                     "entityIdentity");
 
             // retrieve the entity identity to add
@@ -175,7 +175,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // check that row count
-            int acount1 = HibernateEntityUtil.getTableRowCount(session,
+            int acount1 = HibernateUtil.getTableRowCount(session,
                     "entityIdentity");
             assertTrue(acount1 == (acount + eicount));
 
@@ -191,7 +191,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // now check the number of rows in the EntityIdentity table
-            acount1 = HibernateEntityUtil.getTableRowCount(session,
+            acount1 = HibernateUtil.getTableRowCount(session,
                     "entityIdentity");
             assertTrue(acount1 == (acount + eicount - 1));
 
@@ -220,7 +220,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
 
             // get the initial count
-            int acount = HibernateEntityUtil.getTableRowCount(session,
+            int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             Role role = createRole();
             Role target = createRole();
@@ -238,7 +238,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             role.addSourceEntityRelationship(erel);
             tx.commit();
 
-            int acount1 = HibernateEntityUtil.getTableRowCount(session,
+            int acount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             assertTrue(acount1 == (acount + 1));
         } catch (Exception exception) {
@@ -264,7 +264,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
 
             // get the initial count
-            int acount = HibernateEntityUtil.getTableRowCount(session,
+            int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             Role role = createRole();
             Role target = createRole();
@@ -283,7 +283,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             role.addTargetEntityRelationship(erel);
             tx.commit();
 
-            int acount1 = HibernateEntityUtil.getTableRowCount(session,
+            int acount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             assertTrue(acount1 == (acount + 2));
 
@@ -318,7 +318,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
 
             // get the initial count
-            int acount = HibernateEntityUtil.getTableRowCount(session,
+            int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             Role role = createRole();
             session.save(role);
@@ -328,7 +328,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             role.addSourceEntityRelationship(erel);
             tx.commit();
 
-            int acount1 = HibernateEntityUtil.getTableRowCount(session,
+            int acount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             assertTrue(acount1 == (acount + 1));
 
@@ -341,7 +341,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx.commit();
 
             // ensure that there is one less row
-            acount1 = HibernateEntityUtil.getTableRowCount(session,
+            acount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
             assertTrue(acount1 == acount);
 
@@ -372,9 +372,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
 
             // get the initial count
-            int erelCount = HibernateEntityUtil.getTableRowCount(session,
+            int erelCount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            int eclassCount = HibernateEntityUtil.getTableRowCount(session,
+            int eclassCount = HibernateUtil.getTableRowCount(session,
                     "entityClassification");
             Role role = createRole();
             session.save(role);
@@ -388,9 +388,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             role.addEntityClassification(eclass);
             tx.commit();
 
-            int erelCount1 = HibernateEntityUtil.getTableRowCount(session,
+            int erelCount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            int eclassCount1 = HibernateEntityUtil.getTableRowCount(session,
+            int eclassCount1 = HibernateUtil.getTableRowCount(session,
                     "entityClassification");
             assertTrue(erelCount1 == (erelCount + 1));
             assertTrue(eclassCount1 == (eclassCount + 1));
@@ -433,7 +433,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             int eccount = ((Integer) this.getTestData().getTestCaseParameter(
                     "testAdditionRemovalEntityClassification", "normal",
                     "entityClassificationCount")).intValue();
-            int eclassCount = HibernateEntityUtil.getTableRowCount(session,
+            int eclassCount = HibernateUtil.getTableRowCount(session,
                     "entityClassification");
 
             tx = session.beginTransaction();
@@ -446,7 +446,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             }
             tx.commit();
 
-            int eclassCount1 = HibernateEntityUtil.getTableRowCount(session,
+            int eclassCount1 = HibernateUtil.getTableRowCount(session,
                     "entityClassification");
             assertTrue(eclassCount1 == (eclassCount + eccount));
 
@@ -462,7 +462,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             session.delete(eclass);
             tx.commit();
 
-            eclassCount1 = HibernateEntityUtil.getTableRowCount(session,
+            eclassCount1 = HibernateUtil.getTableRowCount(session,
                     "entityClassification");
             assertTrue(eclassCount1 == (eclassCount + eccount - 1));
             role = (Role) session.load(Role.class, role.getUid());
@@ -483,9 +483,8 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      * @return Role
      */
     private Role createRole() throws Exception {
-        return new Role(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "role"), "role.simple", null, null,
-                createTimeInterval(), createSimpleAttributeMap());
+        return new Role(getGenerator().nextId(), createRoleArchetypeId(), null, 
+                null, createTimeInterval(), createSimpleAttributeMap());
 
     }
 
@@ -495,8 +494,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      * @return EntityIdentity
      */
     private EntityIdentity createEntityIdentity() {
-        return new EntityIdentity(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "entityIdentity"), "eidentity", 
+        return new EntityIdentity(getGenerator().nextId(), createArchetypeId(), 
                 "isbn1203", createSimpleAttributeMap());
     }
 
@@ -508,8 +506,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
     private EntityRelationship createEntityRelationship(Entity source,
             Entity target) {
         return new EntityRelationship(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "entityIdentity"), 
-                "identity.simple", source, target, null);
+                createArchetypeId(), source, target, null);
     }
 
     /**
@@ -523,8 +520,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
     private EntityClassification createEntityClassification(Entity entity,
             Classification classification) {
         return new EntityClassification(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "entityClassification"),
-                "classification.simple", entity, classification, 
+                createEntityArchetypeId(), entity, classification, 
                 createTimeInterval());
     }
 
@@ -536,7 +532,47 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      */
     private Classification createClassification() throws Exception {
         return new Classification(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "classification"),
-                "classification.base", null, null);
+                createClassificationArchetypeId(), null, null);
     }
+    
+    /**
+     * Return a role archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createRoleArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common.party", 
+                "simple", "role", "Role", "1.0");
+    }
+
+    /**
+     * Return a entity identity archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createEntityArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
+                "simple", "entityIdentity", "EntityIdentity", "1.0");
+    }
+
+    /**
+     * Return a classificationarchetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createClassificationArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
+                "simple", "classification", "Classification", "1.0");
+    }
+
+    /**
+     * Return a entity identity archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
+                "simple", "entityIdentity", "EntityIdentity", "1.0");
+    }
+
 }

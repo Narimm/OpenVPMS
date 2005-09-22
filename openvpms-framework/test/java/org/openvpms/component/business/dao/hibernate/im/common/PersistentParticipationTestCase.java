@@ -17,17 +17,18 @@
  */
 
 
-package org.openvpms.component.business.dao.hibernate.im;
+package org.openvpms.component.business.dao.hibernate.im.common;
 
 // hibernate
 import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
 //openvpms-framework
+import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.Entity;
-import org.openvpms.component.business.domain.im.Participation;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Role;
 
 /**
@@ -209,9 +210,8 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Participation
      */
     private Participation createParticipation(Entity entity) {
-        return new Participation(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "participation"),
-                "participation.base", entity, null, null);
+        return new Participation(getGenerator().nextId(), createArchetypeId(),
+                entity, null, null);
     }
     
     /**
@@ -220,9 +220,8 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Entity
      */
     private Entity createEntity() {
-        return new Role(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "role"), "role.simple", null, null, 
-                createTimeInterval(), null);
+        return new Role(getGenerator().nextId(), createArchetypeId(),
+                null, null, createTimeInterval(), null);
 
     }
     
@@ -238,5 +237,15 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      */
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+    
+    /**
+     * Return the archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
+                "base", "participation", "Participation", "1.0");
     }
 }

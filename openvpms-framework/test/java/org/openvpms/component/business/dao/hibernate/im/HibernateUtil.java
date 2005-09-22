@@ -32,7 +32,7 @@ import net.sf.hibernate.Session;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class HibernateEntityUtil {
+public class HibernateUtil {
     /**
      * Return the number of rows in the specified table. It assumes that
      * there is a query in the form of table.getRowCount defined.

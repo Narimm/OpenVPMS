@@ -86,8 +86,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             Address address = createAddress();
             
-            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
-                    "contact-draft", "1.0"), "contact.general", activePeriod);
+            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
             session.save(contact);
             
             // add the address
@@ -124,8 +123,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
-                    "contact-draft", "1.0"), "contact.general", activePeriod);
+            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
             session.save(contact);
             tx.commit();
             
@@ -172,8 +170,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
-                    "contact-draft", "1.0"), "contact.general", activePeriod);
+            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -234,12 +231,11 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         try {
             // first we need to delete all Address and 
             // Contacts
-            //HibernateEntityUtil.deleteAllContacts(session);
+            //HibernateUtil.deleteAllContacts(session);
             
             
             tx = session.beginTransaction();
-            Contact contact = new Contact(id, new ArchetypeId("openvpms", 
-                    "contact-draft", "1.0"), "contact.general", activePeriod);
+            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -336,8 +332,17 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * @return Address
      */
     private Address createAddress() throws Exception {
-        return new Address(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "address", "1.0"), "homeAddress",
+        return new Address(getGenerator().nextId(), createArchetypeId(),
                 createSimpleAttributeMap());
+    }
+    
+    /**
+     * Return the archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common.party", 
+                "personalContact", "contact", "Contact", "1.0");
     }
 }

@@ -16,15 +16,17 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.hibernate.im;
+package org.openvpms.component.business.dao.hibernate.im.common;
 
 // hibernate
 import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
 // openvpms-framework
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.Classification;
+import org.openvpms.component.business.domain.im.common.Classification;
 
 /**
  * Test the hierarchical Classification data structure
@@ -69,7 +71,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         Transaction tx = null;
 
         try {
-            int acount = HibernateEntityUtil.getTableRowCount(session, "classification");
+            int acount = HibernateUtil.getTableRowCount(session, "classification");
 
             Classification classification = createClassification();
 
@@ -78,7 +80,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // ensure that there is still one more address
-            int acount1 = HibernateEntityUtil
+            int acount1 = HibernateUtil
                     .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
         } catch (Exception exception) {
@@ -99,7 +101,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         Transaction tx = null;
 
         try {
-            int acount = HibernateEntityUtil.getTableRowCount(
+            int acount = HibernateUtil.getTableRowCount(
                     session, "classification");
 
             Classification parent = createClassification();
@@ -118,7 +120,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // ensure that there is still one more address
-            int acount1 = HibernateEntityUtil
+            int acount1 = HibernateUtil
                     .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 4);
 
@@ -145,7 +147,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         Transaction tx = null;
 
         try {
-            int acount = HibernateEntityUtil
+            int acount = HibernateUtil
             .getTableRowCount(session, "classification");
 
             Classification parent = createClassification();
@@ -164,7 +166,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // ensure that there is still one more address
-            int acount1 = HibernateEntityUtil
+            int acount1 = HibernateUtil
                     .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 4);
 
@@ -180,7 +182,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             tx.commit();
 
             // check that there is one less entry than before
-            acount1 = HibernateEntityUtil
+            acount1 = HibernateUtil
             .getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 3);
 
@@ -240,9 +242,8 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
      * @thorws Exception
      */
     private Classification createClassification() throws Exception {
-        return new Classification(getGenerator().nextId(),
-                new ArchetypeId("openvpms", "classification", "1.0"),
-                "classification.base", null, null);
+        return new Classification(getGenerator().nextId(), createArchetypeId(),
+                null, null);
     }
 
     /**
@@ -292,5 +293,15 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         } else {
             return getClassification(root.getChildren()[0], currentLevel + 1, targetLevel);
         }
+    }
+    
+    /**
+     * Return the archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createArchetypeId() {
+        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
+                "base", "classification", "Classification", "1.0");
     }
 }

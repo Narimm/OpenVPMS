@@ -27,7 +27,7 @@ import net.sf.hibernate.Session;
 import net.sf.hibernate.Transaction;
 
 // openvpms framework
-import org.openvpms.component.business.dao.hibernate.im.HibernateEntityUtil;
+import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 
@@ -38,7 +38,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class HibernatePartyUtil extends HibernateEntityUtil {
+public class HibernatePartyUtil extends HibernateUtil {
     /**
      * Retrieve all the persistent address instances
      * 
