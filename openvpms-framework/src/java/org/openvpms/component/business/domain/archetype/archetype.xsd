@@ -31,13 +31,15 @@
 			</xsd:sequence>
 			<xsd:attribute name="shortName" type="xsd:string"
 				use="required" />
-			<xsd:attribute name="archetypeNamespace" type="xsd:string"
+			<xsd:attribute name="namespace" type="xsd:string"
 				use="required" />
-			<xsd:attribute name="archetypeName" type="xsd:string"
+			<xsd:attribute name="rmName" type="xsd:string"
 				use="required" />
-			<xsd:attribute name="version" type="xsd:string"
+			<xsd:attribute name="concept" type="xsd:string"
 				use="required" />
 			<xsd:attribute name="imClass" type="xsd:string"
+				use="required" />
+			<xsd:attribute name="version" type="xsd:string"
 				use="required" />
 		</xsd:complexType>
 	</xsd:element>

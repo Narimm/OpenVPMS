@@ -20,8 +20,10 @@ package org.openvpms.component.business.domain.archetype;
 
 // java core
 import java.io.Serializable;
+import java.util.StringTokenizer;
 
 // commons-lang
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -48,16 +50,31 @@ public class ArchetypeId implements Serializable {
      * The namespace
      */
     private String namespace;
-
+    
+    /**
+     * The reference model name
+     */
+    private String rmName;
+    
     /**
      * The archetype name
      */
-    private String name;
+    private String concept;
+    
+    /**
+     * The domain class name
+     */
+    private String imClass;
 
     /**
      * The version number
      */
     private String version;
+    
+    /**
+     * The fully qualified name
+     */
+    private String qName;
 
     /**
      * The empty constructor
@@ -67,51 +84,86 @@ public class ArchetypeId implements Serializable {
     }
 
     /**
-     * Generate an archetype id with namespace, name and version.
+     * Create an archetypeId from a fully qualified name
+     * 
+     * @param qname
+     *            the fully qualified name
+     * @throws ArchetypeIdException
+     *            if an illegal archetype id has been specified            
+     */
+    public ArchetypeId(String qname) {
+        if (StringUtils.isEmpty(qname)) {
+            throw new ArchetypeIdException(
+                    ArchetypeIdException.ErrorCode.EmptyQualifiedName);
+        }
+        
+        // tokenise using the hyphen
+        StringTokenizer tokens = new StringTokenizer(qname, "-");
+        if (tokens.countTokens() != 5) {
+            throw new ArchetypeIdException(
+                    ArchetypeIdException.ErrorCode.InvalidQNameFormat,
+                    new Object[] {qname});
+        }
+        
+        this.namespace = tokens.nextToken();
+        this.rmName = tokens.nextToken();
+        this.imClass = tokens.nextToken();
+        this.concept = tokens.nextToken();
+        this.version = tokens.nextToken();
+        this.qName = qname;
+        
+    }
+    
+    /**
+     * Create an archetype id based on the following components. This 
+     * information should be sufficient enough to identify a specific 
+     * archetype.
+     * <p>
+     * The namespace, rmName and imClass can be concatenated to prov ide 
      * 
      * @param namespace
-     * @param name
+     *            the namespace that the archetype belongs too
+     * @param rmName
+     *            the reference model name 
+     * @param concept
+     *            the concept that the archetype denotes
+     * @param imClass
+     *            the information model class name
      * @param version
+     *            the version of the archetype
+     * @throws ArchetypeIdExcpetion
+     *            if a legal archetype id cannot be constructed.            
      */
-    public ArchetypeId(String namespace, String name, String version) {
+    public ArchetypeId(String namespace, String rmName, String concept, 
+        String imClass, String version) {
+        
+        if ((StringUtils.isEmpty(namespace)) ||
+            (StringUtils.isEmpty(rmName)) ||
+            (StringUtils.isEmpty(concept)) ||
+            (StringUtils.isEmpty(imClass)) ||
+            (StringUtils.isEmpty(version))) {
+            throw new ArchetypeIdException(
+                    ArchetypeIdException.ErrorCode.EmptyElement);
+        }
+        
         this.namespace = namespace;
-        this.name = name;
+        this.rmName = rmName;
+        this.concept = concept;
+        this.imClass = imClass;
         this.version = version;
-    }
-
-    /**
-     * Generate an archetype id with namespace and name.
-     * 
-     * @param namespace
-     * @param name
-     */
-    public ArchetypeId(String namespace, String name) {
-        this.namespace = namespace;
-        this.name = name;
-    }
-
-    /**
-     * Generate an archetype id with name.
-     * 
-     * @param name
-     */
-    public ArchetypeId(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name
-     *            The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
+        
+        //concatenate the elements
+        this.qName = 
+            new StringBuffer(namespace)
+                .append("-")
+                .append(rmName)
+                .append("-")
+                .append(imClass)
+                .append("-")
+                .append(concept)
+                .append("-")
+                .append(version)
+                .toString();
     }
 
     /**
@@ -122,14 +174,6 @@ public class ArchetypeId implements Serializable {
     }
 
     /**
-     * @param namespace
-     *            The namespace to set.
-     */
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    /**
      * @return Returns the version.
      */
     public String getVersion() {
@@ -137,13 +181,46 @@ public class ArchetypeId implements Serializable {
     }
 
     /**
-     * @param version
-     *            The version to set.
+     * @return Returns the concept.
      */
-    public void setVersion(String version) {
-        this.version = version;
+    public String getConcept() {
+        return concept;
     }
 
+    /**
+     * @return Returns the imClass.
+     */
+    public String getImClass() {
+        return imClass;
+    }
+
+    /**
+     * @return Returns the qName.
+     */
+    public String getQName() {
+        return qName;
+    }
+
+    /**
+     * @return Returns the rmName.
+     */
+    public String getRmName() {
+        return rmName;
+    }
+
+    /**
+     * Return the short name, which is the concatenation of the rmName and 
+     * the concept
+     * 
+     * @return String
+     */
+    public String getShortName() {
+        return new StringBuffer(rmName)
+            .append(".")
+            .append(concept)
+            .toString();
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -163,9 +240,10 @@ public class ArchetypeId implements Serializable {
         
         ArchetypeId rhs = (ArchetypeId) obj;
         return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
             .append(namespace, rhs.namespace)
-            .append(name, rhs.name)
+            .append(concept, rhs.concept)
+            .append(rmName, rhs.rmName)
+            .append(imClass, rhs.imClass)
             .append(version, rhs.version)
             .isEquals();
     }
@@ -179,8 +257,10 @@ public class ArchetypeId implements Serializable {
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
             .append(namespace)
+            .append(concept)
+            .append(rmName)
+            .append(imClass)
             .append(version)
-            .append(name)
             .toHashCode();
     }
 
@@ -193,7 +273,9 @@ public class ArchetypeId implements Serializable {
     public String toString() {
         return new ToStringBuilder(this)
             .append("namespace", namespace)
-            .append("name", name)
+            .append("concept", concept)
+            .append("rmName", rmName)
+            .append("imClass", imClass)
             .append("version", version)
             .toString();
     }
