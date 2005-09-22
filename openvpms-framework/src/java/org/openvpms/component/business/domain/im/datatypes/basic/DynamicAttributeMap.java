@@ -51,35 +51,35 @@ public class DynamicAttributeMap extends DataValue {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.datatypes.basic.IDynamicAttributes#setAttribute(java.lang.String, java.io.Serializable)
+     * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#setAttribute(java.lang.String, java.io.Serializable)
      */
     public void setAttribute(String name, Serializable value) {
         attributes.put(name, value);
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.datatypes.basic.IDynamicAttributes#removeAttribute(java.lang.String)
+     * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#removeAttribute(java.lang.String)
      */
     public Serializable removeAttribute(String name) {
         return attributes.remove(name);
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.datatypes.basic.IDynamicAttributes#getAttributeValue(java.lang.String)
+     * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#getAttributeValue(java.lang.String)
      */
     public Serializable getAttributeValue(String name) {
         return attributes.get(name);
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.datatypes.basic.IDynamicAttributes#getAttributeType(java.lang.String)
+     * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#getAttributeType(java.lang.String)
      */
     public String getAttributeType(String name) {
         return attributes.get(name).getClass().getName();
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.datatypes.basic.IDynamicAttributes#getAttributeNames()
+     * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#getAttributeNames()
      */
     public String[] getAttributeNames() {
         return (String[])attributes.keySet().toArray(
@@ -87,7 +87,7 @@ public class DynamicAttributeMap extends DataValue {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.datatypes.basic.IDynamicAttributes#getAttributeValues()
+     * @see org.openvpms.component.business.domain.im.common.datatypes.basic.IDynamicAttributes#getAttributeValues()
      */
     public Serializable[] getAttributeValues() {
         return (Serializable[])attributes.values().toArray(
