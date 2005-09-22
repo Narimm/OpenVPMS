@@ -20,7 +20,7 @@ package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * This interface defines the services that are provided by the archetype

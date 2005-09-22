@@ -43,7 +43,7 @@ import org.openvpms.component.business.domain.archetype.AssertionType;
 import org.openvpms.component.business.domain.archetype.Assertion;
 import org.openvpms.component.business.domain.archetype.AssertionTypes;
 import org.openvpms.component.business.domain.archetype.Node;
-import org.openvpms.component.business.domain.im.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.service.uuid.IUUIDGenerator;
 
 /**
@@ -210,7 +210,7 @@ public class ArchetypeService implements IArchetypeService {
     /*
      * (non-Javadoc)
      * 
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.IMObject)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public boolean validateObject(IMObject object) {
 
@@ -262,6 +262,14 @@ public class ArchetypeService implements IArchetypeService {
                 .size()]);
     }
 
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
+     */
+    public IArchetypeDescriptor getArchetypeDescriptor(String name) {
+        return null;
+    }
+    
     /**
      * Iterate through all the nodes and ensure that the object meets all the
      * specified assertions. The assertions are defined in the node and can be
@@ -449,10 +457,12 @@ public class ArchetypeService implements IArchetypeService {
      */
     private void loadArchetypeRecords(Archetypes records) {
         for (Archetype archetype : records.getArchetype()) {
-            ArchetypeRecord record = new ArchetypeRecord(archetype
-                    .getShortName(), new ArchetypeId(archetype
-                    .getArchetypeNamespace(), archetype.getArchetypeName(),
-                    archetype.getVersion()), archetype.getImClass(), archetype);
+            ArchetypeRecord record = new ArchetypeRecord(
+                    archetype.getShortName(), new ArchetypeId(
+                    archetype.getNamespace(), archetype.getRmName(),
+                    archetype.getConcept(), archetype.getImClass(),
+                    archetype.getVersion()), 
+                    getClassNameFromArchetype(archetype), archetype);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing archetype record "
@@ -636,13 +646,23 @@ public class ArchetypeService implements IArchetypeService {
             }
         }
     }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
+    
+    /**
+     * Return the fully qualified java class name from the archetype 
+     * 
+     * @param record
+     *            the archetype record
+     * @return String
+     *            the fully qualified class name
      */
-    public IArchetypeDescriptor getArchetypeDescriptor(String name) {
-        // TODO Auto-generated method stub
-        return null;
+    private String getClassNameFromArchetype(Archetype record) {
+        return new StringBuilder()
+            .append(record.getNamespace())
+            .append(".")
+            .append(record.getRmName())
+            .append(".")
+            .append(record.getImClass())
+            .toString() ;
     }
     
 }
