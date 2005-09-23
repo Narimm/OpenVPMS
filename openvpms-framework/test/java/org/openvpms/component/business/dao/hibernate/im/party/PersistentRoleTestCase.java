@@ -541,8 +541,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      * @return ArchetypeId
      */
     private ArchetypeId createRoleArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common.party", 
-                "simple", "role", "Role", "1.0");
+        return new ArchetypeId("openvpms-party-role.role.1.0");
     }
 
     /**
@@ -551,8 +550,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      * @return ArchetypeId
      */
     private ArchetypeId createEntityArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
-                "simple", "entityIdentity", "EntityIdentity", "1.0");
+        return new ArchetypeId("openvpms-common-entity.entity.1.0");
     }
 
     /**
@@ -561,8 +559,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      * @return ArchetypeId
      */
     private ArchetypeId createClassificationArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
-                "simple", "classification", "Classification", "1.0");
+        return new ArchetypeId("openvpms-common-classification.classification.1.0");
     }
 
     /**
@@ -571,8 +568,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      * @return ArchetypeId
      */
     private ArchetypeId createArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
-                "simple", "entityIdentity", "EntityIdentity", "1.0");
+        return new ArchetypeId("openvpms-common-entityId.entityId.1.0");
     }
 
 }

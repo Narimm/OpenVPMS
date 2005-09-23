@@ -213,7 +213,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 == ((Integer)params.get("recordCount1")).intValue());
         
         // test retrieval for anything with animal
-        assertTrue(registry.getArchetypeRecords(".*animal.*").length 
+        assertTrue(registry.getArchetypeRecords(".*pet.*").length 
                 == ((Integer)params.get("recordCount2")).intValue());
         
         // test retrieval for anything that starts with person

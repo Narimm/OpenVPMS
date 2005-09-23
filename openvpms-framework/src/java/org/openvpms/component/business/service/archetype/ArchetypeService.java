@@ -240,8 +240,8 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords()
      */
     public ArchetypeRecord[] getArchetypeRecords() {
-        return (ArchetypeRecord[]) this.archetypesByShortName.values().toArray(
-                new ArchetypeRecord[this.archetypesByShortName.size()]);
+        return (ArchetypeRecord[]) this.archetypesById.values().toArray(
+                new ArchetypeRecord[this.archetypesById.size()]);
     }
 
     /*
@@ -253,7 +253,8 @@ public class ArchetypeService implements IArchetypeService {
         List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
 
         for (String name : this.archetypesByShortName.keySet()) {
-            if (name.matches(shortName)) {
+            if ((name.matches(shortName)) &&
+                !(records.contains(this.archetypesByShortName.get(name)))) {
                 records.add(this.archetypesByShortName.get(name));
             }
         }
@@ -457,11 +458,10 @@ public class ArchetypeService implements IArchetypeService {
      */
     private void loadArchetypeRecords(Archetypes records) {
         for (Archetype archetype : records.getArchetype()) {
-            ArchetypeId archId = new ArchetypeId(archetype.getNamespace(), 
-                    archetype.getRmName(), archetype.getConcept(), 
-                    archetype.getImClass(),archetype.getVersion());
+            ArchetypeId archId = new ArchetypeId(archetype.getName());
             
-            ArchetypeRecord record = new ArchetypeRecord(archId, archetype);
+            ArchetypeRecord record = new ArchetypeRecord(archId, 
+                    archetype.getClassName(), archetype);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing archetype record "
@@ -478,9 +478,20 @@ public class ArchetypeService implements IArchetypeService {
                 }
 
                 Thread.currentThread().getContextClassLoader().loadClass(
-                        archId.getJavaClassName());
+                        record.getClassName());
+                
+                // cache the record
                 archetypesByShortName.put(archId.getShortName(), record);
                 archetypesById.put(archId, record);
+                
+                // if this is the latest version of an archetype then we 
+                // create another alias for it
+                if (archetype.getLatest()) {
+                    archetypesByShortName.put(
+                            archId.getEntityName() + "." + archId.getConcept(),
+                            record);
+                }
+                
                 if (logger.isDebugEnabled()) {
                     logger.debug("Loading [" + archId.getShortName() + "] "
                             + archId.toString());
@@ -488,7 +499,7 @@ public class ArchetypeService implements IArchetypeService {
             } catch (ClassNotFoundException excpetion) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.FailedToLoadClass,
-                        new Object[] { archId.getJavaClassName() }, excpetion);
+                        new Object[] { record.getClassName() }, excpetion);
             }
 
             // check that the assertions are specified correctly
@@ -538,15 +549,14 @@ public class ArchetypeService implements IArchetypeService {
     private Object createDefaultObject(ArchetypeRecord record) {
         Object obj = null;
         try {
-            Class domainClass = Class.forName(
-                    record.getArchetypeId().getJavaClassName());
+            Class domainClass = Class.forName(record.getClassName());
             obj = domainClass.newInstance();
 
             // the object must be an instance of {@link IMObject}
             if (!(obj instanceof IMObject)) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.InvalidIMClass,
-                        new Object[] { record.getArchetypeId().getJavaClassName() });
+                        new Object[] { record.getClassName() });
             }
 
             // cast to imobject and set the archetype and the uuid.

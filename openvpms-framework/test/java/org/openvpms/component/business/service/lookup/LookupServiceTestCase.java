@@ -1,0 +1,99 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.component.business.service.lookup;
+
+// spring-context
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+
+/**
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class LookupServiceTestCase extends
+        AbstractDependencyInjectionSpringContextTests {
+    
+    /**
+     * Holds a reference to the party service
+     */
+    private LookupService lookupService;
+    
+
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(LookupServiceTestCase.class);
+    }
+
+    /**
+     * Default constructor
+     */
+    public LookupServiceTestCase() {
+    }
+
+    /**
+     * @param partyService The partyService to set.
+     */
+    public void setLookupService(LookupService lookupService) {
+        this.lookupService = lookupService;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
+     */
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[] { 
+                "org/openvpms/component/business/service/lookup/lookup-service-appcontext.xml" 
+                };
+    }
+
+    /**
+     * Test that we can create an object through this service
+     */
+    public void testLookupObjectCreation()
+    throws Exception {
+        for (int index = 0; index < 5; index++) {
+            Lookup lookup = lookupService.createLookup("lookup.country");
+            assertTrue(lookup != null);
+            
+            // set to meet the archetype requirements
+            lookup.setValue("Autralia-" + index);
+            lookup.setCode("AU-" + index);
+            
+            // insert the party object
+            lookupService.insertLookup(lookup);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
+     */
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        
+        this.lookupService= (LookupService)applicationContext.getBean(
+                "lookupService");
+    }
+
+}

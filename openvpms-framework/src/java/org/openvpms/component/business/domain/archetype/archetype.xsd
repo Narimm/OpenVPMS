@@ -29,16 +29,11 @@
 				<xsd:element ref="tns:node" minOccurs="0"
 					maxOccurs="unbounded" />
 			</xsd:sequence>
-			<xsd:attribute name="namespace" type="xsd:string"
+			<xsd:attribute name="name" type="xsd:string"
 				use="required" />
-			<xsd:attribute name="rmName" type="xsd:string"
+			<xsd:attribute name="className" type="xsd:string"
 				use="required" />
-			<xsd:attribute name="concept" type="xsd:string"
-				use="required" />
-			<xsd:attribute name="imClass" type="xsd:string"
-				use="required" />
-			<xsd:attribute name="version" type="xsd:string"
-				use="required" />
+			<xsd:attribute name="latest" type="xsd:boolean" default="true" />
 		</xsd:complexType>
 	</xsd:element>
 

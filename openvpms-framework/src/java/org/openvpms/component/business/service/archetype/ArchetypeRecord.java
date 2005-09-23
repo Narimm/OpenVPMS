@@ -50,6 +50,11 @@ public class ArchetypeRecord implements Serializable {
     private ArchetypeId archetypeId;
     
     /**
+     * The fully qualified java class name
+     */
+    private String className;
+    
+    /**
      * The archetype details 
      */
     private Archetype archetype;
@@ -58,17 +63,16 @@ public class ArchetypeRecord implements Serializable {
      * Construct a record using a short name, ans archetype id and the 
      * associated information model class
      * 
-     * @param name
-     *            the name of the record.
      * @param id
      *            the archetype id
-     * @param imClass
-     *            the info model class name
+     * @param className
+     *            the java class name
      * @param archetype
      *            the archetype details            
      */
-    public ArchetypeRecord(ArchetypeId id, Archetype archetype) {
+    public ArchetypeRecord(ArchetypeId id, String className, Archetype archetype) {
         this.archetypeId = id;
+        this.className = className; 
         this.archetype = archetype;
     }
 
@@ -100,6 +104,20 @@ public class ArchetypeRecord implements Serializable {
         this.archetype = archetype;
     }
     
+    /**
+     * @return Returns the className.
+     */
+    public String getClassName() {
+        return className;
+    }
+
+    /**
+     * @param className The className to set.
+     */
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
     /**
      * Retrieve the node for a particular path or null if one doesn't
      * exist.
@@ -149,6 +167,7 @@ public class ArchetypeRecord implements Serializable {
     public String toString() {
         return new ToStringBuilder(this)
             .append("archetypeId", archetypeId)
+            .append("className", className)
             .toString();
     }
 }

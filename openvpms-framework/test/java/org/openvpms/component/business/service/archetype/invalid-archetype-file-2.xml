@@ -1,6 +1,5 @@
 <archetypes>
-  <archetype namespace="org.openvpms" rmName="party" imClass="party.Person"
-    version="1.0">
+  <archetype className="org.openvpms.component.business.domain.im.party.Person">
     <node />
   </archetype>
 </archetypes>

@@ -210,7 +210,8 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Participation
      */
     private Participation createParticipation(Entity entity) {
-        return new Participation(getGenerator().nextId(), createArchetypeId(),
+        return new Participation(getGenerator().nextId(), 
+                new ArchetypeId("openvpms-common-participation.participation.1.0"),
                 entity, null, null);
     }
     
@@ -220,7 +221,8 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Entity
      */
     private Entity createEntity() {
-        return new Role(getGenerator().nextId(), createArchetypeId(),
+        return new Role(getGenerator().nextId(),
+                new ArchetypeId("openvpms-party-role.role.1.0"),
                 null, null, createTimeInterval(), null);
 
     }
@@ -239,13 +241,4 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
         super.tearDown();
     }
     
-    /**
-     * Return the archetype Id
-     * 
-     * @return ArchetypeId
-     */
-    private ArchetypeId createArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
-                "base", "participation", "Participation", "1.0");
-    }
 }

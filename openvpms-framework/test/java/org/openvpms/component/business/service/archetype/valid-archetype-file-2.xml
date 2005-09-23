@@ -1,21 +1,21 @@
 <archetypes>
-  <archetype namespace="org.openvpms" rmName="party" concept="customer"
-    imClass="party.Person" version="1.0">
+  <archetype name="openvpms-party-person.customer.1.0"
+    className="org.openvpms.component.business.domain.im.party.Person">
     <node name="name" path="/name" type="java.lang.String"
       minCardinality="1" />
   </archetype>
-  <archetype namespace="org.openvpms" rmName="party" concept="animal"
-    imClass="party.Person" version="1.0">
+  <archetype name="openvpms-party-animal.pet.1.0"
+    className="org.openvpms.component.business.domain.im.party.Animal">
     <node name="name" path="/name" type="java.lang.String"
       minCardinality="1" />
   </archetype>
-  <archetype namespace="org.openvpms" rmName="party" concept="supplier"
-    imClass="party.Person" version="1.0">
+  <archetype name="openvpms-party-party.supplier.1.0"
+    className="org.openvpms.component.business.domain.im.party.Person">
     <node name="name" path="/name" type="java.lang.String"
       minCardinality="1" />
   </archetype>
-  <archetype namespace="org.openvpms" rmName="party" concept="administrator"
-    imClass="party.Person" version="1.0">
+  <archetype name="openvpms-party-party.administrator.1.0"
+    className="org.openvpms.component.business.domain.im.party.Person">
     <node name="name" path="/name" type="java.lang.String"
       minCardinality="1" />
   </archetype>

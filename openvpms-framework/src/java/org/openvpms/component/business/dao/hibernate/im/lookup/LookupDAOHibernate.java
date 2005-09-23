@@ -154,7 +154,7 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToInsertLookup,
-                    new Object[] { lookup });
+                    new Object[] { lookup }, exception);
         }
     }
 

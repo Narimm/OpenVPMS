@@ -301,7 +301,6 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
      * @return ArchetypeId
      */
     private ArchetypeId createArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common", 
-                "base", "classification", "Classification", "1.0");
+        return new ArchetypeId("openvpms-party-classification.classification.1.0");
     }
 }

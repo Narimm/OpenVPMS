@@ -1,6 +1,7 @@
 <archetypes>
-  <archetype namespace="org.openvpms" rmName="party" concept="person"
-    imClass="party.Person" version="1.0">
+  <archetype name="openvpms-party-person.person.1.0"
+    className="org.openvpms.component.business.domain.im.party.Person"
+    latest="false">
     <node name="name" type="java.lang.String" minCardinality="1" />
     <node />
   </archetype>

@@ -1,6 +1,5 @@
 <archetypes>
-  <archetype namespace="org.openvpms" rmName="party" concept="person"
-    version="1.0">
+  <archetype name="openvpms-party-person.person.1.0" latest="true" >
     <node />
   </archetype>
 </archetypes>

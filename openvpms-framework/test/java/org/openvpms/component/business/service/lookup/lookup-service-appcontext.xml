@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+  "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+  <!--  Property configuration -->
+  <bean id="props"
+    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="locations">
+      <list>
+        <value>classpath:hibernate.properties</value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  The MySQL DataSource -->
+  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="driverClassName"
+      value="${hibernate.connection.driver_class}" />
+    <property name="url" value="${hibernate.connection.url}" />
+    <property name="username" value="${hibernate.connection.username}" />
+    <property name="password" value="${hibernate.connection.password}" />
+  </bean>
+
+  <!--  Hibernate session factory -->
+  <bean id="sessionFactory"
+    class="org.springframework.orm.hibernate.LocalSessionFactoryBean">
+    <property name="dataSource">
+      <ref local="mySQLDataSource" />
+    </property>
+    <property name="hibernateProperties">
+      <props>
+        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
+        <prop key="hibernate.c3p0.max_statements">
+          ${hibernate.c3p0.max_statements}
+        </prop>
+      </props>
+    </property>
+    <property name="mappingDirectoryLocations">
+      <list>
+        <value>classpath:/org/openvpms/component/business/domain/im/lookup</value>
+        <value>classpath:/org/openvpms/component/business/domain/im/common</value>
+        <value>classpath:/org/openvpms/component/business/domain/im/party</value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  The UUID Service -->
+  <bean id="uuidService"
+    class="org.openvpms.component.system.service.uuid.JUGGenerator">
+    <constructor-arg index="0">
+      <value>a7:51:b8:83:9d:f8</value>
+    </constructor-arg>
+  </bean>
+
+  <!--  Need this bean to support database style assertions (i.e. reference data -->
+  <bean id="dbAssertion"
+    class="org.openvpms.component.business.service.archetype.assertion.DatabaseAssertions">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+  
+  <!--  The Archetype Service -->
+  <bean id="archetypeService"
+    class="org.openvpms.component.business.service.archetype.ArchetypeService">
+    <constructor-arg index="0">
+      <ref bean="uuidService" />
+    </constructor-arg>
+    <constructor-arg index="1" value="target/classes/org/openvpms/archetype" />
+    <constructor-arg index="2">
+      <list>
+        <value>adl</value>
+      </list>
+    </constructor-arg>
+    <constructor-arg index="3"
+      value="org/openvpms/archetype/assertionTypes.xml" />
+  </bean>
+
+  <!--  The Lookup DAO bean -->
+  <bean id="lookupDao"
+    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+
+  <!--  The Lookup Service -->
+  <bean id="lookupService"
+    class="org.openvpms.component.business.service.lookup.LookupService">
+    <constructor-arg index="0">
+      <ref bean="archetypeService" />
+    </constructor-arg>
+    <constructor-arg index="1">
+      <ref bean="lookupDao" />
+    </constructor-arg>
+  </bean>
+
+</beans>

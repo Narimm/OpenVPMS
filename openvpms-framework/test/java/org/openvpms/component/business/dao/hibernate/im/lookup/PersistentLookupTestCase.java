@@ -290,7 +290,6 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
      * @return ArchetypeId
      */
     private ArchetypeId createLookArchetypeId(String concept) {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.lookup", 
-                "lookup", concept, "Lookup", "1.0");
+        return new ArchetypeId("openvpms-lookup-lookup." + concept + ".1.0");
     }
 }

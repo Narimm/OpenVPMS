@@ -1,7 +1,6 @@
 <archetypes>
-	<archetype namespace="org.openvpms" rmName="entityRelationship"
-		concept="animalCarer" imClass="common.EntityRelationship"
-		version="1.0">
+	<archetype name="openvpms-common-entityRelationship.animalCarer.1.0" 
+		className="org.openvpms.component.business.domain.im.common.EntityRelationship">
 		<node name="sequence" path="/sequence" type="java.lang.Integer"
 			minCardinality="1" />
 		<node name="reason" path="/reason" type="java.lang.String" />

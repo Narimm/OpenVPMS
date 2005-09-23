@@ -61,7 +61,7 @@ public class Lookup extends IMObject {
     /**
      * Default constructor
      */
-    protected Lookup() {
+    public Lookup() {
     }
 
     /**

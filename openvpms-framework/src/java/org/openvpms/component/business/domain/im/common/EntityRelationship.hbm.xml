@@ -36,8 +36,8 @@
 				column="archetype_rm_name" type="string" />
 			<property name="concept" access="field"
 				column="archetype_concept" type="string" />
-			<property name="imClass" access="field"
-				column="archetype_im_class" type="string" />
+			<property name="entityName" access="field"
+				column="archetype_entity_name" type="string" />
 			<property name="version" access="field"
 				column="archetype_version" type="string" />
 		</component>

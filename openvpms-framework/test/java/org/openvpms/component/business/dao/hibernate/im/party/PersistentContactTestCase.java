@@ -86,7 +86,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             Address address = createAddress();
             
-            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
+            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
             session.save(contact);
             
             // add the address
@@ -123,7 +123,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
+            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
             session.save(contact);
             tx.commit();
             
@@ -170,7 +170,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
+            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -235,7 +235,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             
             tx = session.beginTransaction();
-            Contact contact = new Contact(id, createArchetypeId(), activePeriod);
+            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -332,17 +332,25 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * @return Address
      */
     private Address createAddress() throws Exception {
-        return new Address(getGenerator().nextId(), createArchetypeId(),
+        return new Address(getGenerator().nextId(), createAddressArchetypeId(),
                 createSimpleAttributeMap());
     }
     
     /**
-     * Return the archetype Id
+     * Return a contact archetype Id
      * 
      * @return ArchetypeId
      */
-    private ArchetypeId createArchetypeId() {
-        return new ArchetypeId("org.openvpms.component.business.domain.im.common.party", 
-                "personalContact", "contact", "Contact", "1.0");
+    private ArchetypeId createContactArchetypeId() {
+        return new ArchetypeId("openvpms-party-contact.contact.1.0");
+    }
+    
+    /**
+     * Return an address archetype Id
+     * 
+     * @return ArchetypeId
+     */
+    private ArchetypeId createAddressArchetypeId() {
+        return new ArchetypeId("openvpms-party-address.address.1.0");
     }
 }
