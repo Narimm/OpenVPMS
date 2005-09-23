@@ -40,11 +40,19 @@
         </prop>
       </props>
     </property>
-    <property name="mappingDirectoryLocations">
+    <property name="mappingResources">
       <list>
-        <value>classpath:/org/openvpms/component/business/domain/im/lookup</value>
-        <value>classpath:/org/openvpms/component/business/domain/im/common</value>
-        <value>classpath:/org/openvpms/component/business/domain/im/party</value>
+        <value>/org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Act.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Classification.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Entity.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/EntityClassification.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Participation.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/party/Address.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/party/Contact.hbm.xml</value>
       </list>
     </property>
   </bean>
