@@ -42,10 +42,10 @@ public class Organization extends Actor {
     /**
      * Constructs an organization entity.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the name of the organization            
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -55,9 +55,9 @@ public class Organization extends Actor {
      * @param details 
      *            actor details
      */
-    public Organization(String uid, ArchetypeId archetypeId, 
+    public Organization(ArchetypeId archetypeId, String name, 
             String description, Set<Contact> contacts, Set<Role> roles,
             DynamicAttributeMap details) {
-        super(uid, archetypeId, description, contacts, roles, details);
+        super(archetypeId, name, description, contacts, roles, details);
     }
 }

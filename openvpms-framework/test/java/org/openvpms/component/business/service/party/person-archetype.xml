@@ -1,5 +1,0 @@
-<archetypes>
-  <archetype namespace="org.openvpms" rmName="party" concept="person"
-    imClass="party.Person" version="1.0">
-  </archetype>
-</archetypes>

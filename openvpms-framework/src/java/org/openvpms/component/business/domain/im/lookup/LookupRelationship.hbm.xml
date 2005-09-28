@@ -17,23 +17,23 @@
   #  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
-        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
   <class
     name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
     table="lookup_relationship">
-    <id name="uid" access="field" type="int" unsaved-value="null">
-      <column name="lookup_relationship_id" index="lookup_Relationship_id_idx" />
+    <id name="uid" access="field" type="long" unsaved-value="-1">
+      <column name="lookup_relationship_id" index="lookup_relationship_id_idx" />
       <generator class="increment" />
     </id>
     <version name="version" access="field" type="long" />
     <property name="type" access="field" column="type" type="string" />
     <component name="source" access="field">
-      <property name="uid" column="source" type="string" />
+      <property name="uid" column="source" type="long" />
     </component>
     <component name="target" access="field">
-      <property name="uid" column="target" type="string" />
+      <property name="uid" column="target" type="long" />
     </component>
   </class>
 

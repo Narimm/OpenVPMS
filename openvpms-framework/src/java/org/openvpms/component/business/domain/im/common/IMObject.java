@@ -25,8 +25,10 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.support.IMObjectReference;
+import org.openvpms.component.system.service.uuid.JUGGenerator;
+import org.safehaus.uuid.UUIDGenerator;
 
 /**
  * This is the base class for information model objects. An {@link IMObject} 
@@ -45,14 +47,38 @@ public abstract class IMObject implements Serializable {
     private static final long serialVersionUID = 1L;
     
     /**
+     * An internal UUID generator
+     */
+    @SuppressWarnings("unused")
+    private static JUGGenerator generator = new JUGGenerator(
+            UUIDGenerator.getInstance().getDummyAddress().toString());
+    
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(IMObject.class);
+
+    /**
      * Indicates the version of this object
      */
     private long version;
     
     /**
-     * Uniquely identifies an instance of this class 
+     * This is the link id for the object, which is used to associated one 
+     * IMObject with another in hibernate. This is required to support cascade
+     * save/updates and to work reliable in detached mode and to allow the 
+     * a call to saveOrUpdate to be made. This is not be confused with the 
+     * object id, which  is set by the mapping
      */
-    private String uid;
+    private String linkId;
+    
+    
+    /**
+     * Uniquely identifies an instance of this class. This is the identifier
+     * that is used for persistence.
+     */
+    private long uid = -1;
     
     /**
      * The archetype that is attached to this object
@@ -70,18 +96,12 @@ public abstract class IMObject implements Serializable {
      * Construct an instance of an info model object given the specified 
      * data.
      * 
-     * @param uid
-     *            the object's unique identity.
      * @param archetypeId
-     *            the id of the archetype to associated with this object.
-     * @param imVersion
-     *            the version of the information model.           
-     * @param archetypeNodeId
-     *            the node identity that this archetype.
+     *            the archetype id.
      */
-    public IMObject(String uid, ArchetypeId archetypeId) {
-        this.uid = uid;
+    public IMObject(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
+        this.linkId = generator.nextId();
     }
     /**
      * @return Returns the version.
@@ -93,21 +113,21 @@ public abstract class IMObject implements Serializable {
     /**
      * @param version The version to set.
      */
-    public void setVersion(long version) {
+    public void setVersion(long version) { 
         this.version = version;
     }
 
     /**
      * @return Returns the id.
      */
-    public String getUid() {
+    public long getUid() {
         return this.uid;
     }
 
     /**
      * @param id The id to set.
      */
-    public void setUid(String id) {
+    public void setUid(long id) {
         this.uid = id;
     }
     
@@ -125,34 +145,16 @@ public abstract class IMObject implements Serializable {
         this.archetypeId = archetypeId;
     }
 
-    /**
-     * Return an {@link IMObjectReference} to this object
-     * 
-     * @return IMObjectReference
-     */
-    public IMObjectReference getObjectReference() {
-        return new IMObjectReference(this.getClass().getName(), getUid());
-    }
-
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     public boolean equals(Object obj) {
-        // different object types
-        if (obj instanceof IMObject == false) {
-            return false;
-        }
-        
-        // same object
-        if (this == obj) {
-            return true;
-        }
-        
         IMObject rhs = (IMObject)obj;
         return new EqualsBuilder()
             .append(uid, rhs.uid)
             .append(archetypeId, rhs.archetypeId)
+            .append(linkId, rhs.linkId)
             .isEquals();
     }
 
@@ -161,9 +163,8 @@ public abstract class IMObject implements Serializable {
      */
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-            .append(uid)    
-            .append(archetypeId)
+        return new HashCodeBuilder()
+            .append(linkId)    
             .toHashCode();
     }
 
@@ -175,6 +176,7 @@ public abstract class IMObject implements Serializable {
         return new ToStringBuilder(this)
             .append("uid", uid)
             .append("archetypeId", archetypeId)
+            .append("linkId", linkId)
             .toString();
     }
 }

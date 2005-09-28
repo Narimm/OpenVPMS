@@ -44,7 +44,6 @@ import org.openvpms.component.business.domain.archetype.Assertion;
 import org.openvpms.component.business.domain.archetype.AssertionTypes;
 import org.openvpms.component.business.domain.archetype.Node;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.service.uuid.IUUIDGenerator;
 
 /**
  * This basic implementation of an archetype service, which reads in the
@@ -67,11 +66,6 @@ public class ArchetypeService implements IArchetypeService {
             .getLogger(ArchetypeService.class);
 
     /**
-     * A reference to the UUIDGenerator, which it uses during the create process
-     */
-    private IUUIDGenerator uuidGenerator;
-
-    /**
      * In memory cache of the archetype definitions keyed on the short name.
      */
     private Map<String, ArchetypeRecord> archetypesByShortName;
@@ -88,14 +82,12 @@ public class ArchetypeService implements IArchetypeService {
 
     /**
      * Construct an instance of this class by loading and parsing all the
-     * archetype definitions in the specified file. The file must b
+     * archetype definitions in the specified file.
      * <p>
      * The resource specified by afile must be loadable from the classpath. A
      * similar constraint applies to the resourcr specified by adir, it must be
      * a valid path in the classpath.
      * 
-     * @param uuidGenerator
-     *            the uuid generator is used to assign ids during objct creation
      * @param archeFile
      *            the file that holds all the archetype records.
      * @param assertFile
@@ -104,9 +96,7 @@ public class ArchetypeService implements IArchetypeService {
      *             if it cannot successfully bootstrap the service. This is a
      *             runtime exception
      */
-    public ArchetypeService(IUUIDGenerator uuidGenerator, String archeFile,
-            String assertFile) {
-        this.uuidGenerator = uuidGenerator;
+    public ArchetypeService(String archeFile, String assertFile) {
         this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
         this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
         this.assertionTypes = new HashMap<String, AssertionTypeRecord>();
@@ -120,9 +110,6 @@ public class ArchetypeService implements IArchetypeService {
      * definitions in the specified directory. Only process files with the
      * specified extensions
      * 
-     * @param uuidGenerator
-     *            the uuid generator is used to assign ids during object
-     *            creation
      * @param archeDir
      *            the directory
      * @parsm extensions only process files with these extensions
@@ -132,9 +119,7 @@ public class ArchetypeService implements IArchetypeService {
      *             if there is a problem processing one or more files in the
      *             directory
      */
-    public ArchetypeService(IUUIDGenerator uuidGenerator, String archDir,
-            String[] extensions, String assertFile) {
-        this.uuidGenerator = uuidGenerator;
+    public ArchetypeService(String archDir, String[] extensions, String assertFile) {
         this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
         this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
         this.assertionTypes = new HashMap<String, AssertionTypeRecord>();
@@ -249,7 +234,7 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords(java.lang.String)
      */
-    public ArchetypeRecord[] getArchetypeRecords(String shortName) {
+    public ArchetypeRecord[] getArchetypeRecordsByShortName(String shortName) {
         List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
 
         for (String name : this.archetypesByShortName.keySet()) {
@@ -263,6 +248,22 @@ public class ArchetypeService implements IArchetypeService {
                 .size()]);
     }
 
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecordsByRmName(java.lang.String)
+     */
+    public ArchetypeRecord[] getArchetypeRecordsByRmName(String rmName) {
+        List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
+
+        for (ArchetypeId archId : this.archetypesById.keySet()) {
+            if (rmName.matches(archId.getRmName())) {
+                records.add(this.archetypesById.get(archId));
+            }
+        }
+
+        return (ArchetypeRecord[]) records.toArray(new ArchetypeRecord[records
+                .size()]);
+    }
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
@@ -562,7 +563,6 @@ public class ArchetypeService implements IArchetypeService {
             // cast to imobject and set the archetype and the uuid.
             IMObject imobj = (IMObject) obj;
             imobj.setArchetypeId(record.getArchetypeId());
-            imobj.setUid(uuidGenerator.nextId());
 
             // first create a JXPath context and use it to process the nodes
             // in the archetype

@@ -50,10 +50,10 @@ public class Agent extends Actor {
     /**
      * Constructs an animal entity.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the name of the entity            
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -63,9 +63,9 @@ public class Agent extends Actor {
      * @param details 
      *            actor details
      */
-    public Agent(String uid, ArchetypeId archetypeId, 
+    public Agent(ArchetypeId archetypeId, String name,
             String description, Set<Contact> contacts, Set<Role> roles, 
             DynamicAttributeMap details) {
-        super(uid, archetypeId, description, contacts, roles, details);
+        super(archetypeId, name, description, contacts, roles, details);
     }
 }

@@ -20,8 +20,8 @@
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 // hibernate
-import net.sf.hibernate.Session;
-import net.sf.hibernate.Transaction;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 //openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
@@ -63,7 +63,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup lookup = new Lookup(getGenerator().nextId(), 
+            Lookup lookup = new Lookup( 
                     createLookArchetypeId("breed"), "dog", "dog");
             session.save(lookup);
             tx.commit();
@@ -95,7 +95,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup lookup = new Lookup(getGenerator().nextId(), 
+            Lookup lookup = new Lookup( 
                     createLookArchetypeId("breed"), "jimmy", null);
             session.save(lookup);
             tx.commit();
@@ -138,7 +138,7 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup lookup = new Lookup(getGenerator().nextId(), 
+            Lookup lookup = new Lookup( 
                     createLookArchetypeId("breed"), "johnny", null);
             session.save(lookup);
             tx.commit();
@@ -180,22 +180,22 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup lookup = new Lookup(getGenerator().nextId(), 
+            Lookup lookup = new Lookup( 
                     createLookArchetypeId("species"), "dog", "dog");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("species"), "cat", "cat");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("species"), "mouse", "mouse");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("species"), "rabbit", "rabbit");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("species"), "cow", "cow");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("species"), "donkey", "donkey");
             session.save(lookup);
             tx.commit();
@@ -227,22 +227,22 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup lookup = new Lookup(getGenerator().nextId(), 
+            Lookup lookup = new Lookup( 
                     createLookArchetypeId("colour"), "red", "red");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("colour"), "green", "green");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("colour"), "blue", "blue");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("colour"), "rabbit", "rabbit");
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("title"), "Mr", null);
             session.save(lookup);
-            lookup = new Lookup(getGenerator().nextId(), 
+            lookup = new Lookup( 
                     createLookArchetypeId("title"), "Mrs", null);
             session.save(lookup);
             tx.commit();

@@ -67,8 +67,6 @@ public class Lookup extends IMObject {
     /**
      * Construct a lookup
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param value
@@ -76,9 +74,9 @@ public class Lookup extends IMObject {
      * @param code 
      *            an optional code 
      */
-    public Lookup(String uid, ArchetypeId archetypeId, String value, 
+    public Lookup(ArchetypeId archetypeId, String value, 
         String code) {
-        super(uid, archetypeId);
+        super(archetypeId);
         
         this.details = new DynamicAttributeMap();
         this.value = value;

@@ -22,9 +22,9 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 import java.util.List;
 
 // hibernate
-import net.sf.hibernate.Query;
-import net.sf.hibernate.Session;
-import net.sf.hibernate.Transaction;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
@@ -71,7 +71,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * Test the creation of a simple contact
      */
     public void testCreateSimpleContact() throws Exception {
-        String id = getGenerator().nextId();
         DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
@@ -86,7 +85,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             Address address = createAddress();
             
-            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
             session.save(contact);
             
             // add the address
@@ -111,7 +110,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * Test the addition of an address to a contact
      */
     public void testAddressAdditionForContact() throws Exception {
-        String id = getGenerator().nextId();
         DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
@@ -123,7 +121,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
             session.save(contact);
             tx.commit();
             
@@ -158,7 +156,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     public void testAddressDeleteForContact()
     throws Exception {
-        String id = getGenerator().nextId();
         DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
@@ -170,7 +167,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -222,7 +219,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     public void testAddressUpdateForContact()
     throws Exception {
-        String id = getGenerator().nextId();
         DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
@@ -235,7 +231,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             
             tx = session.beginTransaction();
-            Contact contact = new Contact(id, createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
             assertTrue(contact != null);
             
             session.save(contact);
@@ -289,11 +285,11 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      *          the identity of the contact
      * @return Contact
      */
-    private Contact getContactById(Session session, String id) {
+    private Contact getContactById(Session session, long id) {
         Contact result = null;
         try {
             Query query = session.getNamedQuery("contact.getContactById");
-            query.setString("id", id);
+            query.setLong("id", id);
             List rs = query.list();
             
             if (rs.size() != 1) {
@@ -332,8 +328,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * @return Address
      */
     private Address createAddress() throws Exception {
-        return new Address(getGenerator().nextId(), createAddressArchetypeId(),
-                createSimpleAttributeMap());
+        return new Address(createAddressArchetypeId(), createSimpleAttributeMap());
     }
     
     /**

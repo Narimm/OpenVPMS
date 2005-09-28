@@ -140,15 +140,13 @@ public class Act extends IMObject {
     /**
      * Constructs an instance of an act.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param details
      *            dynamic details of the act.
      */
-    public Act(String uid, ArchetypeId archetypeId, DynamicAttributeMap details) {
-        super(uid, archetypeId);
+    public Act(ArchetypeId archetypeId, DynamicAttributeMap details) {
+        super(archetypeId);
         this.details = details;
         this.participations = new HashSet<Participation>();
         this.sourceActRelationships = new HashSet<ActRelationship>();

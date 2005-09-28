@@ -41,6 +41,7 @@ public class EntityException extends RuntimeException implements
      * An enumeration of error codes
      */
     public enum ErrorCode {
+        NoNameSpecified,
         NullEntityClassificationSpecified,
         NullChildClassificationSpecified
     }

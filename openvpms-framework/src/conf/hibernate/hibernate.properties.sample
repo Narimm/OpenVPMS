@@ -18,11 +18,11 @@
 # Copy this file to hibernate.properties and make the appropriate
 # entries. 
 #
-#hibernate.dialect=net.sf.hibernate.dialect.MySQLDialect
-#hibernate.connection.driver_class=com.mysql.jdbc.Driver
-#hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
-#hibernate.connection.username=mysql
-#hibernate.connection.password=mysql
+hibernate.dialect=org.hibernate.dialect.MySQLDialect
+hibernate.connection.driver_class=com.mysql.jdbc.Driver
+hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
+hibernate.connection.username=mysql
+hibernate.connection.password=mysql
 
 #hibernate.dialect=net.sf.hibernate.dialect.HSQLDialect
 #hibernate.connection.driver_class=org.hsqldb.jdbcDriver
@@ -30,13 +30,18 @@
 #hibernate.connection.username=sa
 #hibernate.connection.password=
 
-#hibernate.show_sql=false
+hibernate.show_sql=false
 
 #
 # Transaction locking ptroblems with mysql are resolved with this 
 # caching enabled.
 #
-#hibernate.c3p0.min_size=5
-#hibernate.c3p0.max_size=20
-#hibernate.c3p0.timeout=1800
-#hibernate.c3p0.max_statements=50
+hibernate.c3p0.min_size=5
+hibernate.c3p0.max_size=20
+hibernate.c3p0.timeout=1800
+hibernate.c3p0.max_statements=50
+
+#
+# The HQL parser
+#
+hibernate.query.factory_class=org.hibernate.hql.classic.ClassicQueryTranslatorFactory

@@ -171,63 +171,63 @@
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-hibernate</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-mock</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-dao</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-orm</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
       <groupId>springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <type>jar</type>
       <url>http://www.springframework.org/</url>
     </dependency>
@@ -292,7 +292,19 @@
     <dependency>
       <groupId>hibernate</groupId>
       <artifactId>hibernate</artifactId>
-      <version>2.1.8</version>
+      <version>3.1b3</version>
+      <url>http://www.hibernate.org</url>
+    </dependency>
+    <dependency>
+      <groupId>hibernate</groupId>
+      <artifactId>asm</artifactId>
+      <version>3.1b3</version>
+      <url>http://www.hibernate.org</url>
+    </dependency>
+    <dependency>
+      <groupId>hibernate</groupId>
+      <artifactId>asm-attrs</artifactId>
+      <version>3.1b3</version>
       <url>http://www.hibernate.org</url>
     </dependency>
     <dependency>
@@ -309,8 +321,8 @@
     </dependency>
     <dependency>
       <groupId>cglib</groupId>
-      <artifactId>cglib-full</artifactId>
-      <version>2.0.2</version>
+      <artifactId>cglib</artifactId>
+      <version>2.1.2</version>
       <url>http://www.hibernate.org</url>
     </dependency>
     <dependency>

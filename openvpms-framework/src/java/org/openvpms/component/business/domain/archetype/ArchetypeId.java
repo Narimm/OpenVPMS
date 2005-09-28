@@ -267,16 +267,6 @@ public class ArchetypeId implements Serializable {
      */
     @Override
     public boolean equals(Object obj) {
-        // ensure they are the same type
-        if (obj instanceof ArchetypeId == false) {
-            return false;
-        }
-
-        // if they are the same object then return true
-        if (this == obj) {
-            return true;
-        }
-        
         ArchetypeId rhs = (ArchetypeId) obj;
         return new EqualsBuilder()
             .append(qName, rhs.qName)
@@ -290,7 +280,7 @@ public class ArchetypeId implements Serializable {
      */
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
+        return new HashCodeBuilder()
             .append(qName)
             .toHashCode();
     }

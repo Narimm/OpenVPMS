@@ -33,9 +33,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 
 // openvpms-test-component
 import org.openvpms.component.system.common.test.BaseTestCase;
-import org.openvpms.component.system.service.uuid.IUUIDGenerator;
-import org.openvpms.component.system.service.uuid.JUGGenerator;
-import org.safehaus.uuid.UUIDGenerator;
 
 /**
  * Test the {@link org.openvpms.component.business.service.archetype.IArchetypeService}
@@ -72,7 +69,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
             new ArchetypeService(null, null, assertionFile);
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
-                ArchetypeServiceException.ErrorCode.NoFileSpecified);
+                ArchetypeServiceException.ErrorCode.NoDirSpecified);
         }
     }
     
@@ -84,8 +81,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         String assertionFile = (String)this.getTestData().getTestCaseParameter(
                 "testCreationWithInvalidFileName", "normal", "assertionFile");
         try {
-            new ArchetypeService(createUUIDGenerator(),"file-does-not-exist", 
-                    assertionFile);
+            new ArchetypeService("file-does-not-exist", assertionFile);
         } catch (ArchetypeServiceException exception) {
             assertTrue(exception.getErrorCode() == 
                 ArchetypeServiceException.ErrorCode.InvalidFile);
@@ -103,8 +99,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 "testCreationWithValidFileContent", "valid-files", "files");
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
-            new ArchetypeService(createUUIDGenerator(),(String)iter.next(),
-                    assertionFile);
+            new ArchetypeService((String)iter.next(), assertionFile);
         }
     }
     
@@ -120,8 +115,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Iterator iter = testData.iterator();
         while (iter.hasNext()) {
             try {
-                new ArchetypeService(createUUIDGenerator(), (String)iter.next(), 
-                        assertionFile);
+                new ArchetypeService((String)iter.next(), assertionFile);
             } catch (ArchetypeServiceException exception) {
                 assertTrue(exception.getErrorCode() == 
                     ArchetypeServiceException.ErrorCode.InvalidFile);
@@ -141,8 +135,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testValidEntryRetrieval", "valid-retrieval", "archetypes");
         
-        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
-                validFile, assertionFile);
+        ArchetypeService registry = new ArchetypeService(validFile, assertionFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             ArchetypeRecord record = registry.getArchetypeRecord((String)iter.next());
@@ -164,8 +157,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Vector archetypes = (Vector)this.getTestData().getTestCaseParameter(
                 "testInvalidEntryRetrieval", "invalid-retrieval", "archetypes");
         
-        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(), 
-                validFile, assertionFile);
+        ArchetypeService registry = new ArchetypeService(validFile, assertionFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
             assertTrue(registry.getArchetypeRecord((String)iter.next()) == null);
@@ -189,8 +181,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 "testLoadingArchetypesFromDir", "normal", "recordCount1"))
                 .intValue();
         
-        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
-                dir, new String[]{extension}, assertionFile);
+        ArchetypeService registry = new ArchetypeService(dir, 
+                new String[]{extension}, assertionFile);
         assertTrue(registry.getArchetypeRecords().length == recordCount1);
     }
     
@@ -198,40 +190,55 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * Test the retrieval of archetypes using regular expression. IT uses the 
      * adl files, which reside in src/archetypes/
      */
-    public void testRetrievalThroughRegularExpression()
+    public void testRetrievalByShortName()
     throws Exception {
         Hashtable params = this.getTestData().getTestCaseParams(
-                "testRetrievalThroughRegularExpression", "normal");
+                "testRetrievalByShortName", "normal");
         
-        ArchetypeService registry = new ArchetypeService(createUUIDGenerator(),
+        ArchetypeService registry = new ArchetypeService((String)params.get("dir"), 
+                new String[]{(String)params.get("extension")},
+                (String)params.get("assertionFile"));
+
+        // test retrieval of all records that start with entityRelationship
+        assertTrue(registry.getArchetypeRecordsByShortName("entityRelationship\\..*").length 
+                == ((Integer)params.get("recordCount1")).intValue());
+        
+        // test retrieval for anything with animal
+        assertTrue(registry.getArchetypeRecordsByShortName(".*pet.*").length 
+                == ((Integer)params.get("recordCount2")).intValue());
+        
+        // test retrieval for anything that starts with person
+        assertTrue(registry.getArchetypeRecordsByShortName("person.*").length 
+                == ((Integer)params.get("recordCount3")).intValue());
+        
+        // test retrieval for anything that matchers person\\.person
+        assertTrue(registry.getArchetypeRecordsByShortName("person\\.person").length 
+                == ((Integer)params.get("recordCount4")).intValue());
+    }
+    
+    /**
+     * 
+     */
+    public void testRetrievalByReferenceModelName()
+    throws Exception {
+        Hashtable params = this.getTestData().getTestCaseParams(
+                "testRetrievalByReferenceModelName", "normal");
+        
+        ArchetypeService registry = new ArchetypeService(
                 (String)params.get("dir"), 
                 new String[]{(String)params.get("extension")},
                 (String)params.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
-        assertTrue(registry.getArchetypeRecords("entityRelationship\\..*").length 
+        assertTrue(registry.getArchetypeRecordsByRmName("party").length 
                 == ((Integer)params.get("recordCount1")).intValue());
         
         // test retrieval for anything with animal
-        assertTrue(registry.getArchetypeRecords(".*pet.*").length 
+        assertTrue(registry.getArchetypeRecordsByRmName("common").length 
                 == ((Integer)params.get("recordCount2")).intValue());
         
         // test retrieval for anything that starts with person
-        assertTrue(registry.getArchetypeRecords("person.*").length 
+        assertTrue(registry.getArchetypeRecordsByRmName("lookup").length 
                 == ((Integer)params.get("recordCount3")).intValue());
-        
-        // test retrieval for anything that matchers person\\.person
-        assertTrue(registry.getArchetypeRecords("person\\.person").length 
-                == ((Integer)params.get("recordCount4")).intValue());
-    }
-    
-    /**
-     * Create a UUID geenrator
-     * 
-     * @return IUUIDGenerator
-     */
-    private IUUIDGenerator createUUIDGenerator() {
-        return new JUGGenerator(UUIDGenerator.getInstance()
-               .getDummyAddress().toString());  
     }
 }

@@ -24,7 +24,7 @@
 
   <!--  Hibernate session factory -->
   <bean id="sessionFactory"
-    class="org.springframework.orm.hibernate.LocalSessionFactoryBean">
+    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
     <property name="dataSource">
       <ref local="mySQLDataSource" />
     </property>
@@ -40,21 +40,21 @@
         </prop>
       </props>
     </property>
-    <property name="mappingDirectoryLocations">
+    <property name="mappingResources">
       <list>
-        <value>classpath:/org/openvpms/component/business/domain/im/common</value>
-        <value>classpath:/org/openvpms/component/business/domain/im/party</value>
-        <value>classpath:/org/openvpms/component/business/domain/im/lookup</value>
+        <value>/org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Act.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Classification.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Entity.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/EntityClassification.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/common/Participation.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/party/Address.hbm.xml</value>
+        <value>/org/openvpms/component/business/domain/im/party/Contact.hbm.xml</value>
       </list>
     </property>
-  </bean>
-
-  <!--  The UUID Service -->
-  <bean id="uuidService"
-    class="org.openvpms.component.system.service.uuid.JUGGenerator">
-    <constructor-arg index="0">
-      <value>a7:51:b8:83:9d:f8</value>
-    </constructor-arg>
   </bean>
 
   <!--  Need this bean to support database style assertions (i.e. reference data -->
@@ -68,16 +68,13 @@
   <!--  The Archetype Service -->
   <bean id="archetypeService"
     class="org.openvpms.component.business.service.archetype.ArchetypeService">
-    <constructor-arg index="0">
-      <ref bean="uuidService" />
-    </constructor-arg>
-    <constructor-arg index="1" value="target/classes/org/openvpms/archetype" />
-    <constructor-arg index="2">
+    <constructor-arg index="0" value="target/classes/org/openvpms/archetype" />
+    <constructor-arg index="1">
       <list>
         <value>adl</value>
       </list>
     </constructor-arg>
-    <constructor-arg index="3"
+    <constructor-arg index="2"
       value="org/openvpms/archetype/assertionTypes.xml" />
   </bean>
 

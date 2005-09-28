@@ -17,16 +17,17 @@
   #  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
-        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.common.EntityIdentity"
     table="entity_identity">
-    <id name="uid" type="string">
+    <id name="uid" type="long" unsaved-value="-1">
       <column name="entity_identity_id" index="entity_identity_id_idx" />
-      <generator class="assigned" />
+      <generator class="increment" />
     </id>
     <version name="version" access="field" type="long" />
+    <property name="linkId" column="link_id" access="field" type="string" />
     <component name="archetypeId">
       <property name="namespace" access="field" column="archetype_namespace"
         type="string" />
@@ -40,7 +41,7 @@
         type="string" />
     </component>
     <property name="identity" type="string" column="identity" />
-    <many-to-one name="entity" column="entity_id" />
+    <many-to-one name="entity" property-ref="linkId" column="entity_link_id" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
   </class>

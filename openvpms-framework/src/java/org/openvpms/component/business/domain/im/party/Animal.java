@@ -72,26 +72,22 @@ public class Animal extends Actor {
      */
     private DvDateTime dateOfBirth;
     
-    /**
-     * The primary name of the animal
-     */
-    private String primaryName;
 
     
     /**
      * Default constructor
      */
-    protected Animal() {
+    public Animal() {
         // do nothing
     }
     
     /**
      * Constructs an animal.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the animal's primary name            
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -101,10 +97,10 @@ public class Animal extends Actor {
      * @param details 
      *            actor details
      */
-    public Animal(String uid, ArchetypeId archetypeId,  
+    public Animal(ArchetypeId archetypeId, String name,
             String description, Set<Contact> contacts, Set<Role> roles, 
             DynamicAttributeMap details) {
-        super(uid, archetypeId, description, contacts, roles, details);
+        super(archetypeId, name, description, contacts, roles, details);
     }
 
     /**
@@ -195,19 +191,5 @@ public class Animal extends Actor {
      */
     public void setSpecies(String species) {
         this.species = species;
-    }
-
-    /**
-     * @return Returns the primaryName.
-     */
-    public String getPrimaryName() {
-        return primaryName;
-    }
-
-    /**
-     * @param primaryName The primaryName to set.
-     */
-    public void setPrimaryName(String primaryName) {
-        this.primaryName = primaryName;
     }
 }

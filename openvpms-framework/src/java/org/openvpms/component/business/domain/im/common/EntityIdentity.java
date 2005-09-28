@@ -64,8 +64,6 @@ public class EntityIdentity extends IMObject {
     /**
      * Constructs a valid instance of an entity identity.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param identity
@@ -75,9 +73,9 @@ public class EntityIdentity extends IMObject {
      * @throws IllegalArgumentException
      *             thrown if the preconditions are not met.
      */
-    public EntityIdentity(String uid, ArchetypeId archetypeId,
+    public EntityIdentity(ArchetypeId archetypeId,
             String identity, DynamicAttributeMap details) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.identity = identity;
         this.details = details;
     }

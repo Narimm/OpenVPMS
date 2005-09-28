@@ -23,8 +23,8 @@ package org.openvpms.component.business.dao.hibernate.im.party;
 import java.util.List;
 
 //hibernate 
-import net.sf.hibernate.Session;
-import net.sf.hibernate.Transaction;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 // openvpms framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;

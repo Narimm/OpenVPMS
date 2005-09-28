@@ -23,9 +23,9 @@ package org.openvpms.component.business.dao.hibernate.im;
 import java.util.Calendar;
 
 //hibernate
-import net.sf.hibernate.Session;
-import net.sf.hibernate.SessionFactory;
-import net.sf.hibernate.cfg.Configuration;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.Act;

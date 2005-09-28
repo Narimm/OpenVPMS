@@ -22,7 +22,7 @@ package org.openvpms.component.business.dao.hibernate.im;
 // java 
 
 //hibernate 
-import net.sf.hibernate.Session;
+import org.hibernate.Session;
 
 
 /**

@@ -22,6 +22,12 @@ package org.openvpms.component.business.domain.im.common;
 import java.util.HashSet;
 import java.util.Set;
 
+// commons-lang
+import org.apache.commons.lang.StringUtils;
+
+// log4j
+import org.apache.log4j.Logger;
+
 //openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
@@ -40,6 +46,18 @@ public class Entity extends IMObject {
      */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(Entity.class);
+
+    /**
+     * This is the name that this entity is known by. Each concrete instance 
+     * must supply this.
+     */
+    private String name;
+    
     /**
      * Description of this entity
      */
@@ -90,18 +108,25 @@ public class Entity extends IMObject {
     /**
      * Constructs an instance of a base entity.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the name of the entity.            
      * @param description
      *            the description of the archetype            
      * @param details
      *            dynamic details of the act.
      */
-    public Entity(String uid, ArchetypeId archetypeId, String description, 
-        DynamicAttributeMap details) {
-        super(uid, archetypeId);
+    public Entity(ArchetypeId archetypeId, String name, 
+        String description,  DynamicAttributeMap details) {
+        super(archetypeId);
+
+        // check that a name was specified
+        if (StringUtils.isEmpty(name)) {
+            throw new EntityException(EntityException.ErrorCode.NoNameSpecified);
+        }
+        
+        this.name = name;
         this.description = description;
         this.identities = new HashSet<EntityIdentity>();
         this.classifications = new HashSet<EntityClassification>();
@@ -154,7 +179,7 @@ public class Entity extends IMObject {
      */
     public void addEntityIdentity(EntityIdentity entityIdentity) {
         entityIdentity.setEntity(this);
-        this.identities.add(entityIdentity);
+        identities.add(entityIdentity);
     }
 
     /**
@@ -162,10 +187,11 @@ public class Entity extends IMObject {
      * 
      * @param entityIdentity
      *          the identity to remove
+     * @return boolean          
      */
-    public void removeEntityIdentity(EntityIdentity entityIdentity) {
+    public boolean removeEntityIdentity(EntityIdentity entityIdentity) {
         entityIdentity.setEntity(null);
-        this.identities.remove(entityIdentity);
+        return(identities.remove(entityIdentity));
     }
     
     /**
@@ -299,9 +325,9 @@ public class Entity extends IMObject {
      * @oparam participation
      *            the entity classification to remove
      */
-    public void removeParticipation(Participation participation) {
+    public boolean removeParticipation(Participation participation) {
         participation.setEntity(null);
-        this.participations.remove(participation);
+        return participations.remove(participation);
     }
     
     /**
@@ -328,4 +354,19 @@ public class Entity extends IMObject {
     public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
+
+    /**
+     * @return Returns the name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name The name to set.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

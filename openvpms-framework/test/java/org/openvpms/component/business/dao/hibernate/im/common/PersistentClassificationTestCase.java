@@ -19,8 +19,8 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 // hibernate
-import net.sf.hibernate.Session;
-import net.sf.hibernate.Transaction;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
@@ -34,10 +34,10 @@ import org.openvpms.component.business.domain.im.common.Classification;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PersistentClassficationTestCase extends HibernateInfoModelTestCase {
+public class PersistentClassificationTestCase extends HibernateInfoModelTestCase {
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(PersistentClassficationTestCase.class);
+        junit.textui.TestRunner.run(PersistentClassificationTestCase.class);
     }
 
     /**
@@ -45,7 +45,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
      * 
      * @param name
      */
-    public PersistentClassficationTestCase(String name) {
+    public PersistentClassificationTestCase(String name) {
         super(name);
     }
 
@@ -104,19 +104,17 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             int acount = HibernateUtil.getTableRowCount(
                     session, "classification");
 
+            tx = session.beginTransaction();
             Classification parent = createClassification();
+            
             Classification child1 = createClassification();
             Classification child2 = createClassification();
             Classification child3 = createClassification();
+            
             parent.addChild(child1);
             parent.addChild(child2);
             parent.addChild(child3);
-
-            tx = session.beginTransaction();
-            session.save(child1);
-            session.save(child2);
-            session.save(child3);
-            session.save(parent);
+            session.saveOrUpdate(parent);
             tx.commit();
 
             // ensure that there is still one more address
@@ -126,7 +124,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             // retrieve the classification and ensure there are three children
             Classification original = (Classification) session.load(
-                    Classification.class, parent.getUid());
+                    Classification.class, new Long(parent.getUid()));
             assertTrue(original.getChildren().length == 3);
         } catch (Exception exception) {
             if (tx != null) {
@@ -150,19 +148,17 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             int acount = HibernateUtil
             .getTableRowCount(session, "classification");
 
+            tx = session.beginTransaction();
             Classification parent = createClassification();
+
             Classification child1 = createClassification();
             Classification child2 = createClassification();
             Classification child3 = createClassification();
+            
             parent.addChild(child1);
             parent.addChild(child2);
             parent.addChild(child3);
-
-            tx = session.beginTransaction();
-            session.save(child1);
-            session.save(child2);
-            session.save(child3);
-            session.save(parent);
+            session.saveOrUpdate(parent);
             tx.commit();
 
             // ensure that there is still one more address
@@ -171,14 +167,14 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
             assertTrue(acount1 == acount + 4);
 
             // retrieve the classification and ensure there are three children
+            tx = session.beginTransaction();
             Classification original = (Classification) session.load(
                     Classification.class, parent.getUid());
             assertTrue(original.getChildren().length == 3);
 
-            tx = session.beginTransaction();
             Classification achild = original.getChildren()[0];
-            original.removeChild(achild);
-            session.delete(achild);
+            assertTrue(original.removeChild(achild));
+            session.saveOrUpdate(original);
             tx.commit();
 
             // check that there is one less entry than before
@@ -217,7 +213,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
 
             tx = session.beginTransaction();
             Classification root = createClassification();
-            session.save(root);
+            session.saveOrUpdate(root);
             createClassificationHierarchy(session, root, childrenPerLevel, 0, levels);
             tx.commit();
 
@@ -242,8 +238,7 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
      * @thorws Exception
      */
     private Classification createClassification() throws Exception {
-        return new Classification(getGenerator().nextId(), createArchetypeId(),
-                null, null);
+        return new Classification(createArchetypeId(), null, null);
     }
 
     /**
@@ -268,11 +263,11 @@ public class PersistentClassficationTestCase extends HibernateInfoModelTestCase 
         for (int cindex = 0; cindex < numOfChildren; cindex++) {
             Classification child = createClassification();
             parent.addChild(child);
-            session.save(child);
             if ((level + 1) < maxLevels) {
                 createClassificationHierarchy(session, child, numOfChildren,
                         (level + 1), maxLevels);
             }
+            session.saveOrUpdate(parent);
         }
     }
     

@@ -82,8 +82,6 @@ public class EntityRelationship extends IMObject {
     /**
      * Constructs a valid intance of an entity relationship
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param sourceEntity
@@ -95,10 +93,10 @@ public class EntityRelationship extends IMObject {
      * @throws IllegalArgumentException
      *             if the constructor pre-conditions are not satisfied.
      */
-    public EntityRelationship(String uid, ArchetypeId archetypeId, 
+    public EntityRelationship(ArchetypeId archetypeId, 
             Entity sourceEntity, Entity targetEntity,
             DynamicAttributeMap details) {
-        super(uid, archetypeId);
+        super(archetypeId);
         
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;

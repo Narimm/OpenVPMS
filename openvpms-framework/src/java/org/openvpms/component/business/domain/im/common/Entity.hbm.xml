@@ -17,16 +17,17 @@
   #  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
-        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.common.Entity"
     table="entity">
-    <id name="uid" type="string" unsaved-value="null">
+    <id name="uid" type="long" unsaved-value="-1">
       <column name="entity_id" index="entity_id_idx" />
-      <generator class="assigned" />
+      <generator class="increment" />
     </id>
     <version name="version" access="field" type="long" />
+    <property name="linkId" column="link_id" access="field" type="string" />
     <component name="archetypeId">
       <property name="namespace" access="field" column="archetype_namespace"
         type="string" />
@@ -39,7 +40,8 @@
       <property name="version" access="field" column="archetype_version"
         type="string" />
     </component>
-    <property name="description" column="description" type="string" />
+    <property name="name" access="field" column="name" type="string" />
+    <property name="description" access="field" column="description" type="string" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <set name="classifications" access="field" lazy="true" inverse="true">
@@ -47,24 +49,24 @@
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityClassification" />
     </set>
-    <set name="identities" access="field" lazy="true" inverse="true">
-      <key column="entity_id" />
+    <set name="identities" access="field" lazy="true" inverse="true" cascade="all,delete-orphan">
+      <key column="entity_link_id" property-ref="linkId"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
     </set>
-    <set name="sourceRelationships" access="field" lazy="true" inverse="true">
-      <key column="source_id" />
+    <set name="sourceRelationships" access="field" lazy="true" inverse="true" cascade="all,delete-orphan">
+      <key column="source_link_id"  property-ref="linkId"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
-    <set name="targetRelationships" access="field" lazy="true" inverse="true">
-      <key column="target_id" />
+    <set name="targetRelationships" access="field" lazy="true" inverse="true"  cascade="all,delete-orphan">
+      <key column="target_link_id"  property-ref="linkId"/>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
-    <set name="participations" access="field" lazy="true" inverse="true">
-      <key column="entity_id" />
-      <one-to-many
+    <set name="participations" access="field" lazy="true" inverse="true" cascade="all,delete-orphan">
+      <key column="entity_link_id" property-ref="linkId"/>
+      <one-to-many 
         class="org.openvpms.component.business.domain.im.common.Participation" />
     </set>
 
@@ -102,7 +104,6 @@
           name="org.openvpms.component.business.domain.im.party.User"
           table="user">
           <key column="entity_id" />
-          <property name="userId" access="field" column="user_id" type="string" />
           <property name="password" access="field" column="password"
             type="string" />
           <property name="lastLogin" column="last_login" type="calendar"

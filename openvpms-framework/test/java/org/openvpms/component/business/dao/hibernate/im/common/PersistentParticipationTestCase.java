@@ -20,8 +20,8 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 // hibernate
-import net.sf.hibernate.Session;
-import net.sf.hibernate.Transaction;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 //openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
@@ -70,8 +70,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             Entity entity = createEntity();
             Participation participation = createParticipation(null);
             entity.addParticipation(participation);
-            session.save(entity);
-            session.save(participation);
+            session.saveOrUpdate(entity);
             tx.commit();
 
             // ensure that there is still one more address
@@ -154,29 +153,27 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             // execute the test
             tx = session.beginTransaction();
             Entity entity = createEntity();
-            session.save(entity);
-            
             for (int index = 0; index < pcount; index++) {
                 Participation participation = createParticipation(null);
                 entity.addParticipation(participation);
-                session.save(participation);
             }
+            session.saveOrUpdate(entity);
             tx.commit();
 
             // ensure that there is still one more address
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
-            assertTrue(acount1 == acount + pcount);
+            assertTrue(acount1 == (acount + pcount));
             
             // retrieve the entity and ensure that it as the correct number
             // of participations
+            tx = session.beginTransaction();
             entity = (Entity)session.load(Entity.class, entity.getUid());
             assertTrue(entity.getParticipations().length == pcount);
             
             // remove the first participation
-            tx = session.beginTransaction();
             Participation participation = entity.getParticipations()[0];
-            entity.removeParticipation(participation);
-            session.delete(participation);
+            assertTrue(entity.removeParticipation(participation));
+            session.saveOrUpdate(entity);
             tx.commit();
             
             // check the number of rows now
@@ -191,7 +188,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             // navigate to the Entity object
             participation = (Participation)session.load(Participation.class, 
                     entity.getParticipations()[0].getUid());
-            assertTrue(participation.getEntity().getUid().equals(entity.getUid()));
+            assertTrue(participation.getEntity().getUid() == entity.getUid());
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -210,7 +207,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Participation
      */
     private Participation createParticipation(Entity entity) {
-        return new Participation(getGenerator().nextId(), 
+        return new Participation( 
                 new ArchetypeId("openvpms-common-participation.participation.1.0"),
                 entity, null, null);
     }
@@ -221,8 +218,8 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Entity
      */
     private Entity createEntity() {
-        return new Role(getGenerator().nextId(),
-                new ArchetypeId("openvpms-party-role.role.1.0"),
+        return new Role(
+                new ArchetypeId("openvpms-party-role.role.1.0"), "administrator",
                 null, null, createTimeInterval(), null);
 
     }

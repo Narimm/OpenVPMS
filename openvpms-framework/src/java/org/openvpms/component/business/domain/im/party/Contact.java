@@ -63,16 +63,14 @@ public class Contact extends IMObject {
     /**
      * Constructs a Contact.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param activePeriod
      *            the active period for this contact
      */
-    public Contact(String uid, ArchetypeId archetypeId,  
+    public Contact(ArchetypeId archetypeId,  
             DvInterval<DvDateTime> activePeriod) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.activePeriod = activePeriod;
         this.addresses = new HashSet<Address>();
     }

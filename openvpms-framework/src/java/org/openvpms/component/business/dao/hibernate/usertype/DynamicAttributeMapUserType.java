@@ -29,8 +29,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 // hibernate
-import net.sf.hibernate.HibernateException;
-import net.sf.hibernate.UserType;
+import org.hibernate.HibernateException;
+import org.hibernate.usertype.UserType;
 
 //codehaus xstream
 import com.thoughtworks.xstream.XStream;
@@ -109,9 +109,12 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
             return null;
         }
         
-        return (DynamicAttributeMap)new XStream()
-            .fromXML(rs.getString(names[0]));
-        
+        if (rs.getString(names[0]) == null) {
+            return (DynamicAttributeMap)null;
+        } else {
+            return (DynamicAttributeMap)new XStream()
+                .fromXML(rs.getString(names[0]));
+        }
     }
 
     /* (non-Javadoc)
@@ -150,5 +153,26 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      */
     public boolean isMutable() {
         return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.hibernate.usertype.UserType#assemble(java.io.Serializable, java.lang.Object)
+     */
+    public Object assemble(Serializable cached, Object owner) throws HibernateException {
+        return cached;
+    }
+
+    /* (non-Javadoc)
+     * @see org.hibernate.usertype.UserType#disassemble(java.lang.Object)
+     */
+    public Serializable disassemble(Object value) throws HibernateException {
+        return (Serializable)value;
+    }
+
+    /* (non-Javadoc)
+     * @see org.hibernate.usertype.UserType#replace(java.lang.Object, java.lang.Object, java.lang.Object)
+     */
+    public Object replace(Object original, Object target, Object owner) throws HibernateException {
+        return original;
     }
 }

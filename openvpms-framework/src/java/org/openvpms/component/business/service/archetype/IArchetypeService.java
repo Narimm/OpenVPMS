@@ -109,11 +109,22 @@ public interface IArchetypeService {
      * matching records.
      * 
      * @param shortName
-     *            the short name or a regular expression
+     *            the short name, which can be a regular expression
      * @return ArchetypeRecord[]
      * @throws ArchetypeServiceException            
      */
-    public ArchetypeRecord[] getArchetypeRecords(String shortName);
+    public ArchetypeRecord[] getArchetypeRecordsByShortName(String shortName);
+    
+    /**
+     * Return all the {@link ArchetypeRecord} instance with the specified 
+     * reference model name. 
+     * 
+     * @param rmName
+     *            the reference model name
+     * @return ArchetypeRecord[]
+     * @throws ArchetypeServiceException            
+     */
+    public ArchetypeRecord[] getArchetypeRecordsByRmName(String rmName);
     
     /**
      * Return the {@link AssertionTypeRecord} with the specified name.

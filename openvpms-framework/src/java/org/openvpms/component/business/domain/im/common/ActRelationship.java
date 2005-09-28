@@ -82,8 +82,6 @@ public class ActRelationship extends IMObject {
     /**
      * Constructs an instance of an act.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param sequence
@@ -95,9 +93,9 @@ public class ActRelationship extends IMObject {
      * @param details
      *            dynamic details of the act relationship
      */
-    public ActRelationship(String uid, ArchetypeId archetypeId, Act sourceAct, 
+    public ActRelationship(ArchetypeId archetypeId, Act sourceAct, 
         Act targetAct, int sequence, DynamicAttributeMap details) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.sequence = sequence;
         this.sourceAct = sourceAct;
         this.targetAct = targetAct;

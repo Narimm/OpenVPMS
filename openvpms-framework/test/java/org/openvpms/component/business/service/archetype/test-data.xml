@@ -116,8 +116,8 @@
       </params>
     </method>
 
-    <!--  Data for the testRetrievalThroughRegularExpression method -->
-    <method name="testRetrievalThroughRegularExpression" test-case="normal">
+    <!--  Data for the testRetrievalByShortName method -->
+    <method name="testRetrievalByShortName" test-case="normal">
       <params>
         <param name="assertionFile" type="java.lang.String">
           org/openvpms/archetype/assertionTypes.xml
@@ -130,6 +130,22 @@
         <param name="recordCount2" type="java.lang.Integer">1</param>
         <param name="recordCount3" type="java.lang.Integer">1</param>
         <param name="recordCount4" type="java.lang.Integer">1</param>
+      </params>
+    </method>
+
+    <!--  Data for the testRetrievalByReferenceModelName method -->
+    <method name="testRetrievalByReferenceModelName" test-case="normal">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/archetype/assertionTypes.xml
+        </param>
+        <param name="dir" type="java.lang.String">
+          target/classes/org/openvpms/archetype
+        </param>
+        <param name="extension" type="java.lang.String">adl</param>
+        <param name="recordCount1" type="java.lang.Integer">5</param>
+        <param name="recordCount2" type="java.lang.Integer">3</param>
+        <param name="recordCount3" type="java.lang.Integer">1</param>
       </params>
     </method>
   </class>

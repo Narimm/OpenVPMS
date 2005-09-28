@@ -21,7 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 // spring-framework
 import java.util.List;
 
-import org.springframework.orm.hibernate.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.im.lookup.ILookupDAO;

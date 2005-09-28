@@ -19,7 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.party;
 
 // spring-framework
-import org.springframework.orm.hibernate.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.im.party.IPartyDAO;

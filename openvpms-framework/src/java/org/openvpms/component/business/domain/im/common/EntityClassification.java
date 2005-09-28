@@ -63,8 +63,6 @@ public class EntityClassification extends IMObject {
     /**
      * Constructs an entity classification.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param entity
@@ -74,10 +72,10 @@ public class EntityClassification extends IMObject {
      * @param activePeriod
      *            the period that this is active                        
      */
-    public EntityClassification(String uid, ArchetypeId archetypeId, 
+    public EntityClassification(ArchetypeId archetypeId, 
             Entity entity, Classification classification,
             DvInterval<DvDateTime> activePeriod) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.entity = entity;
         this.classification = classification;
         this.activePeriod = activePeriod;

@@ -17,17 +17,19 @@
 	#  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
-        "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.party.Address"
 		table="address">
-		<id name="uid" type="string" unsaved-value="null">
+		<id name="uid" type="long" unsaved-value="-1">
 			<column name="address_id" index="address_id_idx" />
-			<generator class="assigned" />
+			<generator class="increment" />
 		</id>
 		<version name="version" access="field" type="long" />
+		<property name="linkId" column="link_id" access="field"
+			type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="field"
 				column="archetype_namespace" type="string" />

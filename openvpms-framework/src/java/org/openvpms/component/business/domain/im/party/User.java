@@ -42,11 +42,6 @@ public class User extends Role {
     private static final long serialVersionUID = 1L;
     
     /**
-     * The identity the user uses to login to the system
-     */
-    private String userId;
-    
-    /**
      * The user's password
      */
     private String password;
@@ -68,10 +63,10 @@ public class User extends Role {
     /**
      * Constructs an employee.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param userId
+     *            the user id 
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -85,12 +80,11 @@ public class User extends Role {
      * @param details
      *            dynamic properties for this role
      */
-    public User(String uid, ArchetypeId archetypeId,
+    public User(ArchetypeId archetypeId, 
             String description, Set<Contact> contacts, String userId, 
             String password, DvInterval<DvDateTime> activePeriod,
             DynamicAttributeMap details) {
-        super(uid, archetypeId, description, contacts, activePeriod, details);
-        this.userId = userId;
+        super(archetypeId, userId, description, contacts, activePeriod, details);
         this.password = password;
     }
 
@@ -126,13 +120,13 @@ public class User extends Role {
      * @return Returns the userId.
      */
     public String getUserId() {
-        return userId;
+        return getName();
     }
 
     /**
      * @param userId The userId to set.
      */
     public void setUserId(String userId) {
-        this.userId = userId;
+        setName(userId);
     }
 }

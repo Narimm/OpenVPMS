@@ -24,7 +24,7 @@
 
   <!--  Hibernate session factory -->
   <bean id="sessionFactory"
-    class="org.springframework.orm.hibernate.LocalSessionFactoryBean">
+    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
     <property name="dataSource">
       <ref local="mySQLDataSource" />
     </property>
@@ -57,14 +57,6 @@
     </property>
   </bean>
 
-  <!--  The UUID Service -->
-  <bean id="uuidService"
-    class="org.openvpms.component.system.service.uuid.JUGGenerator">
-    <constructor-arg index="0">
-      <value>a7:51:b8:83:9d:f8</value>
-    </constructor-arg>
-  </bean>
-
   <!--  Need this bean to support database style assertions (i.e. reference data -->
   <bean id="dbAssertion"
     class="org.openvpms.component.business.service.archetype.assertion.DatabaseAssertions">
@@ -76,16 +68,13 @@
   <!--  The Archetype Service -->
   <bean id="archetypeService"
     class="org.openvpms.component.business.service.archetype.ArchetypeService">
-    <constructor-arg index="0">
-      <ref bean="uuidService" />
-    </constructor-arg>
-    <constructor-arg index="1" value="target/classes/org/openvpms/archetype" />
-    <constructor-arg index="2">
+    <constructor-arg index="0" value="target/classes/org/openvpms/archetype" />
+    <constructor-arg index="1">
       <list>
         <value>adl</value>
       </list>
     </constructor-arg>
-    <constructor-arg index="3"
+    <constructor-arg index="2"
       value="org/openvpms/archetype/assertionTypes.xml" />
   </bean>
 

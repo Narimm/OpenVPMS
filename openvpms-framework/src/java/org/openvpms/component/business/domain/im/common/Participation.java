@@ -104,8 +104,6 @@ public class Participation extends IMObject {
     /**
      * Constructs a participantion between an {@link Entity} and an {@link Act}.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param entity
@@ -115,9 +113,9 @@ public class Participation extends IMObject {
      * @param details
      *            holds dynamic details about the participation.
      */
-    public Participation(String uid, ArchetypeId archetypeId, Entity entity,
+    public Participation(ArchetypeId archetypeId, Entity entity,
         Act act, DynamicAttributeMap details) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.act = act;
         this.entity = entity;
         this.details = details;

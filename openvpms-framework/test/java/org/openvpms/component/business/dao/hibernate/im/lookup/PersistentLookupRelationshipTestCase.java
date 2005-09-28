@@ -22,9 +22,9 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 // hibernate
 import java.util.Iterator;
 
-import net.sf.hibernate.Query;
-import net.sf.hibernate.Session;
-import net.sf.hibernate.Transaction;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 //openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
@@ -69,15 +69,15 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup country = new Lookup(getGenerator().nextId(), 
+            Lookup country = new Lookup( 
                     createLookArchetypeId("country"), "Australia", "AU");
-            Lookup state1 = new Lookup(getGenerator().nextId(), 
+            Lookup state1 = new Lookup( 
                     createLookArchetypeId("state"), "Victoria", "VIC");
-            Lookup state2 = new Lookup(getGenerator().nextId(), 
+            Lookup state2 = new Lookup( 
                     createLookArchetypeId("state"), "New South Wales", "NWS");
-            Lookup state3 = new Lookup(getGenerator().nextId(), 
+            Lookup state3 = new Lookup( 
                     createLookArchetypeId("state"), "Tasmania", "TAS");
-            Lookup state4 = new Lookup(getGenerator().nextId(), 
+            Lookup state4 = new Lookup( 
                     createLookArchetypeId("state"), "South Australia", "SA");
             session.save(state1);
             session.save(state2);
@@ -138,13 +138,13 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
 
             // execute the test
             tx = session.beginTransaction();
-            Lookup country = new Lookup(getGenerator().nextId(), 
+            Lookup country = new Lookup( 
                     createLookArchetypeId("country"), "Greece", "GRE");
-            Lookup city1 = new Lookup(getGenerator().nextId(), 
+            Lookup city1 = new Lookup( 
                     createLookArchetypeId("city"), "Athens", null);
-            Lookup city2 = new Lookup(getGenerator().nextId(), 
+            Lookup city2 = new Lookup( 
                     createLookArchetypeId("city"), "Hellas", null);
-            Lookup city3 = new Lookup(getGenerator().nextId(), 
+            Lookup city3 = new Lookup( 
                     createLookArchetypeId("city"), "Limnos", null);
             session.save(city1);
             session.save(city2);

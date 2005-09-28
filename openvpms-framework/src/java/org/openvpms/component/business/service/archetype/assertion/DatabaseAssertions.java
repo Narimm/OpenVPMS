@@ -20,7 +20,7 @@
 package org.openvpms.component.business.service.archetype.assertion;
 
 // hibernate
-import net.sf.hibernate.SessionFactory;
+import org.hibernate.SessionFactory;
 
 // log4j
 import org.apache.log4j.Logger;

@@ -63,8 +63,6 @@ public class Classification extends IMObject {
     /**
      * Constructs an classification.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param name
@@ -74,9 +72,9 @@ public class Classification extends IMObject {
      * @param details
      *            dynamic details of the act.
      */
-    public Classification(String uid, ArchetypeId archetypeId, 
+    public Classification(ArchetypeId archetypeId, 
         Classification parent, DynamicAttributeMap details) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.details = details;
         this.children = new HashSet<Classification>();
         this.parent = parent;
@@ -100,16 +98,19 @@ public class Classification extends IMObject {
             throw new EntityException(
                     EntityException.ErrorCode.NullChildClassificationSpecified);
         }
-        this.children.add(classification);
+        children.add(classification);
     }
     
     /**
      * Remove a child {@link Classification}
      * 
-     * @return Classification
+     * @param classification
+     *            the classification to remove
+     * @return boolean
      */
-    public void removeChild(Classification classification) {
-        this.children.remove(classification);
+    public boolean removeChild(Classification classification) {
+        classification.setParent(null);
+        return children.remove(classification);
     }
     
     /**

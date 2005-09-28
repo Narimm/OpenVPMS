@@ -56,10 +56,10 @@ public abstract class Actor extends Party {
     /**
      * Constructs an actor.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the name of the entity            
      * @param description
      *            the description of the party            
      * @param contacts
@@ -69,10 +69,10 @@ public abstract class Actor extends Party {
      * @param details 
      *            actor details
      */
-    public Actor(String uid, ArchetypeId archetypeId,  
+    public Actor(ArchetypeId archetypeId, String name, 
             String description, Set<Contact> contacts, Set<Role> roles, 
             DynamicAttributeMap details) {
-        super(uid, archetypeId, description, contacts, details);
+        super(archetypeId, name, description, contacts, details);
         this.roles = (roles == null) ? new HashSet<Role>() : roles;
     }
     

@@ -44,7 +44,7 @@ public class LookupRelationship implements Serializable {
      * Uniquely identifies an instance
      */
     @SuppressWarnings("unused")
-    private int uid;
+    private long uid;
     
     /**
      * Used for database control
@@ -128,7 +128,7 @@ public class LookupRelationship implements Serializable {
     /**
      * @return Returns the uid.
      */
-    public int getUid() {
+    public long getUid() {
         return uid;
     }
 

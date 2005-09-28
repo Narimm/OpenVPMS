@@ -59,8 +59,6 @@ public class Address extends IMObject {
     /**
      * Construct an address.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
      * @param details
@@ -68,9 +66,9 @@ public class Address extends IMObject {
      * @throws IllegalArgumentException
      *             if the constructor pre-conditions are not satisfied.
      */
-    public Address(String uid, ArchetypeId archetypeId,
+    public Address(ArchetypeId archetypeId,
             DynamicAttributeMap details) {
-        super(uid, archetypeId);
+        super(archetypeId);
         this.details = details;
         this.contacts = new HashSet<Contact>();
     }

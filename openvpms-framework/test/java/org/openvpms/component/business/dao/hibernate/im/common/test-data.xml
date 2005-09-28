@@ -3,7 +3,7 @@
   <params>
   </params>
   
-  <class name="PersistentClassficationTestCase">
+  <class name="PersistentClassificationTestCase">
     <!-- Data for the testMultipleLevelClassificationHierarchy method -->
   	<method name="testMultipleLevelClassificationHierarchy" test-case="normal">
   		<params>

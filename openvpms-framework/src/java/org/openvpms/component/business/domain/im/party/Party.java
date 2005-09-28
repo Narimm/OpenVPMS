@@ -58,10 +58,10 @@ public abstract class Party extends Entity {
     /**
      * Construct a Party object.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the name of the entity            
      * @param description
      *            the description of the party            
      * @param contacts
@@ -69,10 +69,10 @@ public abstract class Party extends Entity {
      * @param details 
      *            party details
      */
-    protected Party(String uid, ArchetypeId archetypeId,  
+    protected Party(ArchetypeId archetypeId, String name,  
             String description, Set<Contact> contacts, 
             DynamicAttributeMap details) {
-        super(uid, archetypeId, description, details);
+        super(archetypeId, name, description, details);
         this.contacts = (contacts == null) ? new HashSet<Contact>() : contacts;
     }
 

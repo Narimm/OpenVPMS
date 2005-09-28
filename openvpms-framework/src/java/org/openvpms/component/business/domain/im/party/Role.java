@@ -57,10 +57,10 @@ public class Role extends Party {
     /**
      * Constructs an role.
      * 
-     * @param uid
-     *            uniquely identifies this object
      * @param archetypeId
      *            the archetype id constraining this object
+     * @param name
+     *            the name of the role            
      * @param description
      *            the description of this entity            
      * @param contacts
@@ -70,10 +70,10 @@ public class Role extends Party {
      * @param details
      *            dynamic properties for this role
      */
-    public Role(String uid, ArchetypeId archetypeId, 
+    public Role(ArchetypeId archetypeId, String name,
             String description, Set<Contact> contacts, 
             DvInterval<DvDateTime> activePeriod, DynamicAttributeMap details) {
-        super(uid, archetypeId, description, contacts, details);
+        super(archetypeId, name, description, contacts, details);
         this.activePeriod = activePeriod;
     }
     
