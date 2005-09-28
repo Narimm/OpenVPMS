@@ -20,8 +20,8 @@ package org.openvpms.component.business.service.entity;
 
 
 // openvpms-framework
-import org.openvpms.component.business.dao.im.common.IEntityDAO;
 import org.openvpms.component.business.dao.im.common.EntityDAOException;
+import org.openvpms.component.business.dao.im.common.IEntityDAO;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeRecord;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
