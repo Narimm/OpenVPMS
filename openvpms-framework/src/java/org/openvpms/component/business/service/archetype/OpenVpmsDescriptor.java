@@ -22,12 +22,11 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.openvpms.component.presentation.tapestry.component.Utils;
 
 /**
- * @author fus8882
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class OvpmsDescriptor implements IDescriptor
+public class OpenVpmsDescriptor implements IDescriptor
 {
 
     private String displayName;
@@ -35,12 +34,12 @@ public class OvpmsDescriptor implements IDescriptor
     protected Class type;
     private boolean hidden;
 
-    public OvpmsDescriptor(IDescriptor descriptor)
+    public OpenVpmsDescriptor(IDescriptor descriptor)
     {
         copyFrom(descriptor);
     }
     
-    public OvpmsDescriptor(Class type)
+    public OpenVpmsDescriptor(Class type)
     {
         this.type = type;
     }
@@ -49,7 +48,7 @@ public class OvpmsDescriptor implements IDescriptor
     @Override
     public Object clone()
     {
-        return new OvpmsDescriptor(this);
+        return new OpenVpmsDescriptor(this);
     }
 
      public String getDisplayName()

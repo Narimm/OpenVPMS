@@ -25,7 +25,7 @@ package org.openvpms.component.presentation.tapestry.component;
  * @version  $LastChangedDate$
  */
 
-public abstract class ArchetypeForm extends OvpmsComponent {
+public abstract class ArchetypeForm extends OpenVpmsComponent {
     public abstract Object getModel();
 
     /**

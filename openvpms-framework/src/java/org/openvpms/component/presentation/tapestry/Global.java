@@ -18,11 +18,16 @@
 
 package org.openvpms.component.presentation.tapestry;
 
+import org.openvpms.component.business.service.act.IActService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.entity.IEntityService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.springframework.context.ApplicationContext;
 
 /**
  * The tapestry applications Global object, common to all clients and all
- * components (pages). 
+ * components (pages).  Holds the spring application context and references to any necessary 
+ * OpenVPMS service interfaces.    
  * 
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -30,7 +35,19 @@ import org.springframework.context.ApplicationContext;
 public class Global {
     
     /** the Springframework application context */
-    private ApplicationContext appContext;  
+    private ApplicationContext appContext;
+    
+    /** the EntityService */
+    private IEntityService entityService;
+    
+    /** the Act Service */
+    private IActService actService;
+    
+    /** the Archetype Service */
+    private IArchetypeService archetypeService;
+    
+    /** the Lookup Service */
+    private ILookupService lookupService;
             
     /**
      * @return Returns the Springframeweork application context appContext.
@@ -45,5 +62,41 @@ public class Global {
      */
     public void setAppContext(ApplicationContext ac) {
         this.appContext = ac;
+    }
+
+    /**
+     * @return Returns the archetypeService.
+     */
+    public IArchetypeService getArchetypeService() {
+        if (archetypeService == null)
+            archetypeService = (IArchetypeService)getAppContext().getBean("archetypeService");
+        return archetypeService;
+    }
+
+    /**
+     * @return Returns the entityService.
+     */
+    public IEntityService getEntityService() {
+        if (entityService == null)
+            entityService = (IEntityService)getAppContext().getBean("entityService");
+        return entityService;
+    }
+
+    /**
+     * @return Returns the actService.
+     */
+    public IActService getActService() {
+        if (actService == null)
+            actService = (IActService)getAppContext().getBean("actService");
+        return actService;
+    }
+
+    /**
+     * @return Returns the lookupService.
+     */
+    public ILookupService getLookupService() {
+        if (lookupService == null)
+            lookupService = (ILookupService)getAppContext().getBean("lookupService");
+        return lookupService;
     }
 }

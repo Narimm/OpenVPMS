@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: IdentifierSelectionModel.java 118 2005-09-21 09:36:09Z tony $
  */
 
 package org.openvpms.component.presentation.tapestry.component;
@@ -21,21 +21,16 @@ package org.openvpms.component.presentation.tapestry.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import ognl.Ognl;
-
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.form.IPropertySelectionModel;
 
 /**
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2005-09-21 19:36:09 +1000 (Wed, 21 Sep 2005) $
  */
-public class IdentifierSelectionModel implements IPropertySelectionModel {
+public class OpenVpmsSelectionModel implements IPropertySelectionModel {
     private List instances;
-
-    private String idPropery = "id";
 
     private boolean allowNone;
 
@@ -47,9 +42,7 @@ public class IdentifierSelectionModel implements IPropertySelectionModel {
      * @param instances
      * @param idProperty
      */
-    public IdentifierSelectionModel(List instances, String idProperty) {
-        this.idPropery = idProperty;
-
+    public OpenVpmsSelectionModel(List instances) {
         this.instances = instances;
     }
 
@@ -58,9 +51,8 @@ public class IdentifierSelectionModel implements IPropertySelectionModel {
      * @param idProperty
      * @param allowNone
      */
-    public IdentifierSelectionModel(List instances, String idProperty,
-            boolean allowNone) {
-        this(instances, idProperty);
+    public OpenVpmsSelectionModel(List instances, boolean allowNone) {
+        this(instances);
         this.allowNone = allowNone;
         if (this.allowNone) {
             this.instances = new ArrayList();
@@ -109,7 +101,8 @@ public class IdentifierSelectionModel implements IPropertySelectionModel {
             if (allowNone && index == 0) {
                 return NONE_VALUE;
             } else {
-                return BeanUtils.getProperty(instances.get(index), idPropery);
+      // TODO This is not correct.  Needs updating.
+                return instances.get(index).toString();
             }
         } catch (Exception e) {
             throw new ApplicationRuntimeException(e);
@@ -129,8 +122,8 @@ public class IdentifierSelectionModel implements IPropertySelectionModel {
                 if (value.equals(NONE_VALUE))
                     return null;
             }
-            return Ognl.getValue("#root.{? #this." + idPropery
-                    + ".toString() == \"" + value + "\" }[0]", realInstances);
+            // TODO Not correct.  Need to return the object that the value above refers to.
+            return null;
         } catch (Exception e) {
             throw new ApplicationRuntimeException(e);
         }

@@ -1,14 +1,21 @@
 /*
- * Copyright 2004 Chris Nelson
+ *  Version: 1.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations under the License.
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
  */
+
 package org.openvpms.component.business.service.archetype;
 
 import java.util.ArrayList;
@@ -18,7 +25,7 @@ import java.util.List;
 import ognl.Ognl;
 import ognl.OgnlException;
 
-import org.openvpms.component.business.domain.archetype.Archetype;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.presentation.tapestry.component.Utils;
 
 
@@ -27,13 +34,13 @@ import org.openvpms.component.presentation.tapestry.component.Utils;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class OvpmsArchetypeDescriptor extends OvpmsDescriptor implements IArchetypeDescriptor
+public class OpenVpmsArchetypeDescriptor extends OpenVpmsDescriptor implements IArchetypeDescriptor
 {
     private List propertyDescriptors = new ArrayList();
     private boolean child;
-    private Archetype archetype;
+    private ArchetypeId archetypeId;
     
-    public OvpmsArchetypeDescriptor(IArchetypeDescriptor descriptor)
+    public OpenVpmsArchetypeDescriptor(IArchetypeDescriptor descriptor)
     {
         super(descriptor);
         for (Iterator iter = descriptor.getPropertyDescriptors().iterator(); iter.hasNext();)
@@ -46,23 +53,23 @@ public class OvpmsArchetypeDescriptor extends OvpmsDescriptor implements IArchet
     /**
      * @return Returns the archetype.
      */
-    public Archetype getArchetype() {
-        return archetype;
+    public ArchetypeId getArchetypeId() {
+        return archetypeId;
     }
 
     /**
      * @param archetype The archetype to set.
      */
-    public void setArchetype(Archetype archetype) {
-        this.archetype = archetype;
+    public void setArchetypeId(ArchetypeId archetypeId) {
+        this.archetypeId = archetypeId;
     }
 
-    public OvpmsArchetypeDescriptor(Class type)
+    public OpenVpmsArchetypeDescriptor(Class type)
     {
         super(type);
     }
 
-    public OvpmsArchetypeDescriptor(Class type, String displayName)
+    public OpenVpmsArchetypeDescriptor(Class type, String displayName)
     {
         super(type);
         this.setDisplayName(displayName);
@@ -85,13 +92,6 @@ public class OvpmsArchetypeDescriptor extends OvpmsDescriptor implements IArchet
         this.propertyDescriptors = propertyDescriptors;
     }
 
-    public IPropertyDescriptor getIdentifierDescriptor()
-    {
-        String ognl = "propertyDescriptors.{? identifier}[0]";
-
-        return findDescriptor(ognl);
-    }
-
     /**
      * @param ognl
      * @return
@@ -104,7 +104,6 @@ public class OvpmsArchetypeDescriptor extends OvpmsDescriptor implements IArchet
         }catch (OgnlException oe)
         {
             oe.printStackTrace();
-
             return null;
         }catch (IndexOutOfBoundsException ie)
         {
@@ -149,7 +148,7 @@ public class OvpmsArchetypeDescriptor extends OvpmsDescriptor implements IArchet
     @Override
     public Object clone()
     {
-        return new OvpmsArchetypeDescriptor(this);
+        return new OpenVpmsArchetypeDescriptor(this);
     }
 
     public List getPropertyDescriptors(String[] properties)
@@ -160,7 +159,5 @@ public class OvpmsArchetypeDescriptor extends OvpmsDescriptor implements IArchet
             descriptors.add(getPropertyDescriptor(properties[i]));
         }
         return descriptors;
-    }
-
-    
+    }   
 }

@@ -13,26 +13,26 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: IEntityService.java 149 2005-09-26 23:07:52Z jalateras $
  */
 
-package org.openvpms.component.business.service.entity;
+package org.openvpms.component.business.service.act;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.Act;
 
 
 /**
  * This service interface, provides standard CRUD (create, retrieve, update and 
- * delete) functionality for entities. It is a generic service that can be used
+ * delete) functionality for acts. It is a generic service that can be used
  * to operate on subtypes.
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2005-09-27 09:07:52 +1000 (Tue, 27 Sep 2005) $
  */
-public interface IEntityService {
+public interface IActService {
     /**
-     * Create an entity using the specified shortName. The short name is a 
+     * Create an act using the specified shortName. The short name is a 
      * reference to the archetype that is used to create the object. An archetype 
      * restricts the instances of the domain class by declaring constraints on 
      * it.
@@ -42,51 +42,51 @@ public interface IEntityService {
      * 
      * @param shortName
      *            the short name to the archetype
-     * @return Entity
-     * @throws EntityServiceException
+     * @return Act
+     * @throws ActServiceException
      *             a runtime exception
      * 
      */
-    public Entity create(String shortName);
+    public Act create(String shortName);
 
     /**
-     * Insert the specified {@link Entity}. This service is now responsible for
-     * managing the entity.
+     * Insert the specified {@link Act}. This service is now responsible for
+     * managing the act.
      * 
-     * @param entity
-     *            the entity to insert
-     * @throws EntityServiceException                      
+     * @param act
+     *            the act to insert
+     * @throws ActServiceException                      
      */
-    public void insert(Entity entity);
+    public void insert(Act act);
     
     /**
-     * Remove the specified entity. If the entity cannot be removed for whatever
-     * reason then raise a {@link EntityServiceException}.
+     * Remove the specified act. If the act cannot be removed for whatever
+     * reason then raise a {@link ActServiceException}.
      * 
-     * @param entity
-     *            the entity to remove
-     * @throws EntityServiceException
+     * @param act
+     *            the act to remove
+     * @throws ActServiceException
      *             a runtime exception
      */
-    public void remove(Entity entity);
+    public void remove(Act act);
 
     /**
-     * Update the specified entity. The entity is validated against its
-     * archetype before it is updated. If the entity is invalid or it cannot be 
-     * updated the {@link EntityServiceException} exception is thrown.
+     * Update the specified act. The act is validated against its
+     * archetype before it is updated. If the act is invalid or it cannot be 
+     * updated the {@link ActServiceException} exception is thrown.
      * <p>
-     * The updateEntity method implies both save and upate semantics
+     * The update method implies both save and upate semantics
      * 
-     * @param entity
-     *            the entity to update
-     * @throws EntityServiceException
+     * @param act
+     *            the act to update
+     * @throws ActServiceException
      *             a runtime exception
      */
-    public void update(Entity entity);
+    public void update(Act act);
 
     /**
      * Uses the specified criteria to return zero, one or more matching . 
-     * entities. This is a very generic query which will constrain the 
+     * acts. This is a very generic query which will constrain the 
      * returned set on one or more of the supplied values.
      * <p>
      * Each of the parameters can denote an exact match or a partial match. If
@@ -95,21 +95,21 @@ public interface IEntityService {
      * <p>
      * All the values are optional. In the case where all the values are null
      * then all the entities will be returned. In the case where two or more 
-     * values are specified (i.e. rmName and entityName) then only entities 
+     * values are specified (i.e. rmName and entityName) then only acts 
      * satisfying both conditions will be returned.
      * 
      * @param rmName
      *            the reference model name (partial or complete)
-     * @param entityName
-     *            the name of the entity
+     * @param actName
+     *            the name of the act
      * @param concept
      *            the concept name
      * @param instanceName
      *            the particular instance name
-     * @return Entity[]                                    
-     * @throws EntityServiceException
+     * @return Act[]                                    
+     * @throws ActServiceException
      *            a runtime exception                         
      */
-    public Entity[] findEntities(String rmName, String entityName, 
+    public Act[] findActs(String rmName, String entityName, 
             String conceptName, String instanceName);
 }

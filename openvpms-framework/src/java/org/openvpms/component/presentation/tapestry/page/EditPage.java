@@ -18,153 +18,149 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+import java.util.ArrayList;
+
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
 import org.apache.tapestry.event.PageRenderListener;
 import org.apache.tapestry.form.IPropertySelectionModel;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
+import org.openvpms.component.business.service.entity.EntityServiceException;
+import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.Visit;
-import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
-import org.openvpms.component.presentation.tapestry.validation.OvpmsValidationDelegate;
-
+import org.openvpms.component.presentation.tapestry.component.OpenVpmsSelectionModel;
 
 /**
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class EditPage extends OvpmsPage implements PageRenderListener
-{
-    
-    public void pageBeginRender(PageEvent arg0)
-    {
-    }
+
+public abstract class EditPage extends OpenVpmsPage implements PageRenderListener {
 
     public abstract Object getModel();
 
     public abstract void setModel(Object model);
 
-    public abstract OvpmsValidationDelegate getDelegate();
-
-    public abstract void setDelegate(OvpmsValidationDelegate Delegate);
-
     public abstract ICallback getNextPage();
 
     public abstract void setNextPage(ICallback NextPage);
 
-    public abstract IArchetypeService getArchetypeService();
-
-    public abstract void setArchetypeService(
-        IArchetypeService PropertyDescriptorService);
-
-    public void save(IRequestCycle cycle)
-    {
-        save();       
-    }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.trails.page.TrailsPage#pushCallback()
+    /* (non-Javadoc)
+     * @see org.openvpms.component.presentation.tapestry.page.OvpmsPage#pushCallback()
      */
-    
-    public void pushCallback()
-    {
-        Visit visit = (Visit)getVisit();
-        visit.getCallbackStack().push(new EditCallback(getPageName(), getModel()));
+    public void pushCallback() {
+        Visit visit = (Visit) getVisit();
+        visit.getCallbackStack().push(
+                new EditCallback(getPageName(), getModel()));
     }
-    
-    protected abstract boolean save();
 
-    public abstract void remove(IRequestCycle cycle);
+    /* (non-Javadoc)
+     * @see org.apache.tapestry.event.PageRenderListener#pageBeginRender(org.apache.tapestry.event.PageEvent)
+     */
+    public void pageBeginRender(PageEvent arg0) {
+    }
 
-    public void onFormSubmit(IRequestCycle cycle)
+    /**
+     * @param cycle
+     */
+    public void save(IRequestCycle cycle) {
+        save();
+    }
+
+    /**
+     * @param cycle
+     */
+    public void remove(IRequestCycle cycle)
     {
-        if (getNextPage() != null)
-        {
+          Visit visit = (Visit)getVisit();
+          ICallback callback = (ICallback)visit.getCallbackStack().pop();
+          if (getModel() instanceof Entity)
+              ((Global)getGlobal()).getEntityService().remove((Entity)getModel());
+          else if (getModel() instanceof Act)
+              ((Global)getGlobal()).getActService().remove((Act)getModel());
+          else if (getModel() instanceof Lookup)
+              ((Global)getGlobal()).getLookupService().removeLookup((Lookup)getModel());
+              
+          callback.performCallback(cycle);
+    }
+
+    /**
+     * @param cycle
+     */
+    public void saveAndReturn(IRequestCycle cycle) {
+        if (save()) {
+            Visit visit = (Visit) getVisit();
+            ICallback callback = (ICallback) visit.getCallbackStack().pop();
+            callback.performCallback(cycle);
+        }
+    }
+
+    public void onFormSubmit(IRequestCycle cycle) {
+        if (getNextPage() != null) {
             getNextPage().performCallback(cycle);
         }
     }
-    
+
     /**
      * @return
      */
-    public IArchetypeDescriptor getArchetypeDescriptor()
-    {
-        return getArchetypeService().getArchetypeDescriptor(((IMObject)getModel()).getArchetypeId().getConcept());
+    protected boolean save() {
+        if (!getDelegate().getHasErrors()) {
+            try {
+                Global global = (Global)getGlobal();
+                if (getModel() instanceof Entity)
+                    global.getEntityService().update((Entity)getModel());
+                else if (getModel() instanceof Act)
+                    global.getActService().update((Act)getModel());
+                else if (getModel() instanceof Lookup)
+                    global.getLookupService().updateLookup((Lookup)getModel());                   
+            } catch (EntityServiceException pe) {
+//                getDelegate().record(pe);
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
-    public IPropertySelectionModel getSelectionModel(IPropertyDescriptor descriptor)
-    {
-//        ArrayList instances = new ArrayList();
-// instances.addAll(getEntityService().getAllInstances(descriptor.getPropertyType()));
-// IdentifierSelectionModel selectionModel = new
-// IdentifierSelectionModel(instances,
-// getArchetypeService().getArchetypeDescriptor(descriptor.getPropertyType())
-// .getIdentifierDescriptor().getName(),
-// !descriptor.isRequired());
+    /**
+     * @return
+     */
+    public boolean isModelNew() {
+        return false;
+    }
 
+    /**
+     * @return
+     */
+    public IArchetypeDescriptor getArchetypeDescriptor() {
+        return ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
+                ((IMObject)getModel()).getArchetypeId().getShortName());
+    }
+
+    public IPropertySelectionModel getSelectionModel(IPropertyDescriptor descriptor) {
+//            ArrayList instances = new ArrayList();
+//            instances.addAll(((Global)getGlobal()).getLookupService().getLookups(descriptor.getLookupShortName()));
+//            OpenVpmsSelectionModel selectionModel = new OpenVpmsSelectionModel(instances,!descriptor.isRequired());
         return null;
     }
 
     /**
      * @return
      */
-    public boolean isModelNew()
-    {
-        return false;
-    }
-
-    /**
-     * @param cycle
-     */
-    public void saveAndReturn(IRequestCycle cycle)
-    {
-        if (save())
-        {
-            Visit visit = (Visit)getVisit();
-            ICallback callback = (ICallback)visit.getCallbackStack().pop();
-            if (callback instanceof CollectionCallback)
-            {
-                ((CollectionCallback)callback).add(getModel());
-            }
-            callback.performCallback(cycle);
-        }
-    }
-
-    /**
-     * @return
-     */
-    public String getTitle()
-    {
-        if (cameFromCollection() && isModelNew())
-        {
+    public String getTitle() {
+        if (isModelNew()) {
             return "Add " + getArchetypeDescriptor().getDisplayName();
-        }
-        else
-        {
+        } else {
             return "Edit " + getArchetypeDescriptor().getDisplayName();
         }
-    }
-
-    public boolean cameFromCollection()
-    {
-        Visit visit = (Visit)getVisit();
-        return visit.getCallbackStack().peek() instanceof CollectionCallback;
-    }
-    
-    public boolean cameFromChildCollection()
-    {
-        Visit visit = (Visit)getVisit();
-        if (visit.getCallbackStack().peek() instanceof CollectionCallback)
-        {
-            return ((CollectionCallback)visit.getCallbackStack().peek()).isChildRelationship();
-        }
-        else return false;
     }
 }

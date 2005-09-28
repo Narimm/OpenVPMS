@@ -24,6 +24,12 @@ package org.openvpms.component.presentation.tapestry.page;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Login extends OvpmsPage {
+public class Login extends OpenVpmsPage {
+
+    @Override
+    public void pushCallback() {
+        // TODO Auto-generated method stub
+        
+    }
 
 }

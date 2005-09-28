@@ -30,6 +30,16 @@ import org.openvpms.component.presentation.tapestry.page.EditPage;
 public abstract class ArchetypeEditComponent extends ArchetypeComponent {
 
     /**
+     * @return
+     */
+    public abstract Object getModel();
+
+    /**
+     * @param model
+     */
+    public abstract void setModel(Object model);
+
+    /**
      * @param propertyName
      * @return
      */
@@ -43,17 +53,6 @@ public abstract class ArchetypeEditComponent extends ArchetypeComponent {
             }
         }
         return false;
-    }
-
-    /**
-     * @return
-     */
-    protected EditPage getEditPage() {
-        EditPage editPage = (EditPage) Utils.findPage(getPage()
-                .getRequestCycle(), Utils.unqualify(getModel().getClass()
-                .getName())
-                + "Edit", "Edit");
-        return editPage;
     }
 
     /**
@@ -78,11 +77,10 @@ public abstract class ArchetypeEditComponent extends ArchetypeComponent {
     /**
      * @return
      */
-    public abstract Object getModel();
-
-    /**
-     * @param model
-     */
-    public abstract void setModel(Object model);
-
+    protected EditPage getEditPage() {
+        EditPage editPage = (EditPage) Utils.findPage(getPage()
+                .getRequestCycle(), getArchetypeDescriptor().getArchetypeId().getConcept()
+                + "Edit", "Edit");
+        return editPage;
+    }
 }

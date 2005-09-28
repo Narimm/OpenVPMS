@@ -30,7 +30,7 @@ import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
  * @version $LastChangedDate$
  */
 
-public abstract class PropertyEditor extends OvpmsComponent {
+public abstract class PropertyEditor extends OpenVpmsComponent {
     public abstract IPropertyDescriptor getDescriptor();
 
     public abstract void setDescriptor(IPropertyDescriptor Descriptor);

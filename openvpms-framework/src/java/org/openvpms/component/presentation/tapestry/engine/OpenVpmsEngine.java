@@ -36,10 +36,10 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class OvpmsEngine extends BaseEngine {
+public class OpenVpmsEngine extends BaseEngine {
     private static final long serialVersionUID = 3257288032683177524L;
     
-    private static Logger log = Logger.getLogger(OvpmsEngine.class);
+    private static Logger log = Logger.getLogger(OpenVpmsEngine.class);
     
     protected void setupForRequest(RequestContext context) {
         

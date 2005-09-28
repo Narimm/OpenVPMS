@@ -267,7 +267,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
      */
-    public IArchetypeDescriptor getArchetypeDescriptor(String name) {
+    public IArchetypeDescriptor getArchetypeDescriptor(String shortName) {
         return null;
     }
     

@@ -19,6 +19,11 @@
 package org.openvpms.component.business.service.archetype;
 
 
+/**
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
+ */
 public interface IPropertyDescriptor extends IDescriptor
 {
     public static final int UNDEFINED_INDEX = -1;
@@ -93,4 +98,8 @@ public interface IPropertyDescriptor extends IDescriptor
     public int getLength();
     
     public void setLength(int length);   
+    
+    public String getLookupShortName();
+    
+    public void setLookupShortName(String shortName);
 }

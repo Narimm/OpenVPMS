@@ -26,6 +26,6 @@ import org.apache.tapestry.BaseComponent;
  * @version $LastChangedDate$
  */
 
-public abstract class OvpmsComponent extends BaseComponent {
+public abstract class OpenVpmsComponent extends BaseComponent {
     public static String DEFAULT = "Default";
 }

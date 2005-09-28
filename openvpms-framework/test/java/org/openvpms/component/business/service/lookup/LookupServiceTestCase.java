@@ -33,7 +33,7 @@ public class LookupServiceTestCase extends
         AbstractDependencyInjectionSpringContextTests {
     
     /**
-     * Holds a reference to the party service
+     * Holds a reference to the lookup service
      */
     private LookupService lookupService;
     
@@ -49,7 +49,7 @@ public class LookupServiceTestCase extends
     }
 
     /**
-     * @param partyService The partyService to set.
+     * @param partyService The lookupService to set.
      */
     public void setLookupService(LookupService lookupService) {
         this.lookupService = lookupService;
@@ -80,7 +80,7 @@ public class LookupServiceTestCase extends
             lookup.setValue("Autralia-" + index);
             lookup.setCode("AU-" + index);
             
-            // insert the party object
+            // insert the lookup object
             lookupService.insertLookup(lookup);
         }
     }

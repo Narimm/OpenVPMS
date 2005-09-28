@@ -26,7 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ArchetypeComponent extends OvpmsComponent {
+public abstract class ArchetypeComponent extends OpenVpmsComponent {
 
     public ArchetypeComponent() {
         super();
@@ -64,5 +64,4 @@ public abstract class ArchetypeComponent extends OvpmsComponent {
                     getPropertyNames());
         }
     }
-
 }

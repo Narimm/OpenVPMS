@@ -20,7 +20,7 @@ package org.openvpms.component.business.service.archetype;
 
 import java.util.List;
 
-import org.openvpms.component.business.domain.archetype.Archetype;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
 *
@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.archetype.Archetype;
 
 public interface IArchetypeDescriptor extends IDescriptor
 {
-    public Archetype getArchetype();
+    public ArchetypeId getArchetypeId();
 
     /**
      * @return Returns the propertyDescriptors.
@@ -42,8 +42,6 @@ public interface IArchetypeDescriptor extends IDescriptor
      *            The propertyDescriptors to set.
      */
     public void setPropertyDescriptors(List propertyDescriptors);
-
-    public IPropertyDescriptor getIdentifierDescriptor();
 
     /**
      * @return

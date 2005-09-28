@@ -29,16 +29,24 @@ import org.apache.tapestry.valid.IValidator;
 import org.apache.tapestry.valid.RenderString;
 import org.apache.tapestry.valid.ValidationDelegate;
 import org.apache.tapestry.valid.ValidatorException;
+import org.openvpms.component.business.service.entity.EntityServiceException;
 
 /**
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class OvpmsValidationDelegate extends ValidationDelegate
+public class OpenVpmsValidationDelegate extends ValidationDelegate
 {
     
     public void record(ValidatorException ex)
+    {
+        FieldTracking tracking = findCurrentTracking();
+        tracking.setErrorRenderer(new RenderString(ex.getMessage()));
+        
+    }
+
+    public void record(EntityServiceException ex)
     {
         FieldTracking tracking = findCurrentTracking();
         tracking.setErrorRenderer(new RenderString(ex.getMessage()));
