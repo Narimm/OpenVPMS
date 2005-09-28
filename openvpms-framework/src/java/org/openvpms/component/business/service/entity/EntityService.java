@@ -137,6 +137,27 @@ public class EntityService implements IEntityService {
     }
 
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.entity.IEntityService#save(org.openvpms.component.business.domain.im.common.Entity)
+     */
+    public void save(Entity entity) {
+        if (archetypeService.validateObject(entity)) {
+            try {
+                dao.save(entity);
+            } catch (EntityDAOException exception) {
+                throw new EntityServiceException(
+                        EntityServiceException.ErrorCode.FailedToSaveEntity,
+                        new Object[]{entity.toString()}, exception);
+            }
+        } else {
+            throw new EntityServiceException(
+                    EntityServiceException.ErrorCode.FailedToSaveEntity,
+                    new Object[]{entity.getArchetypeId().toString(),
+                            entity.toString()});
+        }
+    }
+
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#update(org.openvpms.component.business.domain.im.common.Entity)
      */
     public void update(Entity entity) {

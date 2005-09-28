@@ -40,6 +40,7 @@ public class EntityDAOException extends RuntimeException implements
      */
     public enum ErrorCode {
         FailedToInsertEntity, 
+        FailedToSaveEntity, 
         FailedToDeleteEntity, 
         FailedToUpdateEntity, 
         FailedToFindEntities

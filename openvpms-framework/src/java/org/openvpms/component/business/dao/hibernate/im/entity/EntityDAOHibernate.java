@@ -185,4 +185,18 @@ public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDA
                     new Object[]{entity});
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#save(org.openvpms.component.business.domain.im.common.Entity)
+     */
+    public void save(Entity entity) {
+        try {
+            getHibernateTemplate().saveOrUpdate(entity);
+        } catch (Exception exception) {
+            throw new EntityDAOException(
+                    EntityDAOException.ErrorCode.FailedToSaveEntity,
+                    new Object[]{entity});
+        }
+    }
+
 }

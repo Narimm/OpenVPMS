@@ -43,6 +43,7 @@ public class EntityServiceException extends RuntimeException implements
         FailedToCreateEntity,
         FailedToDeleteEntity, 
         FailedToUpdateEntity,
+        FailedToSaveEntity,
         FailedToFindEntity,
         FailedToLocateArchetype,
         InvalidEntityObject

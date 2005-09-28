@@ -51,6 +51,18 @@ public interface IEntityDAO {
     public void update(Entity entity);
 
     /**
+     * This method can be used to do a insert or an update of the entity. This 
+     * method should be called in preference to {@link #insert(Entity)} or
+     * {@link #update(Entity)}. 
+     * 
+     * @param entity
+     *            the entity to save
+     * @throws EntityDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public void save(Entity entity);
+
+    /**
      * Delete the specified {@link Entity}
      * 
      * @param entity

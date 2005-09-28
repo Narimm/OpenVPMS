@@ -57,6 +57,7 @@ public interface IEntityService {
      *            the entity to insert
      * @throws EntityServiceException                      
      */
+    @Deprecated
     public void insert(Entity entity);
     
     /**
@@ -68,8 +69,21 @@ public interface IEntityService {
      * @throws EntityServiceException
      *             a runtime exception
      */
+    @Deprecated
     public void remove(Entity entity);
 
+    /**
+     * The save should be used in preference to the {@link #insert(Entity)} or
+     * {@link #remove(Entity)} methods. This will check that whether the entity
+     * is new and if it is do an insert otherwise do an update.
+     * 
+     * @param entity
+     *            the entity to insert or update
+     * @throws EntityServiceException
+     *             a runtime exception
+     */
+    public void save(Entity entity);
+    
     /**
      * Update the specified entity. The entity is validated against its
      * archetype before it is updated. If the entity is invalid or it cannot be 

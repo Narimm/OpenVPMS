@@ -78,7 +78,7 @@ public class EntityServiceTestCase extends
         person.setFirstName("Jim");
         person.setTitle("Mr");
         
-        entityService.insert(person);
+        entityService.save(person);
     }
 
 
@@ -88,7 +88,7 @@ public class EntityServiceTestCase extends
     public void testAnimalCreation()
     throws Exception {
         // create and insert a new pet
-        entityService.insert(createPet("brutus"));
+        entityService.save(createPet("brutus"));
     }
 
     /**
@@ -101,7 +101,7 @@ public class EntityServiceTestCase extends
         Entity[] before = entityService.findEntities("party", null, null, null);
         
         // create and insert a new pet
-        entityService.insert(createPet("brutus"));
+        entityService.save(createPet("brutus"));
         
         // now get a new count
         Entity[] after = entityService.findEntities("party", null, null, null);
@@ -118,7 +118,7 @@ public class EntityServiceTestCase extends
         Entity[] before = entityService.findEntities("party", "animal", null, null);
         
         // create and insert a new pet
-        entityService.insert(createPet("simon"));
+        entityService.save(createPet("simon"));
         
         // now get a new count
         Entity[] after = entityService.findEntities("party", "animal", null, null);
@@ -135,7 +135,7 @@ public class EntityServiceTestCase extends
         Entity[] before = entityService.findEntities("party", "animal", "pet", null);
         
         // create and insert a new pet
-        entityService.insert(createPet("jack"));
+        entityService.save(createPet("jack"));
         
         // now get a new count
         Entity[] after = entityService.findEntities("party", "animal", "pet", null);
@@ -154,7 +154,7 @@ public class EntityServiceTestCase extends
         Entity[] before = entityService.findEntities("party", "animal", "pet", "brutus");
         
         // create and insert a new pet
-        entityService.insert(createPet("brutus"));
+        entityService.save(createPet("brutus"));
         
         // now get a new count
         Entity[] after = entityService.findEntities("party", "animal", "pet", "brutus");
