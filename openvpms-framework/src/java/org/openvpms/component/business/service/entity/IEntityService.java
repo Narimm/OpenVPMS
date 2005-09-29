@@ -69,12 +69,12 @@ public interface IEntityService {
      * @throws EntityServiceException
      *             a runtime exception
      */
-    @Deprecated
+
     public void remove(Entity entity);
 
     /**
      * The save should be used in preference to the {@link #insert(Entity)} or
-     * {@link #remove(Entity)} methods. This will check that whether the entity
+     * {@link #update(Entity)} methods. This will check that whether the entity
      * is new and if it is do an insert otherwise do an update.
      * 
      * @param entity
@@ -96,6 +96,7 @@ public interface IEntityService {
      * @throws EntityServiceException
      *             a runtime exception
      */
+    @Deprecated
     public void update(Entity entity);
 
     /**
