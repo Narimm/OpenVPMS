@@ -57,6 +57,7 @@ public interface IActService {
      *            the act to insert
      * @throws ActServiceException                      
      */
+    @Deprecated
     public void insert(Act act);
     
     /**
@@ -82,7 +83,20 @@ public interface IActService {
      * @throws ActServiceException
      *             a runtime exception
      */
+    @Deprecated
     public void update(Act act);
+
+    /**
+     * The save should be used in preference to the {@link #insert(Act)} or
+     * {@link #update(Act)} methods. This will check that whether the act
+     * is new and if it is do an insert otherwise do an update.
+     * 
+     * @param act
+     *            the act to insert or update
+     * @throws ActServiceException
+     *             a runtime exception
+     */
+    public void save(Act act);   
 
     /**
      * Uses the specified criteria to return zero, one or more matching . 
