@@ -23,50 +23,56 @@ import java.util.List;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
-*
+* This descriptor interface provides methods to allow the application developer to
+* get presentation specific information about a specific archetype.
+* 
 * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
 * @version  $LastChangedDate$
 */
 
 public interface IArchetypeDescriptor extends IDescriptor
 {
+    /**
+     * Method to return the {&link ArchetypeId } associated with this Descriptor. 
+     * @return the {&link ArchetypeId }
+     */
     public ArchetypeId getArchetypeId();
 
     /**
-     * @return Returns the propertyDescriptors.
+     * Method to return the Archetype shortname associated with this Descriptor. 
+     * @return the {&link ArchetypeId }
      */
-    public List getPropertyDescriptors();
+    public String getArchetypeName();
 
     /**
+     * Method to return a List of INodeDescriptors.  These Descriptors represent presentation
+     * information for each node in the archetype.  
+     * Please Note it will also include an extra Node descriptor representing the object identifier.
+     * 
+     * @return Returns a List of { &link INodeDescriptors }.
+     */
+    public List getNodeDescriptors();
+
+    /**
+     * Method that allows the Node Descriptors to be set from a provided List of
+     * Node Descriptors.  
      * @param propertyDescriptors
      *            The propertyDescriptors to set.
      */
-    public void setPropertyDescriptors(List propertyDescriptors);
+    public void setNodeDescriptors(List nodeDescriptors);
 
     /**
-     * @return
-     */
-    public String getDisplayName();
-    
-    public void setDisplayName(String displayName);
-
-    /**
-     * @return
-     */
-    public String getShortDescription();
-    
-    public void setShortDescription(String shortDescription);
-
-    /**
+     * Method to return the {&link INodeDescriptor} for the specified name.  The name provided is 
+     * the archetype node name.  
      * @param string
-     * @return
+     * @return Returns a {&link INodeDescriptor}
      */
-    public IPropertyDescriptor getPropertyDescriptor(String name);
+    public INodeDescriptor getNodeDescriptor(String name);
 
     /**
-     * @return
+     * Mthod to return a List of { &link INodeDescriptors } for the specified array of Node names.
+     * 
+     * @return List of { &link INodeDescriptor }
      */
-    public String getPluralDisplayName();
-
     public List getPropertyDescriptors(String[] strings);
 }

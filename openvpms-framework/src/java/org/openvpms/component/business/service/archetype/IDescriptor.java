@@ -18,21 +18,54 @@
 
 package org.openvpms.component.business.service.archetype;
 
-public interface IDescriptor extends Cloneable
-{
+import java.io.Serializable;
+
+/**
+ * This interface defines methods applicable to all descriptors and is the
+ * parent of all descriptors. Descriptors provide information to the
+ * presentation layers to allow automated rendering of presentation components.
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public interface IDescriptor extends Serializable, Cloneable {
     /**
-     * @return
+     * Method returns the Descriptor name which is the archetype shortname in
+     * the case of an Archetype Descriptor and the Node name for a Node
+     * Descriptor.
+     * Note: For NodeDescriptors this name must be able to be used to retrieve a property value 
+     * via a ognl expression i.e model[descriptor.name]
+     * 
+     * @return Returns the name.
      */
-    public boolean isHidden();
-    
-    public void setHidden(boolean hidden);
-    
+    public String getName();
+
     /**
-     * @return
+     * Method to get the display name. The Display Name is used by the
+     * presentation layer in place of the actual object, archetype or node name.
+     * Note: This can be formatted from the name above.
+     * 
+     * @return Returns the display name.
      */
     public String getDisplayName();
-    
+
+    /**
+     * Method to set the Display Name.
+     * @param displayName
+     *            The display name to set.
+     */
     public void setDisplayName(String displayName);
-    
+
+    /**
+     * Method to get the type. The type is the rmentity class for Archetypes and
+     * the class name for nodes.
+     * 
+     * @return Class the type.
+     */
+    public Class getType();
+
+    /**
+     * @return Cloned Object.
+     */
     public Object clone();
 }
