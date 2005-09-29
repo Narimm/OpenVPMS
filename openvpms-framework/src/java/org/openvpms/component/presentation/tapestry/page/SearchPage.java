@@ -20,14 +20,10 @@ package org.openvpms.component.presentation.tapestry.page;
 
 import java.util.List;
 
-import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.IExternalPage;
 import org.apache.tapestry.IRequestCycle;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.SearchCallback;
-import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.entity.IEntityService;
 
 
 
@@ -38,14 +34,6 @@ import org.openvpms.component.business.service.entity.IEntityService;
  */
 public abstract class SearchPage extends OpenVpmsPage implements IExternalPage
 {
-    public abstract IArchetypeService getArchetypeService();
-
-    public abstract void setArchetypeService(IArchetypeService archetypeService);
-
-    public abstract IEntityService getEntityService();
-
-    public abstract void setEntityService(IEntityService entityService);
-
     public abstract List getInstances();
 
     public abstract void setInstances(List instances);
