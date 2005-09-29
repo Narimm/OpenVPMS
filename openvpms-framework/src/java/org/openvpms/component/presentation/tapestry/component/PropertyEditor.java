@@ -21,8 +21,9 @@ package org.openvpms.component.presentation.tapestry.component;
 import org.apache.tapestry.valid.BaseValidator;
 import org.apache.tapestry.valid.IValidator;
 import org.apache.tapestry.valid.NumberValidator;
+import org.apache.tapestry.valid.PatternValidator;
 import org.apache.tapestry.valid.StringValidator;
-import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
+import org.openvpms.component.business.service.archetype.INodeDescriptor;
 
 /**
  * 
@@ -31,23 +32,33 @@ import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
  */
 
 public abstract class PropertyEditor extends OpenVpmsComponent {
-    public abstract IPropertyDescriptor getDescriptor();
+    
+    public abstract INodeDescriptor getDescriptor();
 
-    public abstract void setDescriptor(IPropertyDescriptor Descriptor);
+    public abstract void setDescriptor(INodeDescriptor Descriptor);
 
     /**
      * @param descriptor
      * @return
      */
-    public IValidator getValidator(IPropertyDescriptor descriptor) {
+    public IValidator getValidator(INodeDescriptor descriptor) {
         BaseValidator validator = null;
 
         if (descriptor.isNumeric()) {
             validator = new NumberValidator();
             ((NumberValidator) validator).setValueTypeClass(descriptor
-                    .getPropertyType());
+                    .getType());
+            if (descriptor.getMaximumValue() != null)
+                ((NumberValidator) validator).setMaximum(descriptor.getMaximumValue());           
+            if (descriptor.getMinimumValue() != null)
+                ((NumberValidator) validator).setMinimum(descriptor.getMinimumValue());
         } else {
-            validator = new StringValidator();
+            if (descriptor.getStringPattern() == null)
+                validator = new StringValidator();
+            else {
+                validator = new PatternValidator();
+                ((PatternValidator)validator).setPatternString(descriptor.getStringPattern());
+            }
         }
         validator.setRequired(descriptor.isRequired());
         return validator;

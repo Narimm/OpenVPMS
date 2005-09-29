@@ -33,5 +33,5 @@
         <binding name="model">model</binding>
     </component>
     
-    <property-specification name="property" type="org.openvpms.component.business.service.archetype.IPropertyDescriptor"></property-specification>
+    <property-specification name="property" type="org.openvpms.component.business.service.archetype.INodeDescriptor"></property-specification>
 </component-specification>

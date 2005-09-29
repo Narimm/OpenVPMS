@@ -58,7 +58,7 @@ public abstract class ArchetypeComponent extends OpenVpmsComponent {
      */
     public List getPropertyDescriptors() {
         if (getPropertyNames() == null || getPropertyNames().length == 0) {
-            return getArchetypeDescriptor().getPropertyDescriptors();
+            return getArchetypeDescriptor().getNodeDescriptors();
         } else {
             return getArchetypeDescriptor().getPropertyDescriptors(
                     getPropertyNames());

@@ -18,7 +18,7 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
+import org.openvpms.component.business.service.archetype.INodeDescriptor;
 
 /**
  *
@@ -29,6 +29,6 @@ public abstract class PropertyTable extends ArchetypeEditComponent {
     /**
      * @return
      */
-    public abstract IPropertyDescriptor getProperty();
+    public abstract INodeDescriptor getProperty();
 
 }
