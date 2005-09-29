@@ -29,7 +29,7 @@ import org.apache.tapestry.form.IPropertySelectionModel;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-09-21 19:36:09 +1000 (Wed, 21 Sep 2005) $
  */
-public class OpenVpmsSelectionModel implements IPropertySelectionModel {
+public class LookupSelectionModel implements IPropertySelectionModel {
     private List instances;
 
     private boolean allowNone;
@@ -42,8 +42,9 @@ public class OpenVpmsSelectionModel implements IPropertySelectionModel {
      * @param instances
      * @param idProperty
      */
-    public OpenVpmsSelectionModel(List instances) {
+    public LookupSelectionModel(List instances) {
         this.instances = instances;
+        this.allowNone = false;
     }
 
     /**
@@ -51,7 +52,7 @@ public class OpenVpmsSelectionModel implements IPropertySelectionModel {
      * @param idProperty
      * @param allowNone
      */
-    public OpenVpmsSelectionModel(List instances, boolean allowNone) {
+    public LookupSelectionModel(List instances, boolean allowNone) {
         this(instances);
         this.allowNone = allowNone;
         if (this.allowNone) {
