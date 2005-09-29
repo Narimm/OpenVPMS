@@ -18,8 +18,6 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
-import java.util.ArrayList;
-
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
@@ -30,12 +28,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.IPropertyDescriptor;
-import org.openvpms.component.business.service.entity.EntityServiceException;
+import org.openvpms.component.business.service.archetype.INodeDescriptor;
 import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
-import org.openvpms.component.presentation.tapestry.component.OpenVpmsSelectionModel;
 
 /**
  * 
@@ -112,17 +108,20 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     /**
      * @return
      */
+    /**
+     * @return
+     */
     protected boolean save() {
         if (!getDelegate().getHasErrors()) {
             try {
                 Global global = (Global)getGlobal();
                 if (getModel() instanceof Entity)
-                    global.getEntityService().update((Entity)getModel());
+                    global.getEntityService().save((Entity)getModel());
                 else if (getModel() instanceof Act)
-                    global.getActService().update((Act)getModel());
+                    global.getActService().save((Act)getModel());
                 else if (getModel() instanceof Lookup)
                     global.getLookupService().updateLookup((Lookup)getModel());                   
-            } catch (EntityServiceException pe) {
+            } catch (Exception pe) {
 //                getDelegate().record(pe);
                 return false;
             }
@@ -146,13 +145,21 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
                 ((IMObject)getModel()).getArchetypeId().getShortName());
     }
 
-    public IPropertySelectionModel getSelectionModel(IPropertyDescriptor descriptor) {
-//            ArrayList instances = new ArrayList();
-//            instances.addAll(((Global)getGlobal()).getLookupService().getLookups(descriptor.getLookupShortName()));
-//            OpenVpmsSelectionModel selectionModel = new OpenVpmsSelectionModel(instances,!descriptor.isRequired());
+    public IPropertySelectionModel getLookupModel(INodeDescriptor descriptor) {
+        // TODO need to work out how to get lookup selection models from node descriptor
+        // information and model data available to the page.  This method should populate
+        // a special implementation of IPropertySelectionModel called LookupSelectionModel
+        // from either the Lookup service or the Archetyped defined values.
         return null;
     }
 
+    public IPropertySelectionModel getEntityModel(INodeDescriptor descriptor) {
+        // TODO need to work out how to get Entity selection models from node descriptor
+        // information and model data available to the page.  This method should populate
+        // a special implementation of IPropertySelectionModel called EntitySelectionModel
+        // from the Entity service based on the Archetype constraints in the descriptor.
+        return null;
+    }
     /**
      * @return
      */
