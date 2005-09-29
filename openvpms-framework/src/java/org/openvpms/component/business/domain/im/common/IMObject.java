@@ -179,5 +179,15 @@ public abstract class IMObject implements Serializable {
             .append("linkId", linkId)
             .toString();
     }
+    
+    /**
+     * Return true if this is a new object and false otherwise. A new object
+     * is one that has been created but not yet persisted
+     * 
+     * @return boolean
+     */
+    public boolean isNew() {
+        return uid == -1;
+    }
 }
 

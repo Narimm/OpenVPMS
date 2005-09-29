@@ -71,7 +71,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#createLookup(java.lang.String)
      */
-    public Lookup createLookup(String shortName) {
+    public Lookup create(String shortName) {
         // ensure that we can retrieve an arhetype record for the
         // specified short name
         ArchetypeRecord record = archetypeService.getArchetypeRecord(shortName);
@@ -88,7 +88,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#insertLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
-    public void insertLookup(Lookup lookup) {
+    public void insert(Lookup lookup) {
         if (archetypeService.validateObject(lookup)) {
             try {
                 dao.insert(lookup);
@@ -107,7 +107,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#removeLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
-    public void removeLookup(Lookup lookup) {
+    public void remove(Lookup lookup) {
         try {
             dao.delete(lookup);
         } catch (LookupDAOException exception) {
@@ -121,7 +121,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#updateLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
-    public void updateLookup(Lookup lookup) {
+    public void update(Lookup lookup) {
         if (archetypeService.validateObject(lookup)) {
             try {
                 dao.update(lookup);
@@ -139,9 +139,30 @@ public class LookupService implements ILookupService {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.lookup.ILookupService#addLookupRelationship(org.openvpms.component.business.domain.im.lookup.LookupRelationship)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#save(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
-    public void addLookupRelationship(LookupRelationship relationship) {
+    public void save(Lookup lookup) {
+        if (archetypeService.validateObject(lookup)) {
+            try {
+                dao.save(lookup);
+            } catch (LookupDAOException exception) {
+                throw new LookupServiceException(
+                        LookupServiceException.ErrorCode.FailedToSaveLookup,
+                        new Object[]{lookup.toString()}, exception);
+            }
+        } else {
+            throw new LookupServiceException(
+                    LookupServiceException.ErrorCode.FailedToSaveLookup,
+                    new Object[]{lookup.getArchetypeId().toString(),
+                                 lookup.toString()});
+        }
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#add(org.openvpms.component.business.domain.im.lookup.LookupRelationship)
+     */
+    public void add(LookupRelationship relationship) {
         try {
             dao.insert(relationship);
         } catch (LookupDAOException exception) {
@@ -152,9 +173,9 @@ public class LookupService implements ILookupService {
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.lookup.ILookupService#removeLookupRelationshp(org.openvpms.component.business.domain.im.lookup.LookupRelationship)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#remove(org.openvpms.component.business.domain.im.lookup.LookupRelationship)
      */
-    public void removeLookupRelationshp(LookupRelationship relationship) {
+    public void remove(LookupRelationship relationship) {
         try {
             dao.delete(relationship);
         } catch (LookupDAOException exception) {
@@ -167,7 +188,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#getLookups(java.lang.String)
      */
-    public Lookup[] getLookups(String shortName) {
+    public Lookup[] get(String shortName) {
         try {
             return dao.getLookupsByConcept(shortName);
         } catch (LookupDAOException exception) {

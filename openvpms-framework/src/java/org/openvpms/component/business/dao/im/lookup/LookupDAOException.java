@@ -44,6 +44,7 @@ public class LookupDAOException extends RuntimeException implements
         FailedToDeleteLookup, 
         FailedToDeleteLookupRelationship,
         FailedToUpdateLookup, 
+        FailedToSaveLookup, 
         FailedToGetLookupsByConcept,
         FailedToGetSourceLookups,
         FailedToGetTargetLookups

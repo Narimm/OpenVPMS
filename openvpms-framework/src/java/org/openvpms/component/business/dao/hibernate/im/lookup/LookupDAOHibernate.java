@@ -26,10 +26,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 // openvpms-framework
 import org.openvpms.component.business.dao.im.lookup.ILookupDAO;
 import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
-import org.openvpms.component.business.dao.im.party.PartyDAOException;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * This is a hibernate implementation of the {@link ILookupDAO} interface, which
@@ -173,6 +171,19 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.lookup.ILookupDAO#save(org.openvpms.component.business.domain.im.lookup.Lookup)
+     */
+    public void save(Lookup lookup) {
+        try {
+            getHibernateTemplate().saveOrUpdate(lookup);
+        } catch (Exception exception) {
+            throw new LookupDAOException(
+                    LookupDAOException.ErrorCode.FailedToSaveLookup,
+                    new Object[] { lookup });
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -185,21 +196,6 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToUpdateLookup,
                     new Object[] { lookup });
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openvpms.component.business.dao.im.party.IPartyDAO#findById(java.lang.String)
-     */
-    public Party findById(String id) {
-        try {
-            return (Party) getHibernateTemplate().load(Party.class, id);
-        } catch (Exception exception) {
-            throw new PartyDAOException(
-                    PartyDAOException.ErrorCode.FailedToFindPartyWithId,
-                    new Object[] { id });
         }
     }
 

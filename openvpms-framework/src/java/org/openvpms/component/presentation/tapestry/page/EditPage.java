@@ -83,7 +83,7 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
           else if (getModel() instanceof Act)
               ((Global)getGlobal()).getActService().remove((Act)getModel());
           else if (getModel() instanceof Lookup)
-              ((Global)getGlobal()).getLookupService().removeLookup((Lookup)getModel());
+              ((Global)getGlobal()).getLookupService().remove((Lookup)getModel());
               
           callback.performCallback(cycle);
     }
@@ -120,7 +120,7 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
                 else if (getModel() instanceof Act)
                     global.getActService().save((Act)getModel());
                 else if (getModel() instanceof Lookup)
-                    global.getLookupService().updateLookup((Lookup)getModel());                   
+                    global.getLookupService().update((Lookup)getModel());                   
             } catch (Exception pe) {
 //                getDelegate().record(pe);
                 return false;

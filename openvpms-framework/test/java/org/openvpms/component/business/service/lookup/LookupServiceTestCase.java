@@ -73,7 +73,7 @@ public class LookupServiceTestCase extends
     public void testLookupObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
-            Lookup lookup = lookupService.createLookup("lookup.country");
+            Lookup lookup = lookupService.create("lookup.country");
             assertTrue(lookup != null);
             
             // set to meet the archetype requirements
@@ -81,7 +81,7 @@ public class LookupServiceTestCase extends
             lookup.setCode("AU-" + index);
             
             // insert the lookup object
-            lookupService.insertLookup(lookup);
+            lookupService.insert(lookup);
         }
     }
 

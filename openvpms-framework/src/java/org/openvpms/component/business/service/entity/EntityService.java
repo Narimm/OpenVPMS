@@ -111,7 +111,7 @@ public class EntityService implements IEntityService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#findEntities(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    public Entity[] findEntities(String rmName, String entityName, String conceptName, String instanceName) {
+    public Entity[] get(String rmName, String entityName, String conceptName, String instanceName) {
         try {
             return dao.find(rmName, entityName, conceptName, instanceName);
         } catch (EntityDAOException exception) {

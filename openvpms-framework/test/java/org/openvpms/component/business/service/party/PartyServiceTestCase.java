@@ -72,7 +72,7 @@ public class PartyServiceTestCase extends
     public void testPartyObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
-            Person person = (Person)partyService.createParty("person.person");
+            Person person = (Person)partyService.create("person.person");
             assertTrue(person != null);
             
             // set to meet the archetype requirements
@@ -81,7 +81,7 @@ public class PartyServiceTestCase extends
             person.setLastName("alateras");
             
             // insert the party object
-            partyService.insertParty(person);
+            partyService.insert(person);
         }
     }
 

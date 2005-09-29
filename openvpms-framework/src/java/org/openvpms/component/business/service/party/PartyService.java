@@ -85,7 +85,7 @@ public class PartyService implements IPartyService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.party.IPartyService#createParty(java.lang.String)
      */
-    public Party createParty(String shortName) {
+    public Party create(String shortName) {
         // ensure that we can retrieve an arhetype record for the
         // specified short name
         ArchetypeRecord record = archetypeService.getArchetypeRecord(shortName);
@@ -102,7 +102,7 @@ public class PartyService implements IPartyService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.party.IPartyService#insertParty(org.openvpms.component.business.domain.im.common.party.Party)
      */
-    public void insertParty(Party party) {
+    public void insert(Party party) {
         if (archetypeService.validateObject(party)) {
             try {
                 dao.insert(party);
@@ -121,7 +121,7 @@ public class PartyService implements IPartyService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.party.IPartyService#findParties(java.lang.String, java.lang.Object[])
      */
-    public Party[] findParties(String searchCriteria, Object[] searchParams) {
+    public Party[] get(String searchCriteria, Object[] searchParams) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -129,7 +129,7 @@ public class PartyService implements IPartyService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.party.IPartyService#removeParty(org.openvpms.component.business.domain.im.common.party.Party)
      */
-    public void removeParty(Party party) {
+    public void remove(Party party) {
         try {
             dao.delete(party);
         } catch (PartyDAOException exception) {
@@ -143,7 +143,7 @@ public class PartyService implements IPartyService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.party.IPartyService#updateParty(org.openvpms.component.business.domain.im.common.party.Party)
      */
-    public void updateParty(Party party) {
+    public void update(Party party) {
         if (archetypeService.validateObject(party)) {
             try {
                 dao.update(party);

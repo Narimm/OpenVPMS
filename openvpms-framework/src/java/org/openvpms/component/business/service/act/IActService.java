@@ -124,6 +124,6 @@ public interface IActService {
      * @throws ActServiceException
      *            a runtime exception                         
      */
-    public Act[] findActs(String rmName, String entityName, 
+    public Act[] get(String rmName, String entityName, 
             String conceptName, String instanceName);
 }

@@ -47,7 +47,7 @@ public interface ILookupService {
      *             a runtime exception
      * 
      */
-    public Lookup createLookup(String shortName);
+    public Lookup create(String shortName);
 
     /**
      * Insert the specified {@link Lookup}. This service is now responsible for
@@ -57,7 +57,8 @@ public interface ILookupService {
      *            the lookup to insert
      * @throws LookupServiceException                      
      */
-    public void insertLookup(Lookup lookup);
+    @Deprecated
+    public void insert(Lookup lookup);
     
     /**
      * Remove the specified lookup and associated lookup relationships. If the
@@ -68,7 +69,7 @@ public interface ILookupService {
      * @throws LookupServiceException
      *             a runtime exception
      */
-    public void removeLookup(Lookup lookup);
+    public void remove(Lookup lookup);
 
     /**
      * Update the specified lookup. The lookup is validated against its
@@ -80,8 +81,22 @@ public interface ILookupService {
      * @throws LookupServiceException
      *             a runtime exception
      */
-    public void updateLookup(Lookup lookup);
+    @Deprecated
+    public void update(Lookup lookup);
 
+    /**
+     * Save the specified {@link Lookup} instance. This method should be used
+     * instesd of the deprecated {@link #update(Lookup)} or {@link #insert(Lookup)}.
+     * <p>
+     * If there is a problem executing this request the runtime exception 
+     * {@link LookupServiceException} is thrown.
+     * 
+     * @param lookup
+     *            the lookup to save
+     * @throws LookupServiceException            
+     */
+    public void save(Lookup lookup);
+    
     /**
      * Add a lookup relationship between two lookup entities.
      * 
@@ -91,7 +106,7 @@ public interface ILookupService {
      *            the relationship to add
      * @throws LookupServiceException                        
      */
-    public void addLookupRelationship(LookupRelationship relationship);
+    public void add(LookupRelationship relationship);
     
     /**
      * Remove the specified lookup relationship
@@ -100,7 +115,7 @@ public interface ILookupService {
      *            the relationship to remove
      * @throws LookupServiceException             
      */
-    public void removeLookupRelationshp(LookupRelationship relationship);
+    public void remove(LookupRelationship relationship);
     
     /**
      * Retrieve all the lookups with the specified short name
@@ -110,7 +125,7 @@ public interface ILookupService {
      * @throws LookupServiceException
      *            aa runtime exception            
      */
-    public Lookup[] getLookups(String shortName);
+    public Lookup[] get(String shortName);
 
     /**
      * Retrieve all the lookup instances of a particular type, which are the 

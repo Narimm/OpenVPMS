@@ -47,6 +47,7 @@ public class LookupServiceException extends RuntimeException implements
         FailedToDeleteLookup, 
         FailedtoDeleteLookupRelationship,
         FailedToUpdateLookup,
+        FailedToSaveLookup,
         FailedToRetrieveLookupsByConcept,
         FailedToRetrieveSourceLookups,
         FailedToRetrieveTargetLookups

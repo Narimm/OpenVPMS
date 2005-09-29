@@ -46,7 +46,7 @@ public interface IPartyService {
      *             a runtime exception
      * 
      */
-    public Party createParty(String shortName);
+    public Party create(String shortName);
 
     /**
      * Insert the specified {@link Party}. This service is now responsible for
@@ -56,7 +56,7 @@ public interface IPartyService {
      *            the party to insert
      * @throws PartyServiceException                      
      */
-    public void insertParty(Party party);
+    public void insert(Party party);
     
     /**
      * Remove the specified party. If the party cannot be removed for whatever
@@ -67,7 +67,7 @@ public interface IPartyService {
      * @throws PartyServiceException
      *             a runtime exception
      */
-    public void removeParty(Party party);
+    public void remove(Party party);
 
     /**
      * Update the specified party. The party is validated against its
@@ -81,7 +81,7 @@ public interface IPartyService {
      * @throws PartyServiceException
      *             a runtime exception
      */
-    public void updateParty(Party party);
+    public void update(Party party);
 
     /**
      * Retrieve all the parties that match the specified criteria. The criteria
@@ -102,5 +102,5 @@ public interface IPartyService {
      * @throws ArchetypeIdException
      *             a runtime exception if the request cannot be serviced
      */
-    public Party[] findParties(String searchCriteria, Object[] searchParams);
+    public Party[] get(String searchCriteria, Object[] searchParams);
 }

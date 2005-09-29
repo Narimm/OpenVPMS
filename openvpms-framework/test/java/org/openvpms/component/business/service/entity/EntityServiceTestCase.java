@@ -98,13 +98,13 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.findEntities("party", null, null, null);
+        Entity[] before = entityService.get("party", null, null, null);
         
         // create and insert a new pet
         entityService.save(createPet("brutus"));
         
         // now get a new count
-        Entity[] after = entityService.findEntities("party", null, null, null);
+        Entity[] after = entityService.get("party", null, null, null);
         assertTrue(after.length == before.length + 1);
     }
 
@@ -115,13 +115,13 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.findEntities("party", "animal", null, null);
+        Entity[] before = entityService.get("party", "animal", null, null);
         
         // create and insert a new pet
         entityService.save(createPet("simon"));
         
         // now get a new count
-        Entity[] after = entityService.findEntities("party", "animal", null, null);
+        Entity[] after = entityService.get("party", "animal", null, null);
         assertTrue(after.length == before.length + 1);
     }
 
@@ -132,13 +132,13 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.findEntities("party", "animal", "pet", null);
+        Entity[] before = entityService.get("party", "animal", "pet", null);
         
         // create and insert a new pet
         entityService.save(createPet("jack"));
         
         // now get a new count
-        Entity[] after = entityService.findEntities("party", "animal", "pet", null);
+        Entity[] after = entityService.get("party", "animal", "pet", null);
         assertTrue(after.length == before.length + 1);
     }
 
@@ -151,13 +151,13 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.findEntities("party", "animal", "pet", "brutus");
+        Entity[] before = entityService.get("party", "animal", "pet", "brutus");
         
         // create and insert a new pet
         entityService.save(createPet("brutus"));
         
         // now get a new count
-        Entity[] after = entityService.findEntities("party", "animal", "pet", "brutus");
+        Entity[] after = entityService.get("party", "animal", "pet", "brutus");
         assertTrue(after.length == before.length + 1);
     }
 

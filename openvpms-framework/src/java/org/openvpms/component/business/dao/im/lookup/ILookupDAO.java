@@ -52,6 +52,17 @@ public interface ILookupDAO {
     public void update(Lookup lookup);
 
     /**
+     * Save the specified {@link Lookup}. This should be used in preference to
+     * {@link #insert(Lookup)} and {@link #update(Lookup)}.
+     * 
+     * @param lookup
+     *            the lookup to save
+     * @throws LookupDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public void save(Lookup lookup);
+    
+    /**
      * Delete the specified {@link Lookup}
      * 
      * @param lookup

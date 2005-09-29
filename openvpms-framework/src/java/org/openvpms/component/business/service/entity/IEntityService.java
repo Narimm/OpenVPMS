@@ -125,6 +125,6 @@ public interface IEntityService {
      * @throws EntityServiceException
      *            a runtime exception                         
      */
-    public Entity[] findEntities(String rmName, String entityName, 
+    public Entity[] get(String rmName, String entityName, 
             String conceptName, String instanceName);
 }
