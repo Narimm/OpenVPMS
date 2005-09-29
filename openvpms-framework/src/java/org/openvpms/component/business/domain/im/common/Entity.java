@@ -34,7 +34,7 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
 
 
 /**
- * A class representing all namned things in the business.
+ * A class representing all named things in the business.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
