@@ -13,7 +13,7 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: IdentifierSelectionModel.java 118 2005-09-21 09:36:09Z tony $
+ *  $Id: LookupSelectionModel.java 118 2005-09-21 09:36:09Z tony $
  */
 
 package org.openvpms.component.presentation.tapestry.component;
