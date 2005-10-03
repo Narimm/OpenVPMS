@@ -22,6 +22,7 @@ package org.openvpms.component.business.service.archetype;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.File;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,16 +35,19 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.exolab.castor.mapping.Mapping;
+import org.exolab.castor.xml.Unmarshaller;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.archetype.Archetype;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.archetype.Archetypes;
-import org.openvpms.component.business.domain.archetype.AssertionType;
-import org.openvpms.component.business.domain.archetype.Assertion;
-import org.openvpms.component.business.domain.archetype.AssertionTypes;
-import org.openvpms.component.business.domain.archetype.Node;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptors;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.xml.sax.InputSource;
 
 /**
  * This basic implementation of an archetype service, which reads in the
@@ -68,17 +72,17 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * In memory cache of the archetype definitions keyed on the short name.
      */
-    private Map<String, ArchetypeRecord> archetypesByShortName;
+    private Map<String, ArchetypeDescriptor> archetypesByShortName;
 
     /**
      * In memory cache of the archetype definitions keyed on archetype id.
      */
-    private Map<ArchetypeId, ArchetypeRecord> archetypesById;
+    private Map<ArchetypeId, ArchetypeDescriptor> archetypesById;
 
     /**
      * Caches the varies assertion types
      */
-    private Map<String, AssertionTypeRecord> assertionTypes;
+    private Map<String, AssertionTypeDescriptor> assertionTypes;
 
     /**
      * Construct an instance of this class by loading and parsing all the
@@ -97,12 +101,12 @@ public class ArchetypeService implements IArchetypeService {
      *             runtime exception
      */
     public ArchetypeService(String archeFile, String assertFile) {
-        this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
-        this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
-        this.assertionTypes = new HashMap<String, AssertionTypeRecord>();
+        this.archetypesByShortName = new HashMap<String, ArchetypeDescriptor>();
+        this.archetypesById = new HashMap<ArchetypeId, ArchetypeDescriptor>();
+        this.assertionTypes = new HashMap<String, AssertionTypeDescriptor>();
 
-        loadAssertionTypeRecordsFromFile(assertFile);
-        loadArchetypeRecordsFromFile(archeFile);
+        loadAssertionTypeDescriptorsFromFile(assertFile);
+        loadArchetypeDescriptorsInFile(archeFile);
     }
 
     /**
@@ -120,29 +124,29 @@ public class ArchetypeService implements IArchetypeService {
      *             directory
      */
     public ArchetypeService(String archDir, String[] extensions, String assertFile) {
-        this.archetypesByShortName = new HashMap<String, ArchetypeRecord>();
-        this.archetypesById = new HashMap<ArchetypeId, ArchetypeRecord>();
-        this.assertionTypes = new HashMap<String, AssertionTypeRecord>();
+        this.archetypesByShortName = new HashMap<String, ArchetypeDescriptor>();
+        this.archetypesById = new HashMap<ArchetypeId, ArchetypeDescriptor>();
+        this.assertionTypes = new HashMap<String, AssertionTypeDescriptor>();
 
-        loadAssertionTypeRecordsFromFile(assertFile);
-        loadArchetypeRecordsInDir(archDir, extensions);
+        loadAssertionTypeDescriptorsFromFile(assertFile);
+        loadArchetypeDescriptorsInDir(archDir, extensions);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeForName(java.lang.String)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
      */
-    public ArchetypeRecord getArchetypeRecord(String name) {
+    public ArchetypeDescriptor getArchetypeDescriptor(String name) {
         return archetypesByShortName.get(name);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecord(org.openvpms.component.business.domain.archetype.ArchetypeId)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
-    public ArchetypeRecord getArchetypeRecord(ArchetypeId id) {
+    public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
         return archetypesById.get(id);
     }
 
@@ -151,7 +155,7 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecord(java.lang.String)
      */
-    public AssertionTypeRecord getAssertionTypeRecord(String name) {
+    public AssertionTypeDescriptor getAssertionTypeDescriptor(String name) {
         return assertionTypes.get(name);
     }
 
@@ -160,9 +164,9 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecords()
      */
-    public AssertionTypeRecord[] getAssertionTypeRecords() {
-        return (AssertionTypeRecord[]) assertionTypes.values().toArray(
-                new AssertionTypeRecord[assertionTypes.size()]);
+    public AssertionTypeDescriptor[] getAssertionTypeDescriptors() {
+        return (AssertionTypeDescriptor[]) assertionTypes.values().toArray(
+                new AssertionTypeDescriptor[assertionTypes.size()]);
     }
 
     /*
@@ -200,8 +204,8 @@ public class ArchetypeService implements IArchetypeService {
     public boolean validateObject(IMObject object) {
 
         // check that we can retrieve a valid archetype for this object
-        ArchetypeRecord record = getArchetypeRecord(object.getArchetypeId());
-        if (record == null) {
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(object.getArchetypeId());
+        if (descriptor == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
                     new Object[] { object.getArchetypeId().toString() });
@@ -210,10 +214,10 @@ public class ArchetypeService implements IArchetypeService {
         // if there are nodes attached to the archetype then validate the
         // associated assertions
         boolean result = true;
-        if (record.getArchetype().getNodeCount() > 0) {
+        if (descriptor.getNodeDescriptors().size() > 0) {
             JXPathContext context = JXPathContext.newContext(object);
             context.setLenient(true);
-            result = validateObject(context, record.getArchetype().getNode());
+            result = validateObject(context, descriptor.getNodeDescriptors());
         }
 
         return result;
@@ -224,54 +228,46 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords()
      */
-    public ArchetypeRecord[] getArchetypeRecords() {
-        return (ArchetypeRecord[]) this.archetypesById.values().toArray(
-                new ArchetypeRecord[this.archetypesById.size()]);
+    public ArchetypeDescriptor[] getArchetypeDescriptors() {
+        return (ArchetypeDescriptor[])archetypesById.values().toArray(
+                new ArchetypeDescriptor[archetypesById.size()]);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords(java.lang.String)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptors(java.lang.String)
      */
-    public ArchetypeRecord[] getArchetypeRecordsByShortName(String shortName) {
-        List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
+    public ArchetypeDescriptor[] getArchetypeDescriptors(String shortName) {
+        List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
 
-        for (String name : this.archetypesByShortName.keySet()) {
-            if ((name.matches(shortName)) &&
-                !(records.contains(this.archetypesByShortName.get(name)))) {
-                records.add(this.archetypesByShortName.get(name));
+        for (String key : archetypesByShortName.keySet()) {
+            if (key.matches(shortName)) {
+                descriptors.add(archetypesByShortName.get(key));
             }
         }
 
-        return (ArchetypeRecord[]) records.toArray(new ArchetypeRecord[records
-                .size()]);
+        return (ArchetypeDescriptor[]) descriptors.toArray(
+                new ArchetypeDescriptor[descriptors.size()]);
     }
 
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecordsByRmName(java.lang.String)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptorsByRmName(java.lang.String)
      */
-    public ArchetypeRecord[] getArchetypeRecordsByRmName(String rmName) {
-        List<ArchetypeRecord> records = new ArrayList<ArchetypeRecord>();
+    public ArchetypeDescriptor[] getArchetypeDescriptorsByRmName(String rmName) {
+        List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
 
-        for (ArchetypeId archId : this.archetypesById.keySet()) {
+        for (ArchetypeId archId : archetypesById.keySet()) {
             if (rmName.matches(archId.getRmName())) {
-                records.add(this.archetypesById.get(archId));
+                descriptors.add(archetypesById.get(archId));
             }
         }
 
-        return (ArchetypeRecord[]) records.toArray(new ArchetypeRecord[records
-                .size()]);
+        return (ArchetypeDescriptor[]) descriptors.toArray(
+                new ArchetypeDescriptor[descriptors.size()]);
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
-     */
-    public IArchetypeDescriptor getArchetypeDescriptor(String shortName) {
-        return null;
-    }
-    
     /**
      * Iterate through all the nodes and ensure that the object meets all the
      * specified assertions. The assertions are defined in the node and can be
@@ -283,10 +279,12 @@ public class ArchetypeService implements IArchetypeService {
      *            assertions are managed by the nodes object
      * @return boolean true if the object is valid; false otherwise
      */
-    private boolean validateObject(JXPathContext context, Node[] nodes) {
+    private boolean validateObject(JXPathContext context, HashMap nodes) {
         boolean valid = true;
 
-        for (Node node : nodes) {
+        Iterator iter = nodes.values().iterator();
+        while (iter.hasNext()) {
+            NodeDescriptor node = (NodeDescriptor)iter.next();
             Object value = null;
             try {
                 value = context.getValue(node.getPath());
@@ -308,10 +306,13 @@ public class ArchetypeService implements IArchetypeService {
                 break;
             }
 
-            if (value != null) {
+            if ((value != null) &&
+                (node.getAssertionDescriptors().size() > 0)){
                 // only check the assertions for non-null values
-                for (Assertion assertion : node.getAssertion()) {
-                    AssertionTypeRecord assertionType = assertionTypes
+                Iterator aiter = node.getAssertionDescriptors().values().iterator();
+                while (aiter.hasNext()) {
+                    AssertionDescriptor assertion = (AssertionDescriptor)aiter.next();
+                    AssertionTypeDescriptor assertionType = assertionTypes
                             .get(assertion.getType());
     
                     if (!assertionType.assertTrue(value, assertion)) {
@@ -328,8 +329,8 @@ public class ArchetypeService implements IArchetypeService {
             }
 
             // if this node has other nodes then re-enter this method
-            if (node.getNodeCount() > 0) {
-                if (!validateObject(context, node.getNode())) {
+            if (node.getNodeDescriptors().size() > 0) {
+                if (!validateObject(context, node.getNodeDescriptors())) {
                     // if the object is invalid then ignore the
                     // rest of the validation and return false.
                     valid = false;
@@ -352,7 +353,7 @@ public class ArchetypeService implements IArchetypeService {
      *            the path to the file containing the archetype records
      * @throws ArchetypeServiceException
      */
-    private void loadArchetypeRecordsFromFile(String afile) {
+    private void loadArchetypeDescriptorsInFile(String afile) {
 
         // check that a non-null file was specified
         if (StringUtils.isEmpty(afile)) {
@@ -360,27 +361,16 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.NoFileSpecified);
         }
 
-        Archetypes records = null;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Attempting to process records in " + afile);
             }
-            records = (Archetypes) Archetypes.unmarshal(new InputStreamReader(
-                    Thread.currentThread().getContextClassLoader()
-                            .getResourceAsStream(afile)));
+            processArchetypeDescriptors(loadArchetypeDescriptors(afile));
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.InvalidFile,
                     new Object[] { afile }, exception);
         }
-
-        if (!records.isValid()) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.InvalidFile,
-                    new Object[] { afile });
-        }
-
-        loadArchetypeRecords(records);
     }
 
     /**
@@ -397,7 +387,7 @@ public class ArchetypeService implements IArchetypeService {
      *            the file extensions to check
      * @throws ArchetypeServiceException
      */
-    private void loadArchetypeRecordsInDir(String adir, String[] extensions) {
+    private void loadArchetypeDescriptorsInDir(String adir, String[] extensions) {
 
         // check that a non-null directory was specified
         if (StringUtils.isEmpty(adir)) {
@@ -418,94 +408,73 @@ public class ArchetypeService implements IArchetypeService {
         Iterator files = collection.iterator();
         while (files.hasNext()) {
             File file = (File) files.next();
-            Archetypes records = null;
             try {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Attempting to process records in "
                             + file.getName());
                 }
 
-                records = (Archetypes) Archetypes
-                        .unmarshal(new FileReader(file));
+                processArchetypeDescriptors(loadArchetypeDescriptors(
+                        new FileReader(file)));
             } catch (Exception exception) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.InvalidFile,
                         new Object[] { file.getName() }, exception);
             }
 
-            if (!records.isValid()) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.InvalidFile,
-                        new Object[] { file.getName() });
-            }
-
-            loadArchetypeRecords(records);
-
         }
 
     }
 
     /**
-     * Parse the specified file and load all the {@link ArchetypeRecord}
-     * instances in memory. The file must be accessible as a resource through
-     * the class path.
-     * <p>
-     * If there is a error parsing or loading the entries then the runtime
-     * {@link ArchetypeServiceException} is raised.
+     * Iterate over all the descriptors and add them to the existing set of 
+     * descriptores
      * 
-     * @param afile
-     *            the path to the file containing the archetype records
+     * @param descriptors
+     *            the descriptors to process
      * @throws ArchetypeServiceException
      */
-    private void loadArchetypeRecords(Archetypes records) {
-        for (Archetype archetype : records.getArchetype()) {
-            ArchetypeId archId = new ArchetypeId(archetype.getName());
+    private void processArchetypeDescriptors(ArchetypeDescriptors descriptors) {
+        Iterator iter = descriptors.getArchetypeDescriptors().values().iterator();
+        while (iter.hasNext()) {
+            ArchetypeDescriptor descriptor = (ArchetypeDescriptor)iter.next();
+            ArchetypeId archId = descriptor.getArchetypeId();
             
-            ArchetypeRecord record = new ArchetypeRecord(archId, 
-                    archetype.getClassName(), archetype);
-
             if (logger.isDebugEnabled()) {
                 logger.debug("Processing archetype record "
                         + archId.getShortName());
             }
 
             try {
-                // if the short name already exists then raise an
-                // exception
-                if (archetypesByShortName.containsKey(archId.getShortName())) {
-                    throw new ArchetypeServiceException(
-                            ArchetypeServiceException.ErrorCode.ArchetypeAlreadyDefined,
-                            new Object[] { archId.getShortName() });
+                // make sure that the underlying type is loadable
+                Thread.currentThread().getContextClassLoader().loadClass(
+                        descriptor.getType());
+                
+                // only store one copy of the archetype by short name
+                if ((archetypesByShortName.containsKey(archId.getShortName()) == false) || 
+                    (descriptor.isLatest())) {
+                    archetypesByShortName.put(archId.getShortName(), descriptor);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Loading  [" + archId.getShortName() 
+                                + "] in shortNameCache");
+                    }
                 }
 
-                Thread.currentThread().getContextClassLoader().loadClass(
-                        record.getClassName());
-                
-                // cache the record
-                archetypesByShortName.put(archId.getShortName(), record);
-                archetypesById.put(archId, record);
-                
-                // if this is the latest version of an archetype then we 
-                // create another alias for it
-                if (archetype.getLatest()) {
-                    archetypesByShortName.put(
-                            archId.getEntityName() + "." + archId.getConcept(),
-                            record);
-                }
+                archetypesById.put(archId, descriptor);
                 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Loading [" + archId.getShortName() + "] "
-                            + archId.toString());
+                    logger.debug("Loading [" + archId.getShortName() 
+                            + "] in archIdCache");
                 }
             } catch (ClassNotFoundException excpetion) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.FailedToLoadClass,
-                        new Object[] { record.getClassName() }, excpetion);
+                        new Object[] { descriptor.getType() }, excpetion);
             }
 
             // check that the assertions are specified correctly
-            if (archetype.getNodeCount() > 0) {
-                checkAssertionsInNode(archetype.getNode());
+            if (descriptor.getNodeDescriptors().size() > 0) {
+                checkAssertionsInNode(descriptor.getNodeDescriptors());
             }
         }
     }
@@ -519,61 +488,68 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException
      *             runtime exception that is raised when the
      */
-    private void checkAssertionsInNode(Node[] nodes) {
-        for (Node node : nodes) {
-            for (Assertion assertion : node.getAssertion()) {
+    private void checkAssertionsInNode(HashMap nodes) {
+        Iterator niter = nodes.values().iterator();
+        while (niter.hasNext()) {
+            NodeDescriptor node = (NodeDescriptor)niter.next();
+            Iterator iter = node.getAssertionDescriptors().values().iterator();
+            while (iter.hasNext()) {
+                AssertionDescriptor assertion = (AssertionDescriptor)iter.next();
                 if (!assertionTypes.containsKey(assertion.getType())) {
+                    logger.warn("Attempting to find [" + assertion.getType() 
+                            + " in [" + assertionTypes + "]");
                     throw new ArchetypeServiceException(
                             ArchetypeServiceException.ErrorCode.InvalidAssertionSpecified,
                             new Object[] { assertion.getType() });
                 }
             }
 
-            if (node.getNodeCount() > 0) {
-                checkAssertionsInNode(node.getNode());
+            if (node.getNodeDescriptors().size() > 0) {
+                checkAssertionsInNode(node.getNodeDescriptors());
             }
         }
     }
 
     /**
      * This method will create a default object using the specified archetype
-     * record. Fundamentally, it will set the default value when specified and
+     * descriptor. Fundamentally, it will set the default value when specified and
      * it will also create an object through a default constructur if a
      * cardinality constraint is specified.
      * 
-     * @param record
-     *            the archetype record
+     * @param descriptor
+     *            the archetype descriptor
      * @return Object
      * @throws ArchetypeServiceException
      *             if it failed to create the object
      */
-    private Object createDefaultObject(ArchetypeRecord record) {
+    private Object createDefaultObject(ArchetypeDescriptor descriptor) {
         Object obj = null;
         try {
-            Class domainClass = Class.forName(record.getClassName());
+            Class domainClass = Thread.currentThread()
+                .getContextClassLoader().loadClass(descriptor.getType());
             obj = domainClass.newInstance();
 
             // the object must be an instance of {@link IMObject}
             if (!(obj instanceof IMObject)) {
                 throw new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.InvalidIMClass,
-                        new Object[] { record.getClassName() });
+                        new Object[] { descriptor.getType() });
             }
 
             // cast to imobject and set the archetype and the uuid.
             IMObject imobj = (IMObject) obj;
-            imobj.setArchetypeId(record.getArchetypeId());
+            imobj.setArchetypeId(descriptor.getArchetypeId());
 
             // first create a JXPath context and use it to process the nodes
             // in the archetype
             JXPathContext context = JXPathContext.newContext(obj);
             context.setFactory(new JXPathGenericObjectCreationFactory());
-            createDefaultObject(context, record.getArchetype().getNode());
+            createDefaultObject(context, descriptor.getNodeDescriptors());
         } catch (Exception exception) {
             // rethrow as a runtime exception
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToCreateObject,
-                    new Object[] { record.getArchetypeId().getShortName() }, 
+                    new Object[] { descriptor.getArchetypeId().getShortName() }, 
                     exception);
         }
 
@@ -587,12 +563,19 @@ public class ArchetypeService implements IArchetypeService {
      * @param context
      *            the JXPath
      * @param nodes
-     *            the archetype nodes in the definition
+     *            the node descriptors for the archetype
      */
-    private void createDefaultObject(JXPathContext context, Node[] nodes) {
-        for (Node node : nodes) {
+    private void createDefaultObject(JXPathContext context, HashMap nodes) {
+        Iterator iter = nodes.values().iterator();
+        while (iter.hasNext()) {
+            NodeDescriptor node = (NodeDescriptor)iter.next();
+
             // only ceate a node if the minimum cardinality is 1
             if (node.getMinCardinality() == 1) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Attempting to create path " + node.getPath() 
+                            + " for node " + node.getName());
+                }
                 context.getVariables().declareVariable("node", node);
                 context.createPath(node.getPath());
             }
@@ -604,8 +587,8 @@ public class ArchetypeService implements IArchetypeService {
 
             // if this node has children then process them
             // recursively
-            if (node.getNodeCount() > 0) {
-                createDefaultObject(context, node.getNode());
+            if (node.getNodeDescriptors().size() > 0) {
+                createDefaultObject(context, node.getNodeDescriptors());
             }
         }
     }
@@ -616,44 +599,105 @@ public class ArchetypeService implements IArchetypeService {
      * @param assertFile
      *            the name of the file holding the assertion types
      */
-    private void loadAssertionTypeRecordsFromFile(String assertFile) {
+    private void loadAssertionTypeDescriptorsFromFile(String assertFile) {
         // check that a non-null file was specified
         if (StringUtils.isEmpty(assertFile)) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoAssertionTypeFileSpecified);
         }
 
-        AssertionTypes types = null;
+        AssertionTypeDescriptors types = null;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Attempting to process file " + assertFile);
             }
-            types = (AssertionTypes) AssertionTypes
-                    .unmarshal(new InputStreamReader(Thread.currentThread()
-                            .getContextClassLoader().getResourceAsStream(
-                                    assertFile)));
+            types = loadAssertionTypeDescriptors(assertFile);
+            Iterator iter = types.getAssertionTypeDescriptors().values().iterator();
+            while (iter.hasNext()) {
+                AssertionTypeDescriptor descriptor = 
+                    (AssertionTypeDescriptor)iter.next();
+                assertionTypes.put(descriptor.getName(), descriptor);
+                
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Loaded assertion type " + descriptor.getName());
+                }
+            }
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.InvalidAssertionFile,
                     new Object[] { assertFile }, exception);
         }
-
-        if (!types.isValid()) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.InvalidAssertionFile,
-                    new Object[] { assertFile });
-        }
-
-        // process all the records
-        logger.debug("Number of assertion types : "
-                + types.getAssertionTypeCount());
-        for (AssertionType atype : types.getAssertionType()) {
-            AssertionTypeRecord record = new AssertionTypeRecord(atype);
-            assertionTypes.put(atype.getName(), record);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Loaded assertion " + atype.getName());
-            }
-        }
+    }
+    
+    
+    /**
+     * Return the {@link ArchetypeDescriptors} declared in the specified file.
+     * In this case the file must be a resource in the class path.
+     * 
+     * @param resourceName
+     *            the name of the resource that the archetypes are dfined
+     * @return ArchetypeDescriptors
+     * @throws Exception
+     *            propagate exception to caller            
+     */
+    private ArchetypeDescriptors loadArchetypeDescriptors(String resourceName) 
+    throws Exception {
+        // load the mapping file
+        Mapping mapping = new Mapping();
+        
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml"))));
+        
+        return (ArchetypeDescriptors)new Unmarshaller(mapping)
+                .unmarshal(new InputSource(new InputStreamReader(
+                        Thread.currentThread().getContextClassLoader()
+                            .getResourceAsStream(resourceName))));
+    }
+    
+    /**
+     * Return the {@link ArchetypeDescriptors} declared in the specified file.
+     * In this case the file must be a resource in the class path.
+     * 
+     * @param reader
+     *            the reader that declares all the archetypes
+     * @return ArchetypeDescriptors
+     * @throws Exception
+     *            propagate exception to caller
+     */
+    private ArchetypeDescriptors loadArchetypeDescriptors(Reader reader) 
+    throws Exception {
+        // load the mapping file
+        Mapping mapping = new Mapping();
+        
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml"))));
+        
+        return (ArchetypeDescriptors)new Unmarshaller(mapping).unmarshal(reader);
+    }
+    
+    /**
+     * Return the {@link AssertionTypeDescriptors} in the specified file
+     * 
+     * @param assertFile
+     *            the file that declares the assertions
+     * @return AssertionTypeDescriptors
+     * @throws Exception
+     *            propagate exception to caller
+     */
+    private AssertionTypeDescriptors loadAssertionTypeDescriptors(String assertFile)
+    throws Exception {
+        // load the mapping file
+        Mapping mapping = new Mapping();
+        
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("org/openvpms/component/business/service/archetype/descriptor/assertion-type-mapping-file.xml"))));
+        
+        return (AssertionTypeDescriptors)new Unmarshaller(mapping)
+                .unmarshal(new InputSource(new InputStreamReader(
+                        Thread.currentThread().getContextClassLoader()
+                            .getResourceAsStream(assertFile))));
     }
 }

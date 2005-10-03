@@ -1,39 +1,33 @@
 <archetypes>
-	<archetype name="openvpms-party-animal.pet.1.0" 
-		className="org.openvpms.component.business.domain.im.party.Animal">
+	<archetype name="openvpms-party-animal.pet.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Animal">
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
-			<assertion type="refDataAssertion">
+			<assertion type="referenceData">
 				<property name="namedQuery"
 					value="openvpms.animal.species" />
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
-			<assertion type="refDataAssertion">
-				<property name="namedQuery"
+			<assertion type="referenceData">
+				<property key="namedQuery"
 					value="openvpms.animal.breed" />
-				<propertyMap name="queryParameters">
-					<mapElement key="species" value="/species" />
-				</propertyMap>
+				<property key="species" value="/species" />
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
-			<assertion type="refDataAssertion">
-				<property name="namedQuery"
+			<assertion type="referenceData">
+				<property key="namedQuery"
 					value="openvpms.animal.colour" />
-				<propertyMap name="queryParameters">
-					<mapElement key="species" value="/species" />
-					<mapElement key="breed" value="/breed" />
-				</propertyMap>
+				<property key="species" value="/species" />
+				<property key="breed" value="/breed" />
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
-			<assertion type="localDataAssertion">
-				<propertyMap name="entries">
-					<mapElement key="male" value="male" />
-					<mapElement key="female" value="female" />
-					<mapElement key="unspecified" value="unspecified" />
-				</propertyMap>
+			<assertion type="referenceData">
+				<property key="male" value="male" />
+				<property key="female" value="female" />
+				<property key="unspecified" value="unspecified" />
 			</assertion>
 		</node>
 		<node name="desexed" path="/desexed" type="java.lang.Boolean"
@@ -44,11 +38,9 @@
 		<node name="name" path="/name"
 			type="java.lang.String" minCardinality="1" />
 		<node name="identities" path="/identities"
-			type="org.openvpms.component.business.domain.im.EntityIdentity">
-			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="archetypes">
-					<arrayElement value="entityIdentity.animalAlias" />
-				</propertyArray>
+			type="org.openvpms.component.business.domain.im.common.EntityIdentity">
+			<assertion type="archetypeRange">
+				<property key="entityIdentity.animalAlias" />
 			</assertion>
 		</node>
 		<node name="contacts" path="/contacts"

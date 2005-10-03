@@ -57,7 +57,6 @@ public interface IEntityService {
      *            the entity to insert
      * @throws EntityServiceException                      
      */
-    @Deprecated
     public void insert(Entity entity);
     
     /**
@@ -96,7 +95,6 @@ public interface IEntityService {
      * @throws EntityServiceException
      *             a runtime exception
      */
-    @Deprecated
     public void update(Entity entity);
 
     /**

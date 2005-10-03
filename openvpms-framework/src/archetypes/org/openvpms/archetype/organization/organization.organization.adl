@@ -1,6 +1,6 @@
 <archetypes>
-	<archetype name="openvpms-party-organization.organization.1.0" 
-		className="org.openvpms.component.business.domain.im.party.Organization">
+	<archetype name="openvpms-party-organization.organization.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Organization">
 		<node name="deails" path="/details"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
@@ -10,14 +10,10 @@
 				type="java.lang.String" />
 		</node>
 		<node name="classifications" path="/classifications"
-			type="org.openvpms.component.business.domain.im.EntityClassification">
-			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="archetypes">
-					<arrayElement
-						value="entityClassification.animalOwner" />
-					<arrayElement
-						value="entityClassification.animalCarer" />
-				</propertyArray>
+			type="org.openvpms.component.business.domain.im.common.EntityClassification">
+			<assertion type="archetypeRange">
+				<property key="entityClassification.animalOwner" />
+				<property key="entityClassification.animalCarer" />
 			</assertion>
 		</node>
 	</archetype>

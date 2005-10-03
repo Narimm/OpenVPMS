@@ -24,8 +24,8 @@ import org.openvpms.component.business.dao.im.lookup.ILookupDAO;
 import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.archetype.ArchetypeRecord;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 /**
  *
@@ -74,15 +74,16 @@ public class LookupService implements ILookupService {
     public Lookup create(String shortName) {
         // ensure that we can retrieve an arhetype record for the
         // specified short name
-        ArchetypeRecord record = archetypeService.getArchetypeRecord(shortName);
-        if (record == null) {
+        ArchetypeDescriptor descriptor = 
+            archetypeService.getArchetypeDescriptor(shortName);
+        if (descriptor == null) {
             throw  new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToLocateArchetype,
                     new Object[] { shortName });
         }
         
         // create and return the party object
-        return (Lookup)archetypeService.createDefaultObject(record.getArchetypeId());
+        return (Lookup)archetypeService.createDefaultObject(descriptor.getArchetypeId());
     }
 
     /* (non-Javadoc)

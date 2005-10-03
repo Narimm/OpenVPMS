@@ -121,10 +121,11 @@ public class ArchetypeId implements Serializable {
         
         namespace = tokens.nextToken();
         rmName = tokens.nextToken();
-        shortName = tokens.nextToken();
+        
+        String remaining = tokens.nextToken();
        
         // the short name is made up of entity name, concept and version
-        tokens = new StringTokenizer(shortName, ".");
+        tokens = new StringTokenizer(remaining, ".");
         if (tokens.countTokens() < 3) {
             throw new ArchetypeIdException(
                     ArchetypeIdException.ErrorCode.InvalidQNameFormat,
@@ -133,6 +134,7 @@ public class ArchetypeId implements Serializable {
         
         entityName = tokens.nextToken();
         concept = tokens.nextToken();
+        shortName = entityName + "." + concept;
         
         // all the rest have to be the version number
         // which may have a '.'
@@ -190,8 +192,6 @@ public class ArchetypeId implements Serializable {
             new StringBuffer(entityName)
                 .append(".")
                 .append(concept)
-                .append(".")
-                .append(version)
                 .toString();
         
         //concatenate the elements

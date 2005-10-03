@@ -21,6 +21,8 @@ package org.openvpms.component.business.service.archetype;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -34,27 +36,28 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  */
 public interface IArchetypeService {
     /**
-     * Retrieve the {@link ArchetypeRecord} for the specified name. The name is 
-     * a short name.
+     * Retrieve the {@link ArchetypeDescriptor} for the specified name. The 
+     * name is a short name.
      * 
      * @param name
      *            the short name
-     * @return ArchetypeRecord
+     * @return ArchetypeDescriptor
      * @thorws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
-    public ArchetypeRecord getArchetypeRecord(String name);
+    public ArchetypeDescriptor getArchetypeDescriptor(String name);
     
     /**
-     * Retrieve the {@link ArchetypeRecord} for the specified {@link ArchetypeId}.
+     * Retrieve the {@link ArchetypeDescriptor} for the specified 
+     * {@link ArchetypeId}.
      * 
      * @param id
      *            the archetype id
-     * @return ArchetypeRecord           
+     * @return ArchetypeDescriptor           
      * @thorws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
-    public ArchetypeRecord getArchetypeRecord(ArchetypeId id);
+    public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id);
     
     /**
      * Create a default domain object given a short name. The short name is
@@ -95,59 +98,52 @@ public interface IArchetypeService {
     public boolean validateObject(IMObject object);
     
     /**
-     * Return all the {@link ArchetypeRecord} managed by this service
+     * Return all the {@link ArchetypeDescriptor} managed by this service
      * 
-     * @return ArchetypeRecord[]
+     * @return ArchetypeDescriptor[]
      * @throws ArchetypeServiceException
      *            runtime error, which is thrown if the request cannot be completed
      */
-    public ArchetypeRecord[] getArchetypeRecords(); 
+    public ArchetypeDescriptor[] getArchetypeDescriptors(); 
 
     /**
-     * Return all the {@link ArchetypeRecord} with the specified shortName. If 
+     * Return the {@link ArchetypeDescriptor} with the specified shortName. If 
      * the short name is a regular expression then it will return all the 
      * matching records.
      * 
      * @param shortName
      *            the short name, which can be a regular expression
-     * @return ArchetypeRecord[]
+     * @return ArchetypeDescriptor[]
      * @throws ArchetypeServiceException            
      */
-    public ArchetypeRecord[] getArchetypeRecordsByShortName(String shortName);
+    public ArchetypeDescriptor[] getArchetypeDescriptors(String shortName);
     
     /**
-     * Return all the {@link ArchetypeRecord} instance with the specified 
+     * Return all the {@link ArchetypeDescriptor} instance with the specified 
      * reference model name. 
      * 
      * @param rmName
      *            the reference model name
-     * @return ArchetypeRecord[]
+     * @return ArchetypeDescriptor[]
      * @throws ArchetypeServiceException            
      */
-    public ArchetypeRecord[] getArchetypeRecordsByRmName(String rmName);
+    public ArchetypeDescriptor[] getArchetypeDescriptorsByRmName(String rmName);
     
     /**
-     * Return the {@link AssertionTypeRecord} with the specified name.
+     * Return the {@link AssertionTypeDescriptor} with the specified name.
      * 
      * @param name
      *            the name of the assertion type
-     * @return AssertionTypeRecord
+     * @return AssertionTypeDescriptor
      * @throws ArchetypeServiceException            
      */
-    public AssertionTypeRecord getAssertionTypeRecord(String name);
+    public AssertionTypeDescriptor getAssertionTypeDescriptor(String name);
     
     /**
-     * Return all the {@link AssertionTypeRecord} instances supported by this
+     * Return all the {@link AssertionTypeDescriptor} instances supported by this
      * service
      * 
-     * @return AssertionTypeRecord[]
+     * @return AssertionTypeDescriptor[]
      */
-    public AssertionTypeRecord[] getAssertionTypeRecords();
-
-    /**
-     * Return the {@link IArchetypeDescriptor} instance specified by the name.
-     * 
-     * @return IArchetypeDescriptor
-     */
-    public IArchetypeDescriptor getArchetypeDescriptor(String name);
+    public AssertionTypeDescriptor[] getAssertionTypeDescriptors();
 }

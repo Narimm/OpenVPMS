@@ -27,8 +27,8 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.INodeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
@@ -52,6 +52,7 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     /* (non-Javadoc)
      * @see org.openvpms.component.presentation.tapestry.page.OvpmsPage#pushCallback()
      */
+    @SuppressWarnings("unchecked")
     public void pushCallback() {
         Visit visit = (Visit) getVisit();
         visit.getCallbackStack().push(
@@ -140,12 +141,15 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     /**
      * @return
      */
-    public IArchetypeDescriptor getArchetypeDescriptor() {
-        return ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
-                ((IMObject)getModel()).getArchetypeId().getShortName());
+    public ArchetypeDescriptor getArchetypeDescriptor() {
+        // This method can return one or more descriptors since it expects
+        // a regular expression as the input
+//        return ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
+//                ((IMObject)getModel()).getArchetypeId().getShortName());
+        return null;
     }
 
-    public IPropertySelectionModel getLookupModel(INodeDescriptor descriptor) {
+    public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
         // TODO need to work out how to get lookup selection models from node descriptor
         // information and model data available to the page.  This method should populate
         // a special implementation of IPropertySelectionModel called LookupSelectionModel
@@ -153,7 +157,7 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
         return null;
     }
 
-    public IPropertySelectionModel getEntityModel(INodeDescriptor descriptor) {
+    public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
         // TODO need to work out how to get Entity selection models from node descriptor
         // information and model data available to the page.  This method should populate
         // a special implementation of IPropertySelectionModel called EntitySelectionModel

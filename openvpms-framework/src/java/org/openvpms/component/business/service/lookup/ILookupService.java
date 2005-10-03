@@ -57,7 +57,6 @@ public interface ILookupService {
      *            the lookup to insert
      * @throws LookupServiceException                      
      */
-    @Deprecated
     public void insert(Lookup lookup);
     
     /**
@@ -81,7 +80,6 @@ public interface ILookupService {
      * @throws LookupServiceException
      *             a runtime exception
      */
-    @Deprecated
     public void update(Lookup lookup);
 
     /**

@@ -1,17 +1,11 @@
 <assertionTypes>
-  <assertionType name="refDataAssertion"
-    class="org.openvpms.component.business.service.archetype.AssertionMethods"
+  <assertionType name="referenceData"
+    type="org.openvpms.component.business.service.archetype.AssertionMethods"
     method="alwaysTrue" />
-  <assertionType name="regExpAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
+  <assertionType name="regularExpression"
+    type="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
     method="regularExpressionMatch" />
-  <assertionType name="localDataAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.LocalDataAssertions"
-    method="isStringValueInList" />
-  <assertionType name="archeTypeRangeAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
+  <assertionType name="archetypeRange"
+    type="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
     method="isArchetypeShortNameInRange" />
-  <assertionType name="maxStringLengthAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
-    method="withinMaxLength" />
 </assertionTypes>

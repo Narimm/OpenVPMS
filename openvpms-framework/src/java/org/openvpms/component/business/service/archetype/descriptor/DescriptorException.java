@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.component.business.service.archetype.descriptor;
 
 // commons-resources
 import org.apache.commons.resources.Messages;
@@ -27,12 +27,12 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
  * This is the base exception thrown by the objects of type
- * {@link org.openvpms.component.business.service.archetype.AssertionTypeRecord} 
+ * {@link IArchetypeService} 
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class AssertionException extends RuntimeException implements
+public class DescriptorException extends RuntimeException implements
         OpenVPMSException {
 
     /**
@@ -44,11 +44,8 @@ public class AssertionException extends RuntimeException implements
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        NoAssertionTypeSpecified,
-        FailedtoApplyAssertion,
-        NoClassOrMethodSpecified,
-        FailedToLocateMethod,
-        FailedToApplyAssertion
+        InvalidType,
+        UnsupportedOperation
     }
 
     /**
@@ -61,7 +58,7 @@ public class AssertionException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.archetype."
+            .getMessages("org.openvpms.component.business.service.archetype.descriptor."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -71,7 +68,7 @@ public class AssertionException extends RuntimeException implements
      * @param errorCode
      *            the error code
      */
-    public AssertionException(ErrorCode errorCode) {
+    public DescriptorException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -86,7 +83,7 @@ public class AssertionException extends RuntimeException implements
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public AssertionException(ErrorCode errorCode, Object[] params) {
+    public DescriptorException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -100,7 +97,7 @@ public class AssertionException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public AssertionException(ErrorCode errorCode, Throwable cause) {
+    public DescriptorException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -117,7 +114,7 @@ public class AssertionException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public AssertionException(ErrorCode errorCode, Object[] params,
+    public DescriptorException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

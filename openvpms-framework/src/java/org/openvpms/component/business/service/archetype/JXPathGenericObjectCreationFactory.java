@@ -25,7 +25,7 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.archetype.Node;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * This class is used to by JXPath during the object construction phase. It 
@@ -51,8 +51,9 @@ public class JXPathGenericObjectCreationFactory extends AbstractFactory {
     public boolean createObject(JXPathContext context, Pointer ptr, 
             Object parent, String name, int index) {
         try {
-            Node node = (Node)context.getVariables().getVariable("node");
-            ptr.setValue(Class.forName(node.getType()).newInstance());
+            NodeDescriptor node = (NodeDescriptor)context.getVariables().getVariable("node");
+            ptr.setValue(Thread.currentThread().getContextClassLoader()
+                    .loadClass(node.getType()).newInstance());
         } catch (Exception exception) {
             return false;
         }

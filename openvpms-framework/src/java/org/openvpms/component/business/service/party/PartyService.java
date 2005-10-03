@@ -24,8 +24,8 @@ package org.openvpms.component.business.service.party;
 import org.openvpms.component.business.dao.im.party.IPartyDAO;
 import org.openvpms.component.business.dao.im.party.PartyDAOException;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeRecord;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 // openvpms-service
 
@@ -88,15 +88,16 @@ public class PartyService implements IPartyService {
     public Party create(String shortName) {
         // ensure that we can retrieve an arhetype record for the
         // specified short name
-        ArchetypeRecord record = archetypeService.getArchetypeRecord(shortName);
-        if (record == null) {
+        ArchetypeDescriptor descriptor = 
+            archetypeService.getArchetypeDescriptor(shortName);
+        if (descriptor == null) {
             throw  new PartyServiceException(
                     PartyServiceException.ErrorCode.FailedToLocateArchetype,
                     new Object[] { shortName });
         }
         
         // create and return the party object
-        return (Party)archetypeService.createDefaultObject(record.getArchetypeId());
+        return (Party)archetypeService.createDefaultObject(descriptor.getArchetypeId());
     }
 
     /* (non-Javadoc)

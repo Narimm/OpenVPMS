@@ -23,7 +23,7 @@ import org.apache.tapestry.valid.IValidator;
 import org.apache.tapestry.valid.NumberValidator;
 import org.apache.tapestry.valid.PatternValidator;
 import org.apache.tapestry.valid.StringValidator;
-import org.openvpms.component.business.service.archetype.INodeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * 
@@ -33,25 +33,31 @@ import org.openvpms.component.business.service.archetype.INodeDescriptor;
 
 public abstract class PropertyEditor extends OpenVpmsComponent {
     
-    public abstract INodeDescriptor getDescriptor();
+    public abstract NodeDescriptor getDescriptor();
 
-    public abstract void setDescriptor(INodeDescriptor Descriptor);
+    public abstract void setDescriptor(NodeDescriptor Descriptor);
 
     /**
+     * 
+     * TODO Look at this when we get into tapestry
+     * 
      * @param descriptor
-     * @return
+     * @return IValidator
+     * @throws Exception
+     *            propagate exception            
      */
-    public IValidator getValidator(INodeDescriptor descriptor) {
+    public IValidator getValidator(NodeDescriptor descriptor) 
+    throws Exception {
         BaseValidator validator = null;
 
         if (descriptor.isNumeric()) {
             validator = new NumberValidator();
-            ((NumberValidator) validator).setValueTypeClass(descriptor
-                    .getType());
-            if (descriptor.getMaximumValue() != null)
-                ((NumberValidator) validator).setMaximum(descriptor.getMaximumValue());           
-            if (descriptor.getMinimumValue() != null)
-                ((NumberValidator) validator).setMinimum(descriptor.getMinimumValue());
+            ((NumberValidator) validator).setValueTypeClass(
+                    Thread.currentThread().getContextClassLoader().loadClass(descriptor.getType()));
+            if (descriptor.getMaxValue() != null)
+                ((NumberValidator) validator).setMaximum(descriptor.getMaxValue());           
+            if (descriptor.getMinValue() != null)
+                ((NumberValidator) validator).setMinimum(descriptor.getMinValue());
         } else {
             if (descriptor.getStringPattern() == null)
                 validator = new StringValidator();

@@ -23,8 +23,8 @@ package org.openvpms.component.business.service.entity;
 import org.openvpms.component.business.dao.im.common.EntityDAOException;
 import org.openvpms.component.business.dao.im.common.IEntityDAO;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.service.archetype.ArchetypeRecord;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 
 /**
@@ -78,15 +78,16 @@ public class EntityService implements IEntityService {
     public Entity create(String shortName) {
         // ensure that we can retrieve an arhetype record for the
         // specified short name
-        ArchetypeRecord record = archetypeService.getArchetypeRecord(shortName);
-        if (record == null) {
+        ArchetypeDescriptor descriptor = 
+            archetypeService.getArchetypeDescriptor(shortName);
+        if (descriptor == null) {
             throw  new EntityServiceException(
                     EntityServiceException.ErrorCode.FailedToLocateArchetype,
                     new Object[] { shortName });
         }
         
         // create and return the party object
-        return (Entity)archetypeService.createDefaultObject(record.getArchetypeId());
+        return (Entity)archetypeService.createDefaultObject(descriptor.getArchetypeId());
     }
 
     /* (non-Javadoc)

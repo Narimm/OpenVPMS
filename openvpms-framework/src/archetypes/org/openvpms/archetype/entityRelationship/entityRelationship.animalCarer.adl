@@ -1,6 +1,6 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.animalCarer.1.0" 
-		className="org.openvpms.component.business.domain.im.common.EntityRelationship">
+	<archetype name="openvpms-common-entityRelationship.animalCarer.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.EntityRelationship">
 		<node name="sequence" path="/sequence" type="java.lang.Integer"
 			minCardinality="1" />
 		<node name="reason" path="/reason" type="java.lang.String" />
@@ -12,20 +12,16 @@
 				type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime" />
 		</node>
 		<node name="source" path="/sourceEntity"
-			type="org.openvpms.component.business.domain.im.Entity">
-			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="shortNames">
-					<arrayElement value="person.person" />
-					<arrayElement value="organization.organization" />
-				</propertyArray>
+			type="org.openvpms.component.business.domain.im.common.Entity">
+			<assertion type="archetypeRange">
+				<property key="person.person" />
+				<property key="organization.organization" />
 			</assertion>
 		</node>
 		<node name="target" path="/targetEntity"
-			type="org.openvpms.component.business.domain.im.Entity">
-			<assertion type="archeTypeRangeAssertion">
-				<propertyArray name="shortNames">
-					<arrayElement value="animal.animal" />
-				</propertyArray>
+			type="org.openvpms.component.business.domain.im.common.Entity">
+			<assertion type="archetypeRange">
+				<property key="animal.animal" />
 			</assertion>
 		</node>
 	</archetype>

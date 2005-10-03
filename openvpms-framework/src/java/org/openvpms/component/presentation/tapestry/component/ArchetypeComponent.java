@@ -18,8 +18,9 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
+import java.util.ArrayList;
 import java.util.List;
-import org.openvpms.component.business.service.archetype.IArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 /**
  * 
@@ -35,13 +36,13 @@ public abstract class ArchetypeComponent extends OpenVpmsComponent {
     /**
      * @return
      */
-    public abstract IArchetypeDescriptor getArchetypeDescriptor();
+    public abstract ArchetypeDescriptor getArchetypeDescriptor();
 
     /**
      * @param ArchetypeDescriptor
      */
     public abstract void setArchetypeDescriptor(
-            IArchetypeDescriptor ArchetypeDescriptor);
+            ArchetypeDescriptor ArchetypeDescriptor);
 
     /**
      * @return
@@ -56,11 +57,12 @@ public abstract class ArchetypeComponent extends OpenVpmsComponent {
     /**
      * @return
      */
+    @SuppressWarnings("unchecked")
     public List getPropertyDescriptors() {
         if (getPropertyNames() == null || getPropertyNames().length == 0) {
-            return getArchetypeDescriptor().getNodeDescriptors();
+            return new ArrayList(getArchetypeDescriptor().getNodeDescriptors().values());
         } else {
-            return getArchetypeDescriptor().getPropertyDescriptors(
+            return getArchetypeDescriptor().getNodeDescriptors(
                     getPropertyNames());
         }
     }

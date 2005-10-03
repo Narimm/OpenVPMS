@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapping>
+    <class
+        name="org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor" auto-complete="false">
+        <description>Default mapping for class org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor</description>
+        <map-to xml="assertionType"/>
+        <field name="methodName" type="string" required="true"
+            direct="false" transient="false" get-method="getMethodName" set-method="setMethodName">
+            <bind-xml name="method" node="attribute" reference="false"/>
+        </field>
+        <field name="name" type="string" required="true" direct="false"
+            transient="false" get-method="getName" set-method="setName">
+            <bind-xml name="name" node="attribute" reference="false"/>
+        </field>
+        <field name="type" type="string" required="true" direct="false"
+            transient="false" get-method="getType" set-method="setType">
+            <bind-xml name="type" node="attribute" reference="false"/>
+        </field>
+    </class>
+    <class
+        name="org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptors" auto-complete="false">
+        <description>Default mapping for class org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptors</description>
+        <map-to xml="assertionTypes"/>
+        <field name="assertionTypeDescriptors"
+            type="org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor"
+            required="false" direct="false" transient="false"
+            get-method="getAssertionTypeDescriptors"
+            set-method="setAssertionTypeDescriptors" collection="map">
+            <bind-xml name="assertionType" node="element" reference="false"/>
+        </field>
+    </class>
+</mapping>

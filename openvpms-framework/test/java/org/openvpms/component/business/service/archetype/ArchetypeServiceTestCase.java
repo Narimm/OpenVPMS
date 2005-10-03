@@ -26,9 +26,9 @@ import java.util.Iterator;
 import java.util.Vector;
 
 //openvpms-framework
-import org.openvpms.component.business.service.archetype.ArchetypeRecord;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 
 // openvpms-test-component
@@ -138,10 +138,10 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         ArchetypeService registry = new ArchetypeService(validFile, assertionFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
-            ArchetypeRecord record = registry.getArchetypeRecord((String)iter.next());
-            assertTrue(record != null);
-            assertTrue(record.getArchetypeId() != null);
-            assertTrue(record.getArchetype() != null);
+            String key = (String)iter.next();
+            ArchetypeDescriptor descriptor = registry.getArchetypeDescriptor(key);
+            assertTrue(("Looking for " + key), (descriptor != null));
+            assertTrue(descriptor.getArchetypeId() != null);
         }
     }
 
@@ -160,7 +160,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         ArchetypeService registry = new ArchetypeService(validFile, assertionFile);
         Iterator iter = archetypes.iterator();
         while (iter.hasNext()) {
-            assertTrue(registry.getArchetypeRecord((String)iter.next()) == null);
+            String key = (String)iter.next();
+            assertTrue(("Looking for " + key), registry.getArchetypeDescriptor(key) == null);
         }
     }
     
@@ -183,7 +184,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         
         ArchetypeService registry = new ArchetypeService(dir, 
                 new String[]{extension}, assertionFile);
-        assertTrue(registry.getArchetypeRecords().length == recordCount1);
+        assertTrue(registry.getArchetypeDescriptors().length == recordCount1);
     }
     
     /**
@@ -200,19 +201,19 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 (String)params.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
-        assertTrue(registry.getArchetypeRecordsByShortName("entityRelationship\\..*").length 
+        assertTrue(registry.getArchetypeDescriptors("entityRelationship\\..*").length 
                 == ((Integer)params.get("recordCount1")).intValue());
         
         // test retrieval for anything with animal
-        assertTrue(registry.getArchetypeRecordsByShortName(".*pet.*").length 
+        assertTrue(registry.getArchetypeDescriptors(".*pet.*").length 
                 == ((Integer)params.get("recordCount2")).intValue());
         
         // test retrieval for anything that starts with person
-        assertTrue(registry.getArchetypeRecordsByShortName("person.*").length 
+        assertTrue(registry.getArchetypeDescriptors("person.*").length 
                 == ((Integer)params.get("recordCount3")).intValue());
         
         // test retrieval for anything that matchers person\\.person
-        assertTrue(registry.getArchetypeRecordsByShortName("person\\.person").length 
+        assertTrue(registry.getArchetypeDescriptors("person\\.person").length 
                 == ((Integer)params.get("recordCount4")).intValue());
     }
     
@@ -230,15 +231,15 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 (String)params.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
-        assertTrue(registry.getArchetypeRecordsByRmName("party").length 
+        assertTrue(registry.getArchetypeDescriptorsByRmName("party").length 
                 == ((Integer)params.get("recordCount1")).intValue());
         
         // test retrieval for anything with animal
-        assertTrue(registry.getArchetypeRecordsByRmName("common").length 
+        assertTrue(registry.getArchetypeDescriptorsByRmName("common").length 
                 == ((Integer)params.get("recordCount2")).intValue());
         
         // test retrieval for anything that starts with person
-        assertTrue(registry.getArchetypeRecordsByRmName("lookup").length 
+        assertTrue(registry.getArchetypeDescriptorsByRmName("lookup").length 
                 == ((Integer)params.get("recordCount3")).intValue());
     }
 }

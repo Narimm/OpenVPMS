@@ -57,7 +57,6 @@ public interface IActService {
      *            the act to insert
      * @throws ActServiceException                      
      */
-    @Deprecated
     public void insert(Act act);
     
     /**
@@ -83,7 +82,6 @@ public interface IActService {
      * @throws ActServiceException
      *             a runtime exception
      */
-    @Deprecated
     public void update(Act act);
 
     /**
