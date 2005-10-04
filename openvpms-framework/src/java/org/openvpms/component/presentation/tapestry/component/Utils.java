@@ -52,12 +52,12 @@ public class Utils
     }
 
     /**
-     * @param className
+     * @param archetypeName
      * @return
      */
-    public static String unqualify(String className)
+    public static String unqualify(String archetypeName)
     {
-        return className.substring(className.lastIndexOf(".") + 1);
+        return archetypeName.substring(archetypeName.lastIndexOf(".") + 1);
     }
 
     /**
@@ -70,7 +70,6 @@ public class Utils
         String postfix)
     {
         IPage page = null;
-        // Ask howard how to do this right!!
         try
         {
             page = cycle.getPage(pageName);

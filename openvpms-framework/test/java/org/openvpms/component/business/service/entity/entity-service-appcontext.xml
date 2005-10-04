@@ -78,7 +78,7 @@
     </property>
   </bean>
 
-  <!--  The Party Service -->
+  <!--  The Entity Service -->
   <bean id="entityService"
     class="org.openvpms.component.business.service.entity.EntityService">
     <constructor-arg index="0">
