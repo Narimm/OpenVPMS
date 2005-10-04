@@ -1,7 +1,11 @@
-<body jwcid="$content$">
 <span jwcid="@Border">
+<h1>Welcome to the OpenVPMS Test Application</h1>
 
-    Homepage
-
+<ul class="archetypeList">
+<div class="archetypeList" jwcid="@Foreach" source="ognl:archetypeService.getArchetypeDescriptors" value="ognl:descriptor" >
+    <li>
+     	<a href="#" jwcid="@OpenVpms:NewLink" archeTypeName="ognl:descriptor.name" />
+   	</li>
+</div>
+</ul>
 </span>
-</body>

@@ -6,76 +6,135 @@
     <!-- ========================================================================== -->
 	<!-- ========================= GENERAL DEFINITIONS ============================ -->
     <!-- ========================================================================== -->
-	
 
-	<!-- Configurer that replaces ${...} placeholders with values from a properties file -->
-	<!-- (in this case, JDBC-related settings for the dataSource definition below) -->
-	<!-- more locations may be added as necessary                                  -->
-    <!-- bean id="propertyConfigurer" 
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location">
-		    <value>/WEB-INF/jdbc.properties</value>
-		</property>
-	</bean-->
-
-
-	<!-- Message source for this context, loaded from localized "messages_xx" files -->
-	<!-- 
-	<bean id="messageSource" 
-		class="org.springframework.context.support.ResourceBundleMessageSource">
-		<property name="basename"><value>messages</value></property>										
-	</bean>
-	-->
+	  <!--  Property configuration -->
+	  <bean id="props"
+	    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations">
+	      <list>
+	        <value>classpath:hibernate.properties</value>
+	      </list>
+	    </property>
+	  </bean>
 
     <!-- ========================================================================== -->
 	<!-- ========================= RESOURCE DEFINITIONS =========================== -->
     <!-- ========================================================================== -->
-
-    <!--  a locally defined pooled dataSource -->
-	<!-- bean id="dataSource" 
-		class="org.apache.commons.dbcp.BasicDataSource"
-        destroy-method="close">
-		<property name="driverClassName"><value>${jdbc.driverClassName}</value></property>
-		<property name="url"><value>${jdbc.url}</value></property>
-		<property name="username"><value>${jdbc.username}</value></property>
-		<property name="password"><value>${jdbc.password}</value></property>
-	</bean-->
-
-    <!-- JNDI DataSource for J2EE environments -->
-	<!--
-	<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-		<property name="jndiName"><value>java:comp/env/jdbc/dsName</value></property>
-	</bean>
-	-->
-
-	<!-- Hibernate SessionFactory -->
-    <!-- Hibernate settings could be defined at this location,
-         but for the sake of the hbm2ddl task it will remain
-         in the original hibernate config file
-    -->
-    <!--  
-	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate.LocalSessionFactoryBean">
-		<property name="dataSource">
-			<ref local="dataSource" />
-		</property>
-		<property name="configLocation">
-			<value>/WEB-INF/classes/hibernate.cfg.xml</value>
-		</property>
-	</bean>
-    -->
-
-
 	
-    <!-- ========================================================================== -->
-	<!-- =============== BUSINESS SERVICE BEANS =================================== -->
-    <!-- ========================================================================== -->
-
-
+	  <!--  The MySQL DataSource -->
+	  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+	    <property name="driverClassName"
+	      value="${hibernate.connection.driver_class}" />
+	    <property name="url" value="${hibernate.connection.url}" />
+	    <property name="username" value="${hibernate.connection.username}" />
+	    <property name="password" value="${hibernate.connection.password}" />
+	  </bean>
+	
+	  <!--  Hibernate session factory -->
+	  <bean id="sessionFactory"
+	    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+	    <property name="dataSource">
+	      <ref local="mySQLDataSource" />
+	    </property>
+	    <property name="hibernateProperties">
+	      <props>
+	        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+	        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+	        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+	        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+	        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
+	        <prop key="hibernate.c3p0.max_statements">
+	          ${hibernate.c3p0.max_statements}
+	        </prop>
+	      </props>
+	    </property>
+	    <property name="mappingResources">
+	      <list>
+	        <value>/org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/Act.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/Classification.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/Entity.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/EntityClassification.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/common/Participation.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/party/Address.hbm.xml</value>
+	        <value>/org/openvpms/component/business/domain/im/party/Contact.hbm.xml</value>
+	      </list>
+	    </property>
+	  </bean>
+	
     <!-- ========================================================================== -->
 	<!-- =============== DAO DEFINITIONS ========================================== -->
     <!-- ========================================================================== -->
+	  <!--  The Entity DAO bean -->
+	  <bean id="entityDao"
+	    class="org.openvpms.component.business.dao.hibernate.im.entity.EntityDAOHibernate">
+	    <property name="sessionFactory">
+	      <ref local="sessionFactory" />
+	    </property>
+	  </bean>
+	  <!--  The Lookup DAO bean -->
+	  <bean id="lookupDao"
+	    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
+	    <property name="sessionFactory">
+	      <ref local="sessionFactory" />
+	    </property>
+	  </bean>
+	  <!--  The Party DAO bean -->
+	  <bean id="partyDao"
+	    class="org.openvpms.component.business.dao.hibernate.im.party.PartyDAOHibernate">
+	    <property name="sessionFactory">
+	      <ref local="sessionFactory" />
+	    </property>
+	  </bean>
 
+    <!-- ========================================================================== -->
+	<!-- =============== BUSINESS SERVICE BEANS =================================== -->
+    <!-- ========================================================================== -->
+	  <!--  The Archetype Service -->
+	  <bean id="archetypeService"
+	    class="org.openvpms.component.business.service.archetype.ArchetypeService">
+	    <constructor-arg index="0" value="/org/openvpms/archetype" />
+	    <constructor-arg index="1">
+	      <list>
+	        <value>adl</value>
+	      </list>
+	    </constructor-arg>
+	    <constructor-arg index="2"
+	      value="org/openvpms/archetype/assertionTypes.xml" />
+	  </bean>
+	  <!--  The Entity Service -->
+	  <bean id="entityService"
+	    class="org.openvpms.component.business.service.entity.EntityService">
+	    <constructor-arg index="0">
+	      <ref bean="archetypeService" />
+	    </constructor-arg>
+	    <constructor-arg index="1">
+	      <ref bean="entityDao" />
+	    </constructor-arg>
+	  </bean>
+	  <!--  The Lookup Service -->
+	  <bean id="lookupService"
+	    class="org.openvpms.component.business.service.lookup.LookupService">
+	    <constructor-arg index="0">
+	      <ref bean="archetypeService" />
+	    </constructor-arg>
+	    <constructor-arg index="1">
+	      <ref bean="lookupDao" />
+	    </constructor-arg>
+	  </bean>
+	  <!--  The Party Service -->
+	  <bean id="partyService"
+	    class="org.openvpms.component.business.service.party.PartyService">
+	    <constructor-arg index="0">
+	      <ref bean="archetypeService" />
+	    </constructor-arg>
+	    <constructor-arg index="1">
+	      <ref bean="partyDao" />
+	    </constructor-arg>
+	  </bean>
 
     <!-- ========================================================================== -->
 	<!-- =============== SECURITY DEFINITIONS (ACEGI SECURITY)===================== -->

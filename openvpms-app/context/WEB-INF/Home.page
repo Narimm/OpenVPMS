@@ -4,9 +4,6 @@
   "http://jakarta.apache.org/tapestry/dtd/Tapestry_3_0.dtd">
 
 <page-specification class="org.openvpms.app.tapestry.pages.Home">
-
-    <description>add a description</description>
-    
-    
-    
+    <property-specification name="archetypeService" type="org.openvpms.component.business.service.archetype.IArchetypeService">
+	global.getArchetypeService()
 </page-specification>
