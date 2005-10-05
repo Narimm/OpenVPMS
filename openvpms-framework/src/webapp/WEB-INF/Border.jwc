@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE component-specification PUBLIC 
+	"-//Apache Software Foundation//Tapestry Specification 3.0//EN" 
+	"http://jakarta.apache.org/tapestry/dtd/Tapestry_3_0.dtd">
+	     	
+<component-specification
+	allow-body="yes"
+	allow-informal-parameters="no"
+    class="org.openvpms.app.tapestry.components.Border">
+    
+    <description>the Border component that is used to control 
+        the overall application look and feel</description>
+    
+    <!-- override the default template location (more WYSIWYG friendly) -->
+    <context-asset name="$template" path="Border.html"/>
+    
+	<context-asset name="stylesheet" path="css/global.css"/>
+  
+    
+</component-specification>

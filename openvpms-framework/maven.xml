@@ -4,34 +4,8 @@
   xmlns:j="jelly:core"
   xmlns:castor="castor">
 
-	<!--preGoal name="java:compile">
-    	<attainGoal name="castor:prepare-filesystem"/>
-    	<castor:generate 
-    		schema="src/java/org/openvpms/component/business/domain/archetype/archetype.xsd"
-            package="org.openvpms.component.business.domain.archetype"
-            types="j2"/>
-    	<castor:generate 
-    		schema="src/java/org/openvpms/tools/refdata/loader/refdata-loader.xsd"
-            package="org.openvpms.tools.refdata.loader"
-            types="j2"/>
-  	</preGoal-->
-
-	<preGoal name="hibernate:schema-export">
-    	<attainGoal name="java:compile"/>
-	    <attainGoal name="java:jar-resources"/>
-	</preGoal>
-	
-	<!--goal name="refdata:load" description="Load the Reference Data from File" 
-		prereqs="java:jar-resources">
-		<ant:java
-        	classname="org.openvpms.tools.refdata.loader.RefDataLoader"
-	        failonerror="true"
-    	    fork="true">
-            <ant:classpath>
-           		<ant:path refid="maven.dependency.classpath"/>
-           		<ant:pathelement path="${maven.build.dest}"/>
-            </ant:classpath>
-        	<arg line="${openvpms.refdata.file}"/>
-    	</ant:java>	
-    </goal-->
+	<postGoal name="war:install">
+		<ant:copy file="${maven.war.build.dir}/${maven.war.final.name}"
+			tofile="${tomcat.webapps.dir}/${maven.war.final.name}" />
+  	</postGoal>
 </project>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>openvpms-framework</name>
-	<comment>openvpms-framework</comment>
+	<name>openvpms-vpms</name>
+	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
