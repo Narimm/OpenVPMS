@@ -1,0 +1,35 @@
+# A basic log4j.properties file
+
+# all application logging is done through log4j
+# (for dependent components that use jakarta-commons-logging, we
+# configured that, too. but we don't use it for our application)
+
+
+# available log levels:
+#   
+#   DEBUG
+#   INFO
+#   WARN
+#   ERROR
+#   FATAL
+#   
+#   
+
+
+# Create a single console appender that logs INFO and higher
+log4j.rootLogger=WARN, stdout
+
+# I want debugging for my special class
+#log4j.logger.itoskop.service.ScanFileParser=DEBUG, stdout
+
+# Configure stdout appender to go to the console
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+
+# the stdout appender should use pattern layout
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+
+# the actual pattern for stdout appender
+log4j.appender.stdout.layout.ConversionPattern=%5p [%t] (%F:%L) - %m%n
+
+# openvpms-framework
+log4j.logger.org.openvpms.component.business.service.archetype.ArchetypeService=DEBUG

@@ -1,0 +1,27 @@
+<archetypes>
+	<archetype name="openvpms-common-entityRelationship.familyMember.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.EntityRelationship">
+		<node name="sequence" path="/sequence" type="java.lang.Integer"
+			minCardinality="1" />
+		<node name="reason" path="/reason" type="java.lang.String" />
+		<node name="period" path="/period"
+			type="org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval"
+			minCardinality="1">
+			<node name="startPeriod" path="/period/lower"
+				defaultValue="now()" minCardinality="1"
+				type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime" />
+		</node>
+		<node name="source" path="/sourceEntity"
+			type="org.openvpms.component.business.domain.im.common.Entity">
+			<assertion type="archetypeRange">
+				<property key="person.person" />
+			</assertion>
+		</node>
+		<node name="target" path="/targetEntity"
+			type="org.openvpms.component.business.domain.im.common.Entity">
+			<assertion type="archetypeRange">
+				<property key="person.person" />
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
