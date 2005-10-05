@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-framework-0.1.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPO/tapestry/jars/tapestry-3.0.3.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/openvpms-framework"/>
-	<classpathentry kind="output" path="target/eclipse-classes"/>
-</classpath>
