@@ -89,7 +89,7 @@
 	  <!--  The Archetype Service -->
 	  <bean id="archetypeService"
 	    class="org.openvpms.component.business.service.archetype.ArchetypeService">
-	    <constructor-arg index="0" value="webapps/openvpms/WEB-INF/classes/org/openvpms/archetype" />
+	    <constructor-arg index="0" value="/applications/jakarta-tomcat-5.5.12/webapps/openvpms/WEB-INF/classes/org/openvpms/archetype" />
 	    <constructor-arg index="1">
 	      <list>
 	        <value>adl</value>

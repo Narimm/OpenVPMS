@@ -5,7 +5,7 @@
 
 
 <application name="openvpms" engine-class="org.openvpms.component.presentation.tapestry.engine.OpenVpmsEngine">
-  <description>OpenVPMS<description>
+  <description>OpenVPMS</description>
   <property name="org.apache.tapestry.disable-caching">true</property>
   <property name="org.apache.tapestry.visit-class">org.openvpms.component.presentation.tapestry.Visit</property>
   <property name="org.apache.tapestry.global-class">org.openvpms.component.presentation.tapestry.Global</property>
