@@ -4,10 +4,10 @@
 		<node name="sequence" path="/sequence" type="java.lang.Integer"
 			minCardinality="1" />
 		<node name="reason" path="/reason" type="java.lang.String" />
-		<node name="period" path="/period"
+		<node name="activePeriod" path="/activePeriod"
 			type="org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval"
 			minCardinality="1">
-			<node name="startPeriod" path="/period/lower"
+			<node name="startPeriod" path="/activePeriod/lower"
 				defaultValue="now()" minCardinality="1"
 				type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime" />
 		</node>

@@ -2,12 +2,25 @@
 	<archetype name="openvpms-party-person.person.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Person">
 		<node name="title" path="/title" type="java.lang.String"
-			minCardinality="1" maxLength="10" />
+			minCardinality="1">
+			<assertion type="referenceData">
+				<property key="Mr" value="Mr" />
+				<property key="Ms" value="Ms" />
+				<property key="Mrs" value="Mrs" />
+				<property key="Dr" value="Dr" />
+			</assertion>
+		</node>
 		<node name="firstName" path="/firstName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
-		<node name="lastName" path="/lastName" type="java.lang.String"
+		<node name="surname" path="/lastName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
-		<node name="initials" path="/initials" type="java.lang.String" 
-			minCardinality="0" maxLength="10" />
+		<node name="initials" path="/initials" type="java.lang.String" />
+		<node name="classifications" path="/classifications"
+			type="org.openvpms.component.business.domain.im.common.EntityClassification">
+			<assertion type="archetypeRange">
+				<property key="person.person" />
+				<property key="animal.animal" />
+			</assertion>
+		</node>
 	</archetype>
 </archetypes>
