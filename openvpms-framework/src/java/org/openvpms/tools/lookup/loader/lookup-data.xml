@@ -1,0 +1,22 @@
+<lookupData>
+	<lookupItem id="country" value="Australia" />
+	<lookupItem id="state" value="Victoria" />
+	<lookupItem id="suburb" value="Belgrave" />
+	<lookupItem id="postcode" value="3160" />
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Victoria" />
+	</lookupRel>
+	<lookupRel>
+		<source id="state" value="Victoria" />
+		<target id="suburb" value="Belgrave" />
+	</lookupRel>
+	<lookupRel>
+		<source id="state" value="Victoria" />
+		<target id="postcode" value="3160" />
+	</lookupRel>
+	<lookupRel>
+		<source id="suburb" value="Belgrave" />
+		<target id="postcode" value="3160" />
+	</lookupRel>
+</lookupData>
