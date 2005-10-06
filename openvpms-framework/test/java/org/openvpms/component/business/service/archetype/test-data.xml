@@ -148,6 +148,19 @@
         <param name="recordCount3" type="java.lang.Integer">1</param>
       </params>
     </method>
+
+    <!--  Data for the testCreateDefaultObject method -->
+    <method name="testCreateDefaultObject" test-case="normal">
+      <params>
+        <param name="assertionFile" type="java.lang.String">
+          org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
+        </param>
+        <param name="dir" type="java.lang.String">
+          target/classes/org/openvpms/archetype
+        </param>
+        <param name="extension" type="java.lang.String">adl</param>
+      </params>
+    </method>
   </class>
 </tests>
 

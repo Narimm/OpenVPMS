@@ -20,6 +20,7 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
@@ -108,5 +109,81 @@ public class DescriptorTestCase extends BaseTestCase {
                     Thread.currentThread().getContextClassLoader()
                     .getResourceAsStream(afile))));
         assertTrue(descriptors.getAssertionTypeDescriptors().size() == 5);
+    }
+    
+    /**
+     * Test that the display name for the archetype and node default to the
+     * name of those elements
+     */
+    public void testDefaultDisplayName()
+    throws Exception {
+        String mfile = (String)this.getTestData().getTestCaseParameter(
+                "testSingleArchetypeDescripor", "normal", "mappingFile");
+        String afile = (String)this.getTestData().getTestCaseParameter(
+                "testSingleArchetypeDescripor", "normal", "archetypeFile");
+        
+        // load the mapping file
+        Mapping mapping = new Mapping();
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(mfile))));
+        
+        // set up the unmarshaller
+        Unmarshaller unmarshaller = new Unmarshaller(mapping);
+        ArchetypeDescriptors descriptors = (ArchetypeDescriptors)unmarshaller
+            .unmarshal(new InputSource(new InputStreamReader(
+                    Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(afile))));
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
+        
+        // test that the archetype display name defaults to the name
+        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
+                    .getArchetypeDescriptors().values().iterator().next();
+        assertTrue(descriptor.getDisplayName().equals(descriptor.getName()));
+        
+        // iterate through the top level nodes and enusre that the 
+        // display name defaults to the name
+        Iterator iter = descriptor.getNodeDescriptors().values().iterator();
+        while (iter.hasNext()) {
+            NodeDescriptor node = (NodeDescriptor)iter.next();
+            assertTrue(node.getDisplayName().equals(node.getName())); 
+        }
+    }
+
+    /**
+     * Test that the max length defaults to the appropriate value for a node
+     */
+    public void testDefaultMaxLength()
+    throws Exception {
+        String mfile = (String)this.getTestData().getTestCaseParameter(
+                "testSingleArchetypeDescripor", "normal", "mappingFile");
+        String afile = (String)this.getTestData().getTestCaseParameter(
+                "testSingleArchetypeDescripor", "normal", "archetypeFile");
+        
+        // load the mapping file
+        Mapping mapping = new Mapping();
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(mfile))));
+        
+        // set up the unmarshaller
+        Unmarshaller unmarshaller = new Unmarshaller(mapping);
+        ArchetypeDescriptors descriptors = (ArchetypeDescriptors)unmarshaller
+            .unmarshal(new InputSource(new InputStreamReader(
+                    Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(afile))));
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
+        
+        // test that the archetype display name defaults to the name
+        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
+                    .getArchetypeDescriptors().values().iterator().next();
+        
+        // iterate through the top level nodes and enusre that the 
+        // display name defaults to the name
+        Iterator iter = descriptor.getNodeDescriptors().values().iterator();
+        while (iter.hasNext()) {
+            NodeDescriptor node = (NodeDescriptor)iter.next();
+            assertTrue(node.getMaxLength() == NodeDescriptor.DEFAULT_MAX_LENGTH);
+        }
     }
 }

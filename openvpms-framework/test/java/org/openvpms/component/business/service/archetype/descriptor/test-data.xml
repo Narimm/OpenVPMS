@@ -27,6 +27,30 @@
   			 </param>
   		</params>
   	</method>
+  	
+    <!-- Data for the testDefaultDisplayName method -->
+  	<method name="testDefaultDisplayName" test-case="normal">
+  		<params>
+  			<param name="mappingFile" type="java.lang.String">
+  			   org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml
+  			 </param>
+  			<param name="archetypeFile" type="java.lang.String">
+  			   org/openvpms/component/business/service/archetype/descriptor/single-archetype.xml
+  			 </param>
+  		</params>
+  	</method>
+  	
+    <!-- Data for the testDefaultMaxLength method -->
+  	<method name="testDefaultMaxLength" test-case="normal">
+  		<params>
+  			<param name="mappingFile" type="java.lang.String">
+  			   org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml
+  			 </param>
+  			<param name="archetypeFile" type="java.lang.String">
+  			   org/openvpms/component/business/service/archetype/descriptor/single-archetype.xml
+  			 </param>
+  		</params>
+  	</method>
   </class>
 </tests>
 

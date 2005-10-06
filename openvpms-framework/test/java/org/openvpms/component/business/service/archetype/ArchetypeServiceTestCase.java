@@ -242,4 +242,26 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(registry.getArchetypeDescriptorsByRmName("lookup").length 
                 == ((Integer)params.get("recordCount3")).intValue());
     }
+
+    /**
+     * Test that we can successfully call createDefaultObject on every 
+     * archetype loaded in the registry
+     */
+    public void testCreateDefaultObject()
+    throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "assertionFile");
+        String dir = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "dir");
+        String extension = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "extension");
+        
+        ArchetypeService registry = new ArchetypeService(dir, 
+                new String[]{extension}, assertionFile);
+
+        for (ArchetypeDescriptor descriptor : registry.getArchetypeDescriptors()) {
+            assertTrue("Creating " + descriptor.getArchetypeQName(),
+                    registry.createDefaultObject(descriptor.getArchetypeId()) != null);
+        }
+    }
 }
