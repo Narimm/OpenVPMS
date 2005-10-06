@@ -6,6 +6,6 @@
 <page-specification class="org.openvpms.component.presentation.page.SearchPage">
   <property-specification name="instances" type="java.util.List" persistent="yes">
   </property-specification>
-  <property-specification name="object" type="java.lang.Object" persistent="no">
+  <property-specification name="currentObject" type="java.lang.Object" persistent="no">
   </property-specification>
 </page-specification>
