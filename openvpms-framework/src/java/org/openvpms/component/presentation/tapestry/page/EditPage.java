@@ -77,16 +77,21 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
      */
     public void remove(IRequestCycle cycle)
     {
-          Visit visit = (Visit)getVisit();
-          ICallback callback = (ICallback)visit.getCallbackStack().pop();
+        try
+        {
           if (getModel() instanceof Entity)
               ((Global)getGlobal()).getEntityService().remove((Entity)getModel());
           else if (getModel() instanceof Act)
               ((Global)getGlobal()).getActService().remove((Act)getModel());
           else if (getModel() instanceof Lookup)
               ((Global)getGlobal()).getLookupService().remove((Lookup)getModel());
-              
+          Visit visit = (Visit)getVisit();
+          ICallback callback = (ICallback)visit.getCallbackStack().pop();
           callback.performCallback(cycle);
+        }
+        catch (Exception pe){
+            cycle.activate("Home");
+        }
     }
 
     /**
@@ -94,9 +99,25 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
      */
     public void saveAndReturn(IRequestCycle cycle) {
         if (save()) {
+            try {
+                Visit visit = (Visit) getVisit();
+                ICallback callback = (ICallback) visit.getCallbackStack().pop();
+                callback.performCallback(cycle);
+            }
+            catch (Exception pe) {
+                cycle.activate("Home");
+            }
+        }
+    }
+
+    public void cancel(IRequestCycle cycle) {
+        try {
             Visit visit = (Visit) getVisit();
             ICallback callback = (ICallback) visit.getCallbackStack().pop();
             callback.performCallback(cycle);
+        }
+        catch (Exception pe) {
+            cycle.activate("Home");
         }
     }
 
@@ -152,7 +173,7 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
         // TODO need to work out how to get lookup selection models from node descriptor
         // information and model data available to the page.  This method should populate
         // a special implementation of IPropertySelectionModel called LookupSelectionModel
-        // from either the Lookup service or the Archetyped defined values.
+        // from either the Lookup service or the vales specified in the Archetype.
         return null;
     }
 

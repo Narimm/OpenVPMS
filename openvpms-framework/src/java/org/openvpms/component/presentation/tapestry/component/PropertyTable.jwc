@@ -6,7 +6,7 @@
 
 <component-specification class="org.openvpms.component.presentation.tapestry.component.PropertyTable" allow-body="yes" allow-informal-parameters="yes">
 	<parameter name="model" type="java.lang.Object" required="yes" direction="in" />
-	<parameter name="propertyNames" type="java.lang.String[]" required="no" direction="auto" default-value="null"/>
+	<parameter name="nodeNames" type="java.lang.String[]" required="no" direction="auto" default-value="null"/>
    	<parameter name="archetypeDescriptor" 
     	type="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor"
     	direction="in" required="no"

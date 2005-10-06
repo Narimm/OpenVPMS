@@ -12,7 +12,9 @@
     
     <parameter name="showRemoveButton" type="boolean" required="no" direction="in" default-value="!page.modelNew" />
     
-    <parameter name="propertyNames" type="java.lang.String[]" required="no" direction="in" />
+    <parameter name="showCancelButton" type="boolean" required="no" direction="in" default-value="true" />
+    
+    <parameter name="nodeNames" type="java.lang.String[]" required="no" direction="in" />
     
    	<parameter name="archetypeDescriptor" 
     	type="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor" 
@@ -28,10 +30,16 @@
      <component id="removeButton" type="Submit">
         <binding name="listener">page.listeners.remove</binding>
     </component>
+     <component id="cancelButton" type="Submit">
+        <binding name="listener">page.listeners.cancel</binding>
+    </component>
     <component id="showSaveButton" type="Conditional">
         <binding name="condition">showSaveButton</binding>
     </component>
     <component id="showRemoveButton" type="Conditional">
         <binding name="condition">showRemoveButton</binding>
+    </component>   
+    <component id="showCancelButton" type="Conditional">
+        <binding name="condition">showCancelButton</binding>
     </component>   
 </component-specification>

@@ -47,24 +47,24 @@ public abstract class ArchetypeComponent extends OpenVpmsComponent {
     /**
      * @return
      */
-    public abstract String[] getPropertyNames();
+    public abstract String[] getNodeNames();
 
     /**
-     * @param PropertyNames
+     * @param nodeNames
      */
-    public abstract void setPropertyNames(String[] PropertyNames);
+    public abstract void setNodeNames(String[] nodeNames);
 
     /**
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List getPropertyDescriptors() {
-        if (getPropertyNames() == null || getPropertyNames().length == 0) {
+    public List getNodeDescriptors() {
+        if (getNodeNames() == null || getNodeNames().length == 0) {
             return new ArrayList(getArchetypeDescriptor().getNodeDescriptors()
                     .values());
         } else {
             return getArchetypeDescriptor().getNodeDescriptors(
-                    getPropertyNames());
+                    getNodeNames());
         }
     }
 }

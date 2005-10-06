@@ -10,7 +10,7 @@
   	<parameter name="saveListener" type="org.apache.tapestry.IActionListener" direction="auto" default-value="page.listeners.save"/>
     <parameter name="removeListener" type="org.apache.tapestry.IActionListener" direction="auto" default-value="page.listeners.remove"/>
     <parameter name="delegate" type="org.apache.tapestry.valid.IValidationDelegate" direction="auto" default-value="page.delegate"/>
-    <parameter name="propertyNames" type="java.lang.String[]" required="no" direction="auto" default-value="null"/>
+    <parameter name="nodeNames" type="java.lang.String[]" required="no" direction="auto" default-value="null"/>
    	<parameter name="archetypeDescriptor" 
     	type="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor" 
     	direction="auto" required="no" 
@@ -29,6 +29,6 @@
 	<component id="propertyTable" type="PropertyTable" inherit-informal-parameters="yes">
       	<inherited-binding name="archetypeDescriptor" parameter-name="archetypeDescriptor"/>
         <inherited-binding name="model" parameter-name="model"/>
-        <inherited-binding name="propertyNames" parameter-name="propertyNames"/>
+        <inherited-binding name="nodeNames" parameter-name="nodeNames"/>
     </component>
 </component-specification>

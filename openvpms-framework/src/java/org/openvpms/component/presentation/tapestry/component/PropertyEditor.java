@@ -73,6 +73,7 @@ public abstract class PropertyEditor extends OpenVpmsComponent {
             }
         }
         validator.setRequired(descriptor.isRequired());
+        //validator.setClientScriptingEnabled(true);
         return validator;
     }
 }
