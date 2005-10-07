@@ -66,9 +66,12 @@ public class LocalDataAssertions {
     /**
      * Always return true
      * 
-     * @return boolean
+     * @param target
+     *            the target object
+     * @param properties
+     *            the properties used for the assertion           
      */
-    public static boolean alwaysTrue() {
+    public static boolean alwaysTrue(Object target, Map properties) {
         return true;
     }
 }
