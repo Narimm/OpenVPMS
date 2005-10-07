@@ -1,5 +1,7 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.familyMember.1.0" latest="true"
+	<archetype
+		name="openvpms-common-entityRelationship.familyMember.1.0"
+		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship">
 		<node name="sequence" path="/sequence" type="java.lang.Integer"
 			minCardinality="1" />
@@ -15,12 +17,14 @@
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion type="archetypeRange">
 				<property key="person.person" />
+				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="target" path="/targetEntity"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion type="archetypeRange">
 				<property key="person.person" />
+				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 	</archetype>

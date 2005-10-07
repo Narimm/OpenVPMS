@@ -8,6 +8,7 @@
 				<property key="Ms" value="Ms" />
 				<property key="Mrs" value="Mrs" />
 				<property key="Dr" value="Dr" />
+				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="firstName" path="/firstName" type="java.lang.String"

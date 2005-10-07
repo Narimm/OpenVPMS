@@ -8,12 +8,14 @@
 				type="java.lang.String" minCardinality="1">
 				<assertion type="regularExpression">
 					<property key="expression" value=".*" />
+					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="telephoneNumber" path="/details/attributes[@name='telephoneNumber']"
 				type="java.lang.String">
 				<assertion type="regularExpression">
 					<property key="expression" value="[0-9]*" />
+					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="preferred" path="/details/attributes[@name='preferred']"

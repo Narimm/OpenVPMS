@@ -11,6 +11,7 @@
 				<assertion type="referenceData">
 					<property key="type" value="openvpms.suburb" />
 					<property key="state" value="/details/attributes[@name='state']" />
+					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="postcode" path="/details/attributes[@name='postcode']"
@@ -20,6 +21,7 @@
 					<property key="type" value="openvpms.postcode" />
 					<property key="suburb" value="/details/attributes[@name='suburb']" />
 					<property key="state" value="/details/attributes[@name='state']" />
+					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="state" path="/details/attributes[@name='state']"
@@ -27,12 +29,14 @@
 				<assertion type="referenceData">
 					<property key="type" value="openvpms.state" />
 					<property key="country" value="/details/attributes[@name='country']" />
+					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="country" path="/details/attributes[@name='country']"
 				type="java.lang.String" defaultValue="Australia" minCardinality="1">
 				<assertion type="referenceData">
 					<property key="type" value="openvpms.country" />
+					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 		</node>
