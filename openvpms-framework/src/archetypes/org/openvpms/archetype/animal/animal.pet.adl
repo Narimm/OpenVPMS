@@ -1,0 +1,51 @@
+<archetypes>
+	<archetype name="openvpms-party-animal.pet.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Animal">
+		<node name="species" path="/species" type="java.lang.String"
+			minCardinality="1">
+			<assertion type="referenceData">
+				<property name="namedQuery"
+					value="openvpms.animal.species" />
+			</assertion>
+		</node>
+		<node name="breed" path="/breed" type="java.lang.String">
+			<assertion type="referenceData">
+				<property key="namedQuery"
+					value="openvpms.animal.breed" />
+				<property key="species" value="/species" />
+			</assertion>
+		</node>
+		<node name="colour" path="/colour" type="java.lang.String">
+			<assertion type="referenceData">
+				<property key="namedQuery"
+					value="openvpms.animal.colour" />
+				<property key="species" value="/species" />
+				<property key="breed" value="/breed" />
+			</assertion>
+		</node>
+		<node name="sex" path="/sex" type="java.lang.String">
+			<assertion type="referenceData">
+				<property key="male" value="male" />
+				<property key="female" value="female" />
+				<property key="unspecified" value="unspecified" />
+			</assertion>
+		</node>
+		<node name="desexed" path="/desexed" type="java.lang.Boolean"
+			defaultValue="No" />
+		<node name="dateOfBirth" path="/dateOfBirth"
+			type="java.util.Date"
+			minCardinality="1" />
+		<node name="name" path="/name"
+			type="java.lang.String" minCardinality="1" />
+		<node name="identities" path="/identities"
+			type="org.openvpms.component.business.domain.im.common.EntityIdentity">
+			<assertion type="archetypeRange">
+				<property key="entityIdentity.animalAlias" />
+			</assertion>
+		</node>
+		<node name="contacts" path="/contacts"
+			type="org.openvpms.component.business.domain.im.party.Contact"
+			maxCardinality="0" />
+
+	</archetype>
+</archetypes>

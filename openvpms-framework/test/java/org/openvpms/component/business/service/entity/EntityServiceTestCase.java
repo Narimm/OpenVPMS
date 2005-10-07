@@ -20,11 +20,11 @@ package org.openvpms.component.business.service.entity;
 
 // spring-context
 import java.util.Calendar;
+import java.util.Date;
 
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
 
@@ -182,7 +182,7 @@ public class EntityServiceTestCase extends
         
         Calendar date = Calendar.getInstance();
         date.set(1963, 12, 20);
-        pet.setDateOfBirth(new DvDateTime(date));
+        pet.setDateOfBirth(new Date());
         
         return pet;
     }
