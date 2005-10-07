@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 //openvpms-framework
+import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
@@ -263,5 +264,24 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
             assertTrue("Creating " + descriptor.getArchetypeQName(),
                     registry.createDefaultObject(descriptor.getArchetypeId()) != null);
         }
+    }
+    
+    /**
+     * Test create an instance of animal.pet
+     */
+    public void testCreationAnimalPet()
+    throws Exception {
+        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "assertionFile");
+        String dir = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "dir");
+        String extension = (String)this.getTestData().getTestCaseParameter(
+                "testLoadingArchetypesFromDir", "normal", "extension");
+        
+        ArchetypeService registry = new ArchetypeService(dir, 
+                new String[]{extension}, assertionFile);
+
+        Animal animal = (Animal)registry.createDefaultObject("animal.pet");
+        assertTrue(animal != null);
     }
 }
