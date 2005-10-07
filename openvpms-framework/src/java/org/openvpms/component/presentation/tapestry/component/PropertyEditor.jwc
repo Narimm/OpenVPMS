@@ -17,10 +17,10 @@
         <binding name="condition">descriptor.date and !descriptor.identifier</binding>
     </component> 
     <component id="isString" type="Conditional">
-        <binding name="condition">descriptor.string and !descriptor.identifier and !descriptor.large</binding>
+        <binding name="condition">descriptor.string and !descriptor.identifier and !descriptor.large and !descriptor.lookup</binding>
     </component> 
     <component id="isTextArea" type="Conditional">
-        <binding name="condition">descriptor.large and descriptor.string</binding>
+        <binding name="condition">descriptor.large and descriptor.string and !descriptor.lookup</binding>
     </component> 
     <component id="isNumeric" type="Conditional">
         <binding name="condition">descriptor.numeric and !descriptor.identifier</binding>

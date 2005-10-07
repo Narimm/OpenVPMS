@@ -171,7 +171,8 @@ public class EntityService implements IEntityService {
             } catch (EntityDAOException exception) {
                 throw new EntityServiceException(
                         EntityServiceException.ErrorCode.FailedToSaveEntity,
-                        new Object[]{entity.toString()}, exception);
+                        new Object[]{entity.getArchetypeId().toString(),
+                                entity.toString()}, exception);
             }
         } else {
             throw new EntityServiceException(

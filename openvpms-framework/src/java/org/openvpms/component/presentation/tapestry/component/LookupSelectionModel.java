@@ -125,7 +125,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
                     return null;
             }
             // TODO Not correct.  Need to return the object that the value above refers to.
-            return null;
+            return value;
         } catch (Exception e) {
             throw new ApplicationRuntimeException(e);
         }
