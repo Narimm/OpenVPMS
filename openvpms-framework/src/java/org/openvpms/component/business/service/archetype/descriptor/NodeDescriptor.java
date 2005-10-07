@@ -20,14 +20,14 @@ package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Date;
+import java.util.HashMap;
 
-// openvpms-framework
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
+import org.openvpms.component.presentation.tapestry.component.Utils;
 
 /**
  * 
@@ -178,7 +178,7 @@ public class NodeDescriptor implements Serializable {
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return StringUtils.isEmpty(displayName) ? getName() : displayName;
+        return StringUtils.isEmpty(displayName) ? Utils.unCamelCase(getName()) : displayName;
     }
 
     /**
