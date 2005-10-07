@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.form.IPropertySelectionModel;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 /**
  * 
@@ -30,7 +31,7 @@ import org.apache.tapestry.form.IPropertySelectionModel;
  * @version $LastChangedDate: 2005-09-21 19:36:09 +1000 (Wed, 21 Sep 2005) $
  */
 public class LookupSelectionModel implements IPropertySelectionModel {
-    private List instances;
+    private List<Lookup> instances;
 
     private boolean allowNone;
 
@@ -42,7 +43,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
      * @param instances
      * @param idProperty
      */
-    public LookupSelectionModel(List instances) {
+    public LookupSelectionModel(List<Lookup> instances) {
         this.instances = instances;
         this.allowNone = false;
     }
@@ -53,7 +54,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
      * @param allowNone
      */
     @SuppressWarnings("unchecked")
-    public LookupSelectionModel(List instances, boolean allowNone) {
+    public LookupSelectionModel(List<Lookup> instances, boolean allowNone) {
         this(instances);
         this.allowNone = allowNone;
         if (this.allowNone) {
@@ -90,7 +91,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
         if (allowNone && index == 0) {
             return NONE_LABEL;
         }
-        return instances.get(index).toString();
+        return instances.get(index).getValue();
     }
 
     /*
@@ -103,8 +104,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
             if (allowNone && index == 0) {
                 return NONE_VALUE;
             } else {
-      // TODO This is not correct.  Needs updating.
-                return instances.get(index).toString();
+                return instances.get(index).getValue();
             }
         } catch (Exception e) {
             throw new ApplicationRuntimeException(e);
@@ -141,7 +141,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
     /**
      * @param instances
      */
-    public void setInstances(List instances) {
+    public void setInstances(List<Lookup> instances) {
         this.instances = instances;
     }
 }

@@ -175,12 +175,9 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     }
 
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
-        ArrayList instances = new ArrayList();
-        Global global = (Global)getGlobal();
-        instances.addAll(global.getLookupService().get(descriptor));
-        LookupSelectionModel selectionModel = new LookupSelectionModel(instances,!descriptor.isRequired());
-
-        return selectionModel;
+        return new LookupSelectionModel(
+                ((Global)getGlobal()).getLookupService().get(descriptor),
+                !descriptor.isRequired());
     }
 
     public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
