@@ -20,6 +20,7 @@ package org.openvpms.component.presentation.tapestry.component;
 
 import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
+import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.page.SearchPage;
 
 
@@ -35,8 +36,9 @@ public abstract class SearchLink extends Link
     public void click(IRequestCycle cycle)
     {
         SearchPage page = (SearchPage) findPage(cycle, "Search");
+        Global global = (Global)page.getGlobal();
         try {
-            page.setInstances(null);
+            page.setInstances(global.getEntityService().get("","","",""));
         } catch (Exception ex) {
             throw new ApplicationRuntimeException(ex);
         }
@@ -48,6 +50,6 @@ public abstract class SearchLink extends Link
      */
     public String getLinkText()
     {
-        return "List " + getArchetypeName();
+        return "Search " + getArchetypeName();
     }
 }
