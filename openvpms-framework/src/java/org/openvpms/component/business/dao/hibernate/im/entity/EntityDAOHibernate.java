@@ -63,7 +63,7 @@ public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDA
      * @see org.openvpms.component.business.dao.im.common.IEntityDAO#findById(org.openvpms.component.business.domain.im.common.Entity)
      */
     @SuppressWarnings("unchecked")
-    public Entity[] find(String rmName, String entityName, String conceptName, String instanceName) {
+    public List find(String rmName, String entityName, String conceptName, String instanceName) {
         try {
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
@@ -145,13 +145,10 @@ public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDA
             }
             
             // now execute te query
-           List entities = getHibernateTemplate().findByNamedParam(
+           return getHibernateTemplate().findByNamedParam(
                    queryString.toString(),
                    (String[])names.toArray(new String[names.size()]),
                    params.toArray());
-           
-           return (Entity[])entities.toArray(new Entity[entities.size()]);
-           
         } catch (Exception exception) {
             throw new EntityDAOException(
                     EntityDAOException.ErrorCode.FailedToFindEntities,

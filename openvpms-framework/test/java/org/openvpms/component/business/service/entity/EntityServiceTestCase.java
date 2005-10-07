@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.entity;
 // spring-context
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -98,14 +99,14 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.get("party", null, null, null);
+        List before = entityService.get("party", null, null, null);
         
         // create and insert a new pet
         entityService.save(createPet("brutus"));
         
         // now get a new count
-        Entity[] after = entityService.get("party", null, null, null);
-        assertTrue(after.length == before.length + 1);
+        List after = entityService.get("party", null, null, null);
+        assertTrue(after.size() == before.size() + 1);
     }
 
     /**
@@ -115,14 +116,14 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.get("party", "animal", null, null);
+        List before = entityService.get("party", "animal", null, null);
         
         // create and insert a new pet
         entityService.save(createPet("simon"));
         
         // now get a new count
-        Entity[] after = entityService.get("party", "animal", null, null);
-        assertTrue(after.length == before.length + 1);
+        List after = entityService.get("party", "animal", null, null);
+        assertTrue(after.size() == before.size() + 1);
     }
 
     /**
@@ -132,14 +133,14 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.get("party", "animal", "pet", null);
+        List before = entityService.get("party", "animal", "pet", null);
         
         // create and insert a new pet
         entityService.save(createPet("jack"));
         
         // now get a new count
-        Entity[] after = entityService.get("party", "animal", "pet", null);
-        assertTrue(after.length == before.length + 1);
+        List after = entityService.get("party", "animal", "pet", null);
+        assertTrue(after.size() == before.size() + 1);
     }
 
 
@@ -151,14 +152,14 @@ public class EntityServiceTestCase extends
     throws Exception {
         
         // get the initial count
-        Entity[] before = entityService.get("party", "animal", "pet", "brutus");
+        List before = entityService.get("party", "animal", "pet", "brutus");
         
         // create and insert a new pet
         entityService.save(createPet("brutus"));
         
         // now get a new count
-        Entity[] after = entityService.get("party", "animal", "pet", "brutus");
-        assertTrue(after.length == before.length + 1);
+        List after = entityService.get("party", "animal", "pet", "brutus");
+        assertTrue(after.size() == before.size() + 1);
     }
 
     /**

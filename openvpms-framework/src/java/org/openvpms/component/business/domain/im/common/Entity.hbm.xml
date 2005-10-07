@@ -163,7 +163,7 @@
 				<property name="desexed" access="field" column="desexed"
 					type="boolean" />
 				<property name="dateOfBirth" column="date_of_birth"
-					type="calendar" access="field" />
+					type="date" access="field" />
 			</joined-subclass>
 		</joined-subclass>
 	</class>
