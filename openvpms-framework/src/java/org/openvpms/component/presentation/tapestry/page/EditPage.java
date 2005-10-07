@@ -18,6 +18,9 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+import java.util.ArrayList;
+
+import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
@@ -32,6 +35,7 @@ import org.openvpms.component.business.service.archetype.descriptor.NodeDescript
 import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
+import org.openvpms.component.presentation.tapestry.component.LookupSelectionModel;
 
 /**
  * 
@@ -144,8 +148,9 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
                 else if (getModel() instanceof Lookup)
                     global.getLookupService().save((Lookup)getModel());                   
             } catch (Exception pe) {
-//                getDelegate().record(pe);
-                return false;
+                throw new ApplicationRuntimeException(pe);
+                //((OpenVpmsValidationDelegate)getDelegate()).record(pe);
+                // return false;
             }
             return true;
         }
@@ -170,11 +175,12 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     }
 
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
-        // TODO need to work out how to get lookup selection models from node descriptor
-        // information and model data available to the page.  This method should populate
-        // a special implementation of IPropertySelectionModel called LookupSelectionModel
-        // from either the Lookup service or the vales specified in the Archetype.
-        return null;
+        ArrayList instances = new ArrayList();
+        Global global = (Global)getGlobal();
+        instances.addAll(global.getLookupService().get(descriptor));
+        LookupSelectionModel selectionModel = new LookupSelectionModel(instances,!descriptor.isRequired());
+
+        return selectionModel;
     }
 
     public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
