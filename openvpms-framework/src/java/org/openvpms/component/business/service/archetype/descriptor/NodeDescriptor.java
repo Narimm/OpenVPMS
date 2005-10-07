@@ -22,6 +22,7 @@ package org.openvpms.component.business.service.archetype.descriptor;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -111,12 +112,14 @@ public class NodeDescriptor implements Serializable {
     /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
-    private HashMap assertionDescriptors = new HashMap();
+    private HashMap<String, AssertionDescriptor> assertionDescriptors = 
+        new HashMap<String, AssertionDescriptor>();
 
     /**
      * A node can have other nodeDescriptors to define a nested structure
      */
-    private HashMap nodeDescriptors = new HashMap();
+    private HashMap<String, NodeDescriptor> nodeDescriptors = 
+        new HashMap<String, NodeDescriptor>();
 
     /**
      * Cache the clazz
@@ -287,33 +290,58 @@ public class NodeDescriptor implements Serializable {
     }
 
     /**
+     * Return the assertion descriptors as a map
+     * 
      * @return Returns the assertionDescriptors.
      */
-    public HashMap getAssertionDescriptors() {
+    public Map<String, AssertionDescriptor> getAssertionDescriptorsAsMap() {
         return assertionDescriptors;
+    }
+
+    /**
+     * Return the assertion descriptors as a map
+     */
+    public AssertionDescriptor[] getAssertionDescriptors() {
+        return (AssertionDescriptor[])assertionDescriptors.values().toArray(
+                new AssertionDescriptor[assertionDescriptors.size()]);
     }
 
     /**
      * @param assertionDescriptors
      *            The assertionDescriptors to set.
      */
-    public void setAssertionDescriptors(HashMap assertionDescriptors) {
-        this.assertionDescriptors = assertionDescriptors;
+    public void setAssertionDescriptors(AssertionDescriptor[] assertionDescriptors) {
+        this.assertionDescriptors = new HashMap<String, AssertionDescriptor>();
+        for (AssertionDescriptor descriptor : assertionDescriptors) {
+            this.assertionDescriptors.put(descriptor.getType(), descriptor);
+        }
     }
 
     /**
      * @return Returns the nodeDescriptors.
      */
-    public HashMap getNodeDescriptors() {
-        return nodeDescriptors;
+    public NodeDescriptor[] getNodeDescriptors() {
+        return (NodeDescriptor[])nodeDescriptors.values().toArray(
+                new NodeDescriptor[nodeDescriptors.size()]);
     }
 
     /**
-     * @param descriptors
-     *            The descriptors to set.
+     * Return the {@link NodeDescriptor} instances as a map of name and 
+     * descriptor
+     * @return Returns the nodeDescriptors.
      */
-    public void setNodeDescriptors(HashMap descriptors) {
-        this.nodeDescriptors = descriptors;
+    public Map<String, NodeDescriptor> getNodeDescriptorsAsMap() {
+        return this.nodeDescriptors;
+    }
+
+    /**
+     * @param nodeDescriptors The nodeDescriptors to set.
+     */
+    public void setNodeDescriptors(NodeDescriptor[] nodeDescriptors) {
+        this.nodeDescriptors = new HashMap<String, NodeDescriptor>();
+        for (NodeDescriptor descriptor : nodeDescriptors) {
+            this.nodeDescriptors.put(descriptor.getName(), descriptor);
+        }
     }
 
     /**
@@ -484,7 +512,7 @@ public class NodeDescriptor implements Serializable {
                 assertionDescriptors.get("numericRange");
             if (descriptor != null) {
              number = NumberUtils.createNumber((String)
-                     descriptor.getProperties().get("maxValue"));    
+                     descriptor.getPropertiesAsMap().get("maxValue").getValue());    
             }
         } else {
             throw new DescriptorException(
@@ -511,7 +539,7 @@ public class NodeDescriptor implements Serializable {
                 assertionDescriptors.get("numericRange");
             if (descriptor != null) {
              number = NumberUtils.createNumber((String)
-                     descriptor.getProperties().get("minValue"));    
+                     descriptor.getPropertiesAsMap().get("minValue").getValue());    
             }
         } else {
             throw new DescriptorException(
@@ -534,7 +562,8 @@ public class NodeDescriptor implements Serializable {
             AssertionDescriptor descriptor = (AssertionDescriptor)
                 assertionDescriptors.get("regularExpression");
             if (descriptor != null) {
-             expression = (String)descriptor.getProperties().get("expression");    
+             expression = (String)descriptor.getPropertiesAsMap()
+                 .get("expression").getValue();    
             }
         } else {
             throw new DescriptorException(
@@ -556,8 +585,8 @@ public class NodeDescriptor implements Serializable {
         AssertionDescriptor descriptor = (AssertionDescriptor)
             assertionDescriptors.get("validArchetypes");
         if (descriptor != null) {
-            return (String[])descriptor.getProperties().keySet().toArray(
-                    new String[descriptor.getProperties().size()]);
+            return (String[])descriptor.getPropertiesAsMap().keySet().toArray(
+                    new String[descriptor.getPropertiesAsMap().size()]);
         } else {
             return new String[0];
         }        

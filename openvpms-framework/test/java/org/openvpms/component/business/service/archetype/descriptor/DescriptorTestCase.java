@@ -20,7 +20,6 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 import java.io.InputStreamReader;
-import java.util.Iterator;
 
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
@@ -83,7 +82,7 @@ public class DescriptorTestCase extends BaseTestCase {
             .unmarshal(new InputSource(new InputStreamReader(
                     Thread.currentThread().getContextClassLoader()
                     .getResourceAsStream(afile))));
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
+        assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
     }
 
     /**
@@ -134,18 +133,16 @@ public class DescriptorTestCase extends BaseTestCase {
             .unmarshal(new InputSource(new InputStreamReader(
                     Thread.currentThread().getContextClassLoader()
                     .getResourceAsStream(afile))));
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
+        assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
         
         // test that the archetype display name defaults to the name
         ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptors().values().iterator().next();
+                    .getArchetypeDescriptors()[0];
         assertTrue(descriptor.getDisplayName().equals(descriptor.getName()));
         
         // iterate through the top level nodes and enusre that the 
         // display name defaults to the name
-        Iterator iter = descriptor.getNodeDescriptors().values().iterator();
-        while (iter.hasNext()) {
-            NodeDescriptor node = (NodeDescriptor)iter.next();
+        for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
             assertTrue(node.getDisplayName().equals(node.getName())); 
         }
     }
@@ -160,7 +157,48 @@ public class DescriptorTestCase extends BaseTestCase {
         String afile = (String)this.getTestData().getTestCaseParameter(
                 "testSingleArchetypeDescripor", "normal", "archetypeFile");
         
-        // load the mapping file
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        
+        // test that the archetype display name defaults to the name
+        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
+                    .getArchetypeDescriptors()[0];
+        
+        // iterate through the top level nodes and enusre that the 
+        // display name defaults to the name
+        for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
+            assertTrue(node.getMaxLength() == NodeDescriptor.DEFAULT_MAX_LENGTH);
+        }
+    }
+    
+    /**
+     * Test that IsLookup works for a specified node
+     */
+    public void testIsLookup()
+    throws Exception {
+        String mfile = (String)this.getTestData().getTestCaseParameter(
+                "testIsLookup", "normal", "mappingFile");
+        String afile = (String)this.getTestData().getTestCaseParameter(
+                "testIsLookup", "normal", "archetypeFile");
+        String nodeName = (String)this.getTestData().getTestCaseParameter(
+                "testIsLookup", "normal", "nodeName");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        
+        NodeDescriptor ndesc = descriptors.getArchetypeDescriptors()[0]
+                         .getNodeDescriptor(nodeName);
+        assertTrue(ndesc.isLookup());
+        
+    }
+    
+    /**
+     * Get archetype descriptors
+     * 
+     * @param mfile
+     */
+    private ArchetypeDescriptors getArchetypeDescriptors(String mfile, String afile)
+    throws Exception {
         Mapping mapping = new Mapping();
         mapping.loadMapping(new InputSource(new InputStreamReader(
                 Thread.currentThread().getContextClassLoader()
@@ -168,22 +206,9 @@ public class DescriptorTestCase extends BaseTestCase {
         
         // set up the unmarshaller
         Unmarshaller unmarshaller = new Unmarshaller(mapping);
-        ArchetypeDescriptors descriptors = (ArchetypeDescriptors)unmarshaller
-            .unmarshal(new InputSource(new InputStreamReader(
-                    Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(afile))));
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        // test that the archetype display name defaults to the name
-        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptors().values().iterator().next();
-        
-        // iterate through the top level nodes and enusre that the 
-        // display name defaults to the name
-        Iterator iter = descriptor.getNodeDescriptors().values().iterator();
-        while (iter.hasNext()) {
-            NodeDescriptor node = (NodeDescriptor)iter.next();
-            assertTrue(node.getMaxLength() == NodeDescriptor.DEFAULT_MAX_LENGTH);
-        }
+        return  (ArchetypeDescriptors)unmarshaller.unmarshal(
+                new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(afile))));
     }
 }

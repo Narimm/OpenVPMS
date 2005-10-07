@@ -4,8 +4,9 @@
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
 			<assertion type="referenceData">
-				<property name="namedQuery"
+				<property key="namedQuery"
 					value="openvpms.animal.species" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
@@ -13,6 +14,7 @@
 				<property key="namedQuery"
 					value="openvpms.animal.breed" />
 				<property key="species" value="/species" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
@@ -21,6 +23,7 @@
 					value="openvpms.animal.colour" />
 				<property key="species" value="/species" />
 				<property key="breed" value="/breed" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
@@ -28,19 +31,20 @@
 				<property key="male" value="male" />
 				<property key="female" value="female" />
 				<property key="unspecified" value="unspecified" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="desexed" path="/desexed" type="java.lang.Boolean"
 			defaultValue="No" />
 		<node name="dateOfBirth" path="/dateOfBirth"
-			type="java.util.Date"
+			type="java.util.Date" minCardinality="1" />
+		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
-		<node name="name" path="/name"
-			type="java.lang.String" minCardinality="1" />
 		<node name="identities" path="/identities"
 			type="org.openvpms.component.business.domain.im.common.EntityIdentity">
 			<assertion type="archetypeRange">
 				<property key="entityIdentity.animalAlias" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="contacts" path="/contacts"

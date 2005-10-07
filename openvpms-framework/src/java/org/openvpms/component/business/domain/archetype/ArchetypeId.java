@@ -54,6 +54,12 @@ public class ArchetypeId implements Serializable {
      * Generated SUID
      */
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * The archetype id for a local lookup
+     */
+    public static final ArchetypeId LocalLookupId = 
+            new ArchetypeId("openvpms-lookup-lookup.local.1.0");
 
     /**
      * The namespace

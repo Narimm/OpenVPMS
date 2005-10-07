@@ -23,6 +23,8 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 /**
  * 
@@ -36,6 +38,11 @@ public class LookupServiceTestCase extends
      * Holds a reference to the lookup service
      */
     private LookupService lookupService;
+    
+    /**
+     * Holds a reference to the archetype service
+     */
+    private ArchetypeService archetypeService;
     
 
     public static void main(String[] args) {
@@ -53,6 +60,13 @@ public class LookupServiceTestCase extends
      */
     public void setLookupService(LookupService lookupService) {
         this.lookupService = lookupService;
+    }
+
+    /**
+     * @param archetypeService The archetypeService to set.
+     */
+    public void setArchetypeService(ArchetypeService archetypeService) {
+        this.archetypeService = archetypeService;
     }
 
     /*
@@ -85,6 +99,18 @@ public class LookupServiceTestCase extends
         }
     }
 
+    /**
+     * The the retrieval of look ups given a node descriptor 
+     */
+    public void testLookupRetrievalFromNodeDescriptor()
+    throws Exception {
+        ArchetypeDescriptor descriptor = archetypeService
+            .getArchetypeDescriptor("person.person");
+        assertTrue(descriptor.getNodeDescriptor("title") != null);
+        assertTrue(descriptor.getNodeDescriptor("title").isLookup());
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("title")).size() == 4);
+    }
+    
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */
@@ -92,8 +118,10 @@ public class LookupServiceTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
         
-        this.lookupService= (LookupService)applicationContext.getBean(
-                "lookupService");
+        this.lookupService = (LookupService)applicationContext.getBean(
+            "lookupService");
+        this.archetypeService = (ArchetypeService)applicationContext.getBean(
+            "archetypeService");
     }
 
 }

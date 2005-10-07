@@ -23,9 +23,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+
 
 /**
  * The archetype descriptor is used to describe an archetype.
@@ -66,7 +68,8 @@ public class ArchetypeDescriptor implements Serializable {
      * A list of {@link NodeDescriptor} that belong to this archetype
      * descriptor.
      */
-    private HashMap nodeDescriptors = new HashMap();
+    private HashMap<String,NodeDescriptor> nodeDescriptors = 
+        new HashMap<String, NodeDescriptor>();
     
     /**
      * Default constructor 
@@ -120,15 +123,28 @@ public class ArchetypeDescriptor implements Serializable {
     /**
      * @return Returns the nodeDescriptors.
      */
-    public HashMap getNodeDescriptors() {
-        return nodeDescriptors;
+    public NodeDescriptor[] getNodeDescriptors() {
+        return (NodeDescriptor[])nodeDescriptors.values().toArray(
+                new NodeDescriptor[nodeDescriptors.size()]);
+    }
+
+    /**
+     * Return the {@link NodeDescriptor} instances as a map of name and 
+     * descriptor
+     * @return Returns the nodeDescriptors.
+     */
+    public Map<String, NodeDescriptor> getNodeDescriptorsAsMap() {
+        return this.nodeDescriptors;
     }
 
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
-    public void setNodeDescriptors(HashMap nodeDescriptors) {
-        this.nodeDescriptors = nodeDescriptors;
+    public void setNodeDescriptors(NodeDescriptor[] nodeDescriptors) {
+        this.nodeDescriptors = new HashMap<String, NodeDescriptor>();
+        for (NodeDescriptor descriptor : nodeDescriptors) {
+            this.nodeDescriptors.put(descriptor.getName(), descriptor);
+        }
     }
 
     /**
@@ -169,9 +185,7 @@ public class ArchetypeDescriptor implements Serializable {
      * @return NodeDescriptor
      */
     public NodeDescriptor getNodeDescriptor(String name) {
-        // this will only return the top level name. Do we actually want to
-        // flatten out the structure.
-        return (NodeDescriptor)nodeDescriptors.get(name);
+        return findNodeDescriptorWithName(getNodeDescriptors(), name);
     }
 
     /**
@@ -219,6 +233,36 @@ public class ArchetypeDescriptor implements Serializable {
         
         ArchetypeDescriptor desc = (ArchetypeDescriptor)obj;
         return archetypeId.equals(desc.archetypeId);
+    }
+    
+    /**
+     * Search the node descriptors recursively searching for the 
+     * specified name
+     * 
+     * @param nodes
+     *            the list of NodeDescriptors to search
+     * @param name
+     *            the name to search for
+     * @return NodeDescriptor
+     *            the node descriptor or null                              
+     */
+    private NodeDescriptor findNodeDescriptorWithName(NodeDescriptor[] nodes, 
+            String name) {
+        for (NodeDescriptor node : nodes ) {
+            if (node.getName().equals(name)) {
+                return node;
+            }
+            
+            if (node.getNodeDescriptors().length > 0) {
+                NodeDescriptor result = findNodeDescriptorWithName(
+                        node.getNodeDescriptors(), name);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        
+        return null;
     }
 }
 
