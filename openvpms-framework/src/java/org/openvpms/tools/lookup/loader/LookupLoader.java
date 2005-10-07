@@ -129,8 +129,6 @@ public class LookupLoader {
     protected void processRelationships() throws Exception {
         for (LookupRel rel : data.getLookupRel()) {
             Session session = currentSession();
-            Transaction tx = session.beginTransaction();
-
             // find the source lookup
             Lookup source = findLookup(session, rel.getSource().getId(), 
                     rel.getSource().getValue());
@@ -156,6 +154,7 @@ public class LookupLoader {
             }
             
             // set up the relationship
+            Transaction tx = session.beginTransaction();
             LookupRelationship relationship = new LookupRelationship(source,
                     target);
             session.saveOrUpdate(relationship);
@@ -248,7 +247,7 @@ public class LookupLoader {
     private boolean relationshipExists(Session session, Lookup source, Lookup target)
     throws Exception {
         Query query = session.getNamedQuery("lookupRelationship.getTargetLookups");
-        query.setParameter("source", source);
+        query.setParameter("uid", source.getUid());
         query.setParameter("type", new StringBuffer(
                 source.getArchetypeId().getConcept())
                 .append(".")
@@ -258,8 +257,8 @@ public class LookupLoader {
         List list = query.list();
         Iterator iter = list.iterator();
         while (iter.hasNext()) {
-            LookupRelationship rel = (LookupRelationship)iter.next();
-            if (target.equals(rel.getTarget())) {
+            Lookup lookup = (Lookup)iter.next();
+            if (lookup.equals(target)) {
                 return true;
             }
         }
