@@ -58,7 +58,7 @@ public abstract class ArchetypeComponent extends OpenVpmsComponent {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List getNodeDescriptors() {
+    public List getDescriptors() {
         if (getNodeNames() == null || getNodeNames().length == 0) {
             return new ArrayList(getArchetypeDescriptor().getNodeDescriptors()
                     .values());

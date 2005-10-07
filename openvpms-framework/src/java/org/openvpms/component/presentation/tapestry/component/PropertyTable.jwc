@@ -13,7 +13,7 @@
     	default-value="page.archetypeDescriptor"/>   
     <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="foreach" type="Foreach">
-        <binding name="source">propertyDescriptors</binding>
+        <binding name="source">descriptors</binding>
         <binding name="value">property</binding>
     </component>
     <component id="hasBlock" type="Conditional">
