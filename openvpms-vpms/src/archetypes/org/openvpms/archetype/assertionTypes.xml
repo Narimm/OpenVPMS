@@ -1,6 +1,6 @@
 <assertionTypes>
   <assertionType name="referenceData"
-    type="org.openvpms.component.business.service.archetype.AssertionMethods"
+    type="org.openvpms.component.business.service.archetype.assertion.LocalDataAssertions"
     method="alwaysTrue" />
   <assertionType name="regularExpression"
     type="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
