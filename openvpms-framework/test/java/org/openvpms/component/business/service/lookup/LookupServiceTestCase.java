@@ -111,6 +111,19 @@ public class LookupServiceTestCase extends
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("title")).size() == 4);
     }
     
+    /**
+     * Test the lookup using a concept name using the country node defined in
+     * the address.location archetype
+     */
+    public void testDatabaseLookupRetrievalFromNodeDescriptor()
+    throws Exception {
+        ArchetypeDescriptor descriptor = archetypeService
+        .getArchetypeDescriptor("address.location");
+        assertTrue(descriptor.getNodeDescriptor("country") != null);
+        assertTrue(descriptor.getNodeDescriptor("country").isLookup());
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("country")).size() > 0);
+    }
+    
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */

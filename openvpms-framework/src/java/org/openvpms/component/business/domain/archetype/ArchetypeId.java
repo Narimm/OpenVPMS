@@ -294,7 +294,11 @@ public class ArchetypeId implements Serializable {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-            .append(qName)
+            .append(namespace)
+            .append(rmName)
+            .append(concept)
+            .append(entityName)
+            .append(version)
             .toHashCode();
     }
 

@@ -77,7 +77,7 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * In memory cache of the archetype definitions keyed on archetype id.
      */
-    private Map<ArchetypeId, ArchetypeDescriptor> archetypesById;
+    private Map<String, ArchetypeDescriptor> archetypesById;
 
     /**
      * Caches the varies assertion types
@@ -102,7 +102,7 @@ public class ArchetypeService implements IArchetypeService {
      */
     public ArchetypeService(String archeFile, String assertFile) {
         this.archetypesByShortName = new HashMap<String, ArchetypeDescriptor>();
-        this.archetypesById = new HashMap<ArchetypeId, ArchetypeDescriptor>();
+        this.archetypesById = new HashMap<String, ArchetypeDescriptor>();
         this.assertionTypes = new HashMap<String, AssertionTypeDescriptor>();
 
         loadAssertionTypeDescriptorsFromFile(assertFile);
@@ -125,7 +125,7 @@ public class ArchetypeService implements IArchetypeService {
      */
     public ArchetypeService(String archDir, String[] extensions, String assertFile) {
         this.archetypesByShortName = new HashMap<String, ArchetypeDescriptor>();
-        this.archetypesById = new HashMap<ArchetypeId, ArchetypeDescriptor>();
+        this.archetypesById = new HashMap<String, ArchetypeDescriptor>();
         this.assertionTypes = new HashMap<String, AssertionTypeDescriptor>();
 
         loadAssertionTypeDescriptorsFromFile(assertFile);
@@ -147,7 +147,7 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
-        return archetypesById.get(id);
+        return archetypesById.get(id.getQName());
     }
 
     /*
@@ -175,8 +175,8 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public Object createDefaultObject(ArchetypeId id) {
-        if (archetypesById.containsKey(id)) {
-            return createDefaultObject(archetypesById.get(id));
+        if (archetypesById.containsKey(id.getQName())) {
+            return createDefaultObject(archetypesById.get(id.getQName()));
         } else {
             return null;
         }
@@ -258,9 +258,10 @@ public class ArchetypeService implements IArchetypeService {
     public ArchetypeDescriptor[] getArchetypeDescriptorsByRmName(String rmName) {
         List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
 
-        for (ArchetypeId archId : archetypesById.keySet()) {
-            if (rmName.matches(archId.getRmName())) {
-                descriptors.add(archetypesById.get(archId));
+        for (String qName : archetypesById.keySet()) {
+            ArchetypeDescriptor adesc = archetypesById.get(qName);
+            if (rmName.matches(adesc.getArchetypeId().getRmName())) {
+                descriptors.add(adesc);
             }
         }
 
@@ -456,7 +457,7 @@ public class ArchetypeService implements IArchetypeService {
                     }
                 }
 
-                archetypesById.put(archId, descriptor);
+                archetypesById.put(archId.getQName(), descriptor);
                 
                 if (logger.isDebugEnabled()) {
                     logger.debug("Loading [" + archId.getShortName() 

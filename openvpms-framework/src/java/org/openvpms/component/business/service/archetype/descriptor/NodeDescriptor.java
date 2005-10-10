@@ -21,11 +21,17 @@ package org.openvpms.component.business.service.archetype.descriptor;
 // java core
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+// commons-lang
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+
+// log4j
+import org.apache.log4j.Logger;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 import org.openvpms.component.presentation.tapestry.component.Utils;
@@ -36,6 +42,13 @@ import org.openvpms.component.presentation.tapestry.component.Utils;
  * @version $LastChangedDate$
  */
 public class NodeDescriptor implements Serializable {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(NodeDescriptor.class);
+    
     /**
      * Default SUID
      */
@@ -112,14 +125,14 @@ public class NodeDescriptor implements Serializable {
     /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
-    private HashMap<String, AssertionDescriptor> assertionDescriptors = 
-        new HashMap<String, AssertionDescriptor>();
+    private Map<String, AssertionDescriptor> assertionDescriptors = 
+        new LinkedHashMap<String, AssertionDescriptor>();
 
     /**
      * A node can have other nodeDescriptors to define a nested structure
      */
-    private HashMap<String, NodeDescriptor> nodeDescriptors = 
-        new HashMap<String, NodeDescriptor>();
+    private Map<String, NodeDescriptor> nodeDescriptors = 
+        new LinkedHashMap<String, NodeDescriptor>();
 
     /**
      * Cache the clazz
@@ -311,7 +324,7 @@ public class NodeDescriptor implements Serializable {
      *            The assertionDescriptors to set.
      */
     public void setAssertionDescriptors(AssertionDescriptor[] assertionDescriptors) {
-        this.assertionDescriptors = new HashMap<String, AssertionDescriptor>();
+        this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
         for (AssertionDescriptor descriptor : assertionDescriptors) {
             this.assertionDescriptors.put(descriptor.getType(), descriptor);
         }
@@ -338,7 +351,7 @@ public class NodeDescriptor implements Serializable {
      * @param nodeDescriptors The nodeDescriptors to set.
      */
     public void setNodeDescriptors(NodeDescriptor[] nodeDescriptors) {
-        this.nodeDescriptors = new HashMap<String, NodeDescriptor>();
+        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
         for (NodeDescriptor descriptor : nodeDescriptors) {
             this.nodeDescriptors.put(descriptor.getName(), descriptor);
         }

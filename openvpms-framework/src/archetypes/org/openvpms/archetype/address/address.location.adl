@@ -1,7 +1,7 @@
 <archetypes>
 	<archetype name="openvpms-party-address.location.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Address">
-		<node name="deails" path="/details"
+		<node name="details" path="/details"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="address" path="/details/attributes[@name='address']"
@@ -18,7 +18,7 @@
 				type="java.lang.String">
 				<assertion type="referenceData">
 					<property key="override" value="true" />
-					<property key="type" value="openvpms.postcode" />
+					<property key="type" value="conceptLookup" />
 					<property key="suburb" value="/details/attributes[@name='suburb']" />
 					<property key="state" value="/details/attributes[@name='state']" />
 					<errorMessage>errorMessage</errorMessage>
@@ -35,7 +35,8 @@
 			<node name="country" path="/details/attributes[@name='country']"
 				type="java.lang.String" defaultValue="Australia" minCardinality="1">
 				<assertion type="referenceData">
-					<property key="type" value="openvpms.country" />
+					<property key="type" value="conceptLookup" />
+					<property key="concept" value="country" />
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>

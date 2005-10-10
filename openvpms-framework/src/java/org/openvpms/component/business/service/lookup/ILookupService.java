@@ -123,10 +123,11 @@ public interface ILookupService {
      * 
      * @param shortName
      *            an alias to an archetypeId (i.e type)
+     * @return List<Lookup>            
      * @throws LookupServiceException
      *            aa runtime exception            
      */
-    public Lookup[] get(String shortName);
+    public List<Lookup> get(String shortName);
 
     /**
      * Retrieve all the lookup instances of a particular type, which are the 
@@ -136,9 +137,10 @@ public interface ILookupService {
      *            the relationship type
      * @param source
      *            the source of the relationship
+     * @return List<Lookup>            
      * @throws LookupServiceException            
      */
-    public Lookup[] getTargetLookups(String relType, Lookup source);
+    public List<Lookup> getTargetLookups(String relType, Lookup source);
     
     /**
      * Retrieve all the lookup instance of a particular type, which are the 
@@ -148,9 +150,10 @@ public interface ILookupService {
      *            the relationship type
      * @param target
      *            the target of the relationship
+     * @return List<Lookup>            
      * @throws LookupServiceException            
      */
-    public Lookup[] getSourceLookups(String relType, Lookup target);
+    public List<Lookup> getSourceLookups(String relType, Lookup target);
     
     /**
      * Return a list of lookups for the specified {@link NodeDescriptor} or

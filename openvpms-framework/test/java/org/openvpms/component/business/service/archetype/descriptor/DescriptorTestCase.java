@@ -21,10 +21,16 @@ package org.openvpms.component.business.service.archetype.descriptor;
 
 import java.io.InputStreamReader;
 
+// castor 
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
-import org.openvpms.component.system.common.test.BaseTestCase;
+
+// sax
 import org.xml.sax.InputSource;
+
+// openvpms-framework
+import org.openvpms.component.presentation.tapestry.component.Utils;
+import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
  * Test the all the archetype related descriptors.
@@ -143,7 +149,8 @@ public class DescriptorTestCase extends BaseTestCase {
         // iterate through the top level nodes and enusre that the 
         // display name defaults to the name
         for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
-            assertTrue(node.getDisplayName().equals(node.getName())); 
+            assertTrue(node.getName(), node.getDisplayName()
+                    .equals(Utils.unCamelCase(node.getName()))); 
         }
     }
 

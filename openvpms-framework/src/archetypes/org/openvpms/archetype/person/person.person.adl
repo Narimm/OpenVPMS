@@ -13,9 +13,9 @@
 		</node>
 		<node name="firstName" path="/firstName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
+		<node name="initials" path="/initials" type="java.lang.String" />
 		<node name="lastName" path="/lastName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
-		<node name="initials" path="/initials" type="java.lang.String" />
 		<node name="classifications" path="/classifications"
 			type="org.openvpms.component.business.domain.im.common.EntityClassification">
 			<assertion type="archetypeRange">

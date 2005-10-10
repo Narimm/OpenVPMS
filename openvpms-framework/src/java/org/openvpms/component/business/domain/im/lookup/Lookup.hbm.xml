@@ -59,4 +59,11 @@
 			lookup where lookup.archetypeId.concept = :concept and lookup.value =:value
 		]]>
   </query>
+  
+  <query name="lookup.getByConcept">
+    <![CDATA[
+			from org.openvpms.component.business.domain.im.lookup.Lookup as 
+			lookup where lookup.archetypeId.concept = :concept
+		]]>
+  </query>
 </hibernate-mapping>

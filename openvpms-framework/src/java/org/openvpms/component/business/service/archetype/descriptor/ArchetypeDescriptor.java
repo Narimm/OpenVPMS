@@ -19,13 +19,20 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
+// java core
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+// commons-lang
 import org.apache.commons.lang.StringUtils;
+
+// log4j
+import org.apache.log4j.Logger;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
@@ -36,6 +43,12 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @version  $LastChangedDate$
  */
 public class ArchetypeDescriptor implements Serializable {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(ArchetypeDescriptor.class);
 
     /**
      * Default SUID
@@ -68,8 +81,8 @@ public class ArchetypeDescriptor implements Serializable {
      * A list of {@link NodeDescriptor} that belong to this archetype
      * descriptor.
      */
-    private HashMap<String,NodeDescriptor> nodeDescriptors = 
-        new HashMap<String, NodeDescriptor>();
+    private Map<String,NodeDescriptor> nodeDescriptors = 
+        new LinkedHashMap<String, NodeDescriptor>();
     
     /**
      * Default constructor 
@@ -121,6 +134,7 @@ public class ArchetypeDescriptor implements Serializable {
     }
 
     /**
+     * Return all the 
      * @return Returns the nodeDescriptors.
      */
     public NodeDescriptor[] getNodeDescriptors() {
@@ -141,7 +155,7 @@ public class ArchetypeDescriptor implements Serializable {
      * @param nodeDescriptors The nodeDescriptors to set.
      */
     public void setNodeDescriptors(NodeDescriptor[] nodeDescriptors) {
-        this.nodeDescriptors = new HashMap<String, NodeDescriptor>();
+        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
         for (NodeDescriptor descriptor : nodeDescriptors) {
             this.nodeDescriptors.put(descriptor.getName(), descriptor);
         }

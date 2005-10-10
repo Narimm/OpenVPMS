@@ -196,7 +196,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#getLookups(java.lang.String)
      */
-    public Lookup[] get(String shortName) {
+    public List<Lookup> get(String shortName) {
         try {
             return dao.getLookupsByConcept(shortName);
         } catch (LookupDAOException exception) {
@@ -209,7 +209,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#getTargetLookups(java.lang.String, org.openvpms.component.business.domain.im.lookup.Lookup)
      */
-    public Lookup[] getTargetLookups(String type, Lookup source) {
+    public List<Lookup> getTargetLookups(String type, Lookup source) {
         try {
             return dao.getTargetLookups(type, source);
         } catch (LookupDAOException exception) {
@@ -222,7 +222,7 @@ public class LookupService implements ILookupService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String, org.openvpms.component.business.domain.im.lookup.Lookup)
      */
-    public Lookup[] getSourceLookups(String type, Lookup target) {
+    public List<Lookup> getSourceLookups(String type, Lookup target) {
         try {
             return dao.getSourceLookups(type, target);
         } catch (LookupDAOException exception) {
@@ -236,13 +236,22 @@ public class LookupService implements ILookupService {
      * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor)
      */
     public List<Lookup> get(NodeDescriptor descriptor) {
-        ArrayList<Lookup> lookups = new ArrayList<Lookup>();
+        List<Lookup> lookups = new ArrayList<Lookup>();
         
         if (descriptor.isLookup()) {
            AssertionDescriptor assertion = (AssertionDescriptor)descriptor
                .getAssertionDescriptorsAsMap().get("referenceData");
-           if (assertion.getPropertiesAsMap().containsKey("namedQuery")) {
-               // this is a database lookup
+
+           if (assertion.getPropertiesAsMap().containsKey("type")) {
+               // This is a remote lookup
+               String type = (String)assertion.getPropertiesAsMap()
+                       .get("type").getValue();
+               
+               if (type.equals("conceptLookup")) {
+                   lookups = dao.getLookupsByConcept(
+                           assertion.getPropertiesAsMap()
+                           .get("concept").getValue());
+               }
            } else {
                // it is a local lookup
                // TODO This is very inefficient..we should cache them in

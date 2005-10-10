@@ -104,13 +104,13 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             
             // now and retrieve the realtionships from the source side
             Query query = session.getNamedQuery("lookupRelationship.getTargetLookups");
-            query.setParameter("source", country.getUid());
+            query.setParameter("uid", country.getUid());
             query.setParameter("type", "country.state");
             assertTrue(query.list().size() == 4);
             
             // now and retrieve the realtionships from the target side
             query = session.getNamedQuery("lookupRelationship.getSourceLookups");
-            query.setParameter("target", state1.getUid());
+            query.setParameter("uid", state1.getUid());
             query.setParameter("type", "country.state");
             assertTrue(query.list().size() == 1);
         } catch (Exception exception) {
@@ -169,7 +169,6 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             // now delete the entity and all its relationships
             Lookup lookup = (Lookup)session.load(Lookup.class, country.getUid());
             tx = session.beginTransaction();
-            session.delete(lookup);
             Query query = session.getNamedQuery("lookupRelationship.getAllRelationshipsWithId");
             query.setParameter("id", country.getUid());
             if (query.list().size() > 0) {
@@ -178,6 +177,8 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
                     session.delete(iter.next());
                 }
             }
+            session.delete(lookup);
+            tx.commit();
             
             // ensure that the correct number of rows have been deleted
             lcount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
