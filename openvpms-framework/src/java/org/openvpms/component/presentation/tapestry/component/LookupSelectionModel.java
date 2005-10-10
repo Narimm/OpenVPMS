@@ -21,6 +21,8 @@ package org.openvpms.component.presentation.tapestry.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import ognl.Ognl;
+
 import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -124,7 +126,6 @@ public class LookupSelectionModel implements IPropertySelectionModel {
                 if (value.equals(NONE_VALUE))
                     return null;
             }
-            // TODO Not correct.  Need to return the object that the value above refers to.
             return value;
         } catch (Exception e) {
             throw new ApplicationRuntimeException(e);

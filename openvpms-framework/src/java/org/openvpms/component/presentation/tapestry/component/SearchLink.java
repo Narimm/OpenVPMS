@@ -38,7 +38,7 @@ public abstract class SearchLink extends Link
         SearchPage page = (SearchPage) findPage(cycle, "Search");
         Global global = (Global)page.getGlobal();
         try {
-//            page.setInstances(global.getEntityService().get("","","",""));
+            page.setInstances(global.getEntityService().getByShortName(getArchetypeName()));
         } catch (Exception ex) {
             throw new ApplicationRuntimeException(ex);
         }

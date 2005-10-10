@@ -28,7 +28,7 @@ import org.apache.tapestry.IRequestCycle;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ArchetypeTable extends ArchetypeComponent {
+public abstract class ArchetypeTable extends OpenVpmsComponent {
     public abstract List getInstances();
 
     public abstract void setInstances(List instances);
