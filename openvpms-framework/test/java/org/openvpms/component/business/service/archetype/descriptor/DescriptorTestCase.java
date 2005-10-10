@@ -20,6 +20,8 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 import java.io.InputStreamReader;
+import java.util.Hashtable;
+import java.util.List;
 
 // castor 
 import org.exolab.castor.mapping.Mapping;
@@ -71,23 +73,12 @@ public class DescriptorTestCase extends BaseTestCase {
      */
     public void testSingleArchetypeDescripor()
     throws Exception {
-        String mfile = (String)this.getTestData().getTestCaseParameter(
-                "testSingleArchetypeDescripor", "normal", "mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testSingleArchetypeDescripor", "normal", "archetypeFile");
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
         
-        // load the mapping file
-        Mapping mapping = new Mapping();
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(mfile))));
-        
-        // set up the unmarshaller
-        Unmarshaller unmarshaller = new Unmarshaller(mapping);
-        ArchetypeDescriptors descriptors = (ArchetypeDescriptors)unmarshaller
-            .unmarshal(new InputSource(new InputStreamReader(
-                    Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(afile))));
+        // load the archetypes
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
         assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
     }
 
@@ -96,23 +87,14 @@ public class DescriptorTestCase extends BaseTestCase {
      */
     public void testAssertionTypeDescriptors()
     throws Exception {
-        String mfile = (String)this.getTestData().getTestCaseParameter(
-                "testAssertionTypeDescriptors", "normal", "mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testAssertionTypeDescriptors", "normal", "assertionFile");
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("assertionMappingFile");
+        String afile = (String)gparams.get("assertionFile");
+        
         
         // load the mapping file
-        Mapping mapping = new Mapping();
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(mfile))));
-        
-        // set up the unmarshaller
-        Unmarshaller unmarshaller = new Unmarshaller(mapping);
-        AssertionTypeDescriptors descriptors = (AssertionTypeDescriptors)unmarshaller
-            .unmarshal(new InputSource(new InputStreamReader(
-                    Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(afile))));
+        // load the assertion types
+        AssertionTypeDescriptors descriptors = getAssertionTypeDescriptors(mfile, afile);
         assertTrue(descriptors.getAssertionTypeDescriptors().size() == 5);
     }
     
@@ -122,23 +104,12 @@ public class DescriptorTestCase extends BaseTestCase {
      */
     public void testDefaultDisplayName()
     throws Exception {
-        String mfile = (String)this.getTestData().getTestCaseParameter(
-                "testSingleArchetypeDescripor", "normal", "mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testSingleArchetypeDescripor", "normal", "archetypeFile");
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
         
-        // load the mapping file
-        Mapping mapping = new Mapping();
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(mfile))));
-        
-        // set up the unmarshaller
-        Unmarshaller unmarshaller = new Unmarshaller(mapping);
-        ArchetypeDescriptors descriptors = (ArchetypeDescriptors)unmarshaller
-            .unmarshal(new InputSource(new InputStreamReader(
-                    Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(afile))));
+        // load the archetypes
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
         assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
         
         // test that the archetype display name defaults to the name
@@ -159,11 +130,11 @@ public class DescriptorTestCase extends BaseTestCase {
      */
     public void testDefaultMaxLength()
     throws Exception {
-        String mfile = (String)this.getTestData().getTestCaseParameter(
-                "testSingleArchetypeDescripor", "normal", "mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testSingleArchetypeDescripor", "normal", "archetypeFile");
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
         
+        // load the archetypes
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
         assertTrue(descriptors.getArchetypeDescriptors().length == 1);
         
@@ -183,10 +154,9 @@ public class DescriptorTestCase extends BaseTestCase {
      */
     public void testIsLookup()
     throws Exception {
-        String mfile = (String)this.getTestData().getTestCaseParameter(
-                "testIsLookup", "normal", "mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testIsLookup", "normal", "archetypeFile");
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
         String nodeName = (String)this.getTestData().getTestCaseParameter(
                 "testIsLookup", "normal", "nodeName");
         
@@ -200,9 +170,51 @@ public class DescriptorTestCase extends BaseTestCase {
     }
     
     /**
+     * Test that getAllNodeDescriptors works
+     */
+    public void testGetAllNodeDescriptors()
+    throws Exception {
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        List<NodeDescriptor> ndesc = adesc.getAllNodeDescriptors();
+        assertTrue(ndesc.size() == 6);
+    }
+    
+    /**
+     * Test that the isHidden method works
+     */
+    public void testIsHidden()
+    throws Exception {
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
+        String nodeName = (String)this.getTestData().getTestCaseParameter(
+                "testIsHidden", "normal", "nodeName");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
+        assertTrue(ndesc != null);
+        assertTrue(ndesc.isHidden());
+    }
+    
+    /**
      * Get archetype descriptors
      * 
      * @param mfile
+     *            the mapping file
+     * @param afile
+     *            the archetype descriptor file            
+     * @return ArchetypeDescriptors
+     * @throws Exception
      */
     private ArchetypeDescriptors getArchetypeDescriptors(String mfile, String afile)
     throws Exception {
@@ -214,6 +226,31 @@ public class DescriptorTestCase extends BaseTestCase {
         // set up the unmarshaller
         Unmarshaller unmarshaller = new Unmarshaller(mapping);
         return  (ArchetypeDescriptors)unmarshaller.unmarshal(
+                new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(afile))));
+    }
+    
+    /**
+     * Get assertion type descriptors
+     * 
+     * @param mfile
+     *            the mapping file
+     * @param afile
+     *            the assertion type descriptor file            
+     * @return AssertionTypeDescriptors
+     * @throws Exception
+     */
+    private AssertionTypeDescriptors getAssertionTypeDescriptors(String mfile, String afile)
+    throws Exception {
+        Mapping mapping = new Mapping();
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(mfile))));
+        
+        // set up the unmarshaller
+        Unmarshaller unmarshaller = new Unmarshaller(mapping);
+        return  (AssertionTypeDescriptors)unmarshaller.unmarshal(
                 new InputSource(new InputStreamReader(
                 Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(afile))));

@@ -134,12 +134,30 @@ public class ArchetypeDescriptor implements Serializable {
     }
 
     /**
-     * Return all the 
-     * @return Returns the nodeDescriptors.
+     * Return the top level  node descriptors. The caller must be aware that 
+     * a {@link NodeDescriptor can contain other node descriptors.
+     * 
+     *  TODO Inconsistent return type...change to List
+     *  
+     * @return NodeDescriptor[]
      */
     public NodeDescriptor[] getNodeDescriptors() {
         return (NodeDescriptor[])nodeDescriptors.values().toArray(
                 new NodeDescriptor[nodeDescriptors.size()]);
+    }
+    
+    /**
+     * Return all the {@link NodeDescriptors} for this archetype. This
+     * will basically flatten out the hierarchical node descriptor 
+     * structure
+     * 
+     * @return List<NodeDescriptor>
+     */
+    public List<NodeDescriptor> getAllNodeDescriptors() {
+        List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
+        getAllNodeDescriptors(getNodeDescriptors(), nodes);
+        
+        return nodes;
     }
 
     /**
@@ -203,21 +221,26 @@ public class ArchetypeDescriptor implements Serializable {
     }
 
     /**
-     * Return the node descriptors associated with the specified node names
+     * Return the node descriptors associated with the specified node names. 
+     * This will do a search right down the NodeDescriptor hierarchy.
      * 
-     * @return Map
-     *            a map where the key is node name and the value is the 
-     *            INodeDescriptor      
+     * @return List<NodeDescriptor>
+     *            a list of matching NodeDescriptors      
      */
-    public List getNodeDescriptors(String[] names) {
+    public List<NodeDescriptor> getNodeDescriptors(String[] names) {
         List<NodeDescriptor>  result = new ArrayList<NodeDescriptor>();
         
-        // this will only do a top level search.
+        // TODO his is an inefficient way of doing it. We need to determine
+        // the access paths and optimise our classes for them.
         for (String nodeName : names) {
-            if (nodeDescriptors.containsKey(nodeName)) {
-                result.add((NodeDescriptor)nodeDescriptors.get(nodeName));
+            NodeDescriptor descriptor = getNodeDescriptor(nodeName);
+            if (descriptor != null) {
+                result.add(descriptor);
+            } else {
+                logger.warn("Could not find a node with name " + nodeName);
             }
         }
+        
         return result;
     }
 
@@ -277,6 +300,25 @@ public class ArchetypeDescriptor implements Serializable {
         }
         
         return null;
+    }
+    
+    /**
+     * This is a recursive function that returns all the nodes in this archetype
+     * descriptor.
+     * 
+     * @param descriptors 
+     *            the node descriptors to process
+     * @param nodes
+     *            the resultant node array
+     */
+    private void getAllNodeDescriptors(NodeDescriptor[] descriptors, 
+            List<NodeDescriptor> nodes) {
+        for (NodeDescriptor descriptor : descriptors) {
+            nodes.add(descriptor);
+            if (descriptor.getNodeDescriptors().length > 0) {
+                getAllNodeDescriptors(descriptor.getNodeDescriptors(), nodes);
+            }
+        }
     }
 }
 
