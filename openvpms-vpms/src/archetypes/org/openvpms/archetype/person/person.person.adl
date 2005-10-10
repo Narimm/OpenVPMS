@@ -13,8 +13,8 @@
 		</node>
 		<node name="firstName" path="/firstName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
+		<node name="initials" path="/initials" type="java.lang.String" />
 		<node name="lastName" path="/lastName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
-		<node name="initials" path="/initials" type="java.lang.String" />
 	</archetype>
 </archetypes>
