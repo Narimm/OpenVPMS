@@ -246,6 +246,19 @@ public class ArchetypeId implements Serializable {
      * @return Returns the qName.
      */
     public String getQName() {
+        if (qName == null) {
+            qName = new StringBuffer(namespace)
+                .append("-")
+                .append(rmName)
+                .append("-")
+                .append(entityName)
+                .append(".")
+                .append(concept)
+                .append(".")
+                .append(version)
+                .toString(); 
+        }
+        
         return qName;
     }
 
@@ -263,6 +276,13 @@ public class ArchetypeId implements Serializable {
      * @return String
      */
     public String getShortName() {
+        if (shortName == null){
+            shortName = new StringBuffer(entityName)
+            .append(".")
+            .append(concept)
+            .toString();           
+        }
+
         return shortName;
     }
     
