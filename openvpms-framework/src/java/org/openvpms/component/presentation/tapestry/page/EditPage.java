@@ -18,9 +18,6 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
-import java.util.ArrayList;
-
-import org.apache.tapestry.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.event.PageEvent;
@@ -36,6 +33,7 @@ import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.component.LookupSelectionModel;
+import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidationDelegate;
 
 /**
  * 
@@ -148,9 +146,9 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
                 else if (getModel() instanceof Lookup)
                     global.getLookupService().save((Lookup)getModel());                   
             } catch (Exception pe) {
-                throw new ApplicationRuntimeException(pe);
-                //((OpenVpmsValidationDelegate)getDelegate()).record(pe);
-                // return false;
+                //throw new ApplicationRuntimeException(pe);
+                ((OpenVpmsValidationDelegate)getDelegate()).record(pe);
+                 return false;
             }
             return true;
         }
@@ -170,8 +168,13 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     public ArchetypeDescriptor getArchetypeDescriptor() {
         // This method can return one or more descriptors since it expects
         // a regular expression as the input
-        return ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
-                ((IMObject)getModel()).getArchetypeId().getShortName());
+        ArchetypeDescriptor archetypeDescriptor = ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
+                ((IMObject)getModel()).getArchetypeId());
+        if (archetypeDescriptor == null)
+            return ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
+                    ((IMObject)getModel()).getArchetypeId().getShortName());
+        else
+            return archetypeDescriptor;
     }
 
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
