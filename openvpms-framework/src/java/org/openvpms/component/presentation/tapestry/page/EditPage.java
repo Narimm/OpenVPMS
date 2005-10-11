@@ -20,8 +20,6 @@ package org.openvpms.component.presentation.tapestry.page;
 
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.callback.ICallback;
-import org.apache.tapestry.event.PageEvent;
-import org.apache.tapestry.event.PageRenderListener;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -29,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.component.LookupSelectionModel;
@@ -41,7 +38,7 @@ import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidatio
  * @version $LastChangedDate$
  */
 
-public abstract class EditPage extends OpenVpmsPage implements PageRenderListener {
+public abstract class EditPage extends OpenVpmsPage {
 
     public abstract Object getModel();
 
@@ -61,12 +58,6 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
                 new EditCallback(getPageName(), getModel()));
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.tapestry.event.PageRenderListener#pageBeginRender(org.apache.tapestry.event.PageEvent)
-     */
-    public void pageBeginRender(PageEvent arg0) {
-    }
-
     /**
      * @param cycle
      */
@@ -82,11 +73,11 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
         try
         {
           if (getModel() instanceof Entity)
-              ((Global)getGlobal()).getEntityService().remove((Entity)getModel());
+              getEntityService().remove((Entity)getModel());
           else if (getModel() instanceof Act)
-              ((Global)getGlobal()).getActService().remove((Act)getModel());
+              getActService().remove((Act)getModel());
           else if (getModel() instanceof Lookup)
-              ((Global)getGlobal()).getLookupService().remove((Lookup)getModel());
+              getLookupService().remove((Lookup)getModel());
           Visit visit = (Visit)getVisit();
           ICallback callback = (ICallback)visit.getCallbackStack().pop();
           callback.performCallback(cycle);
@@ -138,15 +129,13 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     protected boolean save() {
         if (!getDelegate().getHasErrors()) {
             try {
-                Global global = (Global)getGlobal();
                 if (getModel() instanceof Entity)
-                    global.getEntityService().save((Entity)getModel());
+                    getEntityService().save((Entity)getModel());
                 else if (getModel() instanceof Act)
-                    global.getActService().save((Act)getModel());
+                    getActService().save((Act)getModel());
                 else if (getModel() instanceof Lookup)
-                    global.getLookupService().save((Lookup)getModel());                   
+                    getLookupService().save((Lookup)getModel());                   
             } catch (Exception pe) {
-                //throw new ApplicationRuntimeException(pe);
                 ((OpenVpmsValidationDelegate)getDelegate()).record(pe);
                  return false;
             }
@@ -168,19 +157,17 @@ public abstract class EditPage extends OpenVpmsPage implements PageRenderListene
     public ArchetypeDescriptor getArchetypeDescriptor() {
         // This method can return one or more descriptors since it expects
         // a regular expression as the input
-        ArchetypeDescriptor archetypeDescriptor = ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
+        ArchetypeDescriptor archetypeDescriptor = getArchetypeService().getArchetypeDescriptor(
                 ((IMObject)getModel()).getArchetypeId());
         if (archetypeDescriptor == null)
-            return ((Global)getGlobal()).getArchetypeService().getArchetypeDescriptor(
+            return getArchetypeService().getArchetypeDescriptor(
                     ((IMObject)getModel()).getArchetypeId().getShortName());
         else
             return archetypeDescriptor;
     }
 
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
-        return new LookupSelectionModel(
-                ((Global)getGlobal()).getLookupService().get(descriptor),
-                !descriptor.isRequired());
+        return new LookupSelectionModel(getLookupService().get(descriptor),!descriptor.isRequired());
     }
 
     public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
