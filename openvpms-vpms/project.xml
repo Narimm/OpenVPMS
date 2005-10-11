@@ -529,7 +529,7 @@
 		<dependency>
 			<groupId>tapestry</groupId>
 			<artifactId>tapestry</artifactId>
-			<version>3.0.3</version>
+			<version>4.0-beta-10</version>
 			<url>http://jakarta.apache.org/tapestry</url>
 			<properties>
 				<war.bundle>true</war.bundle>
@@ -538,8 +538,35 @@
 		<dependency>
 			<groupId>tapestry</groupId>
 			<artifactId>tapestry-contrib</artifactId>
-			<version>3.0.3</version>
+			<version>4.0-beta-10</version>
 			<url>http://jakarta.apache.org/tapestry</url>
+			<properties>
+				<war.bundle>true</war.bundle>
+			</properties>
+		</dependency>
+		<dependency>
+			<groupId>hivemind</groupId>
+			<artifactId>hivemind</artifactId>
+			<version>1.1-rc-1</version>
+			<url>http://jakarta.apache.org/hivemind</url>
+			<properties>
+				<war.bundle>true</war.bundle>
+			</properties>
+		</dependency>
+		<dependency>
+			<groupId>hivemind</groupId>
+			<artifactId>hivemind-lib</artifactId>
+			<version>1.1-rc-1</version>
+			<url>http://jakarta.apache.org/hivemind</url>
+			<properties>
+				<war.bundle>true</war.bundle>
+			</properties>
+		</dependency>
+		<dependency>
+			<groupId>hivemind</groupId>
+			<artifactId>hivemind-jmx</artifactId>
+			<version>1.1-rc-1</version>
+			<url>http://jakarta.apache.org/hivemind</url>
 			<properties>
 				<war.bundle>true</war.bundle>
 			</properties>
@@ -580,7 +607,7 @@
 		<dependency>
 			<groupId>openvpms</groupId>
 			<artifactId>openvpms-framework</artifactId>
-			<version>0.1</version>
+			<version>0.2</version>
 			<url>http://www.openvpms.org</url>
 			<properties>
 				<war.bundle>true</war.bundle>

@@ -3,11 +3,8 @@
   "-//Apache Software Foundation//Tapestry Specification 3.0//EN"
   "http://jakarta.apache.org/tapestry/dtd/Tapestry_3_0.dtd">
 <page-specification class="org.openvpms.app.tapestry.pages.Home">
-  <property-specification name="archetypeService"
-    type="org.openvpms.component.business.service.archetype.IArchetypeService"
-    initial-value="global.getArchetypeService()"/>
-  <property-specification name="descriptor"
-    type="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor"/>
-  <property-specification name="archetypeDescriptors"
-    type="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor[]"/>
+  <property name="archetypeService"
+    initial-value="ognl:getGlobal().getArchetypeService()"/>
+  <property name="descriptor"/>
+  <property name="archetypeDescriptors"/>
 </page-specification>

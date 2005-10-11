@@ -25,7 +25,6 @@ public class Home extends OpenVpmsPage {
     @Override
     public void pushCallback() {
         // TODO Auto-generated method stub
-
     }
 
 }
