@@ -37,20 +37,9 @@
 		<node name="desexed" path="/desexed" type="java.lang.Boolean"
 			defaultValue="No" />
 		<node name="dateOfBirth" path="/dateOfBirth"
-			type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime"
+			type="java.util.Date"
 			minCardinality="1" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
-		<node name="identities" path="/identities"
-			type="org.openvpms.component.business.domain.im.common.EntityIdentity">
-			<assertion type="archetypeRange">
-				<property key="entityIdentity.animalAlias" />
-				<errorMessage>An error message</errorMessage>
-			</assertion>
-		</node>
-		<node name="contacts" path="/contacts"
-			type="org.openvpms.component.business.domain.im.party.Contact"
-			maxCardinality="0" />
-
 	</archetype>
 </archetypes>
