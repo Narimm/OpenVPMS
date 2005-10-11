@@ -18,13 +18,17 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
+// java core
 import java.util.ArrayList;
 import java.util.List;
 
-import ognl.Ognl;
+// jakarta hivemind
+import org.apache.hivemind.ApplicationRuntimeException;
 
-import org.apache.tapestry.ApplicationRuntimeException;
+// jakarta tapestry
 import org.apache.tapestry.form.IPropertySelectionModel;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 
 /**

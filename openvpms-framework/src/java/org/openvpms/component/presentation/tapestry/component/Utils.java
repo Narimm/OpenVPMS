@@ -18,11 +18,19 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
+// java core
 import java.util.ArrayList;
 
+// commons-lang
 import org.apache.commons.lang.StringUtils;
+
+// apache oro
 import org.apache.oro.text.perl.Perl5Util;
-import org.apache.tapestry.ApplicationRuntimeException;
+
+// jakarta hivemind
+import org.apache.hivemind.ApplicationRuntimeException;
+
+// jakrta tapestry
 import org.apache.tapestry.IPage;
 import org.apache.tapestry.IRequestCycle;
 
@@ -32,125 +40,125 @@ import org.apache.tapestry.IRequestCycle;
  * @version $LastChangedDate$
  */
 public class Utils {
-    public static String DEFAULT = "Default";
+	public static String DEFAULT = "Default";
 
-    /**
-     * @param className
-     * @return
-     */
-    public static Class getClassForName(String className) {
-        try {
-            return Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw new ApplicationRuntimeException(e);
-        }
-    }
+	/**
+	 * @param className
+	 * @return
+	 */
+	public static Class getClassForName(String className) {
+		try {
+			return Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			throw new ApplicationRuntimeException(e);
+		}
+	}
 
-    /**
-     * @param archetypeName
-     * @return
-     */
-    public static String unqualify(String archetypeName) {
-        return archetypeName.substring(archetypeName.lastIndexOf(".") + 1);
-    }
+	/**
+	 * @param archetypeName
+	 * @return
+	 */
+	public static String unqualify(String archetypeName) {
+		return archetypeName.substring(archetypeName.lastIndexOf(".") + 1);
+	}
 
-    /**
-     * @param cycle
-     * @param pageName
-     * @param postfix
-     * @return
-     */
-    public static IPage findPage(IRequestCycle cycle, String pageName,
-            String postfix) {
-        IPage page = null;
-        try {
-            page = cycle.getPage(pageName);
-        } catch (ApplicationRuntimeException ae) {
-            if (ae.getMessage().startsWith("Page")) {
-                page = cycle.getPage(DEFAULT + postfix);
-            } else {
-                throw ae;
-            }
-        }
+	/**
+	 * @param cycle
+	 * @param pageName
+	 * @param postfix
+	 * @return
+	 */
+	public static IPage findPage(IRequestCycle cycle, String pageName,
+			String postfix) {
+		IPage page = null;
+		try {
+			page = cycle.getPage(pageName);
+		} catch (ApplicationRuntimeException ae) {
+			if (ae.getMessage().startsWith("Page")) {
+				page = cycle.getPage(DEFAULT + postfix);
+			} else {
+				throw ae;
+			}
+		}
 
-        return page;
-    }
+		return page;
+	}
 
-    /**
-     * Thank you, AndroMDA project... Linguistically pluralizes a singular noun.
-     * <p/>
-     * <ul>
-     * <li><code>noun</code> becomes <code>nouns</code></li>
-     * <li><code>key</code> becomes <code>keys</code></li>
-     * <li><code>word</code> becomes <code>words</code></li>
-     * <li><code>property</code> becomes <code>properties</code></li>
-     * <li><code>bus</code> becomes <code>busses</code></li>
-     * <li><code>boss</code> becomes <code>bosses</code></li>
-     * </ul>
-     * <p>
-     * Whitespace as well as <code>null></code> arguments will return an empty
-     * String.
-     * </p>
-     * 
-     * @param singularNoun
-     *            A singularNoun to pluralize
-     * @return The plural of the argument singularNoun
-     */
-    public static String pluralize(String singularNoun) {
-        String pluralNoun = singularNoun;
+	/**
+	 * Thank you, AndroMDA project... Linguistically pluralizes a singular noun.
+	 * <p/>
+	 * <ul>
+	 * <li><code>noun</code> becomes <code>nouns</code></li>
+	 * <li><code>key</code> becomes <code>keys</code></li>
+	 * <li><code>word</code> becomes <code>words</code></li>
+	 * <li><code>property</code> becomes <code>properties</code></li>
+	 * <li><code>bus</code> becomes <code>busses</code></li>
+	 * <li><code>boss</code> becomes <code>bosses</code></li>
+	 * </ul>
+	 * <p>
+	 * Whitespace as well as <code>null></code> arguments will return an empty
+	 * String.
+	 * </p>
+	 * 
+	 * @param singularNoun
+	 *            A singularNoun to pluralize
+	 * @return The plural of the argument singularNoun
+	 */
+	public static String pluralize(String singularNoun) {
+		String pluralNoun = singularNoun;
 
-        int nounLength = pluralNoun.length();
+		int nounLength = pluralNoun.length();
 
-        if (nounLength == 1) {
-            pluralNoun = pluralNoun + 's';
-        } else if (nounLength > 1) {
-            char secondToLastChar = pluralNoun.charAt(nounLength - 2);
+		if (nounLength == 1) {
+			pluralNoun = pluralNoun + 's';
+		} else if (nounLength > 1) {
+			char secondToLastChar = pluralNoun.charAt(nounLength - 2);
 
-            if (pluralNoun.endsWith("y")) {
-                switch (secondToLastChar) {
-                case 'a': // fall-through
-                case 'e': // fall-through
-                case 'i': // fall-through
-                case 'o': // fall-through
-                case 'u':
-                    pluralNoun = pluralNoun + 's';
-                    break;
-                default:
-                    pluralNoun = pluralNoun.substring(0, nounLength - 1)
-                            + "ies";
-                }
-            } else if (pluralNoun.endsWith("s")) {
-                switch (secondToLastChar) {
-                case 's':
-                    pluralNoun = pluralNoun + "es";
-                    break;
-                default:
-                    pluralNoun = pluralNoun + "ses";
-                }
-            } else {
-                pluralNoun = pluralNoun + 's';
-            }
-        }
-        return pluralNoun;
-    }
+			if (pluralNoun.endsWith("y")) {
+				switch (secondToLastChar) {
+				case 'a': // fall-through
+				case 'e': // fall-through
+				case 'i': // fall-through
+				case 'o': // fall-through
+				case 'u':
+					pluralNoun = pluralNoun + 's';
+					break;
+				default:
+					pluralNoun = pluralNoun.substring(0, nounLength - 1)
+							+ "ies";
+				}
+			} else if (pluralNoun.endsWith("s")) {
+				switch (secondToLastChar) {
+				case 's':
+					pluralNoun = pluralNoun + "es";
+					break;
+				default:
+					pluralNoun = pluralNoun + "ses";
+				}
+			} else {
+				pluralNoun = pluralNoun + 's';
+			}
+		}
+		return pluralNoun;
+	}
 
-    /**
-     * @param name
-     * @return
-     */
-    public static String unCamelCase(String name) {
-        ArrayList<String> words = new ArrayList<String>();
-        Perl5Util perl = new Perl5Util();
+	/**
+	 * @param name
+	 * @return
+	 */
+	public static String unCamelCase(String name) {
+		ArrayList<String> words = new ArrayList<String>();
+		Perl5Util perl = new Perl5Util();
 
-        while (perl.match("/(\\w+?)([A-Z].*)/", name)) {
-            String word = perl.group(1);
-            name = perl.group(2);
-            words.add(StringUtils.capitalize(word));
-        }
+		while (perl.match("/(\\w+?)([A-Z].*)/", name)) {
+			String word = perl.group(1);
+			name = perl.group(2);
+			words.add(StringUtils.capitalize(word));
+		}
 
-        words.add(StringUtils.capitalize(name));
+		words.add(StringUtils.capitalize(name));
 
-        return StringUtils.join(words.iterator(), " ");
-    }
+		return StringUtils.join(words.iterator(), " ");
+	}
 
 }

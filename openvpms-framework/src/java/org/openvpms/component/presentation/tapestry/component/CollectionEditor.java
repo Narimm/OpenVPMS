@@ -23,10 +23,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.tapestry.ApplicationRuntimeException;
+
+// jakarta-hivemind
+import org.apache.hivemind.ApplicationRuntimeException;
+
+// jakarta-tapestry
 import org.apache.tapestry.IRequestCycle;
+
+// openvpms-framework
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
@@ -68,7 +75,7 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         buildSelectedList();
     }
 
-    void buildSelectedList() {
+    @SuppressWarnings("unchecked") void buildSelectedList() {
         if (getCollection() != null) {
             selected = new ArrayList();
             for (Iterator iter = getCollection().iterator(); iter.hasNext();) {
@@ -103,7 +110,8 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         return callback;
     }
 
-    public void remove(IRequestCycle cycle) {
+    @SuppressWarnings("unchecked")
+	public void remove(IRequestCycle cycle) {
         int i = 0;
         // TODO CN - This code stinks (I wrote it). Isn't there a better way??
         ArrayList deleting = new ArrayList();
@@ -119,13 +127,15 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         getCollection().removeAll(deleting);
     }
 
-    public List getSelectedList() {
+    @SuppressWarnings("unchecked")
+	public List getSelectedList() {
         ArrayList selectedList = new ArrayList();
         selectedList.addAll(getCollection());
         return selectedList;
     }
 
-    public void setSelectedList(List selected) {
+    @SuppressWarnings("unchecked")
+	public void setSelectedList(List selected) {
         if (selected != null) {
             getCollection().clear();
             getCollection().addAll(selected);

@@ -18,38 +18,40 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-import org.apache.tapestry.ApplicationRuntimeException;
+// tapestry hivemind
+import org.apache.hivemind.ApplicationRuntimeException;
+
+// jakarta tapestry
 import org.apache.tapestry.IRequestCycle;
+
+// openvpms-framework
 import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.page.SearchPage;
 
-
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public abstract class SearchLink extends Link
-{
-    public abstract void setArchetypeName(String archetypeName);
+public abstract class SearchLink extends Link {
+	public abstract void setArchetypeName(String archetypeName);
 
-    public void click(IRequestCycle cycle)
-    {
-        SearchPage page = (SearchPage) findPage(cycle, "Search");
-        Global global = (Global)page.getGlobal();
-        try {
-            page.setInstances(global.getEntityService().getByShortName(getArchetypeName()));
-        } catch (Exception ex) {
-            throw new ApplicationRuntimeException(ex);
-        }
-        page.activateExternalPage(new Object[] {getArchetypeName()}, cycle);
-    }
+	public void click(IRequestCycle cycle) {
+		SearchPage page = (SearchPage) findPage(cycle, "Search");
+		Global global = (Global) page.getGlobal();
+		try {
+			page.setInstances(global.getEntityService().getByShortName(
+					getArchetypeName()));
+		} catch (Exception ex) {
+			throw new ApplicationRuntimeException(ex);
+		}
+		page.activateExternalPage(new Object[] { getArchetypeName() }, cycle);
+	}
 
-    /**
-     * @return
-     */
-    public String getLinkText()
-    {
-        return "Search " + getArchetypeName();
-    }
+	/**
+	 * @return
+	 */
+	public String getLinkText() {
+		return "Search " + getArchetypeName();
+	}
 }
