@@ -18,7 +18,6 @@
 
 package org.openvpms.component.presentation.tapestry.engine;
 
-import org.apache.log4j.Logger;
 import org.apache.tapestry.engine.BaseEngine;
 
 /**
@@ -34,8 +33,5 @@ import org.apache.tapestry.engine.BaseEngine;
  */
 public class OpenVpmsEngine extends BaseEngine {
     private static final long serialVersionUID = 3257288032683177524L;
-    
-    @SuppressWarnings("unused")
-	private static Logger log = Logger.getLogger(OpenVpmsEngine.class);
     
 }
