@@ -20,12 +20,7 @@ package org.openvpms.component.presentation.tapestry.component;
 
 // jakarta hivemind
 import org.apache.hivemind.ApplicationRuntimeException;
-
-// jakarta tapestry
 import org.apache.tapestry.IRequestCycle;
-
-// openvpms-framework
-import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
 import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
 
@@ -46,8 +41,7 @@ public abstract class NewLink extends Link {
         EditPage page = (EditPage) findPage(cycle, SUFFIX);
 
         try {
-            page.setModel(((Global) page.getGlobal()).getArchetypeService()
-                    .createDefaultObject(getArchetypeName()));
+            page.setModel(page.getArchetypeService().createDefaultObject(getArchetypeName()));
             cycle.activate(page);
         } catch (Exception ex) {
             throw new ApplicationRuntimeException(ex);

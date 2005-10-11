@@ -36,7 +36,7 @@ public abstract class ArchetypeTable extends OpenVpmsComponent {
 	public abstract Object getCurrentObject();
 
 	public abstract void setCurrentObject(Object CurrentObject);
-
+    
 	private List selected = new ArrayList();
 
 	protected void prepareForRender(IRequestCycle arg0) {

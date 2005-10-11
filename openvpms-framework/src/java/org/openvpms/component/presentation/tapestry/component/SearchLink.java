@@ -20,12 +20,7 @@ package org.openvpms.component.presentation.tapestry.component;
 
 // tapestry hivemind
 import org.apache.hivemind.ApplicationRuntimeException;
-
-// jakarta tapestry
 import org.apache.tapestry.IRequestCycle;
-
-// openvpms-framework
-import org.openvpms.component.presentation.tapestry.Global;
 import org.openvpms.component.presentation.tapestry.page.SearchPage;
 
 /**
@@ -38,9 +33,8 @@ public abstract class SearchLink extends Link {
 
 	public void click(IRequestCycle cycle) {
 		SearchPage page = (SearchPage) findPage(cycle, "Search");
-		Global global = (Global) page.getGlobal();
 		try {
-			page.setInstances(global.getEntityService().getByShortName(
+			page.setInstances(page.getEntityService().getByShortName(
 					getArchetypeName()));
 		} catch (Exception ex) {
 			throw new ApplicationRuntimeException(ex);

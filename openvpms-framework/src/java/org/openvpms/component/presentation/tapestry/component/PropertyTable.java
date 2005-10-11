@@ -18,7 +18,6 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * 
@@ -26,9 +25,4 @@ import org.openvpms.component.business.service.archetype.descriptor.NodeDescript
  * @version $LastChangedDate$
  */
 public abstract class PropertyTable extends ArchetypeEditComponent {
-    /**
-     * @return
-     */
-    public abstract NodeDescriptor getProperty();
-
 }
