@@ -545,6 +545,15 @@
 			</properties>
 		</dependency>
 		<dependency>
+			<groupId>tapestry</groupId>
+			<artifactId>tapestry-spring</artifactId>
+			<version>1.0-alpha</version>
+			<url>http://jakarta.apache.org/tapestry</url>
+			<properties>
+				<war.bundle>true</war.bundle>
+			</properties>
+		</dependency>
+		<dependency>
 			<groupId>hivemind</groupId>
 			<artifactId>hivemind</artifactId>
 			<version>1.1-rc-1</version>

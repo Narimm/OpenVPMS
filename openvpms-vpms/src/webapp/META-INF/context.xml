@@ -1,5 +1,0 @@
-<!-- The contents of this file will be loaded for each web application -->
-<Context docBase="/openvmps" antiJARLocking="true" antiResourceLocking="true">
-    <!-- Default set of monitored resources -->
-    <WatchedResource>WEB-INF/web.xml</WatchedResource>
-</Context>
