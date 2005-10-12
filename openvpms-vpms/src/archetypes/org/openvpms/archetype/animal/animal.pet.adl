@@ -4,26 +4,23 @@
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
 			<assertion type="referenceData">
-				<property key="namedQuery"
-					value="openvpms.animal.species" />
-				<errorMessage>An error message</errorMessage>
+				<property key="type" value="conceptLookup" />
+				<property key="concept" value="species" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
 			<assertion type="referenceData">
-				<property key="namedQuery"
-					value="openvpms.animal.breed" />
-				<errorMessage>An error message</errorMessage>
-				<property key="species" value="/species" />
+				<property key="type" value="conceptLookup" />
+				<property key="concept" value="breed" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
 			<assertion type="referenceData">
-				<property key="namedQuery"
-					value="openvpms.animal.colour" />
-				<property key="species" value="/species" />
-				<property key="breed" value="/breed" />
-				<errorMessage>An error message</errorMessage>
+				<property key="type" value="conceptLookup" />
+				<property key="concept" value="colour" />
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
@@ -37,8 +34,7 @@
 		<node name="desexed" path="/desexed" type="java.lang.Boolean"
 			defaultValue="No" />
 		<node name="dateOfBirth" path="/dateOfBirth"
-			type="java.util.Date"
-			minCardinality="1" />
+			type="java.util.Date" minCardinality="1" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
 	</archetype>
