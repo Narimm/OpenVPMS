@@ -1,0 +1,13 @@
+<module id="openvpms" version="1.0.0">
+ <contribution configuration-id="tapestry.bindings.BindingFactories">
+    <binding prefix="jxpath" service-id="JXPathBindingFactory"/>
+ </contribution>
+
+  <service-point id="JXPathBindingFactory" interface="org.apache.tapestry.binding.BindingFactory">
+    <invoke-factory>
+      <construct class="org.openvpms.component.presentation.tapestry.binding.JXPathBindingFactory">
+        <set-object property="valueConverter" value="infrastructure:valueConverter"/>  
+      </construct>
+    </invoke-factory>
+  </service-point>
+</module>

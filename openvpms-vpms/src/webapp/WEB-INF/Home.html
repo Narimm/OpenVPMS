@@ -2,18 +2,11 @@
 <h1>Welcome to the OpenVPMS Test Application</h1>
 
 <ul class="archetypeList">
-	<div class="archetypeList" jwcid="@Foreach"
-		source="ognl:archetypeService.archetypeDescriptors"
-		value="ognl:descriptor">
+	<div class="archetypeList" jwcid="@For"
+		source="jxpath:archetypeService/archetypeDescriptors"
+		value="jxpath:descriptor">
 	<li><a href="#" jwcid="@openvpms:NewLink"
-		archetypeName="ognl:descriptor.name" /></li>
+		archetypeName="jxpath:descriptor/name" /></li>
 	</div>
-</ul>
-<ul class="archetypeList">
-<div class="archetypeList" jwcid="@Foreach" source="ognl:archetypeService.archetypeDescriptors" value="ognl:descriptor" >
-    <li>
-     	<a href="#" jwcid="@openvpms:SearchLink" archetypeName="ognl:descriptor.name" />
-   	</li>
-</div>
 </ul>
 </span>

@@ -18,6 +18,7 @@
 
 package org.openvpms.app.tapestry.pages;
 
+// openvpms-framework
 import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
 
 public abstract class Home extends OpenVpmsPage {
@@ -26,5 +27,4 @@ public abstract class Home extends OpenVpmsPage {
     public void pushCallback() {
         // TODO Auto-generated method stub
     }
-
 }
