@@ -122,7 +122,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             // retrieve the entity and ensure that it as the correct number
             // of participations
             entity = (Entity)session.load(Entity.class, entity.getUid());
-            assertTrue(entity.getParticipations().length == pcount);
+            assertTrue(entity.getParticipations().size() == pcount);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -168,10 +168,10 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             // of participations
             tx = session.beginTransaction();
             entity = (Entity)session.load(Entity.class, entity.getUid());
-            assertTrue(entity.getParticipations().length == pcount);
+            assertTrue(entity.getParticipations().size() == pcount);
             
             // remove the first participation
-            Participation participation = entity.getParticipations()[0];
+            Participation participation = entity.getParticipations().iterator().next();
             assertTrue(entity.removeParticipation(participation));
             session.saveOrUpdate(entity);
             tx.commit();
@@ -182,12 +182,12 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             
             // retrieve the entity object again
             entity = (Entity)session.load(Entity.class, entity.getUid());
-            assertTrue(entity.getParticipations().length == pcount - 1);
+            assertTrue(entity.getParticipations().size() == pcount - 1);
             
             // retrieve the first participation object and then use it to 
             // navigate to the Entity object
             participation = (Participation)session.load(Participation.class, 
-                    entity.getParticipations()[0].getUid());
+                    entity.getParticipations().iterator().next().getUid());
             assertTrue(participation.getEntity().getUid() == entity.getUid());
         } catch (Exception exception) {
             if (tx != null) {

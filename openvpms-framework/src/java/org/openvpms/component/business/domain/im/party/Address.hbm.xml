@@ -21,10 +21,10 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.domain.im.lookup.Lookup"
-		table="lookup">
+		name="org.openvpms.component.business.domain.im.party.Address"
+		table="address">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="lookup_id" index="lookup_id_idx" />
+			<column name="address_id" index="address_id_idx" />
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
@@ -42,32 +42,35 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
-		<property name="value" access="property" column="value"
-			type="string" />
-		<property name="code" access="property" column="code"
-			type="string" />
-		<property name="details" access="property" column="details" length="5000" 
+		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+		<set name="contacts" lazy="false" table="contact_address"
+			inverse="false" cascade="none">
+			<key column="address_id" />
+			<many-to-many
+				class="org.openvpms.component.business.domain.im.party.Contact"
+				column="contact_id" outer-join="auto" />
+		</set>
 	</class>
 
-	<query name="lookup.getRowCount">
+	<query name="address.getAddressById">
 		<![CDATA[
-			select count(lookup) from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup
+			from org.openvpms.component.business.domain.im.party.Address as 
+			address where address.id = :id
 		]]>
 	</query>
 
-	<query name="lookup.getLookupForConceptAndValue">
+	<query name="address.getAllAddresses">
 		<![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept and lookup.value =:value
+			from from org.openvpms.component.business.domain.im.party.Address as 
+			address
 		]]>
 	</query>
 
-	<query name="lookup.getByConcept">
+	<query name="address.getRowCount">
 		<![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept
+			select count(address) from org.openvpms.component.business.domain.im.party.Address as 
+			address
 		]]>
 	</query>
 </hibernate-mapping>

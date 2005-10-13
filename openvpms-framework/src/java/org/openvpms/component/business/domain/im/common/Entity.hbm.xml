@@ -27,52 +27,52 @@
 			<column name="entity_id" index="entity_id_idx" />
 			<generator class="increment" />
 		</id>
-		<version name="version" access="field" type="long" />
-		<property name="linkId" column="link_id" access="field"
+		<version name="version" access="property" type="long" />
+		<property name="linkId" column="link_id" access="property"
 			type="string" />
 		<component name="archetypeId">
-			<property name="namespace" access="field"
+			<property name="namespace" access="property"
 				column="archetype_namespace" type="string" />
-			<property name="rmName" access="field"
+			<property name="rmName" access="property"
 				column="archetype_rm_name" type="string" />
-			<property name="concept" access="field"
+			<property name="concept" access="property"
 				column="archetype_concept" type="string" />
-			<property name="entityName" access="field"
+			<property name="entityName" access="property"
 				column="archetype_entity_name" type="string" />
-			<property name="version" access="field"
+			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
-		<property name="name" access="field" column="name"
+		<property name="name" access="property" column="name"
 			type="string" />
-		<property name="description" access="field" column="description"
+		<property name="description" access="property" column="description"
 			type="string" />
 		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-		<set name="classifications" access="field" lazy="true"
+		<set name="classifications" access="property" lazy="true"
 			inverse="true">
 			<key column="entity_id" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.common.EntityClassification" />
 		</set>
-		<set name="identities" access="field" lazy="true" inverse="true"
+		<set name="identities" access="property" lazy="true" inverse="true"
 			cascade="all,delete-orphan">
 			<key column="entity_link_id" property-ref="linkId" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
 		</set>
-		<set name="sourceRelationships" access="field" lazy="true"
+		<set name="sourceRelationships" access="property" lazy="true"
 			inverse="true" cascade="all,delete-orphan">
 			<key column="source_link_id" property-ref="linkId" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
 		</set>
-		<set name="targetRelationships" access="field" lazy="true"
+		<set name="targetRelationships" access="property" lazy="true"
 			inverse="true" cascade="all,delete-orphan">
 			<key column="target_link_id" property-ref="linkId" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
 		</set>
-		<set name="participations" access="field" lazy="true"
+		<set name="participations" access="property" lazy="true"
 			inverse="true" cascade="all,delete-orphan">
 			<key column="entity_link_id" property-ref="linkId" />
 			<one-to-many
@@ -84,7 +84,7 @@
 			name="org.openvpms.component.business.domain.im.party.Party"
 			table="party">
 			<key column="entity_id" />
-			<set name="contacts" access="field" lazy="true">
+			<set name="contacts" access="property" lazy="true">
 				<key column="party_id" />
 				<one-to-many
 					class="org.openvpms.component.business.domain.im.party.Contact" />
@@ -96,15 +96,15 @@
 				table="role">
 				<key column="entity_id" />
 				<component name="activePeriod">
-					<component name="lower" access="field"
+					<component name="lower" access="property"
 						class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
 						<property name="dateTime"
-							column="active_start_datetime" type="calendar" access="field" />
+							column="active_start_datetime" type="calendar" access="property" />
 					</component>
-					<component name="upper" access="field"
+					<component name="upper" access="property"
 						class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
 						<property name="dateTime"
-							column="active_end_datetime" type="calendar" access="field" />
+							column="active_end_datetime" type="calendar" access="property" />
 					</component>
 				</component>
 
@@ -113,10 +113,10 @@
 					name="org.openvpms.component.business.domain.im.party.User"
 					table="user">
 					<key column="entity_id" />
-					<property name="password" access="field"
+					<property name="password" access="property"
 						column="password" type="string" />
 					<property name="lastLogin" column="last_login"
-						type="calendar" access="field" />
+						type="calendar" access="property" />
 				</joined-subclass>
 			</joined-subclass>
 		</joined-subclass>
@@ -126,7 +126,7 @@
 			name="org.openvpms.component.business.domain.im.party.Actor"
 			table="actor">
 			<key column="entity_id" />
-			<set name="roles" access="field" lazy="true">
+			<set name="roles" access="property" lazy="true">
 				<key column="actor_id" />
 				<one-to-many
 					class="org.openvpms.component.business.domain.im.party.Role" />
@@ -137,13 +137,13 @@
 				name="org.openvpms.component.business.domain.im.party.Person"
 				table="person">
 				<key column="entity_id" />
-				<property name="title" access="field" column="title"
+				<property name="title" access="property" column="title"
 					type="string" />
-				<property name="firstName" access="field"
+				<property name="firstName" access="property"
 					column="first_name" type="string" />
-				<property name="lastName" access="field"
+				<property name="lastName" access="property"
 					column="last_name" type="string" />
-				<property name="initials" access="field"
+				<property name="initials" access="property"
 					column="initials" type="string" />
 			</joined-subclass>
 
@@ -152,18 +152,18 @@
 				name="org.openvpms.component.business.domain.im.party.Animal"
 				table="animal">
 				<key column="entity_id" />
-				<property name="species" access="field" column="species"
+				<property name="species" access="property" column="species"
 					type="string" />
-				<property name="breed" access="field" column="breed"
+				<property name="breed" access="property" column="breed"
 					type="string" />
-				<property name="colour" access="field" column="colour"
+				<property name="colour" access="property" column="colour"
 					type="string" />
-				<property name="sex" access="field" column="sex"
+				<property name="sex" access="property" column="sex"
 					type="string" />
-				<property name="desexed" access="field" column="desexed"
+				<property name="desexed" access="property" column="desexed"
 					type="boolean" />
 				<property name="dateOfBirth" column="date_of_birth"
-					type="date" access="field" />
+					type="date" access="property" />
 			</joined-subclass>
 		</joined-subclass>
 	</class>

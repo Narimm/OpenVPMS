@@ -303,11 +303,18 @@ public class Entity extends IMObject {
      * 
      * @return EntityClassification[]
      */
-    public EntityClassification[] getClassifications() {
-        return (EntityClassification[])classifications.toArray(
-                new EntityClassification[classifications.size()]);
+    public Set<EntityClassification> getClassifications() {
+        return this.classifications;
     }
     
+    /**
+     * @param classifications The classifications to set.
+     */
+    @SuppressWarnings("unused")
+    private void setClassifications(Set<EntityClassification> classifications) {
+        this.classifications = classifications;
+    }
+
     /**
      * Add this entity to the specified participation
      * 
@@ -336,9 +343,8 @@ public class Entity extends IMObject {
      * 
      * @return Participation[]
      */
-    public Participation[] getParticipations() {
-        return (Participation[])participations.toArray(
-                new Participation[participations.size()]);
+    public Set<Participation> getParticipations() {
+        return participations;
     }
     
     /**
@@ -368,4 +374,37 @@ public class Entity extends IMObject {
     public void setName(String name) {
         this.name = name;
     }
+
+    /**
+     * @return Returns the identities.
+     */
+    @SuppressWarnings("unused")
+    private Set<EntityIdentity> getIdentities() {
+        return identities;
+    }
+
+    /**
+     * @param identities The identities to set.
+     */
+    @SuppressWarnings("unused")
+    private void setIdentities(Set<EntityIdentity> identities) {
+        this.identities = identities;
+    }
+
+    /**
+     * @return Returns the sourceRelationships.
+     */
+    @SuppressWarnings("unused")
+    private Set<EntityRelationship> getSourceRelationships() {
+        return sourceRelationships;
+    }
+
+    /**
+     * @param sourceRelationships The sourceRelationships to set.
+     */
+    @SuppressWarnings("unused")
+    private void setSourceRelationships(Set<EntityRelationship> sourceRelationships) {
+        this.sourceRelationships = sourceRelationships;
+    }
+
 }

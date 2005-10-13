@@ -21,10 +21,10 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.domain.im.lookup.Lookup"
-		table="lookup">
+		name="org.openvpms.component.business.domain.im.party.Contact"
+		table="contact">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="lookup_id" index="lookup_id_idx" />
+			<column name="contact_id" index="contact_id_idx" />
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
@@ -42,32 +42,38 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
-		<property name="value" access="property" column="value"
-			type="string" />
-		<property name="code" access="property" column="code"
-			type="string" />
-		<property name="details" access="property" column="details" length="5000" 
-			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+		<component name="activePeriod">
+			<component name="lower" access="property"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="start_date"
+					type="calendar" access="property" />
+			</component>
+			<component name="upper" access="property"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="end_date"
+					type="calendar" access="property" />
+			</component>
+		</component>
+		<set name="addresses" lazy="false" inverse="true"
+			table="contact_address" cascade="none">
+			<key column="contact_id" />
+			<many-to-many
+				class="org.openvpms.component.business.domain.im.party.Address"
+				column="address_id" outer-join="auto" />
+		</set>
 	</class>
 
-	<query name="lookup.getRowCount">
+	<query name="contact.getContactById">
 		<![CDATA[
-			select count(lookup) from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup
+			from org.openvpms.component.business.domain.im.party.Contact as
+			contact where contact.id = :id
 		]]>
 	</query>
 
-	<query name="lookup.getLookupForConceptAndValue">
+	<query name="contact.getAllContacts">
 		<![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept and lookup.value =:value
-		]]>
-	</query>
-
-	<query name="lookup.getByConcept">
-		<![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept
+			from org.openvpms.component.business.domain.im.party.Contact as 
+			contact
 		]]>
 	</query>
 </hibernate-mapping>

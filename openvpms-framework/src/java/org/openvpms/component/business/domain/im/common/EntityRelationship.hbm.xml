@@ -21,15 +21,15 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.domain.im.lookup.Lookup"
-		table="lookup">
+		name="org.openvpms.component.business.domain.im.common.EntityRelationship"
+		table="entity_relationship">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="lookup_id" index="lookup_id_idx" />
+			<column name="entity_relationship_id"
+				index="entity_relationship_id_idx" />
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
-		<property name="linkId" column="link_id" access="property"
-			type="string" />
+    <property name="linkId" column="link_id" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
 				column="archetype_namespace" type="string" />
@@ -42,32 +42,34 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
-		<property name="value" access="property" column="value"
-			type="string" />
-		<property name="code" access="property" column="code"
-			type="string" />
-		<property name="details" access="property" column="details" length="5000" 
+		<property name="sequence" type="int" column="sequence" />
+		<property name="reason" type="string" column="reason" />
+		<component name="activePeriod">
+			<component name="lower" access="property"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="start_date"
+					type="calendar" access="property" />
+			</component>
+			<component name="upper" access="property"
+				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+				<property name="dateTime" column="end_date"
+					type="calendar" access="property" />
+			</component>
+		</component>
+		<many-to-one name="sourceEntity" access="property" property-ref="linkId"
+			column="source_link_id" />
+		<many-to-one name="targetEntity" access="property" property-ref="linkId"
+			column="target_link_id" />
+		<many-to-one name="entityIdentity" access="property"
+			column="entity_identity_id" not-null="false" unique="true" />
+		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
 	</class>
 
-	<query name="lookup.getRowCount">
+	<query name="entityRelationship.getRowCount">
 		<![CDATA[
-			select count(lookup) from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup
-		]]>
-	</query>
-
-	<query name="lookup.getLookupForConceptAndValue">
-		<![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept and lookup.value =:value
-		]]>
-	</query>
-
-	<query name="lookup.getByConcept">
-		<![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept
+			select count(entityRelationship) from org.openvpms.component.business.domain.im.common.EntityRelationship as 
+			entityRelationship
 		]]>
 	</query>
 </hibernate-mapping>

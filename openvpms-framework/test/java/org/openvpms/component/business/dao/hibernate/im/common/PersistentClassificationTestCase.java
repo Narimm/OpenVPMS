@@ -125,7 +125,7 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
             // retrieve the classification and ensure there are three children
             Classification original = (Classification) session.load(
                     Classification.class, new Long(parent.getUid()));
-            assertTrue(original.getChildren().length == 3);
+            assertTrue(original.getChildren().size() == 3);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -170,9 +170,9 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
             tx = session.beginTransaction();
             Classification original = (Classification) session.load(
                     Classification.class, parent.getUid());
-            assertTrue(original.getChildren().length == 3);
+            assertTrue(original.getChildren().size() == 3);
 
-            Classification achild = original.getChildren()[0];
+            Classification achild = original.getChildren().iterator().next();
             assertTrue(original.removeChild(achild));
             session.saveOrUpdate(original);
             tx.commit();
@@ -186,7 +186,7 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
             // children
             original = (Classification) session.load(Classification.class,
                     parent.getUid());
-            assertTrue(original.getChildren().length == 2);
+            assertTrue(original.getChildren().size() == 2);
 
         } catch (Exception exception) {
             if (tx != null) {
@@ -220,7 +220,7 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
             // retrieve the root
             root = (Classification)session.load(Classification.class, root.getUid());
             assertTrue(getClassification(root, 0, levels - 1)
-                    .getChildren().length == childrenPerLevel);
+                    .getChildren().size() == childrenPerLevel);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -286,7 +286,8 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
         if (currentLevel == targetLevel) {
             return root;
         } else {
-            return getClassification(root.getChildren()[0], currentLevel + 1, targetLevel);
+            return getClassification(root.getChildren().iterator().next(), 
+                    currentLevel + 1, targetLevel);
         }
     }
     

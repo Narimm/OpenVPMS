@@ -57,7 +57,7 @@ public class Lookup extends IMObject {
     /**
      * Details holds dynamic attributes for a lookup
      */
-    private DynamicAttributeMap details;
+    private DynamicAttributeMap details = new DynamicAttributeMap();
     
     
     /**

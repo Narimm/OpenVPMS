@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!--
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class name="org.openvpms.component.business.domain.im.common.Participation"
+    table="participation">
+    <id name="uid" type="long" unsaved-value="-1">
+      <column name="participation_id" index="participation_id_idx" />
+      <generator class="increment" />
+    </id>
+    <version name="version" access="property" type="long" />
+    <property name="linkId" column="link_id" access="property" type="string" />
+    <component name="archetypeId">
+      <property name="namespace" access="property" column="archetype_namespace"
+        type="string" />
+      <property name="rmName" access="property" column="archetype_rm_name"
+        type="string" />
+      <property name="concept" access="property" column="archetype_concept"
+        type="string" />
+      <property name="entityName" access="property" column="archetype_entity_name"
+        type="string" />
+      <property name="version" access="property" column="archetype_version"
+        type="string" />
+    </component>
+    <property name="sequence" column="sequence" access="property" type="int" />
+    <property name="description" column="description" type="string" />
+    <property name="negationInd" column="negationInd" type="boolean" />
+    <property name="mode" column="mode" type="string" />
+    <property name="percentage" column="percentage" type="int" />
+    <component name="timeInterval">
+      <component name="lower" access="property"
+        class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+        <property name="dateTime" column="participation_start_datetime"
+          type="calendar" access="property" />
+      </component>
+      <component name="upper" access="property"
+        class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
+        <property name="dateTime" column="participation_end_datetime"
+          type="calendar" access="property" />
+      </component>
+    </component>
+    <many-to-one name="entity" property-ref="linkId" column="entity_link_id" />
+    <many-to-one name="act" access="property" column="act_id" />
+    <property name="details" column="details" length="5000"
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+  </class>
+
+  <query name="participation.getRowCount">
+    <![CDATA[
+			select count(participation) from org.openvpms.component.business.domain.im.common.Participation as 
+			participation
+		]]>
+  </query>
+</hibernate-mapping>

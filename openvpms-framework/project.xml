@@ -404,6 +404,7 @@
       <excludes>
         <exclude>**/BaseTestCase.java</exclude>
         <exclude>**/HibernateInfoModelTestCase.java</exclude>
+        <exclude>**/Hibernate*.java</exclude>
       </excludes>
       <resources>
         <resource>

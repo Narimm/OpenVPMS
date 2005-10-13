@@ -333,4 +333,60 @@ public class ArchetypeId implements Serializable {
             .append("qName", qName)
             .toString();
     }
+
+    /**
+     * @param concept The concept to set.
+     */
+    @SuppressWarnings("unused")
+    private void setConcept(String concept) {
+        this.concept = concept;
+    }
+
+    /**
+     * @param entityName The entityName to set.
+     */
+    @SuppressWarnings("unused")
+    private void setEntityName(String entityName) {
+        this.entityName = entityName;
+    }
+
+    /**
+     * @param namespace The namespace to set.
+     */
+    @SuppressWarnings("unused")
+    private void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    /**
+     * @param name The qName to set.
+     */
+    @SuppressWarnings("unused")
+    private void setQName(String name) {
+        qName = name;
+    }
+
+    /**
+     * @param rmName The rmName to set.
+     */
+    @SuppressWarnings("unused")
+    private void setRmName(String rmName) {
+        this.rmName = rmName;
+    }
+
+    /**
+     * @param shortName The shortName to set.
+     */
+    @SuppressWarnings("unused")
+    private void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    /**
+     * @param version The version to set.
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(String version) {
+        this.version = version;
+    }
 }

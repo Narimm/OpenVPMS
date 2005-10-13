@@ -141,6 +141,14 @@ public abstract class IMObject implements Serializable {
     }
 
     /**
+     * @param linkId The linkId to set.
+     */
+    @SuppressWarnings("unused")
+    private void setLinkId(String linkId) {
+        this.linkId = linkId;
+    }
+
+    /**
      * @return Returns the archetypeId.
      */
     public ArchetypeId getArchetypeId() {
