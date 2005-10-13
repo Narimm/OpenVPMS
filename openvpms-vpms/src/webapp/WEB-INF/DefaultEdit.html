@@ -2,9 +2,13 @@
 
 <span jwcid="@Border">
 	<h1><span jwcid="@Insert" value="ognl:title" /></h1>
-    <div jwcid="@Conditional" class="error" condition="ognl:delegate.hasErrors" element="div">
-        Error: <span jwcid="@Delegator" delegate="ognl:delegate.firstError" />
-    </div>
+	<ul>
+		<span jwcid="errors">
+			<li jwcid="isInError" style="{color: red}">
+				<span jwcid="error" />
+			</li>
+		</span>
+	</ul>
     <form jwcid="@openvpms:ArchetypeForm" model="ognl:model" class="detail">       
 	</form>
 </span>
