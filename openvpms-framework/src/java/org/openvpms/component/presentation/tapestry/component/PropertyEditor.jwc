@@ -10,40 +10,40 @@
     <component id="insert" type="Insert">
         <binding name="value">descriptor.displayName</binding>
     </component>
-    <!--component id="isIdentifier" type="Conditional">
+    <!--component id="isIdentifier" type="If">
         <binding name="condition">descriptor.identifier</binding>
     </component-->
-    <component id="isDate" type="Conditional">
+    <component id="isDate" type="If">
         <binding name="condition">descriptor.date and !descriptor.identifier</binding>
     </component> 
-    <component id="isString" type="Conditional">
+    <component id="isString" type="If">
         <binding name="condition">descriptor.string and !descriptor.identifier and !descriptor.large and !descriptor.lookup</binding>
     </component> 
-    <component id="isTextArea" type="Conditional">
+    <component id="isTextArea" type="If">
         <binding name="condition">descriptor.large and descriptor.string and !descriptor.lookup</binding>
     </component> 
-    <component id="isNumeric" type="Conditional">
+    <component id="isNumeric" type="If">
         <binding name="condition">descriptor.numeric and !descriptor.identifier</binding>
     </component> 
-    <component id="isBoolean" type="Conditional">
+    <component id="isBoolean" type="If">
         <binding name="condition">descriptor.boolean and !descriptor.identifier</binding>
     </component> 
-    <component id="isObject" type="Conditional">
+    <component id="isObject" type="If">
         <binding name="condition">descriptor.objectReference</binding>
     </component>   
-    <component id="isCollection" type="Conditional">
+    <component id="isCollection" type="If">
         <binding name="condition">descriptor.collection</binding>
     </component>
-    <component id="isLookup" type="Conditional">
+    <component id="isLookup" type="If">
         <binding name="condition">descriptor.lookup</binding>
     </component>
-    <component id="notReadOnly" type="Conditional">
+    <component id="notReadOnly" type="If">
         <binding name="condition">!descriptor.readOnly</binding>
     </component>
-    <component id="isReadOnly" type="Conditional">
+    <component id="isReadOnly" type="If">
         <binding name="condition">descriptor.readOnly</binding>
     </component>
-    <component id="notHidden" type="Conditional">
+    <component id="notHidden" type="If">
         <binding name="condition">!descriptor.hidden</binding>
     </component>
     
@@ -51,34 +51,38 @@
         <binding name="value">model[descriptor.name]</binding>
     </component>
     <component id="dateField" type="DatePicker">
+        <binding name="displayName">descriptor.displayName</binding>
+        <binding name="validators">getValidators(descriptor)</binding>
         <binding name="value">model[descriptor.name]</binding>
     </component> 
-    <component id="stringField" type="ValidField">
+    <component id="stringField" type="TextField">
         <binding name="displayName">descriptor.displayName</binding>
-        <binding name="validator">getValidator(descriptor)</binding>
+        <binding name="validators">getValidators(descriptor)</binding>
         <binding name="value">model[descriptor.name]</binding>
-        <binding name="maxlength">descriptor.maxLength</binding>
     </component> 
    <component id="textArea" type="TextArea">
         <binding name="value">model[descriptor.name]</binding>
     </component> 
-    <component id="numberField" type="ValidField">
+    <component id="numberField" type="TextField">
         <binding name="displayName">descriptor.displayName</binding>
-        <binding name="validator">getValidator(descriptor)</binding>
+        <binding name="translator">translator:number,pattern=#.#</binding>
+        <binding name="validators">getValidators(descriptor)</binding>
         <binding name="value">model[descriptor.name]</binding>
     </component>   
     <component id="checkbox" type="Checkbox">
-        <binding name="selected">model[descriptor.name]</binding>
+        <binding name="value">model[descriptor.name]</binding>
     </component>   
     <component id="collectionEditor" type="CollectionEditor">
         <binding name="collection">model[descriptor.name]</binding>
         <binding name="descriptor">descriptor</binding>
     </component>
     <component id="lookupCombo" type="PropertySelection">
+        <binding name="displayName">descriptor.displayName</binding>
         <binding name="model">page.getLookupModel(descriptor)</binding>
         <binding name="value">model[descriptor.name]</binding>
     </component>       
     <component id="selectObject" type="PropertySelection">
+        <binding name="displayName">descriptor.displayName</binding>
         <binding name="model">page.getEntityModel(descriptor)</binding>
         <binding name="value">model[descriptor.name]</binding>
     </component>       

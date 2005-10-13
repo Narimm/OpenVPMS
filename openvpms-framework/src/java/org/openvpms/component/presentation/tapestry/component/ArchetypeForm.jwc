@@ -9,12 +9,11 @@
 	<parameter name="model" default-value="page.model" />
   	<parameter name="saveListener" default-value="page.listeners.save"/>
     <parameter name="removeListener" default-value="page.listeners.remove"/>
-    <parameter name="delegate" default-value="page.delegate"/>
     <parameter name="nodeNames" default-value="null"/>
    	<parameter name="archetypeDescriptor" required="no" default-value="page.archetypeDescriptor"/>
     
     <component id="form" type="Form">
-        <binding name="delegate">delegate</binding>
+        <binding name="delegate">page.beans.delegate</binding>
         <binding name="listener">page.listeners.onFormSubmit</binding>
     </component>   
     <component id="archetypeActions" type="ArchetypeActions">

@@ -16,10 +16,10 @@
         <binding name="source">descriptors</binding>
         <binding name="value">property</binding>
     </component>
-    <component id="hasBlock" type="Conditional">
+    <component id="hasBlock" type="If">
         <binding name="condition">hasBlock(property.name)</binding>
     </component>   
-    <component id="doesntHaveBlock" type="Conditional">
+    <component id="doesntHaveBlock" type="If">
         <binding name="condition">not(hasBlock(property.name))</binding>
     </component>      
     <component id="renderBlock" type="RenderBlock">

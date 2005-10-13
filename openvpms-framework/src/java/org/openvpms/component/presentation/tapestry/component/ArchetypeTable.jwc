@@ -8,7 +8,6 @@
     <parameter name="instances" required="yes" ></parameter>
     <parameter name="nodeNames" required="no" default-value="null"/>
     <parameter name="allowCreate" default-value="true" />
-    <parameter name="allowRemove" default-value="true" />
 
     <property name="currentObject" />
     <property name="index" />
@@ -23,25 +22,16 @@
         <binding name="element">literal:tr</binding>
     </component>
     <component id="any" type="Any" inherit-informal-parameters="yes" />
-    <component id="removeCheckbox" type="Checkbox">
-        <binding name="selected">selected[index]</binding>
-    </component>
     <component id="editLink" type="EditLink">
         <binding name="model">currentObject</binding>
     </component>
     <component id="insert" type="Insert">
         <binding name="value">currentObject</binding>
     </component>
-    <component id="allowCreate" type="Conditional">
+    <component id="allowCreate" type="If">
         <binding name="condition">allowCreate</binding>
-    </component>
-    <component id="allowRemove" type="Conditional">
-        <binding name="condition">allowRemove</binding>
     </component>
     <component id="addbutton" type="Submit">
         <binding name="listener" >listeners.showAddPage</binding>
     </component>
-    <component id="removebutton" type="Submit">
-        <binding name="listener" >listeners.remove</binding>
-    </component>  
 </component-specification>

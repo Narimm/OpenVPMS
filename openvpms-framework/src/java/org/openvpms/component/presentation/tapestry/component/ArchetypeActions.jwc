@@ -25,13 +25,13 @@
      <component id="cancelButton" type="Submit">
         <binding name="listener">page.listeners.cancel</binding>
     </component>
-    <component id="showSaveButton" type="Conditional">
+    <component id="showSaveButton" type="If">
         <binding name="condition">showSaveButton</binding>
     </component>
-    <component id="showRemoveButton" type="Conditional">
+    <component id="showRemoveButton" type="If">
         <binding name="condition">showRemoveButton</binding>
     </component>   
-    <component id="showCancelButton" type="Conditional">
+    <component id="showCancelButton" type="If">
         <binding name="condition">showCancelButton</binding>
     </component>   
 </component-specification>

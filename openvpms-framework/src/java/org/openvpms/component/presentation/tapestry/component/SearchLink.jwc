@@ -12,10 +12,10 @@
     <component id="insert" type="Insert">
         <binding name="value">linkText</binding>
     </component>
-    <component id="hasBody" type="Conditional">
+    <component id="hasBody" type="If">
         <binding name="condition">bodyCount > 0</binding>
 	</component>
-     <component id="hasNoBody" type="Conditional">
+     <component id="hasNoBody" type="If">
         <binding name="condition">bodyCount == 0</binding>
 	</component> 
      <component id="renderBody" type="RenderBody">

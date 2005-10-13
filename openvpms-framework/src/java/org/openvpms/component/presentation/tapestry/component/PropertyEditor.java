@@ -18,11 +18,15 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-import org.apache.tapestry.valid.BaseValidator;
-import org.apache.tapestry.valid.IValidator;
-import org.apache.tapestry.valid.NumberValidator;
-import org.apache.tapestry.valid.PatternValidator;
-import org.apache.tapestry.valid.StringValidator;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.tapestry.form.validator.BaseValidator;
+import org.apache.tapestry.form.validator.Max;
+import org.apache.tapestry.form.validator.MaxLength;
+import org.apache.tapestry.form.validator.Min;
+import org.apache.tapestry.form.validator.Pattern;
+import org.apache.tapestry.form.validator.Required;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
@@ -46,34 +50,40 @@ public abstract class PropertyEditor extends OpenVpmsComponent {
      * @throws Exception
      *             propagate exception
      */
-    public IValidator getValidator(NodeDescriptor descriptor) throws Exception {
+    public List getValidators(NodeDescriptor descriptor) throws Exception {
         BaseValidator validator = null;
+        
+        List<BaseValidator> validators = new ArrayList<BaseValidator>();
 
+        if (descriptor.isRequired()) {
+            validator = new Required();
+            validators.add(validator);
+        }
         if (descriptor.isNumeric()) {
-            validator = new NumberValidator();
-            ((NumberValidator) validator).setValueTypeClass(Thread
-                    .currentThread().getContextClassLoader().loadClass(
-                            descriptor.getType()));
+            validator = new Pattern("#");
+            validators.add(validator);
             if (descriptor.getMaxValue() != null) {
-                ((NumberValidator) validator).setMaximum(descriptor
-                        .getMaxValue());
+                validator = new Max(descriptor.getMaxValue().toString());
+                validators.add(validator);
             }
 
             if (descriptor.getMinValue() != null) {
-                ((NumberValidator) validator).setMinimum(descriptor
-                        .getMinValue());
+                validator = new Min(descriptor.getMinValue().toString());
+                validators.add(validator);
             }
-        } else {
-            if (descriptor.getStringPattern() == null)
-                validator = new StringValidator();
-            else {
-                validator = new PatternValidator();
-                ((PatternValidator) validator).setPatternString(descriptor
-                        .getStringPattern());
+        } else if  (descriptor.isDate()){
+        } else if (descriptor.isString()) {
+            if (descriptor.getMaxLength() > 0) {
+                validator = new MaxLength();
+                ((MaxLength)validator).setMaxLength(descriptor.getMaxLength());
+                validators.add(validator);
+            }
+            if (descriptor.getStringPattern() != null) {
+                validator = new Pattern(descriptor.getStringPattern());
+                validators.add(validator);
             }
         }
-        validator.setRequired(descriptor.isRequired());
-        //validator.setClientScriptingEnabled(true);
-        return validator;
+        
+        return validators;
     }
 }
