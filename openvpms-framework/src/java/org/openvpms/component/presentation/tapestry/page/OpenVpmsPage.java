@@ -31,12 +31,10 @@ import org.apache.tapestry.IPage;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.PageRedirectException;
 import org.apache.tapestry.html.BasePage;
-import org.apache.tapestry.valid.IValidationDelegate;
 import org.openvpms.component.business.service.act.IActService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.entity.IEntityService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidationDelegate;
 
 /**
  * 
@@ -69,9 +67,6 @@ public abstract class OpenVpmsPage extends BasePage {
      */
     public static final String SCREEN_NAME = "OpenVPMS";
 
-    /** the validation delegate */
-    private IValidationDelegate delegate;
-
     /**
      * @return Returns the errorMessage.
      */
@@ -98,14 +93,6 @@ public abstract class OpenVpmsPage extends BasePage {
      */
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public IValidationDelegate getDelegate()
-    {
-        if (delegate == null)
-            delegate = new OpenVpmsValidationDelegate();
-
-        return delegate;
     }
 
     /**

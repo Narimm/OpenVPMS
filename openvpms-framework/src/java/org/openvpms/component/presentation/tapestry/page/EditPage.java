@@ -127,7 +127,8 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     protected boolean save() {
-        if (!getDelegate().getHasErrors()) {
+        OpenVpmsValidationDelegate delegate = (OpenVpmsValidationDelegate)getPage().getBeans().getBean("delegate");
+        if (!delegate.getHasErrors()) {
             try {
                 if (getModel() instanceof Entity)
                     getEntityService().save((Entity)getModel());
@@ -136,7 +137,7 @@ public abstract class EditPage extends OpenVpmsPage {
                 else if (getModel() instanceof Lookup)
                     getLookupService().save((Lookup)getModel());                   
             } catch (Exception pe) {
-                ((OpenVpmsValidationDelegate)getDelegate()).record(pe);
+                ((OpenVpmsValidationDelegate)delegate).record(pe);
                  return false;
             }
             return true;
