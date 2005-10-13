@@ -1,5 +1,8 @@
 <lookupData>
 	<lookupItem id="country" value="Australia" />
+	<lookupItem id="country" value="New Zealand" />
+	<lookupItem id="country" value="Greece" />
+	<lookupItem id="country" value="Spain" />
 	<lookupItem id="state" value="Victoria" />
 	<lookupItem id="suburb" value="Belgrave" />
 	<lookupItem id="postcode" value="3160" />

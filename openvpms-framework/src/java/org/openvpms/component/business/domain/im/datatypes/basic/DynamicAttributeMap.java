@@ -41,13 +41,13 @@ public class DynamicAttributeMap extends DataValue {
     /**
      * Caches all the dynamic attributes
      */
-    HashMap<String, Serializable> attributes;
+    HashMap<String, Serializable> attributes =
+        new HashMap<String, Serializable>();
     
     /**
      * Default constructor
      */
     public DynamicAttributeMap() {
-        attributes = new HashMap<String, Serializable>();
     }
 
     /**

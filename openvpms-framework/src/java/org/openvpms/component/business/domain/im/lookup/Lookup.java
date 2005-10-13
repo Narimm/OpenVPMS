@@ -80,7 +80,6 @@ public class Lookup extends IMObject {
         String code) {
         super(archetypeId);
         
-        this.details = new DynamicAttributeMap();
         this.value = value;
         this.code = code;
     }

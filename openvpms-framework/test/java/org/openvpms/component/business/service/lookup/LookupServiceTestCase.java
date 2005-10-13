@@ -84,7 +84,7 @@ public class LookupServiceTestCase extends
     /**
      * Test that we can create an object through this service
      */
-    public void testLookupObjectCreation()
+    public void NtestLookupObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
             Lookup lookup = lookupService.create("lookup.country");
@@ -102,7 +102,7 @@ public class LookupServiceTestCase extends
     /**
      * The the retrieval of look ups given a node descriptor 
      */
-    public void testLookupRetrievalFromNodeDescriptor()
+    public void NtestLookupRetrievalFromNodeDescriptor()
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
             .getArchetypeDescriptor("person.person");
