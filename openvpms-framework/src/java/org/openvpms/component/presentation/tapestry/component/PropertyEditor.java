@@ -60,7 +60,8 @@ public abstract class PropertyEditor extends OpenVpmsComponent {
             validators.add(validator);
         }
         if (descriptor.isNumeric()) {
-            validator = new Pattern("#");
+            validator = new Pattern();
+            ((Pattern)validator).setPattern("#");
             validators.add(validator);
             if (descriptor.getMaxValue() != null) {
                 validator = new Max(descriptor.getMaxValue().toString());
@@ -79,7 +80,8 @@ public abstract class PropertyEditor extends OpenVpmsComponent {
                 validators.add(validator);
             }
             if (descriptor.getStringPattern() != null) {
-                validator = new Pattern(descriptor.getStringPattern());
+                validator = new Pattern();
+                ((Pattern)validator).setPattern(descriptor.getStringPattern());
                 validators.add(validator);
             }
         }
