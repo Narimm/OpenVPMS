@@ -100,4 +100,15 @@ public class JXPathBinding extends AbstractBinding {
     public void setObject(Object value) {
         JXPathContext.newContext(root).setValue(path, value);
     }
+
+    /* (non-Javadoc)
+     * @see org.apache.tapestry.binding.AbstractBinding#isInvariant()
+     */
+    @Override
+    public boolean isInvariant() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    
 }

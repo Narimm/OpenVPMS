@@ -48,29 +48,29 @@
     </component>
     
     <component id="displayValue" type="Insert">
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>
     <component id="dateField" type="DatePicker">
         <binding name="displayName">descriptor.displayName</binding>
         <binding name="validators">getValidators(descriptor)</binding>
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component> 
     <component id="stringField" type="TextField">
         <binding name="displayName">descriptor.displayName</binding>
         <binding name="validators">getValidators(descriptor)</binding>
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component> 
    <component id="textArea" type="TextArea">
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component> 
     <component id="numberField" type="TextField">
         <binding name="displayName">descriptor.displayName</binding>
         <binding name="translator">translator:number,pattern=#.#</binding>
         <binding name="validators">getValidators(descriptor)</binding>
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>   
     <component id="checkbox" type="Checkbox">
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>   
     <component id="collectionEditor" type="CollectionEditor">
         <binding name="collection">model[descriptor.name]</binding>
@@ -79,11 +79,11 @@
     <component id="lookupCombo" type="PropertySelection">
         <binding name="displayName">descriptor.displayName</binding>
         <binding name="model">page.getLookupModel(descriptor)</binding>
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>       
     <component id="selectObject" type="PropertySelection">
         <binding name="displayName">descriptor.displayName</binding>
         <binding name="model">page.getEntityModel(descriptor)</binding>
-        <binding name="value">model[descriptor.name]</binding>
+        <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>       
 </component-specification>

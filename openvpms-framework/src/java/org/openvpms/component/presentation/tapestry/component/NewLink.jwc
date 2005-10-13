@@ -7,16 +7,16 @@
 <component-specification class="org.openvpms.component.presentation.tapestry.component.NewLink" allow-body="yes" allow-informal-parameters="yes">
 	<parameter name="archetypeName" required="yes"></parameter>
     <component id="link" type="ActionLink">
-        <binding name="listener">listeners.click</binding>
+        <binding name="listener" value="listeners.click" />
     </component>	
     <component id="insert" type="Insert">
-        <binding name="value">linkText</binding>
+        <binding name="value" value="jxpath:linkText" />
     </component>
    <component id="hasBody" type="If">
-        <binding name="condition">bodyCount > 0</binding>
+        <binding name="condition" value="jxpath:bodyCount > 0" />
 	</component>
      <component id="hasNoBody" type="If">
-        <binding name="condition">bodyCount == 0</binding>
+        <binding name="condition" value="jxpath:bodyCount = 0" />
 	</component> 
      <component id="renderBody" type="RenderBody">
 

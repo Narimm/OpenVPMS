@@ -22,6 +22,8 @@ package org.openvpms.component.business.domain.im.common;
 import java.io.Serializable;
 
 // openvpms-framework
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -132,6 +134,13 @@ public abstract class IMObject implements Serializable {
     }
     
     /**
+     * @return Returns the linkId.
+     */
+    public String getLinkId() {
+        return linkId;
+    }
+
+    /**
      * @return Returns the archetypeId.
      */
     public ArchetypeId getArchetypeId() {
@@ -188,6 +197,18 @@ public abstract class IMObject implements Serializable {
      */
     public boolean isNew() {
         return uid == -1;
+    }
+
+    /**
+     * This method will retrieve an attribute of this object
+     * give an xpath
+     * 
+     * @param path
+     *            an xpath expression in to this object
+     * @return Object
+     */
+    public Pointer pathToObject(String path) {
+        return JXPathContext.newContext(this).getPointer(path);
     }
 }
 

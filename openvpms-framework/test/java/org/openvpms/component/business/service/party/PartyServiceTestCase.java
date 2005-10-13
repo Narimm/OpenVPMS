@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.party;
 // spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Person;
 
 /**
@@ -74,7 +75,7 @@ public class PartyServiceTestCase extends
         for (int index = 0; index < 5; index++) {
             Person person = (Person)partyService.create("person.person");
             assertTrue(person != null);
-            
+
             // set to meet the archetype requirements
             person.setTitle("Mr");
             person.setFirstName("jim");
@@ -83,6 +84,26 @@ public class PartyServiceTestCase extends
             // insert the party object
             partyService.insert(person);
         }
+    }
+    
+    /**
+     * Test to ensure that the linkId is created and stored with the
+     * persistent object
+     */
+    public void testLinkIdCreation()
+    throws Exception {
+        Person person = (Person)partyService.create("person.person");
+        assertTrue(person != null);
+        
+        // set the attributes to meet the archetype requirements
+        person.setTitle("Ms");
+        person.setFirstName("bernadette");
+        person.setInitials("M T");
+        person.setLastName("feeney");
+        
+        // insert the party object
+        assertTrue(StringUtils.isEmpty(person.getLinkId()) == false);
+        partyService.insert(person);
     }
 
     /* (non-Javadoc)
