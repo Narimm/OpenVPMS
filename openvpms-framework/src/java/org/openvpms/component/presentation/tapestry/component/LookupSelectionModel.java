@@ -66,7 +66,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
         if (this.allowNone) {
             this.instances = new ArrayList();
             this.instances.addAll(instances);
-            this.instances.add(0, null);
+            this.instances.add(0, new Lookup(null,"",""));
         }
     }
 
@@ -85,7 +85,7 @@ public class LookupSelectionModel implements IPropertySelectionModel {
      * @see org.apache.tapestry.form.IPropertySelectionModel#getOption(int)
      */
     public Object getOption(int index) {
-        return instances.get(index);
+        return instances.get(index).getValue();
     }
 
     /*

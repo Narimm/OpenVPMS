@@ -57,12 +57,12 @@ public class Visit implements Serializable {
   /**
    * @return Returns the appName.
    */
-  public String getAppName() {
-	  return appName;
-  }
+//  public String getAppName() {
+//	  return appName;
+//  }
   
-  public String getUserName() {
+//  public String getUserName() {
 	  
-	  return appName;
-  }
+//	  return appName;
+//  }
 }
