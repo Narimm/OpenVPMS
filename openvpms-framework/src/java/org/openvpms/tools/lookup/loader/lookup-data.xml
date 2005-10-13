@@ -19,4 +19,39 @@
 		<source id="suburb" value="Belgrave" />
 		<target id="postcode" value="3160" />
 	</lookupRel>
+	<lookupItem id="species" value="Canine" />
+	<lookupItem id="species" value="Feline" />
+	<lookupItem id="species" value="Equine" />
+	<lookupItem id="species" value="Porcine" />
+	<lookupItem id="species" value="Bovine" />
+	<lookupItem id="species" value="Avian" />
+
+	<lookupItem id="breed" value="German Sheperd" />
+	<lookupItem id="breed" value="Dalmation" />
+	<lookupItem id="breed" value="Rottweiler" />
+	<lookupItem id="breed" value="Domestic Shorthair" />
+	<lookupItem id="breed" value="Persian" />
+	<lookupRel>
+		<source id="species" value="Canine" />
+		<target id="breed" value="Dalmation" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Canine" />
+		<target id="breed" value="German Sheperd" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Canine" />
+		<target id="breed" value="Rottweiler" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Feline" />
+		<target id="breed" value="Domestic Shorthair" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Feline" />
+		<target id="breed" value="Persian" />
+	</lookupRel>
+	<lookupItem id="colour" value="Black" />
+	<lookupItem id="colour" value="White" />
+	
 </lookupData>
