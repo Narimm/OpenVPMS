@@ -12,11 +12,9 @@
     <property name="model" persist="session" />
     <property name="nextPage" persist="session" />
     <property name="currentFieldTracking" />
+    <property name="callback" persist="session" />   
     
     <bean name="delegate" class="org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidationDelegate" lifecycle="request" />
-    <bean name="numberValidator" class="org.apache.tapestry.valid.NumberValidator" lifecycle="page" >
-		<set name="valueType">"int"</set>
-    </bean>
     
     <component id="errors" type="For" >
         <binding name="source" value="beans.delegate.fieldTracking" />
