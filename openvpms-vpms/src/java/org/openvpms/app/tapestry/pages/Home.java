@@ -23,8 +23,4 @@ import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
 
 public abstract class Home extends OpenVpmsPage {
 
-    @Override
-    public void pushCallback() {
-        // TODO Auto-generated method stub
-    }
 }
