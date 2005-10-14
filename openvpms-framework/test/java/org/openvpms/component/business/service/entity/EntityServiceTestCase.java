@@ -69,7 +69,7 @@ public class EntityServiceTestCase extends
     /**
      * Test that we can create a {@link Person} through this service
      */
-    public void testPersonCreation()
+    public void NtestPersonCreation()
     throws Exception {
         Entity entity = entityService.create("person.person");
         assertTrue(entity instanceof Person);
@@ -82,11 +82,30 @@ public class EntityServiceTestCase extends
         entityService.save(person);
     }
 
+    /**
+     * Test person create, retrieve and update
+     */
+    public void testPersonLifecycle()
+    throws Exception {
+        Entity entity = entityService.create("person.person");
+        assertTrue(entity instanceof Person);
+        
+        Person person = (Person)entity;
+        person.setLastName("Alateras");
+        person.setFirstName("Jim");
+        person.setTitle("Mr");
+        
+        entityService.save(person);
+        
+        person = (Person)entityService.getById(person.getUid());
+        person.setFirstName("Grace");
+        entityService.save(person);
+    }
 
     /**
      * Test that we can create a {@link Animal} through this service
      */
-    public void testAnimalCreation()
+    public void NtestAnimalCreation()
     throws Exception {
         // create and insert a new pet
         entityService.save(createPet("brutus"));
@@ -95,7 +114,7 @@ public class EntityServiceTestCase extends
     /**
      * Test that we can locate entities by RmName only
      */
-    public void testFindWithRmName()
+    public void NtestFindWithRmName()
     throws Exception {
         
         // get the initial count
@@ -112,7 +131,7 @@ public class EntityServiceTestCase extends
     /**
      * Test that we can locate entities by RmName and EntityName only
      */
-    public void testFindWithEntityName()
+    public void NtestFindWithEntityName()
     throws Exception {
         
         // get the initial count
@@ -129,7 +148,7 @@ public class EntityServiceTestCase extends
     /**
      * Test that we can locate entities by RmName, EntityName and ConceptName
      */
-    public void testFindWithConceptName()
+    public void NtestFindWithConceptName()
     throws Exception {
         
         // get the initial count
@@ -148,7 +167,7 @@ public class EntityServiceTestCase extends
      * Test that we can locate entities by RmName, EntityName, ConceptName
      * and instance name
      */
-    public void testFindWithInstanceName()
+    public void NtestFindWithInstanceName()
     throws Exception {
         
         // get the initial count

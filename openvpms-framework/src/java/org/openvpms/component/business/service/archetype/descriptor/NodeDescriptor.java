@@ -85,7 +85,18 @@ public class NodeDescriptor implements Serializable {
      * Attribute, which defines whether this node is hidden or can be displayed
      */
     private boolean isHidden = false;
+    
+    /**
+     * Determine whether the value for this node is derived
+     */
+    private boolean isDerived = false;
 
+    /**
+     * This is a jxpath expression, which is used to determine the 
+     * value of the node
+     */
+    private String derivedValue;
+    
     /**
      * The XPath/JXPath expression that is used to resolve this node within the
      * associated domain object.
@@ -218,6 +229,34 @@ public class NodeDescriptor implements Serializable {
      */
     public void setHidden(boolean isHidden) {
         this.isHidden = isHidden;
+    }
+
+    /**
+     * @return Returns the isDerived.
+     */
+    public boolean isDerived() {
+        return isDerived;
+    }
+
+    /**
+     * @return Returns the derivedValue.
+     */
+    public String getDerivedValue() {
+        return derivedValue;
+    }
+
+    /**
+     * @param derivedValue The derivedValue to set.
+     */
+    public void setDerivedValue(String derivedValue) {
+        this.derivedValue = derivedValue;
+    }
+
+    /**
+     * @param isDerived The isDerived to set.
+     */
+    public void setDerived(boolean isDerived) {
+        this.isDerived = isDerived;
     }
 
     /**

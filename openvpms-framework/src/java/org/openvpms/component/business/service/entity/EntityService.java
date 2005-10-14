@@ -119,7 +119,7 @@ public class EntityService implements IEntityService {
      */
     public List get(String rmName, String entityName, String conceptName, String instanceName) {
         try {
-            return dao.find(rmName, entityName, conceptName, instanceName);
+            return dao.get(rmName, entityName, conceptName, instanceName);
         } catch (EntityDAOException exception) {
             throw new EntityServiceException(
                     EntityServiceException.ErrorCode.FailedToFindEntity,
@@ -127,6 +127,21 @@ public class EntityService implements IEntityService {
                     exception);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.entity.IEntityService#getById(long)
+     */
+    public Entity getById(long id) {
+        try {
+            return dao.getById(id);
+        } catch (EntityDAOException exception) {
+            throw new EntityServiceException(
+                    EntityServiceException.ErrorCode.FailedToFindEntityWithId,
+                    new Object[]{id}, 
+                    exception);
+        }
+    }
+
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getByShortName(java.lang.String)

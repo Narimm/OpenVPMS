@@ -18,11 +18,17 @@
 			minCardinality="1" maxLength="30" />
 		<node name="classifications" path="/classifications"
 			type="org.openvpms.component.business.domain.im.common.EntityClassification">
-			<assertion type="archetypeRange">
+			<!-- assertion type="archetypeRange">
 				<property key="person.person" />
 				<property key="animal.animal" />
 				<errorMessage>errorMessage</errorMessage>
-			</assertion>
+			</assertion-->
 		</node>
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat(/firstName, ' ', /lastName)" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" minCardinality="1" derived="true"
+			derivedValue="/archetypeId/concept" />
 	</archetype>
 </archetypes>

@@ -63,7 +63,7 @@ public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDA
      * @see org.openvpms.component.business.dao.im.common.IEntityDAO#findById(org.openvpms.component.business.domain.im.common.Entity)
      */
     @SuppressWarnings("unchecked")
-    public List find(String rmName, String entityName, String conceptName, String instanceName) {
+    public List get(String rmName, String entityName, String conceptName, String instanceName) {
         try {
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
@@ -154,6 +154,33 @@ public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDA
                     EntityDAOException.ErrorCode.FailedToFindEntities,
                     new Object[]{rmName, entityName, conceptName, instanceName},
                     exception);
+        }
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#getById(long)
+     */
+    public Entity getById(long id) {
+        try {
+            List results = getHibernateTemplate()
+                .findByNamedQueryAndNamedParam("entity.getEntityById",
+                    new String[] { "uid" },
+                    new Object[] {new Long(id)});
+            
+            if (results.size() > 1) {
+                throw new EntityDAOException(
+                    EntityDAOException.ErrorCode.MultipleInstances,
+                    new Object[]{id});
+            } else if (results.size() == 0) {
+                return null;
+            } else {
+                return (Entity)results.get(0);
+            }
+        } catch (Exception exception) {
+            throw new EntityDAOException(
+                    EntityDAOException.ErrorCode.FailedToFindEntity,
+                    new Object[]{id}, exception);
         }
     }
 

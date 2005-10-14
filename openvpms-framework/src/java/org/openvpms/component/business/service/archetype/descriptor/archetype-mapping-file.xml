@@ -119,6 +119,14 @@
             direct="false" transient="false" get-method="isHidden" set-method="setHidden">
             <bind-xml name="hidden" node="attribute" reference="false"/>
         </field>
+        <field name="derived" type="boolean" required="false"
+            direct="false" transient="false" get-method="isDerived" set-method="setDerived">
+            <bind-xml name="derived" node="attribute" reference="false"/>
+        </field>
+        <field name="derivedValue" type="string" required="false" direct="false"
+            transient="false" get-method="getDerivedValue" set-method="setDerivedValue">
+            <bind-xml name="derivedValue" node="attribute" reference="false"/>
+        </field>
         <field name="minLength" type="integer" required="false"
             direct="false" transient="false" get-method="getMinLength" set-method="setMinLength">
             <bind-xml name="minLength" node="attribute" reference="false"/>

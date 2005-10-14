@@ -296,7 +296,14 @@ public class ArchetypeService implements IArchetypeService {
                 // can also cause problems
             }
 
-            // first check the cardinality
+            // first check whether the value for this node is derived and if it
+            // is then derive the value
+            if (node.isDerived()) {
+                context.getPointer(node.getPath())
+                    .setValue(context.getValue(node.getDerivedValue()));
+            }
+            
+            // check the cardinality
             if ((node.getMinCardinality() == 1) && (value == null)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation failed for Node: " +
@@ -306,6 +313,7 @@ public class ArchetypeService implements IArchetypeService {
                 valid = false;
                 break;
             }
+            
 
             if ((value != null) &&
                 (node.getAssertionDescriptors().length > 0)){
@@ -314,6 +322,7 @@ public class ArchetypeService implements IArchetypeService {
                     AssertionTypeDescriptor assertionType = assertionTypes
                             .get(assertion.getType());
     
+                    logger.debug("Executing assertion " + assertion.getType() + " for object of type " + value.getClass().getName());
                     if (!assertionType.assertTrue(value, assertion)) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Assertion failed for Node: " +

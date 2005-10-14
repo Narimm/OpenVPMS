@@ -129,6 +129,19 @@ public interface IEntityService {
             String conceptName, String instanceName);
     
     /**
+     * Return the entity with the specified identity or null if it does not
+     * exist
+     * 
+     * @param id
+     *            the entities identity
+     * @return Entity
+     *            the entity object
+     * @throws EntityServiceException
+     *            a runtime exception                         
+     */
+    public Entity getById(long id);
+
+    /**
      * Return a list of {@link Entity} instances with the specified 
      * short name
      * 

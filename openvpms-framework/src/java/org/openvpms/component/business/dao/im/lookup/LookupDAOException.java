@@ -16,39 +16,40 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.entity;
+package org.openvpms.component.business.dao.im.lookup;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * This exception is the base service exception for the entity sergvice. As 
- * with most excpetions in OpenVPMS it is a {@link java.lang.RuntimeException}. 
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityServiceException extends RuntimeException implements
+public class LookupDAOException extends RuntimeException implements
         OpenVPMSException {
 
     /**
-     * Generated SUID
+     * Generated SUID.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1403478672254798421L;
 
     /**
-     * An enumeration of error codes
+     * An enumeration of error codes.
      */
     public enum ErrorCode {
-        FailedToCreateEntity,
-        FailedToDeleteEntity, 
-        FailedToUpdateEntity,
-        FailedToSaveEntity,
-        FailedToFindEntity,
-        FailedToLocateArchetype,
-        InvalidEntityObject,
-        InvalidShortName,
-        FailedToFindEntityWithId
+        FailedToInitializeService,
+        FailedToInsertLookup, 
+        FailedToInsertLookupRelationship,
+        FailedToDeleteLookup, 
+        FailedToDeleteLookupRelationship,
+        FailedToUpdateLookup, 
+        FailedToSaveLookup, 
+        FailedToGetLookupsByConcept,
+        FailedToGetSourceLookups,
+        FailedToGetTargetLookups,
+        InvalidRelationshipType,
+        FailedToLocateLookup
     }
 
     /**
@@ -61,7 +62,7 @@ public class EntityServiceException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.entity."
+            .getMessages("org.openvpms.component.business.dao.im.lookup."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -71,7 +72,7 @@ public class EntityServiceException extends RuntimeException implements
      * @param errorCode
      *            the error code
      */
-    public EntityServiceException(ErrorCode errorCode) {
+    public LookupDAOException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -86,7 +87,7 @@ public class EntityServiceException extends RuntimeException implements
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public EntityServiceException(ErrorCode errorCode, Object[] params) {
+    public LookupDAOException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -100,7 +101,7 @@ public class EntityServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public EntityServiceException(ErrorCode errorCode, Throwable cause) {
+    public LookupDAOException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -117,7 +118,7 @@ public class EntityServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public EntityServiceException(ErrorCode errorCode, Object[] params,
+    public LookupDAOException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

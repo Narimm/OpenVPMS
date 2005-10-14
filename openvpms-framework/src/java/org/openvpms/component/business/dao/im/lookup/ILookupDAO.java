@@ -122,6 +122,22 @@ public interface ILookupDAO {
     
     /**
      * Retrieve all the {@link Lookup} instances that are of the specified type
+     * (i.e. archetypeId} and are the target of the a relationship with the 
+     * nominated source. In this case the source is a String rather than a 
+     * {@link Lookup} object.
+     * 
+     * @param type
+     *            the relationship type
+     * @param source
+     *            the source value
+     * @return List<Lookup>            
+     * @throws LookupDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public List<Lookup> getTargetLookups(String type, String source);
+    
+    /**
+     * Retrieve all the {@link Lookup} instances that are of the specified type
      * (i.e. archetypeId} and are the source of the a relationship with the 
      * nominated target
      * 
@@ -134,4 +150,20 @@ public interface ILookupDAO {
      *             a runtime exception if the request cannot complete
      */
     public List<Lookup> getSourceLookups(String type, Lookup target);
+    
+    /**
+     * Retrieve all the {@link Lookup} instances that are of the specified type
+     * (i.e. archetypeId} and are the source of the a relationship with the 
+     * nominated target. In this case the source is a String rather than a 
+     * {@link Lookup} object.
+     * 
+     * @param type
+     *            the relationship type
+     * @param target
+     *            the target value
+     * @return List<Lookup>            
+     * @throws LookupDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public List<Lookup> getSourceLookups(String type, String target);
 }

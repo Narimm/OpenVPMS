@@ -143,6 +143,21 @@ public interface ILookupService {
     public List<Lookup> getTargetLookups(String relType, Lookup source);
     
     /**
+     * Retrieve all the lookup instances of a particular type, which are the
+     * target of a lookup relationship with the specified source. In this 
+     * case the source is a string so an initial lookup is required to retrieve
+     * the source lookup object
+     * 
+     * @param relType
+     *            the relationship type
+     * @param source
+     *            the source of the relationship
+     * @return List<Lookup>            
+     * @throws LookupServiceException            
+     */
+    public List<Lookup> getTargetLookups(String relType, String source);
+    
+    /**
      * Retrieve all the lookup instance of a particular type, which are the 
      * source of a lookup relationship with the specified target
      * 
@@ -154,6 +169,21 @@ public interface ILookupService {
      * @throws LookupServiceException            
      */
     public List<Lookup> getSourceLookups(String relType, Lookup target);
+    
+    /**
+     * Retrieve all the lookup instance of a particular type, which are the 
+     * source of a lookup relationship with the specified target. In this 
+     * case the source is a string so an initial lookup is required to retrieve
+     * the target lookup object
+     * 
+     * @param relType
+     *            the relationship type
+     * @param target
+     *            the target of the relationship
+     * @return List<Lookup>            
+     * @throws LookupServiceException            
+     */
+    public List<Lookup> getSourceLookups(String relType, String target);
     
     /**
      * Return a list of lookups for the specified {@link NodeDescriptor} or

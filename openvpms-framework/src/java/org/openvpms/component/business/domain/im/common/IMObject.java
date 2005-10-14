@@ -75,12 +75,22 @@ public abstract class IMObject implements Serializable {
      */
     private String linkId;
     
-    
     /**
      * Uniquely identifies an instance of this class. This is the identifier
      * that is used for persistence.
      */
     private long uid = -1;
+    
+    /**
+     * This is the name that this entity is known by. Each concrete instance 
+     * must supply this.
+     */
+    private String name;
+    
+    /**
+     * Description of this entity
+     */
+    private String description;
     
     /**
      * The archetype that is attached to this object
@@ -104,7 +114,26 @@ public abstract class IMObject implements Serializable {
     public IMObject(ArchetypeId archetypeId) {
         this();
         this.archetypeId = archetypeId;
+        this.description = archetypeId.getConcept();
     }
+
+    /**
+     * Construct an instance of an info model object given the specified 
+     * data.
+     * 
+     * @param archetypeId
+     *            the archetype id.
+     * @param name
+     *            the name of the object
+     * @param description
+     *            the description for this object                        
+     */
+    public IMObject(ArchetypeId archetypeId, String name, String description) {
+        this(archetypeId);
+        this.name = name;
+        this.description = description;
+    }
+
     /**
      * @return Returns the version.
      */
@@ -146,6 +175,34 @@ public abstract class IMObject implements Serializable {
     @SuppressWarnings("unused")
     private void setLinkId(String linkId) {
         this.linkId = linkId;
+    }
+
+    /**
+     * @return Returns the name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name The name to set.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return Returns the description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description The description to set.
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

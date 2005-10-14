@@ -53,17 +53,6 @@ public class Entity extends IMObject {
     private static final Logger logger = Logger.getLogger(Entity.class);
 
     /**
-     * This is the name that this entity is known by. Each concrete instance 
-     * must supply this.
-     */
-    private String name;
-    
-    /**
-     * Description of this entity
-     */
-    private String description;
-    
-    /**
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
@@ -119,35 +108,19 @@ public class Entity extends IMObject {
      */
     public Entity(ArchetypeId archetypeId, String name, 
         String description,  DynamicAttributeMap details) {
-        super(archetypeId);
+        super(archetypeId, name, description);
 
         // check that a name was specified
         if (StringUtils.isEmpty(name)) {
             throw new EntityException(EntityException.ErrorCode.NoNameSpecified);
         }
         
-        this.name = name;
-        this.description = description;
         this.identities = new HashSet<EntityIdentity>();
         this.classifications = new HashSet<EntityClassification>();
         this.participations = new HashSet<Participation>();
         this.sourceRelationships = new HashSet<EntityRelationship>();
         this.targetRelationships = new HashSet<EntityRelationship>();
         this.details = details;
-    }
-
-    /**
-     * @return Returns the description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @param description The description to set.
-     */
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     /**
@@ -359,20 +332,6 @@ public class Entity extends IMObject {
      */
     public void setDetails(DynamicAttributeMap details) {
         this.details = details;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**

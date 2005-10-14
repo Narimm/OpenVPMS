@@ -18,6 +18,9 @@
 
 package org.openvpms.component.business.service.lookup;
 
+// java core
+import java.util.List;
+
 // spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -84,7 +87,7 @@ public class LookupServiceTestCase extends
     /**
      * Test that we can create an object through this service
      */
-    public void NtestLookupObjectCreation()
+    public void testLookupObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
             Lookup lookup = lookupService.create("lookup.country");
@@ -100,9 +103,20 @@ public class LookupServiceTestCase extends
     }
 
     /**
+     * Test the retrieval of lookups. This test assumes that the database is
+     * loaded with stuff
+     */
+    public void testLookupRetrievalByString() {
+        List<Lookup> results = lookupService.getTargetLookups("country.state", "Australia");
+        assertTrue(results.size() > 0);
+        results = lookupService.getSourceLookups("country.state", "Victoria");
+        assertTrue(results.size() > 0);
+    }
+    
+    /**
      * The the retrieval of look ups given a node descriptor 
      */
-    public void NtestLookupRetrievalFromNodeDescriptor()
+    public void testLookupRetrievalFromNodeDescriptor()
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
             .getArchetypeDescriptor("person.person");

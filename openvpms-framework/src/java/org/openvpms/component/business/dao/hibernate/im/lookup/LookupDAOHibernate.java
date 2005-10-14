@@ -20,8 +20,13 @@ package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 // spring-framework
 import java.util.List;
+import java.util.StringTokenizer;
 
+// spring-hibernate
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+
+// log4j
+import org.apache.log4j.Logger;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.im.lookup.ILookupDAO;
@@ -38,6 +43,11 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
  */
 public class LookupDAOHibernate extends HibernateDaoSupport implements
         ILookupDAO {
+    /**
+     * Define a logger for this class
+     */
+    private static final Logger logger = Logger
+            .getLogger(LookupDAOHibernate.class);
 
     /**
      * Default constructor
@@ -57,7 +67,7 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToDeleteLookup,
-                    new Object[] { lookup });
+                    new Object[] { lookup }, exception);
         }
     }
 
@@ -72,7 +82,7 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToDeleteLookupRelationship,
-                    new Object[] { relationship });
+                    new Object[] { relationship }, exception);
         }
     }
 
@@ -92,7 +102,7 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetLookupsByConcept,
-                    new Object[] { concept });
+                    new Object[] { concept }, exception);
         }
     }
 
@@ -107,13 +117,56 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         try {
             return getHibernateTemplate()
                     .findByNamedQueryAndNamedParam("lookupRelationship.getSourceLookups",
-                            new String[] { "type", "target" },
-                            new Object[] { type, target });
+                            new String[] { "type", "uid" },
+                            new Object[] { type, target.getUid() });
 
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetSourceLookups,
-                    new Object[] { type, target });
+                    new Object[] { type, target }, exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.lookup.ILookupDAO#getSourceLookups(java.lang.String, java.lang.String)
+     */
+    public List<Lookup> getSourceLookups(String type, String target) {
+        try {
+            // the type is in the form of sourceConcept.tsrgetConcept
+            StringTokenizer tokens = new StringTokenizer(type, ".");
+            
+            if (tokens.countTokens() != 2) {
+                throw new LookupDAOException(
+                        LookupDAOException.ErrorCode.InvalidRelationshipType,
+                        new Object[] {type});
+            }
+            
+            @SuppressWarnings("unused") String sourceConcept = tokens.nextToken();
+            String targetConcept = tokens.nextToken();
+            List results = getHibernateTemplate()
+                .findByNamedQueryAndNamedParam("lookup.getLookupForConceptAndValue",
+                        new String[] { "concept", "value" },
+                        new Object[] {targetConcept, target });
+            
+            // if we couldn't find the target lookup then throw an exception
+            if (results.size() == 0) {
+                throw new LookupDAOException(
+                        LookupDAOException.ErrorCode.FailedToLocateLookup,
+                        new Object[] {targetConcept, target});
+            }
+            
+            // if there are more then just take the first one and issue a 
+            // warning
+            if (results.size() > 1) {
+                logger.warn("There are multiple lookups with concept:" + 
+                        targetConcept + " and value:" + target);
+            }
+            
+            return getSourceLookups(type, (Lookup)results.get(0));
+        } catch (Exception exception) {
+            throw new LookupDAOException(
+                    LookupDAOException.ErrorCode.FailedToGetSourceLookups,
+                    new Object[] { type, target }, exception);
         }
     }
 
@@ -128,16 +181,60 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         try {
             return getHibernateTemplate()
                     .findByNamedQueryAndNamedParam("lookupRelationship.getTargetLookups",
-                            new String[] { "type", "source" },
-                            new Object[] { type, source });
+                            new String[] { "type", "uid" },
+                            new Object[] { type, source.getUid() });
 
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetTargetLookups,
-                    new Object[] { type, source });
+                    new Object[] { type, source }, exception);
         }
     }
 
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.lookup.ILookupDAO#getTargetLookups(java.lang.String, java.lang.String)
+     */
+    public List<Lookup> getTargetLookups(String type, String source) {
+        try {
+            // the type is in the form of sourceConcept.targetConcept
+            StringTokenizer tokens = new StringTokenizer(type, ".");
+            
+            if (tokens.countTokens() != 2) {
+                throw new LookupDAOException(
+                        LookupDAOException.ErrorCode.InvalidRelationshipType,
+                        new Object[] {type});
+            }
+            
+            String sourceConcept = tokens.nextToken();
+            List results = getHibernateTemplate()
+                .findByNamedQueryAndNamedParam("lookup.getLookupForConceptAndValue",
+                        new String[] { "concept", "value" },
+                        new Object[] {sourceConcept, source });
+            
+            // if we couldn't find the target lookup then throw an exception
+            if (results.size() == 0) {
+                throw new LookupDAOException(
+                        LookupDAOException.ErrorCode.FailedToLocateLookup,
+                        new Object[] {sourceConcept, source});
+            }
+            
+            // if there are more then just take the first one and issue a 
+            // warning
+            if (results.size() > 1) {
+                logger.warn("There are multiple lookups with concept:" + 
+                        sourceConcept + " and value:" + source);
+            }
+            
+            logger.debug(((Lookup)results.get(0)).toString());
+            return getTargetLookups(type, (Lookup)results.get(0));
+        } catch (Exception exception) {
+            throw new LookupDAOException(
+                    LookupDAOException.ErrorCode.FailedToGetTargetLookups,
+                    new Object[] { type, source }, exception);
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * 

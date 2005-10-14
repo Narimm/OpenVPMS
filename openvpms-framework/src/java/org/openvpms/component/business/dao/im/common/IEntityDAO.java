@@ -101,6 +101,17 @@ public interface IEntityDAO {
      * @throws EntityDAOException
      *             a runtime exception if the request cannot complete
      */
-    public List find(String rmName, String entityName, String conceptName, 
+    public List get(String rmName, String entityName, String conceptName, 
             String instanceName);
+    
+    /**
+     * Return an entity with the specified id or null if one does not exists
+     * 
+     * @param id
+     *            the identity of the entity
+     * @return Entity            
+     * @throws EntityDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public Entity getById(long id);
 }

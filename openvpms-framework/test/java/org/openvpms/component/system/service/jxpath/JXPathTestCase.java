@@ -24,7 +24,7 @@ import java.util.Hashtable;
 
 // jxpath
 import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.jxpath.Pointer;
+import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.party.Person;
@@ -128,6 +128,24 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(((Boolean)getValue(adesc, "nodeDescriptorsAsMap/firstName/string and nodeDescriptorsAsMap/lastName/string")).booleanValue());
         assertTrue(((Boolean)getValue(adesc, "nodeDescriptorsAsMap/firstName/string and not(nodeDescriptorsAsMap/lastName/string)")).booleanValue() == false);
         assertTrue(((Boolean)getValue(adesc, "nodeDescriptorsAsMap/firstName/string and not(nodeDescriptorsAsMap/firstName/number)")).booleanValue());
+    }
+    
+    /**
+     * Test that jxpath derive values atually work
+     */
+    public void testDerivedValueNodes()
+    throws Exception {
+        // we know that both name and description are derived nodes 
+        // for person.person
+        Person person = (Person)service.createDefaultObject("person.person");
+
+        person.setLastName("Alateras");
+        person.setFirstName("Jim");
+        person.setTitle("Mr");
+        assertTrue(service.validateObject(person));
+        assertTrue(StringUtils.isEmpty(person.getName()) == false);
+        assertTrue(person.getName().equals("Jim Alateras"));
+        assertTrue(person.getDescription().equals(person.getArchetypeId().getConcept()));
     }
     
     /**

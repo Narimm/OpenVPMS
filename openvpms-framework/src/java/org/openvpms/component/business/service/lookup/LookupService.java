@@ -220,9 +220,35 @@ public class LookupService implements ILookupService {
     }
 
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#getTargetLookups(java.lang.String, java.lang.String)
+     */
+    public List<Lookup> getTargetLookups(String type, String source) {
+        try {
+            return dao.getTargetLookups(type, source);
+        } catch (LookupDAOException exception) {
+            throw new LookupServiceException(
+                    LookupServiceException.ErrorCode.FailedToRetrieveTargetLookups,
+                    new Object[]{type, source}, exception);
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String, org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public List<Lookup> getSourceLookups(String type, Lookup target) {
+        try {
+            return dao.getSourceLookups(type, target);
+        } catch (LookupDAOException exception) {
+            throw new LookupServiceException(
+                    LookupServiceException.ErrorCode.FailedToRetrieveSourceLookups,
+                    new Object[]{type, target}, exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String, java.lang.String)
+     */
+    public List<Lookup> getSourceLookups(String type, String target) {
         try {
             return dao.getSourceLookups(type, target);
         } catch (LookupDAOException exception) {

@@ -165,6 +165,7 @@ public class Lookup extends IMObject {
     public String toString() {
         return new ToStringBuilder(this)
             .appendSuper(super.toString())
+            .append("uid", getUid())
             .append("value", value)
             .append("code", code)
             .toString();
