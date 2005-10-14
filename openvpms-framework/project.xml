@@ -362,6 +362,12 @@
       <url>http://jakarta.apache.org/tapestry</url>
     </dependency>
     <dependency>
+      <groupId>tapestry</groupId>
+      <artifactId>tapestry-annotations</artifactId>
+      <version>4.0-beta-10</version>
+      <url>http://jakarta.apache.org/tapestry</url>
+    </dependency>
+    <dependency>
       <groupId>acegisecurity</groupId>
       <artifactId>acegi-security</artifactId>
       <version>0.8.1</version>
