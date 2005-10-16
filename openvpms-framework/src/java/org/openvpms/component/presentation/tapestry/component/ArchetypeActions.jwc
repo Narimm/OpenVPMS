@@ -14,24 +14,24 @@
    	<parameter name="archetypeDescriptor" required="no" default-value="page.archetypeDescriptor"/> 
     
     <component id="saveButton" type="Submit">
-        <binding name="listener">page.listeners.save</binding>
+        <binding name="listener" value="page.listeners.save"/>
     </component>
     <component id="saveAndReturnButton" type="Submit">
-        <binding name="listener">page.listeners.saveAndReturn</binding>
+        <binding name="listener" value="page.listeners.saveAndReturn"/>
     </component>
      <component id="removeButton" type="Submit">
-        <binding name="listener">page.listeners.remove</binding>
+        <binding name="listener" value="page.listeners.remove"/>
     </component>
      <component id="cancelButton" type="Submit">
-        <binding name="listener">page.listeners.cancel</binding>
+        <binding name="listener" value="page.listeners.cancel"/>
     </component>
     <component id="showSaveButton" type="If">
-        <binding name="condition">showSaveButton</binding>
+        <binding name="condition" value="showSaveButton"/>
     </component>
     <component id="showRemoveButton" type="If">
-        <binding name="condition">showRemoveButton</binding>
+        <binding name="condition" value="showRemoveButton"/>
     </component>   
     <component id="showCancelButton" type="If">
-        <binding name="condition">showCancelButton</binding>
+        <binding name="condition" value="showCancelButton"/>
     </component>   
 </component-specification>

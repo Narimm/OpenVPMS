@@ -12,6 +12,6 @@
 	<parameter name="archetypeDescriptor" required="no" default-value="page.archetypeDescriptor"></parameter>
     
     <component id="link" type="ActionLink">
-        <binding name="listener">listeners.click</binding>
+        <binding name="listener" value="listeners.click"/>
     </component>
 </component-specification>

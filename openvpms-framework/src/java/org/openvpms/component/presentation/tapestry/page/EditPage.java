@@ -18,19 +18,19 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
+import org.apache.tapestry.annotations.Bean;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.form.IPropertySelectionModel;
+import org.apache.tapestry.valid.ValidationDelegate;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.presentation.tapestry.Visit;
-import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.component.LookupSelectionModel;
-import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidationDelegate;
 
 /**
  * 
@@ -48,15 +48,11 @@ public abstract class EditPage extends OpenVpmsPage {
 
     public abstract void setNextPage(ICallback NextPage);
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.presentation.tapestry.page.OvpmsPage#pushCallback()
-     */
-    @SuppressWarnings("unchecked")
-    public void pushCallback() {
-        Visit visit = (Visit) getVisit();
-        visit.getCallbackStack().push(
-                new EditCallback(getPageName(), getModel()));
-    }
+    @Bean
+    public abstract ValidationDelegate getDelegate();
+    //{
+    //    return (ValidationDelegate)getBeans().getBean("delegate");
+    //}
 
     /**
      * @param cycle
@@ -78,9 +74,11 @@ public abstract class EditPage extends OpenVpmsPage {
               getActService().remove((Act)getModel());
           else if (getModel() instanceof Lookup)
               getLookupService().remove((Lookup)getModel());
-          Visit visit = (Visit)getVisit();
-          ICallback callback = (ICallback)visit.getCallbackStack().pop();
-          callback.performCallback(cycle);
+          ICallback callback = (ICallback) getCallback();
+          if (callback == null)
+              cycle.activate("Home");
+          else
+              callback.performCallback(cycle);
         }
         catch (Exception pe){
             cycle.activate("Home");
@@ -93,9 +91,11 @@ public abstract class EditPage extends OpenVpmsPage {
     public void saveAndReturn(IRequestCycle cycle) {
         if (save()) {
             try {
-                Visit visit = (Visit) getVisit();
-                ICallback callback = (ICallback) visit.getCallbackStack().pop();
-                callback.performCallback(cycle);
+                ICallback callback = (ICallback) getCallback();
+                if (callback == null)
+                    cycle.activate("Home");
+                else
+                    callback.performCallback(cycle);
             }
             catch (Exception pe) {
                 cycle.activate("Home");
@@ -105,9 +105,11 @@ public abstract class EditPage extends OpenVpmsPage {
 
     public void cancel(IRequestCycle cycle) {
         try {
-            Visit visit = (Visit) getVisit();
-            ICallback callback = (ICallback) visit.getCallbackStack().pop();
-            callback.performCallback(cycle);
+            ICallback callback = (ICallback) getCallback();
+            if (callback == null)
+                cycle.activate("Home");
+            else
+                callback.performCallback(cycle);
         }
         catch (Exception pe) {
             cycle.activate("Home");
@@ -120,6 +122,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    public void onFormRefresh(IRequestCycle cycle) {
+        getDelegate().clearErrors();
+    }
+
     /**
      * @return
      */
@@ -127,8 +133,7 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     protected boolean save() {
-        OpenVpmsValidationDelegate delegate = (OpenVpmsValidationDelegate)getPage().getBeans().getBean("delegate");
-        if (!delegate.getHasErrors()) {
+        if (!getDelegate().getHasErrors()) {
             try {
                 if (getModel() instanceof Entity)
                     getEntityService().save((Entity)getModel());
@@ -137,8 +142,9 @@ public abstract class EditPage extends OpenVpmsPage {
                 else if (getModel() instanceof Lookup)
                     getLookupService().save((Lookup)getModel());                   
             } catch (Exception pe) {
-                ((OpenVpmsValidationDelegate)delegate).record(pe);
-                 return false;
+                throw new ApplicationRuntimeException(pe);
+                //((OpenVpmsValidationDelegate)getDelegate()).record(pe);
+                // return false;
             }
             return true;
         }

@@ -17,32 +17,32 @@
     <property name="currentObject" />
     <property name="index" />
         
-    <component id="foreach" type="Foreach" >
-    	<binding name="source">collection</binding>       
-        <binding name="value">currentObject</binding> 
-        <binding name="index">index</binding>
-        <binding name="element">literal:tr</binding>
+    <component id="foreach" type="For" >
+    	<binding name="source" value="collection"/>       
+        <binding name="value" value="currentObject"/> 
+        <binding name="index" value="index"/>
+        <binding name="element" value="literal:tr"/>
     </component>
     <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="removeCheckbox" type="Checkbox">
-        <binding name="value">selected[index]</binding>
+        <binding name="value" value="selected[index]"/>
     </component>
     <component id="editLink" type="EditLink">
-        <binding name="model">currentObject</binding>
+        <binding name="model" value="currentObject"/>
     </component>
     <component id="insert" type="Insert">
-        <binding name="value">currentObject</binding>
+        <binding name="value" value="currentObject"/>
     </component>
     <component id="allowCreate" type="If">
-        <binding name="condition">allowCreate</binding>
+        <binding name="condition" value="allowCreate"/>
     </component>
     <component id="allowRemove" type="If">
-        <binding name="condition">allowRemove</binding>
+        <binding name="condition" value="allowRemove"/>
     </component>
     <component id="addbutton" type="Submit">
-        <binding name="listener" >listeners.showAddPage</binding>
+        <binding name="listener" value="listeners.showAddPage"/>
     </component>
     <component id="removebutton" type="Submit">
-        <binding name="listener" >listeners.remove</binding>
+        <binding name="listener" value="listeners.remove"/>
     </component>  
 </component-specification>

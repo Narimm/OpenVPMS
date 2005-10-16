@@ -35,7 +35,7 @@ import org.openvpms.component.business.service.archetype.descriptor.NodeDescript
  * @version $LastChangedDate$
  */
 
-public abstract class PropertyEditor extends OpenVpmsComponent {
+public abstract class NodeEditor extends OpenVpmsComponent {
 
     public abstract NodeDescriptor getDescriptor();
 

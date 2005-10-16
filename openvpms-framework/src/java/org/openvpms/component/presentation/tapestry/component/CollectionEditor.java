@@ -23,19 +23,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-// jakarta-hivemind
 import org.apache.hivemind.ApplicationRuntimeException;
-
-// jakarta-tapestry
 import org.apache.tapestry.IRequestCycle;
-
-// openvpms-framework
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
 
@@ -75,7 +67,8 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         buildSelectedList();
     }
 
-    @SuppressWarnings("unchecked") void buildSelectedList() {
+    @SuppressWarnings("unchecked")
+    void buildSelectedList() {
         if (getCollection() != null) {
             selected = new ArrayList();
             for (Iterator iter = getCollection().iterator(); iter.hasNext();) {
@@ -86,8 +79,6 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
     }
 
     public void showAddPage(IRequestCycle cycle) {
-        Visit visit = (Visit) getPage().getVisit();
-        visit.getCallbackStack().push(buildCallback());
 
         // Look for specific page or else use <Default>AddToCollection
         EditPage editPage = (EditPage) Utils.findPage(cycle, Utils

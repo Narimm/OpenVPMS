@@ -18,12 +18,29 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+import java.util.List;
+
+import org.apache.tapestry.IExternalPage;
+import org.apache.tapestry.IRequestCycle;
+
+
 
 /**
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public abstract class Login extends OpenVpmsPage {
+public abstract class SearchPage extends OpenVpmsPage implements IExternalPage
+{
+    public abstract List getInstances();
 
+    public abstract void setInstances(List instances);
+
+    /* (non-Javadoc)
+     * @see org.apache.tapestry.IExternalPage#activateExternalPage(java.lang.Object[], org.apache.tapestry.IRequestCycle)
+     */
+    public void activateExternalPage(Object[] args, IRequestCycle cycle)
+    {
+        cycle.activate(this);
+    }
 }

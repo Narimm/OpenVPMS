@@ -13,8 +13,9 @@
    	<parameter name="archetypeDescriptor" required="no" default-value="page.archetypeDescriptor"/>
     
     <component id="form" type="Form">
-        <binding name="delegate">page.beans.delegate</binding>
-        <binding name="listener">page.listeners.onFormSubmit</binding>
+        <binding name="delegate" value="page.beans.delegate" />
+        <binding name="listener" value="page.listeners.onFormSubmit" />
+        <binding name="refresh" value="page.listeners.onFormRefresh" />
     </component>   
     <component id="archetypeActions" type="ArchetypeActions">
         <inherited-binding name="model" parameter-name="model"/>
@@ -22,7 +23,7 @@
         <inherited-binding name="saveListener" parameter-name="saveListener"/>
         <inherited-binding name="removeListener" parameter-name="removeListener"/>
     </component>
-	<component id="propertyTable" type="PropertyTable" inherit-informal-parameters="yes">
+	<component id="nodeTable" type="NodeTable" inherit-informal-parameters="yes">
       	<inherited-binding name="archetypeDescriptor" parameter-name="archetypeDescriptor"/>
         <inherited-binding name="model" parameter-name="model"/>
         <inherited-binding name="nodeNames" parameter-name="nodeNames"/>

@@ -21,6 +21,9 @@ package org.openvpms.component.presentation.tapestry.component;
 // tapestry hivemind
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
+import org.openvpms.component.presentation.tapestry.callback.EditCallback;
+import org.openvpms.component.presentation.tapestry.callback.SearchCallback;
+import org.openvpms.component.presentation.tapestry.page.EditPage;
 import org.openvpms.component.presentation.tapestry.page.SearchPage;
 
 /**
@@ -33,6 +36,10 @@ public abstract class SearchLink extends Link {
 
 	public void click(IRequestCycle cycle) {
 		SearchPage page = (SearchPage) findPage(cycle, "Search");
+        if (getPage() instanceof EditPage)
+            page.setCallback(new EditCallback(getPage().getPageName(),((EditPage)getPage()).getModel()));
+        else
+            page.setCallback(new SearchCallback(getPage().getPageName()));
 		try {
 			page.setInstances(page.getEntityService().getByShortName(
 					getArchetypeName()));
