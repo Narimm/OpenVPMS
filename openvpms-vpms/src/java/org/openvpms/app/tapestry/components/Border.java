@@ -19,8 +19,6 @@
 package org.openvpms.app.tapestry.components;
 
 import org.apache.tapestry.IRequestCycle;
-import org.apache.tapestry.event.PageEvent;
-import org.apache.tapestry.event.PageRenderListener;
 import org.openvpms.component.presentation.tapestry.component.OpenVpmsComponent;
 
 /**
@@ -30,8 +28,7 @@ import org.openvpms.component.presentation.tapestry.component.OpenVpmsComponent;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class Border extends OpenVpmsComponent implements
-        PageRenderListener {
+public abstract class Border extends OpenVpmsComponent {
 
     /** navigate to the Login form */
     public void login(IRequestCycle cycle) {
@@ -44,12 +41,4 @@ public abstract class Border extends OpenVpmsComponent implements
 
     }
 
-    /**
-     * setting a few values needed to render the border
-     * 
-     * @see org.apache.tapestry.event.PageRenderListener#pageBeginRender(org.apache.tapestry.event.PageEvent)
-     */
-    public void pageBeginRender(PageEvent event) {
-
-    }
 }
