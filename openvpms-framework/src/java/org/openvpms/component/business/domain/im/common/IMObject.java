@@ -114,7 +114,8 @@ public abstract class IMObject implements Serializable {
     public IMObject(ArchetypeId archetypeId) {
         this();
         this.archetypeId = archetypeId;
-        this.description = archetypeId.getConcept();
+        if (this.archetypeId != null)
+            this.description = archetypeId.getConcept();
     }
 
     /**
