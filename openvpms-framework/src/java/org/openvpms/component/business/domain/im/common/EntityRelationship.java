@@ -215,7 +215,7 @@ public class EntityRelationship extends IMObject {
      */
     public EntityIdentity getIdentity() {
         return identity;
-    }more 
+    }
 
     /**
      * @param identity The identity to set.
