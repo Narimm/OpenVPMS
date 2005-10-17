@@ -127,7 +127,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "entityIdentity");
             Role role1 = (Role) session.load(Role.class, id);
             EntityIdentity eid = createEntityIdentity();
-            role1.addEntityIdentity(eid);
+            role1.addIdentity(eid);
             session.saveOrUpdate(role1);
             tx.commit();
 
@@ -167,7 +167,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             Role role = createRole();
             for (int index = 0; index < eicount; index++) {
                 EntityIdentity eid = createEntityIdentity();
-                role.addEntityIdentity(eid);
+                role.addIdentity(eid);
             }
             session.saveOrUpdate(role);
             tx.commit();
@@ -180,11 +180,11 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // now retrieve the role and delete a single entity identity
             tx = session.beginTransaction();
             Role role1 = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role1.getEntityIdentities().length == eicount);
+            assertTrue(role1.getIdentities().size() == eicount);
 
             // delete the first identity
-            EntityIdentity identity = role1.getEntityIdentities()[0];
-            assertTrue(role1.removeEntityIdentity(identity));
+            EntityIdentity identity = role1.getIdentities().iterator().next();
+            assertTrue(role1.removeIdentity(identity));
             session.saveOrUpdate(role1);
             tx.commit();
 
@@ -195,7 +195,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // retrieve the role and check the entity identity count
             role1 = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role1.getEntityIdentities().length == (eicount - 1));
+            assertTrue(role1.getIdentities().size() == (eicount - 1));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -291,9 +291,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             assertTrue(role.getSourceEntityRelationships().length == 1);
             assertTrue(role.getTargetEntityRelationships().length == 1);
             assertTrue(source.getSourceEntityRelationships()[0]
-                    .getTargetEntity().getSourceEntityRelationships().length == 1);
+                    .getTarget().getSourceEntityRelationships().length == 1);
             assertTrue(source.getSourceEntityRelationships()[0]
-                    .getTargetEntity().getUid() == role.getUid());
+                    .getTarget().getUid() == role.getUid());
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -482,7 +482,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      */
     private Role createRole() throws Exception {
         return new Role(createRoleArchetypeId(), "doctor",  null, null, 
-                createTimeInterval(), createSimpleAttributeMap());
+                createSimpleAttributeMap());
 
     }
 
@@ -517,7 +517,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
     private EntityClassification createEntityClassification(Entity entity,
             Classification classification) {
         return new EntityClassification( createEntityArchetypeId(), entity, 
-                classification, createTimeInterval());
+                classification);
     }
 
     /**

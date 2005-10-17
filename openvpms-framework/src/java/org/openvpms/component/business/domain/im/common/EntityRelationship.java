@@ -18,11 +18,12 @@
 
 package org.openvpms.component.business.domain.im.common;
 
+// java core
+import java.util.Date;
+
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
-import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
-import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * Describes the relationship between two entities.
@@ -48,9 +49,14 @@ public class EntityRelationship extends IMObject {
     private String reason;
 
     /**
-     * Indicates the period that time interval that this relationship is valid.
+     * Indicates the active start time for this relationship
      */
-    private DvInterval<DvDateTime> activePeriod;
+    private Date activeStartTime;
+
+    /**
+     * Indicates the active end time for this relationship
+     */
+    private Date activeEndTime;
 
     /**
      * Records details of the relationship between the entities.
@@ -104,18 +110,31 @@ public class EntityRelationship extends IMObject {
     }
     
     /**
-     * @return Returns the activePeriod.
+     * @return Returns the activeEndTime.
      */
-    public DvInterval<DvDateTime> getActivePeriod() {
-        return activePeriod;
+    public Date getActiveEndTime() {
+        return activeEndTime;
     }
 
     /**
-     * @param activePeriod
-     *            The activePeriod to set.
+     * @param activeEndTime The activeEndTime to set.
      */
-    public void setActivePeriod(DvInterval<DvDateTime> activePeriod) {
-        this.activePeriod = activePeriod;
+    public void setActiveEndTime(Date activeEndTime) {
+        this.activeEndTime = activeEndTime;
+    }
+
+    /**
+     * @return Returns the activeStartTime.
+     */
+    public Date getActiveStartTime() {
+        return activeStartTime;
+    }
+
+    /**
+     * @param activeStartTime The activeStartTime to set.
+     */
+    public void setActiveStartTime(Date activeStartTime) {
+        this.activeStartTime = activeStartTime;
     }
 
     /**
@@ -196,7 +215,7 @@ public class EntityRelationship extends IMObject {
      */
     public EntityIdentity getIdentity() {
         return identity;
-    }
+    }more 
 
     /**
      * @param identity The identity to set.

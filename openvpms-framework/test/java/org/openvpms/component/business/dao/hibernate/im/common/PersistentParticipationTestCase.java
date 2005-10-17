@@ -220,7 +220,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
     private Entity createEntity() {
         return new Role(
                 new ArchetypeId("openvpms-party-role.role.1.0"), "administrator",
-                null, null, createTimeInterval(), null);
+                null, null, null);
 
     }
     

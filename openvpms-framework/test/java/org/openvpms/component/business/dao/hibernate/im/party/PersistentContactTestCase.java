@@ -31,8 +31,6 @@ import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCa
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
-import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * 
@@ -71,7 +69,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * Test the creation of a simple contact
      */
     public void testCreateSimpleContact() throws Exception {
-        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -85,7 +82,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             Address address = createAddress();
             
-            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId());
             session.save(contact);
             
             // add the address
@@ -110,7 +107,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * Test the addition of an address to a contact
      */
     public void testAddressAdditionForContact() throws Exception {
-        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -121,7 +117,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId());
             session.save(contact);
             tx.commit();
             
@@ -156,7 +152,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     public void testAddressDeleteForContact()
     throws Exception {
-        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -167,7 +162,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId());
             assertTrue(contact != null);
             
             session.save(contact);
@@ -219,7 +214,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     public void testAddressUpdateForContact()
     throws Exception {
-        DvInterval<DvDateTime> activePeriod = createTimeInterval();
 
         Session session = currentSession();
         Transaction tx = null;
@@ -231,7 +225,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             
             tx = session.beginTransaction();
-            Contact contact = new Contact(createContactArchetypeId(), activePeriod);
+            Contact contact = new Contact(createContactArchetypeId());
             assertTrue(contact != null);
             
             session.save(contact);

@@ -6,21 +6,16 @@
 		<node name="sequence" path="/sequence" type="java.lang.Integer"
 			minCardinality="1" />
 		<node name="reason" path="/reason" type="java.lang.String" />
-		<node name="activePeriod" path="/activePeriod"
-			type="org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval"
-			minCardinality="1">
-			<node name="startPeriod" path="/activePeriod/lower"
-				defaultValue="now()" minCardinality="1"
-				type="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime" />
-		</node>
-		<node name="source" path="/sourceEntity"
+		<node name="activeStartTime" path="/activeStartTime"
+			type="java.util.Date" minCardinality="1" defaultValue="now()" />
+		<node name="source" path="/source"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion type="archetypeRange">
 				<property key="person.person" />
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="target" path="/targetEntity"
+		<node name="target" path="/target"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion type="archetypeRange">
 				<property key="person.person" />

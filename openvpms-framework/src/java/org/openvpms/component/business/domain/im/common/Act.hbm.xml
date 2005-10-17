@@ -42,31 +42,10 @@
 		<property name="mood" column="mood" type="string" />
 		<property name="title" column="title" type="string" />
 		<property name="descritpion" column="description" type="string" />
-		<component name="effectiveTime">
-			<component name="lower" access="property"
-				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
-				<property name="dateTime"
-					column="effective_start_datetime" type="calendar"
-					access="property" />
-			</component>
-			<component name="upper" access="property"
-				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
-				<property name="dateTime"
-					column="effective_end_datetime" type="calendar" access="property" />
-			</component>
-		</component>
-		<component name="activityTime">
-			<component name="lower" access="property"
-				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
-				<property name="dateTime"
-					column="activity_start_datetime" type="calendar" access="property" />
-			</component>
-			<component name="upper" access="property"
-				class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
-				<property name="dateTime" column="activity_end_datetime"
-					type="calendar" access="property" />
-			</component>
-		</component>
+		<property name="effectiveStartTime" column="effective_start_time" type="date" />
+		<property name="effectiveEndTime" column="effective_end_time" type="date" />
+		<property name="activityStartTime" column="activity_start_time" type="date" />
+		<property name="activityEndTime" column="activity_end_time" type="date" />
 		<property name="priority" column="priority" type="string" />
 		<property name="reason" column="reason" type="string" />
 		<property name="negationInd" column="negation_ind"

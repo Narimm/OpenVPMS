@@ -1,65 +1,57 @@
 <?xml version="1.0"?>
 <!--
-  #  Version: 1.0
-  #
-  #  The contents of this file are subject to the OpenVPMS License Version
-  #  1.0 (the 'License'); you may not use this file except in compliance with
-  #  the License. You may obtain a copy of the License at
-  #  http://www.openvpms.org/license/
-  #
-  #  Software distributed under the License is distributed on an 'AS IS' basis,
-  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  #  for the specific language governing rights and limitations under the
-  #  License.
-  #
-  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
-  #
-  #  $Id$
+	#  Version: 1.0
+	#
+	#  The contents of this file are subject to the OpenVPMS License Version
+	#  1.0 (the 'License'); you may not use this file except in compliance with
+	#  the License. You may obtain a copy of the License at
+	#  http://www.openvpms.org/license/
+	#
+	#  Software distributed under the License is distributed on an 'AS IS' basis,
+	#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+	#  for the specific language governing rights and limitations under the
+	#  License.
+	#
+	#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+	#
+	#  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-  <class
-    name="org.openvpms.component.business.domain.im.common.EntityClassification"
-    table="entity_classification">
-    <id name="uid" type="long" unsaved-value="-1">
-      <column name="entity_classification_id"
-        index="entity_classification_id_idx" />
-      <generator class="increment" />
-    </id>
-    <version name="version" access="property" type="long" />
-    <many-to-one name="entity" column="entity_id" />
-    <component name="archetypeId">
-      <property name="namespace" access="property" column="archetype_namespace"
-        type="string" />
-      <property name="rmName" access="property" column="archetype_rm_name"
-        type="string" />
-      <property name="concept" access="property" column="archetype_concept"
-        type="string" />
-      <property name="entityName" access="property" column="archetype_entity_name"
-        type="string" />
-      <property name="version" access="property" column="archetype_version"
-        type="string" />
-    </component>
-    <component name="activePeriod">
-      <component name="lower" access="property"
-        class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
-        <property name="dateTime" column="start_date" type="calendar"
-          access="property" />
-      </component>
-      <component name="upper" access="property"
-        class="org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime">
-        <property name="dateTime" column="end_date" type="calendar"
-          access="property" />
-      </component>
-    </component>
-  </class>
+	<class
+		name="org.openvpms.component.business.domain.im.common.EntityClassification"
+		table="entity_classification">
+		<id name="uid" type="long" unsaved-value="-1">
+			<column name="entity_classification_id"
+				index="entity_classification_id_idx" />
+			<generator class="increment" />
+		</id>
+		<version name="version" access="property" type="long" />
+		<many-to-one name="entity" column="entity_id" />
+		<component name="archetypeId">
+			<property name="namespace" access="property"
+				column="archetype_namespace" type="string" />
+			<property name="rmName" access="property"
+				column="archetype_rm_name" type="string" />
+			<property name="concept" access="property"
+				column="archetype_concept" type="string" />
+			<property name="entityName" access="property"
+				column="archetype_entity_name" type="string" />
+			<property name="version" access="property"
+				column="archetype_version" type="string" />
+		</component>
+		<property name="activeStartTime" access="property"
+			column="active_start_time" type="date" />
+		<property name="activeEndTime" access="property"
+			column="active_end_time" type="date" />
+	</class>
 
-  <query name="entityClassification.getRowCount">
-    <![CDATA[
+	<query name="entityClassification.getRowCount">
+		<![CDATA[
 			select count(entityClassificatio) from org.openvpms.component.business.domain.im.common.EntityClassification as 
 			entityClassificatio
 		]]>
-  </query>
+	</query>
 </hibernate-mapping>

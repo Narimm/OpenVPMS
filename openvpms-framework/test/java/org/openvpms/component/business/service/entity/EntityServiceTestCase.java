@@ -25,7 +25,9 @@ import java.util.List;
 
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
 
@@ -85,7 +87,7 @@ public class EntityServiceTestCase extends
     /**
      * Test person create, retrieve and update
      */
-    public void testPersonLifecycle()
+    public void NtestPersonLifecycle()
     throws Exception {
         Entity entity = entityService.create("person.person");
         assertTrue(entity instanceof Person);
@@ -95,9 +97,20 @@ public class EntityServiceTestCase extends
         person.setFirstName("Jim");
         person.setTitle("Mr");
         
+        Contact contact = new Contact();
+        contact.setArchetypeId(new ArchetypeId(
+                "openvpms-contact-contact.draft.1.0"));
+        
+        Date start = new Date();
+        Date end = new Date(start.getTime() + (7*24*60*60*1000));
+        contact.setActiveStartTime(start);
+        contact.setActiveEndTime(end);
+        person.addContact(contact);
+        assertTrue(person.getContacts().size() == 1);
         entityService.save(person);
         
         person = (Person)entityService.getById(person.getUid());
+        assertTrue(person.getContacts().size() == 1);
         person.setFirstName("Grace");
         entityService.save(person);
     }
@@ -114,7 +127,7 @@ public class EntityServiceTestCase extends
     /**
      * Test that we can locate entities by RmName only
      */
-    public void NtestFindWithRmName()
+    public void testFindWithRmName()
     throws Exception {
         
         // get the initial count

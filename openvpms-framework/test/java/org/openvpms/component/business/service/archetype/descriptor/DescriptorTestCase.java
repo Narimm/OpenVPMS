@@ -19,6 +19,7 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
+// java core
 import java.io.InputStreamReader;
 import java.util.Hashtable;
 import java.util.List;
@@ -27,12 +28,15 @@ import java.util.List;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
 
+// commons-lang
+import org.apache.commons.lang.StringUtils;
+
 // sax
 import org.xml.sax.InputSource;
 
 // openvpms-framework
-import org.openvpms.component.presentation.tapestry.component.Utils;
 import org.openvpms.component.system.common.test.BaseTestCase;
+
 
 /**
  * Test the all the archetype related descriptors.
@@ -118,10 +122,9 @@ public class DescriptorTestCase extends BaseTestCase {
         assertTrue(descriptor.getDisplayName().equals(descriptor.getName()));
         
         // iterate through the top level nodes and enusre that the 
-        // display name defaults to the name
+        // display name is not null
         for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
-            assertTrue(node.getName(), node.getDisplayName()
-                    .equals(Utils.unCamelCase(node.getName()))); 
+            assertTrue(StringUtils.isEmpty(node.getDisplayName()) == false);
         }
     }
 
@@ -183,7 +186,7 @@ public class DescriptorTestCase extends BaseTestCase {
         
         ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
         List<NodeDescriptor> ndesc = adesc.getAllNodeDescriptors();
-        assertTrue(ndesc.size() == 6);
+        assertTrue(ndesc.size() == 7);
     }
     
     /**
@@ -204,6 +207,45 @@ public class DescriptorTestCase extends BaseTestCase {
         NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
         assertTrue(ndesc != null);
         assertTrue(ndesc.isHidden());
+    }
+    
+    /**
+     * Test the archetype range helper method.
+     */
+    public void testArchetypeRange()
+    throws Exception {
+        
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)this.getTestData().getTestCaseParameter(
+                "testArchetypeRange", "normal", "archetypeFile");
+        String nodeName = (String)this.getTestData().getTestCaseParameter(
+                "testArchetypeRange", "normal", "nodeName");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
+        assertTrue(ndesc != null);
+        assertTrue(ndesc.getArchetypeRange().length == 2);
+    }
+    
+    /**
+     * Test that the default node descriptor is being correctly inserted into
+     * the archetype descriptor.
+     */
+    public void testIdNodeDescriptorExists()
+    throws Exception {
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        assertTrue(adesc.getNodeDescriptor(NodeDescriptor.IDENTIFIER_NODE_NAME) != null);
     }
     
     /**

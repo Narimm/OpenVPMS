@@ -20,6 +20,7 @@
 package org.openvpms.component.business.domain.im.party;
 
 // java core
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,8 +29,6 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
-import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
  * Defines a contact for a {@link Party}. 
@@ -44,9 +43,14 @@ public class Contact extends IMObject {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The period for which this contact is active
+     * The time that this participation was activitated
      */
-    private DvInterval<DvDateTime> activePeriod;
+    private Date activeStartTime;
+    
+    /**
+     * The time that this participation was inactivated
+     */
+    private Date activeEndTime;
     
     /**
      * A list of {@link Address} instances for this contact.
@@ -74,10 +78,8 @@ public class Contact extends IMObject {
      * @param activePeriod
      *            the active period for this contact
      */
-    public Contact(ArchetypeId archetypeId,  
-            DvInterval<DvDateTime> activePeriod) {
+    public Contact(ArchetypeId archetypeId) {
         super(archetypeId);
-        this.activePeriod = activePeriod;
         this.addresses = new HashSet<Address>();
     }
     
@@ -97,17 +99,31 @@ public class Contact extends IMObject {
     }
 
     /**
-     * @return Returns the activePeriod.
+     * @return Returns the activeEndTime.
      */
-    public DvInterval<DvDateTime> getActivePeriod() {
-        return activePeriod;
+    public Date getActiveEndTime() {
+        return activeEndTime;
     }
 
     /**
-     * @param activePeriod The activePeriod to set.
+     * @param activeEndTime The activeEndTime to set.
      */
-    public void setActivePeriod(DvInterval<DvDateTime> activePeriod) {
-        this.activePeriod = activePeriod;
+    public void setActiveEndTime(Date activeEndTime) {
+        this.activeEndTime = activeEndTime;
+    }
+
+    /**
+     * @return Returns the activeStartTime.
+     */
+    public Date getActiveStartTime() {
+        return activeStartTime;
+    }
+
+    /**
+     * @param activeStartTime The activeStartTime to set.
+     */
+    public void setActiveStartTime(Date activeStartTime) {
+        this.activeStartTime = activeStartTime;
     }
 
     /**

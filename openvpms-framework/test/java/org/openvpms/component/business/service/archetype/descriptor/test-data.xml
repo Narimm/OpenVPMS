@@ -9,7 +9,8 @@
 			<param name="archetypeFile" type="java.lang.String">
 				org/openvpms/component/business/service/archetype/descriptor/single-archetype.xml
 			</param>
-			<param name="assertionMappingFile" type="java.lang.String">
+			<param name="assertionMappingFile"
+				type="java.lang.String">
 				org/openvpms/component/business/service/archetype/descriptor/assertion-type-mapping-file.xml
 			</param>
 			<param name="assertionFile" type="java.lang.String">
@@ -31,6 +32,18 @@
 			<params>
 				<param name="nodeName" type="java.lang.String">
 					details
+				</param>
+			</params>
+		</method>
+
+		<!-- Data for the testArchetypeRange method -->
+		<method name="testArchetypeRange" test-case="normal">
+			<params>
+				<param name="archetypeFile" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/descriptor/person.xml
+				</param>
+				<param name="nodeName" type="java.lang.String">
+					classifications
 				</param>
 			</params>
 		</method>
