@@ -20,6 +20,7 @@ package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -642,5 +643,29 @@ public class NodeDescriptor implements Serializable {
         } else {
             return new String[0];
         }        
+    }
+    
+    /**
+     * Return an array of short names or short name regular expression that
+     * are associated with the archetypeRange assertion. If the node does
+     * not have such an assertion then return a zero length string array
+     * 
+     * TODO Should we more this into a utility class
+     * 
+     * @return String[]
+     *            the array of short names
+     */
+    public String[] getArchetypeRange() {
+        if (assertionDescriptors.containsKey("archetypeRange")) {
+            ArrayList<String> range = new ArrayList<String>();
+            AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
+            for (AssertionProperty property : desc.getProperties()) {
+                range.add(property.getKey());
+            }
+            
+            return (String[])range.toArray(new String[range.size()]);
+        } else {
+            return new String[0];
+        }
     }
 }

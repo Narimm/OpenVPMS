@@ -27,7 +27,6 @@
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" column="link_id" access="property" type="string" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="archetype_namespace"
         type="string" />
@@ -42,12 +41,12 @@
     </component>
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-    <many-to-one name="parent" property-ref="linkId" column="parent_link_id"/>
-    <set name="children" access="property" lazy="true" batch-size="10" inverse="true"
+    <many-to-one name="parent" column="parent_id"/>
+    <set name="children" access="property" lazy="false" inverse="true"
       cascade="all,delete-orphan">
-      <key property-ref="linkId">
-        <column name="parent_link_id"
-          index="parent_link_id_idx" />
+      <key>
+        <column name="parent_id"
+          index="parent_id_idx" />
       </key>
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.Classification" />

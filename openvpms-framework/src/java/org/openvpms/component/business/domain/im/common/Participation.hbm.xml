@@ -27,7 +27,6 @@
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" column="link_id" access="property" type="string" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="archetype_namespace"
         type="string" />
@@ -57,7 +56,7 @@
           type="calendar" access="property" />
       </component>
     </component>
-    <many-to-one name="entity" property-ref="linkId" column="entity_link_id" />
+    <many-to-one name="entity" access="property" column="entity_id" />
     <many-to-one name="act" access="property" column="act_id" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

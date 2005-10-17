@@ -88,7 +88,14 @@ public class ArchetypeDescriptor implements Serializable {
      * Default constructor 
      */
     public ArchetypeDescriptor() {
-        // do nothing
+        // TODO Evaluate this since we are encoding path names etc
+        // best to place this in the archetype.
+        NodeDescriptor node = new NodeDescriptor();
+        node.setName(NodeDescriptor.IDENTIFIER_NODE_NAME);
+        node.setType("java.lang.Long");
+        node.setDisplayName("id");
+        node.setPath("uid");
+        nodeDescriptors.put(node.getName(), node);
     }
 
     /**

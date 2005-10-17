@@ -147,24 +147,24 @@ public class Entity extends IMObject {
     /**
      * Add a new {@link EntityIdentity}
      * 
-     * @param entityIdentity
+     * @param identity
      *            the entity identity to add
      */
-    public void addEntityIdentity(EntityIdentity entityIdentity) {
-        entityIdentity.setEntity(this);
-        identities.add(entityIdentity);
+    public void addIdentity(EntityIdentity identity) {
+        identity.setEntity(this);
+        identities.add(identity);
     }
 
     /**
      * Remove the specified {@link EntityIdentity}
      * 
-     * @param entityIdentity
+     * @param identity
      *          the identity to remove
      * @return boolean          
      */
-    public boolean removeEntityIdentity(EntityIdentity entityIdentity) {
-        entityIdentity.setEntity(null);
-        return(identities.remove(entityIdentity));
+    public boolean removeIdentity(EntityIdentity identity) {
+        identity.setEntity(null);
+        return(identities.remove(identity));
     }
     
     /**
@@ -172,9 +172,8 @@ public class Entity extends IMObject {
      * 
      * @return EntityIdentity[]
      */
-    public EntityIdentity[] getEntityIdentities() {
-        return (EntityIdentity[])identities.toArray(
-                new EntityIdentity[identities.size()]);
+    public Set<EntityIdentity> getIdentities() {
+        return identities;
     }
 
     /**
@@ -184,7 +183,7 @@ public class Entity extends IMObject {
      *            the entity relationship to add
      */
     public void addSourceEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setSourceEntity(this);
+        entityRel.setSource(this);
         this.sourceRelationships.add(entityRel);
     }
     
@@ -198,7 +197,7 @@ public class Entity extends IMObject {
      *            the entity relationship to remove
      */
     public void removeSourceEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setSourceEntity(null);
+        entityRel.setSource(null);
         this.sourceRelationships.remove(entityRel);
     }
     
@@ -220,7 +219,7 @@ public class Entity extends IMObject {
      *            the entity relationship to add
      */
     public void addTargetEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setTargetEntity(this);
+        entityRel.setTarget(this);
         this.targetRelationships.add(entityRel);
     }
     
@@ -234,7 +233,7 @@ public class Entity extends IMObject {
      *            the entity relationship to remove
      */
     public void removeTargetEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setTargetEntity(null);
+        entityRel.setTarget(null);
         this.targetRelationships.remove(entityRel);
     }
     
@@ -332,14 +331,6 @@ public class Entity extends IMObject {
      */
     public void setDetails(DynamicAttributeMap details) {
         this.details = details;
-    }
-
-    /**
-     * @return Returns the identities.
-     */
-    @SuppressWarnings("unused")
-    private Set<EntityIdentity> getIdentities() {
-        return identities;
     }
 
     /**

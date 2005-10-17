@@ -60,17 +60,17 @@ public class EntityRelationship extends IMObject {
     /**
      * Record the source entity in the relationship
      */
-    private Entity sourceEntity;
+    private Entity source;
 
     /**
      * Record the target entity in the relationship
      */
-    private Entity targetEntity;
+    private Entity target;
     
     /**
      * A relationship may also have an associated entity identity
      */
-    private EntityIdentity entityIdentity;
+    private EntityIdentity identity;
 
     /**
      * Default constructor
@@ -84,9 +84,9 @@ public class EntityRelationship extends IMObject {
      * 
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param sourceEntity
+     * @param source
      *            the relationship source
-     * @param targetEntity
+     * @param target
      *            the relationship target                       
      * @param details
      *            The details of the address object
@@ -94,12 +94,12 @@ public class EntityRelationship extends IMObject {
      *             if the constructor pre-conditions are not satisfied.
      */
     public EntityRelationship(ArchetypeId archetypeId, 
-            Entity sourceEntity, Entity targetEntity,
+            Entity source, Entity target,
             DynamicAttributeMap details) {
         super(archetypeId);
         
-        this.sourceEntity = sourceEntity;
-        this.targetEntity = targetEntity;
+        this.source = source;
+        this.target = target;
         this.details = details;
     }
     
@@ -166,42 +166,42 @@ public class EntityRelationship extends IMObject {
     /**
      * @return Returns the sourceEntity.
      */
-    public Entity getSourceEntity() {
-        return sourceEntity;
+    public Entity getSource() {
+        return source;
     }
 
     /**
-     * @param sourceEntity The sourceEntity to set.
+     * @param source The source to set.
      */
-    public void setSourceEntity(Entity sourceEntity) {
-        this.sourceEntity = sourceEntity;
+    public void setSource(Entity source) {
+        this.source = source;
     }
 
     /**
-     * @return Returns the targetEntity.
+     * @return Returns the target.
      */
-    public Entity getTargetEntity() {
-        return targetEntity;
+    public Entity getTarget() {
+        return target;
     }
 
     /**
-     * @param targetEntity The targetEntity to set.
+     * @param target The target to set.
      */
-    public void setTargetEntity(Entity targetEntity) {
-        this.targetEntity = targetEntity;
+    public void setTarget(Entity target) {
+        this.target = target;
     }
 
     /**
      * @return Returns the entityIdentity.
      */
-    public EntityIdentity getEntityIdentity() {
-        return entityIdentity;
+    public EntityIdentity getIdentity() {
+        return identity;
     }
 
     /**
-     * @param entityIdentity The entityIdentity to set.
+     * @param identity The identity to set.
      */
-    public void setEntityIdentity(EntityIdentity entityIdentity) {
-        this.entityIdentity = entityIdentity;
+    public void setIdentity(EntityIdentity identity) {
+        this.identity = identity;
     }
 }
