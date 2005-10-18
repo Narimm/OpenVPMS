@@ -7,12 +7,17 @@
 <component-specification class="org.openvpms.component.presentation.tapestry.component.NodeEditor" allow-body="yes" allow-informal-parameters="yes">
 	<parameter name="model" required="yes" />
 	<parameter name="descriptor" default-value="container.property" />
+    <parameter name="editCollections" default-value="true" />
+
     <component id="insert" type="Insert">
         <binding name="value" value="descriptor.displayName"/>
     </component>
-    <!--component id="isIdentifier" type="If">
+    <component id="isIdentifier" type="If">
         <binding name="condition" value="descriptor.identifier"/>
-    </component-->
+    </component>
+    <component id="allowCollectionEdit" type="If">
+        <binding name="condition" value="editCollections" />
+    </component> 
     <component id="isDate" type="If">
         <binding name="condition" value="descriptor.date and !descriptor.identifier" />
     </component> 
@@ -46,7 +51,6 @@
     <component id="notHidden" type="If">
         <binding name="condition" value="!descriptor.hidden"/>
     </component>
-    
     <component id="displayValue" type="Insert">
         <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>

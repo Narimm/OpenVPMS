@@ -19,6 +19,7 @@
 package org.openvpms.component.presentation.tapestry;
 
 import java.io.Serializable;
+import java.util.Stack;
 
 /**
  *
@@ -31,5 +32,21 @@ import java.io.Serializable;
 public class Visit implements Serializable {
     
   private static final long serialVersionUID = 37882478792384798L;
+  private Stack callbackStack = new Stack();
+  
+  /**
+   * @return Returns the callbackStack.
+   */
+  public Stack getCallbackStack()
+  {
+      return callbackStack;
+  }
+  /**
+   * @param callbackStack The callbackStack to set.
+   */
+  public void setCallbackStack(Stack callbackStack)
+  {
+      this.callbackStack = callbackStack;
+  }
   
 }

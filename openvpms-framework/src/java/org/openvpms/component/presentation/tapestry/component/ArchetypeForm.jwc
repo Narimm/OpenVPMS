@@ -11,7 +11,8 @@
     <parameter name="removeListener" default-value="page.listeners.remove"/>
     <parameter name="nodeNames" default-value="null"/>
    	<parameter name="archetypeDescriptor" required="no" default-value="page.archetypeDescriptor"/>
-    
+    <parameter name="editCollections" default-value="true" />
+
     <component id="form" type="Form">
         <binding name="delegate" value="page.beans.delegate" />
         <binding name="listener" value="page.listeners.onFormSubmit" />
@@ -27,5 +28,6 @@
       	<inherited-binding name="archetypeDescriptor" parameter-name="archetypeDescriptor"/>
         <inherited-binding name="model" parameter-name="model"/>
         <inherited-binding name="nodeNames" parameter-name="nodeNames"/>
+        <inherited-binding name="editCollections" parameter-name="editCollections"/>
     </component>
 </component-specification>

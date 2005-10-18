@@ -6,9 +6,7 @@
 
 <component-specification class="org.openvpms.component.presentation.tapestry.component.CollectionEditor" allow-body="yes" allow-informal-parameters="yes">
 	<description>Allows a user to view and edit a collection property</description>
-    <parameter name="collection" required="yes">
-    	<description>The collection to be edited</description>
-    </parameter>
+    <parameter name="collection" required="yes" />
     <parameter name="descriptor" required="yes" />
     <parameter name="model" default-value="page.model" />
     <parameter name="allowCreate" default-value="true" />
@@ -16,6 +14,7 @@
     
     <property name="currentObject" />
     <property name="index" />
+    <property name="archetypeName" />
         
     <component id="foreach" type="For" >
     	<binding name="source" value="collection"/>       
@@ -45,4 +44,9 @@
     <component id="removebutton" type="Submit">
         <binding name="listener" value="listeners.remove"/>
     </component>  
+    <component id="archetypeCombo" type="PropertySelection">
+        <binding name="displayName" value="descriptor.displayName"/>
+        <binding name="model" value="page.getArchetypeNamesModel(descriptor)"/>
+        <binding name="value" value="archetypeName" />
+    </component>       
 </component-specification>

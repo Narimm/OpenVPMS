@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.apache.tapestry.IExternalPage;
 import org.apache.tapestry.IRequestCycle;
+import org.openvpms.component.presentation.tapestry.Visit;
+import org.openvpms.component.presentation.tapestry.callback.SearchCallback;
 
 
 
@@ -42,5 +44,11 @@ public abstract class SearchPage extends OpenVpmsPage implements IExternalPage
     public void activateExternalPage(Object[] args, IRequestCycle cycle)
     {
         cycle.activate(this);
+    }
+
+    public void pushCallback()
+    {
+        Visit visit = (Visit)getVisitObject();
+        visit.getCallbackStack().push(new SearchCallback(getPageName()));
     }
 }

@@ -28,8 +28,11 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.presentation.tapestry.Visit;
+import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
+import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
 
 /**
  * 
@@ -53,6 +56,8 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
     public abstract Object getCurrentObject();
 
     public abstract void setCurrentObject(Object CurrentObject);
+    
+    public abstract String getArchetypeName();
 
     private List selected = new ArrayList();
 
@@ -80,25 +85,27 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
 
     public void showAddPage(IRequestCycle cycle) {
 
+        //Push a Collection Callback onto the stack.
+        CollectionCallback callback = new CollectionCallback(
+                getPage().getPageName(), getModel(), getDescriptor());
+        Visit visit = (Visit) ((OpenVpmsPage)getPage()).getVisit();
+        visit.getCallbackStack().push(callback);
+        
         // Look for specific page or else use <Default>AddToCollection
         EditPage editPage = (EditPage) Utils.findPage(cycle, Utils
                 .unqualify(getDescriptor().getDisplayName() + "Edit"), "Edit");
         try {
+            // First check we have a selected archetype Name
+            if (getArchetypeName() == null || getArchetypeName() == "")
+                return;
             // we need to do some indirection to avoid a StaleLink
             EditCallback nextPage = new EditCallback(editPage.getPageName(),
-                    getDescriptor().getType().getClass().newInstance());
+                    editPage.getArchetypeService().createDefaultObject(getArchetypeName()));
             ((EditPage) getPage()).setNextPage(nextPage);
 
         } catch (Exception ex) {
             throw new ApplicationRuntimeException(ex);
         }
-        // cycle.activate(editPage);
-    }
-
-    EditCallback buildCallback() {
-        EditCallback callback = new EditCallback(getPage().getPageName(),
-                getModel());
-        return callback;
     }
 
     @SuppressWarnings("unchecked")

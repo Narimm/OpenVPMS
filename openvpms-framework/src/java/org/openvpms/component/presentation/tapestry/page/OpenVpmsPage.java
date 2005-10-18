@@ -20,13 +20,14 @@ package org.openvpms.component.presentation.tapestry.page;
 
 import org.apache.tapestry.IPage;
 import org.apache.tapestry.annotations.InjectObject;
-import org.apache.tapestry.annotations.Persist;
+import org.apache.tapestry.annotations.InjectState;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.html.BasePage;
 import org.openvpms.component.business.service.act.IActService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.entity.IEntityService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.presentation.tapestry.Visit;
 
 /**
  * The base page of any OpenVPMS application. Provides funtionality common to all
@@ -54,11 +55,12 @@ public abstract class OpenVpmsPage extends BasePage {
     
     @InjectObject("spring:lookupService")
     public abstract ILookupService getLookupService();
+    
+    public abstract void pushCallback();
 
-    @Persist("session")
-    public abstract ICallback getCallback();
+    @InjectState("visit")
+    public abstract Visit getVisitObject();
 
-    public abstract void setCallback(ICallback callback);
 
     /**
      * View helper function to display the applications screen name, which is

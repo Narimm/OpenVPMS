@@ -8,8 +8,9 @@
 	<parameter name="model" required="yes" />
 	<parameter name="nodeNames" required="no" default-value="null"/>
    	<parameter name="archetypeDescriptor" required="no"	default-value="page.archetypeDescriptor"/>   
+    <parameter name="editCollections" default-value="true" />
        
-    <property name="property">property</property>
+    <property name="property"/>
 
     <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="foreach" type="For">
@@ -28,5 +29,6 @@
     <component id="nodeEditor" type="NodeEditor">
         <binding name="descriptor" value="property"/>
         <binding name="model" value="model"/>
+        <inherited-binding name="editCollections" parameter-name="editCollections"/>
     </component>
 </component-specification>
