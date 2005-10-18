@@ -133,6 +133,13 @@ public class NodeDescriptor implements Serializable {
      * The maximum length
      */
     private int maxLength;
+    
+    /**
+     * This is an option property, which is required for nodes that 
+     * represent collections. It is the name that denotes the individual
+     * elements stored in the collection.
+     */
+    private String baseName;
 
     /**
      * Contains a list of {@link AssertionDescriptor} instances
@@ -340,6 +347,20 @@ public class NodeDescriptor implements Serializable {
      */
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    /**
+     * @return Returns the baseName.
+     */
+    public String getBaseName() {
+        return baseName;
+    }
+
+    /**
+     * @param baseName The baseName to set.
+     */
+    public void setBaseName(String baseName) {
+        this.baseName = baseName;
     }
 
     /**

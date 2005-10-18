@@ -92,6 +92,10 @@
             transient="false" get-method="getPath" set-method="setPath">
             <bind-xml name="path" node="attribute" reference="false"/>
         </field>
+        <field name="baseName" type="string" required="false" direct="false"
+            transient="false" get-method="getBaseName" set-method="setBaseName">
+            <bind-xml name="baseName" node="attribute" reference="false"/>
+        </field>
         <field name="assertionDescriptors"
             type="org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor"
             required="false" direct="false" transient="false"

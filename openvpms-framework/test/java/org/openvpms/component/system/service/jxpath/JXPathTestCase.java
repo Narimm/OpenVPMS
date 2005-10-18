@@ -20,9 +20,11 @@ package org.openvpms.component.system.service.jxpath;
 
 // java
 import java.util.Hashtable;
-import java.util.Set;
 
 // jxpath
+import ognl.Ognl;
+import ognl.OgnlContext;
+
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 
@@ -190,9 +192,16 @@ public class JXPathTestCase extends BaseTestCase {
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
         
-        JXPathContext context = JXPathContext.newContext(person);
-        ((Set)context.getValue(ndesc.getPath())).add(eidentity);
+        ValueHolder holder = new ValueHolder(eidentity, person);
+        OgnlContext context =(OgnlContext)Ognl.createDefaultContext(null);
+        
+        StringBuffer buf = new StringBuffer("target.add");
+        buf.append(StringUtils.capitalize(ndesc.getBaseName()));
+        buf.append("(source)");
+        Ognl.getValue(buf.toString(), context, holder);
+        
         assertTrue(person.getIdentities().size() == 1);
+        assertTrue(person.getIdentities().iterator().next().getEntity() != null);
     }
 
     /**
@@ -230,4 +239,46 @@ public class JXPathTestCase extends BaseTestCase {
     private void setValue(Object source, String path, Object value) {
         JXPathContext.newContext(source).setValue(path, value);
     }
+}
+
+
+class ValueHolder {
+    private Object target;
+    private Object source;
+    
+    
+    /**
+     * @param source
+     * @param target
+     */
+    public ValueHolder(Object source, Object target) {
+        this.source = source;
+        this.target = target;
+    }
+    
+    /**
+     * @return Returns the source.
+     */
+    public Object getSource() {
+        return source;
+    }
+    /**
+     * @param source The source to set.
+     */
+    public void setSource(Object source) {
+        this.source = source;
+    }
+    /**
+     * @return Returns the target.
+     */
+    public Object getTarget() {
+        return target;
+    }
+    /**
+     * @param target The target to set.
+     */
+    public void setTarget(Object target) {
+        this.target = target;
+    }
+    
 }
