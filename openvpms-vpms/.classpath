@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-framework-0.1.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/openvpms/jars/openvpms-framework-0.2.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/openvpms-framework"/>
 	<classpathentry sourcepath="/TAPESTRY_SRC_DIR" kind="var" path="MAVEN_REPO/tapestry/jars/tapestry-4.0-beta-10.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/hivemind/jars/hivemind-1.1-rc-1.jar"/>
