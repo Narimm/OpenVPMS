@@ -366,7 +366,9 @@ public class LookupService implements ILookupService {
                             new Object[] { assertion.getType() });
                 }
 
-                if (type.equals("targetLookup")) {
+                if (type.equals("lookup")) {
+                    lookups = dao.getLookupsByConcept(concept);
+                } else if (type.equals("targetLookup")) {
                     String source = (String) assertion.getPropertiesAsMap()
                             .get("source").getValue();
                     if (StringUtils.isEmpty(source)) {
