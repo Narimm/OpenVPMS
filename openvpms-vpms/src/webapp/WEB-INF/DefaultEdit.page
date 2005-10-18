@@ -6,7 +6,7 @@
 
 <page-specification class="org.openvpms.component.presentation.tapestry.page.EditPage">
     <property name="model" persist="session" />
-    <property name="nextPage" persist="session" />
+    <property name="nextPage" />
     <property name="currentFieldTracking" />
     
     <component id="errors" type="For" >
