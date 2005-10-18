@@ -6,26 +6,25 @@
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
 			<assertion type="referenceData">
-				<property key="namedQuery"
-					value="openvpms.animal.species" />
-				<errorMessage>errorMessage</errorMessage>
+				<property key="type" value="targetLookup" />
+				<property key="concept" value="species" />
+				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
 			<assertion type="referenceData">
-				<property key="namedQuery"
-					value="openvpms.animal.breed" />
-				<property key="species" value="/species" />
-				<errorMessage>errorMessage</errorMessage>
+				<property key="type" value="targetLookup" />
+				<property key="concept" value="species.breed" />
+				<property key="source" value="species" />
+				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
 			<assertion type="referenceData">
-				<property key="namedQuery"
-					value="openvpms.animal.colour" />
-				<property key="species" value="/species" />
-				<property key="breed" value="/breed" />
-				<errorMessage>errorMessage</errorMessage>
+				<property key="type" value="targetLookup" />
+				<property key="concept" value="breed.colour" />
+				<property key="source" value="breed" />
+				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">

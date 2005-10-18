@@ -48,14 +48,7 @@ public class PartyServiceTestCase extends
     public PartyServiceTestCase() {
     }
 
-    /**
-     * @param partyService The partyService to set.
-     */
-    public void setPartyService(PartyService partyService) {
-        this.partyService = partyService;
-    }
-
-    /*
+   /*
      * (non-Javadoc)
      * 
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
@@ -114,7 +107,7 @@ public class PartyServiceTestCase extends
         super.onSetUp();
         
         this.partyService = (PartyService)applicationContext.getBean(
-                "partyService");
+            "partyService");
     }
 
 }

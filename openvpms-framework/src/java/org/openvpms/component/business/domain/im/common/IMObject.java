@@ -227,8 +227,6 @@ public abstract class IMObject implements Serializable {
     public boolean equals(Object obj) {
         IMObject rhs = (IMObject)obj;
         return new EqualsBuilder()
-            .append(uid, rhs.uid)
-            .append(archetypeId, rhs.archetypeId)
             .append(linkId, rhs.linkId)
             .isEquals();
     }

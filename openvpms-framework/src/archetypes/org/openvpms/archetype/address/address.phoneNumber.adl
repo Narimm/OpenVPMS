@@ -4,22 +4,22 @@
 		<node name="deails" path="/details"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="areaCode" path="/details/attributes[@name='areaCode']"
+			<node name="areaCode" path="/details/attributes/areaCode"
 				type="java.lang.String" minCardinality="1">
 				<assertion type="regularExpression">
 					<property key="expression" value=".*" />
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
-			<node name="telephoneNumber" path="/details/attributes[@name='telephoneNumber']"
+			<node name="telephoneNumber" path="/details/attributes/telephoneNumber"
 				type="java.lang.String">
 				<assertion type="regularExpression">
 					<property key="expression" value="[0-9]*" />
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
-			<node name="preferred" path="/details/attributes[@name='preferred']"
-				type="java.lang.Boolean" defaultValue="falseq" />
+			<node name="preferred" path="/details/attributes/preferred"
+				type="java.lang.Boolean" defaultValue="false" />
 		</node>
 	</archetype>
 </archetypes>

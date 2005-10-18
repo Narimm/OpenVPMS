@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.lookup;
 // openvpms-framework
 import java.util.List;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
@@ -195,4 +196,20 @@ public interface ILookupService {
      * @throws LookupServiceException                      
      */
     public List<Lookup> get(NodeDescriptor descriptor);
+    
+    /**
+     * Return a list of {@link Lookup} instances given the specified 
+     * {@link NodeDescriptor} and {@link IMObject}. 
+     * <p>
+     * This method should be used if you want to constrain a lookup
+     * search based on a source or target relationship.
+     * 
+     * @param descriptor
+     *            the node descriptor
+     * @param object
+     *            the object to use.                         
+     * @return List<Lookup>
+     * @throws LookupServiceException                      
+     */
+    public List<Lookup> get(NodeDescriptor descriptor, IMObject object);
 }

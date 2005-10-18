@@ -63,29 +63,34 @@ public class Entity extends IMObject {
      * {@link Entity} can belong to zero, one or more {@link Classification}
      * 
      */
-    private Set<EntityClassification> classifications;
+    private Set<EntityClassification> classifications =
+        new HashSet<EntityClassification>();
     
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
      */
-    private Set<EntityIdentity> identities;
+    private Set<EntityIdentity> identities = 
+        new HashSet<EntityIdentity>();
     
     /**
      * Return a set of {@link Participation} that this entity is part off
      */
-    private Set<Participation> participations;
+    private Set<Participation> participations = 
+        new HashSet<Participation>();
     
     /**
      * Return a set of {@link EntityRelationships} that this entity is the 
      * source off.
      */
-    private Set<EntityRelationship> sourceRelationships;
+    private Set<EntityRelationship> sourceRelationships = 
+        new HashSet<EntityRelationship>();
     
     /**
      * The {@link EntityRelationship} instances where this entity is a
      * target
      */
-    private Set<EntityRelationship> targetRelationships;
+    private Set<EntityRelationship> targetRelationships =
+        new HashSet<EntityRelationship>();
 
     /**
      * Default constructor
@@ -115,11 +120,6 @@ public class Entity extends IMObject {
             throw new EntityException(EntityException.ErrorCode.NoNameSpecified);
         }
         
-        this.identities = new HashSet<EntityIdentity>();
-        this.classifications = new HashSet<EntityClassification>();
-        this.participations = new HashSet<Participation>();
-        this.sourceRelationships = new HashSet<EntityRelationship>();
-        this.targetRelationships = new HashSet<EntityRelationship>();
         this.details = details;
     }
 
@@ -337,7 +337,7 @@ public class Entity extends IMObject {
      * @param identities The identities to set.
      */
     @SuppressWarnings("unused")
-    private void setIdentities(Set<EntityIdentity> identities) {
+    public void setIdentities(Set<EntityIdentity> identities) {
         this.identities = identities;
     }
 

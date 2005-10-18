@@ -112,7 +112,7 @@
           target/classes/org/openvpms/archetype
         </param>
         <param name="extension" type="java.lang.String">adl</param>
-        <param name="recordCount1" type="java.lang.Integer">9</param>
+        <param name="recordCount1" type="java.lang.Integer">11</param>
       </params>
     </method>
 
@@ -143,8 +143,8 @@
           target/classes/org/openvpms/archetype
         </param>
         <param name="extension" type="java.lang.String">adl</param>
-        <param name="recordCount1" type="java.lang.Integer">5</param>
-        <param name="recordCount2" type="java.lang.Integer">3</param>
+        <param name="recordCount1" type="java.lang.Integer">6</param>
+        <param name="recordCount2" type="java.lang.Integer">4</param>
         <param name="recordCount3" type="java.lang.Integer">1</param>
       </params>
     </method>

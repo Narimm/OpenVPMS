@@ -60,7 +60,12 @@ public class JXPathGenericObjectCreationFactory extends AbstractFactory {
             Object parent, String name, int index) {
         try {
             NodeDescriptor node = (NodeDescriptor)context.getVariables().getVariable("node");
-            logger.debug("node: " + node.getPath());
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("node: " + node.getPath() + " for object " + 
+                        context.getContextBean().getClass().getName());
+            }
+            
             ptr.setValue(Thread.currentThread().getContextClassLoader()
                     .loadClass(node.getType()).newInstance());
         } catch (Exception exception) {

@@ -26,6 +26,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
@@ -132,10 +133,26 @@ public class LookupServiceTestCase extends
     public void testDatabaseLookupRetrievalFromNodeDescriptor()
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
-        .getArchetypeDescriptor("address.location");
+            .getArchetypeDescriptor("address.location");
         assertTrue(descriptor.getNodeDescriptor("country") != null);
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("country")).size() > 0);
+    }
+    
+    /**
+     * Test the target lookup up or constrained lookups for the address.location
+     * archetype for country Australia
+     */
+    public void testConstrainedLookupRetrievalFromNodeDescriptor()
+    throws Exception {
+        ArchetypeDescriptor descriptor = archetypeService
+            .getArchetypeDescriptor("address.location");
+        Address address = (Address)archetypeService.createDefaultObject(
+            descriptor.getArchetypeId());
+        address.getDetails().setAttribute("country", "Australia");
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() > 0);
+        address.getDetails().setAttribute("country", "Tasmania");
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() == 0);
     }
     
     /* (non-Javadoc)

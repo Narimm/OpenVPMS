@@ -51,7 +51,7 @@ public abstract class Party extends Entity {
     /**
      * Default Constructor
      */
-    protected Party() {
+    public Party() {
         // do nothing
     }
     
@@ -60,7 +60,7 @@ public abstract class Party extends Entity {
      * 
      * @param archetypeId
      *            the archetype id constraining this object
-     * @param name
+     * @param name 
      *            the name of the entity            
      * @param description
      *            the description of the party            

@@ -16,16 +16,18 @@
  *  $Id$
  */
 
-
 package org.openvpms.component.business.service.lookup;
 
 // openvpms-framework
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.dao.im.lookup.ILookupDAO;
 import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -35,24 +37,23 @@ import org.openvpms.component.business.service.archetype.descriptor.AssertionPro
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class LookupService implements ILookupService {
     /**
      * Cache a reference to an archetype archetype service..
      */
     private IArchetypeService archetypeService;
-    
-    /**
-     * The DAO instance it will use 
-     */
-    private ILookupDAO dao;
-    
 
     /**
-     * Instantiate an instance of this service passing it a reference to the 
+     * The DAO instance it will use
+     */
+    private ILookupDAO dao;
+
+    /**
+     * Instantiate an instance of this service passing it a reference to the
      * archetype servie and a DAO.
      * <p>
      * The archetype service is mandatory, since it provides a means of mapping
@@ -64,8 +65,8 @@ public class LookupService implements ILookupService {
      * @param archetypeService
      *            the archetype service reference
      * @param dao
-     *            the reference to the data access object it will use for the 
-     *            service             
+     *            the reference to the data access object it will use for the
+     *            service
      * @throws LookupServiceException
      *             a runtime exception tha is raised if the service cannot be
      *             instatiated
@@ -75,25 +76,30 @@ public class LookupService implements ILookupService {
         this.dao = dao;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#createLookup(java.lang.String)
      */
     public Lookup create(String shortName) {
         // ensure that we can retrieve an arhetype record for the
         // specified short name
-        ArchetypeDescriptor descriptor = 
-            archetypeService.getArchetypeDescriptor(shortName);
+        ArchetypeDescriptor descriptor = archetypeService
+                .getArchetypeDescriptor(shortName);
         if (descriptor == null) {
-            throw  new LookupServiceException(
+            throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToLocateArchetype,
                     new Object[] { shortName });
         }
-        
+
         // create and return the party object
-        return (Lookup)archetypeService.createDefaultObject(descriptor.getArchetypeId());
+        return (Lookup) archetypeService.createDefaultObject(descriptor
+                .getArchetypeId());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#insertLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void insert(Lookup lookup) {
@@ -103,16 +109,18 @@ public class LookupService implements ILookupService {
             } catch (LookupDAOException exception) {
                 throw new LookupServiceException(
                         LookupServiceException.ErrorCode.FailedToCreateLookup,
-                        new Object[]{lookup.toString()}, exception);
+                        new Object[] { lookup.toString() }, exception);
             }
         } else {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.InvalidLookupObject,
-                    new Object[]{lookup, lookup.getArchetypeId()});
+                    new Object[] { lookup, lookup.getArchetypeId() });
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#removeLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void remove(Lookup lookup) {
@@ -121,12 +129,14 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToDeleteLookup,
-                    new Object[]{lookup.getArchetypeId().toString(),
-                                 lookup.toString()}, exception);
+                    new Object[] { lookup.getArchetypeId().toString(),
+                            lookup.toString() }, exception);
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#updateLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void update(Lookup lookup) {
@@ -136,17 +146,19 @@ public class LookupService implements ILookupService {
             } catch (LookupDAOException exception) {
                 throw new LookupServiceException(
                         LookupServiceException.ErrorCode.FailedToUpdateLookup,
-                        new Object[]{lookup.toString()}, exception);
+                        new Object[] { lookup.toString() }, exception);
             }
         } else {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToUpdateLookup,
-                    new Object[]{lookup.getArchetypeId().toString(),
-                                 lookup.toString()});
+                    new Object[] { lookup.getArchetypeId().toString(),
+                            lookup.toString() });
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#save(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void save(Lookup lookup) {
@@ -156,18 +168,20 @@ public class LookupService implements ILookupService {
             } catch (LookupDAOException exception) {
                 throw new LookupServiceException(
                         LookupServiceException.ErrorCode.FailedToSaveLookup,
-                        new Object[]{lookup.toString()}, exception);
+                        new Object[] { lookup.toString() }, exception);
             }
         } else {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToSaveLookup,
-                    new Object[]{lookup.getArchetypeId().toString(),
-                                 lookup.toString()});
+                    new Object[] { lookup.getArchetypeId().toString(),
+                            lookup.toString() });
         }
-        
+
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#add(org.openvpms.component.business.domain.im.lookup.LookupRelationship)
      */
     public void add(LookupRelationship relationship) {
@@ -176,11 +190,13 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedtoCreateLookupRelationship,
-                    new Object[]{relationship.getType()}, exception);
+                    new Object[] { relationship.getType() }, exception);
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#remove(org.openvpms.component.business.domain.im.lookup.LookupRelationship)
      */
     public void remove(LookupRelationship relationship) {
@@ -189,11 +205,13 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedtoDeleteLookupRelationship,
-                    new Object[]{relationship.getType()}, exception);
+                    new Object[] { relationship.getType() }, exception);
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#getLookups(java.lang.String)
      */
     public List<Lookup> get(String shortName) {
@@ -202,12 +220,15 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToRetrieveLookupsByConcept,
-                    new Object[]{shortName}, exception);
+                    new Object[] { shortName }, exception);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.lookup.ILookupService#getTargetLookups(java.lang.String, org.openvpms.component.business.domain.im.lookup.Lookup)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.service.lookup.ILookupService#getTargetLookups(java.lang.String,
+     *      org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public List<Lookup> getTargetLookups(String type, Lookup source) {
         try {
@@ -215,12 +236,15 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToRetrieveTargetLookups,
-                    new Object[]{type, source}, exception);
+                    new Object[] { type, source }, exception);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.lookup.ILookupService#getTargetLookups(java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.service.lookup.ILookupService#getTargetLookups(java.lang.String,
+     *      java.lang.String)
      */
     public List<Lookup> getTargetLookups(String type, String source) {
         try {
@@ -228,12 +252,15 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToRetrieveTargetLookups,
-                    new Object[]{type, source}, exception);
+                    new Object[] { type, source }, exception);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String, org.openvpms.component.business.domain.im.lookup.Lookup)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String,
+     *      org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public List<Lookup> getSourceLookups(String type, Lookup target) {
         try {
@@ -241,12 +268,15 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToRetrieveSourceLookups,
-                    new Object[]{type, target}, exception);
+                    new Object[] { type, target }, exception);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.service.lookup.ILookupService#getSourceLookups(java.lang.String,
+     *      java.lang.String)
      */
     public List<Lookup> getSourceLookups(String type, String target) {
         try {
@@ -254,41 +284,127 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToRetrieveSourceLookups,
-                    new Object[]{type, target}, exception);
+                    new Object[] { type, target }, exception);
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor)
      */
     public List<Lookup> get(NodeDescriptor descriptor) {
         List<Lookup> lookups = new ArrayList<Lookup>();
-        
-        if (descriptor.isLookup()) {
-           AssertionDescriptor assertion = (AssertionDescriptor)descriptor
-               .getAssertionDescriptorsAsMap().get("referenceData");
 
-           if (assertion.getPropertiesAsMap().containsKey("type")) {
-               // This is a remote lookup
-               String type = (String)assertion.getPropertiesAsMap()
-                       .get("type").getValue();
-               
-               if (type.equals("conceptLookup")) {
-                   lookups = dao.getLookupsByConcept(
-                           assertion.getPropertiesAsMap()
-                           .get("concept").getValue());
-               }
-           } else {
-               // it is a local lookup
-               // TODO This is very inefficient..we should cache them in
-               // this service 
-               for (AssertionProperty prop : assertion.getProperties()) {
-                   lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop.getKey(),
-                           prop.getValue()));
-               }
-           }
+        if (descriptor.isLookup()) {
+            AssertionDescriptor assertion = (AssertionDescriptor) descriptor
+                    .getAssertionDescriptorsAsMap().get("referenceData");
+
+            if (assertion.getPropertiesAsMap().containsKey("type")) {
+                // This is a remote lookup
+                String type = (String) assertion.getPropertiesAsMap()
+                    .get("type").getValue();
+                String concept = (String) assertion.getPropertiesAsMap()
+                    .get("concept").getValue();
+
+                if ((StringUtils.isEmpty(type)) || 
+                    (StringUtils.isEmpty(concept))) {
+                    throw new LookupServiceException(
+                            LookupServiceException.ErrorCode.InvalidAssertion,
+                            new Object[] { assertion.getType() });
+                }
+                
+                if (type.equals("lookup")) {
+                    lookups = dao.getLookupsByConcept(assertion
+                            .getPropertiesAsMap().get("concept").getValue());
+                } else {
+                    // invalid lookup type throw an exception
+                    throw new LookupServiceException(
+                            LookupServiceException.ErrorCode.InvalidLookupType,
+                            new Object[] { type });
+                }
+            } else {
+                // it is a local lookup
+                // TODO This is very inefficient..we should cache them in
+                // this service
+                for (AssertionProperty prop : assertion.getProperties()) {
+                    lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
+                            .getKey(), prop.getValue()));
+                }
+            }
         }
-        
+
+        return lookups;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor,
+     *      org.openvpms.component.business.domain.im.common.IMObject)
+     */
+    public List<Lookup> get(NodeDescriptor descriptor, IMObject object) {
+        List<Lookup> lookups = new ArrayList<Lookup>();
+
+        if (descriptor.isLookup()) {
+            AssertionDescriptor assertion = (AssertionDescriptor) descriptor
+                    .getAssertionDescriptorsAsMap().get("referenceData");
+
+            if (assertion.getPropertiesAsMap().containsKey("type")) {
+                // This is a remote lookup
+                String type = (String) assertion.getPropertiesAsMap().get(
+                        "type").getValue();
+                String concept = (String) assertion.getPropertiesAsMap().get(
+                        "concept").getValue();
+
+                // if the type and concept properties are not specified
+                // then throw an exception
+                if ((StringUtils.isEmpty(type))
+                        || (StringUtils.isEmpty(concept))) {
+                    throw new LookupServiceException(
+                            LookupServiceException.ErrorCode.InvalidAssertion,
+                            new Object[] { assertion.getType() });
+                }
+
+                if (type.equals("targetLookup")) {
+                    String source = (String) assertion.getPropertiesAsMap()
+                            .get("source").getValue();
+                    if (StringUtils.isEmpty(source)) {
+                        throw new LookupServiceException(
+                                LookupServiceException.ErrorCode.InvalidAssertion,
+                                new Object[] { assertion.getType() });
+                    }
+
+                    lookups = dao.getTargetLookups(concept, (String)JXPathContext
+                            .newContext(object).getValue(source));
+                } else if (type.equals("sourceLookup")) {
+                    String target = (String) assertion.getPropertiesAsMap()
+                            .get("target").getValue();
+                    if (StringUtils.isEmpty(target)) {
+                        throw new LookupServiceException(
+                                LookupServiceException.ErrorCode.InvalidAssertion,
+                                new Object[] { assertion.getType() });
+
+                    }
+                    lookups = dao.getSourceLookups(concept, (String)JXPathContext
+                            .newContext(object).getValue(target));
+                } else {
+                    // invalid lookup type throw an exception
+                    throw new LookupServiceException(
+                            LookupServiceException.ErrorCode.InvalidLookupType,
+                            new Object[] { type });
+                }
+            } else {
+                // it is a local lookup
+                // TODO This is very inefficient..we should cache them in
+                // this service
+                for (AssertionProperty prop : assertion.getProperties()) {
+                    lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
+                            .getKey(), prop.getValue()));
+                }
+            }
+        }
+
         return lookups;
     }
 

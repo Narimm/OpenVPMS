@@ -55,7 +55,7 @@ public class Contact extends IMObject {
     /**
      * A list of {@link Address} instances for this contact.
      */
-    private Set<Address> addresses;
+    private Set<Address> addresses = new HashSet<Address>();
     
     /**
      * A reference to the owning {@link Party}
@@ -80,7 +80,6 @@ public class Contact extends IMObject {
      */
     public Contact(ArchetypeId archetypeId) {
         super(archetypeId);
-        this.addresses = new HashSet<Address>();
     }
     
 

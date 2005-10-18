@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 // spring-framework
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -131,6 +132,8 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.lookup.ILookupDAO#getSourceLookups(java.lang.String, java.lang.String)
      */
     public List<Lookup> getSourceLookups(String type, String target) {
+        List<Lookup> lookups = null;
+        
         try {
             // the type is in the form of sourceConcept.tsrgetConcept
             StringTokenizer tokens = new StringTokenizer(type, ".");
@@ -150,24 +153,25 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
             
             // if we couldn't find the target lookup then throw an exception
             if (results.size() == 0) {
-                throw new LookupDAOException(
-                        LookupDAOException.ErrorCode.FailedToLocateLookup,
-                        new Object[] {targetConcept, target});
+                lookups = new ArrayList<Lookup>();
+            } else {
+                
+                // if there are more then just take the first one and issue a 
+                // warning
+                if (results.size() > 1) {
+                    logger.warn("There are multiple lookups with concept:" + 
+                            targetConcept + " and value:" + target);
+                }
+                
+                lookups = getSourceLookups(type, (Lookup)results.get(0));
             }
-            
-            // if there are more then just take the first one and issue a 
-            // warning
-            if (results.size() > 1) {
-                logger.warn("There are multiple lookups with concept:" + 
-                        targetConcept + " and value:" + target);
-            }
-            
-            return getSourceLookups(type, (Lookup)results.get(0));
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetSourceLookups,
                     new Object[] { type, target }, exception);
         }
+        
+        return lookups;
     }
 
     /*
@@ -196,6 +200,8 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.lookup.ILookupDAO#getTargetLookups(java.lang.String, java.lang.String)
      */
     public List<Lookup> getTargetLookups(String type, String source) {
+        List<Lookup> lookups = null;
+        
         try {
             // the type is in the form of sourceConcept.targetConcept
             StringTokenizer tokens = new StringTokenizer(type, ".");
@@ -212,27 +218,27 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
                         new String[] { "concept", "value" },
                         new Object[] {sourceConcept, source });
             
-            // if we couldn't find the target lookup then throw an exception
+            // if we couldn't find the target lookup then return an empty
             if (results.size() == 0) {
-                throw new LookupDAOException(
-                        LookupDAOException.ErrorCode.FailedToLocateLookup,
-                        new Object[] {sourceConcept, source});
+                lookups = new ArrayList<Lookup>();
+            } else {
+                // if there are more then just take the first one and issue a 
+                // warning
+                if (results.size() > 1) {
+                    logger.warn("There are multiple lookups with concept:" + 
+                            sourceConcept + " and value:" + source);
+                }
+                
+                logger.debug(((Lookup)results.get(0)).toString());
+                lookups = getTargetLookups(type, (Lookup)results.get(0));
             }
-            
-            // if there are more then just take the first one and issue a 
-            // warning
-            if (results.size() > 1) {
-                logger.warn("There are multiple lookups with concept:" + 
-                        sourceConcept + " and value:" + source);
-            }
-            
-            logger.debug(((Lookup)results.get(0)).toString());
-            return getTargetLookups(type, (Lookup)results.get(0));
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetTargetLookups,
                     new Object[] { type, source }, exception);
         }
+        
+        return lookups;
     }
     
     /*
