@@ -2,7 +2,7 @@
 	<archetype name="openvpms-party-person.person.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Person">
 		<node name="title" path="/title" type="java.lang.String"
-			minCardinality="1">
+			minCardinality="1" defaultValue="'Mr'">
 			<assertion type="referenceData">
 				<property key="Mr" value="Mr" />
 				<property key="Ms" value="Ms" />

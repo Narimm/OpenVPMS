@@ -62,14 +62,36 @@ public class JXPathGenericObjectCreationFactory extends AbstractFactory {
             NodeDescriptor node = (NodeDescriptor)context.getVariables().getVariable("node");
             
             if (logger.isDebugEnabled()) {
-                logger.debug("node: " + node.getPath() + " for object " + 
-                        context.getContextBean().getClass().getName());
+                logger.debug("root: " + context.getContextBean().toString() +
+                        " parent: " + parent.toString() +
+                        " name: " + name +
+                        " index: " + index);
             }
             
-            ptr.setValue(Thread.currentThread().getContextClassLoader()
-                    .loadClass(node.getType()).newInstance());
+            Class clazz = Thread.currentThread().getContextClassLoader()
+                .loadClass(node.getType());
+            if (clazz == Boolean.class) {
+                ptr.setValue(new Boolean(false));
+            } else if (clazz == Integer.class) {
+                ptr.setValue(new Integer(0));
+            } else if (clazz == Long.class) {
+                ptr.setValue(new Long(0L));
+            } else if (clazz == Double.class) {
+                ptr.setValue(new Double(0.0));
+            } else if (clazz == Float.class) {
+                ptr.setValue(new Float(0.0));
+            } else if (clazz == Short.class) {
+                ptr.setValue(new Short((short)0));
+            } else if (clazz == Byte.class) {
+                ptr.setValue(new Byte((byte)0));
+            } else {
+                ptr.setValue(clazz.newInstance());
+            }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            logger.error("root: " + context.getContextBean().toString() +
+                    " parent: " + parent.toString() +
+                    " name: " + name +
+                    " index: " + index, exception);
             return false;
         }
         

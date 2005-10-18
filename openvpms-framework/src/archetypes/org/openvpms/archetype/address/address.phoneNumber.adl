@@ -19,7 +19,7 @@
 				</assertion>
 			</node>
 			<node name="preferred" path="/details/attributes/preferred"
-				type="java.lang.Boolean" defaultValue="false" />
+				type="java.lang.Boolean" defaultValue="false()" />
 		</node>
 	</archetype>
 </archetypes>

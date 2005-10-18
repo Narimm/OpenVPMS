@@ -25,8 +25,13 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+// commons-lang
+import org.apache.commons.lang.StringUtils;
+
 //openvpms-framework
+import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
@@ -173,12 +178,11 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testLoadingArchetypesFromDir()
     throws Exception {
-        String assertionFile = (String)this.getTestData().getTestCaseParameter(
+        Hashtable params = getTestData().getGlobalParams();
+        String assertionFile = (String)getTestData().getTestCaseParameter(
                 "testLoadingArchetypesFromDir", "normal", "assertionFile");
-        String dir = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "dir");
-        String extension = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "extension");
+        String dir = (String)params.get("dir");
+        String extension = (String)params.get("extension");
         int recordCount1 = ((Integer)this.getTestData().getTestCaseParameter(
                 "testLoadingArchetypesFromDir", "normal", "recordCount1"))
                 .intValue();
@@ -194,12 +198,13 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testRetrievalByShortName()
     throws Exception {
+        Hashtable cparams = getTestData().getGlobalParams();
         Hashtable params = this.getTestData().getTestCaseParams(
                 "testRetrievalByShortName", "normal");
         
-        ArchetypeService registry = new ArchetypeService((String)params.get("dir"), 
-                new String[]{(String)params.get("extension")},
-                (String)params.get("assertionFile"));
+        ArchetypeService registry = new ArchetypeService((String)cparams.get("dir"), 
+                new String[]{(String)cparams.get("extension")},
+                (String)cparams.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
         assertTrue(registry.getArchetypeDescriptors("entityRelationship\\..*").length 
@@ -223,13 +228,14 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testRetrievalByReferenceModelName()
     throws Exception {
+        Hashtable cparams = getTestData().getGlobalParams();
         Hashtable params = this.getTestData().getTestCaseParams(
                 "testRetrievalByReferenceModelName", "normal");
         
         ArchetypeService registry = new ArchetypeService(
-                (String)params.get("dir"), 
-                new String[]{(String)params.get("extension")},
-                (String)params.get("assertionFile"));
+                (String)cparams.get("dir"), 
+                new String[]{(String)cparams.get("extension")},
+                (String)cparams.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
         assertTrue(registry.getArchetypeDescriptorsByRmName("party").length 
@@ -250,12 +256,10 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testCreateDefaultObject()
     throws Exception {
-        String assertionFile = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "assertionFile");
-        String dir = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "dir");
-        String extension = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "extension");
+        Hashtable params = getTestData().getGlobalParams();
+        String assertionFile = (String)params.get("assertionFile");
+        String dir = (String)params.get("dir");
+        String extension = (String)params.get("extension");
         
         ArchetypeService registry = new ArchetypeService(dir, 
                 new String[]{extension}, assertionFile);
@@ -271,17 +275,41 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testCreationAnimalPet()
     throws Exception {
-        String assertionFile = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "assertionFile");
-        String dir = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "dir");
-        String extension = (String)this.getTestData().getTestCaseParameter(
-                "testLoadingArchetypesFromDir", "normal", "extension");
+        Hashtable params = getTestData().getGlobalParams();
+        String assertionFile = (String)params.get("assertionFile");
+        String dir = (String)params.get("dir");
+        String extension = (String)params.get("extension");
         
         ArchetypeService registry = new ArchetypeService(dir, 
                 new String[]{extension}, assertionFile);
 
         Animal animal = (Animal)registry.createDefaultObject("animal.pet");
         assertTrue(animal != null);
+    }
+    
+    /**
+     * Test that default vcalues are assigned for lookups
+     */
+    public void testDefaultValuesForLookups()
+    throws Exception {
+        Hashtable params = getTestData().getGlobalParams();
+        String assertionFile = (String)params.get("assertionFile");
+        String dir = (String)params.get("dir");
+        String extension = (String)params.get("extension");
+        
+        ArchetypeService service = new ArchetypeService(dir, 
+                new String[]{extension}, assertionFile);
+
+        Address address = (Address)service.createDefaultObject("address.location");
+        assertTrue(address.getDetails().getAttribute("country") != null);
+        assertTrue(address.getDetails().getAttribute("country").equals("Australia"));
+        assertTrue(address.getDetails().getAttribute("state") != null);
+        assertTrue(address.getDetails().getAttribute("state").equals("Victoria"));
+        assertTrue(StringUtils.isEmpty((String)address.getDetails().getAttribute("suburb")));
+        assertTrue(StringUtils.isEmpty((String)address.getDetails().getAttribute("postCode")));
+        
+        Person person = (Person)service.createDefaultObject("person.person");
+        assertTrue(person != null);
+        assertTrue(person.getTitle().equals("Mr"));
     }
 }

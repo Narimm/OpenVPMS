@@ -42,12 +42,16 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
+		<property name="name" access="property" column="name"
+			type="string" />
+		<property name="description" access="property"
+			column="description" type="string" />
 		<property name="activeStartTime" access="property"
 			column="active_start_time" type="date" />
 		<property name="activeEndTime" access="property"
 			column="active_end_time" type="date" />
-		<set name="addresses" lazy="false"
-			table="contact_address" cascade="all">
+		<set name="addresses" lazy="false" table="contact_address"
+			cascade="all">
 			<key column="contact_id" />
 			<many-to-many
 				class="org.openvpms.component.business.domain.im.party.Address"

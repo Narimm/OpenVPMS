@@ -106,7 +106,7 @@
         <field name="defaultValue" type="string" required="false"
             direct="false" transient="false"
             get-method="getDefaultValue" set-method="setDefaultValue">
-            <bind-xml name="default" node="attribute" reference="false"/>
+            <bind-xml name="defaultValue" node="attribute" reference="false"/>
         </field>
         <field name="nodeDescriptors"
             type="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor"

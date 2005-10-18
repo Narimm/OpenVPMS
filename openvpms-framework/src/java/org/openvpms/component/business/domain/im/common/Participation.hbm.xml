@@ -41,9 +41,12 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
+		<property name="name" access="property" column="name"
+			type="string" />
+		<property name="description" access="property"
+			column="description" type="string" />
 		<property name="sequence" column="sequence" access="property"
 			type="int" />
-		<property name="description" column="description" type="string" />
 		<property name="negationInd" column="negationInd"
 			type="boolean" />
 		<property name="mode" column="mode" type="string" />

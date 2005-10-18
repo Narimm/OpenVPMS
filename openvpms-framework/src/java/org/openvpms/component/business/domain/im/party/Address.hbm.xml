@@ -41,6 +41,10 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
+		<property name="name" access="property" column="name"
+			type="string" />
+		<property name="description" access="property"
+			column="description" type="string" />
 		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
 		<set name="contacts" lazy="false" table="contact_address"

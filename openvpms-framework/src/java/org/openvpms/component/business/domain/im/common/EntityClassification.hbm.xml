@@ -42,6 +42,10 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
+		<property name="name" access="property" column="name"
+			type="string" />
+		<property name="description" access="property"
+			column="description" type="string" />
 		<property name="activeStartTime" access="property"
 			column="active_start_time" type="date" />
 		<property name="activeEndTime" access="property"

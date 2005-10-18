@@ -6,7 +6,8 @@
 			minCardinality="1" />
 		<node name="reason" path="/reason" type="java.lang.String" />
 		<node name="activeStartTime" path="/activeStartTime"
-			type="java.util.Date" minCardinality="1" defaultValue="now()" />
+			type="java.util.Date" minCardinality="1"
+			defaultValue="java.util.Date.new()" />
 		<node name="source" path="/source"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion type="archetypeRange">

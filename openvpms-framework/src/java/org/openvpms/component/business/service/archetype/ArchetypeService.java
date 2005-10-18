@@ -575,18 +575,32 @@ public class ArchetypeService implements IArchetypeService {
             NodeDescriptor node = (NodeDescriptor)iter.next();
 
             // only ceate a node if the minimum cardinality is 1
-            if (node.getMinCardinality() == 1) {
+            if ((node.getMinCardinality() == 1) ||
+                (StringUtils.isEmpty(node.getDefaultValue())== false)){
                 if (logger.isDebugEnabled()) {
                     logger.debug("Attempting to create path " + node.getPath() 
                             + " for node " + node.getName());
                 }
+                
+                // if we have a value to set then do a create and set
+                // otherwise do only a create
+                String value = node.getDefaultValue();
                 context.getVariables().declareVariable("node", node);
-                context.createPath(node.getPath());
-            }
-
-            // set the default value, if one is specified
-            if (node.getDefaultValue() != null) {
-                context.setValue(node.getPath(), node.getDefaultValue());
+                if (StringUtils.isEmpty(value)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("calling createPath for node " + 
+                                node.getName() + " and path " + node.getPath());
+                    }
+                    context.createPath(node.getPath());
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("calling createPathAndSetValue for node " + 
+                                node.getName() + " path " + node.getPath() +
+                                " and default value " + node.getDefaultValue());
+                    }
+                    context.createPath(node.getPath());
+                    context.setValue(node.getPath(), context.getValue(value));
+                }
             }
 
             // if this node has children then process them

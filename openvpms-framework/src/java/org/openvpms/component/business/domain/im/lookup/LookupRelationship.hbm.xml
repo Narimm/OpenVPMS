@@ -1,65 +1,69 @@
 <?xml version="1.0"?>
 <!--
-  #  Version: 1.0
-  #
-  #  The contents of this file are subject to the OpenVPMS License Version
-  #  1.0 (the 'License'); you may not use this file except in compliance with
-  #  the License. You may obtain a copy of the License at
-  #  http://www.openvpms.org/license/
-  #
-  #  Software distributed under the License is distributed on an 'AS IS' basis,
-  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  #  for the specific language governing rights and limitations under the
-  #  License.
-  #
-  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
-  #
-  #  $Id$
+	#  Version: 1.0
+	#
+	#  The contents of this file are subject to the OpenVPMS License Version
+	#  1.0 (the 'License'); you may not use this file except in compliance with
+	#  the License. You may obtain a copy of the License at
+	#  http://www.openvpms.org/license/
+	#
+	#  Software distributed under the License is distributed on an 'AS IS' basis,
+	#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+	#  for the specific language governing rights and limitations under the
+	#  License.
+	#
+	#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+	#
+	#  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-  <class
-    name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
-    table="lookup_relationship">
-    <id name="uid" access="field" type="long" unsaved-value="-1">
-      <column name="lookup_relationship_id" index="lookup_relationship_id_idx" />
-      <generator class="increment" />
-    </id>
-    <version name="version" access="field" type="long" />
-    <property name="type" access="field" column="type" type="string" />
-    <many-to-one name="source" column="source" access="field" not-null="true" />
-    <many-to-one name="target" column="target" access="field" not-null="true" />
-  </class>
+	<class
+		name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
+		table="lookup_relationship">
+		<id name="uid" access="field" type="long" unsaved-value="-1">
+			<column name="lookup_relationship_id"
+				index="lookup_relationship_id_idx" />
+			<generator class="increment" />
+		</id>
+		<version name="version" access="field" type="long" />
+		<property name="type" access="field" column="type"
+			type="string" />
+		<many-to-one name="source" column="source" access="field"
+			not-null="true" />
+		<many-to-one name="target" column="target" access="field"
+			not-null="true" />
+	</class>
 
-  <query name="lookupRelationship.getRowCount">
-    <![CDATA[
+	<query name="lookupRelationship.getRowCount">
+		<![CDATA[
 			select count(relationship) from org.openvpms.component.business.domain.im.lookup.LookupRelationship as 
 			relationship
 		]]>
-  </query>
+	</query>
 
-  <query name="lookupRelationship.getAllRelationshipsWithId">
-    <![CDATA[
+	<query name="lookupRelationship.getAllRelationshipsWithId">
+		<![CDATA[
 			select relationship from org.openvpms.component.business.domain.im.lookup.LookupRelationship relationship
 			where target = :id or source = :id
 		]]>
-  </query>
+	</query>
 
-  <query name="lookupRelationship.getTargetLookups">
-    <![CDATA[
+	<query name="lookupRelationship.getTargetLookups">
+		<![CDATA[
 			select relationship.target
 			from org.openvpms.component.business.domain.im.lookup.LookupRelationship as relationship
             where relationship.type = :type and relationship.source.uid = :uid
 		]]>
-  </query>
+	</query>
 
-  <query name="lookupRelationship.getSourceLookups">
-    <![CDATA[
+	<query name="lookupRelationship.getSourceLookups">
+		<![CDATA[
 			select relationship.source
 			from org.openvpms.component.business.domain.im.lookup.LookupRelationship as relationship
             where relationship.type = :type and relationship.target.uid = :uid
 		]]>
-  </query>
+	</query>
 </hibernate-mapping>

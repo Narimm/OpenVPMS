@@ -19,6 +19,7 @@
 package org.openvpms.component.system.service.jxpath;
 
 // java
+import java.util.Date;
 import java.util.Hashtable;
 
 // jxpath
@@ -204,6 +205,15 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(person.getIdentities().iterator().next().getEntity() != null);
     }
 
+    /**
+     * Test that packaged functions work as expects
+     */
+    public void testPackagedFunctions() 
+    throws Exception {
+        JXPathContext ctx = JXPathContext.newContext(this);
+        assertTrue(ctx.getValue("java.util.Date.new()") instanceof Date);
+        assertTrue(ctx.getValue("'jimbo'").equals("jimbo"));
+    }
     /**
      * This performs a get using an object and a jxpath expression and returns
      * the resolved object

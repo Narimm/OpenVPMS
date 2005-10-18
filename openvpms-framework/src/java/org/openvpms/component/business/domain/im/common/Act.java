@@ -61,11 +61,6 @@ public class Act extends IMObject {
     private String title;
     
     /**
-     * Description of the Act.
-     */
-    private String descritpion;
-    
-    /**
      * The effective start date of this act.
      */
     private Date effectiveStartTime;
@@ -124,30 +119,32 @@ public class Act extends IMObject {
     /**
      * The {@link Participations} for this act.
      */
-    private Set<Participation> participations;
+    private Set<Participation> participations =
+        new HashSet<Participation>();
     
     /**
      * Holds all the {@link ActRelationship}s that this act is a source off.
      */
-    private Set<ActRelationship> sourceActRelationships;
+    private Set<ActRelationship> sourceActRelationships =
+        new HashSet<ActRelationship>();
     
     /**
      * Holds all the {@link ActRelationship}s that this act is a target off.
      */
-    private Set<ActRelationship> targetActRelationships;
-    
+    private Set<ActRelationship> targetActRelationships =
+        new HashSet<ActRelationship>();
 
     /**
      * Default constructor
      */
-    protected Act() {
+    public Act() {
         // do nothing
     }
     
     /**
      * Constructs an instance of an act.
      * 
-     * @param archetypeId
+     * @param archetypeI
      *            the archetype id constraining this object
      * @param details
      *            dynamic details of the act.
@@ -155,23 +152,6 @@ public class Act extends IMObject {
     public Act(ArchetypeId archetypeId, DynamicAttributeMap details) {
         super(archetypeId);
         this.details = details;
-        this.participations = new HashSet<Participation>();
-        this.sourceActRelationships = new HashSet<ActRelationship>();
-        this.targetActRelationships = new HashSet<ActRelationship>();
-    }
-
-    /**
-     * @return Returns the descritpion.
-     */
-    public String getDescritpion() {
-        return descritpion;
-    }
-
-    /**
-     * @param descritpion The descritpion to set.
-     */
-    public void setDescritpion(String descritpion) {
-        this.descritpion = descritpion;
     }
 
     /**
@@ -345,8 +325,8 @@ public class Act extends IMObject {
     /**
      * @return Returns the sourceActRelationships.
      */
-    public ActRelationship[] getSourceActRelationships() {
-        return (ActRelationship[])sourceActRelationships.toArray();
+    public Set<ActRelationship> getSourceActRelationships() {
+        return sourceActRelationships;
     }
 
     /**
@@ -378,8 +358,8 @@ public class Act extends IMObject {
     /**
      * @return Returns the targetActRelationships.
      */
-    public ActRelationship[] getTargetActRelationships() {
-        return (ActRelationship[])targetActRelationships.toArray();
+    public Set<ActRelationship> getTargetActRelationships() {
+        return targetActRelationships;
     }
 
     /**
@@ -416,8 +396,8 @@ public class Act extends IMObject {
      * 
      * @return Participation
      */
-    public Participation[] getParticipations() {
-        return (Participation[])this.participations.toArray();
+    public Set<Participation> getParticipations() {
+        return participations;
     }
 
     /**

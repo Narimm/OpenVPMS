@@ -36,7 +36,7 @@
 			</assertion>
 		</node>
 		<node name="desexed" path="/desexed" type="java.lang.Boolean"
-			defaultValue="No" />
+			defaultValue="false()" />
 		<node name="dateOfBirth" path="/dateOfBirth"
 			type="java.util.Date" minCardinality="1" />
 		<node name="identities" path="/identities"

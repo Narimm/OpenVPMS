@@ -41,6 +41,10 @@
 			<property name="version" access="property"
 				column="archetype_version" type="string" />
 		</component>
+		<property name="name" access="property" column="name"
+			type="string" />
+		<property name="description" access="property"
+			column="description" type="string" />
 		<property name="sequence" type="int" column="sequence" />
 		<property name="reason" type="string" column="reason" />
 		<property name="activeStartTime" access="property"
@@ -49,8 +53,8 @@
 			column="active_end_time" type="date" />
 		<many-to-one name="source" access="property" column="source_id" />
 		<many-to-one name="target" access="property" column="target_id" />
-		<many-to-one name="identity" access="property" 
-			column="identity_id" cascade="none"/>
+		<many-to-one name="identity" access="property"
+			column="identity_id" cascade="none" />
 		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
 	</class>

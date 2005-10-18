@@ -140,6 +140,18 @@ public class LookupServiceTestCase extends
     }
     
     /**
+     * Test the lookup using the same a differentr call
+     */
+    public void testDatabaseLookupRetrievalFromNodeDescriptor2()
+    throws Exception {
+        ArchetypeDescriptor descriptor = archetypeService
+            .getArchetypeDescriptor("address.location");
+        assertTrue(descriptor.getNodeDescriptor("country") != null);
+        assertTrue(descriptor.getNodeDescriptor("country").isLookup());
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("country"), null).size() > 0);
+    }
+    
+    /**
      * Test the target lookup up or constrained lookups for the address.location
      * archetype for country Australia
      */

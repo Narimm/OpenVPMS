@@ -11,7 +11,8 @@
 				<assertion type="referenceData">
 					<property key="type" value="targetLookup" />
 					<property key="concept" value="state.suburb" />
-					<property key="source" value="/details/attributes/state" />
+					<property key="source"
+						value="/details/attributes/state" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
@@ -20,21 +21,25 @@
 				<assertion type="referenceData">
 					<property key="type" value="targetLookup" />
 					<property key="concept" value="suburb.postCode" />
-					<property key="source" value="/details/attributes/suburb" />
+					<property key="source"
+						value="/details/attributes/suburb" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="state" path="/details/attributes/state"
-				type="java.lang.String" defaultValue="Victoria" minCardinality="1">
+				type="java.lang.String" defaultValue="'Victoria'"
+				minCardinality="1">
 				<assertion type="referenceData">
 					<property key="type" value="targetLookup" />
 					<property key="concept" value="country.state" />
-					<property key="source" value="/details/attributes/country" />
+					<property key="source"
+						value="/details/attributes/country" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="country" path="/details/attributes/country"
-				type="java.lang.String" defaultValue="Australia" minCardinality="1">
+				type="java.lang.String" defaultValue="'Australia'"
+				minCardinality="1">
 				<assertion type="referenceData">
 					<property key="type" value="lookup" />
 					<property key="concept" value="country" />
