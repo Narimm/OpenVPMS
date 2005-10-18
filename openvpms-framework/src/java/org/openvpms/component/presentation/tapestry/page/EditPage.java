@@ -205,7 +205,7 @@ public abstract class EditPage extends OpenVpmsPage {
     }
 
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
-        return new LookupSelectionModel(getLookupService().get(descriptor),
+        return new LookupSelectionModel(getLookupService().get(descriptor,(IMObject)getModel()),
                 !descriptor.isRequired());
     }
 

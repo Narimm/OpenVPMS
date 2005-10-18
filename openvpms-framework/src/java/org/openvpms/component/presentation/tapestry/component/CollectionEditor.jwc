@@ -16,7 +16,7 @@
     <property name="index" />
     <property name="archetypeName" />
         
-    <component id="foreach" type="For" >
+    <component id="foreach" type="Foreach" >
     	<binding name="source" value="collection"/>       
         <binding name="value" value="currentObject"/> 
         <binding name="index" value="index"/>
