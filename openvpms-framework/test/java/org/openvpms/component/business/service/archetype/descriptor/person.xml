@@ -30,5 +30,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="/archetypeId/concept" />
+		<node name="identities" type="java.util.HashSet" baseName="identity"
+			path="/identities" maxCardinality="*"/>
 	</archetype>
 </archetypes>

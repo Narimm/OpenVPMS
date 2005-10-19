@@ -29,6 +29,7 @@
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
+		<property name="linkId" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
 				column="archetype_namespace" type="string" />
@@ -63,6 +64,13 @@
 		<![CDATA[
 			select count(entityRelationship) from org.openvpms.component.business.domain.im.common.EntityRelationship as 
 			entityRelationship
+		]]>
+	</query>
+
+	<query name="entityRelationship.getById">
+		<![CDATA[
+			select entityRelationship from org.openvpms.component.business.domain.im.common.EntityRelationship as 
+			entityRelationship where entityRelationship = :uid
 		]]>
 	</query>
 </hibernate-mapping>

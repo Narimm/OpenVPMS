@@ -288,11 +288,11 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // now retrieve the role and check that there is one source and
             // one target relationship entry
             role = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role.getSourceEntityRelationships().length == 1);
-            assertTrue(role.getTargetEntityRelationships().length == 1);
-            assertTrue(source.getSourceEntityRelationships()[0]
-                    .getTarget().getSourceEntityRelationships().length == 1);
-            assertTrue(source.getSourceEntityRelationships()[0]
+            assertTrue(role.getSourceEntityRelationships().size() == 1);
+            assertTrue(role.getTargetEntityRelationships().size() == 1);
+            assertTrue(source.getSourceEntityRelationships().iterator().next()
+                    .getTarget().getSourceEntityRelationships().size() == 1);
+            assertTrue(source.getSourceEntityRelationships().iterator().next()
                     .getTarget().getUid() == role.getUid());
         } catch (Exception exception) {
             if (tx != null) {
@@ -333,7 +333,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // now retrieve the role and remove the erel
             tx = session.beginTransaction();
             role = (Role) session.load(Role.class, role.getUid());
-            erel = role.getSourceEntityRelationships()[0];
+            erel = role.getSourceEntityRelationships().iterator().next();
             role.removeSourceEntityRelationship(erel);
             session.delete(erel);
             tx.commit();
@@ -347,7 +347,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             session.flush();
             role = (Role) session.load(Role.class, role.getUid());
             assertTrue((role.getSourceEntityRelationships() == null)
-                    || (role.getSourceEntityRelationships().length == 0));
+                    || (role.getSourceEntityRelationships().size() == 0));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -397,7 +397,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             session.flush();
             role = (Role) session.load(Role.class, role.getUid());
             assertTrue(role.getClassifications().size() == 1);
-            assertTrue(role.getSourceEntityRelationships().length == 1);
+            assertTrue(role.getSourceEntityRelationships().size() == 1);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();

@@ -31,7 +31,7 @@
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="/archetypeId/concept" />
 		<node name="identities" type="java.util.HashSet" baseName="identity"
-			path="/identities" minCardinality="1" />
+			path="/identities" maxCardinality="*" />
 
 	</archetype>
 </archetypes>

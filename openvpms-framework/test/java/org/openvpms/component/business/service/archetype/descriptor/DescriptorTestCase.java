@@ -28,9 +28,6 @@ import java.util.List;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
 
-// commons-lang
-import org.apache.commons.lang.StringUtils;
-
 // sax
 import org.xml.sax.InputSource;
 
@@ -103,76 +100,6 @@ public class DescriptorTestCase extends BaseTestCase {
     }
     
     /**
-     * Test that the display name for the archetype and node default to the
-     * name of those elements
-     */
-    public void testDefaultDisplayName()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        
-        // load the archetypes
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
-        
-        // test that the archetype display name defaults to the name
-        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptors()[0];
-        assertTrue(descriptor.getDisplayName().equals(descriptor.getName()));
-        
-        // iterate through the top level nodes and enusre that the 
-        // display name is not null
-        for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
-            assertTrue(StringUtils.isEmpty(node.getDisplayName()) == false);
-        }
-    }
-
-    /**
-     * Test that the max length defaults to the appropriate value for a node
-     */
-    public void testDefaultMaxLength()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        
-        // load the archetypes
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
-        
-        // test that the archetype display name defaults to the name
-        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptors()[0];
-        
-        // iterate through the top level nodes and enusre that the 
-        // display name defaults to the name
-        for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
-            assertTrue(node.getMaxLength() == NodeDescriptor.DEFAULT_MAX_LENGTH);
-        }
-    }
-    
-    /**
-     * Test that IsLookup works for a specified node
-     */
-    public void testIsLookup()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testIsLookup", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
-        
-        NodeDescriptor ndesc = descriptors.getArchetypeDescriptors()[0]
-                         .getNodeDescriptor(nodeName);
-        assertTrue(ndesc.isLookup());
-        
-    }
-    
-    /**
      * Test that getAllNodeDescriptors works
      */
     public void testGetAllNodeDescriptors()
@@ -187,48 +114,6 @@ public class DescriptorTestCase extends BaseTestCase {
         ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
         List<NodeDescriptor> ndesc = adesc.getAllNodeDescriptors();
         assertTrue(ndesc.size() == 7);
-    }
-    
-    /**
-     * Test that the isHidden method works
-     */
-    public void testIsHidden()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testIsHidden", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
-        
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
-        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.isHidden());
-    }
-    
-    /**
-     * Test the archetype range helper method.
-     */
-    public void testArchetypeRange()
-    throws Exception {
-        
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testArchetypeRange", "normal", "archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testArchetypeRange", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
-        
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
-        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.getArchetypeRange().length == 2);
     }
     
     /**

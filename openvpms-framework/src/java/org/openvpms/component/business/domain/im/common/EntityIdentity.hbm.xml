@@ -29,6 +29,7 @@
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
+		<property name="linkId" access="property" type="string" />
 		<many-to-one name="entity" column="entity_id" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
@@ -55,6 +56,13 @@
 		<![CDATA[
 			select count(entityIdentity) from org.openvpms.component.business.domain.im.common.EntityIdentity as 
 			entityIdentity
+		]]>
+	</query>
+
+	<query name="entityIdentity.getById">
+		<![CDATA[
+			select entityIdentity from org.openvpms.component.business.domain.im.common.EntityIdentity as 
+			entityIdentity where entityIdentity.uid = :uid
 		]]>
 	</query>
 </hibernate-mapping>

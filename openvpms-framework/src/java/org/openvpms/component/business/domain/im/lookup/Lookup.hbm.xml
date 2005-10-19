@@ -28,6 +28,7 @@
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
+		<property name="linkId" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
 				column="archetype_namespace" type="string" />

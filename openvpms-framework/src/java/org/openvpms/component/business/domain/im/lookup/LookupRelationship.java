@@ -19,10 +19,11 @@
 
 package org.openvpms.component.business.domain.im.lookup;
 
-// java core
-import java.io.Serializable;
-
+// commons-lang
 import org.apache.commons.lang.StringUtils;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * This class defines a relationship between 2 {@link Lookup} instances, namely
@@ -33,25 +34,13 @@ import org.apache.commons.lang.StringUtils;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class LookupRelationship implements Serializable {
+public class LookupRelationship extends IMObject {
 
     /**
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Uniquely identifies an instance
-     */
-    @SuppressWarnings("unused")
-    private long uid = -1;
-    
-    /**
-     * Used for database control
-     */
-    @SuppressWarnings("unused")
-    private long version;
-    
     /**
      * The source lookup instance
      */
@@ -124,12 +113,4 @@ public class LookupRelationship implements Serializable {
     public String getType() {
         return type;
     }
-
-    /**
-     * @return Returns the uid.
-     */
-    public long getUid() {
-        return uid;
-    }
-
 }

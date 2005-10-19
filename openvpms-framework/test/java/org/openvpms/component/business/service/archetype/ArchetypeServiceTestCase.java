@@ -35,6 +35,7 @@ import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 
 // openvpms-test-component
@@ -285,6 +286,33 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
 
         Animal animal = (Animal)registry.createDefaultObject("animal.pet");
         assertTrue(animal != null);
+    }
+    
+    /**
+     * Test that a node value for an {@link IMObject can be retrieved from
+     * a {@link NodeDescriptor}
+     */
+    public void testGetValueFromNodeDescriptor()
+    throws Exception {
+        Hashtable params = getTestData().getGlobalParams();
+        String assertionFile = (String)params.get("assertionFile");
+        String dir = (String)params.get("dir");
+        String extension = (String)params.get("extension");
+        
+        ArchetypeService service = new ArchetypeService(dir, 
+                new String[]{extension}, assertionFile);
+        Person person = (Person)service.createDefaultObject("person.person");
+        person.setTitle("Mr");
+        person.setFirstName("Jim");
+        person.setLastName("Alateras");
+        
+        NodeDescriptor ndesc = service.getArchetypeDescriptor(
+                person.getArchetypeId()).getNodeDescriptor("description");
+        assertTrue(ndesc.getValue(person).equals(person.getArchetypeId().getConcept()));
+
+        ndesc = service.getArchetypeDescriptor(person
+                .getArchetypeId()).getNodeDescriptor("name");
+        assertTrue(ndesc.getValue(person).equals("Jim Alateras"));
     }
     
     /**

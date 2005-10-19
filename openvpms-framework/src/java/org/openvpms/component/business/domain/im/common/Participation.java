@@ -51,11 +51,6 @@ public class Participation extends IMObject {
     private int sequence;
     
     /**
-     * Description of the participation
-     */
-    private String description;
-    
-    /**
      * Indicates that a particular participation did not occur
      */
     private boolean negationInd;
@@ -126,20 +121,6 @@ public class Participation extends IMObject {
         this.details = details;
     }
     
-    /**
-     * @return Returns the description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @param description The description to set.
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     /**
      * @return Returns the details.
      */

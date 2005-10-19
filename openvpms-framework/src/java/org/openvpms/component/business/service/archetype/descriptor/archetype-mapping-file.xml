@@ -70,9 +70,9 @@
         <description>       Default mapping for class
             org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor     </description>
         <map-to xml="node"/>
-        <field name="maxCardinality" type="integer" required="false"
+        <field name="maxCardinality" type="string" required="false"
             direct="false" transient="false"
-            get-method="getMaxCardinality" set-method="setMaxCardinality">
+            get-method="getMaxCardinalityAsString" set-method="setMaxCardinalityAsString">
             <bind-xml name="maxCardinality" node="attribute" reference="false"/>
         </field>
         <field name="minCardinality" type="integer" required="false"

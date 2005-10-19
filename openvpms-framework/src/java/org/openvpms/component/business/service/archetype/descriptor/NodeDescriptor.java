@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 // commons-lang
+import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 
@@ -59,6 +60,12 @@ public class NodeDescriptor implements Serializable {
      * The name given to the object id node
      */
     public static final String IDENTIFIER_NODE_NAME = "uid";
+    
+    /**
+     * This is used to identify a max cardinality that is unbounded
+     */
+    public static final int UNBOUNDED = -1;
+    public static final String UNBOUNDED_AS_STRING = "*";
     
     /** 
      * The default maximum Length if one is not defined in the node definition 
@@ -178,7 +185,35 @@ public class NodeDescriptor implements Serializable {
     public void setMaxCardinality(int maxCardinality) {
         this.maxCardinality = maxCardinality;
     }
-
+    
+    /**
+     * This setter enabled the user to specify an unbounded maximum
+     * collection using '*'. 
+     * 
+     * @param maxCardinality
+     *            The maxCardinality to set.
+     */
+    public void setMaxCardinalityAsString(String maxCardinality) {
+        if (maxCardinality.equals(UNBOUNDED_AS_STRING)) {
+            setMaxCardinality(UNBOUNDED);
+        } else {
+            setMaxCardinality(Integer.parseInt(maxCardinality));
+        }
+    }
+    
+    /**
+     * The getterthat returns the max cardinality as a string
+     * 
+     * @return String
+     */
+    public String getMaxCardinalityAsString() {
+        if (maxCardinality == UNBOUNDED) {
+            return UNBOUNDED_AS_STRING;
+        } else {
+            return Integer.toString(maxCardinality);
+        }
+    }
+    
     /**
      * @return Returns the minCardinality.
      */
@@ -523,7 +558,7 @@ public class NodeDescriptor implements Serializable {
      * @return boolean
      */
     public boolean isCollection() {
-        return getMaxCardinality() > 1;
+        return getMaxCardinality() > 1 || getMaxCardinality() == UNBOUNDED;
     }
 
     /**
@@ -687,6 +722,24 @@ public class NodeDescriptor implements Serializable {
             return (String[])range.toArray(new String[range.size()]);
         } else {
             return new String[0];
+        }
+    }
+    
+    /**
+     * This will return the node value for the supplied {@link IMObject}. If 
+     * the node is derived then it will return the derived value. If the node is 
+     * not dervied then it will use the path to return the value.
+     * 
+     * @param context
+     *            the context object to work from
+     * @return Object
+     *            the returned object            
+     */
+    public Object getValue(IMObject context) {
+        if (isDerived()) {
+            return JXPathContext.newContext(context).getValue(getDerivedValue());
+        } else {
+            return JXPathContext.newContext(context).getValue(getPath());
         }
     }
 }

@@ -205,11 +205,10 @@ public class Entity extends IMObject {
      * Return all the {@link EntityRelationship} objects that this entity is 
      * the source off
      * 
-     * @return EntityRelationship[]
+     * @return Set<EntityRelationship>
      */
-    public EntityRelationship[] getSourceEntityRelationships() {
-        return (EntityRelationship[])sourceRelationships.toArray(
-                new EntityRelationship[sourceRelationships.size()]);
+    public Set<EntityRelationship> getSourceEntityRelationships() {
+        return sourceRelationships;
     }
     
     /**
@@ -240,11 +239,10 @@ public class Entity extends IMObject {
     /**
      * Return all the target {@link EntityRelationship} for this entity
      * 
-     * @return EntityRelationship[]
+     * @return Set<EntityRelationship>
      */
-    public EntityRelationship[] getTargetEntityRelationships() {
-        return (EntityRelationship[])targetRelationships.toArray(
-                new EntityRelationship[targetRelationships.size()]);
+    public Set<EntityRelationship> getTargetEntityRelationships() {
+        return targetRelationships;
     }
     
     /**

@@ -17,6 +17,24 @@
 				org/openvpms/component/business/service/archetype/descriptor/assertion-test-types.xml
 			</param>
 		</params>
+	</class>
+
+	<class name="NodeDescriptorTestCase">
+		<params>
+			<param name="mappingFile" type="java.lang.String">
+				org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml
+			</param>
+			<param name="archetypeFile" type="java.lang.String">
+				org/openvpms/component/business/service/archetype/descriptor/single-archetype.xml
+			</param>
+			<param name="assertionMappingFile"
+				type="java.lang.String">
+				org/openvpms/component/business/service/archetype/descriptor/assertion-type-mapping-file.xml
+			</param>
+			<param name="assertionFile" type="java.lang.String">
+				org/openvpms/component/business/service/archetype/descriptor/assertion-test-types.xml
+			</param>
+		</params>
 
 		<!-- Data for the testIsLookup method -->
 		<method name="testIsLookup" test-case="normal">
@@ -44,6 +62,18 @@
 				</param>
 				<param name="nodeName" type="java.lang.String">
 					classifications
+				</param>
+			</params>
+		</method>
+
+		<!-- Data for the testMaxCardinality method -->
+		<method name="testMaxCardinality" test-case="normal">
+			<params>
+				<param name="archetypeFile" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/descriptor/person.xml
+				</param>
+				<param name="nodeName" type="java.lang.String">
+					identities
 				</param>
 			</params>
 		</method>

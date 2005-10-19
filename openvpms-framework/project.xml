@@ -411,6 +411,7 @@
         <exclude>**/BaseTestCase.java</exclude>
         <exclude>**/HibernateInfoModelTestCase.java</exclude>
         <exclude>**/Hibernate*.java</exclude>
+        <exclude>**/ServiceBaseTestCase.java</exclude>
       </excludes>
       <resources>
         <resource>
