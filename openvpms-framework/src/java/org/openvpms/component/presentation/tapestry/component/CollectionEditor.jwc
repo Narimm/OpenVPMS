@@ -29,8 +29,11 @@
     <component id="editLink" type="EditLink">
         <binding name="model" value="currentObject"/>
     </component>
-    <component id="insert" type="Insert">
-        <binding name="value" value="currentObject"/>
+    <component id="insertName" type="Insert">
+        <binding name="value" value="jxpath:pathToObject(currentObject,'name')"/>
+    </component>
+    <component id="insertDescription" type="Insert">
+        <binding name="value" value="jxpath:pathToObject(currentObject,'description')"/>
     </component>
     <component id="allowCreate" type="If">
         <binding name="condition" value="allowCreate"/>

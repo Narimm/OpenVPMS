@@ -21,9 +21,6 @@ package org.openvpms.component.presentation.tapestry.component;
 // tapestry hivemind
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
-import org.openvpms.component.presentation.tapestry.callback.EditCallback;
-import org.openvpms.component.presentation.tapestry.callback.SearchCallback;
-import org.openvpms.component.presentation.tapestry.page.EditPage;
 import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
 import org.openvpms.component.presentation.tapestry.page.SearchPage;
 
