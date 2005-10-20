@@ -18,16 +18,17 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
-import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.annotations.Bean;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.apache.tapestry.form.StringPropertySelectionModel;
+import org.apache.tapestry.valid.ValidationConstraint;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.presentation.tapestry.Visit;
@@ -68,17 +69,7 @@ public abstract class EditPage extends OpenVpmsPage {
      * @param cycle
      */
     public void save(IRequestCycle cycle) {
-        ICallback callback = null;
-        try {
-            callback = (ICallback)getVisitObject().getCallbackStack().peek();          
-        }
-        catch (Exception e) {
-        }
-        if (callback instanceof CollectionCallback) {
-            ((CollectionCallback) callback).add(getModel());
-        } else {
-            save();
-        }
+        save();
     }
 
     /**
@@ -117,23 +108,19 @@ public abstract class EditPage extends OpenVpmsPage {
      * @param cycle
      */
     public void saveAndReturn(IRequestCycle cycle) {
-        ICallback callback = null;
-        try {
-            callback = (ICallback)getVisitObject().getCallbackStack().pop();          
+        if (save()){
+            ICallback callback = null;
+            try {
+                callback = (ICallback)getVisitObject().getCallbackStack().pop();          
+                if (callback == null)
+                    cycle.activate("Home");
+                else
+                    callback.performCallback(cycle);           
+            }
+            catch (Exception e){           
+                cycle.activate("Home");
+            }           
         }
-        catch (Exception e){           
-        }
-        
-        if (callback instanceof CollectionCallback) {
-            ((CollectionCallback) callback).add(getModel());
-        } else {
-            if (!save())
-                return;
-        }
-        if (callback == null)
-            cycle.activate("Home");
-        else
-            callback.performCallback(cycle);
     }
 
     public void cancel(IRequestCycle cycle) {
@@ -163,7 +150,34 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     protected boolean save() {
-        if (!getDelegate().getHasErrors()) {
+        // Check the delegator for errors first
+        if (getDelegate().getHasErrors())
+            return false;
+        
+        //Now use Archetype service to Validate the object
+        //TODO need list of errors returned from validator to populate in delegator
+        try {
+            getArchetypeService().validateObject((IMObject)getModel());
+            }
+        catch (ValidationException e){ 
+            //TODO iterate through validation errors and add to delegate
+            //May do this in Delegate method ?
+            getDelegate().setFormComponent(null);
+            getDelegate().record("Object has validation errors",ValidationConstraint.CONSISTENCY);
+            return false;           
+        }
+        // Check to see if we are coming from editing a collection or not
+        ICallback callback = null;
+        try {
+            callback = (ICallback)getVisitObject().getCallbackStack().peek();          
+        }
+        catch (Exception e) {
+            // ignore error just means we have a empty stack so callback is null
+        }
+        // If collection call the callbacks add method with the model
+        if (callback instanceof CollectionCallback) {
+            ((CollectionCallback) callback).add(getModel());
+        } else {
             try {
                 if (getModel() instanceof Entity)
                     getEntityService().save((Entity) getModel());
@@ -172,13 +186,12 @@ public abstract class EditPage extends OpenVpmsPage {
                 else if (getModel() instanceof Lookup)
                     getLookupService().save((Lookup) getModel());
             } catch (Exception pe) {
-                throw new ApplicationRuntimeException(pe);
-                // ((OpenVpmsValidationDelegate)getDelegate()).record(pe);
-                // return false;
+                ((OpenVpmsValidationDelegate)getDelegate()).record(pe);
+                return false;
             }
-            return true;
         }
-        return false;
+        // If we get to here then all is well
+        return true;
     }
 
     /**

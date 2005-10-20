@@ -10,18 +10,16 @@
 
     <property name="currentObject" />
     <property name="index" />
-
-    <component id="form" type="Form">
-    </component>   
-    
-    <component id="foreach" type="Foreach" >
-    	<binding name="source" value="instances"/>       
-        <binding name="value" value="currentObject"/> 
-        <binding name="index" value="index"/>
-        <binding name="element" value="literal:tr"/>
-    </component>
-    <component id="any" type="Any" inherit-informal-parameters="yes" />
-    <component id="editLink" type="EditLink">
+ 
+    <component id="table" inherit-informal-parameters="yes" type="contrib:Table">
+        <binding name="row" value="currentObject"/>
+        <binding name="source" value="instances"/>
+        <binding name="columns" value="literal:name,description"/>
+        <binding name="pageSize" value="10"/>
+    </component>	
+    <component id="nameColumnValue" type="Block" />
+    <component id="descriptionColumnValue" type="Block" />
+    <component id="nameLink" type="EditLink">
         <binding name="model" value="currentObject"/>
     </component>
     <component id="insertName" type="Insert">

@@ -24,6 +24,9 @@
     </component>
      <component id="cancelButton" type="Submit">
         <binding name="listener" value="page.listeners.cancel"/>
+		<binding name="onclick">
+		literal: javascript:this.form.events.cancel();
+		</binding>
     </component>
     <component id="showSaveButton" type="If">
         <binding name="condition" value="showSaveButton"/>

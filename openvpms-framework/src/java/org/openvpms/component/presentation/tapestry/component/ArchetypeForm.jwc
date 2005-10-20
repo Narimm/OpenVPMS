@@ -17,6 +17,7 @@
         <binding name="delegate" value="page.beans.delegate" />
         <binding name="listener" value="page.listeners.onFormSubmit" />
         <binding name="refresh" value="page.listeners.onFormRefresh" />
+		<binding name="cancel" value="page.listeners.cancel"/>
     </component>   
     <component id="archetypeActions" type="ArchetypeActions">
         <inherited-binding name="model" parameter-name="model"/>
