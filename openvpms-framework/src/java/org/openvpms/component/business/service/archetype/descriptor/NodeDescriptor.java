@@ -548,7 +548,15 @@ public class NodeDescriptor implements Serializable {
      * @return boolean
      */
     public boolean isLookup() {
-        return assertionDescriptors.containsKey("referenceData");
+        boolean result = false;
+        for (String key : assertionDescriptors.keySet()) {
+            if (key.startsWith("lookup")) {
+                result = true;
+                break;
+            }
+        }
+        
+        return result;
         
     }
 

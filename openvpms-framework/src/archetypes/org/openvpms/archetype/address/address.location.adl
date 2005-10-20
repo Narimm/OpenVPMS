@@ -8,7 +8,7 @@
 				type="java.lang.String" minCardinality="1" />
 			<node name="suburb" path="/details/attributes/suburb"
 				type="java.lang.String">
-				<assertion type="referenceData">
+				<assertion type="lookup">
 					<property key="type" value="targetLookup" />
 					<property key="concept" value="state.suburb" />
 					<property key="source"
@@ -18,7 +18,7 @@
 			</node>
 			<node name="postcode" path="/details/attributes/postCode"
 				type="java.lang.String">
-				<assertion type="referenceData">
+				<assertion type="lookup">
 					<property key="type" value="targetLookup" />
 					<property key="concept" value="suburb.postCode" />
 					<property key="source"
@@ -29,7 +29,7 @@
 			<node name="state" path="/details/attributes/state"
 				type="java.lang.String" defaultValue="'Victoria'"
 				minCardinality="1">
-				<assertion type="referenceData">
+				<assertion type="lookup">
 					<property key="type" value="targetLookup" />
 					<property key="concept" value="country.state" />
 					<property key="source"
@@ -40,7 +40,7 @@
 			<node name="country" path="/details/attributes/country"
 				type="java.lang.String" defaultValue="'Australia'"
 				minCardinality="1">
-				<assertion type="referenceData">
+				<assertion type="lookup">
 					<property key="type" value="lookup" />
 					<property key="concept" value="country" />
 					<errorMessage>An error message</errorMessage>

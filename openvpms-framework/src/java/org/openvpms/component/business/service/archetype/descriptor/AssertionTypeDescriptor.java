@@ -19,9 +19,9 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
+// java core
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * This is used to define the assertion type. It is used to map an assertion to
@@ -110,6 +110,8 @@ public class AssertionTypeDescriptor implements Serializable {
      * 
      * @param target
      *            this is the object that is the subject of the assetion
+     * @param node
+     *            the node descriptor            
      * @param assertion
      *            this is the assertion obect holds the parameters to the 
      *            method call
@@ -118,18 +120,17 @@ public class AssertionTypeDescriptor implements Serializable {
      *            a runtime exception that is raised if the assertion cannot
      *            be evaluated.
      */
-    public boolean assertTrue(Object target, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertiesAsMap();
-        
-
+    public boolean assertTrue(Object target, NodeDescriptor node, 
+        AssertionDescriptor assertion) {
         try {
             Class clazz = Thread.currentThread()
                 .getContextClassLoader().loadClass(getType());
             Method method = clazz.getMethod(getMethodName(), 
-                    new Class[]{Object.class, Map.class});
+                    new Class[]{Object.class, NodeDescriptor.class, 
+                                AssertionDescriptor.class});
             
             return ((Boolean)method.invoke(null, 
-                    new Object[]{target, properties})).booleanValue();
+                    new Object[]{target, node, assertion})).booleanValue();
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,

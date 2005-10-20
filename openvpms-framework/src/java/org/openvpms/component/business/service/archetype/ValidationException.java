@@ -16,68 +16,69 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.lookup;
+
+package org.openvpms.component.business.service.archetype;
+
+// commons-resources
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.resources.Messages;
+
+// openvpms-common
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * This exception is the base service exception for the 
- * {@link LookupService} service. 
- * 
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * This exception is raised when we are validating objects 
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class LookupServiceException extends RuntimeException implements
+public class ValidationException extends RuntimeException implements
         OpenVPMSException {
 
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = 2702065851372889620L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        FailedToLocateArchetype,
-        InvalidLookupObject,
-        FailedToCreateLookup,
-        FailedtoCreateLookupRelationship,
-        FailedToDeleteLookup, 
-        FailedtoDeleteLookupRelationship,
-        FailedToUpdateLookup,
-        FailedToSaveLookup,
-        FailedToRetrieveLookupsByConcept,
-        FailedToRetrieveSourceLookups,
-        FailedToRetrieveTargetLookups,
-        InvalidLookupType,
-        InvalidAssertion,
-        InvalidLookupAssertion
+        FailedToValidObjectAgainstArchetype
     }
 
     /**
      * Cache the werror code
      */
     private ErrorCode errorCode;
+    
+    /**
+     * Holds a list of errors
+     */
+    private List<ValidationError> errors = new ArrayList<ValidationError>();
 
     /**
      * The appropriate resource file is loaded cached into memory when this
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.lookup."
+            .getMessages("org.openvpms.component.business.service.archetype."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
      * Instantiate an exception given an error code. The error code corresponds
      * to a message that does not require any parameters to redner
      * 
+     * @param errors
+     *            the list of validation errors
      * @param errorCode
      *            the error code
      */
-    public LookupServiceException(ErrorCode errorCode) {
+    public ValidationException(List<ValidationError> errors, ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
+        this.errors = errors;
         this.errorCode = errorCode;
     }
 
@@ -85,14 +86,18 @@ public class LookupServiceException extends RuntimeException implements
      * Instantiate an exception given an error code and a set of associated
      * object parameters. The params are required to render the message
      * 
+     * @param errors
+     *            the list of validation errors
      * @param errorCode
      *            the error code
      * @param parama
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public LookupServiceException(ErrorCode errorCode, Object[] params) {
+    public ValidationException(List<ValidationError> errors, ErrorCode errorCode, 
+            Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
+        this.errors = errors;
         this.errorCode = errorCode;
     }
 
@@ -100,13 +105,17 @@ public class LookupServiceException extends RuntimeException implements
      * Create an exception with the following error code and the root exception.
      * The error code is used to render a local specific message.
      * 
+     * @param errors
+     *            the list of validation errors
      * @param errorCode
      *            the error code
      * @param cause
      *            the root exception
      */
-    public LookupServiceException(ErrorCode errorCode, Throwable cause) {
+    public ValidationException(List<ValidationError> errors, ErrorCode errorCode, 
+            Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
+        this.errors = errors;
         this.errorCode = errorCode;
     }
 
@@ -115,6 +124,8 @@ public class LookupServiceException extends RuntimeException implements
      * The params is used to render the messsgae that is associated with the
      * error code
      * 
+     * @param errors
+     *            the list of validation errors
      * @param errorCode
      *            the error code
      * @param params
@@ -122,9 +133,10 @@ public class LookupServiceException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public LookupServiceException(ErrorCode errorCode, Object[] params,
-            Throwable cause) {
+    public ValidationException(List<ValidationError> errors, ErrorCode errorCode, 
+            Object[] params, Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
+        this.errors = errors;
         this.errorCode = errorCode;
     }
 
@@ -134,4 +146,12 @@ public class LookupServiceException extends RuntimeException implements
     public ErrorCode getErrorCode() {
         return errorCode;
     }
+
+    /**
+     * @return Returns the errors.
+     */
+    public List<ValidationError> getErrors() {
+        return errors;
+    }
+
 }

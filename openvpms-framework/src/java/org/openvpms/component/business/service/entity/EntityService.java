@@ -99,18 +99,13 @@ public class EntityService implements IEntityService {
      * @see org.openvpms.component.business.service.entity.IEntityService#insert(org.openvpms.component.business.domain.im.common.Entity)
      */
     public void insert(Entity entity) {
-        if (archetypeService.validateObject(entity)) {
-            try {
-                dao.insert(entity);
-            } catch (EntityDAOException exception) {
-                throw new EntityServiceException(
-                        EntityServiceException.ErrorCode.FailedToCreateEntity,
-                        new Object[]{entity.toString()}, exception);
-            }
-        } else {
+        archetypeService.validateObject(entity);
+        try {
+            dao.insert(entity);
+        } catch (EntityDAOException exception) {
             throw new EntityServiceException(
-                    EntityServiceException.ErrorCode.InvalidEntityObject,
-                    new Object[]{entity, entity.getArchetypeId()});
+                    EntityServiceException.ErrorCode.FailedToCreateEntity,
+                    new Object[]{entity.toString()}, exception);
         }
     }
 
@@ -180,20 +175,14 @@ public class EntityService implements IEntityService {
      * @see org.openvpms.component.business.service.entity.IEntityService#save(org.openvpms.component.business.domain.im.common.Entity)
      */
     public void save(Entity entity) {
-        if (archetypeService.validateObject(entity)) {
-            try {
-                dao.save(entity);
-            } catch (EntityDAOException exception) {
-                throw new EntityServiceException(
-                        EntityServiceException.ErrorCode.FailedToSaveEntity,
-                        new Object[]{entity.getArchetypeId().toString(),
-                                entity.toString()}, exception);
-            }
-        } else {
+        archetypeService.validateObject(entity);
+        try {
+            dao.save(entity);
+        } catch (EntityDAOException exception) {
             throw new EntityServiceException(
                     EntityServiceException.ErrorCode.FailedToSaveEntity,
                     new Object[]{entity.getArchetypeId().toString(),
-                            entity.toString()});
+                            entity.toString()}, exception);
         }
     }
 
@@ -202,19 +191,13 @@ public class EntityService implements IEntityService {
      * @see org.openvpms.component.business.service.entity.IEntityService#update(org.openvpms.component.business.domain.im.common.Entity)
      */
     public void update(Entity entity) {
-        if (archetypeService.validateObject(entity)) {
-            try {
-                dao.update(entity);
-            } catch (EntityDAOException exception) {
-                throw new EntityServiceException(
-                        EntityServiceException.ErrorCode.FailedToUpdateEntity,
-                        new Object[]{entity.toString()}, exception);
-            }
-        } else {
+        archetypeService.validateObject(entity);
+        try {
+            dao.update(entity);
+        } catch (EntityDAOException exception) {
             throw new EntityServiceException(
                     EntityServiceException.ErrorCode.FailedToUpdateEntity,
-                    new Object[]{entity.getArchetypeId().toString(),
-                            entity.toString()});
+                    new Object[]{entity.toString()}, exception);
         }
     }
 }

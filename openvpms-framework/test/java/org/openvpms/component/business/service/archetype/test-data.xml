@@ -125,7 +125,7 @@
 					org/openvpms/component/business/service/archetype/valid-assertion-type-file-1.xml
 				</param>
 				<param name="recordCount1" type="java.lang.Integer">
-					11
+					12
 				</param>
 			</params>
 		</method>
@@ -156,13 +156,25 @@
 					6
 				</param>
 				<param name="recordCount2" type="java.lang.Integer">
-					4
+					5
 				</param>
 				<param name="recordCount3" type="java.lang.Integer">
 					1
 				</param>
 			</params>
 		</method>
+	</class>
+	
+	<class name="ValidationErrorTestCase">
+		<params>
+			<param name="assertionFile" type="java.lang.String">
+				org/openvpms/archetype/assertionTypes.xml
+			</param>
+			<param name="dir" type="java.lang.String">
+				target/classes/org/openvpms/archetype
+			</param>
+			<param name="extension" type="java.lang.String">adl</param>
+		</params>
 	</class>
 </tests>
 

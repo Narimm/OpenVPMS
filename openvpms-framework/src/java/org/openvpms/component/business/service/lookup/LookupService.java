@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.lookup;
 // openvpms-framework
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
@@ -103,18 +104,13 @@ public class LookupService implements ILookupService {
      * @see org.openvpms.component.business.service.lookup.ILookupService#insertLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void insert(Lookup lookup) {
-        if (archetypeService.validateObject(lookup)) {
-            try {
-                dao.insert(lookup);
-            } catch (LookupDAOException exception) {
-                throw new LookupServiceException(
-                        LookupServiceException.ErrorCode.FailedToCreateLookup,
-                        new Object[] { lookup.toString() }, exception);
-            }
-        } else {
+        archetypeService.validateObject(lookup);
+        try {
+            dao.insert(lookup);
+        } catch (LookupDAOException exception) {
             throw new LookupServiceException(
-                    LookupServiceException.ErrorCode.InvalidLookupObject,
-                    new Object[] { lookup, lookup.getArchetypeId() });
+                    LookupServiceException.ErrorCode.FailedToCreateLookup,
+                    new Object[] { lookup.toString() }, exception);
         }
     }
 
@@ -140,19 +136,13 @@ public class LookupService implements ILookupService {
      * @see org.openvpms.component.business.service.lookup.ILookupService#updateLookup(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void update(Lookup lookup) {
-        if (archetypeService.validateObject(lookup)) {
-            try {
-                dao.update(lookup);
-            } catch (LookupDAOException exception) {
-                throw new LookupServiceException(
-                        LookupServiceException.ErrorCode.FailedToUpdateLookup,
-                        new Object[] { lookup.toString() }, exception);
-            }
-        } else {
+        archetypeService.validateObject(lookup);
+        try {
+            dao.update(lookup);
+        } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToUpdateLookup,
-                    new Object[] { lookup.getArchetypeId().toString(),
-                            lookup.toString() });
+                    new Object[] { lookup.toString() }, exception);
         }
     }
 
@@ -162,21 +152,14 @@ public class LookupService implements ILookupService {
      * @see org.openvpms.component.business.service.lookup.ILookupService#save(org.openvpms.component.business.domain.im.lookup.Lookup)
      */
     public void save(Lookup lookup) {
-        if (archetypeService.validateObject(lookup)) {
-            try {
-                dao.save(lookup);
-            } catch (LookupDAOException exception) {
-                throw new LookupServiceException(
-                        LookupServiceException.ErrorCode.FailedToSaveLookup,
-                        new Object[] { lookup.toString() }, exception);
-            }
-        } else {
+        archetypeService.validateObject(lookup);
+        try {
+            dao.save(lookup);
+        } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToSaveLookup,
-                    new Object[] { lookup.getArchetypeId().toString(),
-                            lookup.toString() });
+                    new Object[] { lookup.toString() }, exception);
         }
-
     }
 
     /*
@@ -297,10 +280,12 @@ public class LookupService implements ILookupService {
         List<Lookup> lookups = new ArrayList<Lookup>();
 
         if (descriptor.isLookup()) {
-            AssertionDescriptor assertion = (AssertionDescriptor) descriptor
-                    .getAssertionDescriptorsAsMap().get("referenceData");
-
-            if (assertion.getPropertiesAsMap().containsKey("type")) {
+            Map<String, AssertionDescriptor> assertions = 
+                descriptor.getAssertionDescriptorsAsMap();
+            
+            if (assertions.containsKey("lookup")) {
+                AssertionDescriptor assertion = assertions.get("lookup");
+                
                 // This is a remote lookup
                 String type = (String) assertion.getPropertiesAsMap()
                     .get("type").getValue();
@@ -323,14 +308,19 @@ public class LookupService implements ILookupService {
                             LookupServiceException.ErrorCode.InvalidLookupType,
                             new Object[] { type });
                 }
-            } else {
+            } else if (assertions.containsKey("lookup.local")){
                 // it is a local lookup
                 // TODO This is very inefficient..we should cache them in
                 // this service
+                AssertionDescriptor assertion = assertions.get("lookup.local");
                 for (AssertionProperty prop : assertion.getProperties()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
                             .getKey(), prop.getValue()));
                 }
+            } else {
+                throw new LookupServiceException(
+                        LookupServiceException.ErrorCode.InvalidLookupAssertion,
+                        new Object[] { descriptor.getName() });
             }
         }
 
@@ -347,11 +337,12 @@ public class LookupService implements ILookupService {
         List<Lookup> lookups = new ArrayList<Lookup>();
 
         if (descriptor.isLookup()) {
-            AssertionDescriptor assertion = (AssertionDescriptor) descriptor
-                    .getAssertionDescriptorsAsMap().get("referenceData");
-
-            if (assertion.getPropertiesAsMap().containsKey("type")) {
+            Map<String, AssertionDescriptor> assertions = 
+                descriptor.getAssertionDescriptorsAsMap();
+            
+            if (assertions.containsKey("lookup")) {
                 // This is a remote lookup
+                AssertionDescriptor assertion = assertions.get("lookup");
                 String type = (String) assertion.getPropertiesAsMap().get(
                         "type").getValue();
                 String concept = (String) assertion.getPropertiesAsMap().get(
@@ -396,14 +387,19 @@ public class LookupService implements ILookupService {
                             LookupServiceException.ErrorCode.InvalidLookupType,
                             new Object[] { type });
                 }
-            } else {
+            } else if (assertions.containsKey("lookup.local")){
                 // it is a local lookup
                 // TODO This is very inefficient..we should cache them in
                 // this service
+                AssertionDescriptor assertion = assertions.get("lookup.local");
                 for (AssertionProperty prop : assertion.getProperties()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
                             .getKey(), prop.getValue()));
                 }
+            } else {
+                throw new LookupServiceException(
+                        LookupServiceException.ErrorCode.InvalidLookupAssertion,
+                        new Object[] { descriptor.getName() });
             }
         }
 

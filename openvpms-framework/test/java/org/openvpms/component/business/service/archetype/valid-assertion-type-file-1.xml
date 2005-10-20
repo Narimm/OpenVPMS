@@ -1,5 +1,8 @@
 <assertionTypes>
-  <assertionType name="referenceData"
+  <assertionType name="lookup"
+    type="org.openvpms.component.business.service.archetype.AssertionMethods"
+    method="alwaysTrue" />
+  <assertionType name="lookup.local"
     type="org.openvpms.component.business.service.archetype.AssertionMethods"
     method="alwaysTrue" />
   <assertionType name="regularExpression"

@@ -21,6 +21,9 @@ package org.openvpms.component.business.service.archetype.assertion;
 
 import java.util.Map;
 
+import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+
 /**
  * This class has static methods for local reference data assertions. All
  * the static methods return boolean and take an object and a property
@@ -29,12 +32,12 @@ import java.util.Map;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class LocalDataAssertions {
+public class LookupAssertions {
 
     /**
      * Default constructor
      */
-    public LocalDataAssertions() {
+    public LookupAssertions() {
     }
     
     /**
@@ -42,25 +45,16 @@ public class LocalDataAssertions {
      * 
      * @param target
      *            the target object
-     * @param properties
-     *            the properties used for the assertion           
+     * @param node
+     *            the node descriptor for this assertion
+     * @param assertion
+     *            the particular assertion                        
      */
-    public static boolean isStringValueInList(Object target, Map properties) {
-        String str = (String)target;
-        Map list = (Map)properties.get("entries");
-        boolean override = false;
-        
-        // check to see if the override attribute has been specified
-        if (properties.get("override") != null) {
-            override = Boolean.parseBoolean((String)properties.get("override"));
-        }
-        
-        // if override is allowed then always return true
-        if (override) {
-            return true;
-        } 
-        
-        return list.containsValue(str);
+    public static boolean isStringValueInList(Object target, 
+            NodeDescriptor node, AssertionDescriptor assertion) {
+        Map properties = assertion.getPropertiesAsMap();
+        return (properties == null) ? false : 
+            properties.containsKey((String)target);
     }
     
     /**
@@ -68,10 +62,13 @@ public class LocalDataAssertions {
      * 
      * @param target
      *            the target object
-     * @param properties
-     *            the properties used for the assertion           
+     * @param node
+     *            the node descriptor for this assertion
+     * @param assertion
+     *            the particular assertion                        
      */
-    public static boolean alwaysTrue(Object target, Map properties) {
+    public static boolean alwaysTrue(Object target, 
+            NodeDescriptor node, AssertionDescriptor assertion) {
         return true;
     }
 }

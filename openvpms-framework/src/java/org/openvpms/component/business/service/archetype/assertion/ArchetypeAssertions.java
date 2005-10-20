@@ -19,7 +19,13 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
-import java.util.Map;
+// java core
+import java.util.Set;
+
+//openvpms-framework
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * These assertions are applied to archetype and parts of archetypes. These
@@ -38,9 +44,48 @@ public class ArchetypeAssertions {
     }
 
     /**
+     * This will iterate through the collection for the specified node
+     * descriptor and check that each element is in the archetype range.
      * 
+     * @param target
+     *            the target object
+     * @param node
+     *            the node descriptor for this assertion
+     * @param assertion
+     *            the particular assertion                        
      */
-    public static boolean isArchetypeShortNameInRange(Object target, Map properties) {
-        return true;
+    public static boolean objectsMatchArchetypeRange(Object target, 
+            NodeDescriptor node, AssertionDescriptor assertion) {
+        String[] atypes = node.getArchetypeRange();
+        
+        if (atypes.length == 0) {
+            return true;
+        }
+        
+        if (target instanceof Set) {
+            Set entries = (Set)target;
+            for (Object entry : entries) {
+                if (entry instanceof IMObject) {
+                    boolean match = false;
+                    IMObject imobj = (IMObject)entry;
+                    for (String type : atypes) {
+                        if (imobj.getArchetypeId().getShortName().matches(type)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    
+                    // if there is no match then break
+                    if (!match) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
@@ -168,7 +169,12 @@ public class JXPathTestCase extends BaseTestCase {
         person.setLastName("Alateras");
         person.setFirstName("Jim");
         person.setTitle("Mr");
-        assertTrue(service.validateObject(person));
+        
+        try {
+            service.validateObject(person);
+        } catch (ValidationException exception) {
+            fail("Validation of person failed");
+        }
         assertTrue(StringUtils.isEmpty(person.getName()) == false);
         assertTrue(person.getName().equals("Jim Alateras"));
         assertTrue(person.getDescription().equals(

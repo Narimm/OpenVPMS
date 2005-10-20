@@ -201,26 +201,39 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public boolean validateObject(IMObject object) {
+    public void validateObject(IMObject object) {
 
+        List<ValidationError> errors = new ArrayList<ValidationError>();
+        
         // check that we can retrieve a valid archetype for this object
         ArchetypeDescriptor descriptor = getArchetypeDescriptor(object.getArchetypeId());
         if (descriptor == null) {
-            throw new ArchetypeServiceException(
+            errors.add(new ValidationError(null, 
+                    new StringBuffer("No archetype definition for ")
+                        .append(object.getArchetypeId())
+                        .toString()));
+            logger.error(new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                    new Object[] { object.getArchetypeId().toString() });
+                    new Object[] { object.getArchetypeId().toString() }));
         }
 
         // if there are nodes attached to the archetype then validate the
         // associated assertions
-        boolean result = true;
         if (descriptor.getNodeDescriptors().length > 0) {
             JXPathContext context = JXPathContext.newContext(object);
             context.setLenient(true);
-            result = validateObject(context, descriptor.getNodeDescriptorsAsMap());
+            validateObject(context, descriptor.getNodeDescriptorsAsMap(), errors);
         }
 
-        return result;
+        /**
+         * if we have accumulated any errors then throw an exception
+         */
+        if (errors.size() > 0) {
+            throw new ValidationException(errors,
+                ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype,
+                new Object[] {object.getArchetypeId()});
+                    
+        }
     }
 
     /*
@@ -278,11 +291,11 @@ public class ArchetypeService implements IArchetypeService {
      *            holds the object to be validated
      * @param nodes
      *            assertions are managed by the nodes object
-     * @return boolean true if the object is valid; false otherwise
+     * @param errors
+     *            the errors are collected in this object            
      */
-    private boolean validateObject(JXPathContext context, Map nodes) {
-        boolean valid = true;
-
+    private void validateObject(JXPathContext context, Map nodes,
+            List<ValidationError> errors) {
         Iterator iter = nodes.values().iterator();
         while (iter.hasNext()) {
             NodeDescriptor node = (NodeDescriptor)iter.next();
@@ -299,19 +312,27 @@ public class ArchetypeService implements IArchetypeService {
             // first check whether the value for this node is derived and if it
             // is then derive the value
             if (node.isDerived()) {
-                context.getPointer(node.getPath())
-                    .setValue(context.getValue(node.getDerivedValue()));
+                try {
+                    value = context.getValue(node.getDerivedValue());
+                    context.getPointer(node.getPath()).setValue(value);
+                } catch (Exception exception) {
+                    value = null;
+                    errors.add(new ValidationError(node.getName(),
+                            "Cannot derive value"));
+                    logger.error("Failed to derice value for " + node.getName(), 
+                            exception);
+                }
             }
             
             // check the cardinality
             if ((node.getMinCardinality() == 1) && (value == null)) {
+                errors.add(new ValidationError(node.getName(),
+                    "value is required"));
+                
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation failed for Node: " +
                             node.getName() + " min cardinality violated");
                 }
-                
-                valid = false;
-                break;
             }
             
 
@@ -321,36 +342,31 @@ public class ArchetypeService implements IArchetypeService {
                 for (AssertionDescriptor assertion : node.getAssertionDescriptors()) {
                     AssertionTypeDescriptor assertionType = assertionTypes
                             .get(assertion.getType());
-    
-                    logger.debug("Executing assertion " + assertion.getType() + " for object of type " + value.getClass().getName());
-                    if (!assertionType.assertTrue(value, assertion)) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Assertion failed for Node: " +
-                                    node.getName() + " and Assertion " +
-                                    assertion.getType());
+                    try {
+                        if (!assertionType.assertTrue(value, node, assertion)) {
+                            errors.add(new ValidationError(node.getName(), 
+                                    assertion.getErrorMessage()));
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Assertion failed for Node: " +
+                                        node.getName() + " and Assertion " +
+                                        assertion.getType());
+                            }
                         }
-                        
-                        valid = false;
-                        break;
+                    } catch (Exception exception) {
+                        //log the error
+                        logger.error("Error in validateObject for node " + 
+                                node.getName(), exception);
+                        errors.add(new ValidationError(node.getName(),
+                                assertion.getErrorMessage()));
                     }
                 }
             }
 
             // if this node has other nodes then re-enter this method
             if (node.getNodeDescriptors().length > 0) {
-                if (!validateObject(context, node.getNodeDescriptorsAsMap())) {
-                    // if the object is invalid then ignore the
-                    // rest of the validation and return false.
-                    valid = false;
-                }
-            }
-
-            if (!valid) {
-                break;
+                validateObject(context, node.getNodeDescriptorsAsMap(), errors);
             }
         }
-
-        return valid;
     }
 
     /**

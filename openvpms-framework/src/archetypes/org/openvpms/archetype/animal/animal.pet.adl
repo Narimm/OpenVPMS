@@ -5,14 +5,14 @@
 			minCardinality="1" />
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
-			<assertion type="referenceData">
+			<assertion type="lookup">
 				<property key="type" value="targetLookup" />
 				<property key="concept" value="species" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
-			<assertion type="referenceData">
+			<assertion type="lookup">
 				<property key="type" value="targetLookup" />
 				<property key="concept" value="species.breed" />
 				<property key="source" value="species" />
@@ -20,7 +20,7 @@
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
-			<assertion type="referenceData">
+			<assertion type="lookup">
 				<property key="type" value="targetLookup" />
 				<property key="concept" value="breed.colour" />
 				<property key="source" value="breed" />
@@ -28,7 +28,7 @@
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
-			<assertion type="referenceData">
+			<assertion type="lookup">
 				<property key="male" value="male" />
 				<property key="female" value="female" />
 				<property key="unspecified" value="unspecified" />
