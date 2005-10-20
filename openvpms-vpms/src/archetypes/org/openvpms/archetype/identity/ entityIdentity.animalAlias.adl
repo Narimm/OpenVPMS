@@ -1,0 +1,8 @@
+<archetypes>
+	<archetype name="openvpms-common-entityIdentity.animalAlias.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.common.EntityIdentity">
+		<node name="identity" path="/identity" type="java.lang.String"
+			minCardinality="1" />
+	</archetype>
+</archetypes>
