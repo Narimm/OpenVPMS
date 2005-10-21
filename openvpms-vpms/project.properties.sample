@@ -2,4 +2,6 @@
 maven.war.final.name=openvpms.war
 
 # tomcat deployment directory
-tomcat.webapps.dir=/applications/jakarta-tomcat-5.5.12/webapps
+tomcat.dir=/applications/apache-tomcat-5.5.12/
+tomcat.webapps.dir=${tomcat.dir}/webapps
+tomcat.sharedlib.dir=${tomcat.dir}/shared/lib

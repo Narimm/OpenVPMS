@@ -4,8 +4,20 @@
   xmlns:j="jelly:core"
   xmlns:castor="castor">
 
+	<preGoal name="war:install">
+	    <j:forEach var="lib" items="${pom.artifacts}">
+    	  <j:set var="dep" value="${lib.dependency}"/>     
+	      <j:if test="${dep.getProperty('war.bundle')=='false'}">
+	         <j:if test="${dep.type =='jar'}"> 
+    	       <ant:copy todir="${tomcat.sharedlib.dir}" file="${lib.path}"/>  
+         	 </j:if> 
+	      </j:if>  
+      </j:forEach>
+	</preGoal>
+	
 	<postGoal name="war:install">
 		<ant:copy file="${maven.war.build.dir}/${maven.war.final.name}"
 			tofile="${tomcat.webapps.dir}/${maven.war.final.name}" />
   	</postGoal>
+  	
 </project>
