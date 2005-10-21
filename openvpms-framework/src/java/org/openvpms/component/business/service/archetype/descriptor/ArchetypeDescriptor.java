@@ -154,6 +154,48 @@ public class ArchetypeDescriptor implements Serializable {
     }
     
     /**
+     * Return the simple node descriptors. These are node descriptors that do
+     * not have an archetypeRange assertion defined.
+     * 
+     * @return List<NodeDescriptor>
+     */
+    public List<NodeDescriptor> getSimpleNodeDescriptors() {
+        List<NodeDescriptor> all = getAllNodeDescriptors();
+        List<NodeDescriptor> simple = new ArrayList<NodeDescriptor>();
+        for (NodeDescriptor node : all) {
+            if ((node.getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
+                    (node.getMaxCardinality() > 1) || 
+                    (node.containsAssertionType("archetypeRange"))){
+                continue;
+            } else {
+                simple.add(node);
+            }
+        }
+        
+        return simple;
+    }
+    
+    /**
+     * Return the comple node descriptors. These are node Descriptors  that
+     * have an archetypeRage assertions defined.
+     * 
+     * @return List<NodeDescriptor>
+     */
+    public List<NodeDescriptor> getComplexNodeDescriptors() {
+        List<NodeDescriptor> all = getAllNodeDescriptors();
+        List<NodeDescriptor> complex = new ArrayList<NodeDescriptor>();
+        for (NodeDescriptor node : all) {
+            if ((node.getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
+                (node.getMaxCardinality() > 1) || 
+                (node.containsAssertionType("archetypeRange"))){
+                complex.add(node);
+            }
+        }
+        
+        return complex;
+    }
+    
+    /**
      * Return all the {@link NodeDescriptors} for this archetype. This
      * will basically flatten out the hierarchical node descriptor 
      * structure

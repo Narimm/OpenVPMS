@@ -41,17 +41,17 @@ import org.openvpms.component.system.common.test.BaseTestCase;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class DescriptorTestCase extends BaseTestCase {
+public class ArchetypeDescriptorTestCase extends BaseTestCase {
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(DescriptorTestCase.class);
+        junit.textui.TestRunner.run(ArchetypeDescriptorTestCase.class);
     }
 
     /**
-     * Constructor for DescriptorTestCase.
+     * Constructor for ArchetypeDescriptorTestCase.
      * @param name
      */
-    public DescriptorTestCase(String name) {
+    public ArchetypeDescriptorTestCase(String name) {
         super(name);
     }
 
@@ -131,6 +131,25 @@ public class DescriptorTestCase extends BaseTestCase {
         
         ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
         assertTrue(adesc.getNodeDescriptor(NodeDescriptor.IDENTIFIER_NODE_NAME) != null);
+    }
+    
+    /**
+     * Test that it can retrieve the simple and complex node descriptors
+     */
+    public void testGetNodeDescriptorMethods()
+    throws Exception {
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)this.getTestData().getTestCaseParameter(
+                "testGetNodeDescriptorMethods", "normal", "archetypeFile");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptors()[0];
+        assertTrue(descriptor.getArchetypeId().getShortName().equals("person.person"));
+        assertTrue(descriptor.getAllNodeDescriptors().size() == 10);
+        assertTrue(descriptor.getSimpleNodeDescriptors().size() == 7);
+        assertTrue(descriptor.getComplexNodeDescriptors().size() == 3);
     }
     
     /**

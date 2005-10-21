@@ -750,4 +750,15 @@ public class NodeDescriptor implements Serializable {
             return JXPathContext.newContext(context).getValue(getPath());
         }
     }
+
+    /**
+     * Check whether this assertion type is defined for this node
+     * 
+     * @param type
+     *            the assertion type
+     * @return boolean
+     */
+    public boolean containsAssertionType(String type) {
+        return assertionDescriptors.containsKey(type);
+    }
 }

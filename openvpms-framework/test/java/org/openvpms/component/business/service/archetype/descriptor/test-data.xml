@@ -1,7 +1,7 @@
 <?xml version ="1.0" encoding = "UTF-8"?>
 <tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-	<class name="DescriptorTestCase">
+	<class name="ArchetypeDescriptorTestCase">
 		<params>
 			<param name="mappingFile" type="java.lang.String">
 				org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml
@@ -17,6 +17,15 @@
 				org/openvpms/component/business/service/archetype/descriptor/assertion-test-types.xml
 			</param>
 		</params>
+
+		<!-- Data for the testGetNodeDescriptorMethods method -->
+		<method name="testGetNodeDescriptorMethods" test-case="normal">
+			<params>
+				<param name="archetypeFile" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/descriptor/person.xml
+				</param>
+			</params>
+		</method>
 	</class>
 
 	<class name="NodeDescriptorTestCase">
