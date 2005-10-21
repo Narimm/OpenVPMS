@@ -761,4 +761,18 @@ public class NodeDescriptor implements Serializable {
     public boolean containsAssertionType(String type) {
         return assertionDescriptors.containsKey(type);
     }
+    
+    /**
+     * Indicates if this node is acomplex node. If the node has
+     * an archetypeRange assertion or the node has a cardinality > 1 then 
+     * the node is deemed to be a complex node
+     * 
+     * @return boolean
+     *            true if complex
+     */
+    public boolean isComplexNode() {
+        return (getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
+               (getMaxCardinality() > 1) || 
+               (containsAssertionType("archetypeRange"));
+    }
 }

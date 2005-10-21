@@ -163,11 +163,7 @@ public class ArchetypeDescriptor implements Serializable {
         List<NodeDescriptor> all = getAllNodeDescriptors();
         List<NodeDescriptor> simple = new ArrayList<NodeDescriptor>();
         for (NodeDescriptor node : all) {
-            if ((node.getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
-                    (node.getMaxCardinality() > 1) || 
-                    (node.containsAssertionType("archetypeRange"))){
-                continue;
-            } else {
+            if (!node.isComplexNode()){
                 simple.add(node);
             }
         }
@@ -185,9 +181,7 @@ public class ArchetypeDescriptor implements Serializable {
         List<NodeDescriptor> all = getAllNodeDescriptors();
         List<NodeDescriptor> complex = new ArrayList<NodeDescriptor>();
         for (NodeDescriptor node : all) {
-            if ((node.getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
-                (node.getMaxCardinality() > 1) || 
-                (node.containsAssertionType("archetypeRange"))){
+            if (node.isComplexNode()){
                 complex.add(node);
             }
         }
