@@ -68,4 +68,20 @@ public abstract class ArchetypeComponent extends OpenVpmsComponent {
                     getNodeNames());
         }
     }
+    public List getSimpleDescriptors() {
+        if (getNodeNames() == null || getNodeNames().length == 0) {
+            return getArchetypeDescriptor().getSimpleNodeDescriptors();
+        } else {
+            return getArchetypeDescriptor().getNodeDescriptors(
+                    getNodeNames());
+        }
+    }
+    public List getComplexDescriptors() {
+        if (getNodeNames() == null || getNodeNames().length == 0) {
+            return getArchetypeDescriptor().getComplexNodeDescriptors();
+        } else {
+            return getArchetypeDescriptor().getNodeDescriptors(
+                    getNodeNames());
+        }
+    }
 }

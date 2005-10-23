@@ -9,7 +9,6 @@
     <parameter name="nodeNames" required="no" default-value="null"/>
 
     <property name="currentObject" />
-    <property name="index" />
  
     <component id="table" inherit-informal-parameters="yes" type="contrib:Table">
         <binding name="row" value="currentObject"/>

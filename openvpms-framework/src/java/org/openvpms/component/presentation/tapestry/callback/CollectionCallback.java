@@ -61,7 +61,6 @@ public class CollectionCallback extends EditCallback
         {
             throw new ApplicationRuntimeException(e);
         }
-
     }
     
     public void remove(Object object)

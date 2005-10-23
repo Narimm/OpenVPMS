@@ -28,7 +28,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
@@ -88,8 +87,7 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         //Push a Collection Callback onto the stack.
         CollectionCallback callback = new CollectionCallback(
                 getPage().getPageName(), getModel(), getDescriptor());
-        Visit visit = (Visit) ((OpenVpmsPage)getPage()).getVisit();
-        visit.getCallbackStack().push(callback);
+        ((OpenVpmsPage)getPage()).getVisitObject().getCallbackStack().push(callback);
         
         // Look for specific page or else use <Default>AddToCollection
         EditPage editPage = (EditPage) Utils.findPage(cycle, Utils
@@ -107,6 +105,7 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
             throw new ApplicationRuntimeException(ex);
         }
     }
+
 
     @SuppressWarnings("unchecked")
 	public void remove(IRequestCycle cycle) {

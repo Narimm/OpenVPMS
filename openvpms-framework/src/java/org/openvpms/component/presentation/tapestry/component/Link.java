@@ -18,20 +18,23 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
-import java.util.List;
+import org.apache.tapestry.IPage;
+import org.apache.tapestry.IRequestCycle;
+
 
 /**
- * 
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public abstract class ArchetypeTable extends OpenVpmsComponent {
-	public abstract List getInstances();
+public abstract class Link extends OpenVpmsComponent
+{
+    public static String DEFAULT = "Default";
 
-	public abstract void setInstances(List instances);
+    protected IPage findPage(IRequestCycle cycle, String archetypeName, String postfix)
+    {
+        String pageName = Utils.unqualify(archetypeName) + postfix;
 
-	public abstract Object getCurrentObject();
-
-	public abstract void setCurrentObject(Object CurrentObject);
-    
+        return Utils.findPage(cycle, pageName, postfix);
+    }
 }

@@ -9,7 +9,8 @@
 	<parameter name="model" required="yes"/>
 	<parameter name="archetypeDescriptor" required="no" default-value="page.archetypeDescriptor"/>
     
-    <component id="link" type="ActionLink">
+    <component id="link" type="DirectLink">
         <binding name="listener" value="listeners.click"/>
+        <binding name="parameters" value="model" />
     </component>
 </component-specification>

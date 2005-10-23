@@ -30,10 +30,11 @@ import org.openvpms.component.presentation.tapestry.page.SearchPage;
  * @version $LastChangedDate$
  */
 public abstract class SearchLink extends Link {
+    public abstract String getArchetypeName();
 	public abstract void setArchetypeName(String archetypeName);
 
 	public void click(IRequestCycle cycle) {
-		SearchPage page = (SearchPage) findPage(cycle, "Search");
+		SearchPage page = (SearchPage) findPage(cycle, getArchetypeName(),"Search");
         ((OpenVpmsPage)getPage()).pushCallback();
 
 		try {

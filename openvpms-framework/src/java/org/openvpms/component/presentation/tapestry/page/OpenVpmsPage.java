@@ -21,7 +21,6 @@ package org.openvpms.component.presentation.tapestry.page;
 import org.apache.tapestry.IPage;
 import org.apache.tapestry.annotations.InjectObject;
 import org.apache.tapestry.annotations.InjectState;
-import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.html.BasePage;
 import org.openvpms.component.business.service.act.IActService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;

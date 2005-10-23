@@ -13,20 +13,22 @@
     <parameter name="allowRemove" default-value="true" />
     
     <property name="currentObject" />
-    <property name="index" />
     <property name="archetypeName" />
         
-    <component id="foreach" type="Foreach" >
-    	<binding name="source" value="collection"/>       
-        <binding name="value" value="currentObject"/> 
-        <binding name="index" value="index"/>
-        <binding name="element" value="literal:tr"/>
-    </component>
+    <component id="table" inherit-informal-parameters="yes" type="contrib:FormTable">
+        <binding name="row" value="currentObject"/>
+        <binding name="source" value="ognl:collection"/>
+        <binding name="columns" value="literal:name,description"/>
+        <binding name="pageSize" value="10"/>
+    </component>	
     <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="removeCheckbox" type="Checkbox">
         <binding name="value" value="selected[index]"/>
     </component>
-    <component id="editLink" type="EditLink">
+    <component id="nameColumnValue" type="Block" />
+    <component id="descriptionColumnValue" type="Block" />
+
+    <component id="nameLink" type="EditLink">
         <binding name="model" value="currentObject"/>
     </component>
     <component id="insertName" type="Insert">
