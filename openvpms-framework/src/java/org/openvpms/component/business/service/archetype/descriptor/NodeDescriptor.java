@@ -32,11 +32,11 @@ import org.apache.commons.lang.math.NumberUtils;
 
 // log4j
 import org.apache.log4j.Logger;
+import org.apache.oro.text.perl.Perl5Util;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
-import org.openvpms.component.presentation.tapestry.component.Utils;
 
 /**
  * 
@@ -248,7 +248,7 @@ public class NodeDescriptor implements Serializable {
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return StringUtils.isEmpty(displayName) ? Utils.unCamelCase(getName()) : displayName;
+        return StringUtils.isEmpty(displayName) ? unCamelCase(getName()) : displayName;
     }
 
     /**
@@ -774,5 +774,28 @@ public class NodeDescriptor implements Serializable {
         return (getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
                (getMaxCardinality() > 1) || 
                (containsAssertionType("archetypeRange"));
+    }
+
+    /**
+     * This method will uncamel case the speified string and return
+     * it to the caller
+     * 
+     * @param name
+     *            the camel cased strig
+     * @return String
+     */
+    private String unCamelCase(String name) {
+        ArrayList<String> words = new ArrayList<String>();
+        Perl5Util perl = new Perl5Util();
+
+        while (perl.match("/(\\w+?)([A-Z].*)/", name)) {
+            String word = perl.group(1);
+            name = perl.group(2);
+            words.add(StringUtils.capitalize(word));
+        }
+
+        words.add(StringUtils.capitalize(name));
+
+        return StringUtils.join(words.iterator(), " ");
     }
 }
