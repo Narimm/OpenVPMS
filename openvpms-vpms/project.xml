@@ -657,6 +657,16 @@
 				</includes>
 			</resource>
 			<resource>
+				<directory>${basedir}/src/java</directory>
+				<includes>
+					<include>**/*.hbm.xml</include>
+					<include>**/*.library</include>
+					<include>**/*.jwc</include>
+					<include>**/*.html</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
 				<directory>${basedir}/src/conf/ehcache</directory>
 				<includes>
 					<include>ehcache.xml</include>
