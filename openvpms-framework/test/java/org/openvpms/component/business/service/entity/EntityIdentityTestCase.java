@@ -81,6 +81,7 @@ public class EntityIdentityTestCase extends
         person = (Person) entityService.getById(person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
+        assertTrue(((EntityIdentity)person.getIdentities().iterator().next()).getUid() != -1);
     }
 
     /**

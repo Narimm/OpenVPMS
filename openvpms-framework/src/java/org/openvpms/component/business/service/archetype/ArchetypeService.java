@@ -19,16 +19,21 @@
 package org.openvpms.component.business.service.archetype;
 
 // java core
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.File;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 // log4j
 import org.apache.commons.io.FileUtils;
@@ -72,18 +77,26 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * In memory cache of the archetype definitions keyed on the short name.
      */
-    private Map<String, ArchetypeDescriptor> archetypesByShortName;
+    private Map<String, ArchetypeDescriptor> archetypesByShortName =
+        Collections.synchronizedMap(new HashMap<String, ArchetypeDescriptor>());
 
     /**
      * In memory cache of the archetype definitions keyed on archetype id.
      */
-    private Map<String, ArchetypeDescriptor> archetypesById;
+    private Map<String, ArchetypeDescriptor> archetypesById = 
+        Collections.synchronizedMap(new HashMap<String, ArchetypeDescriptor>());
 
     /**
      * Caches the varies assertion types
      */
-    private Map<String, AssertionTypeDescriptor> assertionTypes;
-
+    private Map<String, AssertionTypeDescriptor> assertionTypes =
+        Collections.synchronizedMap(new HashMap<String, AssertionTypeDescriptor>());
+    
+    /**
+     * The timer is used to schedule tasks
+     */
+    private Timer timer = new Timer();
+    
     /**
      * Construct an instance of this class by loading and parsing all the
      * archetype definitions in the specified file.
@@ -101,10 +114,6 @@ public class ArchetypeService implements IArchetypeService {
      *             runtime exception
      */
     public ArchetypeService(String archeFile, String assertFile) {
-        this.archetypesByShortName = new HashMap<String, ArchetypeDescriptor>();
-        this.archetypesById = new HashMap<String, ArchetypeDescriptor>();
-        this.assertionTypes = new HashMap<String, AssertionTypeDescriptor>();
-
         loadAssertionTypeDescriptorsFromFile(assertFile);
         loadArchetypeDescriptorsInFile(archeFile);
     }
@@ -124,12 +133,35 @@ public class ArchetypeService implements IArchetypeService {
      *             directory
      */
     public ArchetypeService(String archDir, String[] extensions, String assertFile) {
-        this.archetypesByShortName = new HashMap<String, ArchetypeDescriptor>();
-        this.archetypesById = new HashMap<String, ArchetypeDescriptor>();
-        this.assertionTypes = new HashMap<String, AssertionTypeDescriptor>();
-
         loadAssertionTypeDescriptorsFromFile(assertFile);
         loadArchetypeDescriptorsInDir(archDir, extensions);
+    }
+
+    /**
+     * Construct the archetype service by loading and parsing all archetype
+     * definitions in the specified directory. Only process files with the
+     * specified extensions.
+     * <p>
+     * If a scanInterval greater than 0 is specified then a thread will be
+     * created to monitor changes in the archetype definition.
+     * 
+     * @param archeDir
+     *            the directory
+     * @parsm extensions only process files with these extensions
+     * @param assertFile
+     *            the file that holds the assertions
+     * @param scanInterval
+     *            the interval that the archetype directory is scanned.            
+     * @throws ArchetypeServiceException
+     *             if there is a problem processing one or more files in the
+     *             directory
+     */
+    public ArchetypeService(String archDir, String[] extensions, String assertFile, 
+            long scanInterval) {
+        this(archDir, extensions, assertFile);
+        
+        // determine whether we should create a monitor thread
+        createArchetypeMonitorThread(archDir, extensions, scanInterval);
     }
 
     /*
@@ -441,9 +473,11 @@ public class ArchetypeService implements IArchetypeService {
                 processArchetypeDescriptors(loadArchetypeDescriptors(
                         new FileReader(file)));
             } catch (Exception exception) {
-                throw new ArchetypeServiceException(
+                // do not throw an exception but log a warning
+                logger.warn("Failed to load archetype", 
+                        new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.InvalidFile,
-                        new Object[] { file.getName() }, exception);
+                        new Object[] { file.getName() }, exception));
             }
 
         }
@@ -663,7 +697,6 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
     
-    
     /**
      * Return the {@link ArchetypeDescriptors} declared in the specified file.
      * In this case the file must be a resource in the class path.
@@ -687,6 +720,28 @@ public class ArchetypeService implements IArchetypeService {
                 .unmarshal(new InputSource(new InputStreamReader(
                         Thread.currentThread().getContextClassLoader()
                             .getResourceAsStream(resourceName))));
+    }
+    
+    /**
+     * Return the {@link ArchetypeDescriptors} declared in the specified file.
+     * 
+     * @param name
+     *            the file name
+     * @return ArchetypeDescriptors
+     * @throws Exception
+     *            propagate exception to caller            
+     */
+    private ArchetypeDescriptors loadArchetypeDescriptorsFromFile(String name) 
+    throws Exception {
+        // load the mapping file
+        Mapping mapping = new Mapping();
+        
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml"))));
+        
+        return (ArchetypeDescriptors)new Unmarshaller(mapping)
+                .unmarshal(new InputSource(new FileInputStream(name)));
     }
     
     /**
@@ -733,5 +788,109 @@ public class ArchetypeService implements IArchetypeService {
                 .unmarshal(new InputSource(new InputStreamReader(
                         Thread.currentThread().getContextClassLoader()
                             .getResourceAsStream(assertFile))));
+    }
+    
+    /**
+     * Create athread to monitor changes in archeype definitions. A thread
+     * will only be created if an scanInteval greater than 0 is defined.
+     * 
+     * @param dir
+     *            the base directory name
+     * @param ext
+     *            the extension to look for
+     * @param interval
+     *            the scan interval                         
+     *  
+     */
+    private void createArchetypeMonitorThread(String dir, String[] ext, long interval) {
+        File fdir = new File(dir);
+        if (fdir.exists()) {
+            if (interval > 0) {
+                timer.schedule(new ArchetypeMonitor(fdir, ext), interval, interval);
+            }
+        } else {
+            logger.warn("The directory " + dir + " does not exist.");
+        }
+    }
+
+    
+    
+    /**
+     * This class is used to monitor changes in archetypes. It doesn't handle 
+     * the removal of an archetype definition from the system.
+     */
+    private class ArchetypeMonitor extends TimerTask {
+        /**
+         * This is the base directory where the archetypes are stored
+         */
+        private File dir;
+        
+        /**
+         * This is the extensions to filter on
+         */
+        private String[] extensions;
+        
+        /**
+         * The last time this was run
+         */
+        private Date lastScan = new Date(System.currentTimeMillis());
+        
+        /**
+         * Instantiate an instance of this class using a base directory and 
+         * a list of file extensions. It will only deal with files that 
+         * fulfill this criteria. By default it will do a recursive search.
+         * 
+         * @param dir
+         *            the base directory
+         * @param extensions
+         *            only search for these files   
+         * @param interval
+         *            the scan interval                     
+         */
+        ArchetypeMonitor(File dir, String[] extensions) {
+            this.dir = dir;
+            this.extensions = extensions;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Runnable#run()
+         */
+        public void run() {
+            Date startTime = new Date(System.currentTimeMillis());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Executing the ArchetypeMonitor");
+            }
+            List<File> changedFiles = getChangedFiles();
+            for (File file : changedFiles) {
+                try {
+                    loadArchetypeDescriptorsFromFile(file.getPath());
+                    logger.info("Reloaded archetypes in file " + file.getPath());
+                } catch (Exception exception) {
+                  logger.warn("Failed to load archetype in " 
+                          + file.getPath(), exception);  
+                }
+            }
+
+            // update the last scan
+            lastScan = startTime;
+        }
+        
+        /**
+         * Return a list of files that have changed since the last run.
+         */
+        private List<File> getChangedFiles() {
+            ArrayList<File> changedFiles = new ArrayList<File>();
+            Collection collection = FileUtils.listFiles(dir, extensions, true);
+            Iterator files = collection.iterator();
+            while (files.hasNext()) {
+                File file = (File) files.next();
+                if (FileUtils.isFileNewer(file, lastScan)) {
+                    changedFiles.add(file);
+                }
+            }
+            
+            
+            return changedFiles;
+        }
     }
 }
