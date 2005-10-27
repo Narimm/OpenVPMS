@@ -1,0 +1,23 @@
+<archetypes>
+	<archetype name="openvpms-party-contact.home.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Contact">
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" derived="true"
+			derivedValue="archetypeId/concept" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="/archetypeId/concept" />
+		<node name="startDate" path="/activeStartTime"
+			type="java.util.Date" minCardinality="0" />
+		<node name="endDate" path="/activeEndTime"
+			type="java.util.Date" minCardinality="0" />
+		<node name="addresses" path="/addresses"
+			type="java.util.HashSet" baseName="Address" maxCardinality="3">
+			<assertion type="archetypeRange">
+				<property key="address.phoneNumber" />
+				<property key="address.location" />
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
