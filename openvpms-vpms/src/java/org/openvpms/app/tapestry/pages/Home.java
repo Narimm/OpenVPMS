@@ -18,11 +18,13 @@
 
 package org.openvpms.app.tapestry.pages;
 
+import org.apache.tapestry.event.PageBeginRenderListener;
+import org.apache.tapestry.event.PageEvent;
 import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
 
 // openvpms-framework
 
-public abstract class Home extends OpenVpmsPage {
+public abstract class Home extends OpenVpmsPage implements PageBeginRenderListener {
 
     /* (non-Javadoc)
      * @see org.openvpms.component.presentation.tapestry.page.OpenVpmsPage#pushCallback()
@@ -33,4 +35,8 @@ public abstract class Home extends OpenVpmsPage {
         
     }
 
+    public void pageBeginRender(PageEvent event)
+    {
+        getVisitObject().getCallbackStack().clear();
+    }
 }
