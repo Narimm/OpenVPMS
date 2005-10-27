@@ -4,5 +4,11 @@
 		type="org.openvpms.component.business.domain.im.common.EntityIdentity">
 		<node name="identity" path="/identity" type="java.lang.String"
 			minCardinality="1" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="/archetypeId/concept" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" minCardinality="1" derived="true"
+			derivedValue="/identity" />
 	</archetype>
 </archetypes>
