@@ -9,6 +9,67 @@
 			</li>
 		</span>
 	</ul>
-    <form jwcid="@openvpms:ArchetypeForm" model="ognl:model" class="detail">       
-	</form>
+	<form jwcid="nodeForm">
+    	<input jwcid="saveButton" type="submit" value="Apply"/>
+        <input jwcid="saveAndReturnButton" type="submit" value="OK"/>
+    	<span jwcid="@If" condition="ognl:!modelNew">
+    		<input jwcid="removeButton" type="submit" value="Remove"/>
+    	</span>   
+   		<input jwcid="cancelButton" type="submit" value="Cancel"/>
+		<span>&nbsp</span>
+		<fieldset style="padding-top: 0px; margin: 0px 4px 0px 9px">
+			<legend>&nbsp;&nbsp;Main&nbsp;&nbsp;</legend> 
+				<div jwcid="nodeTable" />
+			<!-- table jwcid="@Any">
+			    <div jwcid="forEachNode" >
+			        <span jwcid="hasBlock">
+		    	        <span jwcid="renderBlock" />
+			        </span>
+		        	<div jwcid="doesntHaveBlock">
+		        	    <span jwcid="notHidden">
+					        <tr>
+						    <th><span jwcid="@Insert" value="ognl:descriptor.displayName"/>: </th>
+						    <span jwcid="isReadOnly">
+						        <td><span jwcid="displayValue" /></td>
+						    </span>
+						    <span jwcid="notReadOnly">
+							    <td jwcid="isDate" element="td">
+							    	<input jwcid="dateField" />
+							    </td>
+							    <td jwcid="isNumeric" element="td">
+							        <input jwcid="numberField" />
+							    </td>     
+							    <td jwcid="isBoolean" element="td">
+							        <input jwcid="checkbox" />
+							    </td>       
+							    <td jwcid="isString" element="td">
+							        <input jwcid="stringField" />
+							    </td>
+							 	<td jwcid="isTextArea" element="td">
+							        <input jwcid="textArea" />
+							    </td>
+							    <td jwcid="isLookup" element="td">
+							    	<span jwcid="lookupCombo" />
+							    </td>
+							    <td jwcid="isObject" element="td">
+							    	<span jwcid="selectObject"/>
+							    </td>
+						   	 </span>
+					        </tr>
+					    </span>
+		        	</div>
+			    </div>
+		    </table-->
+		</fieldset>
+		<span>&nbsp</span>
+		<span jwcid="@If" condition="ognl:!complexDescriptors.isEmpty" >
+			<span jwcid="tabpanel">
+			    <div jwcid="forEachCollection" >
+				    <span jwcid="tab">
+		  		    	<span jwcid="collectionEditor"  />
+				    </span>
+			    </div>
+			</span>	
+		</span>
+    </form>
 </span>

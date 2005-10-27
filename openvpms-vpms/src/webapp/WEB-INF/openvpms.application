@@ -11,4 +11,5 @@
 	<property name="org.apache.tapestry.global-class">org.openvpms.component.presentation.tapestry.Global</property>
 	<library id="openvpms" specification-path="/org/openvpms/component/presentation/tapestry/component/OpenVpms.library"/>
 	<library id="contrib" specification-path="/org/apache/tapestry/contrib/Contrib.library"/>
+	<library id="usc" specification-path="/es/usc/tapestry/components/USC.library"/>
 </application>

@@ -90,7 +90,7 @@
 	  <!--  The Archetype Service -->
 	  <bean id="archetypeService"
 	    class="org.openvpms.component.business.service.archetype.ArchetypeService">
-	    <constructor-arg index="0" value="/applications/jakarta-tomcat-5.5.12/webapps/openvpms/WEB-INF/classes/org/openvpms/archetype" />
+	    <constructor-arg index="0" value="/dev/tomcat/webapps/openvpms/WEB-INF/classes/org/openvpms/archetype" />
 	    <constructor-arg index="1">
 	      <list>
 	        <value>adl</value>
@@ -98,6 +98,7 @@
 	    </constructor-arg>
 	    <constructor-arg index="2"
 	      value="org/openvpms/archetype/assertionTypes.xml" />
+        <constructor-arg index="3" value="300000" /> 
 	  </bean>
 	  <!--  The Entity Service -->
 	  <bean id="entityService"

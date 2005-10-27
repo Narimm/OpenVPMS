@@ -1,20 +1,7 @@
 <span jwcid="@Border">
 <h1>Welcome to the OpenVPMS Test Application</h1>
-
-<ul class="archetypeList">
-	<div class="archetypeList" jwcid="@For"
-		source="jxpath:archetypeService/archetypeDescriptors"
-		value="jxpath:descriptor">
-	<li><a href="#" jwcid="@openvpms:NewLink"
-		archetypeName="jxpath:descriptor/name" /></li>
+	<div>
+	<li><a href="#" jwcid="@openvpms:SearchLink" archetypeRange="party.*.*" defaultArchetypeName="person.person"/></li>
+	<li><a href="#" jwcid="@openvpms:SearchLink" archetypeRange="lookup.*.*" defaultArchetypeName="lookup.country"/></li>
 	</div>
-</ul>
-<ul class="archetypeList">
-	<div class="archetypeList" jwcid="@For"
-		source="jxpath:archetypeService/archetypeDescriptors"
-		value="jxpath:descriptor">
-	<li><a href="#" jwcid="@openvpms:SearchLink"
-		archetypeName="jxpath:descriptor/name" /></li>
-	</div>
-</ul>
 </span>
