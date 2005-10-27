@@ -21,10 +21,13 @@ package org.openvpms.component.business.service.archetype;
 
 
 // java-core
+import java.util.Date;
 import java.util.Hashtable;
 
 //openvpms-framework
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 
@@ -221,6 +224,222 @@ public class ValidationErrorTestCase extends BaseTestCase {
            assertTrue(ve.getErrors().size() == 1);
            assertTrue(ve.getErrors().get(0).getNodeName().equals("identities"));
        }
+   }
+
+   /**
+    * Test a simple regex validation
+    */
+   public void testRegExValidation() throws Exception {
+       Hashtable cparams = getTestData().getGlobalParams();
+       Hashtable params = this.getTestData().getTestCaseParams(
+               "testRegExValidation", "normal");
+
+       ArchetypeService service = new ArchetypeService((String) params
+               .get("file"), (String) cparams.get("assertionFile"));
+       
+       assertTrue(service.getArchetypeDescriptor("address.phoneNumber") != null);
+       Address address = (Address)service.createDefaultObject("address.phoneNumber");
+       address.getDetails().setAttribute("areaCode", "03");
+       address.getDetails().setAttribute("telephoneNumber", "976767666");
+       service.validateObject(address);
+       
+       // test for a failure
+       try {
+           address.getDetails().setAttribute("areaCode", "ABCD");
+           service.validateObject(address);
+           fail("Validation should have failed");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+       }
+   }
+   
+   /**
+    * Test that min and max cardinalities also work for collection classes
+    */
+   public void testMinMaxCardinalityOnCollections() throws Exception {
+       Hashtable cparams = getTestData().getGlobalParams();
+       Hashtable params = this.getTestData().getTestCaseParams(
+               "testMinMaxCardinalityOnCollections", "normal");
+
+       ArchetypeService service = new ArchetypeService((String) params
+               .get("file"), (String) cparams.get("assertionFile"));
+       
+       assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
+       Animal pet = (Animal)service.createDefaultObject("animal.pet");
+       pet.setName("bill");
+       pet.setSex("male");
+       pet.setDateOfBirth(new Date());
+
+       try {
+           service.validateObject(pet);
+           fail("Validation should have failed since min cardinality was violated");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+           assertTrue(((ValidationException)exception).getErrors().size() == 1);
+       }
+       
+       // this should now validate
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // so should this
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // and this
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // but not this
+       try {
+           pet.getIdentities().add(new EntityIdentity());
+           service.validateObject(pet);
+           fail("Validation should have failed since max cardinality was violated");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+           assertTrue(((ValidationException)exception).getErrors().size() == 1);
+       }
+   }
+   
+   /**
+    * Test where only the max cardinality is specified on a collection
+    */
+   public void testMaxCardinalityOnCollections()
+   throws Exception {
+       Hashtable cparams = getTestData().getGlobalParams();
+       Hashtable params = this.getTestData().getTestCaseParams(
+               "testMaxCardinalityOnCollections", "normal");
+
+       ArchetypeService service = new ArchetypeService((String) params
+               .get("file"), (String) cparams.get("assertionFile"));
+       
+       assertTrue(service.getArchetypeDescriptor("animal.pet1") != null);
+       Animal pet = (Animal)service.createDefaultObject("animal.pet1");
+       pet.setName("bill");
+       pet.setSex("male");
+       pet.setDateOfBirth(new Date());
+       service.validateObject(pet);
+       
+       // this should validate
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // and this
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // and this
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // but not this
+       try {
+           pet.getIdentities().add(new EntityIdentity());
+           service.validateObject(pet);
+           fail("Validation should have failed since min cardinality was violated");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+           assertTrue(((ValidationException)exception).getErrors().size() == 1);
+       }
+   }
+   
+   /**
+    * Test where min cardinality and unbounded is specifed on collection
+    */
+   public void testMinUnboundedCardinalityOnCollections()
+   throws Exception {
+       Hashtable cparams = getTestData().getGlobalParams();
+       Hashtable params = this.getTestData().getTestCaseParams(
+               "testMinUnboundedCardinalityOnCollections", "normal");
+
+       ArchetypeService service = new ArchetypeService((String) params
+               .get("file"), (String) cparams.get("assertionFile"));
+       
+       assertTrue(service.getArchetypeDescriptor("animal.pet2") != null);
+       Animal pet = (Animal)service.createDefaultObject("animal.pet2");
+       pet.setName("bill");
+       pet.setSex("male");
+       pet.setDateOfBirth(new Date());
+       try {
+           service.validateObject(pet);
+           fail("Validation should have failed since min cardinality was violated");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+           assertTrue(((ValidationException)exception).getErrors().size() == 1);
+       }
+       
+       // this should not validate
+       pet.getIdentities().add(new EntityIdentity());
+       try {
+           service.validateObject(pet);
+           fail("Validation should have failed since min cardinality was violated");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+           assertTrue(((ValidationException)exception).getErrors().size() == 1);
+       }
+       
+       
+       // this should not validate
+       pet.getIdentities().add(new EntityIdentity());
+       try {
+           service.validateObject(pet);
+           fail("Validation should have failed since min cardinality was violated");
+       } catch (Exception exception) {
+           assertTrue(exception instanceof ValidationException);
+           assertTrue(((ValidationException)exception).getErrors().size() == 1);
+       }
+
+       // but this should
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // and so should this
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+   }
+   
+   /**
+    * Tst where only unbounded cardinality is specified on collections
+    */
+   public void testUnboundedCardinalityOnCollections()
+   throws Exception {
+       Hashtable cparams = getTestData().getGlobalParams();
+       Hashtable params = this.getTestData().getTestCaseParams(
+               "testUnboundedCardinalityOnCollections", "normal");
+
+       ArchetypeService service = new ArchetypeService((String) params
+               .get("file"), (String) cparams.get("assertionFile"));
+       
+       assertTrue(service.getArchetypeDescriptor("animal.pet3") != null);
+       Animal pet = (Animal)service.createDefaultObject("animal.pet3");
+       pet.setName("bill");
+       pet.setSex("male");
+       pet.setDateOfBirth(new Date());
+       service.validateObject(pet);
+       
+       // this should also validate
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // and this
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
+       
+       // and this
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       pet.getIdentities().add(new EntityIdentity());
+       service.validateObject(pet);
    }
    
     /**

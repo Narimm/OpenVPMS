@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype.descriptor;
 // java core
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -566,7 +567,12 @@ public class NodeDescriptor implements Serializable {
      * @return boolean
      */
     public boolean isCollection() {
-        return getMaxCardinality() > 1 || getMaxCardinality() == UNBOUNDED;
+        try {
+            return Collection.class.isAssignableFrom(Thread.currentThread()
+                .getContextClassLoader().loadClass(getType()));
+        } catch (Exception ignore) {
+            return false;
+        }
     }
 
     /**

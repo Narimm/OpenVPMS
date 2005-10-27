@@ -164,14 +164,6 @@
 			</params>
 		</method>
 
-		<!-- Data for the testRegExValidation method -->
-		<method name="testRegExValidation" test-case="normal">
-			<params>
-				<param name="file" type="java.lang.String">
-					org/openvpms/component/business/service/archetype/address.phoneNumber.xml
-				</param>
-			</params>
-		</method>
 	</class>
 
 	<class name="ValidationErrorTestCase">
@@ -184,6 +176,51 @@
 			</param>
 			<param name="extension" type="java.lang.String">adl</param>
 		</params>
+		
+		<!-- Data for the testRegExValidation method -->
+		<method name="testRegExValidation" test-case="normal">
+			<params>
+				<param name="file" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/address.phoneNumber.xml
+				</param>
+			</params>
+		</method>
+		
+		<!-- Data for the testMinMaxCardinalityOnCollections method -->
+		<method name="testMinMaxCardinalityOnCollections" test-case="normal">
+			<params>
+				<param name="file" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/animal.pet.xml
+				</param>
+			</params>
+		</method>
+		
+		<!-- Data for the testMaxCardinalityOnCollections method -->
+		<method name="testMaxCardinalityOnCollections" test-case="normal">
+			<params>
+				<param name="file" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/animal.pet.xml
+				</param>
+			</params>
+		</method>
+		
+		<!-- Data for the testMinUnboundedCardinalityOnCollections method -->
+		<method name="testMinUnboundedCardinalityOnCollections" test-case="normal">
+			<params>
+				<param name="file" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/animal.pet.xml
+				</param>
+			</params>
+		</method>
+		
+		<!-- Data for the testUnboundedCardinalityOnCollections method -->
+		<method name="testUnboundedCardinalityOnCollections" test-case="normal">
+			<params>
+				<param name="file" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/animal.pet.xml
+				</param>
+			</params>
+		</method>
 	</class>
 </tests>
 

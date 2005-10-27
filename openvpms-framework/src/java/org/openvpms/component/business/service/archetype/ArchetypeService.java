@@ -357,7 +357,10 @@ public class ArchetypeService implements IArchetypeService {
             }
             
             // check the cardinality
-            if ((node.getMinCardinality() == 1) && (value == null)) {
+            int minCardinality = node.getMinCardinality();
+            int maxCardinality = node.getMaxCardinality();
+            if ((minCardinality == 1) && 
+                (value == null)) {
                 errors.add(new ValidationError(node.getName(),
                     "value is required"));
                 
@@ -367,7 +370,26 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
             
-
+            // if the node is a collection and there are cardinality 
+            // constraints then check them
+            if (node.isCollection()) {
+                if ((minCardinality > 0) &&
+                    (getCollectionSize(node, value) < minCardinality)) {
+                    errors.add(new ValidationError(node.getName(),
+                            " must supply at least " + minCardinality +
+                            " " + node.getBaseName()));
+                    
+                }
+                
+                if ((maxCardinality > 0) && 
+                    (maxCardinality != NodeDescriptor.UNBOUNDED) &&
+                    (getCollectionSize(node, value) > maxCardinality)) {
+                    errors.add(new ValidationError(node.getName(),
+                            " cannot supply more than " + maxCardinality +
+                            " " + node.getBaseName()));
+                }
+            }
+            
             if ((value != null) &&
                 (node.getAssertionDescriptors().length > 0)){
                 // only check the assertions for non-null values
@@ -398,6 +420,31 @@ public class ArchetypeService implements IArchetypeService {
             if (node.getNodeDescriptors().length > 0) {
                 validateObject(context, node.getNodeDescriptorsAsMap(), errors);
             }
+        }
+    }
+
+    /**
+     * Determine the number of entries in the collection. If the collection is
+     * null then return null. The node descriptor defines the type of the 
+     * collection
+     * 
+     * @param node
+     *            the node descriptor for the collection item
+     * @param collection
+     *            the collection item
+     * @return int
+     */
+    private int getCollectionSize(NodeDescriptor node, Object collection) {
+        if (collection == null) {
+            return 0;
+        }
+        
+        // all collections must implement this interface
+        if (collection instanceof Collection) {
+            return ((Collection)collection).size();
+        } else {
+            // TODO should we actually throw an exception here.
+            return 0;
         }
     }
 

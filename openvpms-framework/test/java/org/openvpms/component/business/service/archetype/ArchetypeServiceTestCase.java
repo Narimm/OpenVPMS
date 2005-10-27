@@ -340,31 +340,4 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(person != null);
         assertTrue(person.getTitle().equals("Mr"));
     }
-
-    /**
-     * Test a simple regex validation
-     */
-    public void testRegExValidation() throws Exception {
-        Hashtable cparams = getTestData().getGlobalParams();
-        Hashtable params = this.getTestData().getTestCaseParams(
-                "testRegExValidation", "normal");
-
-        ArchetypeService service = new ArchetypeService((String) params
-                .get("file"), (String) cparams.get("assertionFile"));
-        
-        assertTrue(service.getArchetypeDescriptor("address.phoneNumber") != null);
-        Address address = (Address)service.createDefaultObject("address.phoneNumber");
-        address.getDetails().setAttribute("areaCode", "03");
-        address.getDetails().setAttribute("telephoneNumber", "976767666");
-        service.validateObject(address);
-        
-        // test for a failure
-        try {
-            address.getDetails().setAttribute("areaCode", "ABCD");
-            service.validateObject(address);
-            fail("Validation should have failed");
-        } catch (Exception exception) {
-            assertTrue(exception instanceof ValidationException);
-        }
-    }
 }
