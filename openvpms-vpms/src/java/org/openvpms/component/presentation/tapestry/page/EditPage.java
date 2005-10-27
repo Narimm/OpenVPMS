@@ -18,16 +18,29 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.annotations.Bean;
+import org.apache.tapestry.annotations.Persist;
 import org.apache.tapestry.callback.ICallback;
+import org.apache.tapestry.components.Block;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.apache.tapestry.form.StringPropertySelectionModel;
+import org.apache.tapestry.form.validator.BaseValidator;
+import org.apache.tapestry.form.validator.Max;
+import org.apache.tapestry.form.validator.MaxLength;
+import org.apache.tapestry.form.validator.Min;
+import org.apache.tapestry.form.validator.Pattern;
+import org.apache.tapestry.form.validator.Required;
 import org.apache.tapestry.valid.ValidationConstraint;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
@@ -45,20 +58,44 @@ import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidatio
 
 public abstract class EditPage extends OpenVpmsPage {
 
-    public abstract Object getModel();
+    // These methods represent page properties managed by Tapestry
 
+    @Persist("client")
+    public abstract Integer getObjectId();
+    public abstract void setObjectId(Integer bookId);
+
+    @Persist("session")
+    public abstract Object getModel();
     public abstract void setModel(Object model);
 
-    public abstract ICallback getNextPage();
+    @Persist("session")
+    public abstract String getArchetypeRange();
+    public abstract void setArchetypeRange(String archetypeRange);  
 
+    @Persist("session")
+    public abstract String getCurrentArchetypeName();
+    public abstract void setCurrentArchetypeName(String name);
+    
+    public abstract ICallback getNextPage();
     public abstract void setNextPage(ICallback NextPage);
 
+    public abstract String[] getNodeNames();
+    public abstract void setNodeNames(String[] nodeNames);
+
+    public abstract Object getCurrentObject();
+    public abstract void setCurrentObject(Object CurrentObject);
+
+    public abstract NodeDescriptor getDescriptor();
+    public abstract void setDescriptor(NodeDescriptor descriptor);
+   
+    // The Validation delegate injected by Tapestry   
     @Bean
     public abstract OpenVpmsValidationDelegate getDelegate();
+    
+    // The private list of selected collection table entries for deletion
+    private List selected = new ArrayList();
 
-    /* (non-Javadoc)
-     * @see org.openvpms.component.presentation.tapestry.page.OpenVpmsPage#pushCallback()
-     */
+    // Push a Edit Page Callback
     public void pushCallback()
     {
         Visit visit = (Visit)getVisitObject();
@@ -68,14 +105,14 @@ public abstract class EditPage extends OpenVpmsPage {
     /**
      * @param cycle
      */
-    public void save(IRequestCycle cycle) {
+    public void onMainApply(IRequestCycle cycle) {
         save();
     }
 
     /**
      * @param cycle
      */
-    public void remove(IRequestCycle cycle) {
+    public void onMainRemove(IRequestCycle cycle) {
         ICallback callback = null;
         try {
             callback = (ICallback)getVisitObject().getCallbackStack().pop();           
@@ -107,7 +144,7 @@ public abstract class EditPage extends OpenVpmsPage {
     /**
      * @param cycle
      */
-    public void saveAndReturn(IRequestCycle cycle) {
+    public void onMainOK(IRequestCycle cycle) {
         if (save()){
             ICallback callback = null;
             try {
@@ -123,7 +160,7 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
-    public void cancel(IRequestCycle cycle) {
+    public void onMainCancel(IRequestCycle cycle) {
         try {
             ICallback callback = (ICallback)getVisitObject().getCallbackStack().pop();
             if (callback == null)
@@ -135,16 +172,20 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
-    public void onFormSubmit(IRequestCycle cycle) {
+    public void onMainSubmit(IRequestCycle cycle) {
+        // If we have a indirection to another page then goto that page 
         if (getNextPage() != null) {
+            // Clear any Validation errors
             getDelegate().clearErrors();
             getNextPage().performCallback(cycle);
         }
     }
 
-    public void onFormRefresh(IRequestCycle cycle) {
+    public void onMainRefresh(IRequestCycle cycle) {
+        // If we are only refreshing then clear any validation errors
         getDelegate().clearErrors();
     }
+
 
     /**
      * @return
@@ -160,10 +201,12 @@ public abstract class EditPage extends OpenVpmsPage {
             getArchetypeService().validateObject((IMObject)getModel());
             }
         catch (ValidationException e){ 
-            //TODO iterate through validation errors and add to delegate
-            //May do this in Delegate method ?
             getDelegate().setFormComponent(null);
-            getDelegate().record("Object has validation errors",ValidationConstraint.CONSISTENCY);
+            List<ValidationError> errors = e.getErrors();
+            for (ValidationError error: errors) {
+                getDelegate().record(error.getNodeName() + ' ' + error.getErrorMessage(),
+                        ValidationConstraint.CONSISTENCY);                
+            }
             return false;           
         }
         // Check to see if we are coming from editing a collection or not
@@ -205,8 +248,6 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
-        // This method can return one or more descriptors since it expects
-        // a regular expression as the input
         ArchetypeDescriptor archetypeDescriptor = getArchetypeService()
                 .getArchetypeDescriptor(
                         ((IMObject) getModel()).getArchetypeId());
@@ -217,6 +258,36 @@ public abstract class EditPage extends OpenVpmsPage {
             return archetypeDescriptor;
     }
 
+    /**
+     * @return
+     */
+    public List getDescriptors() {
+        if (getNodeNames() == null || getNodeNames().length == 0) {
+            return getArchetypeDescriptor().getAllNodeDescriptors();
+        } else {
+            return getArchetypeDescriptor().getNodeDescriptors(
+                    getNodeNames());
+        }
+    }
+    
+    public List getSimpleDescriptors() {
+        if (getNodeNames() == null || getNodeNames().length == 0) {
+            return getArchetypeDescriptor().getSimpleNodeDescriptors();
+        } else {
+            return getArchetypeDescriptor().getNodeDescriptors(
+                    getNodeNames());
+        }
+    }
+    
+    public List getComplexDescriptors() {
+        if (getNodeNames() == null || getNodeNames().length == 0) {
+            return getArchetypeDescriptor().getComplexNodeDescriptors();
+        } else {
+            return getArchetypeDescriptor().getNodeDescriptors(
+                    getNodeNames());
+        }
+    }
+    
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
         return new LookupSelectionModel(getLookupService().get(descriptor,(IMObject)getModel()),
                 !descriptor.isRequired());
@@ -224,7 +295,10 @@ public abstract class EditPage extends OpenVpmsPage {
 
     public IPropertySelectionModel getArchetypeNamesModel(
             NodeDescriptor descriptor) {
-        return new StringPropertySelectionModel(descriptor.getArchetypeRange());
+        if (descriptor == null)
+            return new StringPropertySelectionModel(new String[]{""});
+        else
+            return new StringPropertySelectionModel(descriptor.getArchetypeRange());
     }
 
     public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
@@ -243,10 +317,80 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     public String getTitle() {
+        String entityName = StringUtils.capitalize(((IMObject)getModel()).getArchetypeId().getEntityName());
         if (isModelNew()) {
-            return "Add " + getArchetypeDescriptor().getDisplayName();
+            return "New " + entityName;
         } else {
-            return "Edit " + getArchetypeDescriptor().getDisplayName();
+            return "Edit " + entityName;
         }
+    }
+
+    /**
+     * @param propertyName
+     * @return
+     */
+    public boolean hasBlock(String propertyName) {
+        if (getPage().getComponents().containsKey(propertyName))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * @param propertyName
+     * @return
+     */
+    public Block getBlock(String propertyName) {
+        if (getPage().getComponents().containsKey(propertyName))
+            return (Block) getPage().getComponent(propertyName);
+        else
+            return null;
+    }
+    /**
+     * 
+     * TODO Look at this when we get into tapestry
+     * 
+     * @param descriptor
+     * @return IValidator
+     * @throws Exception
+     *             propagate exception
+     */
+    public List getValidators(NodeDescriptor descriptor) throws Exception {
+        BaseValidator validator = null;
+        
+        List<BaseValidator> validators = new ArrayList<BaseValidator>();
+
+        if (descriptor.isRequired()) {
+            validator = new Required();
+            validators.add(validator);
+        }
+        if (descriptor.isNumeric()) {
+            validator = new Pattern();
+            ((Pattern)validator).setPattern("#");
+            validators.add(validator);
+            if (descriptor.getMaxValue() != null) {
+                validator = new Max(descriptor.getMaxValue().toString());
+                validators.add(validator);
+            }
+
+            if (descriptor.getMinValue() != null) {
+                validator = new Min(descriptor.getMinValue().toString());
+                validators.add(validator);
+            }
+        } else if  (descriptor.isDate()){
+        } else if (descriptor.isString()) {
+            if (descriptor.getMaxLength() > 0) {
+                validator = new MaxLength();
+                ((MaxLength)validator).setMaxLength(descriptor.getMaxLength());
+                validators.add(validator);
+            }
+            if (descriptor.getStringPattern() != null) {
+                validator = new Pattern();
+                ((Pattern)validator).setPattern(descriptor.getStringPattern());
+                validators.add(validator);
+            }
+        }
+        
+        return validators;
     }
 }

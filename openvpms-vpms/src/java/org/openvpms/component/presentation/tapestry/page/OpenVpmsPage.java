@@ -18,6 +18,7 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+import org.apache.commons.jxpath.JXPathContext;
 import org.apache.tapestry.IPage;
 import org.apache.tapestry.annotations.InjectObject;
 import org.apache.tapestry.annotations.InjectState;
@@ -61,6 +62,24 @@ public abstract class OpenVpmsPage extends BasePage {
     public abstract Visit getVisitObject();
 
 
+    /**
+     * This method evaluates a JXPath expression against and object and 
+     * returns the resulting object
+     * 
+     * @param root
+     *            the root object
+     * @param expr  
+     *            the JXPath expression
+     * @return Object
+     *            the resolved object
+     * @throws Exception
+     *            propagate exception                                
+     */
+    public Object getValue(Object root, String expr)
+    throws Exception {
+        JXPathContext context = JXPathContext.newContext(root);
+        return context.getValue(expr);
+    }
     /**
      * View helper function to display the applications screen name, which is
      * defined in the Tapestry page spec.
