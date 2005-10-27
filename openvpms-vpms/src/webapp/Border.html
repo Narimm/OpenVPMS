@@ -1,6 +1,6 @@
 <html jwcid="@Shell" 
       title="OpenVPMS" 
-      stylesheet="ognl:assets.stylesheet">
+      stylesheet="asset:stylesheet">
     
     <link rel="stylesheet" type="text/css" href="css/global.css" jwcid="$remove$"/>
 
@@ -13,10 +13,12 @@
      style="position:absolute; left:0; top:0; width:800px; height:38px; z-index:0;"><img src="images/header.jpg" width="958" height="58" alt="" border="0"></div>
 
 <!-- application and page name -->
+<div jwcid="@contrib:InspectorButton"/>
 <div id="header" style="position:absolute; left:60px; top:7px; width:550px; height:27px; z-index:6;">
 <h1 class="mainHeader">
 	<span jwcid="@Insert" value="OpenVPMS">application name</span>
 </h1>
+<span><a jwcid="@PageLink" page="Home">Home</a></span>
 </div>
 
 <!-- content -->
