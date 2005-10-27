@@ -12,7 +12,7 @@
 			</param>
 			<param name="extension" type="java.lang.String">adl</param>
 		</params>
-		
+
 		<!-- Data for the testCreationWithNullFileName method -->
 		<method name="testCreationWithNullFileName"
 			test-case="normal">
@@ -163,8 +163,17 @@
 				</param>
 			</params>
 		</method>
+
+		<!-- Data for the testRegExValidation method -->
+		<method name="testRegExValidation" test-case="normal">
+			<params>
+				<param name="file" type="java.lang.String">
+					org/openvpms/component/business/service/archetype/address.phoneNumber.xml
+				</param>
+			</params>
+		</method>
 	</class>
-	
+
 	<class name="ValidationErrorTestCase">
 		<params>
 			<param name="assertionFile" type="java.lang.String">

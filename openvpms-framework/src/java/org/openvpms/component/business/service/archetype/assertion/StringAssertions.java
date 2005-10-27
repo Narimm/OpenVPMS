@@ -22,6 +22,7 @@ package org.openvpms.component.business.service.archetype.assertion;
 import java.util.Map;
 
 import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionProperty;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
@@ -71,9 +72,10 @@ public class StringAssertions {
      */
     public static boolean regularExpressionMatch(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertiesAsMap();
+        Map<String, AssertionProperty> properties = 
+            assertion.getPropertiesAsMap();
         String str = (String)target;
-        String regExpr = (String)properties.get("expression");
+        String regExpr = (String)properties.get("expression").getValue();
         
         if (str == null) {
             return false;

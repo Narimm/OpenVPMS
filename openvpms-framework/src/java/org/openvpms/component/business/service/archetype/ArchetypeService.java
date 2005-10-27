@@ -880,13 +880,18 @@ public class ArchetypeService implements IArchetypeService {
          */
         private List<File> getChangedFiles() {
             ArrayList<File> changedFiles = new ArrayList<File>();
-            Collection collection = FileUtils.listFiles(dir, extensions, true);
-            Iterator files = collection.iterator();
-            while (files.hasNext()) {
-                File file = (File) files.next();
-                if (FileUtils.isFileNewer(file, lastScan)) {
-                    changedFiles.add(file);
+            
+            try {
+                Collection collection = FileUtils.listFiles(dir, extensions, true);
+                Iterator files = collection.iterator();
+                while (files.hasNext()) {
+                    File file = (File) files.next();
+                    if (FileUtils.isFileNewer(file, lastScan)) {
+                        changedFiles.add(file);
+                    }
                 }
+            } catch (Exception exception) {
+                logger.warn("Failure in getChangedFiles", exception);
             }
             
             
