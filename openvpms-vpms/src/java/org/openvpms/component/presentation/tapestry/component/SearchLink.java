@@ -19,6 +19,8 @@
 package org.openvpms.component.presentation.tapestry.component;
 
 // tapestry hivemind
+import java.util.StringTokenizer;
+
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
@@ -30,26 +32,47 @@ import org.openvpms.component.presentation.tapestry.page.SearchPage;
  * @version $LastChangedDate$
  */
 public abstract class SearchLink extends Link {
-    public abstract String getArchetypeName();
-	public abstract void setArchetypeName(String archetypeName);
+    public abstract String getArchetypeRange();
+	public abstract void setArchetypeRange(String archetypeRange);
 
 	public void click(IRequestCycle cycle) {
-		SearchPage page = (SearchPage) findPage(cycle, getArchetypeName(),"Search");
-        ((OpenVpmsPage)getPage()).pushCallback();
+	    // First extract the reference model name from the passed parameter.
+        StringTokenizer tokens = new StringTokenizer(getArchetypeRange(),  ".");
+        if (tokens.countTokens() != 3)
+            return;
+        String rmName = tokens.nextToken();
 
-		try {
-			page.setInstances(page.getEntityService().getByShortName(
-					getArchetypeName()));
+        // First check we have a refernce model set
+        if (rmName == null || rmName == "")
+            return;
+      
+        try {
+            // try and find the page for this reference Model otherwise use DefaultSearch
+            SearchPage page = (SearchPage) findPage(cycle, rmName,"Search");
+            
+            // Push a callback
+            ((OpenVpmsPage)getPage()).pushCallback();
+
+            // Set the properties on the search page
+            page.setArchetypeRange(getArchetypeRange());
+            
+            // Activate the Page
+            cycle.activate(page);
+            
 		} catch (Exception ex) {
 			throw new ApplicationRuntimeException(ex);
 		}
-		page.activateExternalPage(new Object[] { getArchetypeName() }, cycle);
 	}
 
 	/**
 	 * @return
 	 */
 	public String getLinkText() {
-		return "Search " + getArchetypeName();
+        String range = getArchetypeRange();
+        StringTokenizer tokens = new StringTokenizer(range,  ".");
+        if (tokens.countTokens() != 3)
+            return "";
+        String rmName = tokens.nextToken();
+		return "Search " + rmName;
 	}
 }

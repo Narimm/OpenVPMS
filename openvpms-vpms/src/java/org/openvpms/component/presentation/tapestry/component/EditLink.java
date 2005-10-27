@@ -19,6 +19,7 @@
 
 package org.openvpms.component.presentation.tapestry.component;
 
+import org.apache.tapestry.IRequestCycle;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.presentation.tapestry.page.EditPage;
@@ -47,11 +48,11 @@ public abstract class EditLink extends Link
 
     public abstract void setModel(Object model);
 
-    public void click(Object model)
+    public void click(IRequestCycle cycle)
     {
-        EditPage page = (EditPage) findPage(getPage().getRequestCycle(), ((IMObject)model).getArchetypeId().getShortName(),SUFFIX);
+        EditPage page = (EditPage) findPage(cycle, getArchetypeName(),SUFFIX);
+        page.setModel(getModel());
         ((OpenVpmsPage)getPage()).pushCallback();
-        page.setModel(model);
-        getPage().getRequestCycle().activate(page);
+        cycle.activate(page);
     }
 }

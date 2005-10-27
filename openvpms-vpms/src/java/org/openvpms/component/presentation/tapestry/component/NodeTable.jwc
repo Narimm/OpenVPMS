@@ -9,24 +9,24 @@
 	<parameter name="nodeNames" required="no" default-value="null"/>
    	<parameter name="archetypeDescriptor" required="no"	default-value="page.archetypeDescriptor"/>   
        
-    <property name="property"/>
+    <property name="descriptor"/>
 
     <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="foreach" type="For">
-        <binding name="source" value="simpleDescriptors"/>
-        <binding name="value" value="property"/>
+        <binding name="source" value="page.simpleDescriptors"/>
+        <binding name="value" value="descriptor"/>
     </component>
     <component id="hasBlock" type="If">
-        <binding name="condition" value="hasBlock(property.name)"/>
+        <binding name="condition" value="page.hasBlock(descriptor.name)"/>
     </component>   
     <component id="doesntHaveBlock" type="If">
-        <binding name="condition" value="not(hasBlock(property.name))"/>
+        <binding name="condition" value="not(page.hasBlock(descriptor.name))"/>
     </component>      
     <component id="renderBlock" type="RenderBlock">
-        <binding name="block" value="getBlock(property.name)"/>
+        <binding name="block" value="page.getBlock(descriptor.name)"/>
     </component>  
     <component id="nodeEditor" type="NodeEditor">
-        <binding name="descriptor" value="property"/>
+        <binding name="descriptor" value="descriptor"/>
         <binding name="model" value="model"/>
     </component>
 </component-specification>

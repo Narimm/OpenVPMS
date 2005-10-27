@@ -24,5 +24,5 @@ package org.openvpms.component.presentation.tapestry.component;
  * @version $LastChangedDate$
  */
 
-public abstract class ArchetypeActions extends ArchetypeEditComponent {
+public abstract class ArchetypeActions extends OpenVpmsComponent {
 }

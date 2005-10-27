@@ -11,6 +11,5 @@
     
     <component id="link" type="DirectLink">
         <binding name="listener" value="listeners.click"/>
-        <binding name="parameters" value="model" />
     </component>
 </component-specification>

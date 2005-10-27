@@ -2,21 +2,15 @@
 
 <span jwcid="$content$">
    	<div jwcid="archetypeCombo"/>
-    <div jwcid="allowCreate">
-    	<input jwcid="addbutton" type="button" value="Add New..." />
-    </div>    
-    <div jwcid="allowRemove">
-    	<input jwcid="removebutton" type="button" value="Remove" />
-    </div>    
-	<table width="90%" border="1" jwcid="table">
-		<tr><th>Name</th><th>Description</th></tr>
-		<tr>
-    	<td jwcid="nameColumnValue">
-            <a jwcid="nameLink" href="#"><span jwcid="insertName">Britney Spears</span></a>
-        </td>
-	   	<td jwcid="descriptionColumnValue">
-	        <span jwcid="insertDescription">A description o fBritney Spears that is no too nasty </span>
-	    </td>
+   	<input jwcid="addbutton" type="button" value="Add New..." />
+   	<input jwcid="removebutton" type="button" value="Remove" />
+	<table border="1" width="100%" jwcid="any">
+		<tr><th></th><th>Type</th><th>Name</th><th>Description</th></tr>
+		<tr jwcid="foreach">
+	        <td><input jwcid="removeCheckbox" type="checkbox" /></td>
+	        <td><span jwcid="insertType" /></td>
+	        <td><a jwcid="nameLink"><span jwcid="insertName" /></a></td>
+	        <td><span jwcid="insertDescription" /></td>
 	    </tr>
-    </table>   
+    </table>
 </span>

@@ -6,7 +6,7 @@
 
 <component-specification class="org.openvpms.component.presentation.tapestry.component.NodeEditor" allow-body="yes" allow-informal-parameters="yes">
 	<parameter name="model" required="yes" />
-	<parameter name="descriptor" default-value="container.property" />
+	<parameter name="descriptor" default-value="container.descriptor" />
 
     <component id="insert" type="Insert">
         <binding name="value" value="descriptor.displayName"/>
@@ -52,12 +52,12 @@
     </component>
     <component id="dateField" type="DatePicker">
         <binding name="displayName" value="descriptor.displayName"/>
-        <binding name="validators" value="getValidators(descriptor)"/>
+        <binding name="validators" value="page.getValidators(descriptor)"/>
         <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component> 
     <component id="stringField" type="TextField">
         <binding name="displayName" value="descriptor.displayName"/>
-        <binding name="validators" value="getValidators(descriptor)"/>
+        <binding name="validators" value="page.getValidators(descriptor)"/>
         <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component> 
    <component id="textArea" type="TextArea">
@@ -66,7 +66,7 @@
     <component id="numberField" type="TextField">
         <binding name="displayName" value="descriptor.displayName"/>
         <binding name="translator" value="translator:number,pattern=#.#"/>
-        <binding name="validators" value="getValidators(descriptor)"/>
+        <binding name="validators" value="page.getValidators(descriptor)"/>
         <binding name="value" value="jxpath:pathToObject(model, descriptor/path)" />
     </component>   
     <component id="checkbox" type="Checkbox">

@@ -68,7 +68,8 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
     protected void prepareForRender(IRequestCycle arg0) {
         // TODO Auto-generated method stub
         super.prepareForRender(arg0);
-        buildSelectedList();
+        if (arg0.isRewinding() == false)
+            buildSelectedList();
     }
 
     @SuppressWarnings("unchecked")
@@ -105,12 +106,31 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
             throw new ApplicationRuntimeException(ex);
         }
     }
+    
+    public void onNameClick(IRequestCycle cycle) {
+        try {
+            //Push a Collection Callback onto the stack.
+            CollectionCallback callback = new CollectionCallback(
+                    getPage().getPageName(), getModel(), getDescriptor());
+            ((OpenVpmsPage)getPage()).getVisitObject().getCallbackStack().push(callback);
+            
+            // Look for specific edit page for archetype or else use DefaultEdit page.
+            EditPage editPage = (EditPage) Utils.findPage(cycle,"DefaultEdit","Edit");
+
+            // we need to do some indirection to avoid a StaleLink
+            EditCallback nextPage = new EditCallback(editPage.getPageName(),getCurrentObject());
+            ((EditPage)getPage()).setNextPage(nextPage);
+            
+        } catch (Exception ex) {
+            throw new ApplicationRuntimeException(ex);
+        }
+    }
+    
 
 
     @SuppressWarnings("unchecked")
 	public void remove(IRequestCycle cycle) {
         int i = 0;
-        // TODO CN - This code stinks (I wrote it). Isn't there a better way??
         ArrayList deleting = new ArrayList();
         for (Iterator iter = getCollection().iterator(); iter.hasNext();) {
 
@@ -123,20 +143,9 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         }
         getCollection().removeAll(deleting);
     }
-
-    @SuppressWarnings("unchecked")
-	public List getSelectedList() {
-        ArrayList selectedList = new ArrayList();
-        selectedList.addAll(getCollection());
-        return selectedList;
-    }
-
-    @SuppressWarnings("unchecked")
-	public void setSelectedList(List selected) {
-        if (selected != null) {
-            getCollection().clear();
-            getCollection().addAll(selected);
-        }
+    
+    public void onCollectionFormSubmit(IRequestCycle cycle) {
+        
     }
 
     /**

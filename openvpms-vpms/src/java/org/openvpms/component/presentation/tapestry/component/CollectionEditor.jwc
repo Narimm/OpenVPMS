@@ -14,22 +14,36 @@
     
     <property name="currentObject" />
     <property name="archetypeName" />
+    <property name="index" />
         
-    <component id="table" inherit-informal-parameters="yes" type="contrib:FormTable">
+	<component id="collectionForm" type="Form">
+	    <binding name="listener" value="listener:onCollectionFormSubmit"/>
+	</component>
+
+    <component id="collectionTable" inherit-informal-parameters="yes" type="contrib:FormTable">
         <binding name="row" value="currentObject"/>
         <binding name="source" value="ognl:collection"/>
         <binding name="columns" value="literal:name,description"/>
         <binding name="pageSize" value="10"/>
     </component>	
-    <component id="any" type="Any" inherit-informal-parameters="yes" />
+   <component id="foreach" type="Foreach" >
+    	<binding name="source" value="collection"/>       
+        <binding name="value" value="currentObject"/> 
+        <binding name="index" value="index"/>
+        <binding name="element" value="literal:tr"/>
+    </component>
+     <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="removeCheckbox" type="Checkbox">
         <binding name="value" value="selected[index]"/>
     </component>
     <component id="nameColumnValue" type="Block" />
     <component id="descriptionColumnValue" type="Block" />
 
-    <component id="nameLink" type="EditLink">
-        <binding name="model" value="currentObject"/>
+    <component id="nameLink" type="LinkSubmit">
+        <binding name="listener" value="listener:onNameClick" />
+    </component>
+    <component id="insertType" type="Insert">
+        <binding name="value" value="jxpath:pathToObject(currentObject,'archetypeId/concept')"/>
     </component>
     <component id="insertName" type="Insert">
         <binding name="value" value="jxpath:pathToObject(currentObject,'name')"/>
@@ -47,7 +61,7 @@
         <binding name="listener" value="listeners.showAddPage"/>
     </component>
     <component id="removebutton" type="Submit">
-        <binding name="listener" value="listeners.remove"/>
+        <binding name="action" value="listeners.remove"/>
     </component>  
     <component id="archetypeCombo" type="PropertySelection">
         <binding name="displayName" value="descriptor.displayName"/>

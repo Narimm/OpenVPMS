@@ -24,5 +24,5 @@ package org.openvpms.component.presentation.tapestry.component;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class NodeTable extends ArchetypeEditComponent {
+public abstract class NodeTable extends OpenVpmsComponent {
 }
