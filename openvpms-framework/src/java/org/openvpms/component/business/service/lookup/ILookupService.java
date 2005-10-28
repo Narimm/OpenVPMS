@@ -130,6 +130,37 @@ public interface ILookupService {
      */
     public List<Lookup> get(String shortName);
 
+
+    /**
+     * Uses the specified criteria to return zero, one or more matching . 
+     * lookups. This is a very generic query which will constrain the 
+     * returned set on one or more of the supplied values.
+     * <p>
+     * Each of the parameters can denote an exact match or a partial match. If
+     * a partial match is required then the last character of the value must be
+     * a '*'. In every other case the search will look for an exact match.
+     * <p>
+     * All the values are optional. In the case where all the values are null
+     * then all the lookup instances will be returned. In the case where two or 
+     * more values are specified (i.e. rmName and entityName) then only entities 
+     * satisfying the specified conditions will be returned.
+     * 
+     * @param rmName
+     *            the reference model name (partial or complete)
+     * @param entityName
+     *            the name of the entity
+     * @param concept
+     *            the concept name
+     * @param instanceName
+     *            the particular instance name
+     * @return List  
+     *            a list of Lookup values                                 
+     * @throws LookupServiceException
+     *            a runtime exception                         
+     */
+    public List get(String rmName, String entityName, 
+            String conceptName, String instanceName);
+    
     /**
      * Retrieve all the lookup instances of a particular type, which are the 
      * target of a lookup relationship with the specified source

@@ -167,6 +167,10 @@ public class LookupServiceTestCase extends
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() == 0);
     }
     
+    /**
+     * Test retrieval by short nam using
+     */
+    
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */

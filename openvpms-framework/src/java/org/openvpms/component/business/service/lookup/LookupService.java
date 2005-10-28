@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDes
 import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.AssertionProperty;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.entity.EntityServiceException;
 
 /**
  * 
@@ -204,6 +205,20 @@ public class LookupService implements ILookupService {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedToRetrieveLookupsByConcept,
                     new Object[] { shortName }, exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public List get(String rmName, String entityName, String conceptName, String instanceName) {
+        try {
+            return dao.get(rmName, entityName, conceptName, instanceName);
+        } catch (LookupDAOException exception) {
+            throw new LookupServiceException(
+                    LookupServiceException.ErrorCode.FailedToFindLookups,
+                    new Object[]{rmName, entityName, conceptName, instanceName}, 
+                    exception);
         }
     }
 

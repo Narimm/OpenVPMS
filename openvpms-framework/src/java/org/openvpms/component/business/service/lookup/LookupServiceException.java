@@ -53,7 +53,8 @@ public class LookupServiceException extends RuntimeException implements
         FailedToRetrieveTargetLookups,
         InvalidLookupType,
         InvalidAssertion,
-        InvalidLookupAssertion
+        InvalidLookupAssertion,
+        FailedToFindLookups
     }
 
     /**

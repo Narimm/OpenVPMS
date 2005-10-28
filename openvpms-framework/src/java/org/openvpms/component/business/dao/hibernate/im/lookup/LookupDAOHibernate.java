@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 // log4j
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 // openvpms-framework
@@ -107,6 +108,104 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.lookup.ILookupDAO#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
+    public List get(String rmName, String entityName, String conceptName, String instanceName) {
+        try {
+            StringBuffer queryString = new StringBuffer();
+            List<String> names = new ArrayList<String>();
+            List<String> params = new ArrayList<String>();
+            boolean andRequired = false;
+            
+            queryString.append("select lookup from org.openvpms.component.business.domain.im.lookup.Lookup as lookup");
+            
+            // check to see if one or more of the values have been specified
+            if ((StringUtils.isEmpty(rmName) == false) ||
+                (StringUtils.isEmpty(entityName) == false) ||
+                (StringUtils.isEmpty(conceptName) == false) ||
+                (StringUtils.isEmpty(instanceName) == false)) {
+                queryString.append(" where ");
+            }
+            
+            // process the rmName
+            if (StringUtils.isEmpty(rmName) == false) {
+                if (rmName.endsWith("*")) {
+                    queryString.append(" lookup.archetypeId.rmName like :rmName");
+                } else {
+                    queryString.append(" lookup.archetypeId.rmName = :rmName");
+                }
+                
+                names.add("rmName");
+                params.add(rmName);
+                andRequired = true;
+            }
+            
+            // process the entity name
+            if (StringUtils.isEmpty(entityName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                if (entityName.endsWith("*")) {
+                    queryString.append(" lookup.archetypeId.entityName like :entityName");
+                } else {
+                    queryString.append(" lookup.archetypeId.entityName = :entityName");
+                }
+                
+                names.add("entityName");
+                params.add(entityName);
+                andRequired = true;
+            }
+            
+            // process the concept name
+            if (StringUtils.isEmpty(conceptName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                if (entityName.endsWith("*")) {
+                    queryString.append(" lookup.archetypeId.concept like :conceptName");
+                } else {
+                    queryString.append(" lookup.archetypeId.concept = :conceptName");
+                }
+                
+                names.add("conceptName");
+                params.add(conceptName);
+                andRequired = true;
+            }
+            
+            // process the instance name
+            if (StringUtils.isEmpty(instanceName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                if (entityName.endsWith("*")) {
+                    queryString.append(" lookup.name like :instanceName");
+                } else {
+                    queryString.append(" lookup.name = :instanceName");
+                }
+                
+                names.add("instanceName");
+                params.add(instanceName);
+                andRequired = true;
+            }
+            
+            // now execute te query
+           return getHibernateTemplate().findByNamedParam(
+                   queryString.toString(),
+                   (String[])names.toArray(new String[names.size()]),
+                   params.toArray());
+        } catch (Exception exception) {
+            throw new LookupDAOException(
+                    LookupDAOException.ErrorCode.FailedToFindLookups,
+                    new Object[]{rmName, entityName, conceptName, instanceName},
+                    exception);
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -298,5 +397,4 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
                     new Object[] { lookup });
         }
     }
-
 }

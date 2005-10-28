@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
@@ -181,6 +182,20 @@ public class JXPathTestCase extends BaseTestCase {
                 person.getArchetypeId().getConcept()));
     }
 
+    /**
+     * Test that the entityRelationship.animalCarer create default object
+     * initializes the date correctly using the jxpath expression
+     */
+    public void testJXPathDateFunction() throws Exception {
+        // create a default animalCarer object
+        Date start = new Date();
+        EntityRelationship er = (EntityRelationship)service
+            .createDefaultObject("entityRelationship.animalCarer");
+        assertTrue(er.getActiveStartTime() != null);
+        assertTrue(er.getActiveStartTime().getTime() >= start.getTime());
+        assertTrue(er.getActiveStartTime().getTime() <= new Date().getTime());
+    }
+    
     /**
      * Test that we can set an entity identity on a set
      */

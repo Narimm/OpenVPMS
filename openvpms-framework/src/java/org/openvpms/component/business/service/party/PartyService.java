@@ -21,6 +21,9 @@ package org.openvpms.component.business.service.party;
 // openvpms-domain
 
 // openvpms-orm
+import java.util.List;
+
+import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
 import org.openvpms.component.business.dao.im.party.IPartyDAO;
 import org.openvpms.component.business.dao.im.party.PartyDAOException;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -121,6 +124,22 @@ public class PartyService implements IPartyService {
         // TODO Auto-generated method stub
         return null;
     }
+
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.party.IPartyService#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public List get(String rmName, String entityName, String conceptName, String instanceName) {
+        try {
+            return dao.get(rmName, entityName, conceptName, instanceName);
+        } catch (LookupDAOException exception) {
+            throw new PartyDAOException(
+                    PartyDAOException.ErrorCode.FailedToFindParties,
+                    new Object[]{rmName, entityName, conceptName, instanceName}, 
+                    exception);
+        }
+    }
+
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.party.IPartyService#removeParty(org.openvpms.component.business.domain.im.common.party.Party)

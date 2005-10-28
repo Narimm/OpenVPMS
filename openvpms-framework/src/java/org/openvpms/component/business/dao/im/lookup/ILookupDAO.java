@@ -106,6 +106,36 @@ public interface ILookupDAO {
     public List<Lookup> getLookupsByConcept(String concept);
     
     /**
+     * Retrieve all the lookup instances that matches the specified search 
+     * criteria. This is a very generic method that provides a mechanism to 
+     * return entities based on, one or more criteria.
+     * <p>
+     * All parameters are optional and can either denote an exact or partial
+     * match semantics. If a parameter ends with '*' then it will do a partial
+     * match and return all lookyps that start with the specified value. 
+     * Alternatively, if a parameter does not end with a '*' then it will only
+     * return entities with the exact value. 
+     * <p>
+     * If two or more parameters are specified then it will return lookups
+     * that match all criteria.
+     * 
+     * @param rmName
+     *            the reference model name
+     * @param entityName
+     *            the entity name
+     * @param conceptName
+     *            the concept name
+     * @param instanceName
+     *            the instance name                                    
+     * @return List
+     *            a list of Lookup instances
+     * @throws LookupDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public List get(String rmName, String entityName, String conceptName, 
+            String instanceName);
+    
+    /**
      * Retrieve all the {@link Lookup} instances that are of the specified type
      * (i.e. archetypeId} and are the target of the a relationship with the 
      * nominated source
