@@ -4,7 +4,7 @@
 BODY  {
 	background-color : #FFFFFF;
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	margin-top: 0px;
 	margin-left: 0px;
 }
@@ -12,7 +12,7 @@ BODY  {
 
 P  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 }
 
 
@@ -25,24 +25,24 @@ EM{
 /*  regular links */
 A  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: bold;
 }
 
 A:Visited  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 }
 
 A:Active  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight:bold;
 }
 
 A:Hover  {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 }
 
 /* menu */
@@ -62,7 +62,7 @@ TABLE.menu {
 /*   MENU links  */
 A.menu  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: bold;
 	color: #FFFFFF;
 	text-decoration: none;
@@ -70,14 +70,14 @@ A.menu  {
 
 A.menu:Visited  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	color: #FFFFFF;
 	text-decoration: none;
 }
 
 A.menu:Active  {
     font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight:bold;
 	color: #FFFFFF;
 	text-decoration: none;
@@ -85,7 +85,7 @@ A.menu:Active  {
 
 A.menu:Hover  {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	color: #FFFFFF;
 	text-decoration: none;
 }
@@ -94,7 +94,7 @@ A.menu:Hover  {
 /* regularHeader, should be used where possible */
 H1  {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 18px;
+	font-size: 12px;
     color: black;	
 }
 
@@ -102,7 +102,7 @@ H1  {
 /*  damn; */
 .mainHeader  {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 18px;
+	font-size: 12px;
 	font-weight: bold;
 	color: white;
 	margin-top: 0px;
@@ -111,7 +111,7 @@ H1  {
 }
 .userHeader  {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: bold;
 	color: white;
 	margin-top: 0px;
@@ -243,21 +243,6 @@ TABLE.form TH {
     font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;
 }
-
-
-
-
-
-
-
-/*
- *   table relatred stuff
- * 
- *
-
-
-
-
 /*
  * data table 
  */
@@ -373,11 +358,6 @@ TABLE.contentBox TD {
 	margin-bottom: 6px;
 }
 
-
-
-
-
-
 /*   two differnet background colors for data tables */
 
 /* 
@@ -479,6 +459,38 @@ TABLE.reportHtml TD {
 	vertical-align : sub;
 }
 
+    td.tab {
+      border-collapse: collapse;
+      border-style: solid solid none solid;
+      border-color: black;
+      border-width: 1px 1px 0px 1px;
+      background-color: #CCC;
+      padding: 2px 0.5em 0px 0.5em;
+      margin-top: 4px;
+    }    
+    td.activetab {
+      border-collapse: collapse;
+      border-style: solid solid none solid;
+      border-color: black;
+      border-width: 1px 1px 0px 1px;
+      background-color: #F3F3F3;
+      padding: 4px 0.5em 2px 0.5em;     
+      margin-top: 4px;
+    }
+    td.tab.hover {
+      background-color: #FFF;
+    }
+    a.tab {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: small;
+	text-decoration: none;    
+    }
+    a.tab.hover {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: small;
+	text-decoration: underline;    
+    }
+    .panel { border: solid 1px black; background-color: #F7F7F7; padding: 5px; overflow: auto;}
 
  
 

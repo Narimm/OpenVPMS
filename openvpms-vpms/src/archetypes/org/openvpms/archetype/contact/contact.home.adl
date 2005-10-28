@@ -8,7 +8,7 @@
 			path="/description" hidden="true" derived="true"
 			derivedValue="/archetypeId/concept" />
 		<node name="startDate" path="/activeStartTime"
-			type="java.util.Date" minCardinality="0" />
+			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"
 			type="java.util.Date" minCardinality="0" />
 		<node name="addresses" path="/addresses"

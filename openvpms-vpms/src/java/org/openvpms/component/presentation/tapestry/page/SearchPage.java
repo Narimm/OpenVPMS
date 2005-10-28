@@ -21,7 +21,6 @@ package org.openvpms.component.presentation.tapestry.page;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.PageRedirectException;
 import org.apache.tapestry.annotations.Persist;
@@ -101,8 +100,8 @@ public abstract class SearchPage extends OpenVpmsPage implements PageBeginRender
         if (tokens.countTokens() != 3)
             return;
         String rmName = tokens.nextToken();
-//        String entityName = tokens.nextToken();
-//        String conceptName = tokens.nextToken();
+        String entityName = tokens.nextToken();
+        String conceptName = tokens.nextToken();
 
         DefaultPrimaryKeyConverter converter = getConverter();
         List results = null;
@@ -110,7 +109,7 @@ public abstract class SearchPage extends OpenVpmsPage implements PageBeginRender
             if (rmName.equalsIgnoreCase("party"))
                 results = getEntityService().get(rmName,null, null, null);
             else if (rmName.equalsIgnoreCase("lookup"))
-                results = getLookupService().get("lookup.country");
+                results = getLookupService().get("country");
             for (Object object : results)
             {
                 converter.add(((IMObject)object).getUid(), object);
@@ -124,7 +123,7 @@ public abstract class SearchPage extends OpenVpmsPage implements PageBeginRender
     public void onNameClick(Object model)
     {
         // TODO Retieve ID from model and the utilise this to retrieve object using service layer.  This 
-        // will solve problem with stale object sin Search List.
+        // will solve problem with stale objects in Search List.
         EditPage page = (EditPage) Utils.findPage(getRequestCycle(), ((IMObject)model).getArchetypeId().getShortName(),"Edit");
         page.setModel(model);
         page.setArchetypeRange(getArchetypeRange());

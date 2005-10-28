@@ -19,57 +19,43 @@
 		<span>&nbsp</span>
 		<fieldset style="padding-top: 0px; margin: 0px 4px 0px 9px">
 			<legend>&nbsp;&nbsp;Main&nbsp;&nbsp;</legend> 
-				<div jwcid="nodeTable" />
-			<!-- table jwcid="@Any">
-			    <div jwcid="forEachNode" >
-			        <span jwcid="hasBlock">
-		    	        <span jwcid="renderBlock" />
-			        </span>
-		        	<div jwcid="doesntHaveBlock">
-		        	    <span jwcid="notHidden">
-					        <tr>
-						    <th><span jwcid="@Insert" value="ognl:descriptor.displayName"/>: </th>
-						    <span jwcid="isReadOnly">
-						        <td><span jwcid="displayValue" /></td>
-						    </span>
-						    <span jwcid="notReadOnly">
-							    <td jwcid="isDate" element="td">
-							    	<input jwcid="dateField" />
-							    </td>
-							    <td jwcid="isNumeric" element="td">
-							        <input jwcid="numberField" />
-							    </td>     
-							    <td jwcid="isBoolean" element="td">
-							        <input jwcid="checkbox" />
-							    </td>       
-							    <td jwcid="isString" element="td">
-							        <input jwcid="stringField" />
-							    </td>
-							 	<td jwcid="isTextArea" element="td">
-							        <input jwcid="textArea" />
-							    </td>
-							    <td jwcid="isLookup" element="td">
-							    	<span jwcid="lookupCombo" />
-							    </td>
-							    <td jwcid="isObject" element="td">
-							    	<span jwcid="selectObject"/>
-							    </td>
-						   	 </span>
-					        </tr>
-					    </span>
-		        	</div>
-			    </div>
-		    </table-->
+			<div jwcid="nodeTable" />
 		</fieldset>
 		<span>&nbsp</span>
 		<span jwcid="@If" condition="ognl:!complexDescriptors.isEmpty" >
-			<span jwcid="tabpanel">
-			    <div jwcid="forEachCollection" >
-				    <span jwcid="tab">
+			<table cellpadding="0" cellspacing="0">
+			  <tr>
+			    <span jwcid="@Foreach" source="ognl:complexDescriptors" value="ognl:descriptor">
+			      <td width="5"></td>
+			      <span jwcid="@If" condition="ognl:currentTabActive">
+			        <td class="activetab">
+			          <span jwcid="@Insert" value="ognl:descriptor.displayName"></span>
+			        </td>
+			      </span>
+			
+			      <span jwcid="@If" condition="ognl:!currentTabActive">
+			        <td class="tab">
+			          <span jwcid="@DirectLink" listener="ognl:listeners.onTabClicked" parameters="ognl:descriptor.displayName">
+			            <span jwcid="@Insert" value="ognl:descriptor.displayName"></span>
+			          </span>
+			        </td>
+			      </span>
+			    </span>
+			  </tr>
+			</table>
+			
+		    <div jwcid="@Foreach" source="ognl:complexDescriptors" value="ognl:descriptor">
+		      <span jwcid="@If" condition="ognl:currentTabActive">
+				<table width="100%" bgcolor="#AAA" cellspacing="6" cellpadding="0" class="panel">
+				  <tr>
+				    <td height="120"></td>  
+				    <td width="100%">
 		  		    	<span jwcid="collectionEditor"  />
-				    </span>
-			    </div>
-			</span>	
+				    </td>
+				  </tr>
+				</table>
+		      </span>
+		    </div>
 		</span>
     </form>
 </span>

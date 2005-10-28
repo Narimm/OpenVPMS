@@ -12,7 +12,7 @@
     <property name="descriptor"/>
 
     <component id="any" type="Any" inherit-informal-parameters="yes" />
-    <component id="foreach" type="For">
+    <component id="foreach" type="Foreach">
         <binding name="source" value="page.simpleDescriptors"/>
         <binding name="value" value="descriptor"/>
     </component>

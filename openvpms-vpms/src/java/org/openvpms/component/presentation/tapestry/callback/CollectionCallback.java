@@ -24,7 +24,9 @@ import ognl.Ognl;
 import ognl.OgnlException;
 
 import org.apache.hivemind.ApplicationRuntimeException;
+import org.apache.tapestry.IRequestCycle;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.presentation.tapestry.page.EditPage;
 
 /**
  *
@@ -36,9 +38,7 @@ public class CollectionCallback extends EditCallback
     private static final long serialVersionUID = 1L;
 
     private NodeDescriptor descriptor;
-	
-	private boolean childRelationship;
-    
+       
     /**
      * @param pageName
      * @param model
@@ -77,14 +77,14 @@ public class CollectionCallback extends EditCallback
         }
     }
 
-    public boolean isChildRelationship()
-    {
-        return childRelationship;
-    }
-    
-
-    public void setChildRelationship(boolean child)
-    {
-        this.childRelationship = child;
+    public void performCallback(IRequestCycle cycle) {
+        // Find the Page for the stored Page Name
+        EditPage editPage = (EditPage) cycle.getPage(pageName);
+        // Set the model
+        editPage.setModel(model);
+        // Set the Active tabe
+        editPage.setCurrentActiveTab(descriptor.getDisplayName());
+        //Activate the Page
+        cycle.activate(editPage);
     }
 }
