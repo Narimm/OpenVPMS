@@ -83,16 +83,16 @@ public class NodeDescriptorTestCase extends BaseTestCase {
         
         // load the archetypes
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
         // test that the archetype display name defaults to the name
         ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptors()[0];
+                    .getArchetypeDescriptorsAsArray()[0];
         assertTrue(descriptor.getDisplayName().equals(descriptor.getName()));
         
         // iterate through the top level nodes and enusre that the 
         // display name is not null
-        for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
+        for (NodeDescriptor node : descriptor.getNodeDescriptorsAsArray()) {
             assertTrue(StringUtils.isEmpty(node.getDisplayName()) == false);
         }
     }
@@ -108,15 +108,15 @@ public class NodeDescriptorTestCase extends BaseTestCase {
         
         // load the archetypes
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
         // test that the archetype display name defaults to the name
         ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptors()[0];
+                    .getArchetypeDescriptorsAsArray()[0];
         
         // iterate through the top level nodes and enusre that the 
         // display name defaults to the name
-        for (NodeDescriptor node : descriptor.getNodeDescriptors()) {
+        for (NodeDescriptor node : descriptor.getNodeDescriptorsAsArray()) {
             assertTrue(node.getMaxLength() == NodeDescriptor.DEFAULT_MAX_LENGTH);
         }
     }
@@ -133,9 +133,9 @@ public class NodeDescriptorTestCase extends BaseTestCase {
                 "testIsLookup", "normal", "nodeName");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
-        NodeDescriptor ndesc = descriptors.getArchetypeDescriptors()[0]
+        NodeDescriptor ndesc = descriptors.getArchetypeDescriptorsAsArray()[0]
                          .getNodeDescriptor(nodeName);
         assertTrue(ndesc.isLookup());
         
@@ -153,9 +153,9 @@ public class NodeDescriptorTestCase extends BaseTestCase {
                 "testIsHidden", "normal", "nodeName");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
         NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
         assertTrue(ndesc != null);
         assertTrue(ndesc.isHidden());
@@ -175,9 +175,9 @@ public class NodeDescriptorTestCase extends BaseTestCase {
                 "testArchetypeRange", "normal", "nodeName");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
         NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
         assertTrue(ndesc != null);
         assertTrue(ndesc.getArchetypeRange().length == 2);
@@ -196,12 +196,33 @@ public class NodeDescriptorTestCase extends BaseTestCase {
                 "testMaxCardinality", "normal", "nodeName");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
         NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
         assertTrue(ndesc != null);
         assertTrue(ndesc.getMaxCardinality() == NodeDescriptor.UNBOUNDED);
+    }
+    
+    /**
+     * Test that the parent child node attribute works correctly 
+     */
+    public void testParentChildAttribute()
+    throws Exception {
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)this.getTestData().getTestCaseParameter(
+                "testParentChildAttribute", "normal", "archetypeFile");
+        String nodeName = (String)this.getTestData().getTestCaseParameter(
+                "testParentChildAttribute", "normal", "nodeName");
+        
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
+        
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
+        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
+        assertTrue(ndesc != null);
+        assertTrue(ndesc.isParentChild() == true);
     }
     
     /**

@@ -80,7 +80,7 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         
         // load the archetypes
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptorsAsMap().size() == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
     }
 
     /**
@@ -109,9 +109,9 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         String afile = (String)gparams.get("archetypeFile");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
         List<NodeDescriptor> ndesc = adesc.getAllNodeDescriptors();
         assertTrue(ndesc.size() == 7);
     }
@@ -127,9 +127,9 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         String afile = (String)gparams.get("archetypeFile");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors()[0];
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
         assertTrue(adesc.getNodeDescriptor(NodeDescriptor.IDENTIFIER_NODE_NAME) != null);
     }
     
@@ -144,8 +144,8 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
                 "testGetNodeDescriptorMethods", "normal", "archetypeFile");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().length == 1);
-        ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptors()[0];
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
+        ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptorsAsArray()[0];
         assertTrue(descriptor.getArchetypeId().getShortName().equals("person.person"));
         assertTrue(descriptor.getAllNodeDescriptors().size() == 10);
         assertTrue(descriptor.getSimpleNodeDescriptors().size() == 7);

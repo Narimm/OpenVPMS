@@ -251,10 +251,10 @@ public class ArchetypeService implements IArchetypeService {
 
         // if there are nodes attached to the archetype then validate the
         // associated assertions
-        if (descriptor.getNodeDescriptors().length > 0) {
+        if (descriptor.getNodeDescriptors().size() > 0) {
             JXPathContext context = JXPathContext.newContext(object);
             context.setLenient(true);
-            validateObject(context, descriptor.getNodeDescriptorsAsMap(), errors);
+            validateObject(context, descriptor.getNodeDescriptors(), errors);
         }
 
         /**
@@ -391,9 +391,9 @@ public class ArchetypeService implements IArchetypeService {
             }
             
             if ((value != null) &&
-                (node.getAssertionDescriptors().length > 0)){
+                (node.getAssertionDescriptorsAsArray().length > 0)){
                 // only check the assertions for non-null values
-                for (AssertionDescriptor assertion : node.getAssertionDescriptors()) {
+                for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
                     AssertionTypeDescriptor assertionType = assertionTypes
                             .get(assertion.getType());
                     try {
@@ -417,8 +417,8 @@ public class ArchetypeService implements IArchetypeService {
             }
 
             // if this node has other nodes then re-enter this method
-            if (node.getNodeDescriptors().length > 0) {
-                validateObject(context, node.getNodeDescriptorsAsMap(), errors);
+            if (node.getNodeDescriptors().size() > 0) {
+                validateObject(context, node.getNodeDescriptors(), errors);
             }
         }
     }
@@ -540,7 +540,7 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException
      */
     private void processArchetypeDescriptors(ArchetypeDescriptors descriptors) {
-        for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptors()) {
+        for (ArchetypeDescriptor descriptor : descriptors.getArchetypeDescriptorsAsArray()) {
             ArchetypeId archId = descriptor.getArchetypeId();
             
             if (logger.isDebugEnabled()) {
@@ -576,8 +576,8 @@ public class ArchetypeService implements IArchetypeService {
             }
 
             // check that the assertions are specified correctly
-            if (descriptor.getNodeDescriptors().length > 0) {
-                checkAssertionsInNode(descriptor.getNodeDescriptorsAsMap());
+            if (descriptor.getNodeDescriptors().size() > 0) {
+                checkAssertionsInNode(descriptor.getNodeDescriptors());
             }
         }
     }
@@ -595,7 +595,7 @@ public class ArchetypeService implements IArchetypeService {
         Iterator niter = nodes.values().iterator();
         while (niter.hasNext()) {
             NodeDescriptor node = (NodeDescriptor)niter.next();
-            for (AssertionDescriptor assertion : node.getAssertionDescriptors()) {
+            for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
                 if (!assertionTypes.containsKey(assertion.getType())) {
                     logger.warn("Attempting to find [" + assertion.getType() 
                             + " in [" + assertionTypes + "]");
@@ -605,8 +605,8 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
 
-            if (node.getNodeDescriptors().length > 0) {
-                checkAssertionsInNode(node.getNodeDescriptorsAsMap());
+            if (node.getNodeDescriptors().size() > 0) {
+                checkAssertionsInNode(node.getNodeDescriptors());
             }
         }
     }
@@ -645,7 +645,7 @@ public class ArchetypeService implements IArchetypeService {
             // in the archetype
             JXPathContext context = JXPathContext.newContext(obj);
             context.setFactory(new JXPathGenericObjectCreationFactory());
-            createDefaultObject(context, descriptor.getNodeDescriptorsAsMap());
+            createDefaultObject(context, descriptor.getNodeDescriptors());
         } catch (Exception exception) {
             // rethrow as a runtime exception
             throw new ArchetypeServiceException(
@@ -702,8 +702,8 @@ public class ArchetypeService implements IArchetypeService {
 
             // if this node has children then process them
             // recursively
-            if (node.getNodeDescriptors().length > 0) {
-                createDefaultObject(context, node.getNodeDescriptorsAsMap());
+            if (node.getNodeDescriptors().size() > 0) {
+                createDefaultObject(context, node.getNodeDescriptors());
             }
         }
     }

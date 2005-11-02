@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!--
+	#  Version: 1.0
+	#
+	#  The contents of this file are subject to the OpenVPMS License Version
+	#  1.0 (the 'License'); you may not use this file except in compliance with
+	#  the License. You may obtain a copy of the License at
+	#  http://www.openvpms.org/license/
+	#
+	#  Software distributed under the License is distributed on an 'AS IS' basis,
+	#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+	#  for the specific language governing rights and limitations under the
+	#  License.
+	#
+	#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+	#
+	#  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class
+		name="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor"
+		table="node_descriptor">
+		<id name="uid" type="long" unsaved-value="-1">
+			<column name="node_desc_id"
+				index="node_desc_id_idx" />
+			<generator class="increment" />
+		</id>
+		<version name="version" access="property" type="long" />
+		<property name="linkId" access="property" type="string" />
+		<property name="name" access="property" column="name"
+			type="string" not-null="true" />
+		<property name="displayName" access="property" column="display_name"
+			type="string" />
+		<property name="type" access="property" column="type"
+			type="string" not-null="true"/>
+		<property name="path" access="property" column="path"
+			type="string" not-null="true"/>
+		<property name="baseName" access="property" column="base_name"
+			type="string" />
+		<property name="defaultValue" access="property" column="default_name"
+			type="string" />
+		<property name="derivedValue" access="property" column="derived_value"
+			type="string" />
+		<property name="hidden" access="property" column="hidden"
+			type="boolean" />
+		<property name="derived" access="property" column="derived"
+			type="boolean" />
+		<property name="parentChild" access="property" column="parent_child"
+			type="boolean" />
+		<property name="minCardinality" access="property" column="min_cardinality"
+			type="integer" />
+		<property name="maxCardinality" access="property" column="max_cardinality"
+			type="integer" />
+		<property name="minLength" access="property" column="min_length"
+			type="integer" />
+		<property name="maxLength" access="property" column="max_length"
+			type="integer" />
+		<map name="nodeDescriptors" access="property" lazy="false"
+			table="node_descriptor" cascade="all">
+			<key column="parent_id" />
+			<map-key column="name" type="string" />
+			<one-to-many
+				class="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor" />
+		</map>
+		<map name="assertionDescriptor" access="property" lazy="false"
+			table="assertion_descriptor" cascade="all">
+			<key column="node_desc_id" />
+			<map-key column="type" type="string" />
+			<one-to-many
+				class="org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor" />
+		</map>
+	</class>
+
+	<query name="nodeDescriptor.getRowCount">
+		<![CDATA[
+			select count(nodeDescriptor) from org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor as 
+			nodeDescriptor
+		]]>
+	</query>
+
+</hibernate-mapping>

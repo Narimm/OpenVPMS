@@ -98,15 +98,15 @@ public class JXPathTestCase extends BaseTestCase {
         NodeDescriptor ndesc = adesc.getNodeDescriptor("firstName");
         assertTrue(ndesc != null);
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptorsAsMap/firstName/string")).booleanValue());
+                "nodeDescriptors/firstName/string")).booleanValue());
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptorsAsMap/lastName/string")).booleanValue());
+                "nodeDescriptors/lastName/string")).booleanValue());
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptorsAsMap/lastName/identifier")).booleanValue() == false);
+                "nodeDescriptors/lastName/identifier")).booleanValue() == false);
         assertTrue(((Boolean) getValue(adesc,
-                "boolean(nodeDescriptorsAsMap/lastName/string)"))
+                "boolean(nodeDescriptors/lastName/string)"))
                 .booleanValue());
-        assertTrue(getValue(adesc, "nodeDescriptorsAsMap/jimbo") == null);
+        assertTrue(getValue(adesc, "nodeDescriptors/jimbo") == null);
     }
 
     /**
@@ -124,18 +124,18 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(page != null);
 
         assertTrue(getValue(page,
-                "pathToObject(model,  node/nodeDescriptorsAsMap/lastName/path)")
+                "pathToObject(model,  node/nodeDescriptors/lastName/path)")
                 .equals("alateras"));
         assertTrue(getValue(page,
-                "pathToObject(model,  node/nodeDescriptorsAsMap/firstName/path)")
+                "pathToObject(model,  node/nodeDescriptors/firstName/path)")
                 .equals("jim"));
 
         setValue(
                 page,
-                "pathToObject(model,  node/nodeDescriptorsAsMap/firstName/path)",
+                "pathToObject(model,  node/nodeDescriptors/firstName/path)",
                 "Bernie");
         assertTrue(getValue(page,
-                "pathToObject(model,  node/nodeDescriptorsAsMap/firstName/path)")
+                "pathToObject(model,  node/nodeDescriptors/firstName/path)")
                 .equals("Bernie"));
     }
 
@@ -147,15 +147,15 @@ public class JXPathTestCase extends BaseTestCase {
                 .getArchetypeDescriptor("person.person");
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptorsAsMap/firstName/string and nodeDescriptorsAsMap/lastName/string"))
+                "nodeDescriptors/firstName/string and nodeDescriptors/lastName/string"))
                 .booleanValue());
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptorsAsMap/firstName/string and not(nodeDescriptorsAsMap/lastName/string)"))
+                "nodeDescriptors/firstName/string and not(nodeDescriptors/lastName/string)"))
                 .booleanValue() == false);
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptorsAsMap/firstName/string and not(nodeDescriptorsAsMap/firstName/number)"))
+                "nodeDescriptors/firstName/string and not(nodeDescriptors/firstName/number)"))
                 .booleanValue());
     }
 

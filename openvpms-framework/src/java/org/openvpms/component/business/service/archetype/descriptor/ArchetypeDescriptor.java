@@ -20,7 +20,6 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,7 +41,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeDescriptor implements Serializable {
+public class ArchetypeDescriptor extends Descriptor {
     /**
      * Define a logger for this class
      */
@@ -148,7 +147,7 @@ public class ArchetypeDescriptor implements Serializable {
      *  
      * @return NodeDescriptor[]
      */
-    public NodeDescriptor[] getNodeDescriptors() {
+    public NodeDescriptor[] getNodeDescriptorsAsArray() {
         return (NodeDescriptor[])nodeDescriptors.values().toArray(
                 new NodeDescriptor[nodeDescriptors.size()]);
     }
@@ -198,7 +197,7 @@ public class ArchetypeDescriptor implements Serializable {
      */
     public List<NodeDescriptor> getAllNodeDescriptors() {
         List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
-        getAllNodeDescriptors(getNodeDescriptors(), nodes);
+        getAllNodeDescriptors(getNodeDescriptorsAsArray(), nodes);
         
         return nodes;
     }
@@ -208,14 +207,21 @@ public class ArchetypeDescriptor implements Serializable {
      * descriptor
      * @return Returns the nodeDescriptors.
      */
-    public Map<String, NodeDescriptor> getNodeDescriptorsAsMap() {
+    public Map<String, NodeDescriptor> getNodeDescriptors() {
         return this.nodeDescriptors;
     }
 
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
-    public void setNodeDescriptors(NodeDescriptor[] nodeDescriptors) {
+    public void setNodeDescriptors(Map<String, NodeDescriptor> nodeDescriptors) {
+        this.nodeDescriptors = nodeDescriptors;
+    }
+
+    /**
+     * @param nodeDescriptors The nodeDescriptors to set.
+     */
+    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodeDescriptors) {
         this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
         for (NodeDescriptor descriptor : nodeDescriptors) {
             this.nodeDescriptors.put(descriptor.getName(), descriptor);
@@ -260,7 +266,7 @@ public class ArchetypeDescriptor implements Serializable {
      * @return NodeDescriptor
      */
     public NodeDescriptor getNodeDescriptor(String name) {
-        return findNodeDescriptorWithName(getNodeDescriptors(), name);
+        return findNodeDescriptorWithName(getNodeDescriptorsAsArray(), name);
     }
 
     /**
@@ -333,9 +339,9 @@ public class ArchetypeDescriptor implements Serializable {
                 return node;
             }
             
-            if (node.getNodeDescriptors().length > 0) {
+            if (node.getNodeDescriptorsAsArray().length > 0) {
                 NodeDescriptor result = findNodeDescriptorWithName(
-                        node.getNodeDescriptors(), name);
+                        node.getNodeDescriptorsAsArray(), name);
                 if (result != null) {
                     return result;
                 }
@@ -358,8 +364,9 @@ public class ArchetypeDescriptor implements Serializable {
             List<NodeDescriptor> nodes) {
         for (NodeDescriptor descriptor : descriptors) {
             nodes.add(descriptor);
-            if (descriptor.getNodeDescriptors().length > 0) {
-                getAllNodeDescriptors(descriptor.getNodeDescriptors(), nodes);
+            if (descriptor.getNodeDescriptorsAsArray().length > 0) {
+                getAllNodeDescriptors(descriptor.getNodeDescriptorsAsArray(), 
+                        nodes);
             }
         }
     }

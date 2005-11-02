@@ -22,7 +22,7 @@ package org.openvpms.component.business.service.archetype.assertion;
 import java.util.Map;
 
 import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.AssertionProperty;
+import org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
@@ -53,7 +53,7 @@ public class StringAssertions {
      */
     public static boolean withinMaxLength(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertiesAsMap();
+        Map properties = assertion.getPropertyDescriptors();
         String str = (String)target;
         int maxLength = Integer.parseInt((String)properties.get("maxLength"));
         
@@ -72,8 +72,8 @@ public class StringAssertions {
      */
     public static boolean regularExpressionMatch(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map<String, AssertionProperty> properties = 
-            assertion.getPropertiesAsMap();
+        Map<String, PropertyDescriptor> properties = 
+            assertion.getPropertyDescriptors();
         String str = (String)target;
         String regExpr = (String)properties.get("expression").getValue();
         

@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+	#  Version: 1.0
+	#
+	#  The contents of this file are subject to the OpenVPMS License Version
+	#  1.0 (the 'License'); you may not use this file except in compliance with
+	#  the License. You may obtain a copy of the License at
+	#  http://www.openvpms.org/license/
+	#
+	#  Software distributed under the License is distributed on an 'AS IS' basis,
+	#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+	#  for the specific language governing rights and limitations under the
+	#  License.
+	#
+	#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+	#
+	#  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class
+		name="org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor"
+		table="property_descriptor">
+		<id name="uid" type="long" unsaved-value="-1">
+			<column name="property_desc_id"
+				index="property_desc_id_idx" />
+			<generator class="increment" />
+		</id>
+		<version name="version" access="property" type="long" />
+		<property name="linkId" access="property" type="string" />
+		<property name="key" access="property" column="key_name"
+			type="string" />
+ave		<property name="type" access="property" column="property_type"
+			type="string" />
+		<property name="value" access="property" column="value_name"
+			type="string" />
+	</class>
+
+	<query name="propertyDescriptor.getRowCount">
+		<![CDATA[
+			select count(propertyDescriptor) from org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor as 
+			propertyDescriptor
+		]]>
+	</query>
+
+</hibernate-mapping>

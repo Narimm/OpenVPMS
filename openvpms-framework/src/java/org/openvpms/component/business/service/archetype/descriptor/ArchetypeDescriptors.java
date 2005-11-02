@@ -53,14 +53,14 @@ public class ArchetypeDescriptors implements Serializable {
      * 
      * @return Returns the archetypeDescriptors.
      */
-    public Map<String, ArchetypeDescriptor> getArchetypeDescriptorsAsMap() {
+    public Map<String, ArchetypeDescriptor> getArchetypeDescriptors() {
         return archetypeDescriptors;
     }
 
     /**
      * @return Returns the archetypeDescriptors.
      */
-    public ArchetypeDescriptor[] getArchetypeDescriptors() {
+    public ArchetypeDescriptor[] getArchetypeDescriptorsAsArray() {
         return (ArchetypeDescriptor[])archetypeDescriptors.values().toArray(
                 new ArchetypeDescriptor[archetypeDescriptors.size()]);
     }
@@ -68,10 +68,18 @@ public class ArchetypeDescriptors implements Serializable {
     /**
      * @param archetypeDescriptors The archetypeDescriptors to set.
      */
-    public void setArchetypeDescriptors(ArchetypeDescriptor[] archetypes) {
+    public void setArchetypeDescriptorsAsArray(ArchetypeDescriptor[] archetypes) {
         archetypeDescriptors = new HashMap<String, ArchetypeDescriptor>();
         for (ArchetypeDescriptor descriptor : archetypes) {
             archetypeDescriptors.put(descriptor.getName(), descriptor);
         }
+    }
+
+    /**
+     * @param archetypeDescriptors The archetypeDescriptors to set.
+     */
+    public void setArchetypeDescriptors(
+            HashMap<String, ArchetypeDescriptor> archetypeDescriptors) {
+        this.archetypeDescriptors = archetypeDescriptors;
     }
 }

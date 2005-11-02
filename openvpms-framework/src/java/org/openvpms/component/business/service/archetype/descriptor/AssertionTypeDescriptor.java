@@ -20,7 +20,6 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
-import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
@@ -30,7 +29,7 @@ import java.lang.reflect.Method;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class AssertionTypeDescriptor implements Serializable {
+public class AssertionTypeDescriptor  extends Descriptor {
 
     /**
      * Default SUID

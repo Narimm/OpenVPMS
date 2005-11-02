@@ -52,7 +52,7 @@ public class LookupAssertions {
      */
     public static boolean isStringValueInList(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertiesAsMap();
+        Map properties = assertion.getPropertyDescriptors();
         return (properties == null) ? false : 
             properties.containsKey((String)target);
     }

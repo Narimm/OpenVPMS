@@ -20,7 +20,6 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +28,7 @@ import java.util.Map;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class AssertionDescriptor implements Serializable {
+public class AssertionDescriptor extends Descriptor {
 
     /**
      * Default SUID
@@ -52,8 +51,8 @@ public class AssertionDescriptor implements Serializable {
      * properties are in the form of key value pairs but in some instances it
      * may only be necessary to specify the value.
      */
-    private HashMap<String, AssertionProperty> properties = 
-        new HashMap<String, AssertionProperty>();
+    private HashMap<String, PropertyDescriptor> propertyDescriptors = 
+        new HashMap<String, PropertyDescriptor>();
 
     /**
      * Default constructor
@@ -93,25 +92,33 @@ public class AssertionDescriptor implements Serializable {
      * Return the properties as a map
      * @return Returns the properties.
      */
-    public Map<String, AssertionProperty> getPropertiesAsMap() {
-        return properties;
+    public Map<String, PropertyDescriptor> getPropertyDescriptors() {
+        return propertyDescriptors;
+    }
+
+    /**
+     * @param propertyDescriptors The propertyDescriptors to set.
+     */
+    public void setPropertyDescriptors(
+            HashMap<String, PropertyDescriptor> propertyDescriptors) {
+        this.propertyDescriptors = propertyDescriptors;
     }
 
     /**
      * @return Returns the properties.
      */
-    public AssertionProperty[] getProperties() {
-        return (AssertionProperty[])properties.values().toArray(
-                new AssertionProperty[properties.size()]);
+    public PropertyDescriptor[] getPropertyDescriptorsAsArray() {
+        return (PropertyDescriptor[])propertyDescriptors.values().toArray(
+                new PropertyDescriptor[propertyDescriptors.size()]);
     }
 
     /**
      * @param properties The properties to set.
      */
-    public void setProperties(AssertionProperty[] properties) {
-        this.properties = new HashMap<String, AssertionProperty>();
-        for (AssertionProperty property : properties) {
-            this.properties.put(property.getKey(), property);
+    public void setPropertyDescriptorsAsArray(PropertyDescriptor[] properties) {
+        this.propertyDescriptors = new HashMap<String, PropertyDescriptor>();
+        for (PropertyDescriptor property : properties) {
+            this.propertyDescriptors.put(property.getKey(), property);
         }
     }
 }

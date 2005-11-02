@@ -269,6 +269,26 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             closeSession();
         }
     }
+    
+    /**
+     * Test case for OVPMS37
+     */
+    public void testOVPMS37()
+    throws Exception {
+        Contact contact = new Contact(createContactArchetypeId());
+        contact.addAddress(createAddress()); 
+
+        Address address = contact.getAddressesAsArray()[0];
+        assertTrue(address != null);
+        
+        // add another element to the addresss
+        address.getDetails().setAttribute("mobile", "04222368612");
+        
+        // adding the address to the contact should be cool since it
+        // should replace the older object
+        contact.addAddress(address);
+        assertTrue(contact.getNumOfAddresses() == 1);
+    }
 
     /**
      * Retrieve the contact with the specified id

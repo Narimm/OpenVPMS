@@ -34,9 +34,8 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.AssertionProperty;
+import org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.entity.EntityServiceException;
 
 /**
  * 
@@ -296,15 +295,15 @@ public class LookupService implements ILookupService {
 
         if (descriptor.isLookup()) {
             Map<String, AssertionDescriptor> assertions = 
-                descriptor.getAssertionDescriptorsAsMap();
+                descriptor.getAssertionDescriptors();
             
             if (assertions.containsKey("lookup")) {
                 AssertionDescriptor assertion = assertions.get("lookup");
                 
                 // This is a remote lookup
-                String type = (String) assertion.getPropertiesAsMap()
+                String type = (String) assertion.getPropertyDescriptors()
                     .get("type").getValue();
-                String concept = (String) assertion.getPropertiesAsMap()
+                String concept = (String) assertion.getPropertyDescriptors()
                     .get("concept").getValue();
 
                 if ((StringUtils.isEmpty(type)) || 
@@ -316,7 +315,7 @@ public class LookupService implements ILookupService {
                 
                 if (type.equals("lookup")) {
                     lookups = dao.getLookupsByConcept(assertion
-                            .getPropertiesAsMap().get("concept").getValue());
+                            .getPropertyDescriptors().get("concept").getValue());
                 } else {
                     // invalid lookup type throw an exception
                     throw new LookupServiceException(
@@ -328,7 +327,7 @@ public class LookupService implements ILookupService {
                 // TODO This is very inefficient..we should cache them in
                 // this service
                 AssertionDescriptor assertion = assertions.get("lookup.local");
-                for (AssertionProperty prop : assertion.getProperties()) {
+                for (PropertyDescriptor prop : assertion.getPropertyDescriptorsAsArray()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
                             .getKey(), prop.getValue()));
                 }
@@ -353,14 +352,14 @@ public class LookupService implements ILookupService {
 
         if (descriptor.isLookup()) {
             Map<String, AssertionDescriptor> assertions = 
-                descriptor.getAssertionDescriptorsAsMap();
+                descriptor.getAssertionDescriptors();
             
             if (assertions.containsKey("lookup")) {
                 // This is a remote lookup
                 AssertionDescriptor assertion = assertions.get("lookup");
-                String type = (String) assertion.getPropertiesAsMap().get(
+                String type = (String) assertion.getPropertyDescriptors().get(
                         "type").getValue();
-                String concept = (String) assertion.getPropertiesAsMap().get(
+                String concept = (String) assertion.getPropertyDescriptors().get(
                         "concept").getValue();
 
                 // if the type and concept properties are not specified
@@ -375,7 +374,7 @@ public class LookupService implements ILookupService {
                 if (type.equals("lookup")) {
                     lookups = dao.getLookupsByConcept(concept);
                 } else if (type.equals("targetLookup")) {
-                    String source = (String) assertion.getPropertiesAsMap()
+                    String source = (String) assertion.getPropertyDescriptors()
                             .get("source").getValue();
                     if (StringUtils.isEmpty(source)) {
                         throw new LookupServiceException(
@@ -386,7 +385,7 @@ public class LookupService implements ILookupService {
                     lookups = dao.getTargetLookups(concept, (String)JXPathContext
                             .newContext(object).getValue(source));
                 } else if (type.equals("sourceLookup")) {
-                    String target = (String) assertion.getPropertiesAsMap()
+                    String target = (String) assertion.getPropertyDescriptors()
                             .get("target").getValue();
                     if (StringUtils.isEmpty(target)) {
                         throw new LookupServiceException(
@@ -407,7 +406,7 @@ public class LookupService implements ILookupService {
                 // TODO This is very inefficient..we should cache them in
                 // this service
                 AssertionDescriptor assertion = assertions.get("lookup.local");
-                for (AssertionProperty prop : assertion.getProperties()) {
+                for (PropertyDescriptor prop : assertion.getPropertyDescriptorsAsArray()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
                             .getKey(), prop.getValue()));
                 }

@@ -19,7 +19,6 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -44,7 +43,7 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvD
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class NodeDescriptor implements Serializable {
+public class NodeDescriptor  extends Descriptor {
     /**
      * Define a logger for this class
      */
@@ -121,6 +120,13 @@ public class NodeDescriptor implements Serializable {
      * The default value
      */
     private String defaultValue;
+    
+    /**
+     * Denote whether the complex node has a parentChild
+     * relationship. In this type of relationship the lifecycle of the
+     * child is controlled by the parent. 
+     */
+    private boolean parentChild;
 
     /**
      * The minimum cardinality, which defaults to 0
@@ -349,6 +355,20 @@ public class NodeDescriptor implements Serializable {
     }
 
     /**
+     * @return Returns the parentChild.
+     */
+    public boolean isParentChild() {
+        return parentChild;
+    }
+
+    /**
+     * @param parentChild The parentChild to set.
+     */
+    public void setParentChild(boolean parentChild) {
+        this.parentChild = parentChild;
+    }
+
+    /**
      * @return Returns the minLength.
      */
     public int getMinLength() {
@@ -404,14 +424,14 @@ public class NodeDescriptor implements Serializable {
      * 
      * @return Returns the assertionDescriptors.
      */
-    public Map<String, AssertionDescriptor> getAssertionDescriptorsAsMap() {
+    public Map<String, AssertionDescriptor> getAssertionDescriptors() {
         return assertionDescriptors;
     }
 
     /**
      * Return the assertion descriptors as a map
      */
-    public AssertionDescriptor[] getAssertionDescriptors() {
+    public AssertionDescriptor[] getAssertionDescriptorsAsArray() {
         return (AssertionDescriptor[])assertionDescriptors.values().toArray(
                 new AssertionDescriptor[assertionDescriptors.size()]);
     }
@@ -420,7 +440,7 @@ public class NodeDescriptor implements Serializable {
      * @param assertionDescriptors
      *            The assertionDescriptors to set.
      */
-    public void setAssertionDescriptors(AssertionDescriptor[] assertionDescriptors) {
+    public void setAssertionDescriptorsAsArray(AssertionDescriptor[] assertionDescriptors) {
         this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
         for (AssertionDescriptor descriptor : assertionDescriptors) {
             this.assertionDescriptors.put(descriptor.getType(), descriptor);
@@ -430,7 +450,7 @@ public class NodeDescriptor implements Serializable {
     /**
      * @return Returns the nodeDescriptors.
      */
-    public NodeDescriptor[] getNodeDescriptors() {
+    public NodeDescriptor[] getNodeDescriptorsAsArray() {
         return (NodeDescriptor[])nodeDescriptors.values().toArray(
                 new NodeDescriptor[nodeDescriptors.size()]);
     }
@@ -440,14 +460,29 @@ public class NodeDescriptor implements Serializable {
      * descriptor
      * @return Returns the nodeDescriptors.
      */
-    public Map<String, NodeDescriptor> getNodeDescriptorsAsMap() {
+    public Map<String, NodeDescriptor> getNodeDescriptors() {
         return this.nodeDescriptors;
+    }
+
+    /**
+     * @param assertionDescriptors The assertionDescriptors to set.
+     */
+    public void setAssertionDescriptors(
+            Map<String, AssertionDescriptor> assertionDescriptors) {
+        this.assertionDescriptors = assertionDescriptors;
     }
 
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
-    public void setNodeDescriptors(NodeDescriptor[] nodeDescriptors) {
+    public void setNodeDescriptors(Map<String, NodeDescriptor> nodeDescriptors) {
+        this.nodeDescriptors = nodeDescriptors;
+    }
+
+    /**
+     * @param nodeDescriptors The nodeDescriptors to set.
+     */
+    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodeDescriptors) {
         this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
         for (NodeDescriptor descriptor : nodeDescriptors) {
             this.nodeDescriptors.put(descriptor.getName(), descriptor);
@@ -635,7 +670,7 @@ public class NodeDescriptor implements Serializable {
                 assertionDescriptors.get("numericRange");
             if (descriptor != null) {
              number = NumberUtils.createNumber((String)
-                     descriptor.getPropertiesAsMap().get("maxValue").getValue());    
+                     descriptor.getPropertyDescriptors().get("maxValue").getValue());    
             }
         } else {
             throw new DescriptorException(
@@ -662,7 +697,7 @@ public class NodeDescriptor implements Serializable {
                 assertionDescriptors.get("numericRange");
             if (descriptor != null) {
              number = NumberUtils.createNumber((String)
-                     descriptor.getPropertiesAsMap().get("minValue").getValue());    
+                     descriptor.getPropertyDescriptors().get("minValue").getValue());    
             }
         } else {
             throw new DescriptorException(
@@ -685,7 +720,7 @@ public class NodeDescriptor implements Serializable {
             AssertionDescriptor descriptor = (AssertionDescriptor)
                 assertionDescriptors.get("regularExpression");
             if (descriptor != null) {
-             expression = (String)descriptor.getPropertiesAsMap()
+             expression = (String)descriptor.getPropertyDescriptors()
                  .get("expression").getValue();    
             }
         } else {
@@ -708,8 +743,8 @@ public class NodeDescriptor implements Serializable {
         AssertionDescriptor descriptor = (AssertionDescriptor)
             assertionDescriptors.get("validArchetypes");
         if (descriptor != null) {
-            return (String[])descriptor.getPropertiesAsMap().keySet().toArray(
-                    new String[descriptor.getPropertiesAsMap().size()]);
+            return (String[])descriptor.getPropertyDescriptors().keySet().toArray(
+                    new String[descriptor.getPropertyDescriptors().size()]);
         } else {
             return new String[0];
         }        
@@ -729,7 +764,7 @@ public class NodeDescriptor implements Serializable {
         if (assertionDescriptors.containsKey("archetypeRange")) {
             ArrayList<String> range = new ArrayList<String>();
             AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
-            for (AssertionProperty property : desc.getProperties()) {
+            for (PropertyDescriptor property : desc.getPropertyDescriptorsAsArray()) {
                 range.add(property.getKey());
             }
             
