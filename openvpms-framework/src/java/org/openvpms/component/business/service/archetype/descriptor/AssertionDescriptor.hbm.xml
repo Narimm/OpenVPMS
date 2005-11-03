@@ -34,7 +34,7 @@
 			type="string" not-null="true" />
 		<property name="errorMessage" access="property" column="error_message"
 			type="string" />
-		<map name="properties" access="property" lazy="false"
+		<map name="propertyDescriptors" access="property" lazy="false"
 			table="node_descriptor" cascade="all">
 			<key column="assertion_desc_id" />
 			<map-key column="key_name" type="string" />

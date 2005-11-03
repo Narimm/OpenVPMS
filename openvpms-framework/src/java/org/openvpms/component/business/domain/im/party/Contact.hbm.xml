@@ -72,4 +72,11 @@
 			contact
 		]]>
 	</query>
+	
+	<query name="contact.getRowCount">
+		<![CDATA[
+			select count(contact) from org.openvpms.component.business.domain.im.party.Contact as 
+			contact
+		]]>
+	</query>
 </hibernate-mapping>

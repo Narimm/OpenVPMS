@@ -166,7 +166,6 @@ public class Contact extends IMObject {
      *            the address to add
      */
     public void addAddress(Address address) {
-        address.addContact(this);
         addresses.add(address);
     }
 
@@ -176,7 +175,6 @@ public class Contact extends IMObject {
      * @param address
      */
     public void removeAddress(Address address) {
-        address.removeContact(this);
         addresses.remove(address);
     }
 }

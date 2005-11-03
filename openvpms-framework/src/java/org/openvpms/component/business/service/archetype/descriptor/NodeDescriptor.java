@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 // commons-lang
@@ -121,13 +122,6 @@ public class NodeDescriptor  extends Descriptor {
      */
     private String defaultValue;
     
-    /**
-     * Denote whether the complex node has a parentChild
-     * relationship. In this type of relationship the lifecycle of the
-     * child is controlled by the parent. 
-     */
-    private boolean parentChild;
-
     /**
      * The minimum cardinality, which defaults to 0
      */
@@ -355,17 +349,20 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
-     * @return Returns the parentChild.
+     * This is a convenience method that checks whether there 
+     * is a parent child relationship within this node. A 
+     * parent child relationship is one where the parent controls 
+     * the lifecycle of the child.
+     * <p>
+     * If the assetion type 'candidateChildren' is defined for this node
+     * then a parent child relationship does not exist and the assertion
+     * defines the list of candiate child objects for this collection.
+     * 
+     * @return boolean
      */
     public boolean isParentChild() {
-        return parentChild;
-    }
-
-    /**
-     * @param parentChild The parentChild to set.
-     */
-    public void setParentChild(boolean parentChild) {
-        this.parentChild = parentChild;
+        return isCollection() && !assertionDescriptors
+            .containsKey("candidateChildren");
     }
 
     /**
@@ -756,6 +753,7 @@ public class NodeDescriptor  extends Descriptor {
      * not have such an assertion then return a zero length string array
      * 
      * TODO Should we more this into a utility class
+     * TODO Change return type to List
      * 
      * @return String[]
      *            the array of short names
@@ -772,6 +770,48 @@ public class NodeDescriptor  extends Descriptor {
         } else {
             return new String[0];
         }
+    }
+    
+    /**
+     * Return a list of candiate children for the specified node. This is only 
+     * applicable for collection nodes. If the 'candidateChildren' assertion
+     * type is defined then use it to retrieve the list of children, otherwise
+     * return a null.
+     * 
+     * @param context
+     *            the context object 
+     * @return List
+     *            a list of candiate children, which can also be an empty list          
+     */
+    @SuppressWarnings("unchecked")
+    public List getCandidateChildren(IMObject context) {
+        AssertionDescriptor descriptor = assertionDescriptors.get("candidateChildren");
+        
+        // if not such descriptor is defined for this node then just
+        // return a null
+        if ((descriptor == null) ||
+            (descriptor.getPropertyDescriptors().containsKey("path") == false)) {
+            return null;
+        }
+
+        String path = descriptor.getPropertyDescriptors().get("path").getValue();
+        ArrayList result = null;
+        try {
+            Object obj = JXPathContext.newContext(context).getValue(path);
+            if (obj == null) {
+                result = new ArrayList();
+            } else if (obj instanceof Collection) {
+                result = new ArrayList((Collection)obj);
+            } else {
+                logger.warn("getCandidateChildren for path " + path +
+                        " returned object of type " + obj.getClass().getName());
+            }
+        } catch (Exception exception) {
+            logger.warn("Failed in getCandidateChildren for path " + path,
+                    exception);
+        }
+        
+        return result;
     }
     
     /**

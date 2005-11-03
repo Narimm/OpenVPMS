@@ -47,6 +47,12 @@ public abstract class Party extends Entity {
      * The list of contacts for the party
      */
     private Set<Contact> contacts = new HashSet<Contact>();
+    
+    /**
+     * The list of addresses for the party. The address' lifecycle is 
+     * controlled by the party object
+     */
+    private Set<Address> addresses = new HashSet<Address>();
 
     /**
      * Default Constructor
@@ -92,20 +98,60 @@ public abstract class Party extends Entity {
     }
     
     /**
-     * Convenience method to add a {@link Contact}
+     * Add the {@link Contact} to this party
      * 
      * @param contact
      *            contact to add
      */
     public void addContact(Contact contact) {
         contact.setParty(this);
-        this.contacts.add(contact);
+        contacts.add(contact);
     }
     
     /**
-     * Convenience method for removing a {@link Contact}
+     * Remove the {@link Contact} from this party.
+     * 
+     * @param contact
+     *            the contact to remove
      */
     public void removeContact(Contact contact) {
-        this.contacts.remove(contact);
+        contact.setParty(null);
+        contacts.remove(contact);
+    }
+
+    /**
+     * @return Returns the addresses.
+     */
+    public Set<Address> getAddresses() {
+        return addresses;
+    }
+
+    /**
+     * @param addresses The addresses to set.
+     */
+    public void setAddresses(Set<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+    /**
+     * Add an {@link Address} to party
+     * 
+     * @param address
+     *            address to add
+     */
+    public void addAddress(Address address) {
+        address.setParty(this);
+        addresses.add(address);
+    }
+    
+    /**
+     * Remove the {@link Address} from this party.
+     * 
+     * @param address
+     *            the address to remove
+     */
+    public void removeContact(Address address) {
+        address.setParty(null);
+        addresses.remove(address);
     }
 }

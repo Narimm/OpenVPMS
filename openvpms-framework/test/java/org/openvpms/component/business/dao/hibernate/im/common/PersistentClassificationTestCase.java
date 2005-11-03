@@ -27,6 +27,7 @@ import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Classification;
+import org.openvpms.component.business.domain.im.common.Entity;
 
 /**
  * Test the hierarchical Classification data structure
@@ -73,7 +74,8 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
         try {
             int acount = HibernateUtil.getTableRowCount(session, "classification");
 
-            Classification classification = createClassification();
+            Classification classification = createClassification(
+                    "testSimpleClassificationCreation");
 
             tx = session.beginTransaction();
             session.save(classification);
@@ -105,11 +107,11 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
                     session, "classification");
 
             tx = session.beginTransaction();
-            Classification parent = createClassification();
+            Classification parent = createClassification("parent");
             
-            Classification child1 = createClassification();
-            Classification child2 = createClassification();
-            Classification child3 = createClassification();
+            Classification child1 = createClassification("child1");
+            Classification child2 = createClassification("child2");
+            Classification child3 = createClassification("child3");
             
             parent.addChild(child1);
             parent.addChild(child2);
@@ -149,11 +151,11 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
             .getTableRowCount(session, "classification");
 
             tx = session.beginTransaction();
-            Classification parent = createClassification();
+            Classification parent = createClassification("parent");
 
-            Classification child1 = createClassification();
-            Classification child2 = createClassification();
-            Classification child3 = createClassification();
+            Classification child1 = createClassification("child1");
+            Classification child2 = createClassification("child2");
+            Classification child3 = createClassification("child3");
             
             parent.addChild(child1);
             parent.addChild(child2);
@@ -212,7 +214,7 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
                             "normal", "childrenPerLevel")).intValue();
 
             tx = session.beginTransaction();
-            Classification root = createClassification();
+            Classification root = createClassification("testMultipleLevelClassificationHierarchy");
             session.saveOrUpdate(root);
             createClassificationHierarchy(session, root, childrenPerLevel, 0, levels);
             tx.commit();
@@ -230,15 +232,136 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
             closeSession();
         }
     }
+    
+    /**
+     * Attach a classification to an entity
+     */
+    public void testCreateEntityClassification()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            int acount = HibernateUtil.getTableRowCount(session, "classification");
+
+            Classification classification = createClassification(
+                    "testCreateEntityClassification");
+
+            tx = session.beginTransaction();
+            session.save(classification);
+            tx.commit();
+
+            // ensure that there is one more classification entry
+            int acount1 = HibernateUtil
+                    .getTableRowCount(session, "classification");
+            assertTrue(acount1 == acount + 1);
+            
+            // create an entity
+            tx = session.beginTransaction();
+            Entity entity = createEntity("jima");
+            entity.addClassification(classification);
+            session.save(entity);
+            tx.commit();
+            
+            // check that the number of classifications is the same
+             acount1 = HibernateUtil
+                 .getTableRowCount(session, "classification");
+             assertTrue(acount1 == acount + 1);
+             
+             // retrieve the entity and ensure that there is only one
+             // classification
+             entity = (Entity)session.load(Entity.class, entity.getUid());
+             assertTrue(entity != null);
+             assertTrue(entity.getClassifications().size() == 1);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Attach a classification to an entity
+     */
+    public void testDeleteEntityClassification()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            int acount = HibernateUtil.getTableRowCount(session, "classification");
+
+            Classification classification = createClassification(
+                    "testCreateEntityClassification");
+
+            tx = session.beginTransaction();
+            session.save(classification);
+            tx.commit();
+
+            // ensure that there is one more classification entry
+            int acount1 = HibernateUtil
+                    .getTableRowCount(session, "classification");
+            assertTrue(acount1 == acount + 1);
+            
+            // create an entity
+            tx = session.beginTransaction();
+            Entity entity = createEntity("jima");
+            entity.addClassification(classification);
+            session.save(entity);
+            tx.commit();
+            
+            // check that the number of classifications is the same
+             acount1 = HibernateUtil
+                 .getTableRowCount(session, "classification");
+             assertTrue(acount1 == acount + 1);
+             
+             // retrieve the entity and ensure that there is only one
+             // classification
+             entity = (Entity)session.load(Entity.class, entity.getUid());
+             assertTrue(entity != null);
+             assertTrue(entity.getClassifications().size() == 1);
+             
+             // delete the classification on the entity
+             tx = session.beginTransaction();
+             entity = (Entity)session.load(Entity.class, entity.getUid());
+             entity.removeClassification(entity.getClassifications()
+                     .iterator().next());
+             tx.commit();
+             
+             // check the rows and object are cool
+             acount1 = HibernateUtil
+                 .getTableRowCount(session, "classification");
+             assertTrue(acount1 == acount + 1);
+             entity = (Entity)session.load(Entity.class, entity.getUid());
+             assertTrue(entity != null);
+             assertTrue(entity.getClassifications().size() == 0);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
 
     /**
+     * 
      * Return a default classification.
      * 
+     * @param name
+     *            the name of the classification
      * @return Classification
      * @thorws Exception
      */
-    private Classification createClassification() throws Exception {
-        return new Classification(createArchetypeId(), null, null);
+    private Classification createClassification(String name) throws Exception {
+        Classification classification =  new Classification(createArchetypeId(), null, null);
+        classification.setName(name);
+        
+        return classification;
     }
 
     /**
@@ -257,11 +380,12 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
      * @throws Exception
      *             propagate exception to caller
      */
-    public void createClassificationHierarchy(Session session,
+    private void createClassificationHierarchy(Session session,
             Classification parent, int numOfChildren, int level, int maxLevels)
             throws Exception {
         for (int cindex = 0; cindex < numOfChildren; cindex++) {
-            Classification child = createClassification();
+            Classification child = createClassification(
+                    "createClassificationHierarchy");
             parent.addChild(child);
             if ((level + 1) < maxLevels) {
                 createClassificationHierarchy(session, child, numOfChildren,
@@ -281,7 +405,7 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
      * @param targetLevel
      *            the final level           
      */
-    public Classification getClassification(Classification root, int currentLevel, 
+    private Classification getClassification(Classification root, int currentLevel, 
             int targetLevel) {
         if (currentLevel == targetLevel) {
             return root;
@@ -298,5 +422,17 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
      */
     private ArchetypeId createArchetypeId() {
         return new ArchetypeId("openvpms-party-classification.classification.1.0");
+    }
+    
+    /**
+     * Create a default entity
+     * 
+     * @param name
+     *            the name of the entity
+     * @return Entity
+     */
+    private Entity createEntity(String name) {
+        return new Entity(new ArchetypeId("openvpms-party-person.person.1.0"),
+                name, name, null);
     }
 }

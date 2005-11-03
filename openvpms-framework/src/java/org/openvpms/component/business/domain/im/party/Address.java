@@ -41,9 +41,14 @@ public class Address extends IMObject {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The contact that owns this address
+     * Contacts that reference this address
      */
     private Set<Contact> contacts = new HashSet<Contact>();
+    
+    /**
+     * A reference to the owning {@link Party}
+     */
+    private Party party;
     
     /**
      * Address details specific, which is specified by the archetype definition
@@ -139,5 +144,19 @@ public class Address extends IMObject {
      */
     public void removeContact(Contact contact) {
         contacts.remove(contact);
+    }
+
+    /**
+     * @return Returns the party.
+     */
+    public Party getParty() {
+        return party;
+    }
+
+    /**
+     * @param party The party to set.
+     */
+    public void setParty(Party party) {
+        this.party = party;
     }
 }

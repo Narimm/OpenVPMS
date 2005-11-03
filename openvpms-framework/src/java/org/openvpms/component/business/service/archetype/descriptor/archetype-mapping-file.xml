@@ -10,7 +10,7 @@
         </field>
         <field name="nodeDescriptors"
             type="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor"
-            required="true" direct="false" transient="false"
+            required="false" direct="false" transient="false"
             get-method="getNodeDescriptorsAsArray"
             set-method="setNodeDescriptorsAsArray" collection="array">
             <bind-xml name="node" node="element" reference="false"/>
@@ -82,10 +82,6 @@
         <field name="name" type="string" required="true" direct="false"
             transient="false" get-method="getName" set-method="setName">
             <bind-xml name="name" node="attribute" reference="false"/>
-        </field>
-        <field name="parentChild" type="boolean" required="false" direct="false"
-            transient="false" get-method="isParentChild" set-method="setParentChild">
-            <bind-xml name="parentChild" node="attribute" reference="false"/>
         </field>
         <field name="type" type="string" required="true" direct="false"
             transient="false" get-method="getType" set-method="setType">

@@ -48,7 +48,6 @@
         <value>/org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml</value>
         <value>/org/openvpms/component/business/domain/im/common/Classification.hbm.xml</value>
         <value>/org/openvpms/component/business/domain/im/common/Entity.hbm.xml</value>
-        <value>/org/openvpms/component/business/domain/im/common/EntityClassification.hbm.xml</value>
         <value>/org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml</value>
         <value>/org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml</value>
         <value>/org/openvpms/component/business/domain/im/common/Participation.hbm.xml</value>

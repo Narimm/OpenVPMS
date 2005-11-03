@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.hibernate.im.party;
 
 // hjava core
+import java.util.HashSet;
 import java.util.List;
 
 // hibernate
@@ -31,6 +32,8 @@ import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCa
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Role;
 
 /**
  * 
@@ -78,21 +81,24 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             // get initial numbr of entries in address tabel
             int acount = HibernatePartyUtil.getTableRowCount(session, "address");
+            int ccount = HibernatePartyUtil.getTableRowCount(session, "contact");
             // execute the test
             tx = session.beginTransaction();
+            Person person = createPerson();
             Address address = createAddress();
             
             Contact contact = new Contact(createContactArchetypeId());
-            session.save(contact);
-            
-            // add the address
-            session.save(address);
+            person.addAddress(address);
+            person.addContact(contact);
             contact.addAddress(address);
+            session.save(person);
             tx.commit();
             
-            // ensure that there is still one more address
+            // ensure that the correct rows have been inserted
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
             assertTrue(acount1 == acount + 1);
+            int ccount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            assertTrue(ccount1 == ccount + 1);
         } catch (Exception exception) { 
             if (tx != null) {
                 tx.rollback();
@@ -117,17 +123,24 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
+            Person person = createPerson();
             Contact contact = new Contact(createContactArchetypeId());
-            session.save(contact);
+            person.addContact(contact);
+            session.save(person);
             tx.commit();
             
-            // Retrieve the contact for a specified id
-            Contact rcontact = (Contact)session.get(Contact.class, contact.getUid());
+            // Retrieve the person and add a contact
+            person = (Person)session.get(Person.class, person.getUid());
 
             tx = session.beginTransaction();
             Address address = createAddress();
-            session.save(address);
-            rcontact.addAddress(address);
+            person.addAddress(address);
+            session.save(person);
+            
+            // Retrieve the contact and add the address
+            contact = (Contact)session.get(Contact.class, contact.getUid());
+            contact.addAddress(address);
+            session.save(contact);
             tx.commit();
             
             // ensure that there is still one more address
@@ -135,8 +148,13 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             assertTrue(acount1 == acount + 1);
             
             // retrieve the contact and make sure there is only one address
-            contact = getContactById(session, contact.getUid());
+            contact = (Contact)session.get(Contact.class, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
+            
+            // retrieve the person and ensure that there is only one address
+            person = (Person)session.get(Person.class, person.getUid());
+            assertTrue(person.getAddresses().size() == 1);
+            
         } catch (Exception exception) { 
             if (tx != null) {
                 tx.rollback();
@@ -162,31 +180,30 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
+            Person person = createPerson();
             Contact contact = new Contact(createContactArchetypeId());
-            assertTrue(contact != null);
-            
-            session.save(contact);
+            person.addContact(contact);
+            session.save(person);
             tx.commit();
             
-            // retrieve the contact again and make sure the address count
-            // is null
+            // retrieve the person and add an address
             tx = session.beginTransaction();
-            contact = getContactById(session, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 0);
+            person = (Person)session.get(Person.class, person.getUid());
+            assertTrue(person != null);
             
-
             Address address = createAddress();
-            session.save(address);
-            contact.addAddress(address);  
+            person.addAddress(address);
+            contact.addAddress(address);
+            session.save(person);
             tx.commit();
             
             // ensure that there is still one more address
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
             assertTrue(acount1 == acount + 1);
             
-            // retrieve the contact and check that the address is als
+            // retrieve the contact and check that the address is also
             // retrieved
-            contact = getContactById(session, contact.getUid());
+            contact = (Contact)session.get(Contact.class, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
             // remove the address and save it
@@ -195,9 +212,16 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             tx.commit();
             
             // check that the address removal worked
-            contact = getContactById(session, contact.getUid());
+            contact = (Contact)session.get(Contact.class, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 0);
             
+            // check that the address still exists on the person
+            person = (Person)session.get(Person.class, person.getUid());
+            assertTrue(person.getAddresses().size() == 1);
+            
+            // ensure that the address row count is correct
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
+            assertTrue(acount1 == acount + 1);
         } catch (Exception exception) { 
             if (tx != null) {
                 tx.rollback();
@@ -219,20 +243,22 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         Transaction tx = null;
         
         try {
-            // first we need to delete all Address and 
-            // Contacts
-            //HibernateUtil.deleteAllContacts(session);
-            
-            
             tx = session.beginTransaction();
+            Person person = createPerson();
             Contact contact = new Contact(createContactArchetypeId());
-            assertTrue(contact != null);
-            
-            session.save(contact);
+            person.addContact(contact);
+            session.save(person);
+            tx.commit();
 
+            // retrieve the person and add an address
+            tx = session.beginTransaction();
+            person = (Person)session.get(Person.class, person.getUid());
+            assertTrue(person != null);
+            
             Address address = createAddress();
-            session.save(address);
-            contact.addAddress(address); 
+            person.addAddress(address);
+            contact.addAddress(address);
+            session.save(person);
             tx.commit();
             
             // ensure that there is still one more address
@@ -242,7 +268,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // retrieve the contact and check that the address is also
             // retrieved
             tx = session.beginTransaction();
-            contact = getContactById(session, contact.getUid());
+            contact = (Contact)session.get(Contact.class, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
             // retrieve the first address
@@ -253,11 +279,12 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             address.getDetails().setAttribute("mobile", "04222368612");
             
             // remove the address and save it
-            session.update(address);
+            contact.addAddress(address);
+            session.update(contact);
             tx.commit();
             
             // check that the address removal worked
-            contact = getContactById(session, contact.getUid());
+            contact = (Contact)session.get(Contact.class, contact.getUid());
             assertTrue(contact.getNumOfAddresses() == 1);
             
         } catch (Exception exception) { 
@@ -345,6 +372,24 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         return new Address(createAddressArchetypeId(), createSimpleAttributeMap());
     }
     
+    /**
+     * Create a simple person
+     * 
+     * @rturn person
+     */
+    private Person createPerson() throws Exception {
+        return new Person(createPersonArchetypeId(), "person", "Mr", "Jim", 
+                "Alateras", null, new HashSet<Contact>(), new HashSet<Role>(), null);
+    }
+    
+    /**
+     * Return a person archetype id
+     * @return
+     */
+    private ArchetypeId createPersonArchetypeId() {
+        return new ArchetypeId("openvpms-party-person.person.1.0");
+    }
+
     /**
      * Return a contact archetype Id
      * 

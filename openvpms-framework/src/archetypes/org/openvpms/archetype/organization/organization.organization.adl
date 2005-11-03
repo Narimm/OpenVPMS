@@ -12,7 +12,7 @@
 				type="java.lang.String" />
 		</node>
 		<node name="classifications" path="/classifications"
-			type="org.openvpms.component.business.domain.im.common.EntityClassification">
+			type="org.openvpms.component.business.domain.im.common.Classification">
 			<assertion type="archetypeRange">
 				<property key="entityClassification.animalOwner" />
 				<property key="entityClassification.animalCarer" />

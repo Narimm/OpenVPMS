@@ -32,7 +32,7 @@
 		<property name="linkId" access="property" type="string" />
 		<property name="key" access="property" column="key_name"
 			type="string" />
-ave		<property name="type" access="property" column="property_type"
+		<property name="type" access="property" column="property_type"
 			type="string" />
 		<property name="value" access="property" column="value_name"
 			type="string" />

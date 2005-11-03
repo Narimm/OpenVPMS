@@ -59,12 +59,12 @@ public class Entity extends IMObject {
     private DynamicAttributeMap details;
     
     /**
-     * Return a set of {@link EntityClassification} for this entity. An 
-     * {@link Entity} can belong to zero, one or more {@link Classification}
+     * Return a set of {@link Classification} for this entity. An 
+     * {@link Entity} can have to zero, one or more {@link Classification}
      * 
      */
-    private Set<EntityClassification> classifications =
-        new HashSet<EntityClassification>();
+    private Set<Classification> classifications =
+        new HashSet<Classification>();
     
     /**
      * Return the set of {@link EntityIdentity} instance for this entity
@@ -246,34 +246,32 @@ public class Entity extends IMObject {
     }
     
     /**
-     * Add an {@link EntityClassification} to this entity
+     * Add an {@link Classification} to this entity
      * 
-     * @param entityClass 
-     *            the entity classification to add
+     * @param classification 
+     *            the classification to add
      */
-    public void addEntityClassification(EntityClassification entityClass) {
-        entityClass.setEntity(this);
-        this.classifications.add(entityClass);
+    public void addClassification(Classification classification) {
+        classifications.add(classification);
     }
     
     /**
-     * Remove the {@link EntityClassification} from this entity
+     * Remove the {@link Classification} from this entity
      * 
-     * @oparam entityClass
-     *            the entity classification to remove
+     * @oparam classification
+     *            the classification to remove
      */
-    public void removeEntityClassification(EntityClassification entityClass) {
-        entityClass.setEntity(null);
-        this.classifications.remove(entityClass);
+    public void removeClassification(Classification classification) {
+        classifications.remove(classification);
     }
     
     /**
-     * Return all the {@link EntityClassification} objects that this entity is 
-     * the source off
+     * Return all the {@link Classification} objects that this entity is 
+     * belongs too.
      * 
-     * @return EntityClassification[]
+     * @return Set<Classification>
      */
-    public Set<EntityClassification> getClassifications() {
+    public Set<Classification> getClassifications() {
         return this.classifications;
     }
     
@@ -281,7 +279,7 @@ public class Entity extends IMObject {
      * @param classifications The classifications to set.
      */
     @SuppressWarnings("unused")
-    private void setClassifications(Set<EntityClassification> classifications) {
+    private void setClassifications(Set<Classification> classifications) {
         this.classifications = classifications;
     }
 

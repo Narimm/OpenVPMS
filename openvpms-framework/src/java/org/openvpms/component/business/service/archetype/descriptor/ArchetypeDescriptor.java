@@ -96,6 +96,17 @@ public class ArchetypeDescriptor extends Descriptor {
         node.setPath("uid");
         nodeDescriptors.put(node.getName(), node);
     }
+    
+    /**
+     * Construct an archetype descriptor for the specified {@link ArchetypeId}
+     * 
+     * @param archetypeId
+     *            the archetypeId
+     */
+    public ArchetypeDescriptor(ArchetypeId id) {
+        this();
+        this.archetypeId = id;
+    }
 
     /**
      * @return Returns the archetypeQName.
@@ -250,12 +261,28 @@ public class ArchetypeDescriptor extends Descriptor {
     }
 
     /**
+     * @param displayName The displayName to set.
+     */
+    @SuppressWarnings("unused")
+    private void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    /**
      * Return the {&link ArchetypeId} associated with this descriptor.
      * 
      * @return ArchetypeId
      */
     public ArchetypeId getArchetypeId() {
         return archetypeId;
+    }
+
+    /**
+     * @param archetypeId The archetypeId to set.
+     */
+    @SuppressWarnings("unused")
+    private void setArchetypeId(ArchetypeId archetypeId) {
+        this.archetypeId = archetypeId;
     }
 
     /**

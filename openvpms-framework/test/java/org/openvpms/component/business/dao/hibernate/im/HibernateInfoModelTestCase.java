@@ -32,7 +32,6 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityClassification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -43,6 +42,11 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
@@ -105,7 +109,6 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         config.addClass(Contact.class);
         config.addClass(Classification.class);
         config.addClass(Entity.class);
-        config.addClass(EntityClassification.class);
         config.addClass(Act.class);
         config.addClass(ActRelationship.class);
         config.addClass(Participation.class);
@@ -113,6 +116,11 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         config.addClass(EntityIdentity.class);
         config.addClass(Lookup.class);
         config.addClass(LookupRelationship.class);
+        config.addClass(ArchetypeDescriptor.class);
+        config.addClass(NodeDescriptor.class);
+        config.addClass(AssertionDescriptor.class);
+        config.addClass(PropertyDescriptor.class);
+        config.addClass(AssertionTypeDescriptor.class);
         this.sessionFactory = config.buildSessionFactory();
     }
 

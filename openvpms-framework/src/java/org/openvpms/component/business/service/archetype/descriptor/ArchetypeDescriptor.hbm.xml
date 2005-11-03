@@ -32,20 +32,20 @@
 		<property name="linkId" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
-				column="namespace" type="string" />
-			<property name="rmName" access="property" column="rm_name"
-				type="string" />
-			<property name="concept" access="property" column="concept"
-				type="string" />
+				column="arch_namespace" type="string" />
+			<property name="rmName" access="property"
+				column="arch_rm_name" type="string" />
+			<property name="concept" access="property"
+				column="arch_concept" type="string" />
 			<property name="entityName" access="property"
-				column="entity_name" type="string" />
-			<property name="version" access="property" column="version"
-				type="string" />
+				column="arch_entity_name" type="string" />
+			<property name="version" access="property"
+				column="arch_version" type="string" />
+			<property name="shortName" access="property"
+				column="arch_short_name" type="string" />
 		</component>
-		<property name="qName" access="property" column="qname"
-			type="string" />
-		<property name="shortName" access="property" column="short_name"
-			type="string" />
+		<property name="archetypeQName" access="property"
+			column="arch_qname" type="string" />
 		<property name="displayName" access="property"
 			column="display_name" type="string" />
 		<property name="latest" access="property" column="latest"
@@ -59,7 +59,7 @@
 		</map>
 	</class>
 
-	<query name="archetype.getRowCount">
+	<query name="archetypeDescriptor.getRowCount">
 		<![CDATA[
 			select count(archetype) from org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor as 
 			archetype

@@ -48,8 +48,6 @@
 			type="boolean" />
 		<property name="derived" access="property" column="derived"
 			type="boolean" />
-		<property name="parentChild" access="property" column="parent_child"
-			type="boolean" />
 		<property name="minCardinality" access="property" column="min_cardinality"
 			type="integer" />
 		<property name="maxCardinality" access="property" column="max_cardinality"
@@ -65,7 +63,7 @@
 			<one-to-many
 				class="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor" />
 		</map>
-		<map name="assertionDescriptor" access="property" lazy="false"
+		<map name="assertionDescriptors" access="property" lazy="false"
 			table="assertion_descriptor" cascade="all">
 			<key column="node_desc_id" />
 			<map-key column="type" type="string" />

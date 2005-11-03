@@ -28,7 +28,6 @@ import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCa
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityClassification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Role;
@@ -372,26 +371,25 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int erelCount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            int eclassCount = HibernateUtil.getTableRowCount(session,
-                    "entityClassification");
+            int classCount = HibernateUtil.getTableRowCount(session,
+                    "classification");
             Role role = createRole();
             session.save(role);
 
             EntityRelationship erel = createEntityRelationship(role, role);
-            EntityClassification eclass = createEntityClassification(role,
-                    createClassification());
+            Classification class1 = createClassification();
             session.save(erel);
-            session.save(eclass);
+            session.save(class1);
             role.addSourceEntityRelationship(erel);
-            role.addEntityClassification(eclass);
+            role.addClassification(class1);
             tx.commit();
 
             int erelCount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            int eclassCount1 = HibernateUtil.getTableRowCount(session,
-                    "entityClassification");
+            int classCount1 = HibernateUtil.getTableRowCount(session,
+                    "classification");
             assertTrue(erelCount1 == (erelCount + 1));
-            assertTrue(eclassCount1 == (eclassCount + 1));
+            assertTrue(classCount1 == (classCount + 1));
 
             // check that the role now has zero entity relationships
             session.flush();
@@ -431,22 +429,21 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             int eccount = ((Integer) this.getTestData().getTestCaseParameter(
                     "testAdditionRemovalEntityClassification", "normal",
                     "entityClassificationCount")).intValue();
-            int eclassCount = HibernateUtil.getTableRowCount(session,
-                    "entityClassification");
+            int classCount = HibernateUtil.getTableRowCount(session,
+                    "classification");
 
             tx = session.beginTransaction();
             role = (Role) session.load(Role.class, role.getUid());
             for (int index = 0; index < eccount; index++) {
-                EntityClassification eclass = createEntityClassification(role,
-                        createClassification());
-                role.addEntityClassification(eclass);
-                session.save(eclass);
+                Classification class1 = createClassification();
+                role.addClassification(class1);
+                session.save(class1);
             }
             tx.commit();
 
-            int eclassCount1 = HibernateUtil.getTableRowCount(session,
-                    "entityClassification");
-            assertTrue(eclassCount1 == (eclassCount + eccount));
+            int classCount1 = HibernateUtil.getTableRowCount(session,
+                    "classification");
+            assertTrue(classCount1 == (classCount + eccount));
 
             // retrieve the role, delete the first entity classification and
             // do some checks
@@ -455,14 +452,14 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             assertTrue(role.getClassifications().size() == eccount);
 
             tx = session.beginTransaction();
-            EntityClassification eclass = role.getClassifications().iterator().next();
-            role.removeEntityClassification(eclass);
-            session.delete(eclass);
+            Classification class1 = role.getClassifications().iterator().next();
+            role.removeClassification(class1);
+            session.delete(class1);
             tx.commit();
 
-            eclassCount1 = HibernateUtil.getTableRowCount(session,
-                    "entityClassification");
-            assertTrue(eclassCount1 == (eclassCount + eccount - 1));
+            classCount1 = HibernateUtil.getTableRowCount(session,
+                    "classification");
+            assertTrue(classCount1 == (classCount + eccount - 1));
             role = (Role) session.load(Role.class, role.getUid());
             assertTrue(role.getClassifications().size() == (eccount - 1));
         } catch (Exception exception) {
@@ -507,20 +504,6 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
-     * Create an {@link EntityClassification}.
-     * 
-     * @param entity
-     *            the entity
-     * @parm classification the classification to associate with it
-     * @return EntityClassification
-     */
-    private EntityClassification createEntityClassification(Entity entity,
-            Classification classification) {
-        return new EntityClassification( createEntityArchetypeId(), entity, 
-                classification);
-    }
-
-    /**
      * Return a default classification.
      * 
      * @return Classification
@@ -537,15 +520,6 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      */
     private ArchetypeId createRoleArchetypeId() {
         return new ArchetypeId("openvpms-party-role.role.1.0");
-    }
-
-    /**
-     * Return a entity identity archetype Id
-     * 
-     * @return ArchetypeId
-     */
-    private ArchetypeId createEntityArchetypeId() {
-        return new ArchetypeId("openvpms-common-entity.entity.1.0");
     }
 
     /**
