@@ -177,4 +177,22 @@ public class Contact extends IMObject {
     public void removeAddress(Address address) {
         addresses.remove(address);
     }
+    
+    /**
+     * Return a string, which concatenates the descriptos of 
+     * each address
+     * 
+     * @return String
+     */
+    public String getAddressesAsString() {
+        StringBuffer buf = new StringBuffer();
+        for (Address address : addresses) {
+            if (buf.length() > 0) {
+                buf.append(", ");
+            }
+            buf.append(address.getDescription());
+        }
+        
+        return buf.toString();
+    }
 }

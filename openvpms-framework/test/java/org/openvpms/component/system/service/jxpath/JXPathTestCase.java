@@ -32,6 +32,8 @@ import org.apache.commons.lang.StringUtils;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
@@ -235,6 +237,30 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(ctx.getValue("java.util.Date.new()") instanceof Date);
         assertTrue(ctx.getValue("'jimbo'").equals("jimbo"));
     }
+    
+    /**
+     * Test concatenation of strings given a list of objects
+     */
+    public void testJXPathConcatenationFunction()
+    throws Exception {
+        Contact contact = new Contact();
+        Address address = new Address();
+        address.setDescription("5 Kalulu Rd Belgrave");
+        contact.addAddress(address);
+        address = new Address();
+        address.setDescription("0422235454");
+        contact.addAddress(address);
+        address = new Address();
+        address.setDescription("8769549399");
+        contact.addAddress(address);
+        
+        JXPathContext ctx = JXPathContext.newContext(contact);
+        error(ctx.getValue("getAddressesAsString(.)"));
+        assertTrue(ctx.getValue("getAddressesAsString(.)").equals(
+                contact.getAddressesAsString()));
+        
+    }
+    
     /**
      * This performs a get using an object and a jxpath expression and returns
      * the resolved object
