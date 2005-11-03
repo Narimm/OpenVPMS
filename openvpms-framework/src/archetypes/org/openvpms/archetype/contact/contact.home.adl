@@ -3,6 +3,10 @@
 		type="org.openvpms.component.business.domain.im.party.Contact">
 		<node name="addresses" path="/addresses"
 			type="java.util.HashSet" minCardinality="1">
+			<assertion type="candidateChildren">
+				<property key="path" value="/party/addresses" />
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
 			<assertion type="archetypeRange">
 				<property key="address.location" />
 				<property key="address.phoneNumber" />

@@ -49,5 +49,6 @@
 	<classpathentry kind="var" path="MAVEN_REPO/jta/jars/jta-1.0.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/cglib/jars/cglib-2.1.2.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/mysql/jars/mysql-connector-java-3.2.0-alpha-bin.jar"/>
+	<classpathentry kind="lib" path="target/test-classes"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

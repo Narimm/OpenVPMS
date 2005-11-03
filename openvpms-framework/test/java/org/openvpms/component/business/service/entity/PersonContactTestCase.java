@@ -20,6 +20,7 @@ package org.openvpms.component.business.service.entity;
 
 // java core
 import java.util.Date;
+import java.util.List;
 
 //spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
@@ -30,6 +31,8 @@ import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * Test the entity service
@@ -204,6 +207,39 @@ public class PersonContactTestCase extends
         person = (Person)entityService.getById(person.getUid());
         contact = person.getContacts().iterator().next();
         assertTrue(contact.getAddresses().size() == 1);
+    }
+    
+    /**
+     * Test that the many-to-many relationship between contact and 
+     * address works.
+     */
+    public void testOVPMS40()
+    throws Exception {
+        Person person = createPerson("Mr", "Johnny", "D");
+        Contact contact = createContact("contact.home");
+        
+        Address address1 = createLocationAddress();
+        Address address2 = createLocationAddress();
+        
+        person.addAddress(address1);
+        person.addAddress(address2);
+        person.addContact(contact);
+        entityService.save(person);
+
+        // now we want to test the NodeDescription for addresses
+        person = (Person)entityService.getById(person.getUid());
+        assertTrue(person != null);
+        assertTrue(person.getAddresses().size() == 2);
+        
+        ArchetypeDescriptor adesc = archetypeService.getArchetypeDescriptor("contact.home");
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("addresses");
+        List list = ndesc.getCandidateChildren(person.getContacts().iterator().next());
+        assertTrue(list.size() == 2);
+        
+        assertTrue(person != null);
+        contact = person.getContacts().iterator().next();
+        contact.addAddress((Address)list.get(0));
+        entityService.save(person);
     }
     
     

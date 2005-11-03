@@ -11,4 +11,6 @@
   <assertionType name="archetypeRange"
     type="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
     method="objectsMatchArchetypeRange" />
+  <assertionType name="candidateChildren" />
+    
 </assertionTypes>

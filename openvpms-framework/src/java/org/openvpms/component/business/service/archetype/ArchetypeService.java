@@ -396,6 +396,16 @@ public class ArchetypeService implements IArchetypeService {
                 for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
                     AssertionTypeDescriptor assertionType = assertionTypes
                             .get(assertion.getType());
+                    
+                    // TODO
+                    // no validation required where the type is not specified.
+                    // This is currently a work around since we need to deal 
+                    // with assertions and some other type of declaration...
+                    // which I don't have a name for.
+                    if (assertionType.getType() == null) {
+                        continue;
+                    }
+                    
                     try {
                         if (!assertionType.assertTrue(value, node, assertion)) {
                             errors.add(new ValidationError(node.getName(), 
