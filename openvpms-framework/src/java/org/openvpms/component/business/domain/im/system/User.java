@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.domain.im.party;
+package org.openvpms.component.business.domain.im.system;
 
 // java core
 import java.util.Calendar;
@@ -25,6 +25,8 @@ import java.util.Set;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Role;
 
 /**
  * 

@@ -255,7 +255,6 @@ public class JXPathTestCase extends BaseTestCase {
         contact.addAddress(address);
         
         JXPathContext ctx = JXPathContext.newContext(contact);
-        error(ctx.getValue("getAddressesAsString(.)"));
         assertTrue(ctx.getValue("getAddressesAsString(.)").equals(
                 contact.getAddressesAsString()));
         

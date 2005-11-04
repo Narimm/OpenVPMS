@@ -214,6 +214,7 @@ public class EntityRelationshipTestCase extends
      *            the identity to assign
      * @return EntityIdentity
      */
+    @SuppressWarnings("unused")
     private EntityIdentity createEntityIdentity(String identity) {
         EntityIdentity eidentity = (EntityIdentity) archetypeService
                 .createDefaultObject("entityIdentity.personAlias");

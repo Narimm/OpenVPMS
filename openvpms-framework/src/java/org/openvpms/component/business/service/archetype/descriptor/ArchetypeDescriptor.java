@@ -263,8 +263,7 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * @param displayName The displayName to set.
      */
-    @SuppressWarnings("unused")
-    private void setDisplayName(String displayName) {
+    public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
 
