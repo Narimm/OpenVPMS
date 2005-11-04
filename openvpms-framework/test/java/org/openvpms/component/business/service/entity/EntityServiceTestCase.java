@@ -142,6 +142,38 @@ public class EntityServiceTestCase extends
     }
 
     /**
+     * Test that we can locate entities by partial RmName only
+     */
+    public void testFindWithPartialRmName()
+    throws Exception {
+        
+        // get the initial count
+        List before = entityService.get("par*", null, null, null);
+        
+        // create and insert a new pet
+        entityService.save(createPet("testFindWithPartialRmName"));
+        
+        // now get a new count
+        List after = entityService.get("par*", null, null, null);
+        assertTrue(after.size() == before.size() + 1);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getRmName().matches("par.*"));
+        }
+
+        // now test with a starts with
+        after = entityService.get("*rty", null, null, null);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getRmName().matches(".*rty"));
+        }
+
+        // now test with a start and ends with
+        after = entityService.get("*art*", null, null, null);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getRmName().matches(".*art.*"));
+        }
+    }
+
+    /**
      * Test that we can locate entities by RmName and EntityName only
      */
     public void testFindWithEntityName()
@@ -156,6 +188,38 @@ public class EntityServiceTestCase extends
         // now get a new count
         List after = entityService.get("party", "animal", null, null);
         assertTrue(after.size() == before.size() + 1);
+    }
+
+    /**
+     * Test that we can locate entities by RmName and partial EntityName 
+     */
+    public void testFindWithPartialEntityName()
+    throws Exception {
+        
+        // get the initial count
+        List before = entityService.get("party", "ani*", null, null);
+        
+        // create and insert a new pet
+        entityService.save(createPet("testFindWithPartialEntityName"));
+        
+        // now get a new count
+        List after = entityService.get("party", "ani*", null, null);
+        assertTrue(after.size() == before.size() + 1);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getEntityName().matches("ani.*"));
+        }
+
+        // now test with a starts with
+        after = entityService.get("party", "*mal", null, null);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getEntityName().matches(".*mal"));
+        }
+
+        // now test with a start and ends with
+        after = entityService.get("party", "*nim*", null, null);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getEntityName().matches(".*nim.*"));
+        }
     }
 
     /**
@@ -174,7 +238,39 @@ public class EntityServiceTestCase extends
         List after = entityService.get("party", "animal", "pet", null);
         assertTrue(after.size() == before.size() + 1);
     }
+    
+    /**
+     * Test that we can locate entities by RmName, EntityName and partial 
+     * conceptName
+     */
+    public void testFindWithPartialConceptName()
+    throws Exception {
+        
+        // get the initial count
+        List before = entityService.get("party", "animal", "p*", null);
+        
+        // create and insert a new pet
+        entityService.save(createPet("testFindWithPartialConceptName"));
+        
+        // now get a new count
+        List after = entityService.get("party", "animal", "p*", null);
+        assertTrue(after.size() == before.size() + 1);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getConcept().matches("p.*"));
+        }
 
+        // now test with a starts with
+        after = entityService.get("party", "animal", "*et", null);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getConcept().matches(".*et"));
+        }
+
+        // now test with a start and ends with
+        after = entityService.get("party", "animal", "*e*", null);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getArchetypeId().getConcept().matches(".*et.*"));
+        }
+    }
 
     /**
      * Test that we can locate entities by RmName, EntityName, ConceptName
@@ -194,6 +290,40 @@ public class EntityServiceTestCase extends
         assertTrue(after.size() == before.size() + 1);
     }
 
+
+    /**
+     * Test that we can locate entities by RmName, EntityName, ConceptName
+     * and partial instance name
+     */
+    public void testFindWithPartialInstanceName()
+    throws Exception {
+        
+        // get the initial count
+        List before = entityService.get("party", "animal", "pet", "br*");
+        
+        // create and insert a new pet
+        entityService.save(createPet("brutus"));
+        
+        // now get a new count
+        List after = entityService.get("party", "animal", "pet", "br*");
+        assertTrue(after.size() == before.size() + 1);
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getName().matches("br.*"));
+        }
+
+        // now test with a starts with
+        after = entityService.get("party", "animal", "pet", "*tus");
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getName().matches(".*tus"));
+        }
+
+        // now test with a start and ends with
+        after = entityService.get("party", "animal", "pet", "*utu*");
+        for (Object entity : after) {
+            assertTrue(((Entity)entity).getName().matches(".*utu.*"));
+        }
+    }
+    
     /**
      * Create a pet with the specified name
      * 

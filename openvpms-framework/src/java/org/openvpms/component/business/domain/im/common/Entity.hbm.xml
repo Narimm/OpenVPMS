@@ -109,7 +109,7 @@
 
 				<!-- Mapping for User -->
 				<joined-subclass
-					name="org.openvpms.component.business.domain.im.party.User"
+					name="org.openvpms.component.business.domain.im.system.User"
 					table="user">
 					<key column="entity_id" />
 					<property name="password" access="property"

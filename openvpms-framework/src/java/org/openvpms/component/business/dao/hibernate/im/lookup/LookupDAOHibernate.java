@@ -131,15 +131,16 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
             
             // process the rmName
             if (StringUtils.isEmpty(rmName) == false) {
-                if (rmName.endsWith("*")) {
+                names.add("rmName");
+                andRequired = true;
+                if ((rmName.endsWith("*")) || rmName.startsWith("*")) {
                     queryString.append(" lookup.archetypeId.rmName like :rmName");
+                    params.add(rmName.replace("*", "%"));
                 } else {
                     queryString.append(" lookup.archetypeId.rmName = :rmName");
+                    params.add(rmName);
                 }
                 
-                names.add("rmName");
-                params.add(rmName);
-                andRequired = true;
             }
             
             // process the entity name
@@ -148,15 +149,16 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
                     queryString.append(" and ");
                 }
                 
-                if (entityName.endsWith("*")) {
+                names.add("entityName");
+                andRequired = true;
+                if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
                     queryString.append(" lookup.archetypeId.entityName like :entityName");
+                    params.add(entityName.replace("*", "%"));
                 } else {
                     queryString.append(" lookup.archetypeId.entityName = :entityName");
+                    params.add(entityName);
                 }
                 
-                names.add("entityName");
-                params.add(entityName);
-                andRequired = true;
             }
             
             // process the concept name
@@ -165,15 +167,15 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
                     queryString.append(" and ");
                 }
                 
-                if (entityName.endsWith("*")) {
+                names.add("conceptName");
+                andRequired = true;
+                if ((conceptName.endsWith("*")) || (conceptName.startsWith("*"))) {
                     queryString.append(" lookup.archetypeId.concept like :conceptName");
+                    params.add(conceptName.replace("*", "%"));
                 } else {
                     queryString.append(" lookup.archetypeId.concept = :conceptName");
+                    params.add(conceptName);
                 }
-                
-                names.add("conceptName");
-                params.add(conceptName);
-                andRequired = true;
             }
             
             // process the instance name
@@ -182,15 +184,15 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
                     queryString.append(" and ");
                 }
                 
-                if (entityName.endsWith("*")) {
+                names.add("instanceName");
+                if ((instanceName.endsWith("*")) || (instanceName.startsWith("*"))) {
                     queryString.append(" lookup.name like :instanceName");
+                    params.add(instanceName.replace("*", "%"));
                 } else {
                     queryString.append(" lookup.name = :instanceName");
+                    params.add(instanceName);
                 }
                 
-                names.add("instanceName");
-                params.add(instanceName);
-                andRequired = true;
             }
             
             // now execute te query
