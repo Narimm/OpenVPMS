@@ -79,7 +79,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Role role = createRole();
+            Role role = createRole("doctor");
             session.save(role);
             tx.commit();
 
@@ -110,7 +110,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // execute the test
             tx = session.beginTransaction();
-            Role role = createRole();
+            Role role = createRole("doctor");
             session.saveOrUpdate(role);
             long id = role.getUid();
             tx.commit();
@@ -163,7 +163,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
 
-            Role role = createRole();
+            Role role = createRole("doctor");
             for (int index = 0; index < eicount; index++) {
                 EntityIdentity eid = createEntityIdentity();
                 role.addIdentity(eid);
@@ -219,8 +219,8 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            Role role = createRole();
-            Role target = createRole();
+            Role role = createRole("doctor");
+            Role target = createRole("doctor");
             session.saveOrUpdate(role);
             session.saveOrUpdate(target);
             tx.commit();
@@ -263,9 +263,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            Role role = createRole();
-            Role target = createRole();
-            Role source = createRole();
+            Role role = createRole("doctor");
+            Role target = createRole("doctor1");
+            Role source = createRole("doctor2");
             session.save(role);
             session.save(target);
             session.save(source);
@@ -317,7 +317,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            Role role = createRole();
+            Role role = createRole("doctor");
             session.save(role);
 
             EntityRelationship erel = createEntityRelationship(role, role);
@@ -373,7 +373,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "entityRelationship");
             int classCount = HibernateUtil.getTableRowCount(session,
                     "classification");
-            Role role = createRole();
+            Role role = createRole("doctor");
             session.save(role);
 
             EntityRelationship erel = createEntityRelationship(role, role);
@@ -418,7 +418,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
 
             // get the initial count
-            Role role = createRole();
+            Role role = createRole("doctor");
             session.save(role);
             EntityRelationship erel = createEntityRelationship(role, role);
             session.save(erel);
@@ -475,10 +475,12 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
     /**
      * Create a simple role
      * 
+     * @param name
+     *            the name of the role
      * @return Role
      */
-    private Role createRole() throws Exception {
-        return new Role(createRoleArchetypeId(), "doctor",  null, null, 
+    private Role createRole(String name) throws Exception {
+        return new Role(createRoleArchetypeId(), name,  name, null, 
                 createSimpleAttributeMap());
 
     }

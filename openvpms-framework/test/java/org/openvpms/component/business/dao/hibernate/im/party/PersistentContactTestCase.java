@@ -18,8 +18,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.party;
 
-// hjava core
-import java.util.HashSet;
+// java core
 import java.util.List;
 
 // hibernate
@@ -33,7 +32,6 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
-import org.openvpms.component.business.domain.im.party.Role;
 
 /**
  * 
@@ -379,7 +377,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     private Person createPerson() throws Exception {
         return new Person(createPersonArchetypeId(), "person", "Mr", "Jim", 
-                "Alateras", null, new HashSet<Contact>(), new HashSet<Role>(), null);
+                "Alateras", null);
     }
     
     /**

@@ -19,13 +19,11 @@
 package org.openvpms.component.business.domain.im.party;
 
 // java core
-import java.util.Set;
 import java.util.Date;
 
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * Defines an {@link Entity} of type animal (i.e. non-human)
@@ -90,17 +88,9 @@ public class Animal extends Actor {
      *            the animal's primary name            
      * @param description
      *            the description of this entity            
-     * @param contacts
-     *            a collection of contacts for this actor            
-     * @param roles
-     *            the collection of roles it belongs too
-     * @param details 
-     *            actor details
      */
-    public Animal(ArchetypeId archetypeId, String name,
-            String description, Set<Contact> contacts, Set<Role> roles, 
-            DynamicAttributeMap details) {
-        super(archetypeId, name, description, contacts, roles, details);
+    public Animal(ArchetypeId archetypeId, String name, String description) {
+        super(archetypeId, name, description);
     }
 
     /**

@@ -24,12 +24,13 @@ package org.openvpms.component.business.domain.im.party;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
- * An organization is an {@link Entity} that can participat in {@link Act}.
+ * Class that represents non-living, non organisational parties such as devices, 
+ * software systems etc.
  *
  * @author   <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class Organization extends Actor {
+public class Agent extends Actor {
 
     /**
      * Generated SUID
@@ -39,20 +40,21 @@ public class Organization extends Actor {
     /**
      * Default constructor
      */
-    public Organization() {
+    protected Agent() {
+        // do nothing
     }
-
+    
     /**
-     * Constructs an organization entity.
+     * Constructs an animal entity.
      * 
      * @param archetypeId
      *            the archetype id constraining this object
      * @param name
-     *            the name of the organization            
+     *            the name of the entity            
      * @param description
      *            the description of this entity            
      */
-    public Organization(ArchetypeId archetypeId, String name, String description) {
+    public Agent(ArchetypeId archetypeId, String name, String description) {
         super(archetypeId, name, description);
     }
 }

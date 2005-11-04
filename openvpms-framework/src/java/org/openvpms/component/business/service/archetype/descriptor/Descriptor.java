@@ -85,6 +85,24 @@ public abstract class Descriptor implements Serializable {
     
     
     /**
+     * An enumeration of different descriptor types
+     */
+    public enum DescriptorType {
+        ArchetypeDescriptor,
+        NodeDescriptor,
+        AssertionDescriptor,
+        PropertyDescriptor,
+        AssertionTypeDescriptor
+    }
+    
+    /**
+     * An enumeration of the different validation errors
+     */
+    public enum ValidationError {
+        IsRequired
+    }
+    
+    /**
      * Default constructor
      */
     public Descriptor() {

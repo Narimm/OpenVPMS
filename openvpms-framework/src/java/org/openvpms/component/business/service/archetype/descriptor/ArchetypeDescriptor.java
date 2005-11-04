@@ -320,6 +320,32 @@ public class ArchetypeDescriptor extends Descriptor {
         return result;
     }
 
+    /**
+     * validate the descriptor. The method will return a list of validation 
+     * errors. An empty list means that the descriptor is valid.
+     * 
+     * @return List<DescriporValidationError>
+     */
+    public List<DescriptorValidationError> validate() {
+        List<DescriptorValidationError> errors = 
+            new ArrayList<DescriptorValidationError>();
+        
+        if (archetypeId == null) {
+            errors.add(new DescriptorValidationError(
+                    Descriptor.DescriptorType.ArchetypeDescriptor, null, 
+                    "archetypeId", Descriptor.ValidationError.IsRequired));
+        }
+        
+        if (StringUtils.isEmpty(type)) {
+            errors.add(new DescriptorValidationError(
+                    Descriptor.DescriptorType.ArchetypeDescriptor, null, 
+                    "type", Descriptor.ValidationError.IsRequired));
+        }
+        
+        
+        return errors;
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

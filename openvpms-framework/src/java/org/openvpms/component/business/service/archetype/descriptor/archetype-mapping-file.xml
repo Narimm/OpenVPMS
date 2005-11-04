@@ -20,6 +20,10 @@
             get-method="getArchetypeQName" set-method="setArchetypeQName">
             <bind-xml name="name" node="attribute" reference="false"/>
         </field>
+        <field name="displayName" type="string" required="false" direct="false"
+            transient="false" get-method="getDisplayName" set-method="setDisplayName">
+            <bind-xml name="displayName" node="attribute" reference="false"/>
+        </field>
         <field name="type" type="string" required="true" direct="false"
             transient="false" get-method="getType" set-method="setType">
             <bind-xml name="type" node="attribute" reference="false"/>

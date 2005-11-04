@@ -48,11 +48,16 @@ public class Role extends Party {
      * The time that this participation was inactivated
      */
     private Date activeEndTime;
+    
+    /**
+     * The actor that owes the role
+     */
+    private Actor actor;
 
     /**
      * Default constructor
      */
-    protected Role() {
+    public Role() {
         // do nothing
     }
 
@@ -105,4 +110,17 @@ public class Role extends Party {
         this.activeStartTime = activeStartTime;
     }
 
+    /**
+     * @return Returns the actor.
+     */
+    public Actor getActor() {
+        return actor;
+    }
+
+    /**
+     * @param actor The actor to set.
+     */
+    public void setActor(Actor actor) {
+        this.actor = actor;
+    }
 }
