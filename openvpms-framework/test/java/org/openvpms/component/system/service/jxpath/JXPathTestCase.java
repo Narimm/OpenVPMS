@@ -19,17 +19,22 @@
 package org.openvpms.component.system.service.jxpath;
 
 // java
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
 
 // jxpath
 import ognl.Ognl;
 import ognl.OgnlContext;
 
+import org.apache.commons.jxpath.ClassFunctions;
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Address;
@@ -258,6 +263,68 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(ctx.getValue("getAddressesAsString(.)").equals(
                 contact.getAddressesAsString()));
         
+    }
+    
+    /**
+     * Test the JXPath expressions into collections
+     */
+    public void testJXPathCollectionExpressions()
+    throws Exception {
+        List<Person> list = new ArrayList<Person>();
+        list.add(new Person(new ArchetypeId("openvpms-party-person.person.1.0"), 
+                null, "Mr", "Jim", "Alateras", null));
+        list.add(new Person(new ArchetypeId("openvpms-party-person.person.1.0"), 
+                null, "Ms", "Bernadette", "Feeney", null));
+        list.add(new Person(new ArchetypeId("openvpms-party-person.person.1.0"), 
+                null, "Ms", "Grace", "Alateras", null));
+        
+        JXPathContext ctx = JXPathContext.newContext(list);
+        // NOTE: Index starts at 1 not 0.
+        assertTrue(ctx.getValue(".[1]/firstName").equals("Jim"));
+        assertTrue(ctx.getValue(".[2]/lastName").equals("Feeney"));
+        assertTrue(ctx.getValue(".[3]/title").equals("Ms"));
+    }
+    
+    /**
+     * Test the JXPath expressions for retrieving an object with a uid 
+     * from a collection
+     */
+    public void testJXPathSearchCollectionForMatchingUid()
+    throws Exception {
+        List<Person> list = new ArrayList<Person>();
+        Person person = new Person(
+                new ArchetypeId("openvpms-party-person.person.1.0"), 
+                null, "Mr", "Jim", "Alateras", null);
+        person.setUid(1);
+        list.add(person);
+
+        person = new Person(
+                new ArchetypeId("openvpms-party-person.person.1.0"), 
+                null, "Ms", "Bernadette", "Feeney", null);
+        person.setUid(2);
+        list.add(person);
+
+        person = new Person(
+                new ArchetypeId("openvpms-party-person.person.1.0"), 
+                null, "Ms", "Grace", "Alateras", null);
+        person.setUid(3);
+        list.add(person);
+        
+        JXPathContext ctx = JXPathContext.newContext(list);
+        // NOTE: Using a extension function to do the work.
+        assertTrue(ctx.getValue("org.openvpms.component.system.service.jxpath.TestFunctions.findObjectWithUid(., 1)") != null);
+        assertTrue(ctx.getValue("org.openvpms.component.system.service.jxpath.TestFunctions.findObjectWithUid(., 3)") != null);
+        assertTrue(ctx.getValue("org.openvpms.component.system.service.jxpath.TestFunctions.findObjectWithUid(., 4)") == null);
+        assertTrue(ctx.getValue("org.openvpms.component.system.service.jxpath.TestFunctions.findObjectWithUid(., 0)") == null);
+        
+        // execute the same test using function namespaces
+        FunctionLibrary lib = new FunctionLibrary();
+        lib.addFunctions(new ClassFunctions(TestFunctions.class, "collfunc"));
+        ctx.setFunctions(lib);
+        assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 1)") != null);
+        assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 3)") != null);
+        assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 4)") == null);
+        assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 0)") == null);
     }
     
     /**
