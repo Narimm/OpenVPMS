@@ -250,7 +250,7 @@ public class PersonContactTestCase extends
      * @return
      */
     private Address createLocationAddress() {
-        Address address = (Address)archetypeService.createDefaultObject("address.location");
+        Address address = (Address)archetypeService.create("address.location");
         assertTrue(address instanceof Address);
         
         address.getDetails().setAttribute("address", "5 Kalulu Rd");
@@ -269,7 +269,7 @@ public class PersonContactTestCase extends
      * @return Contact
      */
     private Contact createContact(String shortName) {
-        Contact contact = (Contact)archetypeService.createDefaultObject("contact.home");
+        Contact contact = (Contact)archetypeService.create("contact.home");
         assertTrue(contact instanceof Contact);
         
         contact.setActiveStartTime(new Date());

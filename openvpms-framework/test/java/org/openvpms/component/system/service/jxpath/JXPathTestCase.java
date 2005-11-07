@@ -123,7 +123,7 @@ public class JXPathTestCase extends BaseTestCase {
         ArchetypeDescriptor adesc = service
                 .getArchetypeDescriptor("person.person");
 
-        Person person = (Person) service.createDefaultObject("person.person");
+        Person person = (Person) service.create("person.person");
         person.setFirstName("jim");
         person.setLastName("alateras");
 
@@ -172,7 +172,7 @@ public class JXPathTestCase extends BaseTestCase {
     public void testDerivedValueNodes() throws Exception {
         // we know that both name and description are derived nodes
         // for person.person
-        Person person = (Person) service.createDefaultObject("person.person");
+        Person person = (Person) service.create("person.person");
 
         person.setLastName("Alateras");
         person.setFirstName("Jim");
@@ -197,7 +197,7 @@ public class JXPathTestCase extends BaseTestCase {
         // create a default animalCarer object
         Date start = new Date();
         EntityRelationship er = (EntityRelationship)service
-            .createDefaultObject("entityRelationship.animalCarer");
+            .create("entityRelationship.animalCarer");
         assertTrue(er.getActiveStartTime() != null);
         assertTrue(er.getActiveStartTime().getTime() >= start.getTime());
         assertTrue(er.getActiveStartTime().getTime() <= new Date().getTime());
@@ -208,10 +208,10 @@ public class JXPathTestCase extends BaseTestCase {
      */
     @SuppressWarnings("unchecked")
     public void testSetEntityIdentityOnEntity() throws Exception {
-        Person person = (Person) service.createDefaultObject("person.person");
+        Person person = (Person) service.create("person.person");
         assertTrue(person != null);
         EntityIdentity eidentity = (EntityIdentity) service
-                .createDefaultObject("entityIdentity.personAlias");
+                .create("entityIdentity.personAlias");
         assertTrue(eidentity != null);
 
         // get the descriptor for the person node

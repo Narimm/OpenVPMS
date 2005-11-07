@@ -102,8 +102,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
      */
     public void testExtendedValidationException()
     throws Exception {
-        Person person = (Person)service.createDefaultObject("person.person");
-        EntityIdentity eid = (EntityIdentity)service.createDefaultObject("entityIdentity.personAlias");
+        Person person = (Person)service.create("person.person");
+        EntityIdentity eid = (EntityIdentity)service.create("entityIdentity.personAlias");
 
         person.setTitle("Mr");
         person.setFirstName("Jim");
@@ -176,8 +176,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
     */
    public void testArchetypeRangeValidation()
    throws Exception {
-       Person person = (Person)service.createDefaultObject("person.person");
-       EntityIdentity eid = (EntityIdentity)service.createDefaultObject("entityIdentity.animalAlias");
+       Person person = (Person)service.create("person.person");
+       EntityIdentity eid = (EntityIdentity)service.create("entityIdentity.animalAlias");
 
        try {
            person.setTitle("Mr");
@@ -201,20 +201,20 @@ public class ValidationErrorTestCase extends BaseTestCase {
     */
    public void testArchetypeRangeValidation2()
    throws Exception {
-       Person person = (Person)service.createDefaultObject("person.person");
+       Person person = (Person)service.create("person.person");
 
        try {
            person.setTitle("Mr");
            person.setFirstName("Jim");
            person.setLastName("Alateras");
            person.addIdentity((EntityIdentity)service
-                   .createDefaultObject("entityIdentity.animalAlias"));
+                   .create("entityIdentity.animalAlias"));
            person.addIdentity((EntityIdentity)service
-                   .createDefaultObject("entityIdentity.animalAlias"));
+                   .create("entityIdentity.animalAlias"));
            person.addIdentity((EntityIdentity)service
-                   .createDefaultObject("entityIdentity.personAlias"));
+                   .create("entityIdentity.personAlias"));
            person.addIdentity((EntityIdentity)service
-                   .createDefaultObject("entityIdentity.animalAlias"));
+                   .create("entityIdentity.animalAlias"));
            service.validateObject(person);
            fail("This object should not have passed validation");
        } catch (Exception exception) {
@@ -238,7 +238,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                .get("file"), (String) cparams.get("assertionFile"));
        
        assertTrue(service.getArchetypeDescriptor("address.phoneNumber") != null);
-       Address address = (Address)service.createDefaultObject("address.phoneNumber");
+       Address address = (Address)service.create("address.phoneNumber");
        address.getDetails().setAttribute("areaCode", "03");
        address.getDetails().setAttribute("telephoneNumber", "976767666");
        service.validateObject(address);
@@ -265,7 +265,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                .get("file"), (String) cparams.get("assertionFile"));
        
        assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
-       Animal pet = (Animal)service.createDefaultObject("animal.pet");
+       Animal pet = (Animal)service.create("animal.pet");
        pet.setName("bill");
        pet.setSex("male");
        pet.setDateOfBirth(new Date());
@@ -314,7 +314,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                .get("file"), (String) cparams.get("assertionFile"));
        
        assertTrue(service.getArchetypeDescriptor("animal.pet1") != null);
-       Animal pet = (Animal)service.createDefaultObject("animal.pet1");
+       Animal pet = (Animal)service.create("animal.pet1");
        pet.setName("bill");
        pet.setSex("male");
        pet.setDateOfBirth(new Date());
@@ -356,7 +356,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                .get("file"), (String) cparams.get("assertionFile"));
        
        assertTrue(service.getArchetypeDescriptor("animal.pet2") != null);
-       Animal pet = (Animal)service.createDefaultObject("animal.pet2");
+       Animal pet = (Animal)service.create("animal.pet2");
        pet.setName("bill");
        pet.setSex("male");
        pet.setDateOfBirth(new Date());
@@ -416,7 +416,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                .get("file"), (String) cparams.get("assertionFile"));
        
        assertTrue(service.getArchetypeDescriptor("animal.pet3") != null);
-       Animal pet = (Animal)service.createDefaultObject("animal.pet3");
+       Animal pet = (Animal)service.create("animal.pet3");
        pet.setName("bill");
        pet.setSex("male");
        pet.setDateOfBirth(new Date());

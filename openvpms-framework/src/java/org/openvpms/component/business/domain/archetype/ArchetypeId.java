@@ -97,9 +97,11 @@ public class ArchetypeId implements Serializable {
     private String shortName;
     
     /**
-     * The empty constructor
+     * The empty constructor, which can be used to construct a
+     * partial archetype id for the purpose of searching. Do not use
+     * this to construct a valid archetypeId
      */
-    protected ArchetypeId() {
+    public ArchetypeId() {
         // do nothing
     }
 

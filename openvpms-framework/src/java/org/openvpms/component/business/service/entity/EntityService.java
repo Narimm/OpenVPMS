@@ -92,7 +92,7 @@ public class EntityService implements IEntityService {
         }
         
         // create and return the party object
-        return (Entity)archetypeService.createDefaultObject(descriptor.getArchetypeId());
+        return (Entity)archetypeService.create(descriptor.getArchetypeId());
     }
 
     /* (non-Javadoc)

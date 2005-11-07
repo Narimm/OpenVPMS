@@ -30,7 +30,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="/archetypeId/concept" />
-		<node name="identities" type="java.util.HashSet" parentChild="true"
+		<node name="identities" type="java.util.HashSet" parentChild="false"
 			baseName="identity" path="/identities" maxCardinality="*">
 			<assertion type="archetypeRange">
 				<property key="entityIdentity.personAlias" />

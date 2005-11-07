@@ -16,6 +16,7 @@
  *  $Id$
  */
 
+
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
 // java core
@@ -25,53 +26,80 @@ import java.util.List;
 //spring-framework
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
-// openvpms-framework
+// commons-lang
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.dao.im.common.IEntityDAO;
-import org.openvpms.component.business.dao.im.common.EntityDAOException;
-import org.openvpms.component.business.domain.im.common.Entity;
+
+//openvpms-framework
+import org.openvpms.component.business.dao.im.common.IMObjectDAO;
+import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 
 /**
- * This is a hibernate implementation of the {@link IEntityDAO} interface, which
- * is based on the Spring Framework's {@link HibernateDaoSupport} object.
- * 
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * This is an implementation of the IMObject DAO for hibernate. It uses the
+ * Spring Framework's template classes.
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDAO {
+public class IMObjectDAOHibernate extends HibernateDaoSupport implements
+        IMObjectDAO {
 
     /**
-     * Default constructor
+     *  Default constructor
      */
-    public EntityDAOHibernate() {
+    public IMObjectDAOHibernate() {
         super();
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#delete(org.openvpms.component.business.domain.im.common.Entity)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void delete(Entity entity) {
+    public void save(IMObject object) {
         try {
-            getHibernateTemplate().delete(entity);
+            getHibernateTemplate().saveOrUpdate(object);
         } catch (Exception exception) {
-            throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.FailedToDeleteEntity,
-                    new Object[]{entity});
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
+                    new Object[]{new Long(object.getUid())});
         }
     }
 
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#findById(org.openvpms.component.business.domain.im.common.Entity)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#delete(org.openvpms.component.business.domain.im.common.IMObject)
+     */
+    public void delete(IMObject object) {
+        try {
+            getHibernateTemplate().delete(object);
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
+                    new Object[]{new Long(object.getUid())});
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @SuppressWarnings("unchecked")
-    public List get(String rmName, String entityName, String conceptName, String instanceName) {
+    public List<IMObject> get(String rmName, String entityName,
+            String conceptName, String instanceName, String clazz) {
         try {
+            // check that rm has been specified
+            if (StringUtils.isEmpty(clazz)) {
+                throw new IMObjectDAOException(
+                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
+                        new Object[]{});
+            }
+            
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
             List<String> params = new ArrayList<String>();
             boolean andRequired = false;
             
-            queryString.append("select entity from org.openvpms.component.business.domain.im.common.Entity as entity");
+            queryString.append("select entity from ");
+            queryString.append(clazz);
+            queryString.append(" as entity");
             
             // check to see if one or more of the values have been specified
             if ((StringUtils.isEmpty(rmName) == false) ||
@@ -153,76 +181,59 @@ public class EntityDAOHibernate extends HibernateDaoSupport implements IEntityDA
                    (String[])names.toArray(new String[names.size()]),
                    params.toArray());
         } catch (Exception exception) {
-            throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.FailedToFindEntities,
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
                     new Object[]{rmName, entityName, conceptName, instanceName},
                     exception);
         }
     }
 
-    
     /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#getById(long)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getByArchetypeShortNames(java.lang.String[])
      */
-    public Entity getById(long id) {
+    public List<IMObject> getByArchetypeShortNames(String[] shortNames) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getById(org.openvpms.component.business.domain.archetype.ArchetypeId, long)
+     */
+    public IMObject getById(String clazz, long id) {
         try {
-            List results = getHibernateTemplate()
-                .findByNamedQueryAndNamedParam("entity.getEntityById",
-                    new String[] { "uid" },
-                    new Object[] {new Long(id)});
-            
-            if (results.size() > 1) {
-                throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.MultipleInstances,
-                    new Object[]{id});
-            } else if (results.size() == 0) {
-                return null;
-            } else {
-                return (Entity)results.get(0);
+            // check that rm has been specified
+            if (StringUtils.isEmpty(clazz)) {
+                throw new IMObjectDAOException(
+                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
+                        new Object[]{});
             }
+            
+            StringBuffer queryString = new StringBuffer();
+            List<String> names = new ArrayList<String>();
+            List<Object> params = new ArrayList<Object>();
+            
+            queryString.append("select entity from ");
+            queryString.append(clazz);
+            queryString.append(" as entity where entity.id = :uid");
+            names.add("uid");
+            params.add(new Long(id));
+            
+            
+            // now execute te query
+           List result = getHibernateTemplate().findByNamedParam(
+                   queryString.toString(),
+                   (String[])names.toArray(new String[names.size()]),
+                   params.toArray());
+           if (result.size() == 0){
+               return null;
+           } else {
+               return (IMObject)result.get(0);
+           }
         } catch (Exception exception) {
-            throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.FailedToFindEntity,
-                    new Object[]{id}, exception);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#insert(org.openvpms.component.business.domain.im.common.Entity)
-     */
-    public void insert(Entity entity) {
-        try{
-            getHibernateTemplate().save(entity);
-        } catch (Exception exception) {
-            throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.FailedToInsertEntity,
-                    new Object[]{entity}, exception);
-        }
-}
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#update(org.openvpms.component.business.domain.im.common.Entity)
-     */
-    public void update(Entity entity) {
-        try {
-            getHibernateTemplate().saveOrUpdate(entity);
-        } catch (Exception exception) {
-            throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.FailedToUpdateEntity,
-                    new Object[]{entity}, exception);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#save(org.openvpms.component.business.domain.im.common.Entity)
-     */
-    public void save(Entity entity) {
-        try {
-            getHibernateTemplate().saveOrUpdate(entity);
-        } catch (Exception exception) {
-            throw new EntityDAOException(
-                    EntityDAOException.ErrorCode.FailedToSaveEntity,
-                    new Object[]{entity}, exception);
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindIMObject,
+                    new Object[]{clazz, new Long(id)},
+                    exception);
         }
     }
 }

@@ -94,7 +94,7 @@ public class LookupService implements ILookupService {
         }
 
         // create and return the party object
-        return (Lookup) archetypeService.createDefaultObject(descriptor
+        return (Lookup) archetypeService.create(descriptor
                 .getArchetypeId());
     }
 

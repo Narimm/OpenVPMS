@@ -264,7 +264,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         for (ArchetypeDescriptor descriptor : registry
                 .getArchetypeDescriptors()) {
             assertTrue("Creating " + descriptor.getArchetypeQName(), registry
-                    .createDefaultObject(descriptor.getArchetypeId()) != null);
+                    .create(descriptor.getArchetypeId()) != null);
         }
     }
 
@@ -280,7 +280,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         ArchetypeService registry = new ArchetypeService(dir,
                 new String[] { extension }, assertionFile);
 
-        Animal animal = (Animal) registry.createDefaultObject("animal.pet");
+        Animal animal = (Animal) registry.create("animal.pet");
         assertTrue(animal != null);
     }
 
@@ -296,7 +296,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
 
         ArchetypeService service = new ArchetypeService(dir,
                 new String[] { extension }, assertionFile);
-        Person person = (Person) service.createDefaultObject("person.person");
+        Person person = (Person) service.create("person.person");
         person.setTitle("Mr");
         person.setFirstName("Jim");
         person.setLastName("Alateras");
@@ -324,7 +324,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
                 new String[] { extension }, assertionFile);
 
         Address address = (Address) service
-                .createDefaultObject("address.location");
+                .create("address.location");
         assertTrue(address.getDetails().getAttribute("country") != null);
         assertTrue(address.getDetails().getAttribute("country").equals(
                 "Australia"));
@@ -336,7 +336,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(StringUtils.isEmpty((String) address.getDetails()
                 .getAttribute("postCode")));
 
-        Person person = (Person) service.createDefaultObject("person.person");
+        Person person = (Person) service.create("person.person");
         assertTrue(person != null);
         assertTrue(person.getTitle().equals("Mr"));
     }

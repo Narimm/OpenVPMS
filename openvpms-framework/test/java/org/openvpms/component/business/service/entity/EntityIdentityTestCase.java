@@ -174,7 +174,7 @@ public class EntityIdentityTestCase extends
      */
     private EntityIdentity createEntityIdentity(String identity) {
         EntityIdentity eidentity = (EntityIdentity) archetypeService
-                .createDefaultObject("entityIdentity.personAlias");
+                .create("entityIdentity.personAlias");
         assertTrue(eidentity != null);
 
         eidentity.setIdentity(identity);

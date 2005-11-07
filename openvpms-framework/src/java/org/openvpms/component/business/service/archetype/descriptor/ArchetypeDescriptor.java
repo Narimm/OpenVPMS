@@ -77,6 +77,12 @@ public class ArchetypeDescriptor extends Descriptor {
     private boolean isLatest;
     
     /**
+     * Indicates whether this is a primary or top level archetype. Defaults 
+     * to true
+     */
+    private boolean primary;
+    
+    /**
      * A list of {@link NodeDescriptor} that belong to this archetype
      * descriptor.
      */
@@ -148,6 +154,20 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public void setLatest(boolean isLatest) {
         this.isLatest = isLatest;
+    }
+
+    /**
+     * @return Returns the primary.
+     */
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    /**
+     * @param primary The primary to set.
+     */
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 
     /**

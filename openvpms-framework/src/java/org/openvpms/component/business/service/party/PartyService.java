@@ -100,7 +100,7 @@ public class PartyService implements IPartyService {
         }
         
         // create and return the party object
-        return (Party)archetypeService.createDefaultObject(descriptor.getArchetypeId());
+        return (Party)archetypeService.create(descriptor.getArchetypeId());
     }
 
     /* (non-Javadoc)

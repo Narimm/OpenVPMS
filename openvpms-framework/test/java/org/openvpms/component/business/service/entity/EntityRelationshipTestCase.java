@@ -196,7 +196,7 @@ public class EntityRelationshipTestCase extends
      */
     private EntityRelationship createEntityRelationship(Entity source, Entity target) {
         EntityRelationship rel = (EntityRelationship)archetypeService
-            .createDefaultObject("entityRelationship.animalCarer");
+            .create("entityRelationship.animalCarer");
         
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);
@@ -217,7 +217,7 @@ public class EntityRelationshipTestCase extends
     @SuppressWarnings("unused")
     private EntityIdentity createEntityIdentity(String identity) {
         EntityIdentity eidentity = (EntityIdentity) archetypeService
-                .createDefaultObject("entityIdentity.personAlias");
+                .create("entityIdentity.personAlias");
         assertTrue(eidentity != null);
 
         eidentity.setIdentity(identity);

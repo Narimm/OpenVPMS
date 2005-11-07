@@ -148,6 +148,14 @@ public class NodeDescriptor  extends Descriptor {
      * elements stored in the collection.
      */
     private String baseName;
+    
+    /**
+     * Indicates that the collection type is a parentChild relationship, which 
+     * is the default for a collection. If this attribute is set to false then
+     * the child lifecycle is independent of the parent lifecycle. This 
+     * attribute is only meaningful for a collection
+     */
+    private boolean parentChild = true;
 
     /**
      * Contains a list of {@link AssertionDescriptor} instances
@@ -351,18 +359,20 @@ public class NodeDescriptor  extends Descriptor {
     /**
      * This is a convenience method that checks whether there 
      * is a parent child relationship within this node. A 
-     * parent child relationship is one where the parent controls 
-     * the lifecycle of the child.
-     * <p>
-     * If the assetion type 'candidateChildren' is defined for this node
-     * then a parent child relationship does not exist and the assertion
-     * defines the list of candiate child objects for this collection.
+     * parent child relationship only applicable for node descriptors
+     * that reference a collection.
      * 
      * @return boolean
      */
     public boolean isParentChild() {
-        return isCollection() && !assertionDescriptors
-            .containsKey("candidateChildren");
+        return isCollection() && parentChild;
+    }
+
+    /**
+     * @param parentChild The parentChild to set.
+     */
+    public void setParentChild(boolean parentChild) {
+        this.parentChild = parentChild;
     }
 
     /**
@@ -774,9 +784,8 @@ public class NodeDescriptor  extends Descriptor {
     
     /**
      * Return a list of candiate children for the specified node. This is only 
-     * applicable for collection nodes. If the 'candidateChildren' assertion
-     * type is defined then use it to retrieve the list of children, otherwise
-     * return a null.
+     * applicable for collection nodes that have a candidateChildren assertion
+     * defined.
      * 
      * @param context
      *            the context object 
@@ -785,17 +794,16 @@ public class NodeDescriptor  extends Descriptor {
      */
     @SuppressWarnings("unchecked")
     public List getCandidateChildren(IMObject context) {
-        AssertionDescriptor descriptor = assertionDescriptors.get("candidateChildren");
-        
-        // if not such descriptor is defined for this node then just
-        // return a null
+        List result = null;
+        AssertionDescriptor descriptor = assertionDescriptors.get(
+                "candidateChildren");
+
         if ((descriptor == null) ||
             (descriptor.getPropertyDescriptors().containsKey("path") == false)) {
-            return null;
+            return result;
         }
 
         String path = descriptor.getPropertyDescriptors().get("path").getValue();
-        ArrayList result = null;
         try {
             Object obj = JXPathContext.newContext(context).getValue(path);
             if (obj == null) {
@@ -812,6 +820,7 @@ public class NodeDescriptor  extends Descriptor {
         }
         
         return result;
+        
     }
     
     /**

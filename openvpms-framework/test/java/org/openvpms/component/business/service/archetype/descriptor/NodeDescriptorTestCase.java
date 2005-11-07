@@ -222,7 +222,7 @@ public class NodeDescriptorTestCase extends BaseTestCase {
         ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
         NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
         assertTrue(ndesc != null);
-        assertTrue(ndesc.isParentChild() == true);
+        assertTrue(ndesc.isParentChild() == false);
     }
     
     /**

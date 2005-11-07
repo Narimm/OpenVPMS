@@ -19,6 +19,8 @@
 package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
+import java.util.List;
+
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
@@ -70,7 +72,7 @@ public interface IArchetypeService {
      * @thorws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
-    public Object createDefaultObject(String name);
+    public Object create(String name);
     
     /**
      * Create a default domain object given an {@link ArchetypeId}. If the 
@@ -82,7 +84,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            if there is a problem creating the object.            
      */
-    public Object createDefaultObject(ArchetypeId id);
+    public Object create(ArchetypeId id);
     
     /**
      * Validate the specified {@link IMObject}. To validate the object it will
@@ -144,4 +146,88 @@ public interface IArchetypeService {
      * @return AssertionTypeDescriptor[]
      */
     public AssertionTypeDescriptor[] getAssertionTypeDescriptors();
+    
+    /**
+     * Remove the specified entity. If the entity cannot be removed for whatever
+     * reason then raise a {@link ArchetypeServiceException}.
+     * 
+     * @param entity
+     *            the entity to remove
+     * @throws ArchetypeServiceException
+     *             a runtime exception
+     */
+
+    public void remove(IMObject entity);
+
+    /**
+     * Save or upadate the specified enity
+     * 
+     * @param entity
+     *            the entity to insert or update
+     * @throws ArchetypeServiceException
+     *             a runtime exception
+     */
+    public void save(IMObject entity);
+    
+    /**
+     * Uses the specified criteria to return zero, one or more matching . 
+     * entities. This is a very generic query which will constrain the 
+     * returned set on one or more of the supplied values.
+     * <p>
+     * Each of the parameters can denote an exact match or a partial match. If
+     * a partial match is required then the last character of the value must be
+     * a '*'. In every other case the search will look for an exact match.
+     * <p>
+     * All the values are optional. In the case where all the values are null
+     * then all the entities will be returned. In the case where two or more 
+     * values are specified (i.e. rmName and entityName) then only entities 
+     * satisfying both conditions will be returned.
+     * 
+     * @param rmName
+     *            the reference model name (must be complete name)
+     * @param entityName
+     *            the name of the entity (partial or complete)
+     * @param concept
+     *            the concept name (partial or complete)
+     * @param instanceName
+     *            the particular instance name
+     * @return List                                   
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public List<IMObject> get(String rmName, String entityName, 
+            String conceptName, String instanceName);
+    
+    /**
+     * Return the entity with the specified identity or null if it does not
+     * exist
+     * 
+     * @param archId
+     *            the archetype id
+     * @param id
+     *            the entities identity
+     * @return IMObject
+     *            the entity object
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public IMObject getById(ArchetypeId archId, long id);
+    
+    /**
+     * Return a list of archtype short names (i.e strings) given the 
+     * nominated criteria
+     * 
+     * @param rmName
+     *            the reference model name
+     * @param entityName
+     *            the entity name
+     * @param conceptName
+     *            the concept name
+     * @param primaryOnly
+     *            indicates whether to return primary objects only.                                                     
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public List<String> getArchetypeShortNames(String rmName, String entityName,
+            String conceptName, boolean primaryOnly);
 }

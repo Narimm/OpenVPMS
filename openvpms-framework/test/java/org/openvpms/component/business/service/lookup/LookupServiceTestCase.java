@@ -159,7 +159,7 @@ public class LookupServiceTestCase extends
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
             .getArchetypeDescriptor("address.location");
-        Address address = (Address)archetypeService.createDefaultObject(
+        Address address = (Address)archetypeService.create(
             descriptor.getArchetypeId());
         address.getDetails().setAttribute("country", "Australia");
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() > 0);
