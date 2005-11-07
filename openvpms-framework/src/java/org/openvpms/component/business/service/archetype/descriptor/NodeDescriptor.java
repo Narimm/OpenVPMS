@@ -793,8 +793,8 @@ public class NodeDescriptor  extends Descriptor {
      *            a list of candiate children, which can also be an empty list          
      */
     @SuppressWarnings("unchecked")
-    public List getCandidateChildren(IMObject context) {
-        List result = null;
+    public List<IMObject> getCandidateChildren(IMObject context) {
+        List<IMObject> result = null;
         AssertionDescriptor descriptor = assertionDescriptors.get(
                 "candidateChildren");
 
@@ -807,9 +807,9 @@ public class NodeDescriptor  extends Descriptor {
         try {
             Object obj = JXPathContext.newContext(context).getValue(path);
             if (obj == null) {
-                result = new ArrayList();
+                result = new ArrayList<IMObject>();
             } else if (obj instanceof Collection) {
-                result = new ArrayList((Collection)obj);
+                result = new ArrayList<IMObject>((Collection)obj);
             } else {
                 logger.warn("getCandidateChildren for path " + path +
                         " returned object of type " + obj.getClass().getName());
@@ -820,7 +820,6 @@ public class NodeDescriptor  extends Descriptor {
         }
         
         return result;
-        
     }
     
     /**

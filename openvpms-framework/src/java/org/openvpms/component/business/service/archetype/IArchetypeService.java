@@ -191,12 +191,26 @@ public interface IArchetypeService {
      *            the concept name (partial or complete)
      * @param instanceName
      *            the particular instance name
-     * @return List                                   
+     * @return List<IMObject>                                   
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
     public List<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName);
+    
+    /**
+     * Retrieve a list of IMObjects that match one or more of the supplied
+     * short names. The short names are specified as an array of strings.
+     * <p>
+     * The short names must be valid short names without wild card characters.
+     * 
+     * @param shortNames
+     *            an array of short names
+     * @return List<IMObject>                                   
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public List<IMObject> get(String[] shortNames);
     
     /**
      * Return the entity with the specified identity or null if it does not

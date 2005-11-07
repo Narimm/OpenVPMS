@@ -37,6 +37,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+// xml-sax 
+import org.xml.sax.InputSource;
+
 // log4j
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jxpath.JXPathContext;
@@ -56,7 +59,6 @@ import org.openvpms.component.business.service.archetype.descriptor.AssertionDes
 import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.xml.sax.InputSource;
 
 /**
  * This basic implementation of an archetype service, which reads in the
@@ -366,6 +368,26 @@ public class ArchetypeService implements IArchetypeService {
 
         return results;
     }
+    
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[])
+     */
+    public List<IMObject> get(String[] shortNames) {
+        List<IMObject> results = new ArrayList<IMObject>();
+        for (String shortName : shortNames) {
+            
+            ArchetypeDescriptor adesc =  archetypesByShortName.get(shortName);
+            if (adesc == null) {
+                continue;
+            }
+            ArchetypeId aid = adesc.getArchetypeId();
+            List<IMObject> objects = get(aid.getRmName(), aid.getEntityName(), 
+                    aid.getConcept(), null);
+            results.addAll(objects);
+        }
+        
+        return results;
+    }
 
     /*
      * (non-Javadoc)
@@ -489,7 +511,7 @@ public class ArchetypeService implements IArchetypeService {
         
         return shortNames;
     }
-
+    
     /**
      * Iterate through all the nodes and ensure that the object meets all the
      * specified assertions. The assertions are defined in the node and can be

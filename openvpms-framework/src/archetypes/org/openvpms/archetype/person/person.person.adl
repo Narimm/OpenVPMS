@@ -16,12 +16,12 @@
 		<node name="initials" path="/initials" type="java.lang.String" />
 		<node name="lastName" path="/lastName" type="java.lang.String"
 			minCardinality="1" maxLength="30" />
-		<node name="classifications" path="/classifications"
-			type="org.openvpms.component.business.domain.im.common.Classification">
+		<node name="classifications" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="classification">
 			<assertion type="archetypeRange">
-				<property key="person.person" />
-				<property key="animal.animal" />
-				<errorMessage>errorMessage</errorMessage>
+				<property key="classification.staff" />
+				<property key="classification.patient" />
+				<errorMessage>Invalid classifications specified</errorMessage>
 			</assertion>
 		</node>
 		<node name="name" type="java.lang.String" path="/name"

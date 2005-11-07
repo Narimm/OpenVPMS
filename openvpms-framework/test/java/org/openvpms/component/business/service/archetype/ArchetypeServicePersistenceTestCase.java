@@ -27,12 +27,15 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * Test the persistence side of the archetype service
@@ -80,7 +83,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can create a {@link Person} through this service
      */
-    public void testCreatePerson()
+    public void  testCreatePerson()
     throws Exception {
         Entity entity = (Entity)service.create("person.person");
         assertTrue(entity instanceof Person);
@@ -96,7 +99,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test create, retrieve and update person
      */
-    public void testPersonLifecycle()
+    public void  testPersonLifecycle()
     throws Exception {
         Entity entity = (Entity)service.create("person.person");
         assertTrue(entity instanceof Person);
@@ -127,7 +130,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can create a {@link Animal} through this service
      */
-    public void testAnimalCreation()
+    public void  testAnimalCreation()
     throws Exception {
         // create and insert a new pet
         service.save(createPet("brutus"));
@@ -136,7 +139,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can create a {@link Lookup} through this service
      */
-    public void testLookupCreation()
+    public void  testLookupCreation()
     throws Exception {
         // create and insert a new lookup
         Lookup lookup = createCountryLookup("South Africa");
@@ -147,7 +150,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can locate entities by RmName only
      */
-    public void testFindWithRmName()
+    public void  testFindWithRmName()
     throws Exception {
         
         // get the initial count
@@ -164,7 +167,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can locate entities by partial RmName only
      */
-    public void testFindWithPartialRmName()
+    public void  testFindWithPartialRmName()
     throws Exception {
         
         // get the initial count..this should not be allowed
@@ -181,7 +184,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can locate entities by RmName and EntityName only
      */
-    public void testFindWithEntityName()
+    public void  testFindWithEntityName()
     throws Exception {
         
         // get the initial count
@@ -198,7 +201,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can locate entities by RmName and partial EntityName 
      */
-    public void testFindWithPartialEntityName()
+    public void  testFindWithPartialEntityName()
     throws Exception {
         
         // get the initial count
@@ -215,13 +218,13 @@ public class ArchetypeServicePersistenceTestCase extends
             assertTrue(((Entity)entity).getArchetypeId().getEntityName().matches("ani.*"));
         }
 
-        // now test with a starts with
+        // now  test with a starts with
         after = service.get("party", "*mal", null, null);
         for (Object entity : after) {
             assertTrue(((Entity)entity).getArchetypeId().getEntityName().matches(".*mal"));
         }
 
-        // now test with a start and ends with
+        // now  test with a start and ends with
         after = service.get("party", "*nim*", null, null);
         for (Object entity : after) {
             assertTrue(((Entity)entity).getArchetypeId().getEntityName().matches(".*nim.*"));
@@ -231,7 +234,7 @@ public class ArchetypeServicePersistenceTestCase extends
     /**
      * Test that we can locate entities by RmName, EntityName and ConceptName
      */
-    public void testFindWithConceptName()
+    public void  testFindWithConceptName()
     throws Exception {
         
         // get the initial count
@@ -249,7 +252,7 @@ public class ArchetypeServicePersistenceTestCase extends
      * Test that we can locate entities by RmName, EntityName and partial 
      * conceptName
      */
-    public void testFindWithPartialConceptName()
+    public void  testFindWithPartialConceptName()
     throws Exception {
         
         // get the initial count
@@ -282,7 +285,7 @@ public class ArchetypeServicePersistenceTestCase extends
      * Test that we can locate entities by RmName, EntityName, ConceptName
      * and instance name
      */
-    public void testFindWithInstanceName()
+    public void  testFindWithInstanceName()
     throws Exception {
         
         // get the initial count
@@ -301,7 +304,7 @@ public class ArchetypeServicePersistenceTestCase extends
      * Test that we can locate entities by RmName, EntityName, ConceptName
      * and partial instance name
      */
-    public void testFindWithPartialInstanceName()
+    public void  testFindWithPartialInstanceName()
     throws Exception {
         
         // get the initial count
@@ -334,7 +337,7 @@ public class ArchetypeServicePersistenceTestCase extends
      * Test that that we can retrieve short names using a combination
      * of rmName, entityName and conceptName
      */
-    public void testGetArchetypeShortNames()
+    public void  testGetArchetypeShortNames()
     throws Exception {
         List<String> shortNames = service.getArchetypeShortNames("jimaparty", null, 
                 null, true);
@@ -404,6 +407,56 @@ public class ArchetypeServicePersistenceTestCase extends
         }
     }
     
+    /**
+     * Test that we can retrieve all the object for a particular 
+     * classification.
+     */
+    public void testGetCandidateChildren()
+    throws Exception {
+        Classification cf = (Classification)service.create("classification.staff");
+        cf.setName("vet");
+        cf.setDescription("vet");
+        service.save(cf);
+        
+        cf = (Classification)service.create("classification.staff");
+        cf.setName("vet1");
+        cf.setDescription("vet1");
+        service.save(cf);
+        
+        cf = (Classification)service.create("classification.patient");
+        cf.setName("premium");
+        cf.setDescription("premium");
+        service.save(cf);
+        
+        cf = (Classification)service.create("classification.patient");
+        cf.setName("standard");
+        cf.setDescription("standard");
+        service.save(cf);
+        
+        Person person = (Person)service.create("person.person");
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
+                person.getArchetypeId());
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
+        List<IMObject> children = 
+            ArchetypeServiceHelper.getCandidateChildren(service, ndesc, person);
+        assertTrue(children.size() > 0);
+        for (IMObject child : children) {
+            boolean matchFound = false;
+            for (String shortName : ndesc.getArchetypeRange()) {
+                if (child.getArchetypeId().getShortName().equals(shortName)) {
+                    matchFound = true;
+                    break;
+                }
+            }
+            
+            // if a match cannot be found then signal an error
+            if (!matchFound) {
+                fail(child.getArchetypeId() + " does not match " + 
+                        ndesc.getArchetypeRange().toString());
+                
+            }
+        }
+    }
     
     /**
      * Create a pet with the specified name

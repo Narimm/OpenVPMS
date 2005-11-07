@@ -1,0 +1,10 @@
+<archetypes>
+	<archetype name="openvpms-common-classification.staff.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.common.Classification">
+		<node name="name" path="/name" type="java.lang.String"
+			minCardinality="1" />
+		<node name="description" path="/description" type="java.lang.String"
+			minCardinality="1" />
+	</archetype>
+</archetypes>
