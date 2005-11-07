@@ -80,7 +80,7 @@ public class ArchetypeDescriptor extends Descriptor {
      * Indicates whether this is a primary or top level archetype. Defaults 
      * to true
      */
-    private boolean primary;
+    private boolean primary = true;
     
     /**
      * A list of {@link NodeDescriptor} that belong to this archetype

@@ -452,24 +452,29 @@ public class ArchetypeService implements IArchetypeService {
     public List<String> getArchetypeShortNames(String rmName,
             String entityName, String conceptName, boolean primaryOnly) {
         List<String> shortNames = new ArrayList<String>();
+        
+        // check out if there are any '*' specified
+        String trmName = (rmName == null) ? null : rmName.replace("*", ".*");
+        String tentityName = (entityName == null) ? null : entityName.replace("*", ".*");
+        String tconceptName = (conceptName == null) ? null : conceptName.replace("*", ".*");
+        
         for (ArchetypeDescriptor desc : archetypesByShortName.values()) {
             ArchetypeId archId = desc.getArchetypeId();
-            
             // do a check on rm name
-            if ((StringUtils.isEmpty(rmName) == false) && 
-                (archId.getRmName().matches(rmName) == false)) {
+            if ((StringUtils.isEmpty(trmName) == false) && 
+                (archId.getRmName().matches(trmName) == false)) {
                 continue;
             }
 
             // do the check on entity name
-            if ((StringUtils.isEmpty(entityName) == false) && 
-                (archId.getEntityName().matches(entityName) == false)) {
+            if ((StringUtils.isEmpty(tentityName) == false) && 
+                (archId.getEntityName().matches(tentityName) == false)) {
                 continue;
             }
 
             // do the check on concept name
-            if ((StringUtils.isEmpty(conceptName) == false) && 
-                (archId.getConcept().matches(conceptName) == false)) {
+            if ((StringUtils.isEmpty(tconceptName) == false) && 
+                (archId.getConcept().matches(tconceptName) == false)) {
                 continue;
             }
             
@@ -478,7 +483,7 @@ public class ArchetypeService implements IArchetypeService {
                 (!desc.isPrimary())) {
                 continue;
             }
-            
+
             shortNames.add(archId.getShortName());
         }
         

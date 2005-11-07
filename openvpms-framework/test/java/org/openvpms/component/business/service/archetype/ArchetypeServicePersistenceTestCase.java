@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 /**
  * Test the persistence side of the archetype service
@@ -328,6 +329,81 @@ public class ArchetypeServicePersistenceTestCase extends
             assertTrue(((Entity)entity).getName().matches(".*utu.*"));
         }
     }
+    
+    /**
+     * Test that that we can retrieve short names using a combination
+     * of rmName, entityName and conceptName
+     */
+    public void testGetArchetypeShortNames()
+    throws Exception {
+        List<String> shortNames = service.getArchetypeShortNames("jimaparty", null, 
+                null, true);
+        assertTrue(shortNames.size() == 0);
+        
+        shortNames = service.getArchetypeShortNames("party", null, 
+                null, true);
+        assertTrue(shortNames.size() > 0);
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
+            ArchetypeId archId = desc.getArchetypeId();
+            if ((archId.getRmName().matches("party")) &&
+                (desc.isPrimary())) {
+                continue;
+            }
+            fail("shortName: " + shortName + " in invalid for rmName=party");
+        }
+
+        // check when primaryOnly is set to false
+        int count = shortNames.size();
+        shortNames = service.getArchetypeShortNames("party", null, 
+                null, false);
+        assertTrue(shortNames.size() > count);
+        
+        
+        shortNames = service.getArchetypeShortNames("party", "person", 
+                null, true);
+        assertTrue(shortNames.size() > 0);
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
+            ArchetypeId archId = desc.getArchetypeId();
+            if ((archId.getRmName().matches("party")) &&
+                    (archId.getEntityName().matches("person")) &&
+                (desc.isPrimary())) {
+                continue;
+            }
+            fail("shortName: " + shortName + " in invalid for rmName=party,entityName=person");
+        }
+        
+        // test with a partial entity name
+        shortNames = service.getArchetypeShortNames("party", "per*", 
+                null, true);
+        assertTrue(shortNames.size() > 0);
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
+            ArchetypeId archId = desc.getArchetypeId();
+            if ((archId.getRmName().matches("party")) &&
+                (archId.getEntityName().matches("per.*")) &&
+                (desc.isPrimary())) {
+                continue;
+            }
+            fail("shortName: " + shortName + " in invalid for rmName=party,entityName=per*");
+        }
+        
+        // test with a partial entity name
+        shortNames = service.getArchetypeShortNames("party", "*dress", 
+                null, false);
+        assertTrue(shortNames.size() > 0);
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
+            ArchetypeId archId = desc.getArchetypeId();
+            if ((archId.getRmName().matches("party")) &&
+                (archId.getEntityName().matches(".*dress"))) {
+                continue;
+            }
+            fail("shortName: " + shortName + " in invalid for rmName=party,entityName=*dress");
+        }
+    }
+    
     
     /**
      * Create a pet with the specified name
