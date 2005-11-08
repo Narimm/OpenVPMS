@@ -14,6 +14,6 @@
     <!-- override the default template location (more WYSIWYG friendly) -->
     <context-asset name="$template" path="Border.html"/>
     
-	<context-asset name="stylesheet" path="css/global.css"/>
+	<context-asset name="stylesheet" path="css/openvpms.css"/>
     
 </component-specification>

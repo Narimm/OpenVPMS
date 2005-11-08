@@ -8,10 +8,7 @@
 <library-specification>
     <description>The OpenVPMS library</description>
 	<library id="contrib" specification-path="/org/apache/tapestry/contrib/Contrib.library"/>
-    <component-type type="NewLink" specification-path="NewLink.jwc"/>
     <component-type type="SearchLink" specification-path="SearchLink.jwc"/>
     <component-type type="CollectionEditor" specification-path="CollectionEditor.jwc"/>
     <component-type type="NodeTable" specification-path="NodeTable.jwc"/>
-    <component-type type="Tab" specification-path="Tab.jwc"/>
-    <component-type type="TabPanel" specification-path="TabPanel.jwc"/>
 </library-specification>

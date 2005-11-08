@@ -16,14 +16,14 @@
         <binding name="source" value="page.simpleDescriptors"/>
         <binding name="value" value="descriptor"/>
     </component>
-    <component id="hasBlock" type="If">
-        <binding name="condition" value="page.hasBlock(descriptor.name)"/>
+    <component id="hasBlock" type="Conditional">
+        <binding name="condition" value="hasBlock(descriptor.name)"/>
     </component>   
-    <component id="doesntHaveBlock" type="If">
-        <binding name="condition" value="not(page.hasBlock(descriptor.name))"/>
+    <component id="doesntHaveBlock" type="Conditional">
+        <binding name="condition" value="not(hasBlock(descriptor.name))"/>
     </component>      
     <component id="renderBlock" type="RenderBlock">
-        <binding name="block" value="page.getBlock(descriptor.name)"/>
+        <binding name="block" value="getBlock(descriptor.name)"/>
     </component>  
     <component id="nodeEditor" type="NodeEditor">
         <binding name="descriptor" value="descriptor"/>

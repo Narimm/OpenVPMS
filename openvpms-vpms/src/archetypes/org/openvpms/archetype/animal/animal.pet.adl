@@ -42,9 +42,9 @@
 		<node name="dateOfBirth" path="/dateOfBirth"
 			type="java.util.Date" minCardinality="1" />
 		<node name="identities" path="/identities"
-			type="java.util.HashSet" baseName="Identity" minCardinality="1" maxCardinality="3">
+			type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
 			<assertion type="archetypeRange">
-				<property key="entityIdentity.animalAlias" />
+				<property key="entityIdentity.Alias" />
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>

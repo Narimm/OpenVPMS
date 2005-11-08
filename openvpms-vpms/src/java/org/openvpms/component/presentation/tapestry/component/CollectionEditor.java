@@ -27,6 +27,11 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
+import org.apache.tapestry.form.IPropertySelectionModel;
+import org.apache.tapestry.form.StringPropertySelectionModel;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
@@ -59,7 +64,7 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
     public abstract String getArchetypeName();
 
     private List selected = new ArrayList();
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -74,32 +79,37 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
 
     @SuppressWarnings("unchecked")
     void buildSelectedList() {
-        if (getCollection() != null) {
+        Collection collection = getCollection();
+        if (collection != null) {
             selected = new ArrayList();
-            for (Iterator iter = getCollection().iterator(); iter.hasNext();) {
+            for (Iterator iter = collection.iterator(); iter.hasNext();) {
                 iter.next();
                 selected.add(new Boolean(false));
             }
         }
     }
 
-    public void showAddPage(IRequestCycle cycle) {
+    public void onNew(IRequestCycle cycle) {
+
+        Object[] parameters = cycle.getListenerParameters();
+        NodeDescriptor descriptor = (NodeDescriptor)parameters[0];
+
+        // First check we have a selected archetype Name
+        if (getArchetypeName() == null || getArchetypeName() == "")
+            return;
 
         //Push a Collection Callback onto the stack.
         CollectionCallback callback = new CollectionCallback(
-                getPage().getPageName(), getModel(), getDescriptor());
+                getPage().getPageName(), getModel(), descriptor);
         ((OpenVpmsPage)getPage()).getVisitObject().getCallbackStack().push(callback);
         
-        // Look for specific page or else use <Default>AddToCollection
+        // Look for specific page or else use DefaultEdit
         EditPage editPage = (EditPage) Utils.findPage(cycle, Utils
-                .unqualify(getDescriptor().getDisplayName() + "Edit"), "Edit");
+                .unqualify(descriptor.getDisplayName() + "Edit"), "Edit");
         try {
-            // First check we have a selected archetype Name
-            if (getArchetypeName() == null || getArchetypeName() == "")
-                return;
             // we need to do some indirection to avoid a StaleLink
             EditCallback nextPage = new EditCallback(editPage.getPageName(),
-                    editPage.getArchetypeService().createDefaultObject(getArchetypeName()));
+                    editPage.getArchetypeService().create(getArchetypeName()));
             ((EditPage) getPage()).setNextPage(nextPage);
 
         } catch (Exception ex) {
@@ -126,28 +136,31 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         }
     }
     
-
-
     @SuppressWarnings("unchecked")
-	public void remove(IRequestCycle cycle) {
-        int i = 0;
-        ArrayList deleting = new ArrayList();
-        for (Iterator iter = getCollection().iterator(); iter.hasNext();) {
+	public void onRemove(IRequestCycle cycle) {
 
-            Object element = (Object) iter.next();
-
-            if (((Boolean) getSelected().get(i)).booleanValue()) {
-                deleting.add(element);
+        Object[] parameters = cycle.getListenerParameters();
+        NodeDescriptor descriptor = (NodeDescriptor)parameters[0];
+        try {
+            Collection collect = (Collection)getValue(getModel(),descriptor.getPath());
+            int i = 0;
+            ArrayList deleting = new ArrayList();
+            for (Iterator iter = collect.iterator(); iter.hasNext();) {
+    
+                Object element = (Object) iter.next();
+    
+                if (((Boolean) getSelected().get(i)).booleanValue()) {
+                    deleting.add(element);
+                }
+                i++;
             }
-            i++;
+            collect.removeAll(deleting);
         }
-        getCollection().removeAll(deleting);
+        catch (Exception e)
+        {  
+        }
     }
     
-    public void onCollectionFormSubmit(IRequestCycle cycle) {
-        
-    }
-
     /**
      * @return Returns the toBeDeleted.
      */
@@ -163,7 +176,48 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         this.selected = toBeDeleted;
     }
 
-    /*
+    public List getSelectedList()
+    {
+        ArrayList selectedList = new ArrayList();
+        selectedList.addAll(getCollection());
+        return selectedList;
+    }
+    
+    public void setSelectedList(List selected)
+    {
+        if (selected != null)
+        {
+            getCollection().clear();
+            getCollection().addAll(selected);
+        }
+    }
+    
+    public IPropertySelectionModel getArchetypeNamesModel(
+            NodeDescriptor descriptor) {
+        if (descriptor == null)
+            return new ArchetypeNameSelectionModel(new String[] { "" });
+        else
+            return new ArchetypeNameSelectionModel(descriptor
+                    .getArchetypeRange());
+    }
+
+    public IPropertySelectionModel getSelectionModel()
+    {
+        // don't allow use to select from all here
+        if (getDescriptor().isParentChild())
+        {
+            return new IdentifierSelectionModel(getSelectedList());
+        }
+        // but do here
+        else
+        {
+//            return new IdentifierSelectionModel(getDescriptor().getCandidateChildren(((IMObject)getModel())));
+            return new IdentifierSelectionModel(ArchetypeServiceHelper.
+                    getCandidateChildren((ArchetypeService)((OpenVpmsPage)getPage()).getArchetypeService(),getDescriptor(),((IMObject)getModel())));
+        }       
+    }
+
+     /*
      * (non-Javadoc)
      * 
      * @see java.lang.Object#equals(java.lang.Object)

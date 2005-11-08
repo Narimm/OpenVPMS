@@ -52,7 +52,7 @@ public abstract class NodeEditor extends OpenVpmsComponent {
      */
     public List getValidators(NodeDescriptor descriptor) throws Exception {
         BaseValidator validator = null;
-        
+
         List<BaseValidator> validators = new ArrayList<BaseValidator>();
 
         if (descriptor.isRequired()) {
@@ -61,7 +61,7 @@ public abstract class NodeEditor extends OpenVpmsComponent {
         }
         if (descriptor.isNumeric()) {
             validator = new Pattern();
-            ((Pattern)validator).setPattern("#");
+            ((Pattern) validator).setPattern("#");
             validators.add(validator);
             if (descriptor.getMaxValue() != null) {
                 validator = new Max(descriptor.getMaxValue().toString());
@@ -72,20 +72,20 @@ public abstract class NodeEditor extends OpenVpmsComponent {
                 validator = new Min(descriptor.getMinValue().toString());
                 validators.add(validator);
             }
-        } else if  (descriptor.isDate()){
+        } else if (descriptor.isDate()) {
         } else if (descriptor.isString()) {
             if (descriptor.getMaxLength() > 0) {
                 validator = new MaxLength();
-                ((MaxLength)validator).setMaxLength(descriptor.getMaxLength());
+                ((MaxLength) validator).setMaxLength(descriptor.getMaxLength());
                 validators.add(validator);
             }
             if (descriptor.getStringPattern() != null) {
                 validator = new Pattern();
-                ((Pattern)validator).setPattern(descriptor.getStringPattern());
+                ((Pattern) validator).setPattern(descriptor.getStringPattern());
                 validators.add(validator);
             }
         }
-        
+
         return validators;
     }
 }

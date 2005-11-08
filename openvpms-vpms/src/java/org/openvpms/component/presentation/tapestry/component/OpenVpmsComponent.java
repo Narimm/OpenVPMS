@@ -20,6 +20,7 @@ package org.openvpms.component.presentation.tapestry.component;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.tapestry.BaseComponent;
+import org.apache.tapestry.components.Block;
 
 /**
  * 
@@ -48,4 +49,28 @@ public abstract class OpenVpmsComponent extends BaseComponent {
         JXPathContext context = JXPathContext.newContext(root);
         return context.getValue(expr);
     }
+    
+    /**
+     * @param propertyName
+     * @return
+     */
+    public boolean hasBlock(String propertyName) {
+        if (getPage().getComponents().containsKey(propertyName))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * @param propertyName
+     * @return
+     */
+    public Block getBlock(String propertyName) {
+        if (getPage().getComponents().containsKey(propertyName))
+            return (Block) getPage().getComponent(propertyName);
+        else
+            return null;
+    }
+
+
 }

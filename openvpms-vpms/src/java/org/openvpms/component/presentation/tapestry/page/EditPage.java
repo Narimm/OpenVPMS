@@ -18,23 +18,14 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.annotations.Bean;
 import org.apache.tapestry.annotations.Persist;
 import org.apache.tapestry.callback.ICallback;
-import org.apache.tapestry.components.Block;
 import org.apache.tapestry.form.IPropertySelectionModel;
-import org.apache.tapestry.form.StringPropertySelectionModel;
-import org.apache.tapestry.form.validator.BaseValidator;
-import org.apache.tapestry.form.validator.Max;
-import org.apache.tapestry.form.validator.MaxLength;
-import org.apache.tapestry.form.validator.Min;
-import org.apache.tapestry.form.validator.Pattern;
-import org.apache.tapestry.form.validator.Required;
 import org.apache.tapestry.valid.ValidationConstraint;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -48,6 +39,7 @@ import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
 import org.openvpms.component.presentation.tapestry.component.LookupSelectionModel;
+import org.openvpms.component.presentation.tapestry.component.Utils;
 import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidationDelegate;
 
 /**
@@ -58,6 +50,7 @@ import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidatio
 
 public abstract class EditPage extends OpenVpmsPage {
 
+ 
     // These methods represent page properties managed by Tapestry
 
     @Persist("session")
@@ -67,14 +60,6 @@ public abstract class EditPage extends OpenVpmsPage {
     @Persist("session")
     public abstract Object getModel();
     public abstract void setModel(Object model);
-
-    @Persist("session")
-    public abstract String getArchetypeRange();
-    public abstract void setArchetypeRange(String archetypeRange);
-
-    @Persist("session")
-    public abstract String getCurrentArchetypeName();
-    public abstract void setCurrentArchetypeName(String name);
 
     public abstract String getCurrentActiveTab();
     public abstract void setCurrentActiveTab(String name);
@@ -94,9 +79,6 @@ public abstract class EditPage extends OpenVpmsPage {
     // The Validation delegate injected by Tapestry
     @Bean
     public abstract OpenVpmsValidationDelegate getDelegate();
-
-    // The private list of selected collection table entries for deletion
-    private List selected = new ArrayList();
 
     // Push a Edit Page Callback
     public void pushCallback() {
@@ -126,12 +108,7 @@ public abstract class EditPage extends OpenVpmsPage {
             ((CollectionCallback) callback).remove(getModel());
         } else {
             try {
-                if (getModel() instanceof Entity)
-                    getEntityService().remove((Entity) getModel());
-                else if (getModel() instanceof Act)
-                    getActService().remove((Act) getModel());
-                else if (getModel() instanceof Lookup)
-                    getLookupService().remove((Lookup) getModel());
+                 getArchetypeService().remove((IMObject) getModel());
             } catch (Exception pe) {
                 cycle.activate("Home");
             }
@@ -224,12 +201,7 @@ public abstract class EditPage extends OpenVpmsPage {
             ((CollectionCallback) callback).add(getModel());
         } else {
             try {
-                if (getModel() instanceof Entity)
-                    getEntityService().save((Entity) getModel());
-                else if (getModel() instanceof Act)
-                    getActService().save((Act) getModel());
-                else if (getModel() instanceof Lookup)
-                    getLookupService().save((Lookup) getModel());
+                    getArchetypeService().save((IMObject)getModel());
             } catch (Exception pe) {
                 ((OpenVpmsValidationDelegate) getDelegate()).record(pe);
                 return false;
@@ -292,15 +264,6 @@ public abstract class EditPage extends OpenVpmsPage {
                 (IMObject) getModel()), !descriptor.isRequired());
     }
 
-    public IPropertySelectionModel getArchetypeNamesModel(
-            NodeDescriptor descriptor) {
-        if (descriptor == null)
-            return new StringPropertySelectionModel(new String[] { "" });
-        else
-            return new StringPropertySelectionModel(descriptor
-                    .getArchetypeRange());
-    }
-
     public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
         // TODO need to work out how to get Entity selection models from node
         // descriptor
@@ -317,84 +280,15 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     public String getTitle() {
-        String entityName = StringUtils.capitalize(((IMObject) getModel())
-                .getArchetypeId().getEntityName());
+        String conceptName = Utils.unCamelCase(((IMObject) getModel())
+                .getArchetypeId().getConcept());
         if (isModelNew()) {
-            return "New " + entityName;
+            return "New " + conceptName;
         } else {
-            return "Edit " + entityName;
+            return "Edit " + conceptName;
         }
     }
 
-    /**
-     * @param propertyName
-     * @return
-     */
-    public boolean hasBlock(String propertyName) {
-        if (getPage().getComponents().containsKey(propertyName))
-            return true;
-        else
-            return false;
-    }
-
-    /**
-     * @param propertyName
-     * @return
-     */
-    public Block getBlock(String propertyName) {
-        if (getPage().getComponents().containsKey(propertyName))
-            return (Block) getPage().getComponent(propertyName);
-        else
-            return null;
-    }
-
-    /**
-     * 
-     * TODO Look at this when we get into tapestry
-     * 
-     * @param descriptor
-     * @return IValidator
-     * @throws Exception
-     *             propagate exception
-     */
-    public List getValidators(NodeDescriptor descriptor) throws Exception {
-        BaseValidator validator = null;
-
-        List<BaseValidator> validators = new ArrayList<BaseValidator>();
-
-        if (descriptor.isRequired()) {
-            validator = new Required();
-            validators.add(validator);
-        }
-        if (descriptor.isNumeric()) {
-            validator = new Pattern();
-            ((Pattern) validator).setPattern("#");
-            validators.add(validator);
-            if (descriptor.getMaxValue() != null) {
-                validator = new Max(descriptor.getMaxValue().toString());
-                validators.add(validator);
-            }
-
-            if (descriptor.getMinValue() != null) {
-                validator = new Min(descriptor.getMinValue().toString());
-                validators.add(validator);
-            }
-        } else if (descriptor.isDate()) {
-        } else if (descriptor.isString()) {
-            if (descriptor.getMaxLength() > 0) {
-                validator = new MaxLength();
-                ((MaxLength) validator).setMaxLength(descriptor.getMaxLength());
-                validators.add(validator);
-            }
-            if (descriptor.getStringPattern() != null) {
-                validator = new Pattern();
-                ((Pattern) validator).setPattern(descriptor.getStringPattern());
-                validators.add(validator);
-            }
-        }
-
-        return validators;
-    }
 
     public boolean isCurrentTabActive() {
         String currenttab = getCurrentActiveTab();
