@@ -198,6 +198,42 @@ public interface IArchetypeService {
     public List<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName);
     
+    
+    /**
+     * Uses the specified criteria to return zero, one or more matching . 
+     * entities. This is a very generic query which will constrain the 
+     * returned set on one or more of the supplied values.
+     * <p>
+     * Each of the parameters can denote an exact match or a partial match. If
+     * a partial match is required then the last character of the value must be
+     * a '*'. In every other case the search will look for an exact match.
+     * <p>
+     * All the values are optional. In the case where all the values are null
+     * then all the entities will be returned. In the case where two or more 
+     * values are specified (i.e. rmName and entityName) then only entities 
+     * satisfying both conditions will be returned.
+     * <p>
+     * If the caller specified primaryOnly flag then it will only process
+     * archetypes that are marked as primary
+     * 
+     * @param rmName
+     *            the reference model name (must be complete name)
+     * @param entityName
+     *            the name of the entity (partial or complete)
+     * @param concept
+     *            the concept name (partial or complete)
+     * @param instanceName
+     *            the particular instance name
+     * @param primaryOnly
+     *            determines whether to restrict processing to archetypes 
+     *            that are marked as primary only.            
+     * @return List<IMObject>                                   
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public List<IMObject> get(String rmName, String entityName, 
+            String conceptName, String instanceName, boolean primaryOnly);
+    
     /**
      * Retrieve a list of IMObjects that match one or more of the supplied
      * short names. The short names are specified as an array of strings.

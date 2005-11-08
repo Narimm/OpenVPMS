@@ -44,9 +44,9 @@
 			type="string" />
 		<property name="derivedValue" access="property" column="derived_value"
 			type="string" />
-		<property name="hidden" access="property" column="hidden"
+		<property name="hidden" access="property" column="is_hidden"
 			type="boolean" />
-		<property name="derived" access="property" column="derived"
+		<property name="derived" access="property" column="is_derived"
 			type="boolean" />
 		<property name="minCardinality" access="property" column="min_cardinality"
 			type="integer" />
@@ -56,6 +56,8 @@
 			type="integer" />
 		<property name="maxLength" access="property" column="max_length"
 			type="integer" />
+		<property name="parentChild" access="property" column="is_parent_child"
+			type="boolean" />
 		<map name="nodeDescriptors" access="property" lazy="false"
 			table="node_descriptor" cascade="all">
 			<key column="parent_id" />

@@ -351,8 +351,20 @@ public class ArchetypeService implements IArchetypeService {
      */
     public List<IMObject> get(String rmName, String entityName,
             String conceptName, String instanceName) {
+        return get(rmName, entityName, conceptName, instanceName, false);
+    }
+    
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String,
+     *      java.lang.String, java.lang.String, java.lang.String)
+     */
+    public List<IMObject> get(String rmName, String entityName,
+            String conceptName, String instanceName, boolean primaryOnly) {
         List<IMObject> results = new ArrayList<IMObject>();
-        Set<String> types = getDistinctTypes(rmName, entityName);
+        Set<String> types = getDistinctTypes(rmName, entityName, primaryOnly);
         for (String type : types) {
             try {
                 List<IMObject> objects = dao.get(rmName, entityName,
@@ -1110,9 +1122,12 @@ public class ArchetypeService implements IArchetypeService {
      *            the reference model name (complete or partial)
      * @param entityName
      *            the entity name (complete or partial)
+     * @param primaryOnly
+     *            determines whether to restrict processing to primary only            
      * @return List<String> a list of types
      */
-    private Set<String> getDistinctTypes(String rmName, String entityName) {
+    private Set<String> getDistinctTypes(String rmName, String entityName,
+            boolean primaryOnly) {
         Set<String> results = new HashSet<String>();
         
         // adjust the reference model name
@@ -1120,6 +1135,11 @@ public class ArchetypeService implements IArchetypeService {
             ArchetypeId archId = desc.getArchetypeId();
             if (StringUtils.isEmpty(rmName)) {
                 // a null or empty rmName is a no match
+                continue;
+            }
+            
+            if ((primaryOnly) &&
+                (desc.isPrimary() == false)) {
                 continue;
             }
 

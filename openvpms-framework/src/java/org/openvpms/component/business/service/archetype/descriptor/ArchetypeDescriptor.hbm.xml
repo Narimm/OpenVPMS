@@ -44,14 +44,18 @@
 			<property name="shortName" access="property"
 				column="arch_short_name" type="string" />
 		</component>
-		<property name="archetypeQName" access="property"
-			column="arch_qname" type="string" />
+		<property name="archetypeQName" access="property" column="arch_qname"
+			type="string" />
+		<property name="type" access="property" column="type"
+			type="string" />
 		<property name="displayName" access="property"
 			column="display_name" type="string" />
-		<property name="latest" access="property" column="latest"
+		<property name="latest" access="property" column="is_latest"
+			type="boolean" />
+		<property name="primary" access="property" column="is_primary"
 			type="boolean" />
 		<map name="nodeDescriptors" access="property" lazy="false"
-			table="node_descriptor" cascade="all">
+			table="node_descriptor" cascade="all,delete-orphan">
 			<key column="archetype_desc_id" />
 			<map-key column="name" type="string" />
 			<one-to-many
@@ -66,4 +70,10 @@
 		]]>
 	</query>
 
+	<query name="archetypeDescriptor.getByQName">
+		<![CDATA[
+			from org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor as 
+			descriptor where descriptor.archetypeQName = :qName
+		]]>
+	</query>
 </hibernate-mapping>

@@ -427,6 +427,25 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
+     * Add a child node descriptor
+     * 
+     * @param child
+     *            the child node descriptor to add
+     */
+    public void addNodeDescriptor(NodeDescriptor child) {
+        nodeDescriptors.put(child.getName(), child);
+    }
+    
+    /**
+     * Add an assertion descriptor to this node
+     * 
+     * @param descriptor
+     */
+    public void addAssertionDescriptor(AssertionDescriptor descriptor) {
+        assertionDescriptors.put(descriptor.getType(), descriptor);
+    }
+
+    /**
      * Return the assertion descriptors as a map
      * 
      * @return Returns the assertionDescriptors.

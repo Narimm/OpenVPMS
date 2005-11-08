@@ -171,6 +171,16 @@ public class ArchetypeDescriptor extends Descriptor {
     }
 
     /**
+     * Add a node descriptor to this archetype descripor
+     * 
+     * @param node
+     *            the node descriptor to add             
+     */
+    public void addNodeDescriptor(NodeDescriptor node) {
+        nodeDescriptors.put(node.getName(), node);
+    }
+    
+    /**
      * Return the top level  node descriptors. The caller must be aware that 
      * a {@link NodeDescriptor can contain other node descriptors.
      * 

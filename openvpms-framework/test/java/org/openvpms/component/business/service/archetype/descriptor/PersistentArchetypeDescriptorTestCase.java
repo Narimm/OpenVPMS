@@ -19,12 +19,17 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // hibernate
+import java.util.List;
+
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Animal;
 
 /**
  * 
@@ -73,7 +78,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             // execute the test
             tx = session.beginTransaction();
             ArchetypeDescriptor desc = createArchetypeDescriptor(
-                    "party", "animal", "mypet", "1,0");
+                    "party", "animal", "mypet", "1.0");
             
             session.save(desc);
             tx.commit();
@@ -90,6 +95,295 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             closeSession();
         }
     }
+    
+    /**
+     * Test the deletion of an archetype descriptor
+     */
+    public void testSimpleArchetypeDeletion()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+        
+        try {
+            ArchetypeDescriptor desc = createArchetypeDescriptor(
+                    "party", "animal", "mypet", "1.0");
+            // delete an archetype with the same qName, which is done in its own 
+            // transaction
+            deleteArchetypeDescriptorWithQName(session, desc.getArchetypeQName());
+
+            // get initial numbr of entries in address tabel
+            int dcount = HibernateDescriptorUtil.getTableRowCount(session, "archetypeDescriptor");
+            // execute the test
+            tx = session.beginTransaction();
+            session.save(desc);
+            tx.commit();
+            int dcount1 = HibernateDescriptorUtil.getTableRowCount(session, "archetypeDescriptor");
+            assertTrue(dcount1 == dcount + 1);
+            
+            // now delete the object and check again
+            tx = session.beginTransaction();
+            session.delete(desc);
+            tx.commit();
+            dcount1 = HibernateDescriptorUtil.getTableRowCount(session, "archetypeDescriptor");
+            assertTrue(dcount1 == dcount);
+        } catch (Exception exception) { 
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Test creation of simple archetype with some node descriptors
+     */
+    public void testSimpleArchetypeWithNodeDescriptors() 
+    throws Exception{
+
+        Session session = currentSession();
+        Transaction tx = null;
+        
+        try {
+            
+            // execute the test
+            // get initial counts
+            ArchetypeDescriptor desc = createArchetypeDescriptor(
+                    "party", "animal", "mypet", "1.0");
+
+            // delete an archetype with the same qName, which is done in its own 
+            // transaction
+            deleteArchetypeDescriptorWithQName(session, desc.getArchetypeQName());
+            
+            // set up the descriptor
+            int acount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            int ncount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            tx = session.beginTransaction();
+            desc.setType(Animal.class.getName());
+            desc.addNodeDescriptor(createNodeDescriptor("uid", "/uid", 
+                    "java.lang.Long", 1, 1));
+            desc.addNodeDescriptor(createNodeDescriptor("name", "/name", 
+                    "java.lang.String", 1, 1));
+            desc.addNodeDescriptor(createNodeDescriptor("description", 
+                    "/description", "java.lang.String", 1, 1));
+            desc.addNodeDescriptor(createNodeDescriptor("breed", "/breed", 
+                    "java.lang.String", 1, 1));
+            session.save(desc);
+            tx.commit();
+            int acount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            int ncount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(ncount1 == ncount + 4);
+            
+            // retrieve the object and ensure that the correct number of
+            // node descriptors are present
+            desc = (ArchetypeDescriptor)session.load(ArchetypeDescriptor.class, 
+                    desc.getUid());
+            assertTrue(desc.getNodeDescriptors().size() == 4);
+            assertTrue(desc.getNodeDescriptor("uid") != null);
+            assertTrue(desc.getNodeDescriptor("name") != null);
+            
+            // delete the archetype descriptor and check results
+            tx = session.beginTransaction();
+            session.delete(desc);
+            tx.commit();
+            acount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            ncount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            assertTrue(acount1 == acount);
+            assertTrue(ncount1 == ncount);
+        } catch (Exception exception) { 
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Test nested node descriptors
+     */
+    public void testArchetypeWithNestedNodeDescriptors() 
+    throws Exception {
+
+        Session session = currentSession();
+        Transaction tx = null;
+        
+        try {
+            
+            // execute the test
+            // get initial counts
+            ArchetypeDescriptor desc = createArchetypeDescriptor(
+                    "party", "address", "mylocation", "1.0");
+
+            // delete an archetype with the same qName, which is done in its own 
+            // transaction
+            deleteArchetypeDescriptorWithQName(session, desc.getArchetypeQName());
+            
+            // set up the descriptor
+            int acount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            int ncount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            tx = session.beginTransaction();
+            desc.setType(Address.class.getName());
+            desc.addNodeDescriptor(createNodeDescriptor("uid", "/uid", 
+                    "java.lang.Long", 1, 1));
+            desc.addNodeDescriptor(createNodeDescriptor("name", "/name", 
+                    "java.lang.String", 1, 1));
+            desc.addNodeDescriptor(createNodeDescriptor("description", 
+                    "/description", "java.lang.String", 1, 1));
+            
+            NodeDescriptor details = createNodeDescriptor("details", "/details", 
+                    "org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap", 1, 1);
+            desc.addNodeDescriptor(details);
+            
+            // add a couple of nested nodes
+            details.addNodeDescriptor(createNodeDescriptor("address", 
+                    "/details/attributes/address", "java.lang.String", 1, 1));
+            details.addNodeDescriptor(createNodeDescriptor("postCode", 
+                    "/details/attributes/postCode", "java.lang.String", 1, 1));
+            session.save(desc);
+            tx.commit();
+            int acount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            int ncount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(ncount1 == ncount + 6);
+            
+            // retrieve the object and ensure that the correct number of
+            // node descriptors are present
+            ArchetypeDescriptor adesc = (ArchetypeDescriptor)session.load(
+                    ArchetypeDescriptor.class, desc.getUid());
+            assertTrue(adesc.getNodeDescriptors().size() == 4);
+            assertTrue(adesc.getNodeDescriptor("uid") != null);
+            assertTrue(adesc.getNodeDescriptor("name") != null);
+            
+            details = adesc.getNodeDescriptor("details");
+            assertTrue(details != null);
+            assertTrue(details.getNodeDescriptors().size() == 2);
+            assertTrue(adesc.getNodeDescriptor("address") != null);
+            assertTrue(adesc.getNodeDescriptor("postCode") != null);
+
+            // delete the archetype descriptor and check results
+            tx = session.beginTransaction();
+            session.delete(adesc);
+            tx.commit();
+            acount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            ncount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            assertTrue(acount1 == acount);
+            assertTrue(ncount1 == ncount);
+        } catch (Exception exception) { 
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Test an archetype with assertion descriptors
+     */
+    public void testArchetypeWithAssertionDescriptors()
+    throws Exception {
+
+        Session session = currentSession();
+        Transaction tx = null;
+        
+        try {
+            
+            // execute the test
+            // get initial counts
+            ArchetypeDescriptor desc = createArchetypeDescriptor(
+                    "party", "animal", "myOtherBreed", "1.0");
+
+            // delete an archetype with the same qName, which is done in its own 
+            // transaction
+            deleteArchetypeDescriptorWithQName(session, desc.getArchetypeQName());
+            
+            int acount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            int ncount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            int ascount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "assertionDescriptor");
+            int pcount = HibernateDescriptorUtil.getTableRowCount(
+                    session, "propertyDescriptor");
+            
+            // set up the descriptor
+            NodeDescriptor ndesc = null;
+            desc.setType(Animal.class.getName());
+            ndesc = createNodeDescriptor("uid", "/uid", "java.lang.Long", 1, 1);
+            desc.addNodeDescriptor(ndesc);
+            
+            ndesc = createNodeDescriptor("name", "/name", "java.lang.String", 1, 1);
+            ndesc.addAssertionDescriptor(createAssertionDescriptor("regularExpression"));
+            desc.addNodeDescriptor(ndesc);
+            
+            ndesc = createNodeDescriptor("description", "/description", 
+                    "java.lang.String", 1, 1);
+            ndesc.addAssertionDescriptor(createAssertionDescriptor("regularExpression"));
+            ndesc.addAssertionDescriptor(createAssertionDescriptor("maxLength"));
+            desc.addNodeDescriptor(ndesc);
+            
+            desc.addNodeDescriptor(createNodeDescriptor("breed", "/breed", 
+                    "java.lang.String", 1, 1));
+            tx = session.beginTransaction();
+            session.save(desc);
+            tx.commit();
+
+            int acount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "archetypeDescriptor");
+            int ncount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "nodeDescriptor");
+            int ascount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "assertionDescriptor");
+            int pcount1 = HibernateDescriptorUtil.getTableRowCount(
+                    session, "propertyDescriptor");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(ncount1 == ncount + 4);
+            assertTrue(ascount1 == ascount + 3);
+            assertTrue(pcount1 == pcount);
+            
+        } catch (Exception exception) { 
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Test archetype with updating of node descriptors
+     */
+    public void testArchetypeWithUpdateNodeDescriptors()
+    throws Exception {
+        
+    }
+    
+    /**
+     * Test archetype with the updsting of assertion descriptors
+     */
+    public void testArchetypeWithUpdateAssertionDescriptors()
+    throws Exception {
+        
+    }
+    
     
     /*
      * @see BaseTestCase#tearDown()
@@ -122,12 +416,71 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
      *            the version of the archetype
      * @return ArchetypeDescriptor            
      */
-    public ArchetypeDescriptor createArchetypeDescriptor(String rmName, String entityName,
+    private ArchetypeDescriptor createArchetypeDescriptor(String rmName, String entityName,
         String concept, String version) {
         ArchetypeDescriptor desc =  new ArchetypeDescriptor(new ArchetypeId(
                 "openvpms", rmName, entityName, concept, version));
         desc.setLatest(true);
 
+        return desc;
+    }
+    
+    /**
+     * Delete the archetype with the specified arhetypeId QName. This must
+     * be called within a transaction
+     * 
+     * @param session
+     *            the hibernate session
+     * @param qname
+     *            the qname to use    
+     * @return ArchetypeDescriptor
+     *            the desciptor                    
+     */
+    private void deleteArchetypeDescriptorWithQName(Session session, String qName) 
+    throws Exception {
+        Transaction tx = session.beginTransaction();
+        try {
+            Query query = session.getNamedQuery("archetypeDescriptor.getByQName");
+            query.setParameter("qName", qName);
+            List result = query.list();
+            
+            for (Object object : result) {
+                session.delete(object);
+            }
+             
+            tx.commit();
+        } catch (Exception exception) {
+            tx.rollback();
+            throw exception;
+        }
+    }
+    
+    /**
+     * Create a {@link NodeDescriptor with the specified parameters
+     * 
+     * @return NodeDescriptor
+     */
+    private NodeDescriptor createNodeDescriptor(String name, String path, 
+            String type, int minC, int maxC) {
+        NodeDescriptor desc = new NodeDescriptor();
+        desc.setName(name);
+        desc.setPath(path);
+        desc.setType(type);
+        desc.setMinCardinality(minC);
+        desc.setMaxCardinality(maxC);
+        return desc;
+    }
+    
+    /**
+     * Create an {@link AssertionType} with the specified parameters
+     * 
+     * @return AssertionDescriptor
+     */
+    private AssertionDescriptor createAssertionDescriptor(String type) {
+        AssertionDescriptor desc = new AssertionDescriptor();
+        desc.setType(type);
+        desc.setErrorMessage("An error message");
+        
         return desc;
     }
 }

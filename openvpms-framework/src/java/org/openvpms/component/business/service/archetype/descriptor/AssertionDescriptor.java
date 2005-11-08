@@ -51,7 +51,7 @@ public class AssertionDescriptor extends Descriptor {
      * properties are in the form of key value pairs but in some instances it
      * may only be necessary to specify the value.
      */
-    private HashMap<String, PropertyDescriptor> propertyDescriptors = 
+    private Map<String, PropertyDescriptor> propertyDescriptors = 
         new HashMap<String, PropertyDescriptor>();
 
     /**
@@ -100,7 +100,7 @@ public class AssertionDescriptor extends Descriptor {
      * @param propertyDescriptors The propertyDescriptors to set.
      */
     public void setPropertyDescriptors(
-            HashMap<String, PropertyDescriptor> propertyDescriptors) {
+            Map<String, PropertyDescriptor> propertyDescriptors) {
         this.propertyDescriptors = propertyDescriptors;
     }
 
