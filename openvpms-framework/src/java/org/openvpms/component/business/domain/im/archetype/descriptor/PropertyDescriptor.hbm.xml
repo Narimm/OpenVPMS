@@ -21,28 +21,27 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor"
-		table="assertion_type_descriptor">
+		name="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor"
+		table="property_descriptor">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="assertion_type_desc_id"
-				index="assertion_type_id_idx" />
+			<column name="property_desc_id"
+				index="property_desc_id_idx" />
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
 		<property name="linkId" access="property" type="string" />
 		<property name="name" access="property" column="name"
-			type="string" not-null="true" />
+			type="string" />
 		<property name="type" access="property" column="type"
-			type="string" not-null="true" />
-		<property name="methodName" access="property" column="method_name"
-			type="string" not-null="true"/>
-			
+			type="string" />
+		<property name="value" access="property" column="value"
+			type="string" />
 	</class>
 
-	<query name="assertionTypeDescriptor.getRowCount">
+	<query name="propertyDescriptor.getRowCount">
 		<![CDATA[
-			select count(assertionTypeDescriptor) from org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor as 
-			assertionTypeDescriptor
+			select count(propertyDescriptor) from org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor as 
+			propertyDescriptor
 		]]>
 	</query>
 

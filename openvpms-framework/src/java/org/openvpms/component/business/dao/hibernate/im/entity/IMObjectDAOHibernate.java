@@ -22,6 +22,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 // java core
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 //spring-framework
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -61,7 +62,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
-                    new Object[]{new Long(object.getUid())});
+                    new Object[]{new Long(object.getUid())}, exception);
         }
     }
 
@@ -236,4 +237,27 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     exception);
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getByNamedQuery(java.lang.String, java.util.Map)
+     */
+    @SuppressWarnings("unchecked")
+    public List<IMObject> getByNamedQuery(String name, Map<String, Object> params) {
+        List<IMObject> results = null;
+        try {
+            String[] paramNames = (String[])params.keySet().toArray(
+                    new String[params.size()]);
+            Object[] paramValues = params.values().toArray();
+            
+            results = getHibernateTemplate().findByNamedQueryAndNamedParam(
+                    name, paramNames, paramValues);
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery,
+                    new Object[]{name}, exception);
+        }
+        
+        return results;
+    }
+    
 }

@@ -21,7 +21,7 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor"
+		name="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor"
 		table="archetype_descriptor">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="archetype_desc_id"
@@ -30,6 +30,8 @@
 		</id>
 		<version name="version" access="property" type="long" />
 		<property name="linkId" access="property" type="string" />
+		<property name="name" access="property" column="name"
+			type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
 				column="arch_namespace" type="string" />
@@ -44,9 +46,7 @@
 			<property name="shortName" access="property"
 				column="arch_short_name" type="string" />
 		</component>
-		<property name="archetypeQName" access="property" column="arch_qname"
-			type="string" />
-		<property name="type" access="property" column="type"
+		<property name="className" access="property" column="class_name"
 			type="string" />
 		<property name="displayName" access="property"
 			column="display_name" type="string" />
@@ -56,24 +56,24 @@
 			type="boolean" />
 		<map name="nodeDescriptors" access="property" lazy="false"
 			table="node_descriptor" cascade="all,delete-orphan">
-			<key column="archetype_desc_id" />
+			<key column="archetype_desc_id"/>
 			<map-key column="name" type="string" />
 			<one-to-many
-				class="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor" />
+				class="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" />
 		</map>
 	</class>
 
 	<query name="archetypeDescriptor.getRowCount">
 		<![CDATA[
-			select count(archetype) from org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor as 
+			select count(archetype) from org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor as 
 			archetype
 		]]>
 	</query>
 
-	<query name="archetypeDescriptor.getByQName">
+	<query name="archetypeDescriptor.getByName">
 		<![CDATA[
-			from org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor as 
-			descriptor where descriptor.archetypeQName = :qName
+			from org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor as 
+			descriptor where descriptor.name = :name
 		]]>
 	</query>
 </hibernate-mapping>

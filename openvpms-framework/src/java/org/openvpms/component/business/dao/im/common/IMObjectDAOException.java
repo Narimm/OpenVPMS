@@ -43,7 +43,8 @@ public class IMObjectDAOException extends RuntimeException implements
         FailedToDeleteIMObject, 
         FailedToFindIMObject, 
         FailedToFindIMObjects,
-        ClassNameMustBeSpecified
+        ClassNameMustBeSpecified,
+        FailedToExecuteNamedQuery
     }
 
     /**

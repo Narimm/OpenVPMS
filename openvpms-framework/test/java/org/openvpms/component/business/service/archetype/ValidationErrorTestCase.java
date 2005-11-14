@@ -30,6 +30,8 @@ import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 
 
 // openvpms-test-component
@@ -69,12 +71,15 @@ public class ValidationErrorTestCase extends BaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
         Hashtable params = getTestData().getGlobalParams();
-        String assertionFile = (String)params.get("assertionFile");
-        String dir = (String)params.get("dir");
-        String extension = (String)params.get("extension");
-        
-        service = new ArchetypeService(dir, new String[]{extension}, assertionFile);
+        String assertionFile = (String) params.get("assertionFile");
+        String dir = (String) params.get("dir");
+        String extension = (String) params.get("extension");
+
+        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
+                new String[] { extension }, assertionFile);
+        service = new ArchetypeService(cache);
         assertTrue(service != null);
     }
     
@@ -86,7 +91,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
     throws Exception {
         Person person = new Person();
         person.setArchetypeId(service.getArchetypeDescriptor("person.person")
-                .getArchetypeId());
+                .getType());
         try {
             service.validateObject(person);
             fail("This object should not have passed validation");
@@ -119,7 +124,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
     throws Exception {
         Person person = new Person();
         person.setArchetypeId(service.getArchetypeDescriptor("person.person")
-                .getArchetypeId());
+                .getType());
         try {
             service.validateObject(person);
             fail("This object should not have passed validation");
@@ -158,7 +163,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
    throws Exception {
        Person person = new Person();
        person.setArchetypeId(service.getArchetypeDescriptor("person.person")
-               .getArchetypeId());
+               .getType());
        try {
            person.setTitle("Mister");
            person.setFirstName("Jim");
@@ -234,8 +239,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
        Hashtable params = this.getTestData().getTestCaseParams(
                "testRegExValidation", "normal");
 
-       ArchetypeService service = new ArchetypeService((String) params
-               .get("file"), (String) cparams.get("assertionFile"));
+       IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+               (String) params.get("file"), (String)cparams.get("assertionFile"));
+       ArchetypeService service = new ArchetypeService(cache);
        
        assertTrue(service.getArchetypeDescriptor("address.phoneNumber") != null);
        Address address = (Address)service.create("address.phoneNumber");
@@ -261,8 +267,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
        Hashtable params = this.getTestData().getTestCaseParams(
                "testMinMaxCardinalityOnCollections", "normal");
 
-       ArchetypeService service = new ArchetypeService((String) params
-               .get("file"), (String) cparams.get("assertionFile"));
+       IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+               (String) params.get("file"), 
+               (String) cparams.get("assertionFile"));
+       ArchetypeService service = new ArchetypeService(cache);
        
        assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
        Animal pet = (Animal)service.create("animal.pet");
@@ -310,8 +318,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
        Hashtable params = this.getTestData().getTestCaseParams(
                "testMaxCardinalityOnCollections", "normal");
 
-       ArchetypeService service = new ArchetypeService((String) params
-               .get("file"), (String) cparams.get("assertionFile"));
+       IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+               (String) params.get("file"), (String) cparams.get("assertionFile"));
+       ArchetypeService service = new ArchetypeService(cache);
        
        assertTrue(service.getArchetypeDescriptor("animal.pet1") != null);
        Animal pet = (Animal)service.create("animal.pet1");
@@ -352,8 +361,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
        Hashtable params = this.getTestData().getTestCaseParams(
                "testMinUnboundedCardinalityOnCollections", "normal");
 
-       ArchetypeService service = new ArchetypeService((String) params
-               .get("file"), (String) cparams.get("assertionFile"));
+       IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+               (String) params.get("file"), (String) cparams.get("assertionFile"));
+       ArchetypeService service = new ArchetypeService(cache);
        
        assertTrue(service.getArchetypeDescriptor("animal.pet2") != null);
        Animal pet = (Animal)service.create("animal.pet2");
@@ -412,8 +422,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
        Hashtable params = this.getTestData().getTestCaseParams(
                "testUnboundedCardinalityOnCollections", "normal");
 
-       ArchetypeService service = new ArchetypeService((String) params
-               .get("file"), (String) cparams.get("assertionFile"));
+       IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(
+               (String) params.get("file"), (String) cparams.get("assertionFile"));
+       ArchetypeService service = new ArchetypeService(cache);
        
        assertTrue(service.getArchetypeDescriptor("animal.pet3") != null);
        Animal pet = (Animal)service.create("animal.pet3");

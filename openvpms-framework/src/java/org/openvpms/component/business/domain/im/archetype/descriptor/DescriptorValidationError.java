@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import java.io.Serializable;
 

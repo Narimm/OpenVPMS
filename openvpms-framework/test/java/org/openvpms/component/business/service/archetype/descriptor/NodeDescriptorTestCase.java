@@ -34,6 +34,9 @@ import org.apache.commons.lang.StringUtils;
 import org.xml.sax.InputSource;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 
@@ -88,7 +91,7 @@ public class NodeDescriptorTestCase extends BaseTestCase {
         // test that the archetype display name defaults to the name
         ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
                     .getArchetypeDescriptorsAsArray()[0];
-        assertTrue(descriptor.getDisplayName().equals(descriptor.getName()));
+        assertTrue(descriptor.getDisplayName().equals(descriptor.getShortName()));
         
         // iterate through the top level nodes and enusre that the 
         // display name is not null

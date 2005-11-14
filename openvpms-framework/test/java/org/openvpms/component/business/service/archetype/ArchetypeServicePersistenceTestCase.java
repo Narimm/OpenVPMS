@@ -27,6 +27,8 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,8 +36,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * Test the persistence side of the archetype service
@@ -348,7 +348,7 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
-            ArchetypeId archId = desc.getArchetypeId();
+            ArchetypeId archId = desc.getType();
             if ((archId.getRmName().matches("party")) &&
                 (desc.isPrimary())) {
                 continue;
@@ -368,7 +368,7 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
-            ArchetypeId archId = desc.getArchetypeId();
+            ArchetypeId archId = desc.getType();
             if ((archId.getRmName().matches("party")) &&
                     (archId.getEntityName().matches("person")) &&
                 (desc.isPrimary())) {
@@ -383,7 +383,7 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
-            ArchetypeId archId = desc.getArchetypeId();
+            ArchetypeId archId = desc.getType();
             if ((archId.getRmName().matches("party")) &&
                 (archId.getEntityName().matches("per.*")) &&
                 (desc.isPrimary())) {
@@ -398,7 +398,7 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
-            ArchetypeId archId = desc.getArchetypeId();
+            ArchetypeId archId = desc.getType();
             if ((archId.getRmName().matches("party")) &&
                 (archId.getEntityName().matches(".*dress"))) {
                 continue;

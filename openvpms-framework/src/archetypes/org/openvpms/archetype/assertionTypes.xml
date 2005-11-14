@@ -4,7 +4,7 @@
     method="alwaysTrue" />
   <assertionType name="lookup.local"
     type="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
-    subType="local" method="isStringValueInList" />
+    method="isStringValueInList" />
   <assertionType name="regularExpression"
     type="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
     method="regularExpressionMatch" />
@@ -13,4 +13,10 @@
     method="objectsMatchArchetypeRange" />
   <assertionType name="candidateChildren" />
     
+  <assertionType name="lookup.assertionType"
+    type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+    method="alwaysTrue" />
+  <assertionType name="lookup.methodName"
+    type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+    method="alwaysTrue" />
 </assertionTypes>

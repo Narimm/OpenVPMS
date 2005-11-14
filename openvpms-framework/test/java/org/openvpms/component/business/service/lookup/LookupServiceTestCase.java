@@ -25,10 +25,10 @@ import java.util.List;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 /**
  * 
@@ -160,7 +160,7 @@ public class LookupServiceTestCase extends
         ArchetypeDescriptor descriptor = archetypeService
             .getArchetypeDescriptor("address.location");
         Address address = (Address)archetypeService.create(
-            descriptor.getArchetypeId());
+            descriptor.getType());
         address.getDetails().setAttribute("country", "Australia");
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() > 0);
         address.getDetails().setAttribute("country", "Tasmania");

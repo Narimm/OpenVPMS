@@ -10,7 +10,7 @@
   <inceptionYear>2005</inceptionYear>
   <name>openvpms</name>
   <artifactId>openvpms-framework</artifactId>
-  <currentVersion>0.2</currentVersion>
+  <currentVersion>0.3</currentVersion>
   <package>org.openvpms</package>
   <url>http://www.openvpms.org/${pom.artifactId}</url>
   <issueTrackingUrl>
@@ -306,6 +306,18 @@
       <artifactId>asm-attrs</artifactId>
       <version>3.1b3</version>
       <url>http://www.hibernate.org</url>
+    </dependency>
+    <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
+      <version>2.7.5H3</version>
+      <url>http://www.antlr.org/</url>
+    </dependency>
+    <dependency>
+      <groupId>jsap</groupId>
+      <artifactId>JSAP</artifactId>
+      <version>2.0a</version>
+      <url>http://jsap.sourceforge.net/</url>
     </dependency>
     <dependency>
       <groupId>dom4j</groupId>

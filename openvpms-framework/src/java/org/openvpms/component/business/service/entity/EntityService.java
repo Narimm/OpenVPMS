@@ -27,9 +27,9 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.dao.im.common.EntityDAOException;
 import org.openvpms.component.business.dao.im.common.IEntityDAO;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 
 /**
@@ -92,7 +92,7 @@ public class EntityService implements IEntityService {
         }
         
         // create and return the party object
-        return (Entity)archetypeService.create(descriptor.getArchetypeId());
+        return (Entity)archetypeService.create(descriptor.getType());
     }
 
     /* (non-Javadoc)

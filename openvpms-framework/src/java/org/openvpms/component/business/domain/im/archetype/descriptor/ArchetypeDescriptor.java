@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
 import java.util.ArrayList;
@@ -55,9 +55,9 @@ public class ArchetypeDescriptor extends Descriptor {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The achetype id
+     * The archetype id is the type.
      */
-    private ArchetypeId archetypeId;
+    private ArchetypeId type;
     
     /**
      * The display name of the archetype. If the displayname is empty then
@@ -68,7 +68,7 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * The full-qualified Java domain class that the archetype constrains
      */
-    private String type;
+    private String className;
     
     /**
      * Indicates that this is the latest version of the archetype descritpor.
@@ -93,53 +93,74 @@ public class ArchetypeDescriptor extends Descriptor {
      * Default constructor 
      */
     public ArchetypeDescriptor() {
-        // TODO Evaluate this since we are encoding path names etc
-        // best to place this in the archetype.
-        NodeDescriptor node = new NodeDescriptor();
-        node.setName(NodeDescriptor.IDENTIFIER_NODE_NAME);
-        node.setType("java.lang.Long");
-        node.setDisplayName("id");
-        node.setPath("uid");
-        nodeDescriptors.put(node.getName(), node);
-    }
-    
-    /**
-     * Construct an archetype descriptor for the specified {@link ArchetypeId}
-     * 
-     * @param archetypeId
-     *            the archetypeId
-     */
-    public ArchetypeDescriptor(ArchetypeId id) {
-        this();
-        this.archetypeId = id;
+        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.archetype.1.0"));
     }
 
     /**
      * @return Returns the archetypeQName.
      */
+    @Deprecated
     public String getArchetypeQName() {
-        return archetypeId == null ? null : archetypeId.getQName();
+        return type == null ? null : type.getQName();
     }
 
     /**
      * @param archetypeQName The archetypeQName to set.
      */
+    @Deprecated
     public void setArchetypeQName(String archetypeQName) {
-        this.archetypeId = new ArchetypeId(archetypeQName);
+        if (StringUtils.isEmpty(archetypeQName)) {
+            type = null;
+        } else {
+            type = new ArchetypeId(archetypeQName);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#setName(java.lang.String)
+     */
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        if (StringUtils.isEmpty(name)) {
+            type = null;
+        } else {
+            type = new ArchetypeId(name);
+        }
     }
 
     /**
-     * @return Returns the type.
+     * Return the archetype id, which is also the type
+     * 
+     * @return String
      */
-    public String getType() {
+    public ArchetypeId getType() {
         return type;
     }
+    
+    /**
+     * Set the archetype id
+     * 
+     * @param shortName
+     *            the archetype short name
+     */
+    @SuppressWarnings("unused")
+    private void setType(ArchetypeId type) {
+        this.type = type;
+    }
+    
+    /**
+     * @return Returns the associated Java class name.
+     */
+    public String getClassName() {
+        return className;
+    }
 
     /**
-     * @param type The type to set.
+     * @param clazz The type to set.
      */
-    public void setType(String type) {
-        this.type = type;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     /**
@@ -178,6 +199,29 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public void addNodeDescriptor(NodeDescriptor node) {
         nodeDescriptors.put(node.getName(), node);
+    }
+    
+    /**
+     * Remove the specified node descriptor
+     * 
+     * @param node
+     *            the node descriptor to remove
+     */
+    public void removeNodeDescriptor(NodeDescriptor node) {
+        nodeDescriptors.remove(node.getName());
+    }
+    
+    /**
+     * Remove the specified node descriptor. This will iterate the node 
+     * descriptor hierarchy and remove the first one with the specified 
+     * name
+     * 
+     * @param nodeName
+     *            the name of the node descriptor
+     */
+    public void removeNodeDescriptor(String nodeName) {
+        removeNodeDescriptorWithName(getNodeDescriptors(), nodeName);
+        
     }
     
     /**
@@ -275,8 +319,8 @@ public class ArchetypeDescriptor extends Descriptor {
      * @return String
      *            the node name
      */
-    public String getName() {
-        return archetypeId.getShortName();
+    public String getShortName() {
+        return type.getShortName();
     }
 
     /**
@@ -287,7 +331,7 @@ public class ArchetypeDescriptor extends Descriptor {
      *            the display name
      */
     public String getDisplayName() {
-        return StringUtils.isEmpty(displayName) ? getName() : displayName;
+        return StringUtils.isEmpty(displayName) ? getShortName() : displayName;
     }
 
     /**
@@ -295,23 +339,6 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    /**
-     * Return the {&link ArchetypeId} associated with this descriptor.
-     * 
-     * @return ArchetypeId
-     */
-    public ArchetypeId getArchetypeId() {
-        return archetypeId;
-    }
-
-    /**
-     * @param archetypeId The archetypeId to set.
-     */
-    @SuppressWarnings("unused")
-    private void setArchetypeId(ArchetypeId archetypeId) {
-        this.archetypeId = archetypeId;
     }
 
     /**
@@ -359,16 +386,16 @@ public class ArchetypeDescriptor extends Descriptor {
         List<DescriptorValidationError> errors = 
             new ArrayList<DescriptorValidationError>();
         
-        if (archetypeId == null) {
-            errors.add(new DescriptorValidationError(
-                    Descriptor.DescriptorType.ArchetypeDescriptor, null, 
-                    "archetypeId", Descriptor.ValidationError.IsRequired));
-        }
-        
-        if (StringUtils.isEmpty(type)) {
+        if (type == null) {
             errors.add(new DescriptorValidationError(
                     Descriptor.DescriptorType.ArchetypeDescriptor, null, 
                     "type", Descriptor.ValidationError.IsRequired));
+        }
+        
+        if (StringUtils.isEmpty(className)) {
+            errors.add(new DescriptorValidationError(
+                    Descriptor.DescriptorType.ArchetypeDescriptor, null, 
+                    "className", Descriptor.ValidationError.IsRequired));
         }
         
         
@@ -380,7 +407,7 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     @Override
     public int hashCode() {
-        return archetypeId.hashCode();
+        return type.hashCode();
     }
 
     /* (non-Javadoc)
@@ -400,7 +427,7 @@ public class ArchetypeDescriptor extends Descriptor {
         }
         
         ArchetypeDescriptor desc = (ArchetypeDescriptor)obj;
-        return archetypeId.equals(desc.archetypeId);
+        return type.equals(desc.type);
     }
     
     /**
@@ -424,6 +451,38 @@ public class ArchetypeDescriptor extends Descriptor {
             if (node.getNodeDescriptorsAsArray().length > 0) {
                 NodeDescriptor result = findNodeDescriptorWithName(
                         node.getNodeDescriptorsAsArray(), name);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Remove the node the node descriptors recursively searching for the 
+     * specified name
+     * 
+     * @param nodes
+     *            the list of NodeDescriptors to search
+     * @param nodeName
+     *            the name to search for
+     * @return NodeDescriptor
+     *            the node descriptor that was remove or null                              
+     */
+    private NodeDescriptor removeNodeDescriptorWithName(
+            Map<String, NodeDescriptor> nodes, 
+            String nodeName) {
+        for (String name : nodes.keySet() ) {
+            NodeDescriptor node = nodes.get(name);
+            if (node.getName().equals(nodeName)) {
+                return nodes.remove(nodeName);
+            }
+            
+            if (node.getNodeDescriptors().size() > 0) {
+                NodeDescriptor result = removeNodeDescriptorWithName(
+                        node.getNodeDescriptors(), nodeName);
                 if (result != null) {
                     return result;
                 }

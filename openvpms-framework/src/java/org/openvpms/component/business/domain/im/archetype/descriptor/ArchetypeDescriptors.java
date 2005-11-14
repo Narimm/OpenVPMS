@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class ArchetypeDescriptors implements Serializable {
     public void setArchetypeDescriptorsAsArray(ArchetypeDescriptor[] archetypes) {
         archetypeDescriptors = new HashMap<String, ArchetypeDescriptor>();
         for (ArchetypeDescriptor descriptor : archetypes) {
-            archetypeDescriptors.put(descriptor.getName(), descriptor);
+            archetypeDescriptors.put(descriptor.getShortName(), descriptor);
         }
     }
 

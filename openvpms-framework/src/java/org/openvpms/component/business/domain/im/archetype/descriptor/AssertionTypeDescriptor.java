@@ -17,10 +17,12 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
 import java.lang.reflect.Method;
+
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
  * This is used to define the assertion type. It is used to map an assertion to
@@ -35,11 +37,6 @@ public class AssertionTypeDescriptor  extends Descriptor {
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The name of the assertion
-     */
-    private String name;
     
     /**
      * The class, which contains the corresponding method
@@ -55,6 +52,7 @@ public class AssertionTypeDescriptor  extends Descriptor {
      * Default constructor
      */
     public AssertionTypeDescriptor() {
+        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.assertionType.1.0"));
     }
 
     /**
@@ -83,20 +81,6 @@ public class AssertionTypeDescriptor  extends Descriptor {
      */
     public void setMethodName(String methodName) {
         this.methodName = methodName;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**

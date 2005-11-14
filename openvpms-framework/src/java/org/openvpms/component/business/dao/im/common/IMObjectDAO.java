@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.im.common;
 
 // java
 import java.util.List;
+import java.util.Map;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -103,4 +104,19 @@ public interface IMObjectDAO {
      *             a runtime exception if the request cannot complete
      */
     public IMObject getById(String clazz, long id);
+
+    /**
+     * Execute the specified named query using the specified parameter
+     * list.
+     * 
+     * @param name
+     *            the name of the query
+     * @param param
+     *            a map of param name and param value.
+     * @return List
+     *            the result set
+     * @throws IMObjectDAOException
+     *            if there is an error processing the request                                   
+     */
+    public List<IMObject> getByNamedQuery(String name, Map<String, Object> params);
 }

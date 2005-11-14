@@ -32,6 +32,10 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.xml.sax.InputSource;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 
@@ -146,7 +150,7 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
         assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
         ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptorsAsArray()[0];
-        assertTrue(descriptor.getArchetypeId().getShortName().equals("person.person"));
+        assertTrue(descriptor.getType().getShortName().equals("person.person"));
         assertTrue(descriptor.getAllNodeDescriptors().size() == 10);
         assertTrue(descriptor.getSimpleNodeDescriptors().size() == 7);
         assertTrue(descriptor.getComplexNodeDescriptors().size() == 3);

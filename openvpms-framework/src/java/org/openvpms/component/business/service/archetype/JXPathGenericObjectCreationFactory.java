@@ -26,7 +26,7 @@ import org.apache.commons.jxpath.Pointer;
 import org.apache.log4j.Logger;
 
 // openvpms-framework
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
 /**
  * This class is used to by JXPath during the object construction phase. It 
@@ -65,7 +65,8 @@ public class JXPathGenericObjectCreationFactory extends AbstractFactory {
                 logger.debug("root: " + context.getContextBean().toString() +
                         " parent: " + parent.toString() +
                         " name: " + name +
-                        " index: " + index);
+                        " index: " + index +
+                        " type: " + node.getType());
             }
             
             Class clazz = Thread.currentThread().getContextClassLoader()

@@ -26,9 +26,9 @@ import java.util.List;
 import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
 import org.openvpms.component.business.dao.im.party.IPartyDAO;
 import org.openvpms.component.business.dao.im.party.PartyDAOException;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
 
 // openvpms-service
 
@@ -100,7 +100,7 @@ public class PartyService implements IPartyService {
         }
         
         // create and return the party object
-        return (Party)archetypeService.create(descriptor.getArchetypeId());
+        return (Party)archetypeService.create(descriptor.getType());
     }
 
     /* (non-Javadoc)

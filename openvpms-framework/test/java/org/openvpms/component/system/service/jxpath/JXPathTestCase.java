@@ -35,6 +35,8 @@ import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Address;
@@ -42,8 +44,8 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
+import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
@@ -83,7 +85,9 @@ public class JXPathTestCase extends BaseTestCase {
         String dir = (String) gparams.get("dir");
         String extension = (String) gparams.get("extension");
 
-        service = new ArchetypeService(dir, new String[] { extension }, afile);
+        IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
+                new String[] { extension }, afile);
+        service = new ArchetypeService(cache);
         assertTrue(service != null);
     }
 

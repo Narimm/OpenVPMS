@@ -20,7 +20,7 @@
 package org.openvpms.component.system.service.jxpath;
 
 // openvpms-framework
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 
 /**
  * This is the test page, which is used to emulate the use of JXPath

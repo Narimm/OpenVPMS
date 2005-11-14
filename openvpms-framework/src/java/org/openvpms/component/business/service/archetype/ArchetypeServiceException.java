@@ -63,7 +63,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         FailedToDeleteObject,
         FailedToFindObject,
         FailedToFindObjects,
-        NoDaoConfigured
+        NoDaoConfigured,
+        FailedInGetByNamedQuery
     }
 
     /**

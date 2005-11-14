@@ -17,11 +17,13 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
 import java.util.HashMap;
 import java.util.Map;
+
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
  *
@@ -34,12 +36,6 @@ public class AssertionDescriptor extends Descriptor {
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-    
-    /**
-     * A string that defines the assertion type. There can only be one 
-     * instance of an assertion type per {@link NodeDescriptor}.
-     */
-    private String type;
     
     /**
      * The associated error message. This is used when the assertion fails
@@ -58,20 +54,7 @@ public class AssertionDescriptor extends Descriptor {
      * Default constructor
      */
     public AssertionDescriptor() {
-    }
-
-    /**
-     * @return Returns the type.
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * @param type The type to set.
-     */
-    public void setType(String type) {
-        this.type = type;
+        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.assertion.1.0"));
     }
 
     /**
@@ -103,6 +86,47 @@ public class AssertionDescriptor extends Descriptor {
             Map<String, PropertyDescriptor> propertyDescriptors) {
         this.propertyDescriptors = propertyDescriptors;
     }
+    
+    /**
+     * Add the property descriptor to the list
+     * 
+     * param descriptor
+     *            the property descriptor to add
+     */
+    public void addPropertyDescriptor(PropertyDescriptor descriptor) {
+        propertyDescriptors.put(descriptor.getName(), descriptor);
+    }
+    
+    /**
+     * Remove the specified property descriptor
+     * 
+     * @param descriptor
+     *            the property descriptor to remove
+     */
+    public void removePropertyDescriptor(PropertyDescriptor descriptor) {
+        propertyDescriptors.remove(descriptor.getName());
+    }
+    
+    /**
+     * Remove the property descriptor with the specified key
+     * 
+     * @param key
+     *            the property descriptor key
+     */
+    public void removePropertyDescriptor(String key) {
+        propertyDescriptors.remove(key);
+    }
+    
+    /**
+     * Retrieve the property descriptor with the specified key
+     * 
+     * @param, key
+     *            the property descriptor key
+     * @return PropertyDescriptor            
+     */
+    public PropertyDescriptor getPropertyDescriptor(String key) {
+        return propertyDescriptors.get(key);
+    }
 
     /**
      * @return Returns the properties.
@@ -118,7 +142,7 @@ public class AssertionDescriptor extends Descriptor {
     public void setPropertyDescriptorsAsArray(PropertyDescriptor[] properties) {
         this.propertyDescriptors = new HashMap<String, PropertyDescriptor>();
         for (PropertyDescriptor property : properties) {
-            this.propertyDescriptors.put(property.getKey(), property);
+            this.propertyDescriptors.put(property.getName(), property);
         }
     }
 }

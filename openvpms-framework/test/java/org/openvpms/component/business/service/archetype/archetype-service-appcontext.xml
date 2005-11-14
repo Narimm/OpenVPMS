@@ -85,6 +85,21 @@
 				<value>
 					/org/openvpms/component/business/domain/im/party/Contact.hbm.xml
 				</value>
+				<value>
+					/org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
+				</value>
+				<value>
+					/org/openvpms/component/business/domain/im/archetype/descriptor/AssertionDescriptor.hbm.xml
+				</value>
+				<value>
+					/org/openvpms/component/business/domain/im/archetype/descriptor/AssertionTypeDescriptor.hbm.xml
+				</value>
+				<value>
+					/org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
+				</value>
+				<value>
+					/org/openvpms/component/business/domain/im/archetype/descriptor/PropertyDescriptor.hbm.xml
+				</value>
 			</list>
 		</property>
 	</bean>
@@ -97,9 +112,9 @@
 		</property>
 	</bean>
 
-	<!--  The Archetype Service -->
-	<bean id="archetypeService"
-		class="org.openvpms.component.business.service.archetype.ArchetypeService">
+	<!--  The Archetype Descriptor Cache -->
+	<bean id="archetypeDescriptorCache"
+		class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
 		<constructor-arg index="0"
 			value="target/classes/org/openvpms/archetype" />
 		<constructor-arg index="1">
@@ -109,6 +124,14 @@
 		</constructor-arg>
 		<constructor-arg index="2"
 			value="org/openvpms/archetype/assertionTypes.xml" />
+	</bean>
+
+	<!--  The Archetype Service -->
+	<bean id="archetypeService"
+		class="org.openvpms.component.business.service.archetype.ArchetypeService">
+		<constructor-arg index="0">
+			<ref local="archetypeDescriptorCache" />
+		</constructor-arg>
 		<property name="dao">
 			<ref local="imObjectDao" />
 		</property>

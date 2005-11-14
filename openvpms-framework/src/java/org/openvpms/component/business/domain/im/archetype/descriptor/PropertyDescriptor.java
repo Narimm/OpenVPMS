@@ -17,7 +17,9 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
+
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
 /**
@@ -35,11 +37,6 @@ public class PropertyDescriptor  extends Descriptor {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The property name
-     */
-    private String key;
-    
-    /**
      * The property type, which defaults to string
      */
     private String type = String.class.getName();
@@ -53,22 +50,7 @@ public class PropertyDescriptor  extends Descriptor {
      * Default constructor
      */
     public PropertyDescriptor() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * @return Returns the key.
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * @param key The key to set.
-     */
-    public void setKey(String key) {
-        this.key = key;
+        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.property.1.0"));
     }
 
     /**

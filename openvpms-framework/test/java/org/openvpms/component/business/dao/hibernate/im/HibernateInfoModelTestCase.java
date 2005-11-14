@@ -28,6 +28,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Classification;
@@ -42,11 +47,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 

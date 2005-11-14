@@ -1,8 +1,8 @@
 <mapping>
     <class
-        name="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor" auto-complete="false">
+        name="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor" auto-complete="false">
         <description>       Default mapping for class
-            org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor     </description>
+            org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor     </description>
         <map-to xml="archetype"/>
         <field name="latest" type="boolean" required="true"
             direct="false" transient="false" get-method="isLatest" set-method="setLatest">
@@ -13,30 +13,30 @@
             <bind-xml name="primary" node="attribute" reference="false"/>
         </field>
         <field name="nodeDescriptors"
-            type="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor"
+            type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
             required="false" direct="false" transient="false"
             get-method="getNodeDescriptorsAsArray"
             set-method="setNodeDescriptorsAsArray" collection="array">
             <bind-xml name="node" node="element" reference="false"/>
         </field>
-        <field name="archetypeQName" type="string" required="true"
+        <field name="name" type="string" required="true"
             direct="false" transient="false"
-            get-method="getArchetypeQName" set-method="setArchetypeQName">
+            get-method="getName" set-method="setName">
             <bind-xml name="name" node="attribute" reference="false"/>
         </field>
         <field name="displayName" type="string" required="false" direct="false"
             transient="false" get-method="getDisplayName" set-method="setDisplayName">
             <bind-xml name="displayName" node="attribute" reference="false"/>
         </field>
-        <field name="type" type="string" required="true" direct="false"
-            transient="false" get-method="getType" set-method="setType">
+        <field name="className" type="string" required="true" direct="false"
+            transient="false" get-method="getClassName" set-method="setClassName">
             <bind-xml name="type" node="attribute" reference="false"/>
         </field>
     </class>
     <class
-        name="org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor" auto-complete="false">
+        name="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor" auto-complete="false">
         <description>       Default mapping for class
-            org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor     </description>
+            org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor     </description>
         <map-to xml="assertion"/>
         <field name="errorMessage" type="string" required="true"
             direct="false" transient="false"
@@ -44,24 +44,24 @@
             <bind-xml name="errorMessage" node="element" reference="false"/>
         </field>
         <field name="propertyDescriptors"
-            type="org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor"
+            type="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor"
             required="false" direct="false" transient="false"
             get-method="getPropertyDescriptorsAsArray" set-method="setPropertyDescriptorsAsArray" collection="array">
             <bind-xml name="property" node="element" reference="false"/>
         </field>
-        <field name="type" type="string" required="true" direct="false"
-            transient="false" get-method="getType" set-method="setType">
-            <bind-xml name="type" node="attribute" reference="false"/>
+        <field name="name" type="string" required="true" direct="false"
+            transient="false" get-method="getName" set-method="setName">
+            <bind-xml name="name" node="attribute" reference="false"/>
         </field>
     </class>
     <class
-        name="org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor" auto-complete="false">
+        name="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor" auto-complete="false">
         <description>       Default mapping for class
-            org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor     </description>
+            org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor     </description>
         <map-to xml="property"/>
-        <field name="key" type="string" required="true" direct="false"
-            transient="false" get-method="getKey" set-method="setKey">
-            <bind-xml name="key" node="attribute" reference="false"/>
+        <field name="name" type="string" required="true" direct="false"
+            transient="false" get-method="getName" set-method="setName">
+            <bind-xml name="name" node="attribute" reference="false"/>
         </field>
         <field name="type" type="string" required="false" direct="false"
             transient="false" get-method="getType" set-method="setType">
@@ -73,9 +73,9 @@
         </field>
     </class>
     <class
-        name="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor" auto-complete="false">
+        name="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" auto-complete="false">
         <description>       Default mapping for class
-            org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor     </description>
+            org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor     </description>
         <map-to xml="node"/>
         <field name="maxCardinality" type="string" required="false"
             direct="false" transient="false"
@@ -108,7 +108,7 @@
             <bind-xml name="baseName" node="attribute" reference="false"/>
         </field>
         <field name="assertionDescriptors"
-            type="org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor"
+            type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor"
             required="false" direct="false" transient="false"
             get-method="getAssertionDescriptorsAsArray"
             set-method="setAssertionDescriptorsAsArray" collection="array">
@@ -120,7 +120,7 @@
             <bind-xml name="defaultValue" node="attribute" reference="false"/>
         </field>
         <field name="nodeDescriptors"
-            type="org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor"
+            type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
             required="false" direct="false" transient="false"
             get-method="getNodeDescriptorsAsArray"
             set-method="setNodeDescriptorsAsArray" collection="array">
@@ -152,12 +152,12 @@
         </field>
     </class>
     <class
-        name="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptors" auto-complete="false">
+        name="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors" auto-complete="false">
         <description>       Default mapping for class
-            org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptors     </description>
+            org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors     </description>
         <map-to xml="archetypes"/>
         <field name="archetypeDescriptors"
-            type="org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor"
+            type="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor"
             required="false" direct="false" transient="false"
             get-method="getArchetypeDescriptorsAsArray"
             set-method="setArchetypeDescriptorsAsArray" collection="array">

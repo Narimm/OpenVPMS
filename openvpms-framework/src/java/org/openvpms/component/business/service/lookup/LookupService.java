@@ -28,14 +28,14 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.dao.im.lookup.ILookupDAO;
 import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * 
@@ -95,7 +95,7 @@ public class LookupService implements ILookupService {
 
         // create and return the party object
         return (Lookup) archetypeService.create(descriptor
-                .getArchetypeId());
+                .getType());
     }
 
     /*
@@ -288,7 +288,7 @@ public class LookupService implements ILookupService {
     /*
      * (non-Javadoc)
      * 
-     * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor)
+     * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor)
      */
     public List<Lookup> get(NodeDescriptor descriptor) {
         List<Lookup> lookups = new ArrayList<Lookup>();
@@ -310,7 +310,7 @@ public class LookupService implements ILookupService {
                     (StringUtils.isEmpty(concept))) {
                     throw new LookupServiceException(
                             LookupServiceException.ErrorCode.InvalidAssertion,
-                            new Object[] { assertion.getType() });
+                            new Object[] { assertion.getName() });
                 }
                 
                 if (type.equals("lookup")) {
@@ -329,7 +329,7 @@ public class LookupService implements ILookupService {
                 AssertionDescriptor assertion = assertions.get("lookup.local");
                 for (PropertyDescriptor prop : assertion.getPropertyDescriptorsAsArray()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
-                            .getKey(), prop.getValue()));
+                            .getName(), prop.getValue()));
                 }
             } else {
                 throw new LookupServiceException(
@@ -344,7 +344,7 @@ public class LookupService implements ILookupService {
     /*
      * (non-Javadoc)
      * 
-     * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor,
+     * @see org.openvpms.component.business.service.lookup.ILookupService#get(org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor,
      *      org.openvpms.component.business.domain.im.common.IMObject)
      */
     public List<Lookup> get(NodeDescriptor descriptor, IMObject object) {
@@ -368,7 +368,7 @@ public class LookupService implements ILookupService {
                         || (StringUtils.isEmpty(concept))) {
                     throw new LookupServiceException(
                             LookupServiceException.ErrorCode.InvalidAssertion,
-                            new Object[] { assertion.getType() });
+                            new Object[] { assertion.getName() });
                 }
 
                 if (type.equals("lookup")) {
@@ -379,7 +379,7 @@ public class LookupService implements ILookupService {
                     if (StringUtils.isEmpty(source)) {
                         throw new LookupServiceException(
                                 LookupServiceException.ErrorCode.InvalidAssertion,
-                                new Object[] { assertion.getType() });
+                                new Object[] { assertion.getName() });
                     }
 
                     lookups = dao.getTargetLookups(concept, (String)JXPathContext
@@ -390,7 +390,7 @@ public class LookupService implements ILookupService {
                     if (StringUtils.isEmpty(target)) {
                         throw new LookupServiceException(
                                 LookupServiceException.ErrorCode.InvalidAssertion,
-                                new Object[] { assertion.getType() });
+                                new Object[] { assertion.getName() });
 
                     }
                     lookups = dao.getSourceLookups(concept, (String)JXPathContext
@@ -408,7 +408,7 @@ public class LookupService implements ILookupService {
                 AssertionDescriptor assertion = assertions.get("lookup.local");
                 for (PropertyDescriptor prop : assertion.getPropertyDescriptorsAsArray()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
-                            .getKey(), prop.getValue()));
+                            .getName(), prop.getValue()));
                 }
             } else {
                 throw new LookupServiceException(

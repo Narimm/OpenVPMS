@@ -20,11 +20,12 @@ package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
 import java.util.List;
+import java.util.Map;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.AssertionTypeDescriptor;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -38,8 +39,7 @@ import org.openvpms.component.business.service.archetype.descriptor.AssertionTyp
  */
 public interface IArchetypeService {
     /**
-     * Retrieve the {@link ArchetypeDescriptor} for the specified name. The 
-     * name is a short name.
+     * Retrieve the {@link ArchetypeDescriptor} with the specified short name. 
      * 
      * @param name
      *            the short name
@@ -104,19 +104,18 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            runtime error, which is thrown if the request cannot be completed
      */
-    public ArchetypeDescriptor[] getArchetypeDescriptors(); 
+    public List<ArchetypeDescriptor> getArchetypeDescriptors(); 
 
     /**
-     * Return the {@link ArchetypeDescriptor} with the specified shortName. If 
-     * the short name is a regular expression then it will return all the 
-     * matching records.
+     * Return all the {@link ArchetypeDescriptor} instances that match the
+     * specified shortName. The short name can be a regular expression.
      * 
      * @param shortName
      *            the short name, which can be a regular expression
      * @return ArchetypeDescriptor[]
      * @throws ArchetypeServiceException            
      */
-    public ArchetypeDescriptor[] getArchetypeDescriptors(String shortName);
+    public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName);
     
     /**
      * Return all the {@link ArchetypeDescriptor} instance with the specified 
@@ -124,10 +123,10 @@ public interface IArchetypeService {
      * 
      * @param rmName
      *            the reference model name
-     * @return ArchetypeDescriptor[]
+     * @return List<ArchetypeDescriptor>
      * @throws ArchetypeServiceException            
      */
-    public ArchetypeDescriptor[] getArchetypeDescriptorsByRmName(String rmName);
+    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName);
     
     /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
@@ -143,9 +142,9 @@ public interface IArchetypeService {
      * Return all the {@link AssertionTypeDescriptor} instances supported by this
      * service
      * 
-     * @return AssertionTypeDescriptor[]
+     * @return List<AssertionTypeDescriptor>
      */
-    public AssertionTypeDescriptor[] getAssertionTypeDescriptors();
+    public List<AssertionTypeDescriptor> getAssertionTypeDescriptors();
     
     /**
      * Remove the specified entity. If the entity cannot be removed for whatever
@@ -262,6 +261,22 @@ public interface IArchetypeService {
      *            a runtime exception                         
      */
     public IMObject getById(ArchetypeId archId, long id);
+    
+    /**
+     * Retrun a list of {@link IMObject} instances that satisfy the specified
+     * named query. The query name must map to a valid query in the target 
+     * database. That params are key-value pairs that are required for the 
+     * query to execute correctly
+     * 
+     * @param name
+     *            the query name
+     * @param params
+     *            a map holding key value pairs.
+     * @return List<IMObject>
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public List<IMObject> getByNamedQuery(String name, Map<String, Object>params);
     
     /**
      * Return a list of archtype short names (i.e strings) given the 

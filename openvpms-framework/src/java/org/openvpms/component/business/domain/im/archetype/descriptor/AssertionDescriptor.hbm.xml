@@ -21,7 +21,7 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor"
+		name="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor"
 		table="assertion_descriptor">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="assertion_desc_id"
@@ -30,22 +30,22 @@
 		</id>
 		<version name="version" access="property" type="long" />
 		<property name="linkId" access="property" type="string" />
-		<property name="type" access="property" column="assertion_type"
+		<property name="name" access="property" column="name"
 			type="string" not-null="true" />
 		<property name="errorMessage" access="property" column="error_message"
 			type="string" />
 		<map name="propertyDescriptors" access="property" lazy="false"
-			table="node_descriptor" cascade="all">
-			<key column="assertion_desc_id" />
+			table="node_descriptor" cascade="all,delete-orphan">
+			<key column="assertion_desc_id"/>
 			<map-key column="key_name" type="string" />
 			<one-to-many
-				class="org.openvpms.component.business.service.archetype.descriptor.PropertyDescriptor" />
+				class="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor" />
 		</map>
 	</class>
 
 	<query name="assertionDescriptor.getRowCount">
 		<![CDATA[
-			select count(assertionDescriptor) from org.openvpms.component.business.service.archetype.descriptor.AssertionDescriptor as 
+			select count(assertionDescriptor) from org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor as 
 			assertionDescriptor
 		]]>
 	</query>

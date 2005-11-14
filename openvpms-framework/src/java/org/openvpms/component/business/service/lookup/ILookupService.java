@@ -21,10 +21,10 @@ package org.openvpms.component.business.service.lookup;
 // openvpms-framework
 import java.util.List;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 
 /**

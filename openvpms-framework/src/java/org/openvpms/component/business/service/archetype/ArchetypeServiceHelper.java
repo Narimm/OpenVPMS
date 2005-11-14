@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
 
 /**
  * This is a helper class for the archetype service.

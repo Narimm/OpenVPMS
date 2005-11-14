@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.archetype.descriptor;
+package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.apache.oro.text.perl.Perl5Util;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
@@ -77,12 +78,6 @@ public class NodeDescriptor  extends Descriptor {
      * The default display length if one is not defined in the node definition 
      */
     public static final int DEFAULT_DISPLAY_LENGTH = 50;
-
-    /**
-     * The display name or well known name of the node. This must be unique
-     * within the set of nodeDescriptors for an {@link ArchetypeDescriptor}
-     */
-    private String name;
 
     /**
      * This is the display name, which is only supplied if it is different to
@@ -178,6 +173,7 @@ public class NodeDescriptor  extends Descriptor {
      * Default constructor
      */
     public NodeDescriptor() {
+        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.node.1.0"));
     }
 
     /**
@@ -236,21 +232,6 @@ public class NodeDescriptor  extends Descriptor {
      */
     public void setMinCardinality(int minCardinality) {
         this.minCardinality = minCardinality;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name
-     *            The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**
@@ -338,14 +319,20 @@ public class NodeDescriptor  extends Descriptor {
      *            The type to set.
      */
     public void setType(String type) {
-        try {
-            clazz = Thread.currentThread().getContextClassLoader().loadClass(
-                    type);
-            this.type = type;
-        } catch (Exception exception) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.InvalidType,
-                    new Object[] { type }, exception);
+        
+        // if the type is null then simply ignore it
+        if (StringUtils.isEmpty(type)) {
+            this.type  = type;
+        } else {
+            try {
+                clazz = Thread.currentThread().getContextClassLoader().loadClass(
+                        type);
+                this.type = type;
+            } catch (Exception exception) {
+                throw new DescriptorException(
+                        DescriptorException.ErrorCode.InvalidType,
+                        new Object[] { type }, exception);
+            }
         }
     }
 
@@ -442,9 +429,41 @@ public class NodeDescriptor  extends Descriptor {
      * @param descriptor
      */
     public void addAssertionDescriptor(AssertionDescriptor descriptor) {
-        assertionDescriptors.put(descriptor.getType(), descriptor);
+        assertionDescriptors.put(descriptor.getName(), descriptor);
     }
 
+    /**
+     * Delete the specified assertion descriptor
+     * 
+     * @param assertion
+     *            the assertion to delete
+     */
+    public void removeAssertionDescriptor(AssertionDescriptor descriptor) {
+        assertionDescriptors.remove(descriptor.getName());
+    }
+    
+    /**
+     * Delete the assertion descriptor with the specified type
+     * 
+     * @param type
+     *            the type name
+     */
+    public void removeAssertionDescriptor(String type) {
+        assertionDescriptors.remove(type);
+    }
+    
+    /**
+     * Retrieve the assertion descriptor with the specified type or
+     * null if one does not exist.
+     * 
+     * @param type
+     *            the type of the assertion descriptor
+     * @return AssertionDescriptor            
+     */
+    public AssertionDescriptor getAssertionDescriptor(String type) {
+        return assertionDescriptors.get(type);
+    }
+    
     /**
      * Return the assertion descriptors as a map
      * 
@@ -469,7 +488,7 @@ public class NodeDescriptor  extends Descriptor {
     public void setAssertionDescriptorsAsArray(AssertionDescriptor[] assertionDescriptors) {
         this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
         for (AssertionDescriptor descriptor : assertionDescriptors) {
-            this.assertionDescriptors.put(descriptor.getType(), descriptor);
+            this.assertionDescriptors.put(descriptor.getName(), descriptor);
         }
     }
 
@@ -487,7 +506,16 @@ public class NodeDescriptor  extends Descriptor {
      * @return Returns the nodeDescriptors.
      */
     public Map<String, NodeDescriptor> getNodeDescriptors() {
-        return this.nodeDescriptors;
+        return nodeDescriptors;
+    }
+    
+    /**
+     * Return the number of children node descriptors
+     * 
+     * @return int
+     */
+    public int getNodeDescriptorCount() {
+        return (nodeDescriptors == null) ? 0 : nodeDescriptors.size();
     }
 
     /**
@@ -503,6 +531,7 @@ public class NodeDescriptor  extends Descriptor {
      */
     public void setNodeDescriptors(Map<String, NodeDescriptor> nodeDescriptors) {
         this.nodeDescriptors = nodeDescriptors;
+        checkArchetypeId();
     }
 
     /**
@@ -511,7 +540,7 @@ public class NodeDescriptor  extends Descriptor {
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodeDescriptors) {
         this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
         for (NodeDescriptor descriptor : nodeDescriptors) {
-            this.nodeDescriptors.put(descriptor.getName(), descriptor);
+            addNodeDescriptor(descriptor);
         }
     }
 
@@ -792,7 +821,7 @@ public class NodeDescriptor  extends Descriptor {
             ArrayList<String> range = new ArrayList<String>();
             AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
             for (PropertyDescriptor property : desc.getPropertyDescriptorsAsArray()) {
-                range.add(property.getKey());
+                range.add(property.getName());
             }
             
             return (String[])range.toArray(new String[range.size()]);
@@ -906,4 +935,28 @@ public class NodeDescriptor  extends Descriptor {
 
         return StringUtils.join(words.iterator(), " ");
     }
+
+    /**
+     * Check and adjust the archetype id. If the node descriptor 
+     * has other children then set the archetypeId to collection
+     * node, otherwise set it to normal node.
+     * <p>
+     * TODO This will disappear when we introduce a new collection node
+     * class.
+     */
+    private void checkArchetypeId() {
+        if ((nodeDescriptors != null) &&
+            (nodeDescriptors.size() > 0)) {
+            if (getArchetypeId().getConcept().equals("node")) {
+                setArchetypeId(new ArchetypeId("openvpms-system-descriptor.collectionNode.1.0"));
+            }
+        } else {
+            if (getArchetypeId().getConcept().equals("collectionNode")) {
+                setArchetypeId(new ArchetypeId("openvpms-system-descriptor.node.1.0"));
+            }
+        }
+        // TODO Auto-generated method stub
+        
+    }
+
 }

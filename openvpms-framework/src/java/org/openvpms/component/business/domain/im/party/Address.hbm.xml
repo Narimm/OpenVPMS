@@ -66,7 +66,7 @@
 
 	<query name="address.getAllAddresses">
 		<![CDATA[
-			from from org.openvpms.component.business.domain.im.party.Address as 
+			from org.openvpms.component.business.domain.im.party.Address as 
 			address
 		]]>
 	</query>
