@@ -32,6 +32,20 @@
 		<property name="linkId" access="property" type="string" />
 		<property name="name" access="property" column="name"
 			type="string" not-null="true" />
+		<component name="archetypeId">
+			<property name="namespace" access="property"
+				column="arch_namespace" type="string" />
+			<property name="rmName" access="property"
+				column="arch_rm_name" type="string" />
+			<property name="concept" access="property"
+				column="arch_concept" type="string" />
+			<property name="entityName" access="property"
+				column="arch_entity_name" type="string" />
+			<property name="version" access="property"
+				column="arch_version" type="string" />
+			<property name="shortName" access="property"
+				column="arch_short_name" type="string" />
+		</component>
 		<property name="type" access="property" column="type"
 			type="string" not-null="true" />
 		<property name="methodName" access="property" column="method_name"
@@ -46,4 +60,17 @@
 		]]>
 	</query>
 
+	<query name="assertionTypeDescriptor.getByName">
+		<![CDATA[
+			from org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor as 
+			descriptor where descriptor.name = :name
+		]]>
+	</query>
+
+	<query name="assertionTypeDescriptor.getAll">
+		<![CDATA[
+			from org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor as 
+			descriptor
+		]]>
+	</query>
 </hibernate-mapping>

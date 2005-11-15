@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.descriptor.cache;
+package org.openvpms.tools.archetype.loader;
 
 // commons-resources
 import org.apache.commons.resources.Messages;
@@ -26,13 +26,12 @@ import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * This is the base exception thrown by the objects of type
- * {@link IArchetypeDescriptorCache} 
+ * This is the base exception thrown by the archetype loader
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeDescriptorCacheException extends RuntimeException implements
+public class ArchetypeLoaderException extends RuntimeException implements
         OpenVPMSException {
 
     /**
@@ -44,19 +43,8 @@ public class ArchetypeDescriptorCacheException extends RuntimeException implemen
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        InvalidArchetypeDefDir,
-        FailedToLoadClass,
-        NoArchetypeDefinition,
-        FailedToInitializeRegistry,
-        FailedToCreateArchetype,
-        InvalidFile,
-        InvalidDir,
-        NoFileSpecified,
-        NoDirSpecified,
-        ArchetypeAlreadyDefined,
-        NoAssertionTypeFileSpecified,
-        InvalidAssertionFile,
-        InvalidAssertionSpecified,
+        UsageError,
+        RuntimeError
     }
 
     /**
@@ -69,7 +57,7 @@ public class ArchetypeDescriptorCacheException extends RuntimeException implemen
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.archetype.descriptor.cache."
+            .getMessages("org.openvpms.tools.archetype.loader."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -79,7 +67,7 @@ public class ArchetypeDescriptorCacheException extends RuntimeException implemen
      * @param errorCode
      *            the error code
      */
-    public ArchetypeDescriptorCacheException(ErrorCode errorCode) {
+    public ArchetypeLoaderException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -94,7 +82,7 @@ public class ArchetypeDescriptorCacheException extends RuntimeException implemen
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public ArchetypeDescriptorCacheException(ErrorCode errorCode, Object[] params) {
+    public ArchetypeLoaderException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -108,7 +96,7 @@ public class ArchetypeDescriptorCacheException extends RuntimeException implemen
      * @param cause
      *            the root exception
      */
-    public ArchetypeDescriptorCacheException(ErrorCode errorCode, Throwable cause) {
+    public ArchetypeLoaderException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -125,7 +113,7 @@ public class ArchetypeDescriptorCacheException extends RuntimeException implemen
      * @param cause
      *            the root exception
      */
-    public ArchetypeDescriptorCacheException(ErrorCode errorCode, Object[] params,
+    public ArchetypeLoaderException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

@@ -61,6 +61,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
 
@@ -105,6 +106,11 @@ public class ArchetypeLoader {
     private String fileName;
     
     /**
+     * The location of the assertion type mapping file
+     */
+    private String mappingFile;
+    
+    /**
      * Indicates whether to display verbose information while loading the 
      * archetypes
      */
@@ -115,6 +121,11 @@ public class ArchetypeLoader {
      * archetype (i.e. one that is already stored in the databse
      */
     private boolean overwrite;
+    
+    /**
+     * Indicate whether we should clean the tbles before loading
+     */
+    private boolean clean;
     
     /**
      * Used to process the command line
@@ -176,13 +187,45 @@ public class ArchetypeLoader {
      */
     protected void load() 
     throws Exception {
-        if (config.getString("file") != null) {
-            loadFromFile();
-        } else if (config.getString("dir") != null) {
-            loadFromDirectory();
-        } else {
-            displayUsage();
+        verbose = config.getBoolean("verbose");
+        overwrite = config.getBoolean("overwrite");
+        clean = config.getBoolean("clean");
+
+        try {
+            if (clean) {
+                clean();
+            }
+            
+            if (config.getString("file") != null) {
+                loadArchetypesFromFile();
+            } else if (config.getString("dir") != null) {
+                loadArchetypesFromDirectory();
+            } else if (!clean){
+                displayUsage();
+            }
+        } catch (ArchetypeLoaderException exception) {
+            if (exception.getErrorCode() == 
+                ArchetypeLoaderException.ErrorCode.UsageError) {
+                System.err.println();
+                System.err.println(exception.getMessage());
+                displayUsage();
+            } else {
+                throw exception;
+            }
+            
         }
+    }
+
+    /**
+     * Delete all the archetype and assertion type descriptors
+     * 
+     * @throws Exception
+     *            propagate exception
+     */
+    private void clean() 
+    throws Exception {
+        deleteAllAssertionTypeDescriptors();
+        deleteAllArchetypeDescriptors();
     }
 
     /**
@@ -192,49 +235,139 @@ public class ArchetypeLoader {
      * @throws Exception
      *            propagate exception to caller
      */
-    private void loadFromDirectory() 
-    throws Exception {
+    private void loadArchetypesFromDirectory() {
         // process options
         dirName = config.getString("dir");
-        verbose = config.getBoolean("verbose");
-        overwrite = config.getBoolean("overwrite");
         subdir = config.getBoolean("subdir");
+        mappingFile  = config.getString("mappingFile");
         
-        if (!StringUtils.isEmpty(dirName)) {
-          File dir = new File(dirName);  
-          if (dir.exists()) {
-              String[] extensions = {extension};
-              Collection collection = FileUtils.listFiles(dir, extensions, subdir);
-              Iterator files = collection.iterator();
-              while (files.hasNext()) {
-                  processFile((File) files.next());
-              }
-          } else {
-              throw new RuntimeException("Directory " + dirName 
-                      + ", does not exist.");
-          }
-        } 
+        if (StringUtils.isEmpty(mappingFile)) {
+            throw new ArchetypeLoaderException(
+                    ArchetypeLoaderException.ErrorCode.UsageError, 
+                    new Object[] {"Mapping file has not been specified."});
+        }
+        
+        if (StringUtils.isEmpty(dirName)) {
+            throw new ArchetypeLoaderException(
+                    ArchetypeLoaderException.ErrorCode.UsageError, 
+                    new Object[] {"Directory has not been specified."});
+        }
+        
+        try {
+            loadAssertionTypesFromFile();
+            File dir = new File(dirName);  
+            if (dir.exists()) {
+                String[] extensions = {extension};
+                Collection collection = FileUtils.listFiles(dir, extensions, subdir);
+                Iterator files = collection.iterator();
+                while (files.hasNext()) {
+                    processFile((File) files.next());
+                }
+            } else {
+                throw new RuntimeException("Directory " + dirName 
+                        + ", does not exist.");
+            }
+        } catch (Exception exception) {
+            throw new ArchetypeLoaderException(
+                    ArchetypeLoaderException.ErrorCode.RuntimeError, exception);
+        }
     }
 
 
     /**
      * Process the specified file and load all the defind archetypes
      * 
-     * @throws Exception
-     *            propagate the exception to the client
      */
-    private void loadFromFile() 
-    throws Exception {
+    private void loadArchetypesFromFile() {
         // process options
         fileName = config.getString("file");
-        verbose = config.getBoolean("verbose");
-        overwrite = config.getBoolean("overwrite");
+        mappingFile  = config.getString("mappingFile");
         
-        File file = new File(fileName);
-        if (file.exists()) {
-            processFile(file);
-        } else {
-            throw new RuntimeException("File " + fileName + " does not exist.");
+        if (!StringUtils.isEmpty(mappingFile)) {
+            throw new ArchetypeLoaderException(
+                    ArchetypeLoaderException.ErrorCode.UsageError, 
+                    new Object[] {"Mapping file has not been specified."});
+        }
+        
+        if (!StringUtils.isEmpty(fileName)) {
+            throw new ArchetypeLoaderException(
+                    ArchetypeLoaderException.ErrorCode.UsageError, 
+                    new Object[] {"File name has not been specified."});
+        }
+
+        try {
+            loadAssertionTypesFromFile();
+            File file = new File(fileName);
+            if (file.exists()) {
+                processFile(file);
+            } else {
+                throw new RuntimeException("File " + fileName + " does not exist.");
+            }
+        } catch (Exception exception) {
+            throw new ArchetypeLoaderException(
+                    ArchetypeLoaderException.ErrorCode.RuntimeError, exception);
+        }
+    }
+    
+    /**
+     * Process the assertion types defined in the mapping file
+     * 
+     * @throws Exception
+     *            propagate exeption to the client
+     */
+    private void loadAssertionTypesFromFile()
+    throws Exception {
+        if (verbose) {
+            logger.info("Processing Assertion Type Mapping File: " + mappingFile);
+        }
+        
+        Mapping mapping = new Mapping();
+        mapping.loadMapping(new InputSource(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                        "org/openvpms/component/business/domain/im/archetype/descriptor/assertion-type-mapping-file.xml"))));
+        
+        AssertionTypeDescriptors adescs = (AssertionTypeDescriptors)
+            new Unmarshaller(mapping).unmarshal(new FileReader(mappingFile));
+        for (AssertionTypeDescriptor adesc : 
+            adescs.getAssertionTypeDescriptors().values()) {
+            if (verbose) {
+                logger.info("Processing Assertion Type: " + adesc.getName());
+            }
+            
+            Transaction tx = session.beginTransaction();
+            try {
+                Query query = session.getNamedQuery("assertionTypeDescriptor.getByName");
+                query.setParameter("name", adesc.getName());
+                if (query.list().size() > 0) {
+                    // check if the overwtite flag has been specified
+                    if (!overwrite) {
+                        if (verbose) {
+                            logger.info("AssertionTypeDescriptor " + adesc.getName()
+                                    + " already exists. Not overwriting");
+                        }
+                        tx.commit();
+                        continue;
+                    }
+                    
+                    for (Object obj : query.list()) {
+                        if (verbose) {
+                            logger.info("Deleting Existing AssertionTypeDescriptor: " + 
+                                    ((AssertionTypeDescriptor)obj).getName());
+                        }
+                        session.delete(obj);
+                    }
+                } 
+                
+                if (verbose) {
+                    logger.info("Creating AssertionTypeDescriptor: " + adesc.getName());
+                }
+                session.saveOrUpdate(adesc);
+                tx.commit();
+            } catch (Exception exception) {
+                // rollback before rethrowing the exceptin
+                tx.rollback();
+                throw exception;
+            }
         }
     }
     
@@ -250,14 +383,14 @@ public class ArchetypeLoader {
     private void processFile(File file) 
     throws Exception {
         if (verbose) {
-            logger.info("Processing File: " + file);
+            logger.info("Processing Archetype Descriptor File: " + file);
         }
         
         // load the mapping file
         Mapping mapping = new Mapping();
         mapping.loadMapping(new InputSource(new InputStreamReader(
                 Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "org/openvpms/component/business/service/archetype/descriptor/archetype-mapping-file.xml"))));
+                        "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml"))));
 
         ArchetypeDescriptors adescs = (ArchetypeDescriptors)
             new Unmarshaller(mapping).unmarshal(new FileReader(file));
@@ -326,25 +459,91 @@ public class ArchetypeLoader {
     throws Exception {
         jsap.registerParameter(new FlaggedOption("dir")
                 .setShortFlag('d')
+                .setLongFlag("dir")
                 .setHelp("Directory where ADL files reside."));
         jsap.registerParameter(new Switch("subdir")
                 .setShortFlag('s')
+                .setLongFlag("subdir")
                 .setDefault("false")
                 .setHelp("Search the subdirectories as well."));
         jsap.registerParameter(new FlaggedOption("file")
                 .setShortFlag('f')
+                .setLongFlag("file")
                 .setHelp("Name of file containing archetypes"));
         jsap.registerParameter(new Switch("verbose")
                 .setShortFlag('v')
+                .setLongFlag("verbose")
                 .setDefault("false")
                 .setHelp("Displays verbose info to the console."));
         jsap.registerParameter(new Switch("overwrite")
                 .setShortFlag('o')
+                .setLongFlag("overwrite")
                 .setDefault("false")
                 .setHelp("Overwrite archetype if it already exists"));
+        jsap.registerParameter(new Switch("clean")
+                .setShortFlag('c')
+                .setLongFlag("clean")
+                .setDefault("false")
+                .setHelp("Clean all the archetypes before loading"));
+        jsap.registerParameter(new FlaggedOption("mappingFile")
+                .setShortFlag('m')
+                .setLongFlag("mappingFile")
+                .setHelp("A location of the assertion type mapping file"));
         
     }
 
+    /**
+     * Delete all archetype descriptors 
+     * 
+     * @throws Exception
+     *           propagate exception to caller
+     */
+    private void deleteAllArchetypeDescriptors()
+    throws Exception {
+        Transaction tx = session.beginTransaction();
+        try {
+            Query query = session.getNamedQuery("archetypeDescriptor.getAll");
+            if (query.list().size() > 0) {
+                for (Object obj : query.list()) {
+                    if (verbose) {
+                        logger.info("Deleting " + ((ArchetypeDescriptor)obj).getName());
+                    }
+                    session.delete(obj);
+                }
+            }
+            tx.commit();
+        } catch (Exception exception) {
+            tx.rollback();
+            throw exception;
+        }
+    }
+
+    /**
+     * Delete all assertion type descriptors 
+     * 
+     * @throws Exception
+     *           propagate exception to caller
+     */
+    private void deleteAllAssertionTypeDescriptors()
+    throws Exception {
+        Transaction tx = session.beginTransaction();
+        try {
+            Query query = session.getNamedQuery("assertionTypeDescriptor.getAll");
+            if (query.list().size() > 0) {
+                for (Object obj : query.list()) {
+                    if (verbose) {
+                        logger.info("Deleting " + ((AssertionTypeDescriptor)obj).getName());
+                    }
+                    session.delete(obj);
+                }
+            }
+            tx.commit();
+        } catch (Exception exception) {
+            tx.rollback();
+            throw exception;
+        }
+    }
+    
     /**
      * Create a hibernate session, which can be used to load the
      * archetypes

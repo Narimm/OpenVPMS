@@ -76,4 +76,11 @@
 			descriptor where descriptor.name = :name
 		]]>
 	</query>
+
+	<query name="archetypeDescriptor.getAll">
+		<![CDATA[
+			from org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor as
+			descriptor
+		]]>
+	</query>
 </hibernate-mapping>

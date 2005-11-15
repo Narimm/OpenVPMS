@@ -27,12 +27,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,10 +44,8 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.xml.sax.InputSource;
 
 /**
@@ -62,43 +57,20 @@ import org.xml.sax.InputSource;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeDescriptorCacheFS implements IArchetypeDescriptorCache {
+public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
+    implements IArchetypeDescriptorCache {
     /** 
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
-    private static final Logger logger = Logger
+    static final private Logger logger = Logger
             .getLogger(ArchetypeDescriptorCacheFS.class);
 
-    /**
-     * In memory cache of the archetype definitions keyed on the short name.
-     */
-    private Map<String, ArchetypeDescriptor> archetypesByShortName = Collections
-            .synchronizedMap(new HashMap<String, ArchetypeDescriptor>());
-
-    /**
-     * In memory cache of the archetype definitions keyed on archetype id.
-     */
-    private Map<String, ArchetypeDescriptor> archetypesById = Collections
-            .synchronizedMap(new HashMap<String, ArchetypeDescriptor>());
-
-    /**
-     * Caches the varies assertion types
-     */
-    private Map<String, AssertionTypeDescriptor> assertionTypes = Collections
-            .synchronizedMap(new HashMap<String, AssertionTypeDescriptor>());
-    
     /**
      * The timer is used to schedule tasks
      */
     private Timer timer = new Timer();
     
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptor(java.lang.String)
-     */
-    public ArchetypeDescriptor getArchetypeDescriptor(String name) {
-        return archetypesByShortName.get(name);
-    }
 
     /**
      * Construct an instance of this cache by loading and parsing all the
@@ -163,109 +135,6 @@ public class ArchetypeDescriptorCacheFS implements IArchetypeDescriptorCache {
 
         // determine whether we should create a monitor thread
         createArchetypeMonitorThread(archDir, extensions, scanInterval);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
-     */
-    public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
-        return archetypesById.get(id.getQName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptors()
-     */
-    public List<ArchetypeDescriptor> getArchetypeDescriptors() {
-        return new ArrayList<ArchetypeDescriptor>(archetypesById.values());
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptors(java.lang.String)
-     */
-    public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
-        List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
-
-        for (String key : archetypesByShortName.keySet()) {
-            if (key.matches(shortName)) {
-                descriptors.add(archetypesByShortName.get(key));
-            }
-        }
-
-        return descriptors;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeDescriptorsByRmName(java.lang.String)
-     */
-    public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName) {
-        List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
-
-        for (String qName : archetypesById.keySet()) {
-            ArchetypeDescriptor adesc = archetypesById.get(qName);
-            if (rmName.matches(adesc.getType().getRmName())) {
-                descriptors.add(adesc);
-            }
-        }
-
-        return descriptors;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getAssertionTypeDescriptor(java.lang.String)
-     */
-    public AssertionTypeDescriptor getAssertionTypeDescriptor(String name) {
-        return assertionTypes.get(name);
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getAssertionTypeDescriptors()
-     */
-    public List<AssertionTypeDescriptor> getAssertionTypeDescriptors() {
-        return new ArrayList<AssertionTypeDescriptor>(assertionTypes.values());
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames(java.lang.String, java.lang.String, java.lang.String, boolean)
-     */
-    public List<String> getArchetypeShortNames(String rmName,
-            String entityName, String conceptName, boolean primaryOnly) {
-        List<String> shortNames = new ArrayList<String>();
-        
-        // check out if there are any '*' specified
-        String trmName = (rmName == null) ? null : rmName.replace("*", ".*");
-        String tentityName = (entityName == null) ? null : entityName.replace("*", ".*");
-        String tconceptName = (conceptName == null) ? null : conceptName.replace("*", ".*");
-        
-        for (ArchetypeDescriptor desc : archetypesByShortName.values()) {
-            ArchetypeId archId = desc.getType();
-            // do a check on rm name
-            if ((StringUtils.isEmpty(trmName) == false) && 
-                (archId.getRmName().matches(trmName) == false)) {
-                continue;
-            }
-
-            // do the check on entity name
-            if ((StringUtils.isEmpty(tentityName) == false) && 
-                (archId.getEntityName().matches(tentityName) == false)) {
-                continue;
-            }
-
-            // do the check on concept name
-            if ((StringUtils.isEmpty(tconceptName) == false) && 
-                (archId.getConcept().matches(tconceptName) == false)) {
-                continue;
-            }
-            
-            // are we requesting only primary
-            if ((primaryOnly) &&
-                (!desc.isPrimary())) {
-                continue;
-            }
-
-            shortNames.add(archId.getShortName());
-        }
-        
-        return shortNames;
     }
 
     /**
@@ -423,8 +292,7 @@ public class ArchetypeDescriptorCacheFS implements IArchetypeDescriptorCache {
                 logger.debug("Attempting to process file " + assertFile);
             }
             types = loadAssertionTypeDescriptors(assertFile);
-            Iterator iter = types.getAssertionTypeDescriptors().values()
-                    .iterator();
+            Iterator iter = types.getAssertionTypeDescriptors().values().iterator();
             while (iter.hasNext()) {
                 AssertionTypeDescriptor descriptor = (AssertionTypeDescriptor) iter
                         .next();
@@ -534,36 +402,6 @@ public class ArchetypeDescriptorCacheFS implements IArchetypeDescriptorCache {
                 .unmarshal(new InputSource(new InputStreamReader(Thread
                         .currentThread().getContextClassLoader()
                         .getResourceAsStream(assertFile))));
-    }
-
-    /**
-     * Process all the assertions defined for a specified node. This is a
-     * re-entrant method.
-     * 
-     * @param node
-     *            the node to process
-     * @throws ArchetypeDescriptorCacheException
-     *             runtime exception that is raised when the
-     */
-    private void checkAssertionsInNode(Map nodes) {
-        Iterator niter = nodes.values().iterator();
-        while (niter.hasNext()) {
-            NodeDescriptor node = (NodeDescriptor) niter.next();
-            for (AssertionDescriptor assertion : node
-                    .getAssertionDescriptorsAsArray()) {
-                if (!assertionTypes.containsKey(assertion.getName())) {
-                    logger.warn("Attempting to find [" + assertion.getName()
-                            + " in [" + assertionTypes + "]");
-                    throw new ArchetypeDescriptorCacheException(
-                            ArchetypeDescriptorCacheException.ErrorCode.InvalidAssertionSpecified,
-                            new Object[] { assertion.getName() });
-                }
-            }
-
-            if (node.getNodeDescriptors().size() > 0) {
-                checkAssertionsInNode(node.getNodeDescriptors());
-            }
-        }
     }
 
     /**
