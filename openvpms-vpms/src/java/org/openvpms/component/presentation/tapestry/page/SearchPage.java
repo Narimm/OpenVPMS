@@ -18,10 +18,14 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
+// java-core
 import java.util.List;
 import java.util.StringTokenizer;
 
+// commons-lang
 import org.apache.commons.lang.StringUtils;
+
+// jakarta-tapestry
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.PageRedirectException;
 import org.apache.tapestry.annotations.Persist;
@@ -30,41 +34,58 @@ import org.apache.tapestry.event.PageDetachListener;
 import org.apache.tapestry.event.PageEvent;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.apache.tapestry.util.DefaultPrimaryKeyConverter;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.SearchCallback;
 import org.openvpms.component.presentation.tapestry.component.ArchetypeNameSelectionModel;
 import org.openvpms.component.presentation.tapestry.component.Utils;
 
-
-
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public abstract class SearchPage extends OpenVpmsPage implements PageBeginRenderListener, PageDetachListener
-{
+public abstract class SearchPage extends OpenVpmsPage implements
+        PageBeginRenderListener, PageDetachListener {
     @Persist("session")
     public abstract String getArchetypeRange();
-    public abstract void setArchetypeRange(String archetypeRange);  
 
+    /**
+     * 
+     * @param archetypeRange
+     */
+    public abstract void setArchetypeRange(String archetypeRange);
+    
+    /**
+     * 
+     * @return
+     */
     public abstract String getArchetypeName();
 
+    /**
+     * 
+     * @return
+     */
     public abstract String getSearchName();
 
+    /**
+     * 
+     */
     private DefaultPrimaryKeyConverter _converter;
 
-    public DefaultPrimaryKeyConverter getConverter()
-    {
+    /**
+     * 
+     * @return
+     */
+    public DefaultPrimaryKeyConverter getConverter() {
         if (_converter == null)
-            _converter = new DefaultPrimaryKeyConverter()
-            {
+            _converter = new DefaultPrimaryKeyConverter() {
                 // Here's why we DON'T use @Bean ...
 
                 @Override
-                protected Object provideMissingValue(Object key)
-                {
+                protected Object provideMissingValue(Object key) {
                     throw new PageRedirectException(SearchPage.this);
                 }
 
@@ -73,36 +94,40 @@ public abstract class SearchPage extends OpenVpmsPage implements PageBeginRender
         return _converter;
     }
 
-    public void pageBeginRender(PageEvent event)
-    {
-            readRecords();
+    /**
+     * 
+     */
+    public void pageBeginRender(PageEvent event) {
+        readRecords();
     }
 
-    public void pageDetached(PageEvent event)
-    {
+    /**
+     * 
+     */
+    public void pageDetached(PageEvent event) {
         _converter = null;
     }
 
-
-    public void pushCallback()
-    {
-        Visit visit = (Visit)getVisitObject();
+    /**
+     * 
+     */
+    @SuppressWarnings("unchecked")
+    public void pushCallback() {
+        Visit visit = (Visit) getVisitObject();
         visit.getCallbackStack().push(new SearchCallback(getPageName()));
     }
-    
-    /**
-     * Reads all the records from the database, building the list of record ids, and the map from
-     * id to Record. 
-     */
 
-    private void readRecords()
-    {
+    /**
+     * Reads all the records from the database, building the list of record ids,
+     * and the map from id to Record.
+     */
+    private void readRecords() {
         if (getRequestCycle().isRewinding())
             return;
-        
-        //* get the archetype range tokens
+
+        // * get the archetype range tokens
         String range = getArchetypeRange();
-        StringTokenizer rangetokens = new StringTokenizer(range,  ".");
+        StringTokenizer rangetokens = new StringTokenizer(range, ".");
         String rmName = rangetokens.nextToken();
         String entityName = rangetokens.nextToken();
         String conceptName = rangetokens.nextToken();
@@ -110,7 +135,7 @@ public abstract class SearchPage extends OpenVpmsPage implements PageBeginRender
         if (StringUtils.isEmpty(name) == false)
             name = name + "*";
         String type = getArchetypeName();
-                
+
         List results = null;
         DefaultPrimaryKeyConverter converter = null;
         if (type == null)
@@ -118,66 +143,87 @@ public abstract class SearchPage extends OpenVpmsPage implements PageBeginRender
         try {
             converter = getConverter();
             if (type.equalsIgnoreCase("all"))
-                results = getArchetypeService().get(rmName,entityName, conceptName, name, true);
+                results = getArchetypeService().get(rmName, entityName,
+                        conceptName, name, true);
             else {
-                StringTokenizer typetokens = new StringTokenizer(type,".");
+                StringTokenizer typetokens = new StringTokenizer(type, ".");
                 String entity = typetokens.nextToken();
                 String concept = typetokens.nextToken();
-                results = getArchetypeService().get(rmName,entity, concept, name, true);                   
+                results = getArchetypeService().get(rmName, entity, concept,
+                        name, true);
             }
-            for (Object object : results)
-            {
-                converter.add(((IMObject)object).getLinkId(), object);
+            for (Object object : results) {
+                converter.add(((IMObject) object).getLinkId(), object);
             }
-        }
-        catch (Exception e) {
-            converter.clear();             
+        } catch (Exception e) {
+            converter.clear();
         }
     }
-    
-    public void onNameClick(Object model)
-    {
-        // TODO Retieve ID from model and the utilise this to retrieve object using service layer.  This 
+
+    /**
+     * 
+     * @param model
+     */
+    public void onNameClick(Object model) {
+        // TODO Retieve ID from model and the utilise this to retrieve object
+        // using service layer. This
         // will solve problem with stale objects in Search List.
-        EditPage page = (EditPage) Utils.findPage(getRequestCycle(), ((IMObject)model).getArchetypeId().getShortName(),"Edit");
+        EditPage page = (EditPage) Utils.findPage(getRequestCycle(),
+                ((IMObject) model).getArchetypeId().getShortName(), "Edit");
         page.setModel(model);
         this.pushCallback();
         getRequestCycle().activate(page);
     }
 
-    public void onNew(IRequestCycle cycle)
-    {
+    /**
+     * 
+     * @param cycle
+     */
+    public void onNew(IRequestCycle cycle) {
         // First check we have a selected archetype Name
-        if (getArchetypeName() == null || getArchetypeName() == "" || getArchetypeName().equalsIgnoreCase("all"))
+        if (getArchetypeName() == null || getArchetypeName() == ""
+                || getArchetypeName().equalsIgnoreCase("all"))
             return;
 
-        EditPage page = (EditPage) Utils.findPage(getRequestCycle(), getArchetypeName(),"Edit");
+        EditPage page = (EditPage) Utils.findPage(getRequestCycle(),
+                getArchetypeName(), "Edit");
         page.setModel(getArchetypeService().create(getArchetypeName()));
         this.pushCallback();
         cycle.activate(page);
     }
 
-    public void onSearch(IRequestCycle cycle)
-    {
+    /**
+     * 
+     * @param cycle
+     */
+    public void onSearch(IRequestCycle cycle) {
         readRecords();
     }
 
+    /**
+     * 
+     * @return
+     */
     public IPropertySelectionModel getArchetypeSearchModel() {
-        //* get the archetype range tokens
+        // * get the archetype range tokens
         String range = getArchetypeRange();
-        StringTokenizer tokens = new StringTokenizer(range,  ".");
+        StringTokenizer tokens = new StringTokenizer(range, ".");
         String rmName = tokens.nextToken();
         String entityName = tokens.nextToken();
         String conceptName = tokens.nextToken();
 
-        // Create a list of archetype short names from the supplied archetype range
-        //ArchetypeDescriptor[] archetypes = getArchetypeService().getArchetypeDescriptorsByRmName(rmName);
-        //<String> archetypenames = new ArrayList<String>();
-        //for (ArchetypeDescriptor desc : archetypes) {
-        //    archetypenames.add(desc.getName());
-        //}
-        List<String> archetypeNames = getArchetypeService().getArchetypeShortNames(rmName,entityName,conceptName,true);
-        archetypeNames.add(0,"All");
-        return new ArchetypeNameSelectionModel((String[])archetypeNames.toArray(new String[archetypeNames.size()]));
+        // Create a list of archetype short names from the supplied archetype
+        // range
+        // ArchetypeDescriptor[] archetypes =
+        // getArchetypeService().getArchetypeDescriptorsByRmName(rmName);
+        // <String> archetypenames = new ArrayList<String>();
+        // for (ArchetypeDescriptor desc : archetypes) {
+        // archetypenames.add(desc.getName());
+        // }
+        List<String> archetypeNames = getArchetypeService()
+                .getArchetypeShortNames(rmName, entityName, conceptName, true);
+        archetypeNames.add(0, "All");
+        return new ArchetypeNameSelectionModel((String[]) archetypeNames
+                .toArray(new String[archetypeNames.size()]));
     }
 }

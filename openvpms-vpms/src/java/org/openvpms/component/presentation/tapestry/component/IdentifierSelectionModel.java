@@ -31,19 +31,41 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @version  $LastChangedDate$
  */
 public class IdentifierSelectionModel implements IPropertySelectionModel {
+    /**
+     * 
+     */
     private List instances;
 
+    /**
+     * 
+     */
     private boolean allowNone;
 
+    /**
+     * 
+     */
     public static String NONE_LABEL = "None";
-
+    
+    /**
+     * 
+     */
     public static String NONE_VALUE = "none";
 
+    /**
+     * 
+     * @param instances
+     */
     public IdentifierSelectionModel(List instances) {
         this.instances = instances;
         this.allowNone = false;
     }
 
+    /**
+     * 
+     * @param instances
+     * @param allowNone
+     */
+    @SuppressWarnings("unchecked")
     public IdentifierSelectionModel(List instances,boolean allowNone) {
         this(instances);
         this.allowNone = allowNone;

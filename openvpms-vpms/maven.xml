@@ -20,4 +20,34 @@
 			tofile="${tomcat.webapps.dir}/${maven.war.final.name}" />
   	</postGoal>
   	
+	<goal name="lookup:load" description="Load the Lookup Data from File">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.lookup.loader.LookupLoader"
+	        failonerror="true"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.lookup.data.file}"/>
+    	</ant:java>	
+    </goal>
+  	
+	<goal name="archetype:load" description="Load the Archetypes from a directory">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
+	        failonerror="true"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.archetype.loader.cmdline}"/>
+    	</ant:java>	
+    </goal>
+    
 </project>

@@ -1,0 +1,12 @@
+<archetypes>
+	<archetype name="openvpms-system-descriptor.property.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor">
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
+		<node name="key" path="/key" type="java.lang.String"
+			minCardinality="1" />
+		<node name="type" path="/type" type="java.lang.String"
+			minCardinality="1" />
+		<node name="value" path="/value" type="java.lang.String" />
+	</archetype>
+</archetypes>

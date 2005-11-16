@@ -260,7 +260,7 @@
 			<artifactId>spring-core</artifactId>
 			<version>1.2.5</version>
 			<type>jar</type>
-			<url>http://www.springframework.org/</url>
+			<url>http://www.spring.org/</url>
 			<properties>
 				<war.bundle>false</war.bundle>
 			</properties>
@@ -455,6 +455,24 @@
 			</properties>
 		</dependency>
 		<dependency>
+			<groupId>antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>2.7.5H3</version>
+			<url>http://www.antlr.org/</url>
+			<properties>
+				<war.bundle>false</war.bundle>
+			</properties>
+		</dependency>
+		<dependency>
+			<groupId>jsap</groupId>
+			<artifactId>JSAP</artifactId>
+			<version>2.0a</version>
+			<url>http://jsap.sourceforge.net/</url>
+			<properties>
+				<war.bundle>false</war.bundle>
+			</properties>
+		</dependency>
+		<dependency>
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>1.4</version>
@@ -625,7 +643,7 @@
 		<dependency>
 			<groupId>openvpms</groupId>
 			<artifactId>openvpms-framework</artifactId>
-			<version>0.2</version>
+			<version>0.3</version>
 			<url>http://www.openvpms.org</url>
 			<properties>
 				<war.bundle>true</war.bundle>

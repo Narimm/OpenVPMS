@@ -18,23 +18,23 @@
 
 package org.openvpms.component.presentation.tapestry.page;
 
-import java.util.Collection;
+// java core
 import java.util.List;
 
+// jakarta-tapestry
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.annotations.Bean;
 import org.apache.tapestry.annotations.Persist;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.apache.tapestry.valid.ValidationConstraint;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
@@ -50,37 +50,46 @@ import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidatio
 
 public abstract class EditPage extends OpenVpmsPage {
 
- 
     // These methods represent page properties managed by Tapestry
 
     @Persist("session")
     public abstract Integer getObjectId();
+
     public abstract void setObjectId(Integer bookId);
 
     @Persist("session")
     public abstract Object getModel();
+
     public abstract void setModel(Object model);
 
     public abstract String getCurrentActiveTab();
+
     public abstract void setCurrentActiveTab(String name);
 
     public abstract ICallback getNextPage();
+
     public abstract void setNextPage(ICallback NextPage);
 
     public abstract String[] getNodeNames();
+
     public abstract void setNodeNames(String[] nodeNames);
 
     public abstract Object getCurrentObject();
+
     public abstract void setCurrentObject(Object CurrentObject);
 
     public abstract NodeDescriptor getDescriptor();
+
     public abstract void setDescriptor(NodeDescriptor descriptor);
 
     // The Validation delegate injected by Tapestry
     @Bean
     public abstract OpenVpmsValidationDelegate getDelegate();
 
-    // Push a Edit Page Callback
+    /**
+     * 
+     */
+    @SuppressWarnings("unchecked")
     public void pushCallback() {
         Visit visit = (Visit) getVisitObject();
         visit.getCallbackStack().push(
@@ -108,7 +117,7 @@ public abstract class EditPage extends OpenVpmsPage {
             ((CollectionCallback) callback).remove(getModel());
         } else {
             try {
-                 getArchetypeService().remove((IMObject) getModel());
+                getArchetypeService().remove((IMObject) getModel());
             } catch (Exception pe) {
                 cycle.activate("Home");
             }
@@ -139,6 +148,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    /**
+     * 
+     * @param cycle
+     */
     public void onMainCancel(IRequestCycle cycle) {
         try {
             ICallback callback = (ICallback) getVisitObject()
@@ -152,6 +165,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    /**
+     * 
+     * @param cycle
+     */
     public void onMainSubmit(IRequestCycle cycle) {
         // If we have a indirection to another page then goto that page
         if (getNextPage() != null) {
@@ -161,6 +178,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    /**
+     * 
+     * @param cycle
+     */
     public void onMainRefresh(IRequestCycle cycle) {
         // If we are only refreshing then clear any validation errors
         getDelegate().clearErrors();
@@ -201,7 +222,7 @@ public abstract class EditPage extends OpenVpmsPage {
             ((CollectionCallback) callback).add(getModel());
         } else {
             try {
-                    getArchetypeService().save((IMObject)getModel());
+                getArchetypeService().save((IMObject) getModel());
             } catch (Exception pe) {
                 ((OpenVpmsValidationDelegate) getDelegate()).record(pe);
                 return false;
@@ -243,6 +264,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    /**
+     * 
+     * @return
+     */
     public List getSimpleDescriptors() {
         if (getNodeNames() == null || getNodeNames().length == 0) {
             return getArchetypeDescriptor().getSimpleNodeDescriptors();
@@ -251,6 +276,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    /**
+     * 
+     * @return
+     */
     public List getComplexDescriptors() {
         if (getNodeNames() == null || getNodeNames().length == 0) {
             return getArchetypeDescriptor().getComplexNodeDescriptors();
@@ -259,11 +288,21 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
+    /**
+     * 
+     * @param descriptor
+     * @return
+     */
     public IPropertySelectionModel getLookupModel(NodeDescriptor descriptor) {
         return new LookupSelectionModel(getLookupService().get(descriptor,
                 (IMObject) getModel()), !descriptor.isRequired());
     }
 
+    /**
+     * 
+     * @param descriptor
+     * @return
+     */
     public IPropertySelectionModel getEntityModel(NodeDescriptor descriptor) {
         // TODO need to work out how to get Entity selection models from node
         // descriptor
@@ -289,7 +328,10 @@ public abstract class EditPage extends OpenVpmsPage {
         }
     }
 
-
+    /**
+     * 
+     * @return
+     */
     public boolean isCurrentTabActive() {
         String currenttab = getCurrentActiveTab();
         String displayname = getDescriptor().getDisplayName();
@@ -302,6 +344,10 @@ public abstract class EditPage extends OpenVpmsPage {
             return false;
     }
 
+    /**
+     * 
+     * @param displayName
+     */
     public void onTabClicked(String displayName) {
         setCurrentActiveTab(displayName);
     }

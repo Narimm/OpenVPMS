@@ -23,9 +23,9 @@ import java.util.StringTokenizer;
 import org.apache.tapestry.form.IPropertySelectionModel;
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * 
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
 public class ArchetypeNameSelectionModel implements IPropertySelectionModel {
@@ -33,54 +33,52 @@ public class ArchetypeNameSelectionModel implements IPropertySelectionModel {
 
     /**
      * Standard constructor.
-     *
+     * 
      * The options are retained (not copied).
-     **/
-
-    public ArchetypeNameSelectionModel(String[] options)
-    {
+     */
+    public ArchetypeNameSelectionModel(String[] options) {
         this.options = options;
     }
 
-    public int getOptionCount()
-    {
+    /**
+     * 
+     */
+    public int getOptionCount() {
         return options.length;
     }
 
-    public Object getOption(int index)
-    {
+    /**
+     * 
+     */
+    public Object getOption(int index) {
         return options[index];
     }
 
     /**
-     *  Labels match options.
-     *
-     **/
-
-    public String getLabel(int index)
-    {
-        StringTokenizer tokens = new StringTokenizer(options[index],  ".");
+     * Labels match options.
+     * 
+     */
+    public String getLabel(int index) {
+        StringTokenizer tokens = new StringTokenizer(options[index], ".");
         if (tokens.countTokens() > 1) {
-            String entityName = tokens.nextToken();
             String conceptName = tokens.nextToken();
             return Utils.unCamelCase(conceptName);
-        }
-        else
+        } else
             return options[index];
     }
 
     /**
-     *  Values are indexes into the array of options.
-     *
-     **/
-
-    public String getValue(int index)
-    {
+     * Values are indexes into the array of options.
+     * 
+     */
+    public String getValue(int index) {
         return Integer.toString(index);
     }
 
-    public Object translateValue(String value)
-    {
+    /**
+     * 
+     */
+    public Object translateValue(String value) {
         int index;
 
         index = Integer.parseInt(value);

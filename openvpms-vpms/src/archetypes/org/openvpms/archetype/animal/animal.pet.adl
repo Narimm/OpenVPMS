@@ -1,6 +1,7 @@
 <archetypes>
 	<archetype name="openvpms-party-animal.pet.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Animal">
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
 		<node name="description" type="java.lang.String"
@@ -8,32 +9,32 @@
 			derivedValue="concat(/sex, ' ', /colour, ' ', /breed)" />
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
-			<assertion type="lookup">
-				<property key="type" value="lookup" />
-				<property key="concept" value="species" />
+			<assertion name="lookup">
+				<property name="type" value="lookup" />
+				<property name="concept" value="species" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="breed" path="/breed" type="java.lang.String">
-			<assertion type="lookup">
-				<property key="type" value="targetLookup" />
-				<property key="concept" value="species.breed" />
-				<property key="source" value="species" />
+			<assertion name="lookup">
+				<property name="type" value="targetLookup" />
+				<property name="concept" value="species.breed" />
+				<property name="source" value="species" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
-			<assertion type="lookup">
-				<property key="type" value="lookup" />
-				<property key="concept" value="colour" />
+			<assertion name="lookup">
+				<property name="type" value="lookup" />
+				<property name="concept" value="colour" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
-			<assertion type="lookup.local">
-				<property key="male" value="male" />
-				<property key="female" value="female" />
-				<property key="unspecified" value="unspecified" />
+			<assertion name="lookup.local">
+				<property name="male" value="male" />
+				<property name="female" value="female" />
+				<property name="unspecified" value="unspecified" />
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
@@ -43,8 +44,8 @@
 			type="java.util.Date" minCardinality="1" />
 		<node name="identities" path="/identities"
 			type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
-			<assertion type="archetypeRange">
-				<property key="entityIdentity.Alias" />
+			<assertion name="archetypeRange">
+				<property name="entityIdentity.Alias" />
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>

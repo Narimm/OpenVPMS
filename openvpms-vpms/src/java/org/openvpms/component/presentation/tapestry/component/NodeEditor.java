@@ -27,7 +27,7 @@ import org.apache.tapestry.form.validator.MaxLength;
 import org.apache.tapestry.form.validator.Min;
 import org.apache.tapestry.form.validator.Pattern;
 import org.apache.tapestry.form.validator.Required;
-import org.openvpms.component.business.service.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 
 /**
  * 
@@ -37,8 +37,16 @@ import org.openvpms.component.business.service.archetype.descriptor.NodeDescript
 
 public abstract class NodeEditor extends OpenVpmsComponent {
 
+    /**
+     * 
+     * @return
+     */
     public abstract NodeDescriptor getDescriptor();
 
+    /**
+     * 
+     * @param Descriptor
+     */
     public abstract void setDescriptor(NodeDescriptor Descriptor);
 
     /**

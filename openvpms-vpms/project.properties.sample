@@ -1,7 +1,19 @@
 # war plugin properties
 maven.war.final.name=openvpms.war
 
+# ------------------------------------------------- #
 # tomcat deployment directory
+# ------------------------------------------------- #
 tomcat.dir=/applications/apache-tomcat-5.5.12/
 tomcat.webapps.dir=${tomcat.dir}/webapps
 tomcat.sharedlib.dir=${tomcat.dir}/shared/lib
+
+# ------------------------------------------------- #
+# Properties for Reference Data Loader
+# ------------------------------------------------- #
+openvpms.lookup.data.file=src/java/org/openvpms/tools/lookup/loader/lookup-data.xml
+
+# ------------------------------------------------- #
+# Properties for Archetype Loader
+# ------------------------------------------------- #
+openvpms.archetype.loader.cmdline=-v -s -c -o -m target/classes/org/openvpms/archetype/assertionTypes.xml -d target/classes/org/openvpms/archetype

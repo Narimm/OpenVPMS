@@ -1,0 +1,24 @@
+<archetypes>
+	<archetype name="openvpms-system-descriptor.assertion.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
+		<node name="type" path="/type" type="java.lang.String"
+			minCardinality="1">
+			<assertion name="lookup.assertionType">
+				<errorMessage>Invalid assertion type</errorMessage>
+			</assertion>
+		</node>
+		<node name="errorMessage" path="/errorMessage"
+			type="java.lang.String" minCardinality="1" />
+		<node name="propertyDescriptors" path="/propertyDescriptor"
+			parentChild="true" type="java.util.HashMap" baseName="propertyDescriptor">
+			<assertion name="archetypeRange">
+				<property name="descriptor.property" />
+				<errorMessage>
+					Can only add property descriptors
+				</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>

@@ -1,6 +1,7 @@
 <archetypes>
 	<archetype name="openvpms-party-address.location.1.0" latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.party.Address">
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" derived="true"
 			derivedValue="archetypeId/concept" />
@@ -14,20 +15,20 @@
 				type="java.lang.String" minCardinality="1" />
 			<node name="suburb" path="/details/attributes/suburb"
 				type="java.lang.String">
-				<assertion type="lookup">
-					<property key="type" value="targetLookup" />
-					<property key="concept" value="state.suburb" />
-					<property key="source"
+				<assertion name="lookup">
+					<property name="type" value="targetLookup" />
+					<property name="concept" value="state.suburb" />
+					<property name="source"
 						value="/details/attributes/state" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="postcode" path="/details/attributes/postCode"
 				type="java.lang.String">
-				<assertion type="lookup">
-					<property key="type" value="targetLookup" />
-					<property key="concept" value="suburb.postCode" />
-					<property key="source"
+				<assertion name="lookup">
+					<property name="type" value="targetLookup" />
+					<property name="concept" value="suburb.postCode" />
+					<property name="source"
 						value="/details/attributes/suburb" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
@@ -35,10 +36,10 @@
 			<node name="state" path="/details/attributes/state"
 				type="java.lang.String" defaultValue="'Victoria'"
 				minCardinality="1">
-				<assertion type="lookup">
-					<property key="type" value="targetLookup" />
-					<property key="concept" value="country.state" />
-					<property key="source"
+				<assertion name="lookup">
+					<property name="type" value="targetLookup" />
+					<property name="concept" value="country.state" />
+					<property name="source"
 						value="/details/attributes/country" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
@@ -46,9 +47,9 @@
 			<node name="country" path="/details/attributes/country"
 				type="java.lang.String" defaultValue="'Australia'"
 				minCardinality="1">
-				<assertion type="lookup">
-					<property key="type" value="lookup" />
-					<property key="concept" value="country" />
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="concept" value="country" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

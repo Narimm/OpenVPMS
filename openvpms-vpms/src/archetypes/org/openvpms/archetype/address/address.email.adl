@@ -1,6 +1,7 @@
 <archetypes>
 	<archetype name="openvpms-party-address.email.1.0" latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.party.Address">
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" derived="true"
 			derivedValue="archetypeId/concept" />
@@ -13,8 +14,8 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="telephoneNumber" path="/details/attributes/telephoneNumber"
 				type="java.lang.String">
-				<assertion type="regularExpression">
-					<property key="expression" value="*@*" />
+				<assertion name="regularExpression">
+					<property name="expression" value="*@*" />
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>

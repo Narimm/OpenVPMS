@@ -10,4 +10,5 @@ hibernate.c3p0.max_size=20
 hibernate.c3p0.timeout=1800
 hibernate.c3p0.max_statements=50
 
-hibernate.query.factory_class=org.hibernate.hql.classic.ClassicQueryTranslatorFactory
+hibernate.query.factory_class=org.hibernate.hql.ast.ASTQueryTranslatorFactory
+#hibernate.query.factory_class=org.hibernate.hql.classic.ClassicQueryTranslatorFactory
