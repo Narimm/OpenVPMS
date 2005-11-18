@@ -39,7 +39,7 @@
         <binding name="index" value="index"/>
         <binding name="element" value="literal:tr"/>
     </component>
-     <component id="any" type="Any" inherit-informal-parameters="yes" />
+    <component id="any" type="Any" inherit-informal-parameters="yes" />
     <component id="removeCheckbox" type="Checkbox">
         <binding name="value" value="selected[index]"/>
         <binding name="disabled" value="!allowRemove" />

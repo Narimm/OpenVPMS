@@ -76,10 +76,8 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
      * @see org.apache.tapestry.AbstractComponent#prepareForRender(org.apache.tapestry.IRequestCycle)
      */
     protected void prepareForRender(IRequestCycle arg0) {
-        // TODO Auto-generated method stub
         super.prepareForRender(arg0);
-        if (arg0.isRewinding() == false)
-            buildSelectedList();
+        buildSelectedList();
     }
 
     /**

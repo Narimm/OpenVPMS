@@ -17,7 +17,7 @@
 	<assertionType name="lookup.assertionType"
 		type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
 		method="alwaysTrue" />
-	<assertionType name="lookup.methodName"
+	<assertionType name="validateMethod"
 		type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
 		method="alwaysTrue" />
 </assertionTypes>

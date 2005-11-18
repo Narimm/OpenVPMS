@@ -56,7 +56,7 @@
 
    
     <component id="collectionEditor" type="openvpms:CollectionEditor">
-        <binding name="collection" value="jxpath:pathToObject(model, descriptor/path)"/>
+        <binding name="collection" value="jxpath:pathToCollection(model, descriptor/path)"/>
         <binding name="descriptor" value="descriptor" />
     </component>    
 </page-specification>

@@ -142,17 +142,8 @@
 	<!-- ========================================================================== -->
 	<!--  The Archetype Descriptor Cache -->
 	<bean id="archetypeDescriptorCache"
-		class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-		<constructor-arg index="0"
-			value="/applications/apache-tomcat-5.5.12/webapps/openvpms/WEB-INF/classes/org/openvpms/archetype" />
-		<constructor-arg index="1">
-			<list>
-				<value>adl</value>
-			</list>
-		</constructor-arg>
-		<constructor-arg index="2"
-			value="org/openvpms/archetype/assertionTypes.xml" />
-		<!-- constructor-arg index="3" value="300000" /-->
+		class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
+		<constructor-arg index="0" ref="imObjectDao" />
 	</bean>
 
 	<!--  The Archetype Service -->

@@ -26,6 +26,7 @@ import ognl.Ognl;
 import ognl.OgnlException;
 
 // apache-hivemind
+import org.apache.commons.lang.StringUtils;
 import org.apache.hivemind.ApplicationRuntimeException;
 import org.apache.tapestry.IRequestCycle;
 
@@ -58,8 +59,8 @@ public class CollectionCallback extends EditCallback {
         context.put("member", newObject);
 
         try {
-            Ognl.getValue("add" + descriptor.getBaseName() + "(#member)",
-                    context, model);
+            Ognl.getValue("add" + StringUtils.capitalize(descriptor.getBaseName()) 
+                    + "(#member)", context, model);
         } catch (OgnlException e) {
             throw new ApplicationRuntimeException(e);
         }
@@ -70,8 +71,8 @@ public class CollectionCallback extends EditCallback {
         context.put("member", object);
 
         try {
-            Ognl.getValue("remove" + descriptor.getBaseName() + "(#member)",
-                    context, model);
+            Ognl.getValue("remove" + StringUtils.capitalize(descriptor.getBaseName()) 
+                    + "(#member)", context, model);
         } catch (OgnlException e) {
             throw new ApplicationRuntimeException(e);
         }

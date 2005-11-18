@@ -61,6 +61,8 @@ public class ArchetypeNameSelectionModel implements IPropertySelectionModel {
     public String getLabel(int index) {
         StringTokenizer tokens = new StringTokenizer(options[index], ".");
         if (tokens.countTokens() > 1) {
+            // burn the entity name and keep the concept name.
+            tokens.nextToken();
             String conceptName = tokens.nextToken();
             return Utils.unCamelCase(conceptName);
         } else

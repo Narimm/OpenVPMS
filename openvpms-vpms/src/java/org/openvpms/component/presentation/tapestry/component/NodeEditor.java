@@ -68,9 +68,6 @@ public abstract class NodeEditor extends OpenVpmsComponent {
             validators.add(validator);
         }
         if (descriptor.isNumeric()) {
-            validator = new Pattern();
-            ((Pattern) validator).setPattern("#");
-            validators.add(validator);
             if (descriptor.getMaxValue() != null) {
                 validator = new Max(descriptor.getMaxValue().toString());
                 validators.add(validator);
