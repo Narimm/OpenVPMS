@@ -20,14 +20,14 @@
 		<node name="baseName" path="/defaultValue" type="java.lang.String" />
 		<node name="parentChild" path="/parentChild" type="java.lang.Boolean" 
 			defaultValue="true()"/>
-		<node name="assertionDescriptors" path="/assertionDescriptors" parentChild="true"
+		<node name="assertionDescriptors" path="/assertionDescriptors"
 			type="java.util.HashMap" baseName="assertionDescriptor">
 			<assertion name="archetypeRange">
 				<property name="descriptor.assertion" />
 				<errorMessage>Can only add assertion descriptors</errorMessage>
 			</assertion>
 		</node>
-		<node name="nodeDescriptors" path="/nodeDescriptors" parentChild="true"
+		<node name="nodeDescriptors" path="/nodeDescriptors"
 			type="java.util.HashMap" baseName="nodeDescriptor">
 			<assertion name="archetypeRange">
 				<property name="descriptor.node" />

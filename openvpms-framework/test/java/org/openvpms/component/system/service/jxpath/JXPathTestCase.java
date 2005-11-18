@@ -20,6 +20,7 @@ package org.openvpms.component.system.service.jxpath;
 
 // java
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -289,6 +290,22 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(ctx.getValue(".[3]/title").equals("Ms"));
     }
     
+    /**
+     * Test that path to collection works
+     */
+    public void testPathToCollection() throws Exception {
+
+        // retrieve the node descriptor for animal.pet
+        ArchetypeDescriptor adesc = (ArchetypeDescriptor)service
+            .create("descriptor.archetype");
+        assertTrue(adesc != null);
+        ArchetypeDescriptor metaDesc = service.getArchetypeDescriptor(
+                adesc.getArchetypeId());
+        TestPage page = new TestPage(adesc, metaDesc);
+        assertTrue(page != null);
+        assertTrue(getValue(page, "pathToCollection(model,  node/nodeDescriptors/nodeDescriptors/path)") 
+                instanceof Collection);
+    }
     /**
      * Test the JXPath expressions for retrieving an object with a uid 
      * from a collection

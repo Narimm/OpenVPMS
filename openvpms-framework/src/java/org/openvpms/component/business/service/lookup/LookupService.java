@@ -30,6 +30,7 @@ import org.openvpms.component.business.dao.im.lookup.LookupDAOException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -350,6 +351,9 @@ public class LookupService implements ILookupService {
     public List<Lookup> get(NodeDescriptor descriptor, IMObject object) {
         List<Lookup> lookups = new ArrayList<Lookup>();
 
+        // TODO This needs to be fixed up so that it is more pluggabl
+        // Need to define a better interface for the different assertion
+        // types.
         if (descriptor.isLookup()) {
             Map<String, AssertionDescriptor> assertions = 
                 descriptor.getAssertionDescriptors();
@@ -409,6 +413,15 @@ public class LookupService implements ILookupService {
                 for (PropertyDescriptor prop : assertion.getPropertyDescriptorsAsArray()) {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, prop
                             .getName(), prop.getValue()));
+                }
+            } else if (assertions.containsKey("lookup.assertionType")){
+                // retrieve all the assertionTypes from the archetype service
+                // we need to 
+                List<AssertionTypeDescriptor> adescs = 
+                    archetypeService.getAssertionTypeDescriptors();
+                for (AssertionTypeDescriptor adesc : adescs) {
+                    lookups.add(new Lookup(ArchetypeId.LocalLookupId, 
+                            adesc.getName(), adesc.getName()));
                 }
             } else {
                 throw new LookupServiceException(

@@ -9,7 +9,7 @@
 			minCardinality="1" />
 		<node name="methodName" path="/methodName"
 			type="java.lang.String">
-			<assertion name="lookup.methodName">
+			<assertion name="validateMethod">
 				<property name="class" value="/type" />
 				<errorMessage>Invalid methodName</errorMessage>
 			</assertion>

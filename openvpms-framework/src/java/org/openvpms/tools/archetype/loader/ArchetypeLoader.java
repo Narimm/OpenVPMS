@@ -21,7 +21,7 @@ package org.openvpms.tools.archetype.loader;
 
 // java core
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileReader; 
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Iterator;

@@ -12,7 +12,7 @@
 		<node name="latest" path="/latest" type="java.lang.Boolean" />
 		<node name="primary" path="/primary" type="java.lang.Boolean" />
 		<node name="nodeDescriptors" path="/nodeDescriptors"
-			parentChild="true" type="java.util.HashMap" baseName="nodeDescriptor">
+			type="java.util.HashMap" baseName="nodeDescriptor">
 			<assertion name="archetypeRange">
 				<property name="descriptor.node" />
 				<errorMessage>

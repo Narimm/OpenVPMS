@@ -20,6 +20,7 @@ package org.openvpms.component.business.domain.im.common;
 
 // java core
 import java.io.Serializable;
+import java.util.Map;
 
 // openvpms-framework
 import org.apache.commons.jxpath.JXPathContext;
@@ -270,10 +271,32 @@ public abstract class IMObject implements Serializable {
      * 
      * @param path
      *            an xpath expression in to this object
-     * @return Object
+     * @return Pointer
      */
     public Pointer pathToObject(String path) {
         return JXPathContext.newContext(this).getPointer(path);
+    }
+    
+    /**
+     * This method will retrieve a reference to a value collection. If the 
+     * returned object is already an instance of a collection then it will
+     * return it as is. If the returned object is an instance of a Map then
+     * it will return the the value objects
+     * 
+     * @param path
+     *            a xpath expression in to this object
+     * @return Pointer   
+     *            a pointer to the location         
+     */
+    public Pointer pathToCollection(String path) {
+        Pointer ptr = pathToObject(path);
+        if (ptr != null) {
+            if (ptr.getValue() instanceof Map) {
+                ptr = JXPathContext.newContext(ptr.getValue()).getPointer("values(.)");
+            }
+        }
+        
+        return ptr;
     }
 }
 

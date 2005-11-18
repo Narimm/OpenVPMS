@@ -150,7 +150,7 @@ public class NodeDescriptor  extends Descriptor {
      * the child lifecycle is independent of the parent lifecycle. This 
      * attribute is only meaningful for a collection
      */
-    private boolean parentChild = true;
+    private boolean isParentChild = true;
 
     /**
      * Contains a list of {@link AssertionDescriptor} instances
@@ -169,6 +169,11 @@ public class NodeDescriptor  extends Descriptor {
      */
     private transient Class clazz;
 
+    /**
+     * The index of this discriptor within the collection
+     */
+    private int index;
+    
     /**
      * Default constructor
      */
@@ -352,14 +357,29 @@ public class NodeDescriptor  extends Descriptor {
      * @return boolean
      */
     public boolean isParentChild() {
-        return isCollection() && parentChild;
+        return isCollection() && isParentChild;
     }
 
     /**
      * @param parentChild The parentChild to set.
      */
     public void setParentChild(boolean parentChild) {
-        this.parentChild = parentChild;
+        this.isParentChild = parentChild;
+    }
+
+
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     /**
@@ -537,10 +557,12 @@ public class NodeDescriptor  extends Descriptor {
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
-    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodeDescriptors) {
+    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
         this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
-        for (NodeDescriptor descriptor : nodeDescriptors) {
-            addNodeDescriptor(descriptor);
+        int index = 0;
+        for (NodeDescriptor node : nodes) {
+            node.setIndex(index++);
+            addNodeDescriptor(node);
         }
     }
 
@@ -658,8 +680,10 @@ public class NodeDescriptor  extends Descriptor {
      */
     public boolean isCollection() {
         try {
-            return Collection.class.isAssignableFrom(Thread.currentThread()
-                .getContextClassLoader().loadClass(getType()));
+            Class aclass = Thread.currentThread().getContextClassLoader()
+                .loadClass(getType());
+            return Collection.class.isAssignableFrom(aclass) ||
+                Map.class.isAssignableFrom(aclass);
         } catch (Exception ignore) {
             return false;
         }
@@ -719,7 +743,7 @@ public class NodeDescriptor  extends Descriptor {
      *            a runtim exception            
      */
     public Number getMaxValue() {
-        Number number = NumberUtils.createNumber("0");
+        Number number = null;
         if (isNumeric()) {
             AssertionDescriptor descriptor = (AssertionDescriptor)
                 assertionDescriptors.get("numericRange");
@@ -746,7 +770,7 @@ public class NodeDescriptor  extends Descriptor {
      *            a runtim exception            
      */
     public Number getMinValue() {
-        Number number = NumberUtils.createNumber("0");
+        Number number = null;
         if (isNumeric()) {
             AssertionDescriptor descriptor = (AssertionDescriptor)
                 assertionDescriptors.get("numericRange");

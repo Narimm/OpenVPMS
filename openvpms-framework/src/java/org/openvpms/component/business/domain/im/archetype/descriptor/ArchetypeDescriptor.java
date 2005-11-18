@@ -21,6 +21,9 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -286,6 +289,16 @@ public class ArchetypeDescriptor extends Descriptor {
         
         return nodes;
     }
+    
+    /**
+     * Return the total number of node descriptors for this archetype. This
+     * will traverse all the node descriptors.
+     * 
+     * @return int
+     */
+    public int getTotalNodeDescriptorCount() {
+        return getTotalNodeDescriptorCount(getNodeDescriptors().values());
+    }
 
     /**
      * Return the {@link NodeDescriptor} instances as a map of name and 
@@ -306,10 +319,12 @@ public class ArchetypeDescriptor extends Descriptor {
     /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
-    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodeDescriptors) {
+    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
         this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
-        for (NodeDescriptor descriptor : nodeDescriptors) {
-            this.nodeDescriptors.put(descriptor.getName(), descriptor);
+        int index = 0;
+        for (NodeDescriptor node : nodes) {
+            node.setIndex(index++);
+            this.nodeDescriptors.put(node.getName(), node);
         }
     }
 
@@ -320,7 +335,7 @@ public class ArchetypeDescriptor extends Descriptor {
      *            the node name
      */
     public String getShortName() {
-        return type.getShortName();
+        return type == null ? null : type.getShortName();
     }
 
     /**
@@ -501,15 +516,71 @@ public class ArchetypeDescriptor extends Descriptor {
      * @param nodes
      *            the resultant node array
      */
-    private void getAllNodeDescriptors(NodeDescriptor[] descriptors, 
-            List<NodeDescriptor> nodes) {
-        for (NodeDescriptor descriptor : descriptors) {
-            nodes.add(descriptor);
-            if (descriptor.getNodeDescriptorsAsArray().length > 0) {
-                getAllNodeDescriptors(descriptor.getNodeDescriptorsAsArray(), 
-                        nodes);
+    @SuppressWarnings("unchecked")
+    private void getAllNodeDescriptors(NodeDescriptor[] nodes, 
+            List<NodeDescriptor> result) {
+        Arrays.sort(nodes, new NodeDescriptorIndexComparator());
+
+        for (NodeDescriptor node : nodes) {
+            result.add(node);
+            if (node.getNodeDescriptorsAsArray().length > 0) {
+                getAllNodeDescriptors(node.getNodeDescriptorsAsArray(), 
+                        result);
             }
         }
     }
+    
+    /**
+     * Return the number of node descriptors contained within the specified
+     * node descriptor. If the node has children node descriptors then make sure 
+     * you count them as well.
+     * 
+     * @param nodes
+     *            the nodes to count
+     * @return int
+     *            
+     */
+    private int getTotalNodeDescriptorCount(Collection<NodeDescriptor> nodes) {
+        int total = nodes.size();
+        
+        for (NodeDescriptor node : nodes) {
+            if (node.getNodeDescriptorCount() > 0) {
+                total += getTotalNodeDescriptorCount(node.getNodeDescriptors().values());
+            }
+        }
+        
+        return total;
+    }
 }
+
+
+
+/**
+ * This comparator is used to compare the indices of NodeDescriptors
+ * 
+ */
+class NodeDescriptorIndexComparator implements Comparator {
+
+    /* (non-Javadoc)
+     * @see java.util.Comparator#compare(T, T)
+     */
+    public int compare(Object o1, Object o2) {
+        if (o1 == o2) {
+            return 0;
+        }
+        
+        NodeDescriptor no1 = (NodeDescriptor)o1;
+        NodeDescriptor no2 = (NodeDescriptor)o2;
+        if (no1.getIndex() == no2.getIndex()) {
+            return 0;
+        } else if (no1.getIndex() >  no2.getIndex()) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+}
+
+
+
 
