@@ -42,6 +42,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
 /**
  * This basic implementation of an archetype service, which reads in the
@@ -72,6 +73,12 @@ public class ArchetypeService implements IArchetypeService {
      * The DAO instance it will use...optional
      */
     private IMObjectDAO dao;
+
+    /**
+     * The entity interceptor that is used to intercept calls hibernate
+     * calls
+     */
+    private EntityInterceptor entityInterceptor;
 
     /**
      * Construct an instance of this service using the specified archetpe class by loading and parsing all the
@@ -105,6 +112,21 @@ public class ArchetypeService implements IArchetypeService {
      */
     public void setDao(IMObjectDAO dao) {
         this.dao = dao;
+    }
+
+    /**
+     * @return Returns the entityInterceptor.
+     */
+    public EntityInterceptor getEntityInterceptor() {
+        return entityInterceptor;
+    }
+
+    /**
+     * @param entityInterceptor The entityInterceptor to set.
+     */
+    public void setEntityInterceptor(EntityInterceptor entityInterceptor) {
+        this.entityInterceptor = entityInterceptor;
+        entityInterceptor.setDescriptorCache(dCache);
     }
 
     /*
@@ -390,6 +412,16 @@ public class ArchetypeService implements IArchetypeService {
         validateObject(entity);
         try {
             dao.save(entity);
+            
+            // a quick fix to the archetype descriptor update problem
+            // couldn't get the interceptors working
+            // TODO Fix
+            if (entity instanceof ArchetypeDescriptor) {
+                ArchetypeDescriptor adesc = (ArchetypeDescriptor)entity;
+                if (dCache != null) {
+                    dCache.addArchetypeDescriptor(adesc, true);
+                }
+            }
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToSaveObject,

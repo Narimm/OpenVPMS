@@ -186,6 +186,19 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
         return shortNames;
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#addArchetypeDescriptor(org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor, boolean)
+     */
+    public void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean replace) {
+        ArchetypeDescriptor temp = archetypesById.get(adesc.getType().getQName());
+        
+        if ((temp == null) ||
+            (replace)) {
+            addArchetypeById(adesc);
+            addArchetypeByShortName(adesc);
+        }
+    }
+
     /**
      * Process all the assertions defined for a specified node. This is a
      * re-entrant method.
@@ -214,5 +227,33 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
                 checkAssertionsInNode(node.getNodeDescriptors());
             }
         }
+    }
+    
+    /**
+     * Add the descriptor to the short name cache
+     * 
+     * @param adesc
+     */
+    protected void addArchetypeByShortName(ArchetypeDescriptor adesc) {
+        ArchetypeId archId = adesc.getType();
+        
+        // only store one copy of the archetype by short name
+        if ((archetypesByShortName.containsKey(archId.getShortName()) == false) || 
+            (adesc.isLatest())) {
+            archetypesByShortName.put(archId.getShortName(), adesc);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Loading  [" + archId.getShortName()
+                        + "] in shortNameCache");
+            }
+        }
+    }
+
+    /**
+     * Add the descriptor to the id cache
+     * 
+     * @param adesc
+     */
+    protected void addArchetypeById(ArchetypeDescriptor adesc) {
+        archetypesById.put(adesc.getType().getQName(), adesc);
     }
 }

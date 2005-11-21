@@ -23,6 +23,7 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
@@ -145,4 +146,17 @@ public class AssertionDescriptor extends Descriptor {
             this.propertyDescriptors.put(property.getName(), property);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("name", getName())
+            .append("errorMessage", errorMessage)
+            .append("propertyDescriptors", propertyDescriptors)
+            .toString();
+    }
+
 }

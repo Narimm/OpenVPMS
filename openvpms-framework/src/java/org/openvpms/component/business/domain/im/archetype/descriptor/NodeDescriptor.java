@@ -29,6 +29,7 @@ import java.util.Map;
 // commons-lang
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
 
 // log4j
@@ -165,9 +166,10 @@ public class NodeDescriptor  extends Descriptor {
         new LinkedHashMap<String, NodeDescriptor>();
 
     /**
-     * Cache the clazz
+     * Cache the clazz. Do not access this directly. Use the {@link #getClazz()}
+     * method instead.
      */
-    private transient Class clazz;
+    private Class clazz;
 
     /**
      * The index of this discriptor within the collection
@@ -324,21 +326,7 @@ public class NodeDescriptor  extends Descriptor {
      *            The type to set.
      */
     public void setType(String type) {
-        
-        // if the type is null then simply ignore it
-        if (StringUtils.isEmpty(type)) {
-            this.type  = type;
-        } else {
-            try {
-                clazz = Thread.currentThread().getContextClassLoader().loadClass(
-                        type);
-                this.type = type;
-            } catch (Exception exception) {
-                throw new DescriptorException(
-                        DescriptorException.ErrorCode.InvalidType,
-                        new Object[] { type }, exception);
-            }
-        }
+        this.type  = type;
     }
 
     /**
@@ -587,13 +575,14 @@ public class NodeDescriptor  extends Descriptor {
      */
     public boolean isNumeric() {
 
-        if ((Number.class.isAssignableFrom(clazz)) || 
-            (byte.class == clazz) || 
-            (short.class == clazz) || 
-            (int.class == clazz) || 
-            (long.class == clazz) || 
-            (float.class == clazz) || 
-            (double.class == clazz)) {
+        Class aclass = getClazz();
+        if ((Number.class.isAssignableFrom(aclass)) || 
+            (byte.class == aclass) || 
+            (short.class == aclass) || 
+            (int.class == aclass) || 
+            (long.class == aclass) || 
+            (float.class == aclass) || 
+            (double.class == aclass)) {
             return true;
         }
 
@@ -606,8 +595,9 @@ public class NodeDescriptor  extends Descriptor {
      * @return boolean
      */
     public boolean isBoolean() {
-        if ((Boolean.class == clazz) || 
-            (boolean.class == clazz)) {
+        Class aclass = getClazz();
+        if ((Boolean.class == aclass) || 
+            (boolean.class == aclass)) {
             return true;
         }
 
@@ -620,8 +610,9 @@ public class NodeDescriptor  extends Descriptor {
      * @return boolean
      */
     public boolean isDate() {
-        if ((Date.class == clazz) || 
-            (DvDateTime.class == clazz)) {
+        Class aclass = getClazz();
+        if ((Date.class == aclass) || 
+            (DvDateTime.class == aclass)) {
             return true;
         }
 
@@ -634,7 +625,8 @@ public class NodeDescriptor  extends Descriptor {
      * @return boolean
      */
     public boolean isString() {
-        if (String.class == clazz) {
+        Class aclass = getClazz();
+        if (String.class == aclass) {
             return true;
         }
         
@@ -648,7 +640,7 @@ public class NodeDescriptor  extends Descriptor {
      * @return boolean
      */
     public boolean isObjectReference() {
-        if (IMObject.class.isAssignableFrom(clazz)) {
+        if (IMObject.class.isAssignableFrom(getClazz())) {
             return true;
         }
         
@@ -937,6 +929,33 @@ public class NodeDescriptor  extends Descriptor {
                (containsAssertionType("archetypeRange"));
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+             .append("name", getName())
+            .append("displayName", displayName)
+            .append("isHidden", isHidden)
+            .append("isDerived", isDerived)
+            .append("derivedValue", derivedValue)
+            .append("path", path)
+            .append("type", type)
+            .append("defaultValue", defaultValue)
+            .append("minCardinality", minCardinality)
+            .append("maxCardinality", maxCardinality)
+            .append("minLength", minLength)
+            .append("maxLength", maxLength)
+            .append("baseName", baseName)
+            .append("isParentChild", isParentChild)
+            .append("clazz", clazz)
+            .append("index", index)
+            .append("assertionDescriptors", assertionDescriptors)
+            .append("nodeDescriptors", nodeDescriptors)
+            .toString();
+    }
+
     /**
      * This method will uncamel case the speified string and return
      * it to the caller
@@ -946,6 +965,10 @@ public class NodeDescriptor  extends Descriptor {
      * @return String
      */
     private String unCamelCase(String name) {
+        if (StringUtils.isEmpty(name)) {
+            return null;
+        }
+        
         ArrayList<String> words = new ArrayList<String>();
         Perl5Util perl = new Perl5Util();
 
@@ -979,8 +1002,30 @@ public class NodeDescriptor  extends Descriptor {
                 setArchetypeId(new ArchetypeId("openvpms-system-descriptor.node.1.0"));
             }
         }
-        // TODO Auto-generated method stub
-        
     }
 
+    /**
+     * Return the class for the specified type
+     * 
+     * @param Class
+     *            The class
+     */
+    private Class getClazz() {
+        if (clazz == null) {
+            if (StringUtils.isEmpty(type)) {
+                clazz = null;
+            } else {
+                try {
+                    clazz = Thread.currentThread().getContextClassLoader()
+                        .loadClass(type);
+                } catch (Exception exception) {
+                    throw new DescriptorException(
+                            DescriptorException.ErrorCode.InvalidType,
+                            new Object[] { type }, exception);
+                }
+            }
+        }
+        
+        return clazz;
+    }
 }

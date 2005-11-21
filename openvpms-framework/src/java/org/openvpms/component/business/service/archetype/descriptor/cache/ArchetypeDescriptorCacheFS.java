@@ -242,24 +242,7 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
                 // make sure that the underlying type is loadable
                 Thread.currentThread().getContextClassLoader().loadClass(
                         descriptor.getClassName());
-
-                // only store one copy of the archetype by short name
-                if ((archetypesByShortName.containsKey(archId.getShortName()) == false)
-                        || (descriptor.isLatest())) {
-                    archetypesByShortName
-                            .put(archId.getShortName(), descriptor);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Loading  [" + archId.getShortName()
-                                + "] in shortNameCache");
-                    }
-                }
-
-                archetypesById.put(archId.getQName(), descriptor);
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Loading [" + archId.getShortName()
-                            + "] in archIdCache");
-                }
+                addArchetypeDescriptor(descriptor, true);
             } catch (ClassNotFoundException excpetion) {
                 throw new ArchetypeDescriptorCacheException(
                         ArchetypeDescriptorCacheException.ErrorCode.FailedToLoadClass,

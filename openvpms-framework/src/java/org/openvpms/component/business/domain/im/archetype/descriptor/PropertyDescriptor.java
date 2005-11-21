@@ -19,6 +19,7 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 
@@ -79,5 +80,17 @@ public class PropertyDescriptor  extends Descriptor {
      */
     public void setValue(String value) {
         this.value = value;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("name", getName())
+            .append("type", type)
+            .append("value", value)
+            .toString();
     }
 }

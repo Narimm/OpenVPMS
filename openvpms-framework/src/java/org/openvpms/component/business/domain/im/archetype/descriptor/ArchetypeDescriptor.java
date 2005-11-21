@@ -30,6 +30,7 @@ import java.util.Map;
 
 // commons-lang
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 // log4j
 import org.apache.log4j.Logger;
@@ -112,11 +113,7 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     @Deprecated
     public void setArchetypeQName(String archetypeQName) {
-        if (StringUtils.isEmpty(archetypeQName)) {
-            type = null;
-        } else {
-            type = new ArchetypeId(archetypeQName);
-        }
+        setName(archetypeQName);
     }
 
     /* (non-Javadoc)
@@ -445,6 +442,22 @@ public class ArchetypeDescriptor extends Descriptor {
         return type.equals(desc.type);
     }
     
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("name", getName())
+            .append("type", type)
+            .append("displayName", displayName)
+            .append("className", className)
+            .append("isLatest", isLatest)
+            .append("primary", primary)
+            .append("nodeDescriptors", nodeDescriptors)
+            .toString();
+    }
+
     /**
      * Search the node descriptors recursively searching for the 
      * specified name

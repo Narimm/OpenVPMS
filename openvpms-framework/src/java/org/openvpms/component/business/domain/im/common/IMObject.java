@@ -20,6 +20,7 @@ package org.openvpms.component.business.domain.im.common;
 
 // java core
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 // openvpms-framework
@@ -99,6 +100,11 @@ public abstract class IMObject implements Serializable {
     private ArchetypeId archetypeId;
     
     /**
+     * This is the date and time that this object was last modified
+     */
+    private Date lastModified;
+    
+    /**
      * Default constructor
      */
     public IMObject() {
@@ -164,6 +170,20 @@ public abstract class IMObject implements Serializable {
         this.uid = id;
     }
     
+    /**
+     * @return Returns the lastModified.
+     */
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     * @param lastModified The lastModified to set.
+     */
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
     /**
      * @return Returns the linkId.
      */

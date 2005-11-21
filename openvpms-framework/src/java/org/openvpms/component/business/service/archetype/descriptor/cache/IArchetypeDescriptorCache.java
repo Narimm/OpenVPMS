@@ -133,4 +133,17 @@ public interface IArchetypeDescriptorCache {
      */
     public List<String> getArchetypeShortNames(String rmName, String entityName,
             String conceptName, boolean primaryOnly);
+
+    /**
+     * Add the specified archetype descriptor to the cache. If the replace
+     * flag is specified and the archetype descriptor exists, then replace the
+     * existing archetype descriptor with the new one.
+     * 
+     * @param adesc
+     *            the archetype descriptor to add
+     * @param replace
+     *            indicates whether it should replace and existing version.
+     * 
+     */
+    public void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean b);
 }

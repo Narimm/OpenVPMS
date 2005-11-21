@@ -50,10 +50,10 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
             .getLogger(ArchetypeDescriptorCacheDB.class);
 
     /**
-     * The DAO instance it will use...optional
+     * The DAO instance it will use
      */
     private IMObjectDAO dao;
-
+    
     
 
     /**
