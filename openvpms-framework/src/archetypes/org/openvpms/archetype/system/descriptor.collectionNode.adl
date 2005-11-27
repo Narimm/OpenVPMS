@@ -1,40 +1,55 @@
 <archetypes>
-	<archetype name="openvpms-system-descriptor.collectionNode.1.0" latest="true"
+	<archetype name="openvpms-system-descriptor.collectionNode.1.0"
+		latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
-		<node name="displayName" path="/displayName" type="java.lang.String"
-			minCardinality="1" />
+		<node name="displayName" path="/displayName"
+			type="java.lang.String" minCardinality="1" />
 		<node name="type" path="/type" type="java.lang.String"
 			minCardinality="1" />
 		<node name="path" path="/path" type="java.lang.String"
 			minCardinality="1" />
-		<node name="minCardinality" path="/minCardinality" type="java.lang.Integer" />
-		<node name="maxCardinality" path="/maxCardinality" type="java.lang.Integer" />
-		<node name="minLength" path="/minLength" type="java.lang.Integer" />
-		<node name="maxLength" path="/maxLength" type="java.lang.Integer" />
-		<node name="defaultValue" path="/defaultValue" type="java.lang.String" />
+		<node name="minCardinality" path="/minCardinality"
+			type="java.lang.Integer" />
+		<node name="maxCardinality" path="/maxCardinality"
+			type="java.lang.Integer" />
+		<node name="minLength" path="/minLength"
+			type="java.lang.Integer" />
+		<node name="maxLength" path="/maxLength"
+			type="java.lang.Integer" />
+		<node name="defaultValue" path="/defaultValue"
+			type="java.lang.String" />
 		<node name="derived" path="/derived" type="java.lang.Boolean" />
-		<node name="derivedValue" path="/derivedValue" type="java.lang.String" />
-		<node name="baseName" path="/defaultValue" type="java.lang.String" />
-		<node name="parentChild" path="/parentChild" type="java.lang.Boolean" 
-			defaultValue="true()"/>
+		<node name="derivedValue" path="/derivedValue"
+			type="java.lang.String" />
+		<node name="baseName" path="/defaultValue"
+			type="java.lang.String" />
+		<node name="parentChild" path="/parentChild"
+			type="java.lang.Boolean" defaultValue="true()" />
 		<node name="assertionDescriptors" path="/assertionDescriptors"
-			type="java.util.HashMap" baseName="assertionDescriptor">
+			parentChild="true" type="java.util.HashMap"
+			baseName="assertionDescriptor">
 			<assertion name="archetypeRange">
 				<property name="descriptor.assertion" />
-				<errorMessage>Can only add assertion descriptors</errorMessage>
+				<errorMessage>
+					Can only add assertion descriptors
+				</errorMessage>
 			</assertion>
 		</node>
 		<node name="nodeDescriptors" path="/nodeDescriptors"
-			type="java.util.HashMap" baseName="nodeDescriptor">
+			parentChild="true" type="java.util.HashMap"
+			baseName="nodeDescriptor">
 			<assertion name="archetypeRange">
 				<property name="descriptor.node" />
 				<property name="descriptor.collectionNode" />
-				<errorMessage>Can only add node descriptors</errorMessage>
+				<errorMessage>
+					Can only add node descriptors
+				</errorMessage>
 			</assertion>
 		</node>
-		
+
 	</archetype>
 </archetypes>

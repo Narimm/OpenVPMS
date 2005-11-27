@@ -1,0 +1,24 @@
+<archetypes>
+	<archetype name="openvpms-system-descriptor.assertionType2.1.0"
+		latest="true" primary="true"
+		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor">
+		<node name="name" path="/name" displayName="Name"
+			type="java.lang.String" minCardinality="1" />
+		<node name="actionTypes" path="/actionTypes"
+			displayName="Action Types" type="java.util.ArrayList"
+			baseName="actionType" parentChild="true">
+			<assertion name="archetypeRange">
+				<property name="descriptor.actionType" />
+				<errorMessage>Invalid archetype specified</errorMessage>					
+			</assertion>
+		</node>
+		<node name="propertyTypes" path="/propertyTypes"
+			displayName="Property Types" type="java.util.ArrayList"
+			baseName="propertyType" parentChild="true">
+			<assertion name="archetypeRange">
+				<property name="descriptor.propertyType" />
+				<errorMessage>Invalid archetype specified</errorMessage>					
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
