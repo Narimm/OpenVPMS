@@ -58,9 +58,9 @@
     <!--  The HttpSessionEventPublisher will publish HttpSessionCreatedEvent 
           and HttpSessionDestroyedEvent to the WebApplicationContext.
           No idea so far, what this could be good for  -->  
-    <listener>
+    <!-- listener>
         <listener-class>net.sf.acegisecurity.ui.session.HttpSessionEventPublisher</listener-class>
-    </listener>
+    </listener-->
 
     <!-- make the Springframework use logging, too  -->
 	<listener>

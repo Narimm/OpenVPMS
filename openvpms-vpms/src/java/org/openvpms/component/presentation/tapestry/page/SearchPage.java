@@ -226,4 +226,23 @@ public abstract class SearchPage extends OpenVpmsPage implements
         return new ArchetypeNameSelectionModel((String[]) archetypeNames
                 .toArray(new String[archetypeNames.size()]));
     }
+    
+    /**
+     * @return
+     */
+    public String getTitle() {
+        String range = getArchetypeRange();
+        StringTokenizer tokens = new StringTokenizer(range,  ".");
+        String rmName = tokens.nextToken();
+        String entityName = tokens.nextToken();
+        String conceptName = tokens.nextToken();
+        String title = rmName;
+        if (entityName != null && !entityName.equalsIgnoreCase("*"))
+            title = entityName;
+        if (conceptName != null && !conceptName.equalsIgnoreCase("*"))
+            title = conceptName;
+        
+        return "Search " + StringUtils.capitalize(Utils.pluralize(title));
+    }
+
 }

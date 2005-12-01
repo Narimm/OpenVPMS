@@ -48,12 +48,14 @@ td.inplabel { width: 120px; height: 30px; text-align: right; padding-right: 10px
 td.inplabel1{ width: 60px; height: 24px; text-align: right; padding-right: 6px; }
 td.inplabel2{ width: 50px; height: 24px; text-align: right; padding-right: 6px; }
 td.inplabel3{ width: 70px; height: 24px; text-align: right; padding-right: 9px; }
-.idColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ; font-size:14px; font-weight:bold}
-.typeColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ;font-size:14px; font-weight:bold }
-.nameColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ;font-size:14px; font-weight:bold}
-.nameColumnHeader a {background-color: #BBC7D9; text-align:left; font-size:14px; font-weight:bold}
-.descriptionColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ;font-size:14px; font-weight:bold}
-.descriptionColumnHeader a {background-color: #BBC7D9; text-align:left; font-size:14px; font-weight:bold}
+.idColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ; font-size:13px; font-weight:bold}
+.idColumnHeader a {background-color: #BBC7D9; text-align:left; font-size:13px; font-weight:bold}
+.typeColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ;font-size:13px; font-weight:bold }
+.typeColumnHeader a {background-color: #BBC7D9; text-align:left; font-size:13px; font-weight:bold}
+.nameColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ;font-size:13px; font-weight:bold}
+.nameColumnHeader a {background-color: #BBC7D9; text-align:left; font-size:13px; font-weight:bold}
+.descriptionColumnHeader {background-color: #BBC7D9; text-align:left; border: 1px solid silver ;font-size:13px; font-weight:bold}
+.descriptionColumnHeader a {background-color: #BBC7D9; text-align:left; font-size:13px; font-weight:bold}
 .idColumnValue {background-color: #DFE3EC; text-align:left; font-size:13px; font-weight:normal }
 .typeColumnValue {background-color: #DFE3EC; text-align:left; font-size:13px; font-weight:normal }
 .nameColumnValue {background-color: #DFE3EC; text-align:left; font-size:13px; font-weight:normal }

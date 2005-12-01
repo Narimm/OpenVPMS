@@ -32,7 +32,7 @@
     <component id="table" type="contrib:Table">
         <binding name="row" value="currentObject"/>
         <binding name="source" value="converter.values"/>
-        <binding name="columns" value="literal:!id,!type,name:name:Name,description"/>
+        <binding name="columns" value="literal:id,type,name,!description"/>
         <binding name="pageSize" value="20"/>
         <binding name="converter" value="converter"/>
         <binding name="rowClass" value="literal:even" />

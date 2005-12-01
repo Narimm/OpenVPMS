@@ -21,20 +21,17 @@ package org.openvpms.component.presentation.tapestry.page;
 // java core
 import java.util.List;
 
-// jakarta-tapestry
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.annotations.Bean;
 import org.apache.tapestry.annotations.Persist;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.apache.tapestry.valid.ValidationConstraint;
-
-// openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.presentation.tapestry.Visit;
 import org.openvpms.component.presentation.tapestry.callback.CollectionCallback;
 import org.openvpms.component.presentation.tapestry.callback.EditCallback;
