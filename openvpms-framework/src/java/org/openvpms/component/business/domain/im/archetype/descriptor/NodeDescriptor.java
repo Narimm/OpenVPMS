@@ -593,7 +593,14 @@ public class NodeDescriptor  extends Descriptor {
                 // if a baseName has been specified then prepend 'add' to the 
                 // base name and excute the derived method on context object
                 String methodName = "add" + StringUtils.capitalize(baseName);
-                MethodUtils.invokeMethod(getValue(context), methodName, child);
+
+                // TODO This is a tempoaray fix until we resolve the discrepency 
+                // with collections.
+                if (getValue(context) instanceof IMObject) {
+                    MethodUtils.invokeMethod(getValue(context), methodName, child);
+                } else {
+                    MethodUtils.invokeMethod(context, methodName, child);
+                }
                 
             }
         } catch (Exception exception) {
