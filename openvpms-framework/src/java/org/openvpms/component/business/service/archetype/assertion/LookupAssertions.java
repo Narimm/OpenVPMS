@@ -19,10 +19,12 @@
 
 package org.openvpms.component.business.service.archetype.assertion;
 
-import java.util.Map;
-
+//openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 
 /**
  * This class has static methods for local reference data assertions. All
@@ -52,9 +54,20 @@ public class LookupAssertions {
      */
     public static boolean isStringValueInList(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertyDescriptors();
-        return (properties == null) ? false : 
-            properties.containsKey((String)target);
+        PropertyList entries = (PropertyList)assertion.getPropertyMap()
+            .getProperties().get("entries");
+        if (entries == null) {
+            return false;
+        }
+        
+        for (NamedProperty property : entries.getProperties()) {
+            AssertionProperty prop = (AssertionProperty)property;
+            if (prop.getValue().equals((String)target)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**

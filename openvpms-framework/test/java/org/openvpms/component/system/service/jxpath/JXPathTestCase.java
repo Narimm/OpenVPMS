@@ -25,10 +25,14 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 
-// jxpath
+// commons-beanutils
+import org.apache.commons.beanutils.MethodUtils;
+
+// ognl
 import ognl.Ognl;
 import ognl.OgnlContext;
 
+// commons-jxpath
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
@@ -40,6 +44,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
@@ -346,6 +352,36 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 3)") != null);
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 4)") == null);
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 0)") == null);
+    }
+    
+    /**
+     * Test the setting and getting of values on collections
+     */
+    public void testCollectionManipulation() 
+    throws Exception {
+        ArrayList list = new ArrayList();
+        MethodUtils.invokeMethod(list, "add", "object1");
+        MethodUtils.invokeMethod(list, "add", "object2");
+        MethodUtils.invokeMethod(list, "add", "object3");
+        assertTrue(list.size() == 3);
+    }
+    
+    /**
+     * Test the set value on a PropertyMap
+     */
+    public void testSetValueOnPropertyMap()
+    throws Exception {
+        PropertyMap map = new PropertyMap();
+        map.setName("archetypes");
+        
+        AssertionProperty prop = new AssertionProperty();
+        prop.setName("shortName");
+        prop.setType("java.lang.String");
+        map.addProperty(prop);
+        
+        JXPathContext context = JXPathContext.newContext(map);
+        context.setValue("/properties/shortName/value", "descripor.archetypeRange");
+        assertTrue(prop.getValue().equals("descripor.archetypeRange"));
     }
     
     /**

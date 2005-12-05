@@ -19,6 +19,9 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
@@ -46,6 +49,12 @@ public class PropertyDescriptor  extends Descriptor {
      * The property value
      */
     private String value;
+    
+    /**
+     * A property can have embedded properties
+     */
+    private Map<String, PropertyDescriptor> propertyDescriptors =
+        new HashMap<String, PropertyDescriptor>();
     
     /**
      * Default constructor
@@ -82,6 +91,58 @@ public class PropertyDescriptor  extends Descriptor {
         this.value = value;
     }
 
+    /**
+     * @return Returns the properties.
+     */
+    public Map<String, PropertyDescriptor> getPropertyDescriptors() {
+        return propertyDescriptors;
+    }
+
+    /**
+     * @param properties The properties to set.
+     */
+    public void setPropertyDescriptors(Map<String, PropertyDescriptor> properties) {
+        this.propertyDescriptors = properties;
+    }
+    
+    /**
+     * Add the properties descriptor
+     * 
+     * @param property
+     *            the property descriptor to add
+     */
+    public void addPropertyDescriptor(PropertyDescriptor property) {
+        propertyDescriptors.put(property.getName(), property);
+    }
+
+    /**
+     * Remove the properties descriptor
+     * 
+     * @param property
+     *            the property descriptor to add
+     */
+    public void removePropertyDescriptor(PropertyDescriptor property) {
+        propertyDescriptors.remove(property.getName());
+    }
+
+    /**
+     * @return Returns the properties.
+     */
+    public PropertyDescriptor[] getPropertyDescriptorsAsArray() {
+        return (PropertyDescriptor[])propertyDescriptors.values().toArray(
+                new PropertyDescriptor[propertyDescriptors.size()]);
+    }
+
+    /**
+     * @param properties The properties to set.
+     */
+    public void setPropertyDescriptorsAsArray(PropertyDescriptor[] properties) {
+        this.propertyDescriptors = new HashMap<String, PropertyDescriptor>();
+        for (PropertyDescriptor property : properties) {
+            this.propertyDescriptors.put(property.getName(), property);
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
@@ -91,6 +152,7 @@ public class PropertyDescriptor  extends Descriptor {
             .append("name", getName())
             .append("type", type)
             .append("value", value)
+            .append("properties", propertyDescriptors == null ? " NULL" : propertyDescriptors)
             .toString();
     }
 }

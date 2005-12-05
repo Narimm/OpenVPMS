@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
 
 /**
  * This class has a number of static assertion functions. All static functions
@@ -53,7 +52,7 @@ public class StringAssertions {
      */
     public static boolean withinMaxLength(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map properties = assertion.getPropertyDescriptors();
+        Map properties = assertion.getPropertyMap().getProperties();
         String str = (String)target;
         int maxLength = Integer.parseInt((String)properties.get("maxLength"));
         
@@ -72,10 +71,9 @@ public class StringAssertions {
      */
     public static boolean regularExpressionMatch(Object target, 
             NodeDescriptor node, AssertionDescriptor assertion) {
-        Map<String, PropertyDescriptor> properties = 
-            assertion.getPropertyDescriptors();
         String str = (String)target;
-        String regExpr = (String)properties.get("expression").getValue();
+        String regExpr = (String)assertion.getPropertyMap().getProperties().get(
+                "expression").getValue();
         
         if (str == null) {
             return false;

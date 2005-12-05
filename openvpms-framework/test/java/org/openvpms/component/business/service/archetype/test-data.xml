@@ -14,6 +14,17 @@
 		</params>
 	</class>
 
+	<class name="ArchetypeServiceWithAssertionDescriptorTestCase">
+		<params>
+			<param name="assertionFile" type="java.lang.String">
+				org/openvpms/archetype/assertionTypes.xml
+			</param>
+			<param name="archetypeFile" type="java.lang.String">
+				org/openvpms/archetype/system/assertion/assertion.archetypeRange.adl
+			</param>
+		</params>
+	</class>
+	
 	<class name="ValidationErrorTestCase">
 		<params>
 			<param name="assertionFile" type="java.lang.String">

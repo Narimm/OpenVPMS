@@ -8,16 +8,13 @@
 			displayName="Action Types" type="java.util.ArrayList"
 			baseName="actionType" parentChild="true">
 			<assertion name="archetypeRange">
-				<property name="descriptor.actionType" />
-				<errorMessage>Invalid archetype specified</errorMessage>					
-			</assertion>
-		</node>
-		<node name="propertyTypes" path="/propertyTypes"
-			displayName="Property Types" type="java.util.ArrayList"
-			baseName="propertyType" parentChild="true">
-			<assertion name="archetypeRange">
-				<property name="descriptor.propertyType" />
-				<errorMessage>Invalid archetype specified</errorMessage>					
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="descriptor.actionType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>Invalid archetype specified</errorMessage>
 			</assertion>
 		</node>
 	</archetype>

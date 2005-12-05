@@ -26,7 +26,7 @@ import java.util.Map;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // log4j
-import org.apache.log4j.Logger;
+import org.apache.log4j.Logger; 
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -37,7 +37,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 /** 
@@ -211,7 +211,7 @@ public class ArchetypeServiceDescriptorTestCase extends
         config.addClass(ArchetypeDescriptor.class);
         config.addClass(NodeDescriptor.class);
         config.addClass(AssertionDescriptor.class);
-        config.addClass(PropertyDescriptor.class);
+        config.addClass(ActionTypeDescriptor.class);
         config.addClass(AssertionTypeDescriptor.class);
         this.sessionFactory = config.buildSessionFactory();
     }

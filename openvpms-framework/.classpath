@@ -22,7 +22,7 @@
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-core-1.7.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-bean-collections-1.7.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/castor/jars/castor-xml-0.9.7.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPO/commons-jxpath/jars/commons-jxpath-1.2.jar"/>
+	<classpathentry sourcepath="/JXPATH_SRC" kind="var" path="MAVEN_REPO/commons-jxpath/jars/commons-jxpath-1.2.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/acegisecurity/jars/acegi-security-0.8.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/ognl/jars/ognl-2.6.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/servletapi/jars/servletapi-2.4.jar"/>

@@ -1,17 +1,32 @@
 <assertionTypes>
-  <assertionType name="refDataAssertion"
-    class="org.openvpms.component.business.service.archetype.AssertionMethods"
-    method="alwaysTrue" />
-  <assertionType name="regExpAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
-    method="regularExpressionMatch" />
-  <assertionType name="localDataAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.LocalDataAssertions"
-    method="isStringValueInList" />
-  <assertionType name="archeTypeRangeAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
-    method="isArchetypeShortNameInRange" />
-  <assertionType name="maxStringLengthAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
-    method="withinMaxLength" />
+	<assertionType name="refDataAssertion"
+		propertyArchetype="openvpms-system-assertion.refDataAssertionProperty.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.AssertionMethods"
+			methodName="alwaysTrue" />
+	</assertionType>
+	<assertionType name="regExpAssertion"
+		propertyArchetype="openvpms-system-assertion.regExpAssertionProperty.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
+			methodName="regularExpressionMatch" />
+	</assertionType>
+	<assertionType name="localDataAssertion"
+		propertyArchetype="openvpms-system-assertion.localDataAssertionProperty.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.LocalDataAssertions"
+			methodName="isStringValueInList" />
+	</assertionType>
+	<assertionType name="archetypeRange"
+		propertyArchetype="openvpms-system-assertion.archetypeRangeProperty.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
+			methodName="isArchetypeShortNameInRange" />
+	</assertionType>
+	<assertionType name="maxStringLengthAssertion"
+		propertyArchetype="openvpms-system-assertion.maxStringLengthAssertionProperty.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
+			methodName="withinMaxLength" />
+	</assertionType>
 </assertionTypes>

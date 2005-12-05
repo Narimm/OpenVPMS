@@ -214,7 +214,9 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
             NodeDescriptor node = (NodeDescriptor) niter.next();
             for (AssertionDescriptor assertion : node
                     .getAssertionDescriptorsAsArray()) {
-                if (!assertionTypes.containsKey(assertion.getName())) {
+                AssertionTypeDescriptor atDesc = assertionTypes.get(
+                        assertion.getName());
+                if (atDesc == null) {
                     logger.warn("Attempting to find [" + assertion.getName()
                             + " in [" + assertionTypes + "]");
                     throw new ArchetypeDescriptorCacheException(

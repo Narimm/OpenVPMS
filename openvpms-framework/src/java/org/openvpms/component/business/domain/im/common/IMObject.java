@@ -23,16 +23,25 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
-// openvpms-framework
+// commons-jxpath
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
+
+// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+// log4j
 import org.apache.log4j.Logger;
+
+// commons-id
+import org.safehaus.uuid.UUIDGenerator;
+
+//openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
-import org.safehaus.uuid.UUIDGenerator;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 
 /**
  * This is the base class for information model objects. An {@link IMObject} 
@@ -95,7 +104,8 @@ public abstract class IMObject implements Serializable {
     private String description;
     
     /**
-     * The archetype that is attached to this object
+     * The archetype that is attached to this object. which defines
+     * 
      */
     private ArchetypeId archetypeId;
     
@@ -103,6 +113,12 @@ public abstract class IMObject implements Serializable {
      * This is the date and time that this object was last modified
      */
     private Date lastModified;
+    
+    /**
+     * Indicates whether this object is active
+     */
+    private boolean active;
+    
     
     /**
      * Default constructor
@@ -241,6 +257,39 @@ public abstract class IMObject implements Serializable {
         this.archetypeId = archetypeId;
     }
 
+    /**
+     * Return the archetypeId as a string
+     * 
+     * @return String
+     *            the fully qualified archetype id
+     */
+    public String getArchetypeIdAsString() {
+        return (this.archetypeId == null) ? null : archetypeId.getQName();
+    }
+    
+    /**
+     * Set the archetypeId from a string
+     * 
+     * @param archId
+     *            the fully qualified archetype name
+     */
+    public void setArchetypeIdAsString(String archId) {
+        this.archetypeId = new ArchetypeId(archId);
+    }
+    /**
+     * @return Returns the active.
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * @param active The active to set.
+     */
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -292,9 +341,19 @@ public abstract class IMObject implements Serializable {
      * @param path
      *            an xpath expression in to this object
      * @return Pointer
+     *            a pointer ot the object or null.
      */
     public Pointer pathToObject(String path) {
-        return JXPathContext.newContext(this).getPointer(path);
+        Pointer ptr = null;
+        
+        try {
+            ptr = JXPathContext.newContext(this).getPointer(path);
+        } catch (Exception exception) {
+            logger.warn("No path to: " + path + " for object of type: " 
+                    + this.getClass().getName());
+        }
+        
+        return ptr;
     }
     
     /**
@@ -311,8 +370,11 @@ public abstract class IMObject implements Serializable {
     public Pointer pathToCollection(String path) {
         Pointer ptr = pathToObject(path);
         if (ptr != null) {
-            if (ptr.getValue() instanceof Map) {
-                ptr = JXPathContext.newContext(ptr.getValue()).getPointer("values(.)");
+            Object obj  = ptr.getValue();
+            if (obj instanceof Map) {
+                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
+            } else if (obj instanceof PropertyCollection){
+                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
             }
         }
         

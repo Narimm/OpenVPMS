@@ -289,10 +289,10 @@ public class ArchetypeService implements IArchetypeService {
                         conceptName, instanceName, type);
                 results.addAll(objects);
             } catch (IMObjectDAOException exception) {
-                throw new ArchetypeServiceException(
+                logger.error("ArchetypeService.get", new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.FailedToFindObjects,
                         new Object[] { rmName, entityName, conceptName,
-                                instanceName }, exception);
+                                instanceName }, exception));
             }
         }
 
@@ -530,7 +530,7 @@ public class ArchetypeService implements IArchetypeService {
                     // This is currently a work around since we need to deal
                     // with assertions and some other type of declaration...
                     // which I don't have a name for.
-                    if (assertionType.getType() == null) {
+                    if (assertionType.getActionType("assert") == null) {
                         continue;
                     }
 
@@ -605,16 +605,13 @@ public class ArchetypeService implements IArchetypeService {
                     .loadClass(descriptor.getClassName());
             obj = domainClass.newInstance();
 
-            // the object must be an instance of {@link IMObject}
-            if (!(obj instanceof IMObject)) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.InvalidIMClass,
-                        new Object[] { descriptor.getClassName() });
-            }
+            // if the object is an instance of {@link IMObject}
+            if (obj instanceof IMObject) {
+                // cast to imobject and set the archetype and the uuid.
+                IMObject imobj = (IMObject) obj;
+                imobj.setArchetypeId(descriptor.getType());
+            } 
 
-            // cast to imobject and set the archetype and the uuid.
-            IMObject imobj = (IMObject) obj;
-            imobj.setArchetypeId(descriptor.getType());
 
             // first create a JXPath context and use it to process the nodes
             // in the archetype

@@ -63,7 +63,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 
 /**
  * This utility will load all the archetypes in the specified directory
@@ -557,7 +557,7 @@ public class ArchetypeLoader {
         config.addClass(ArchetypeDescriptor.class);
         config.addClass(NodeDescriptor.class);
         config.addClass(AssertionDescriptor.class);
-        config.addClass(PropertyDescriptor.class);
+        config.addClass(ActionTypeDescriptor.class);
         config.addClass(AssertionTypeDescriptor.class);
         
         session = config.buildSessionFactory().openSession();

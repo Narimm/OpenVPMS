@@ -34,13 +34,8 @@
 			type="string" not-null="true" />
 		<property name="errorMessage" access="property" column="error_message"
 			type="string" />
-		<map name="propertyDescriptors" access="property" lazy="false"
-			table="node_descriptor" cascade="all,delete-orphan">
-			<key column="assertion_desc_id"/>
-			<map-key column="key_name" type="string" />
-			<one-to-many
-				class="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor" />
-		</map>
+		<property name="propertyMap" column="property_map" length="5000"
+			type="org.openvpms.component.business.dao.hibernate.usertype.PropertyMapUserType" />
 	</class>
 
 	<query name="assertionDescriptor.getRowCount">

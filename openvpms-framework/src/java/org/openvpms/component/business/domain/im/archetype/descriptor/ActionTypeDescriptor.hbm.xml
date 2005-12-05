@@ -21,27 +21,39 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
 	<class
-		name="org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor"
-		table="property_descriptor">
+		name="org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor"
+		table="action_type_descriptor">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="property_desc_id"
-				index="property_desc_id_idx" />
+			<column name="action_type_desc_id"
+				index="action_type_desc_id_idx" />
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
 		<property name="linkId" access="property" type="string" />
 		<property name="name" access="property" column="name"
-			type="string" />
-		<property name="type" access="property" column="type"
-			type="string" />
-		<property name="value" access="property" column="value"
-			type="string" />
+			type="string" not-null="true" />
+		<component name="archetypeId">
+			<property name="namespace" access="property"
+				column="arch_namespace" type="string" />
+			<property name="rmName" access="property"
+				column="arch_rm_name" type="string" />
+			<property name="concept" access="property"
+				column="arch_concept" type="string" />
+			<property name="entityName" access="property"
+				column="arch_entity_name" type="string" />
+			<property name="version" access="property"
+				column="arch_version" type="string" />
+			<property name="shortName" access="property"
+				column="arch_short_name" type="string" />
+		</component>
+		<property name="className" access="property" type="string" column="class_name"/>
+		<property name="methodName" access="property" type="string" column="method_name"/>
 	</class>
 
 	<query name="propertyDescriptor.getRowCount">
 		<![CDATA[
-			select count(propertyDescriptor) from org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor as 
-			propertyDescriptor
+			select count(descriptor) from org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor as 
+			descriptor
 		]]>
 	</query>
 

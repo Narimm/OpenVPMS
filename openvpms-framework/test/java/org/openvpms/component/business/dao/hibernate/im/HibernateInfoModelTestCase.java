@@ -32,7 +32,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Classification;
@@ -119,8 +119,8 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         config.addClass(ArchetypeDescriptor.class);
         config.addClass(NodeDescriptor.class);
         config.addClass(AssertionDescriptor.class);
-        config.addClass(PropertyDescriptor.class);
         config.addClass(AssertionTypeDescriptor.class);
+        config.addClass(ActionTypeDescriptor.class);
         this.sessionFactory = config.buildSessionFactory();
     }
 

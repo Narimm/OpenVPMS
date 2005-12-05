@@ -70,7 +70,7 @@ public class PersistentClassificationTestCase extends HibernateInfoModelTestCase
     public void testSimpleClassificationCreation() throws Exception {
         Session session = currentSession();
         Transaction tx = null;
-
+ 
         try {
             int acount = HibernateUtil.getTableRowCount(session, "classification");
 

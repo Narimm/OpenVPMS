@@ -48,7 +48,9 @@ public class AssertionException extends RuntimeException implements
         FailedtoApplyAssertion,
         NoClassOrMethodSpecified,
         FailedToLocateMethod,
-        FailedToApplyAssertion
+        FailedToApplyAssertion,
+        ActionNoSupportedByAssertion,
+        NoActionTypeSpecified
     }
 
     /**

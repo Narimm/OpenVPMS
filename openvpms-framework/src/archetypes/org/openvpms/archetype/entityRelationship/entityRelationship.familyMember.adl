@@ -12,14 +12,24 @@
 		<node name="source" path="/source"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion name="archetypeRange">
-				<property name="person.person" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="person.person" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="target" path="/target"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion name="archetypeRange">
-				<property name="person.person" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="person.person" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>

@@ -93,7 +93,11 @@ public class ArchetypeServicePersistenceTestCase extends
         person.setFirstName("Jim");
         person.setTitle("Mr");
         
-        service.save(person);
+        try {
+            service.save(person);
+        } catch (ValidationException exception) {
+            dump(exception);
+        }
     }
 
     /**
@@ -512,4 +516,16 @@ public class ArchetypeServicePersistenceTestCase extends
                 "archetypeService");
     }
 
+    /**
+     * Display the validation errors
+     * 
+     * @param exception
+     *            the validation exception 
+     */
+    private void dump(ValidationException exception) {
+        for (ValidationError error : exception.getErrors()) {
+            logger.error("node: " + error.getNodeName()
+                    + " message: " + error.getErrorMessage());
+        }
+    }
 }

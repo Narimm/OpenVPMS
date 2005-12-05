@@ -24,6 +24,7 @@ import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 
 /**
@@ -72,7 +73,9 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
                     session, "assertionTypeDescriptor");
             tx = session.beginTransaction();
             AssertionTypeDescriptor adesc = createAssertionTypeDescriptor(
-                    "regularExpression", "StringFunctions", "evaluateRegEx");
+                    "regularExpression");
+            addActionTypeToDescriptor(adesc, "assert", "StringFunctions", 
+                    "evaluateRegEx");
             session.save(adesc);
             tx.commit();
             
@@ -101,16 +104,31 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
             int acount = HibernateDescriptorUtil.getTableRowCount(
                     session, "assertionTypeDescriptor");
             tx = session.beginTransaction();
-            session.save(createAssertionTypeDescriptor(
-                    "regularExpression", "StringFunctions", "evaluateRegEx"));
-            session.save(createAssertionTypeDescriptor(
-                    "regularExpression1", "StringFunctions", "evaluateRegEx1"));
-            session.save(createAssertionTypeDescriptor(
-                    "regularExpression2", "StringFunctions", "evaluateRegEx2"));
-            session.save(createAssertionTypeDescriptor(
-                    "regularExpression3", "StringFunctions", "evaluateRegEx3"));
-            session.save(createAssertionTypeDescriptor(
-                    "regularExpression4", "StringFunctions", "evaluateRegEx4"));
+            AssertionTypeDescriptor adesc = createAssertionTypeDescriptor(
+                    "regularExpression");
+            addActionTypeToDescriptor(adesc, "assert", "StringFunctions",
+                    "evaluateRegEx");
+            session.save(adesc);
+
+            adesc = createAssertionTypeDescriptor("regularExpression1");
+            addActionTypeToDescriptor(adesc, "assert", "StringFunctions",
+                    "evaluateRegEx1");
+            session.save(adesc);
+
+            adesc = createAssertionTypeDescriptor("regularExpression2");
+            addActionTypeToDescriptor(adesc, "assert", "StringFunctions",
+                    "evaluateRegEx2");
+            session.save(adesc);
+            
+            adesc = createAssertionTypeDescriptor("regularExpression3");
+            addActionTypeToDescriptor(adesc, "assert", "StringFunctions",
+                    "evaluateRegEx3");
+            session.save(adesc);
+            
+            adesc = createAssertionTypeDescriptor("regularExpression4");
+            addActionTypeToDescriptor(adesc, "assert", "StringFunctions",
+                    "evaluateRegEx4");
+            session.save(adesc);
             tx.commit();
             
             int acount1 = HibernateDescriptorUtil.getTableRowCount(
@@ -140,7 +158,9 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
                     session, "assertionTypeDescriptor");
             tx = session.beginTransaction();
             AssertionTypeDescriptor adesc = createAssertionTypeDescriptor(
-                    "maxLength", "LengthFunctions", "evalMaxLength");
+                    "maxLength");
+            addActionTypeToDescriptor(adesc, "assert", "LengthFunctions", 
+                    "evalMaxLength");
             session.save(adesc);
             tx.commit();
             
@@ -184,7 +204,9 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
                     session, "assertionTypeDescriptor");
             tx = session.beginTransaction();
             AssertionTypeDescriptor adesc = createAssertionTypeDescriptor(
-                    "minLength", "LengthFunctions", "evalMinLength");
+                    "minLength");
+            addActionTypeToDescriptor(adesc, "assert", "LengthFunctions", 
+                    "evalMinLength");
             session.save(adesc);
             tx.commit();
             
@@ -197,7 +219,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
                    AssertionTypeDescriptor.class, adesc.getUid());
             assertTrue(adesc != null);
             
-            adesc.setType("MinLengthFunctions");
+            adesc.getActionType("assert").setClassName("MinLengthFunctions");
             session.saveOrUpdate(adesc);
             tx.commit();
 
@@ -207,7 +229,7 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
             adesc = (AssertionTypeDescriptor)session.load(
                     AssertionTypeDescriptor.class, adesc.getUid());
             assertTrue(adesc != null);
-            assertTrue(adesc.getType().equals("MinLengthFunctions"));
+            assertTrue(adesc.getActionType("assert").getClassName().equals("MinLengthFunctions"));
         } catch (Exception exception) { 
             if (tx != null) {
                 tx.rollback();
@@ -241,13 +263,32 @@ public class PersistentAssertionTypeDescriptorTestCase extends HibernateInfoMode
      * 
      * @return AssertionTypeDescriptor
      */
-    private AssertionTypeDescriptor createAssertionTypeDescriptor(String name,
-            String type, String method) {
+    private AssertionTypeDescriptor createAssertionTypeDescriptor(String name) {
         AssertionTypeDescriptor desc = new AssertionTypeDescriptor();
         desc.setName(name);
-        desc.setType(type);
-        desc.setMethodName(method);
+        desc.setPropertyArchetype("openvpms-dum-dum"); 
         
         return desc;
+    }
+    
+    /**
+     * Add an action to the specified {@link AssertionTypeDescriptor}
+     * 
+     * @param descriptor
+     *            the source descriptor
+     * @param name
+     *            the action name
+     * @param class
+     *            the action class name
+     * @param method
+     *            the action method name
+     */
+    private void addActionTypeToDescriptor(AssertionTypeDescriptor descriptor, 
+            String name, String clazz, String method) {
+        ActionTypeDescriptor action = new ActionTypeDescriptor();
+        action.setName(name);
+        action.setClassName(clazz);
+        action.setMethodName(method);
+        descriptor.addActionType(action);
     }
 }

@@ -176,7 +176,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
         String extension = (String) params.get("extension");
         int recordCount1 = ((Integer) this.getTestData().getTestCaseParameter(
                 "testLoadingArchetypesFromDir", "normal", "recordCount1"))
-                .intValue();
+                .intValue(); 
 
         ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] {extension}, assertionFile);

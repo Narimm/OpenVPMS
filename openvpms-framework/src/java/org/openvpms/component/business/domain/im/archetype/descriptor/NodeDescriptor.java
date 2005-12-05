@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 // commons-lang
+import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -39,6 +40,11 @@ import org.apache.oro.text.perl.Perl5Util;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 
 /**
@@ -543,6 +549,123 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
+     * Add a child object to this node descriptor using the specified 
+     * {@link IMObject} as the context. If this node descriptor is not 
+     * of type collection, or the context object is null it will raise an
+     * exception.
+     * 
+     * @param context
+     *            the context object, which will be the source of the add
+     * @param child
+     *            the child element to add            
+     * @thorws DescriptorException
+     *            if it fails to complete this request            
+     */
+    public void addChildToCollection(IMObject context, Object child) {
+        if (context == null) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToAddChildElement,
+                    new Object[] { getName() });
+        }
+        
+        if (!isCollection()) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToAddChildElement,
+                    new Object[] { getName() });
+        }
+        
+        try {
+            if (StringUtils.isEmpty(baseName)) {
+             // no base name specified look at the type to determine 
+             // what method to call
+             Class tClass = getClazz();
+             if (Collection.class.isAssignableFrom(tClass)) {
+                 MethodUtils.invokeMethod(getValue(context), "add", child);
+             } else if (Map.class.isAssignableFrom(tClass)) {
+                 MethodUtils.invokeMethod(getValue(context), "put",
+                         new Object[] { child, child});
+             } else {
+                 throw new DescriptorException(
+                         DescriptorException.ErrorCode.FailedToAddChildElement,
+                         new Object[] { getName() });
+             }
+            } else {
+                // if a baseName has been specified then prepend 'add' to the 
+                // base name and excute the derived method on context object
+                String methodName = "add" + StringUtils.capitalize(baseName);
+                MethodUtils.invokeMethod(getValue(context), methodName, child);
+                
+            }
+        } catch (Exception exception) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToAddChildElement,
+                    new Object[] { getName() }, exception);
+        }
+    }
+    
+    /**
+     * Remove the specified child object from the collection defined by this
+     * node descriptor using the nominated {@link IMObject} as the root context.
+     * <p>
+     * If this node descriptor is not of type collection, or the context object 
+     * is null it will raise an exception.
+     * 
+     * @param context
+     *            the root context object
+     * @param child
+     *            the child element to remove            
+     * @thorws DescriptorException
+     *            if it fails to complete this request            
+     */
+    public void removeChildFromCollection(IMObject context, Object child) {
+        if (context == null) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                    new Object[] { getName() });
+        }
+        
+        if (!isCollection()) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                    new Object[] { getName() });
+        }
+        
+        try {
+            if (StringUtils.isEmpty(baseName)) {
+             // no base name specified look at the type to determine 
+             // what method to call
+             Class tClass = getClazz();
+             if (Collection.class.isAssignableFrom(tClass)) {
+                 MethodUtils.invokeMethod(getValue(context), "remove", child);
+             } else if (Map.class.isAssignableFrom(tClass)) {
+                 MethodUtils.invokeMethod(getValue(context), "remove", child);
+             } else {
+                 throw new DescriptorException(
+                         DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                         new Object[] { getName() });
+             }
+            } else {
+                // if a baseName has been specified then prepend 'add' to the 
+                // base name and excute the derived method on contxt object
+                String methodName = "remove" + StringUtils.capitalize(baseName);
+                
+                // TODO This is a tempoaray fix until we resolve the discrepency 
+                // with collections.
+                if (getValue(context) instanceof IMObject) {
+                    MethodUtils.invokeMethod(getValue(context), methodName, child);
+                } else {
+                    MethodUtils.invokeMethod(context, methodName, child);
+                }
+                
+            }
+        } catch (Exception exception) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                    new Object[] { getName() }, exception);
+        }
+    }
+    
+    /**
      * @param nodeDescriptors The nodeDescriptors to set.
      */
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
@@ -674,8 +797,11 @@ public class NodeDescriptor  extends Descriptor {
         try {
             Class aclass = Thread.currentThread().getContextClassLoader()
                 .loadClass(getType());
-            return Collection.class.isAssignableFrom(aclass) ||
-                Map.class.isAssignableFrom(aclass);
+            
+            return 
+                Collection.class.isAssignableFrom(aclass) ||
+                Map.class.isAssignableFrom(aclass) ||
+                PropertyCollection.class.isAssignableFrom(aclass);
         } catch (Exception ignore) {
             return false;
         }
@@ -741,7 +867,7 @@ public class NodeDescriptor  extends Descriptor {
                 assertionDescriptors.get("numericRange");
             if (descriptor != null) {
              number = NumberUtils.createNumber((String)
-                     descriptor.getPropertyDescriptors().get("maxValue").getValue());    
+                     descriptor.getPropertyMap().getProperties().get("maxValue").getValue());    
             }
         } else {
             throw new DescriptorException(
@@ -768,7 +894,7 @@ public class NodeDescriptor  extends Descriptor {
                 assertionDescriptors.get("numericRange");
             if (descriptor != null) {
              number = NumberUtils.createNumber((String)
-                     descriptor.getPropertyDescriptors().get("minValue").getValue());    
+                     descriptor.getPropertyMap().getProperties().get("minValue").getValue());    
             }
         } else {
             throw new DescriptorException(
@@ -791,7 +917,7 @@ public class NodeDescriptor  extends Descriptor {
             AssertionDescriptor descriptor = (AssertionDescriptor)
                 assertionDescriptors.get("regularExpression");
             if (descriptor != null) {
-             expression = (String)descriptor.getPropertyDescriptors()
+             expression = (String)descriptor.getPropertyMap().getProperties()
                  .get("expression").getValue();    
             }
         } else {
@@ -811,14 +937,21 @@ public class NodeDescriptor  extends Descriptor {
      */
     @SuppressWarnings("unchecked")
     public String[] getArchetypeNames() {
-        AssertionDescriptor descriptor = (AssertionDescriptor)
+        ArrayList<String> result = new ArrayList<String>();
+        
+        AssertionDescriptor desc = (AssertionDescriptor)
             assertionDescriptors.get("validArchetypes");
-        if (descriptor != null) {
-            return (String[])descriptor.getPropertyDescriptors().keySet().toArray(
-                    new String[descriptor.getPropertyDescriptors().size()]);
-        } else {
-            return new String[0];
-        }        
+        if (desc != null) {
+            PropertyList archetypes = (PropertyList)desc.getPropertyMap().
+                getProperties().get("archetypes");
+            for (NamedProperty archetype : archetypes.getProperties()) {
+                AssertionProperty shortName= (AssertionProperty)((PropertyMap)
+                        archetype).getProperties().get("shortName");
+                result.add(shortName.getValue());
+            }
+        }
+        
+        return (String[])result.toArray(new String[result.size()]);
     }
     
     /**
@@ -836,8 +969,12 @@ public class NodeDescriptor  extends Descriptor {
         if (assertionDescriptors.containsKey("archetypeRange")) {
             ArrayList<String> range = new ArrayList<String>();
             AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
-            for (PropertyDescriptor property : desc.getPropertyDescriptorsAsArray()) {
-                range.add(property.getName());
+            PropertyList archetypes = (PropertyList)desc.getPropertyMap()
+                .getProperties().get("archetypes");
+            for (NamedProperty archetype : archetypes.getProperties()) {
+                AssertionProperty shortName= (AssertionProperty)((PropertyMap)
+                        archetype).getProperties().get("shortName");
+                range.add(shortName.getValue());
             }
             
             return (String[])range.toArray(new String[range.size()]);
@@ -863,11 +1000,12 @@ public class NodeDescriptor  extends Descriptor {
                 "candidateChildren");
 
         if ((descriptor == null) ||
-            (descriptor.getPropertyDescriptors().containsKey("path") == false)) {
+            (descriptor.getPropertyMap().getProperties().containsKey("path") == false)) {
             return result;
         }
 
-        String path = descriptor.getPropertyDescriptors().get("path").getValue();
+        String path = (String)descriptor.getPropertyMap().getProperties().
+            get("path").getValue();
         try {
             Object obj = JXPathContext.newContext(context).getValue(path);
             if (obj == null) {

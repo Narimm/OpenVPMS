@@ -9,8 +9,8 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 			<assertion name="archetypeRange">
-				<property name="address.location" />
-				<property name="address.phoneNumber" />
+				<property name="address.location" value="address.location"/>
+				<property name="address.phoneNumber" value="address.location" />
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>

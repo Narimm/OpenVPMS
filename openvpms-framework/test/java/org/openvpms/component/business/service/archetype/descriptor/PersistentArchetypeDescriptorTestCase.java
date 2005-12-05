@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.PropertyDescriptor;
+import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Animal;
 
@@ -45,7 +45,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
     /**
      * main line
      * 
-     * @param args
+     * @param args 
      */
     public static void main(String[] args) {
         junit.textui.TestRunner.run(PersistentArchetypeDescriptorTestCase.class);
@@ -324,8 +324,6 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "nodeDescriptor");
             int ascount = HibernateDescriptorUtil.getTableRowCount(
                     session, "assertionDescriptor");
-            int pcount = HibernateDescriptorUtil.getTableRowCount(
-                    session, "propertyDescriptor");
             
             // set up the descriptor
             NodeDescriptor ndesc = null;
@@ -341,12 +339,12 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             ndesc = createNodeDescriptor("description", "/description", 
                     "java.lang.String", 1, 1);
             adesc = createAssertionDescriptor("regularExpression");
-            adesc.addPropertyDescriptor(createPropertyDescriptor("expression",
+            adesc.addProperty(createAssertionProperty("expression",
                     "java.lang.String", ".*"));
             ndesc.addAssertionDescriptor(adesc);
             
             adesc = createAssertionDescriptor("maxLength");
-            adesc.addPropertyDescriptor(createPropertyDescriptor("length",
+            adesc.addProperty(createAssertionProperty("length",
                     "java.lang.Integer", "20"));
             ndesc.addAssertionDescriptor(adesc);
             desc.addNodeDescriptor(ndesc);
@@ -363,12 +361,9 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "nodeDescriptor");
             int ascount1 = HibernateDescriptorUtil.getTableRowCount(
                     session, "assertionDescriptor");
-            int pcount1 = HibernateDescriptorUtil.getTableRowCount(
-                    session, "propertyDescriptor");
             assertTrue(acount1 == acount + 1);
             assertTrue(ncount1 == ncount + 4);
             assertTrue(ascount1 == ascount + 3);
-            assertTrue(pcount1 == pcount + 2);
             
         } catch (Exception exception) { 
             if (tx != null) {
@@ -475,8 +470,6 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "nodeDescriptor");
             int ascount = HibernateDescriptorUtil.getTableRowCount(
                     session, "assertionDescriptor");
-            int pcount = HibernateDescriptorUtil.getTableRowCount(
-                    session, "propertyDescriptor");
             
             // set up the descriptor
             NodeDescriptor ndesc = null;
@@ -492,14 +485,14 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             ndesc = createNodeDescriptor("description", "/description", 
                     "java.lang.String", 1, 1);
             adesc = createAssertionDescriptor("regularExpression");
-            adesc.addPropertyDescriptor(createPropertyDescriptor("expression",
+            adesc.addProperty(createAssertionProperty("expression",
                     "java.lang.String", ".*"));
             ndesc.addAssertionDescriptor(adesc);
             
             adesc = createAssertionDescriptor("maxLength");
-            adesc.addPropertyDescriptor(createPropertyDescriptor("length",
+            adesc.addProperty(createAssertionProperty("length",
                     "java.lang.Integer", "20"));
-            adesc.addPropertyDescriptor(createPropertyDescriptor("length2",
+            adesc.addProperty(createAssertionProperty("length2",
                     "java.lang.Integer", "20"));
             ndesc.addAssertionDescriptor(adesc);
             desc.addNodeDescriptor(ndesc);
@@ -516,12 +509,9 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "nodeDescriptor");
             int ascount1 = HibernateDescriptorUtil.getTableRowCount(
                     session, "assertionDescriptor");
-            int pcount1 = HibernateDescriptorUtil.getTableRowCount(
-                    session, "propertyDescriptor");
             assertTrue(acount1 == acount + 1);
             assertTrue(ncount1 == ncount + 4);
             assertTrue(ascount1 == ascount + 3);
-            assertTrue(pcount1 == pcount + 3);
             
             // retrieve the object an delete 2 assertions and one property
             tx = session.beginTransaction();
@@ -532,7 +522,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             ndesc = desc.getNodeDescriptor("description");
             ndesc.removeAssertionDescriptor("regularExpression");
             adesc = ndesc.getAssertionDescriptor("maxLength");
-            adesc.removePropertyDescriptor("length2");
+            adesc.removeProperty("length2");
             session.save(desc);
             tx.commit();
             
@@ -542,12 +532,9 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "nodeDescriptor");
             ascount1 = HibernateDescriptorUtil.getTableRowCount(
                     session, "assertionDescriptor");
-            pcount1 = HibernateDescriptorUtil.getTableRowCount(
-                    session, "propertyDescriptor");
             assertTrue(acount1 == acount + 1);
             assertTrue(ncount1 == ncount + 3);
             assertTrue(ascount1 == ascount + 2);
-            assertTrue(pcount1 == pcount + 1);
             
             desc = (ArchetypeDescriptor)session.load(ArchetypeDescriptor.class,
                     desc.getUid());
@@ -666,17 +653,17 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
     }
     
     /**
-     * Create a {@link PropertyDescriptor with the specified parameters
+     * Create a {@link AssertionProperty} with the specified parameters
      * 
-     * @return PropertyDescriptor
+     * @return AssertionProperty
      */
-    private PropertyDescriptor createPropertyDescriptor(String name, String type,
+    private AssertionProperty createAssertionProperty(String name, String type,
             String value) {
-        PropertyDescriptor desc = new PropertyDescriptor();
-        desc.setName(name);
-        desc.setType(type);
-        desc.setValue(value);
+        AssertionProperty prop = new AssertionProperty();
+        prop.setName(name);
+        prop.setType(type);
+        prop.setValue(value);
         
-        return desc;
+        return prop;
     }
 }

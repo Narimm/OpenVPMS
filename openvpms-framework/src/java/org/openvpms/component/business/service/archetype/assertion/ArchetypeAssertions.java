@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype.assertion;
 
 // java core
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 
 /**
  * These assertions are applied to archetype and parts of archetypes. These
@@ -40,7 +42,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeAssertions {
+public class ArchetypeAssertions { 
     /**
      * Define a logger for this class
      */
@@ -85,8 +87,10 @@ public class ArchetypeAssertions {
             entries = (Collection)target;
         } else if (target instanceof Map) {
             entries = (Collection)((Map)target).values();
-        } else {
-            return false;
+        } else if (target instanceof List){ 
+            entries = (Collection)target;
+        } else if (target instanceof PropertyCollection) {
+            entries = ((PropertyCollection)target).values();
         }
         
         if (entries.size() > 0) {

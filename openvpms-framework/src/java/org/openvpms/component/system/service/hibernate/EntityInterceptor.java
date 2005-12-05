@@ -76,8 +76,6 @@ public class EntityInterceptor extends EmptyInterceptor {
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, 
             Object[] previousState, String[] propertyNames, Type[] types) {
 
-        logger.error("onSave: entity=" + entity.toString());
-
         // after we save the entity
         if (entity instanceof ArchetypeDescriptor) {
             ArchetypeDescriptor adesc = (ArchetypeDescriptor)entity;

@@ -19,12 +19,15 @@
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
-// java core
-import java.util.HashMap;
-import java.util.Map;
-
+// commons-lang
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.log4j.Logger;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 
 /**
  *
@@ -32,6 +35,13 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @version  $LastChangedDate$
  */
 public class AssertionDescriptor extends Descriptor {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(AssertionDescriptor.class);
+
 
     /**
      * Default SUID
@@ -48,8 +58,7 @@ public class AssertionDescriptor extends Descriptor {
      * properties are in the form of key value pairs but in some instances it
      * may only be necessary to specify the value.
      */
-    private Map<String, PropertyDescriptor> propertyDescriptors = 
-        new HashMap<String, PropertyDescriptor>();
+    private PropertyMap propertyMap = new PropertyMap("root");
 
     /**
      * Default constructor
@@ -76,74 +85,75 @@ public class AssertionDescriptor extends Descriptor {
      * Return the properties as a map
      * @return Returns the properties.
      */
-    public Map<String, PropertyDescriptor> getPropertyDescriptors() {
-        return propertyDescriptors;
+    public PropertyMap getPropertyMap() {
+        return propertyMap;
     }
 
     /**
-     * @param propertyDescriptors The propertyDescriptors to set.
+     * @param properties 
+     *            the properties to add
      */
-    public void setPropertyDescriptors(
-            Map<String, PropertyDescriptor> propertyDescriptors) {
-        this.propertyDescriptors = propertyDescriptors;
+    public void setPropertyMap(PropertyMap propertyMap) {
+        this.propertyMap = propertyMap;
     }
     
     /**
-     * Add the property descriptor to the list
+     * Add the property to the collection
      * 
-     * param descriptor
-     *            the property descriptor to add
+     * param property
+     *            the property to add
      */
-    public void addPropertyDescriptor(PropertyDescriptor descriptor) {
-        propertyDescriptors.put(descriptor.getName(), descriptor);
+    public void addProperty(NamedProperty property) {
+        propertyMap.getProperties().put(property.getName(), property);
     }
     
     /**
-     * Remove the specified property descriptor
+     * Remove the specified property 
      * 
-     * @param descriptor
-     *            the property descriptor to remove
+     * @param property
+     *            the property to remove
      */
-    public void removePropertyDescriptor(PropertyDescriptor descriptor) {
-        propertyDescriptors.remove(descriptor.getName());
+    public void removeProperty(NamedProperty property) {
+        propertyMap.getProperties().remove(property.getName());
     }
     
     /**
-     * Remove the property descriptor with the specified key
+     * Remove the property with the specified name
      * 
-     * @param key
-     *            the property descriptor key
+     * @param name
+     *            the property name
      */
-    public void removePropertyDescriptor(String key) {
-        propertyDescriptors.remove(key);
+    public void removeProperty(String name) {
+        propertyMap.getProperties().remove(name);
     }
     
     /**
-     * Retrieve the property descriptor with the specified key
+     * Retrieve the property descriptor with the specified name
      * 
-     * @param, key
-     *            the property descriptor key
-     * @return PropertyDescriptor            
+     * @param, name
+     *            the property name
+     * @return NamedProperty
+     *            the named property or null            
      */
-    public PropertyDescriptor getPropertyDescriptor(String key) {
-        return propertyDescriptors.get(key);
+    public NamedProperty getProperty(String name) {
+        return propertyMap.getProperties().get(name);
     }
 
     /**
      * @return Returns the properties.
      */
-    public PropertyDescriptor[] getPropertyDescriptorsAsArray() {
-        return (PropertyDescriptor[])propertyDescriptors.values().toArray(
-                new PropertyDescriptor[propertyDescriptors.size()]);
+    public NamedProperty[] getPropertiesAsArray() {
+        return (NamedProperty[])propertyMap.getProperties().values().toArray(
+                new NamedProperty[propertyMap.getProperties().size()]);
     }
 
     /**
      * @param properties The properties to set.
      */
-    public void setPropertyDescriptorsAsArray(PropertyDescriptor[] properties) {
-        this.propertyDescriptors = new HashMap<String, PropertyDescriptor>();
-        for (PropertyDescriptor property : properties) {
-            this.propertyDescriptors.put(property.getName(), property);
+    public void setPropertiesAsArray(NamedProperty[] properties) {
+        this.propertyMap = new PropertyMap("root");
+        for (NamedProperty property : properties) {
+            this.propertyMap.getProperties().put(property.getName(), property);
         }
     }
 
@@ -152,11 +162,8 @@ public class AssertionDescriptor extends Descriptor {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-            .append("name", getName())
-            .append("errorMessage", errorMessage)
-            .append("propertyDescriptors", propertyDescriptors)
-            .toString();
+        return ToStringBuilder.reflectionToString(this, 
+                ToStringStyle.MULTI_LINE_STYLE);
     }
 
 }

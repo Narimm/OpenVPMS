@@ -45,7 +45,9 @@ public class DescriptorException extends RuntimeException implements
      */
     public enum ErrorCode {
         InvalidType,
-        UnsupportedOperation
+        UnsupportedOperation,
+        FailedToAddChildElement,
+        FailedToRemoveChildElement
     }
 
     /**
