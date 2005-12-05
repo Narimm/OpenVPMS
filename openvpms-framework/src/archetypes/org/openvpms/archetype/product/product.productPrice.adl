@@ -1,0 +1,15 @@
+<archetypes>
+	<archetype name="openvpms-product-product.productPrice.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.product.ProductPrice">
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" />
+		<node name="name" path="/name" displayName="Product Name" 
+			minCardinality="1" />
+		<node name="fromDate" path="/fromDate"
+			type="java.util.Date" minCardinality="1"  displayName="From Date" />
+		<node name="thruDate" path="/thruDate"
+			type="java.util.Date" minCardinality="1"  displayName="Thru Date" />
+		<node name="fixed" path="/fixed"
+			type="java.lang.Boolean" minCardinality="1"  displayName="Fixed Price" />
+	</archetype>
+</archetypes>
