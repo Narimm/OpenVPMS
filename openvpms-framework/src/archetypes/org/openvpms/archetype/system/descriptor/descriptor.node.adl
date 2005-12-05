@@ -15,7 +15,7 @@
 		<node name="minCardinality" path="/minCardinality"
 			type="java.lang.Integer" />
 		<node name="maxCardinality" path="/maxCardinality"
-			type="java.lang.Integer" />
+			type="java.lang.Integer" defaultValue="1" />
 		<node name="minLength" path="/minLength"
 			type="java.lang.Integer" />
 		<node name="maxLength" path="/maxLength"
@@ -31,7 +31,19 @@
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
-						<property name="shortName" value="descriptor.assertion" />
+						<property name="shortName" value="assertion.archetypeRange" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.candidateChildren" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.localLookup" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.regularExpression" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.lookup" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>

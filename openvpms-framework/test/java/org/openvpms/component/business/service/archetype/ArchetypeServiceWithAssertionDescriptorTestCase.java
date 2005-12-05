@@ -86,7 +86,7 @@ public class ArchetypeServiceWithAssertionDescriptorTestCase extends BaseTestCas
                 "assertion.archetypeRange");
         assertTrue(adesc != null);
         PropertyMap pdesc = (PropertyMap)service.create(
-                "assertion.archetypeProperty");
+                "assertion.archetypeRangeProperties");
         assertTrue(adesc != null);
         assertTrue(pdesc.getProperties().size() == 3);
         assertTrue(pdesc.getProperties().get("shortName") != null);
@@ -96,7 +96,7 @@ public class ArchetypeServiceWithAssertionDescriptorTestCase extends BaseTestCas
         assertTrue(desc != null);
         
         NodeDescriptor ndesc = desc.getNodeDescriptor("archetypes");
-        assertTrue(ndesc != null);
+        assertTrue(ndesc != null); 
         
         ndesc.addChildToCollection(adesc, pdesc);
         assertTrue(adesc.getProperty("archetypes") != null);

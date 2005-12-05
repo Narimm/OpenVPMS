@@ -2,16 +2,19 @@
 	<archetype name="openvpms-system-descriptor.assertionType.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
-		<node name="name" path="/name" type="java.lang.String"
-			minCardinality="1" />
-		<node name="type" path="/type" type="java.lang.String"
-			minCardinality="1" />
-		<node name="methodName" path="/methodName"
-			type="java.lang.String">
-			<assertion name="validateMethod">
-				<property name="class" value="/type" />
-				<errorMessage>Invalid methodName</errorMessage>
+		<node name="name" path="/name" displayName="Action Name"
+			type="java.lang.String" minCardinality="1" />
+		<node name="actionTypes" path="/actionTypes"
+			displayName="Action Types" type="java.util.ArrayList"
+			baseName="actionType" parentChild="true">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="descriptor.actionType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>Invalid archetype specified</errorMessage>
 			</assertion>
 		</node>
 	</archetype>

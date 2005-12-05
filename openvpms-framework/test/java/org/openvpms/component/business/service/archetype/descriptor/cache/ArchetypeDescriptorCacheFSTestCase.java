@@ -39,7 +39,7 @@ import org.openvpms.component.system.common.test.BaseTestCase;
 public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
 
     /**
-     * @param args
+     * @param args  
      */
     public static void main(String[] args) {
         junit.textui.TestRunner.run(ArchetypeDescriptorCacheFSTestCase.class);
@@ -180,7 +180,8 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
 
         ArchetypeDescriptorCacheFS cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] {extension}, assertionFile);
-        assertTrue(cache.getArchetypeDescriptors().size() == recordCount1);
+        assertTrue("Count must be " + cache.getArchetypeDescriptors().size(),
+                cache.getArchetypeDescriptors().size() == recordCount1);
     }
 
     /**
