@@ -1,23 +1,44 @@
 <assertionTypes>
 	<assertionType name="lookup"
-		type="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
-		method="alwaysTrue" />
+		propertyArchetype="openvpms-system-assertion.lookup.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
+			methodName="alwaysTrue" />
+	</assertionType>
 	<assertionType name="lookup.local"
-		type="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
-		method="isStringValueInList" />
+		propertyArchetype="openvpms-system-assertion.lookupLocal.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
+			methodName="isStringValueInList" />
+	</assertionType>
 	<assertionType name="regularExpression"
-		type="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
-		method="regularExpressionMatch" />
+		propertyArchetype="openvpms-system-assertion.regularExpression.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.StringAssertions"
+			methodName="regularExpressionMatch" />
+	</assertionType>
 	<assertionType name="archetypeRange"
-		type="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
-		method="objectsMatchArchetypeRange" />
+		propertyArchetype="openvpms-system-assertion.archetypeRange.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.ArchetypeAssertions"
+			methodName="objectsMatchArchetypeRange" />
+	</assertionType>
 	<assertionType name="candidateChildren"
-		type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
-		method="alwaysTrue" />
+		propertyArchetype="openvpms-system-assertion.candidateChildren.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+			methodName="alwaysTrue" />
+	</assertionType>
 	<assertionType name="lookup.assertionType"
-		type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
-		method="alwaysTrue" />
+		propertyArchetype="openvpms-system-assertion.lookupAssertionType.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+			methodName="alwaysTrue" />
+	</assertionType>
 	<assertionType name="validateMethod"
-		type="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
-		method="alwaysTrue" />
+		propertyArchetype="openvpms-system-assertion.validateMethod.1.0">
+		<actionType name="assert"
+			className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+			methodName="alwaysTrue" />
+	</assertionType>
 </assertionTypes>

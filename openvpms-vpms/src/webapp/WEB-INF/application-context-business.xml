@@ -109,7 +109,7 @@
 					/org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
 				</value>
 				<value>
-					/org/openvpms/component/business/domain/im/archetype/descriptor/PropertyDescriptor.hbm.xml
+					/org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
 				</value>
 			</list>
 		</property>

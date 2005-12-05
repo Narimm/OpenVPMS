@@ -2,8 +2,9 @@
 	<archetype name="openvpms-system-descriptor.archetype.1.0"
 		latest="true" primary="true"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
-		<node name="type" path="/archetypeQName" type="java.lang.String"
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" />
+		<node name="type" path="/name" type="java.lang.String" displayName="Name"
 			minCardinality="1" />
 		<node name="displayName" path="/displayName"
 			type="java.lang.String" minCardinality="1" />
@@ -12,10 +13,19 @@
 		<node name="latest" path="/latest" type="java.lang.Boolean" />
 		<node name="primary" path="/primary" type="java.lang.Boolean" />
 		<node name="nodeDescriptors" path="/nodeDescriptors"
-			parentChild="true" type="java.util.HashMap" baseName="nodeDescriptor">
+			parentChild="true" type="java.util.HashMap"
+			baseName="nodeDescriptor">
 			<assertion name="archetypeRange">
-				<property name="descriptor.node" />
-				<property name="descriptor.collectionNode" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="descriptor.node" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="descriptor.collectionNode" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>
 					Can only add node descriptors
 				</errorMessage>

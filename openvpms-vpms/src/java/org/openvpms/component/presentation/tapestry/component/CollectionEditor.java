@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hivemind.ApplicationRuntimeException;
+import org.apache.log4j.Logger;
 
 // jakarta-tapestry
 import org.apache.tapestry.IRequestCycle;
@@ -50,6 +51,13 @@ import org.openvpms.component.presentation.tapestry.page.OpenVpmsPage;
  */
 public abstract class CollectionEditor extends OpenVpmsComponent {
 
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(CollectionEditor.class);
+    
     public abstract Collection getCollection();
 
     public abstract void setCollection(Collection Collection);
@@ -126,6 +134,7 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
             ((EditPage) getPage()).setNextPage(nextPage);
 
         } catch (Exception ex) {
+            logger.error(ex);
             throw new ApplicationRuntimeException(ex);
         }
     }
@@ -164,8 +173,9 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
         Object[] parameters = cycle.getListenerParameters();
         NodeDescriptor descriptor = (NodeDescriptor) parameters[0];
         try {
-            Collection collect = (Collection) getValue(getModel(), descriptor
-                    .getPath());
+            
+            Collection collect = getCollection((IMObject)getModel(), 
+                    descriptor.getPath());
             int i = 0;
             ArrayList deleting = new ArrayList();
             for (Iterator iter = collect.iterator(); iter.hasNext();) {
@@ -178,7 +188,9 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
                 i++;
             }
             collect.removeAll(deleting);
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            // log the error
+            logger.error(ex);
         }
     }
 
@@ -275,5 +287,17 @@ public abstract class CollectionEditor extends OpenVpmsComponent {
      */
     public boolean isList() {
         return getCollection() instanceof List;
+    }
+    
+    /**
+     * Return the collection for the specified IMObject and path
+     * 
+     * @param source
+     *            the source object
+     * @param path
+     *            the path into the object            
+     */
+    private Collection getCollection(IMObject source, String path) {
+        return (Collection)source.pathToCollection(path).getValue();
     }
 }

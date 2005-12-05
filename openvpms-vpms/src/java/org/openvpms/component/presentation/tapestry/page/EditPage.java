@@ -21,13 +21,17 @@ package org.openvpms.component.presentation.tapestry.page;
 // java core
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.apache.tapestry.IRequestCycle;
 import org.apache.tapestry.annotations.Bean;
 import org.apache.tapestry.annotations.Persist;
 import org.apache.tapestry.callback.ICallback;
 import org.apache.tapestry.form.IPropertySelectionModel;
 import org.apache.tapestry.valid.ValidationConstraint;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationError;
@@ -46,6 +50,12 @@ import org.openvpms.component.presentation.tapestry.validation.OpenVpmsValidatio
  */
 
 public abstract class EditPage extends OpenVpmsPage {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(EditPage.class);
 
     // These methods represent page properties managed by Tapestry
 
@@ -237,17 +247,48 @@ public abstract class EditPage extends OpenVpmsPage {
     }
 
     /**
-     * @return
+     * This will return the archetype descriptor for the object that will
+     * be rendered by this edit page.
+     * <p>
+     * It will locate the {@link ArchetypeDescriptor} for the specified object.
+     * <p>
+     * TODO At the moment we have the logic to determine whether the descriptor
+     * is an AssertionTypeDescriptor and then switch accordingly in this object.
+     * This needs to be transparent
+     * 
+     * @return ArchetypeDescriptor
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
-        ArchetypeDescriptor archetypeDescriptor = getArchetypeService()
-                .getArchetypeDescriptor(
-                        ((IMObject) getModel()).getArchetypeId());
-        if (archetypeDescriptor == null)
+        IMObject imObj = (IMObject)getModel();
+
+        
+        ArchetypeDescriptor archetypeDescriptor = null;
+        ArchetypeId archId = imObj.getArchetypeId();
+        
+        //TODO This is a work around until we resolve the current 
+        // problem with archetyping and archetype. We need to 
+        // extend this page and create a new archetype specific 
+        // edit page.
+        if (imObj instanceof AssertionDescriptor) {
+           AssertionTypeDescriptor atDesc = getArchetypeService()
+               .getAssertionTypeDescriptor(imObj.getName()); 
+           archId = new ArchetypeId(atDesc.getPropertyArchetype());
+        }
+        
+        archetypeDescriptor = getArchetypeService().getArchetypeDescriptor(archId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Returning archetypDescriptor: " 
+                    + (archetypeDescriptor == null ? null :archetypeDescriptor.getName())
+                    + " for archId: " + archId 
+                    + " and object: " + imObj.getClass().getName());
+        }
+        
+        if (archetypeDescriptor == null) {
             return getArchetypeService().getArchetypeDescriptor(
-                    ((IMObject) getModel()).getArchetypeId().getShortName());
-        else
+                    imObj.getArchetypeId().getShortName());
+        } else {
             return archetypeDescriptor;
+        }
     }
 
     /**
@@ -316,8 +357,16 @@ public abstract class EditPage extends OpenVpmsPage {
      * @return
      */
     public String getTitle() {
-        String conceptName = Utils.unCamelCase(((IMObject) getModel())
-                .getArchetypeId().getConcept());
+        
+        ArchetypeId archId = ((IMObject) getModel()).getArchetypeId();
+        String conceptName = null;
+        
+        if (archId == null) {
+            conceptName = Utils.unCamelCase(getModel().getClass().getName());
+        } else {
+            conceptName = Utils.unCamelCase(archId.getConcept());
+        }
+            
         if (isModelNew()) {
             return "New " + conceptName;
         } else {

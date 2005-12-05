@@ -1,6 +1,6 @@
 <archetypes>
-	<archetype name="openvpms-system-descriptor.collectionNode.1.0"
-		latest="true" primary="false"
+	<archetype name="openvpms-system-descriptor.node.1.0" latest="true"
+		primary="false"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor">
 		<node name="uid" path="/uid" displayName="id"
 			type="java.lang.Long" />
@@ -15,7 +15,7 @@
 		<node name="minCardinality" path="/minCardinality"
 			type="java.lang.Integer" />
 		<node name="maxCardinality" path="/maxCardinality"
-			type="java.lang.Integer" />
+			type="java.lang.Integer" defaultValue="1" />
 		<node name="minLength" path="/minLength"
 			type="java.lang.Integer" />
 		<node name="maxLength" path="/maxLength"
@@ -25,31 +25,31 @@
 		<node name="derived" path="/derived" type="java.lang.Boolean" />
 		<node name="derivedValue" path="/derivedValue"
 			type="java.lang.String" />
-		<node name="baseName" path="/defaultValue"
-			type="java.lang.String" />
-		<node name="parentChild" path="/parentChild"
-			type="java.lang.Boolean" defaultValue="true()" />
 		<node name="assertionDescriptors" path="/assertionDescriptors"
-			parentChild="true" type="java.util.HashMap"
+			parentChild="true" type="java.util.Map"
 			baseName="assertionDescriptor">
 			<assertion name="archetypeRange">
-				<property name="descriptor.assertion" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.archetypeRange" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.candidateChildren" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.localLookup" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.regularExpression" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.lookup" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>
 					Can only add assertion descriptors
 				</errorMessage>
 			</assertion>
 		</node>
-		<node name="nodeDescriptors" path="/nodeDescriptors"
-			parentChild="true" type="java.util.HashMap"
-			baseName="nodeDescriptor">
-			<assertion name="archetypeRange">
-				<property name="descriptor.node" />
-				<property name="descriptor.collectionNode" />
-				<errorMessage>
-					Can only add node descriptors
-				</errorMessage>
-			</assertion>
-		</node>
-
 	</archetype>
 </archetypes>

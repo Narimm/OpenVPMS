@@ -11,10 +11,12 @@
 		<node name="title" path="/title" type="java.lang.String"
 			minCardinality="1">
 			<assertion name="lookup.local">
-				<property name="Mr" value="Mr" />
-				<property name="Ms" value="Ms" />
-				<property name="Mrs" value="Mrs" />
-				<property name="Dr" value="Dr" />
+				<propertyList name="entries">
+					<property name="Mr" value="Mr" />
+					<property name="Ms" value="Ms" />
+					<property name="Mrs" value="Mrs" />
+					<property name="Dr" value="Dr" />
+				</propertyList>
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
@@ -26,40 +28,80 @@
 		<node name="addresses" path="/addresses"
 			type="java.util.HashSet" baseName="Address" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
-				<property name="address.location" />
-				<property name="address.phoneNumber" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="address.location" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="address.phoneNumber" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
-				<property name="contact.home" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="contact.home" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="classifications" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
-				<property name="classification.personType" />
-				<property name="classification.accountType" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.personType" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.accountType" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="identities" path="/identities"
 			type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
-				<property name="entityIdentity.Alias" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityIdentity.Alias" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="roles" path="/roles" type="java.util.HashSet" baseName="Role" 
 			minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
-				<property name="role.veterinarian" />
-				<property name="role.customer" />
-				<property name="role.supplier" />
-				<property name="role.employee" />
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="role.veterinarian" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="role.customer" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="role.supplier" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="role.employee" />
+					</propertyMap>
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
