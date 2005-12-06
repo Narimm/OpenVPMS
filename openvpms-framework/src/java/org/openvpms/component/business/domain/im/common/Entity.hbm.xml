@@ -56,7 +56,7 @@
 		</set>
 		<set name="identities" access="property" lazy="false"
 			inverse="true" cascade="all,delete-orphan">
-			<key column="entity_id" />
+			<key column="entity_id" not-null="true" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
 		</set>
@@ -83,9 +83,9 @@
 		<joined-subclass
 			name="org.openvpms.component.business.domain.im.party.Party"
 			table="party">
-			<key column="entity_id" />
+			<key column="party_id" />
 			<set name="contacts" access="property" inverse="true"
-				lazy="false" cascade="all,delete-orphan" table="contact">
+				lazy="false" cascade="all,delete-orphan">
 				<key column="party_id" />
 				<one-to-many
 					class="org.openvpms.component.business.domain.im.party.Contact" />
@@ -101,7 +101,8 @@
 			<joined-subclass
 				name="org.openvpms.component.business.domain.im.party.Role"
 				table="role">
-				<key column="entity_id" />
+				<key column="role_id" />
+				<many-to-one name="actor" column="actor_id" />
 				<property name="activeStartTime" access="property"
 					column="active_start_time" type="date" />
 				<property name="activeEndTime" access="property"
@@ -111,7 +112,7 @@
 				<joined-subclass
 					name="org.openvpms.component.business.domain.im.system.User"
 					table="user">
-					<key column="entity_id" />
+					<key column="user_id" />
 					<property name="password" access="property"
 						column="password" type="string" />
 					<property name="lastLogin" column="last_login"
@@ -123,10 +124,10 @@
 			<joined-subclass
 				name="org.openvpms.component.business.domain.im.party.Actor"
 				table="actor">
-				<key column="entity_id" />
+				<key column="actor_id" />
 				<set name="roles" access="property" lazy="false"
 					inverse="true" cascade="all,delete-orphan">
-					<key column="actor_id" />
+					<key column="actor_id" not-null="true" />
 					<one-to-many
 						class="org.openvpms.component.business.domain.im.party.Role" />
 				</set>
@@ -135,7 +136,7 @@
 				<joined-subclass
 					name="org.openvpms.component.business.domain.im.party.Person"
 					table="person">
-					<key column="entity_id" />
+					<key column="person_id" />
 					<property name="title" access="property"
 						column="title" type="string" />
 					<property name="firstName" access="property"
@@ -150,7 +151,7 @@
 				<joined-subclass
 					name="org.openvpms.component.business.domain.im.party.Animal"
 					table="animal">
-					<key column="entity_id" />
+					<key column="animal_id" />
 					<property name="species" access="property"
 						column="species" type="string" />
 					<property name="breed" access="property"
@@ -178,8 +179,8 @@
 				type="date" access="property" />
 			<property name="discontinuedDate" column="end_date"
 				type="date" access="property" />
-			<set name="productPrices" access="property" inverse="true"
-				lazy="false" cascade="all,delete-orphan" table="product_price">
+			<set name="productPrices" access="property" 
+				lazy="false" cascade="all,delete-orphan">
 				<key column="product_id" />
 				<one-to-many
 					class="org.openvpms.component.business.domain.im.product.ProductPrice" />
