@@ -265,6 +265,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
         Product product = new Product();
         product.setArchetypeIdAsString("openvpms-product-product.basic.1.0");
         product.setName(name);
+        product.setPrintedName(name);
         product.setIntroductionDate(new Date());
         product.setDiscontinuedDate(new Date());
         

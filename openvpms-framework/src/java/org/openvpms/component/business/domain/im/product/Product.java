@@ -52,6 +52,11 @@ public class Product extends Entity {
     private Date discontinuedDate;
     
     /**
+     * The name that is printed on the invoice
+     */
+    private String printedName;
+    
+    /**
      * Maintains a list of {@link ProductPrice} for this product
      */
     private Set<ProductPrice> productPrices = new HashSet<ProductPrice>();
@@ -89,6 +94,20 @@ public class Product extends Entity {
      */
     public void setIntroductionDate(Date introductionDate) {
         this.introductionDate = introductionDate;
+    }
+
+    /**
+     * @return Returns the printedName.
+     */
+    public String getPrintedName() {
+        return printedName;
+    }
+
+    /**
+     * @param printedName The printedName to set.
+     */
+    public void setPrintedName(String printedName) {
+        this.printedName = printedName;
     }
 
     /**

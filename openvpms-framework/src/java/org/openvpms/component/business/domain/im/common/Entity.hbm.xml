@@ -172,6 +172,8 @@
 			name="org.openvpms.component.business.domain.im.product.Product"
 			table="product">
 			<key column="product_id" />
+			<property name="printedName" column="printed_name"
+				type="string" access="property" />
 			<property name="introductionDate" column="start_date"
 				type="date" access="property" />
 			<property name="discontinuedDate" column="end_date"

@@ -5,6 +5,9 @@
 			type="java.lang.Long" />
 		<node name="name" path="/name" displayName="Product Name"
 			minCardinality="1" />
+		<node name="printedName" path="printedName"
+			type="java.lang.String" minCardinality="0"
+			displayName="Printed Date" />
 		<node name="introductionDate" path="/introductionDate"
 			type="java.util.Date" minCardinality="1"
 			displayName="Introduction Date" />
