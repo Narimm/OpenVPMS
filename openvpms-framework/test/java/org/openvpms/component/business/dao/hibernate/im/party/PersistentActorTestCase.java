@@ -221,7 +221,6 @@ public class PersistentActorTestCase extends HibernateInfoModelTestCase {
         }
     }
 
-
     /**
      * Create a simple role
      * 

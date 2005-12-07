@@ -268,8 +268,8 @@ public class ArchetypeService implements IArchetypeService {
      *      java.lang.String, java.lang.String, java.lang.String)
      */
     public List<IMObject> get(String rmName, String entityName,
-            String conceptName, String instanceName) {
-        return get(rmName, entityName, conceptName, instanceName, false);
+            String conceptName, String instanceName, boolean activeOnly) {
+        return get(rmName, entityName, conceptName, instanceName, false, activeOnly);
     }
     
 
@@ -280,13 +280,14 @@ public class ArchetypeService implements IArchetypeService {
      *      java.lang.String, java.lang.String, java.lang.String)
      */
     public List<IMObject> get(String rmName, String entityName,
-            String conceptName, String instanceName, boolean primaryOnly) {
+            String conceptName, String instanceName, boolean primaryOnly,
+            boolean activeOnly) {
         List<IMObject> results = new ArrayList<IMObject>();
         Set<String> types = getDistinctTypes(rmName, entityName, primaryOnly);
         for (String type : types) {
             try {
                 List<IMObject> objects = dao.get(rmName, entityName,
-                        conceptName, instanceName, type);
+                        conceptName, instanceName, type, activeOnly);
                 results.addAll(objects);
             } catch (IMObjectDAOException exception) {
                 logger.error("ArchetypeService.get", new ArchetypeServiceException(
@@ -302,7 +303,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[])
      */
-    public List<IMObject> get(String[] shortNames) {
+    public List<IMObject> get(String[] shortNames, boolean activeOnly) {
         List<IMObject> results = new ArrayList<IMObject>();
         for (String shortName : shortNames) {
             
@@ -312,7 +313,7 @@ public class ArchetypeService implements IArchetypeService {
             }
             ArchetypeId aid = adesc.getType();
             List<IMObject> objects = get(aid.getRmName(), aid.getEntityName(), 
-                    aid.getConcept(), null);
+                    aid.getConcept(), null, activeOnly);
             results.addAll(objects);
         }
         
@@ -412,10 +413,10 @@ public class ArchetypeService implements IArchetypeService {
         validateObject(entity);
         try {
             dao.save(entity);
-            
+             
             // a quick fix to the archetype descriptor update problem
-            // couldn't get the interceptors working
-            // TODO Fix
+            // couldn't get the hibernate interceptors working
+            // TODO Review the interceptors
             if (entity instanceof ArchetypeDescriptor) {
                 ArchetypeDescriptor adesc = (ArchetypeDescriptor)entity;
                 if (dCache != null) {

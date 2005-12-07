@@ -117,7 +117,7 @@ public abstract class IMObject implements Serializable {
     /**
      * Indicates whether this object is active
      */
-    private boolean active;
+    private boolean active = true;
     
     
     /**

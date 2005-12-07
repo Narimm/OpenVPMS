@@ -82,14 +82,15 @@ public interface IMObjectDAO {
      * @param instanceName
      *            the instance name   
      * @param clazz
-     *            the fully qualified name of the class to search for                                             
-     * @param return
-     *            List<IMObject>
+     *            the fully qualified name of the class to search for  
+     * @param activeOnly
+     *            indicates whether to return active objects.                                                       
+     * @return List<IMObject>
      * @throws IMObjectDAOException
      *             a runtime exception if the request cannot complete
      */
     public List<IMObject> get(String rmName, String entityName, String conceptName, 
-            String instanceName, String clazz);
+            String instanceName, String clazz, boolean activeOnly);
     
     /**
      * Return an object with the specified uid for the nominated clazz and null 

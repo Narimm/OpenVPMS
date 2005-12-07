@@ -44,12 +44,18 @@
 			type="string" />
 		<property name="description" access="property"
 			column="description" type="string" />
+		<property name="active" access="property" column="active"
+			type="boolean" />
 		<property name="mood" column="mood" type="string" />
 		<property name="title" column="title" type="string" />
-		<property name="effectiveStartTime" column="effective_start_time" type="date" />
-		<property name="effectiveEndTime" column="effective_end_time" type="date" />
-		<property name="activityStartTime" column="activity_start_time" type="date" />
-		<property name="activityEndTime" column="activity_end_time" type="date" />
+		<property name="effectiveStartTime"
+			column="effective_start_time" type="date" />
+		<property name="effectiveEndTime" column="effective_end_time"
+			type="date" />
+		<property name="activityStartTime" column="activity_start_time"
+			type="date" />
+		<property name="activityEndTime" column="activity_end_time"
+			type="date" />
 		<property name="priority" column="priority" type="string" />
 		<property name="reason" column="reason" type="string" />
 		<property name="negationInd" column="negation_ind"

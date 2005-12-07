@@ -190,12 +190,14 @@ public interface IArchetypeService {
      *            the concept name (partial or complete)
      * @param instanceName
      *            the particular instance name
+     * @param activeOnly
+     *            whether to retrieve only the active objects            
      * @return List<IMObject>                                   
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
     public List<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName);
+            String conceptName, String instanceName, boolean activeOnly);
     
     
     /**
@@ -226,12 +228,15 @@ public interface IArchetypeService {
      * @param primaryOnly
      *            determines whether to restrict processing to archetypes 
      *            that are marked as primary only.            
+     * @param activeOnly
+     *            whether to retrieve only the active objects            
      * @return List<IMObject>                                   
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
     public List<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName, boolean primaryOnly);
+            String conceptName, String instanceName, boolean primaryOnly,
+            boolean activeOnly);
     
     /**
      * Retrieve a list of IMObjects that match one or more of the supplied
@@ -245,7 +250,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
-    public List<IMObject> get(String[] shortNames);
+    public List<IMObject> get(String[] shortNames, boolean activeOnly);
     
     /**
      * Return the entity with the specified identity or null if it does not

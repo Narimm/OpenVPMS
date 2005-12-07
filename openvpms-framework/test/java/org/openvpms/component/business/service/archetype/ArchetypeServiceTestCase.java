@@ -128,7 +128,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(person != null);
         assertTrue(person.getTitle().equals("Mr"));
     }
-
+    
     /* (non-Javadoc)
      * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
      */

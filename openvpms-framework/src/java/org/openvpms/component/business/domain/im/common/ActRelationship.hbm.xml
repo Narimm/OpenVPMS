@@ -46,6 +46,8 @@
 			type="string" />
 		<property name="description" access="property"
 			column="description" type="string" />
+		<property name="active" access="property"
+			column="active" type="boolean" />
 		<property name="sequence" type="int" column="sequence" />
 		<property name="negationInd" type="boolean"
 			column="negation_ind" />

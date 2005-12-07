@@ -32,8 +32,10 @@
 		<property name="linkId" access="property" type="string" />
 		<property name="name" access="property" column="name"
 			type="string" not-null="true" />
-		<property name="errorMessage" access="property" column="error_message"
-			type="string" />
+		<property name="active" access="property" column="active"
+			type="boolean" />
+		<property name="errorMessage" access="property"
+			column="error_message" type="string" />
 		<property name="propertyMap" column="property_map" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.PropertyMapUserType" />
 	</class>

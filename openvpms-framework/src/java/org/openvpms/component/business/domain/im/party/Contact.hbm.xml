@@ -46,6 +46,8 @@
 			type="string" />
 		<property name="description" access="property"
 			column="description" type="string" />
+		<property name="active" access="property"
+			column="active" type="boolean" />
 		<property name="activeStartTime" access="property"
 			column="active_start_time" type="date" />
 		<property name="activeEndTime" access="property"

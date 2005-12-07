@@ -58,7 +58,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      */
     public void save(IMObject object) {
         try {
-            getHibernateTemplate().saveOrUpdate(object);
+            getHibernateTemplate().saveOrUpdate(object); 
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
@@ -84,7 +84,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      */
     @SuppressWarnings("unchecked")
     public List<IMObject> get(String rmName, String entityName,
-            String conceptName, String instanceName, String clazz) {
+            String conceptName, String instanceName, String clazz, boolean activeOnly) {
         try {
             // check that rm has been specified
             if (StringUtils.isEmpty(clazz)) {
@@ -166,6 +166,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 }
                 
                 names.add("instanceName");
+                andRequired = true;
                 if ((instanceName.endsWith("*")) || (instanceName.startsWith("*"))) {
                     queryString.append(" entity.name like :instanceName");
                     params.add(instanceName.replace("*", "%"));
@@ -173,7 +174,14 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     queryString.append(" entity.name = :instanceName");
                     params.add(instanceName);
                 }
-                
+            }
+            
+            // determine if we are only interested in active objects
+            if (activeOnly) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                queryString.append(" entity.active = true");
             }
             
             // now execute te query

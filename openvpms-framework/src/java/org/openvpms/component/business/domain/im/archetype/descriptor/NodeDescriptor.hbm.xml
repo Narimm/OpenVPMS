@@ -24,52 +24,53 @@
 		name="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
 		table="node_descriptor">
 		<id name="uid" type="long" unsaved-value="-1">
-			<column name="node_desc_id"
-				index="node_desc_id_idx" />
+			<column name="node_desc_id" index="node_desc_id_idx" />
 			<generator class="increment" />
 		</id>
 		<version name="version" access="property" type="long" />
 		<property name="linkId" access="property" type="string" />
 		<property name="name" access="property" column="name"
 			type="string" not-null="true" />
-		<property name="displayName" access="property" column="display_name"
-			type="string" />
+		<property name="active" access="property" column="active"
+			type="boolean" />
+		<property name="displayName" access="property"
+			column="display_name" type="string" />
 		<property name="type" access="property" column="type"
-			type="string" not-null="true"/>
+			type="string" not-null="true" />
 		<property name="path" access="property" column="path"
-			type="string" not-null="true"/>
+			type="string" not-null="true" />
 		<property name="baseName" access="property" column="base_name"
 			type="string" />
-		<property name="defaultValue" access="property" column="default_name"
-			type="string" />
-		<property name="derivedValue" access="property" column="derived_value"
-			type="string" />
+		<property name="defaultValue" access="property"
+			column="default_name" type="string" />
+		<property name="derivedValue" access="property"
+			column="derived_value" type="string" />
 		<property name="hidden" access="property" column="is_hidden"
 			type="boolean" />
 		<property name="derived" access="property" column="is_derived"
 			type="boolean" />
-		<property name="minCardinality" access="property" column="min_cardinality"
-			type="integer" />
-		<property name="maxCardinality" access="property" column="max_cardinality"
-			type="integer" />
+		<property name="minCardinality" access="property"
+			column="min_cardinality" type="integer" />
+		<property name="maxCardinality" access="property"
+			column="max_cardinality" type="integer" />
 		<property name="minLength" access="property" column="min_length"
 			type="integer" />
 		<property name="maxLength" access="property" column="max_length"
 			type="integer" />
 		<property name="index" access="property" column="node_index"
 			type="integer" />
-		<property name="parentChild" access="property" column="is_parent_child"
-			type="boolean" />
+		<property name="parentChild" access="property"
+			column="is_parent_child" type="boolean" />
 		<map name="nodeDescriptors" access="property" lazy="false"
 			table="node_descriptor" cascade="all,delete-orphan">
-			<key column="parent_id"/>
+			<key column="parent_id" />
 			<map-key column="name" type="string" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" />
 		</map>
 		<map name="assertionDescriptors" access="property" lazy="false"
 			table="assertion_descriptor" cascade="all,delete-orphan">
-			<key column="node_desc_id"/>
+			<key column="node_desc_id" />
 			<map-key column="type" type="string" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor" />

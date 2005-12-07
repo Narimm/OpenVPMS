@@ -46,11 +46,13 @@
 			<property name="shortName" access="property"
 				column="arch_short_name" type="string" />
 		</component>
-		<property name="propertyArchetype" access="property" column="property_archetype"
-			type="string" not-null="true"/>
+		<property name="active" access="property" column="active"
+			type="boolean" />
+		<property name="propertyArchetype" access="property"
+			column="property_archetype" type="string" not-null="true" />
 		<set name="actionTypes" access="property" lazy="false"
 			table="action_type_descriptor" cascade="all,delete-orphan">
-			<key column="assertion_type_desc_id"/>
+			<key column="assertion_type_desc_id" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor" />
 		</set>

@@ -46,8 +46,12 @@
 			<property name="shortName" access="property"
 				column="arch_short_name" type="string" />
 		</component>
-		<property name="className" access="property" type="string" column="class_name"/>
-		<property name="methodName" access="property" type="string" column="method_name"/>
+		<property name="active" access="property" column="active"
+			type="boolean" />
+		<property name="className" access="property" type="string"
+			column="class_name" />
+		<property name="methodName" access="property" type="string"
+			column="method_name" />
 	</class>
 
 	<query name="propertyDescriptor.getRowCount">
