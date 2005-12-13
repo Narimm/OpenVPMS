@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+  "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+  <!--  Property configuration -->
+  <bean id="props"
+    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="locations">
+      <list>
+        <value>classpath:hibernate.properties</value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  The MySQL DataSource -->
+  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="driverClassName"
+      value="${hibernate.connection.driver_class}" />
+    <property name="url" value="${hibernate.connection.url}" />
+    <property name="username" value="${hibernate.connection.username}" />
+    <property name="password" value="${hibernate.connection.password}" />
+  </bean>
+
+
+  <!--  Entity Interceptor Bean for Hibernate -->
+  <bean id="entityInterceptor"
+    class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
+  </bean>
+
+  <!--  Hibernate session factory -->
+  <bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+    <property name="dataSource">
+      <ref local="mySQLDataSource" />
+    </property>
+    <property name="entityInterceptor">
+      <ref local="entityInterceptor" />
+    </property>
+    <property name="hibernateProperties">
+      <props>
+        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
+        <prop key="hibernate.c3p0.max_statements">
+          ${hibernate.c3p0.max_statements}
+        </prop>
+      </props>
+    </property>
+    <property name="mappingResources">
+      <list>
+        <value>
+          /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Act.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Participation.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/party/Address.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionTypeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
+        </value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  The IMObject DAO bean -->
+  <bean id="imObjectDao"
+    class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+
+  <!--  The Archetype Descriptor Cache -->
+  <bean id="archetypeDescriptorCache"
+    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
+    <constructor-arg index="0" value="target/classes/org/openvpms/archetype" />
+    <constructor-arg index="1">
+      <list>
+        <value>adl</value>
+      </list>
+    </constructor-arg>
+    <constructor-arg index="2"
+      value="org/openvpms/archetype/assertionTypes.xml" />
+  </bean>
+
+  <!--  The Archetype Service -->
+  <bean id="archetypeService"
+    class="org.openvpms.component.business.service.archetype.ArchetypeService">
+    <constructor-arg index="0">
+      <ref local="archetypeDescriptorCache" />
+    </constructor-arg>
+    <property name="dao">
+      <ref local="imObjectDao" />
+    </property>
+    <property name="entityInterceptor">
+      <ref local="entityInterceptor" />
+    </property>
+  </bean>
+
+  <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
+  <bean id="ruleServiceProvider"
+    class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
+    <property name="provider">
+      <value>http://drools.org</value>
+    </property>
+    <property name="providerClass">
+      <value>org.drools.jsr94.rules.RuleServiceProviderImpl</value>
+    </property>
+  </bean>
+
+  <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
+  <bean id="ruleRuntime"
+    class="org.springmodules.jsr94.factory.RuleRuntimeFactoryBean">
+    <property name="serviceProvider">
+      <ref local="ruleServiceProvider" />
+    </property>
+  </bean>
+
+  <!-- the local ruleAdministrator. Usually, there is one ruleAdministrator bean for each ruleServiceProvider bean -->
+  <bean id="ruleAdministrator"
+    class="org.springmodules.jsr94.factory.RuleAdministratorFactoryBean">
+    <property name="serviceProvider">
+      <ref local="ruleServiceProvider" />
+    </property>
+  </bean>
+
+  <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
+  <bean id="ruleSource"
+    class="org.springmodules.jsr94.rulesource.DefaultRuleSource">
+    <property name="ruleRuntime">
+      <ref local="ruleRuntime" />
+    </property>
+    <property name="ruleAdministrator">
+      <ref local="ruleAdministrator" />
+    </property>
+    <property name="source">
+      <value>org/openvpms/rules/archetypeService.save.before.drl</value>
+    </property>
+    <property name="bindUri">
+      <value>archetypeService.save.before</value>
+    </property>
+  </bean>
+
+  <!-- Jsr94Template -->
+  <bean id="jsr94Template" class="org.springmodules.jsr94.core.Jsr94Template">
+    <property name="ruleSource">
+      <ref local="ruleSource" />
+    </property>
+  </bean>
+
+  <!--  The DroolsRileEngine interceptor -->
+  <bean id="ruleEngineInterceptor" class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngineInterceptor">
+    <constructor-arg index="0" value="target/classes/org/openvpms/rules" />
+    <property name="template">
+      <ref local="jsr94Template" />
+    </property>
+  </bean>
+  
+  <!--  Create a proxy for the ArchetypeService bean -->
+  <bean id="autoProxyCreator"
+    class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+    <property name="beanNames">
+      <list>
+        <idref local="archetypeService" />
+      </list>
+    </property>
+    <property name="interceptorNames">
+      <list>
+        <value>ruleEngineAdvisor</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- The advisor  -->
+  <bean id="ruleEngineAdvisor"
+    class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+    <property name="advice">
+      <ref local="ruleEngineInterceptor" />
+    </property>
+    <property name="patterns">
+      <list>
+        <value>.*save</value>
+      </list>
+    </property>
+  </bean>
+</beans>

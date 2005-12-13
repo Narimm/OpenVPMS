@@ -232,6 +232,41 @@
       <url>http://www.springframework.org/</url>
     </dependency>
     <dependency>
+      <groupId>springframework</groupId>
+      <artifactId>spring-aop</artifactId>
+      <version>1.2.5</version>
+      <type>jar</type>
+      <url>http://www.springframework.org/</url>
+    </dependency>
+    <dependency>
+      <groupId>springmodules</groupId>
+      <artifactId>springmodules</artifactId>
+      <version>0.2</version>
+      <type>jar</type>
+      <url>http://java.springmodules.net/</url>
+    </dependency>
+    <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+      <version>1.0</version>
+      <type>jar</type>
+      <url>http://www.aopalliance.org/</url>
+    </dependency>
+    <dependency>
+      <groupId>drools</groupId>
+      <artifactId>drools-all-jdk5</artifactId>
+      <version>2.1</version>
+      <type>jar</type>
+      <url>http://drools.codehaus.org/</url>
+    </dependency>
+    <dependency>
+      <groupId>drools</groupId>
+      <artifactId>jsr94</artifactId>
+      <version>1.1</version>
+      <type>jar</type>
+      <url>http://drools.codehaus.org/</url>
+    </dependency>
+    <dependency>
       <groupId>ehcache</groupId>
       <artifactId>ehcache</artifactId>
       <version>1.1</version>
@@ -486,6 +521,12 @@
         <includes>
           <include>**/*.adl</include>
           <include>**/*.xml</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/rules</directory>
+        <includes>
+          <include>**/*.drl</include>
         </includes>
       </resource>
     </resources>
