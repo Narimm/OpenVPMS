@@ -20,9 +20,13 @@ package org.openvpms.component.business.service.audit;
 
 
 // commons-lang
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.audit.AuditRecord;
+import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 // openvpms-test-component
@@ -45,10 +49,16 @@ public class AuditServiceTestCase extends
             .getLogger(AuditServiceTestCase.class);
 
     /**
-     * Holds a reference to the entity service
+     * Holds a reference to the archetectype service
      */
-    private IArchetypeService service;
-
+    private IArchetypeService archetype;
+    
+    /**
+     * Holder a reference to the audit service
+     */
+    private IAuditService audit;
+    
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(AuditServiceTestCase.class);
     }
@@ -77,15 +87,113 @@ public class AuditServiceTestCase extends
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        this.service = (IArchetypeService)applicationContext
-                .getBean("archetypeService");
+        this.archetype = (IArchetypeService)applicationContext
+            .getBean("archetypeService");
+        this.audit = (IAuditService)applicationContext
+            .getBean("auditService");
     }
     
     /**
-     * Test that we can successfully startup
+     * Test that audit recrods are successfully created on save
      */
-    public void testSuccessfulStartUp()
+    public void testAuditOnSave()
     throws Exception {
-        // no op
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        archetype.save(person);
+        List<AuditRecord> records = audit.getbyObjectId(
+                person.getArchetypeIdAsString(), person.getUid());
+
+        assertTrue("The size " + records.size() + " for "  + person.getUid(), (records.size() == 1));
+    }
+    
+    /**
+     * Test that audit records are successfully created on update
+     */
+    public void testAuditOnUpdate()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        archetype.save(person);
+        assertTrue(audit.getbyObjectId(person.getArchetypeIdAsString(), 
+                person.getUid()).size() == 1);
+        
+        person.setFirstName("James");
+        archetype.save(person);
+        assertTrue(audit.getbyObjectId(person.getArchetypeIdAsString(), 
+                person.getUid()).size() == 2);
+    }
+    
+    /**
+     * Test that audit records are successfull created on multiple updates
+     */
+    public void testAuditOnMultipleUpdates()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        archetype.save(person);
+        
+        for (int index = 0; index < 5; index++) {
+            person.setFirstName(person.getFirstName() + index);
+            archetype.save(person);
+        }
+        assertTrue(audit.getbyObjectId(person.getArchetypeIdAsString(), 
+                person.getUid()).size() == 6);
+    }
+    
+    /**
+     * Test that we can retrieve audit records by id
+     */
+     public void testRetrievalById()
+     throws Exception {
+         Person person = createPerson("Mr", "Jim", "Alateras");
+         archetype.save(person);
+         archetype.save(person);
+         archetype.save(person);
+         List<AuditRecord> records = audit.getbyObjectId(
+                 person.getArchetypeIdAsString(), person.getUid());
+         assertTrue(records.size() == 3);
+         
+         for (AuditRecord record : records) {
+             assertTrue(audit.getById(record.getUid()) != null);
+         }
+     }
+     
+     /**
+      * Test that an audit record is generated for a delete
+      */
+     public void testAuditOnDelete()
+     throws Exception {
+         Person person = createPerson("Mr", "Jim", "Alateras");
+         archetype.save(person);
+         archetype.remove(person);
+         List<AuditRecord> records = audit.getbyObjectId(
+                 person.getArchetypeIdAsString(), person.getUid());
+         assertTrue(records.size() == 2);
+         for (AuditRecord record : records) {
+             if (record.getOperation().equals("save") ||
+                 record.getOperation().equals("remove")) {
+                 // no opn
+             } else {
+                 fail("Unexpected audit record. Operation must either be save or remove");
+             }
+         }
+     }
+    
+    /**
+     * Create a person
+     * 
+     * @param title
+     *            the person's title
+     * @param firstName
+     *            the person's first name
+     * @param lastName
+     *            the person's last name
+     * @return Person
+     */
+    private Person createPerson(String title, String firstName, String lastName) {
+        Person person = (Person)archetype.create("person.person");
+        person.setTitle(title);
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+
+        return person;
     }
 }

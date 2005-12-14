@@ -30,7 +30,7 @@
     <property name="archetypeId" access="property" column="archetype_id"
       type="string" />
     <property name="timeStamp" access="property" column="time_stamp"
-      type="date" />
+      type="timestamp" />
     <property name="objectId" access="property" column="object_id" type="long" />
     <property name="service" access="property" column="service" type="string" />
     <property name="operation" access="property" column="operation"

@@ -119,26 +119,23 @@ public class AuditService implements MethodInterceptor, IAuditService {
      *            the intercepted method.           
      */
     private void afterMethodInvocation(MethodInvocation invocation) {
-        // only log instances of {@link IMObject}.
-        if (invocation.getThis() instanceof IMObject == false) {
-            return;
-        }
-        
-        IMObject imObject = (IMObject)invocation.getThis();
-        try {
-            AuditRecord audit = new AuditRecord();
-            audit.setArchetypeId(imObject.getArchetypeIdAsString());
-            audit.setObjectId(imObject.getUid());
-            audit.setOperation(invocation.getMethod().getName());
-            audit.setService(invocation.getMethod().getDeclaringClass().getName());
-            audit.setUser("unknown");
-            audit.setTimeStamp(new Date());
-            
-            // insert the object
-            dao.insert(audit);
-        } catch (Exception exception) {
-            logger.error("Error in AuditService.afterMethodInvocation " +
-                    exception);
+        if (invocation.getArguments()[0] instanceof IMObject) {
+            IMObject imObject = (IMObject)invocation.getArguments()[0];
+            try {
+                AuditRecord audit = new AuditRecord();
+                audit.setArchetypeId(imObject.getArchetypeIdAsString());
+                audit.setObjectId(imObject.getUid());
+                audit.setOperation(invocation.getMethod().getName());
+                audit.setService(invocation.getThis().getClass().getName());
+                audit.setUser("unknown");
+                audit.setTimeStamp(new Date());
+                
+                // insert the object
+                dao.insert(audit);
+            } catch (Exception exception) {
+                logger.error("Error in AuditService.afterMethodInvocation " +
+                        exception);
+            }
         }
     }
         
