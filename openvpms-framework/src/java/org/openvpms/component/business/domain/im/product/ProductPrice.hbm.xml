@@ -22,7 +22,7 @@
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.product.ProductPrice"
-		table="product_price">
+		table="product_prices">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="product_price_id" index="product_price_id_idx" />
 			<generator class="increment" />
@@ -31,15 +31,15 @@
 		<property name="linkId" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
-				column="archetype_namespace" type="string" />
+				column="arch_namespace" type="string" />
 			<property name="rmName" access="property"
-				column="archetype_rm_name" type="string" />
+				column="arch_rm_name" type="string" />
 			<property name="concept" access="property"
-				column="archetype_concept" type="string" />
+				column="arch_concept_name" type="string" />
 			<property name="entityName" access="property"
-				column="archetype_entity_name" type="string" />
+				column="arch_entity_name" type="string" />
 			<property name="version" access="property"
-				column="archetype_version" type="string" />
+				column="arch_version" type="string" />
 		</component>
 		<property name="fromDate" access="property"
 			column="start_time" type="date" />

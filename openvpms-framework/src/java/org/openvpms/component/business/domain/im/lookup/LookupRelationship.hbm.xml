@@ -22,7 +22,7 @@
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
-		table="lookup_relationship">
+		table="lookup_relationships">
 		<id name="uid" access="field" type="long" unsaved-value="-1">
 			<column name="lookup_relationship_id"
 				index="lookup_relationship_id_idx" />

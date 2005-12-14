@@ -22,7 +22,7 @@
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor"
-		table="assertion_descriptor">
+		table="assertion_descriptors">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="assertion_desc_id"
 				index="assertion_desc_id_idx" />

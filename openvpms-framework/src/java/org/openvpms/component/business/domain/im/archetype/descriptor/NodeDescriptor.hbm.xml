@@ -22,7 +22,7 @@
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor"
-		table="node_descriptor">
+		table="node_descriptors">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="node_desc_id" index="node_desc_id_idx" />
 			<generator class="increment" />
@@ -62,14 +62,14 @@
 		<property name="parentChild" access="property"
 			column="is_parent_child" type="boolean" />
 		<map name="nodeDescriptors" access="property" lazy="false"
-			table="node_descriptor" cascade="all,delete-orphan">
+			table="node_descriptors" cascade="all,delete-orphan">
 			<key column="parent_id" />
 			<map-key column="name" type="string" />
 			<one-to-many
 				class="org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor" />
 		</map>
 		<map name="assertionDescriptors" access="property" lazy="false"
-			table="assertion_descriptor" cascade="all,delete-orphan">
+			table="assertion_descriptors" cascade="all,delete-orphan">
 			<key column="node_desc_id" />
 			<map-key column="type" type="string" />
 			<one-to-many

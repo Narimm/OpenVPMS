@@ -22,7 +22,7 @@
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.common.ActRelationship"
-		table="act_relationship">
+		table="act_relationships">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="act_relationship_id"
 				index="act_relationship_id_idx" />
@@ -32,15 +32,15 @@
 		<property name="linkId" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
-				column="archetype_namespace" type="string" />
+				column="arch_namespace" type="string" />
 			<property name="rmName" access="property"
-				column="archetype_rm_name" type="string" />
+				column="arch_rm_name" type="string" />
 			<property name="concept" access="property"
-				column="archetype_concept" type="string" />
+				column="arch_concept_name" type="string" />
 			<property name="entityName" access="property"
-				column="archetype_entity_name" type="string" />
+				column="arch_entity_name" type="string" />
 			<property name="version" access="property"
-				column="archetype_version" type="string" />
+				column="arch_version" type="string" />
 		</component>
 		<property name="name" access="property" column="name"
 			type="string" />

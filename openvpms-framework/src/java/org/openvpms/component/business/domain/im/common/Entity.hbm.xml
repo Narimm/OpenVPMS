@@ -22,7 +22,7 @@
 <hibernate-mapping>
 	<class
 		name="org.openvpms.component.business.domain.im.common.Entity"
-		table="entity">
+		table="entities">
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="entity_id" index="entity_id_idx" />
 			<generator class="increment" />
@@ -31,15 +31,15 @@
 		<property name="linkId" access="property" type="string" />
 		<component name="archetypeId">
 			<property name="namespace" access="property"
-				column="archetype_namespace" type="string" />
+				column="arch_namespace" type="string" />
 			<property name="rmName" access="property"
-				column="archetype_rm_name" type="string" />
+				column="arch_rm_name" type="string" />
 			<property name="concept" access="property"
-				column="archetype_concept" type="string" />
+				column="arch_concept_name" type="string" />
 			<property name="entityName" access="property"
-				column="archetype_entity_name" type="string" />
+				column="arch_entity_name" type="string" />
 			<property name="version" access="property"
-				column="archetype_version" type="string" />
+				column="arch_version" type="string" />
 		</component>
 		<property name="name" access="property" column="name"
 			type="string" />
@@ -50,7 +50,7 @@
 		<property name="details" column="details" length="5000"
 			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
 		<set name="classifications" access="property" lazy="false"
-			inverse="false" table="entity_classification" cascade="none">
+			inverse="false" table="entity_classifications" cascade="none">
 			<key column="entity_id" />
 			<many-to-many
 				class="org.openvpms.component.business.domain.im.common.Classification"
@@ -84,7 +84,7 @@
 		<!--  Mapping for the abstract Party class -->
 		<joined-subclass
 			name="org.openvpms.component.business.domain.im.party.Party"
-			table="party">
+			table="parties">
 			<key column="party_id" />
 			<set name="contacts" access="property" inverse="true"
 				lazy="false" cascade="all,delete-orphan">
@@ -93,7 +93,7 @@
 					class="org.openvpms.component.business.domain.im.party.Contact" />
 			</set>
 			<set name="addresses" access="property" inverse="true"
-				lazy="false" cascade="all,delete-orphan" table="address">
+				lazy="false" cascade="all,delete-orphan" table="addresses">
 				<key column="party_id" />
 				<one-to-many
 					class="org.openvpms.component.business.domain.im.party.Address" />
@@ -102,7 +102,7 @@
 			<!-- Mapping for the Role class -->
 			<joined-subclass
 				name="org.openvpms.component.business.domain.im.party.Role"
-				table="role">
+				table="roles">
 				<key column="role_id" />
 				<many-to-one name="actor" column="actor_id" />
 				<property name="activeStartTime" access="property"
@@ -113,7 +113,7 @@
 				<!-- Mapping for User -->
 				<joined-subclass
 					name="org.openvpms.component.business.domain.im.system.User"
-					table="user">
+					table="users">
 					<key column="user_id" />
 					<property name="password" access="property"
 						column="password" type="string" />
@@ -125,7 +125,7 @@
 			<!--  Mapping for the abstract Actor class -->
 			<joined-subclass
 				name="org.openvpms.component.business.domain.im.party.Actor"
-				table="actor">
+				table="actors">
 				<key column="actor_id" />
 				<set name="roles" access="property" lazy="false"
 					inverse="true" cascade="all,delete-orphan">
@@ -137,7 +137,7 @@
 				<!-- Mapping for person -->
 				<joined-subclass
 					name="org.openvpms.component.business.domain.im.party.Person"
-					table="person">
+					table="persons">
 					<key column="person_id" />
 					<property name="title" access="property"
 						column="title" type="string" />
@@ -152,7 +152,7 @@
 				<!-- Mapping for animal -->
 				<joined-subclass
 					name="org.openvpms.component.business.domain.im.party.Animal"
-					table="animal">
+					table="animals">
 					<key column="animal_id" />
 					<property name="species" access="property"
 						column="species" type="string" />
@@ -173,7 +173,7 @@
 		<!--  Mapping for the Product class -->
 		<joined-subclass
 			name="org.openvpms.component.business.domain.im.product.Product"
-			table="product">
+			table="products">
 			<key column="product_id" />
 			<property name="printedName" column="printed_name"
 				type="string" access="property" />
