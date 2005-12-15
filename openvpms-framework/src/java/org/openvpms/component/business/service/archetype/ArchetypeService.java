@@ -293,7 +293,7 @@ public class ArchetypeService implements IArchetypeService {
                 logger.error("ArchetypeService.get", new ArchetypeServiceException(
                         ArchetypeServiceException.ErrorCode.FailedToFindObjects,
                         new Object[] { rmName, entityName, conceptName,
-                                instanceName }, exception));
+                                instanceName }, exception)); 
             }
         }
 
@@ -480,7 +480,7 @@ public class ArchetypeService implements IArchetypeService {
                     errors.add(new ValidationError(node.getName(),
                             "Cannot derive value"));
                     logger.error(
-                            "Failed to derice value for " + node.getName(),
+                            "Failed to derive value for " + node.getName(),
                             exception);
                 }
             }

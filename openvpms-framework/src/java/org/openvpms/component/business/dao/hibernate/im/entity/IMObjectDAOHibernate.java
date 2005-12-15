@@ -43,7 +43,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class IMObjectDAOHibernate extends HibernateDaoSupport implements
+public class IMObjectDAOHibernate extends HibernateDaoSupport implements 
         IMObjectDAO {
 
     /**
@@ -192,7 +192,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
-                    new Object[]{rmName, entityName, conceptName, instanceName},
+                    new Object[]{rmName, entityName, conceptName, instanceName, clazz},
                     exception);
         }
     }
