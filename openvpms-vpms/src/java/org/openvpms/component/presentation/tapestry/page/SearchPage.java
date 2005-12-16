@@ -144,13 +144,13 @@ public abstract class SearchPage extends OpenVpmsPage implements
             converter = getConverter();
             if (type.equalsIgnoreCase("all"))
                 results = getArchetypeService().get(rmName, entityName,
-                        conceptName, name, true);
+                        conceptName, name, true, true);
             else {
                 StringTokenizer typetokens = new StringTokenizer(type, ".");
                 String entity = typetokens.nextToken();
                 String concept = typetokens.nextToken();
                 results = getArchetypeService().get(rmName, entity, concept,
-                        name, true);
+                        name, true, true);
             }
             for (Object object : results) {
                 converter.add(((IMObject) object).getLinkId(), object);
