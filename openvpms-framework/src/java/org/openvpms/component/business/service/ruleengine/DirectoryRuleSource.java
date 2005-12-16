@@ -31,6 +31,7 @@ import javax.rules.admin.RuleExecutionSet;
 // spring-modules
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.springmodules.jsr94.rulesource.AbstractRuleSource;
 
 /**
@@ -42,6 +43,12 @@ import org.springmodules.jsr94.rulesource.AbstractRuleSource;
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 public class DirectoryRuleSource extends AbstractRuleSource {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(DirectoryRuleSource.class);
 
     /**
      * The root rule directory
@@ -192,8 +199,7 @@ public class DirectoryRuleSource extends AbstractRuleSource {
             RuleExecutionSet ruleExecutionSet = ruleAdministrator
                 .getLocalRuleExecutionSetProvider(providerProperties)
                 .createRuleExecutionSet(new FileInputStream(file), rulesetProperties);
-            String uri = RuleSetUriHelper.getRuleSetURI(file);
-            
+            String uri = ruleExecutionSet.getName();
             ruleAdministrator.registerRuleExecutionSet(uri, ruleExecutionSet,
                     registrationProperties);
             ruleSetNames.put(uri, file.getName());

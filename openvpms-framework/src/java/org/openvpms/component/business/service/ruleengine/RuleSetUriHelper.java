@@ -19,9 +19,10 @@
 
 package org.openvpms.component.business.service.ruleengine;
 
-import java.io.File;
-
+// aop alliance
 import org.aopalliance.intercept.MethodInvocation;
+
+// commons-lang
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -76,17 +77,5 @@ public class RuleSetUriHelper {
         }
         
         return StringUtils.uncapitalize(buf.toString());
-    }
-    
-    /**
-     * Return the rule set uri from the specified {@link File}.
-     * 
-     * @param file
-     *            the file containing the rule set
-     * @return String
-     *            the rule set uri            
-     */
-    public static String getRuleSetURI(File file) {
-        return StringUtils.chomp(file.getName(), ".drl");
     }
 }
