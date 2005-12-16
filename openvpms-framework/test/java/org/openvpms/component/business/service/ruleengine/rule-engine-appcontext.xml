@@ -113,16 +113,10 @@
 
   <!--  The Archetype Descriptor Cache -->
   <bean id="archetypeDescriptorCache"
-    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-    <constructor-arg index="0" value="target/classes/org/openvpms/archetype" />
-    <constructor-arg index="1">
-      <list>
-        <value>adl</value>
-      </list>
-    </constructor-arg>
-    <constructor-arg index="2"
-      value="org/openvpms/archetype/assertionTypes.xml" />
+    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
+    <constructor-arg index="0" ref="imObjectDao" />
   </bean>
+
 
   <!--  The Archetype Service -->
   <bean id="archetypeService"
@@ -167,19 +161,14 @@
 
   <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
   <bean id="ruleSource"
-    class="org.springmodules.jsr94.rulesource.DefaultRuleSource">
+    class="org.openvpms.component.business.service.ruleengine.DirectoryRuleSource">
     <property name="ruleRuntime">
       <ref local="ruleRuntime" />
     </property>
     <property name="ruleAdministrator">
       <ref local="ruleAdministrator" />
     </property>
-    <property name="source">
-      <value>org/openvpms/rules/archetypeService.save.before.drl</value>
-    </property>
-    <property name="bindUri">
-      <value>archetypeService.save.before</value>
-    </property>
+    <property name="directory" value="target/classes/org/openvpms/rules" />
   </bean>
 
   <!-- Jsr94Template -->
@@ -190,13 +179,16 @@
   </bean>
 
   <!--  The DroolsRileEngine interceptor -->
-  <bean id="ruleEngineInterceptor" class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngineInterceptor">
-    <constructor-arg index="0" value="target/classes/org/openvpms/rules" />
+  <bean id="ruleEngineInterceptor"
+    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngineInterceptor">
+    <constructor-arg index="0">
+      <ref local="ruleSource" />
+    </constructor-arg>
     <property name="template">
       <ref local="jsr94Template" />
     </property>
   </bean>
-  
+
   <!--  Create a proxy for the ArchetypeService bean -->
   <bean id="autoProxyCreator"
     class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">

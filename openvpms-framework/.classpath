@@ -53,5 +53,13 @@
 	<classpathentry kind="var" path="MAVEN_REPO/aopalliance/jars/aopalliance-1.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/drools/jars/drools-all-jdk5-2.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/drools/jars/jsr94-1.1.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-aop-1.2.5.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/hibernate/jars/asm-3.1b3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/hibernate/jars/asm-attrs-3.1b3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/janino/jars/janino-2.3.8.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/antlr/jars/antlr-2.7.5H3.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/xpp3/jars/xpp3-1.1.2a.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/c3p0/jars/c3p0-0.9.0.jar"/>
+	<classpathentry kind="var" path="MAVEN_REPO/odmg/jars/odmg-3.0.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

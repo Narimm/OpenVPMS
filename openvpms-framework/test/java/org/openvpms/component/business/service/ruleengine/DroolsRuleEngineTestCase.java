@@ -19,10 +19,12 @@
 package org.openvpms.component.business.service.ruleengine;
 
 
-// commons-lang
+// log4j
 import org.apache.log4j.Logger;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 // openvpms-test-component
@@ -47,7 +49,7 @@ public class DroolsRuleEngineTestCase extends
     /**
      * Holds a reference to the entity service
      */
-    private IArchetypeService service;
+    private IArchetypeService archetype;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(DroolsRuleEngineTestCase.class);
@@ -77,15 +79,51 @@ public class DroolsRuleEngineTestCase extends
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        this.service = (IArchetypeService)applicationContext
+        this.archetype = (IArchetypeService)applicationContext
                 .getBean("archetypeService");
     }
     
     /**
-     * Test that we can successfully startup
+     * Test that rule engine is called when this object is being saved
      */
-    public void testSuccessfulStartUp()
+    public void testRuleEngineOnSave()
     throws Exception {
-        // no op
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        archetype.save(person);
+    }
+    
+    /**
+     * Create a person
+     * 
+     * @param title
+     *            the person's title
+     * @param firstName
+     *            the person's first name
+     * @param lastName
+     *            the person's last name
+     * @return Person
+     */
+    private Person createPerson(String title, String firstName, String lastName) {
+        Person person = (Person)archetype.create("person.person");
+        person.setTitle(title);
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+        person.addAddress(createPhoneAddress());
+
+        return person;
+    }
+    
+    /**
+     * Create a phone address
+     * 
+     * @return Address
+     */
+    private Address createPhoneAddress() {
+        Address address = (Address)archetype.create("address.phoneNumber");
+        address.getDetails().setAttribute("areaCode", "03");
+        address.getDetails().setAttribute("telephoneNumber", "1234567");
+        address.getDetails().setAttribute("preferred", new Boolean(true));
+        
+        return address;
     }
 }

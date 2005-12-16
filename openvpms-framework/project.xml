@@ -267,6 +267,13 @@
       <url>http://drools.codehaus.org/</url>
     </dependency>
     <dependency>
+      <groupId>janino</groupId>
+      <artifactId>janino</artifactId>
+      <version>2.3.8</version>
+      <type>jar</type>
+      <url>http://www.janino.net/</url>
+    </dependency>
+    <dependency>
       <groupId>ehcache</groupId>
       <artifactId>ehcache</artifactId>
       <version>1.1</version>

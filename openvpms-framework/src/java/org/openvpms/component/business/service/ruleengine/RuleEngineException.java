@@ -44,7 +44,10 @@ public class RuleEngineException extends RuntimeException implements
      */
     public enum ErrorCode {
         NoRuleDirSpecified,
-        InvalidDir
+        InvalidDir,
+        InvalidFile,
+        FailedToRegister,
+        NoDirSpecified
     }
 
     /**

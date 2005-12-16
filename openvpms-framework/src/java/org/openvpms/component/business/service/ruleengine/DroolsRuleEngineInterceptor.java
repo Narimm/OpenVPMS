@@ -20,12 +20,7 @@
 package org.openvpms.component.business.service.ruleengine;
 
 // java core
-import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 // aop alliance
 import org.aopalliance.intercept.MethodInterceptor;
@@ -33,12 +28,6 @@ import org.aopalliance.intercept.MethodInvocation;
 
 // log4j
 import org.apache.log4j.Logger;
-
-// commons-lang
-import org.apache.commons.lang.StringUtils;
-
-//commons-io
-import org.apache.commons.io.FileUtils;
 
 // spring modules
 import org.springmodules.jsr94.core.Jsr94RuleSupport;
@@ -73,25 +62,20 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
             .getLogger(DroolsRuleEngineInterceptor.class);
     
     /**
-     * The base directory where all rules are stored
+     * Cache a copy of the directory rule source
      */
-    private String ruleDirectory;
-    
-    /**
-     * Caches the name of the various rule sets
-     */
-     private Map<String, String> ruleSetNames =
-         new HashMap<String, String>();
+    private DirectoryRuleSource ruleSource;
     
     
     /**
-     * Create an instance of the interceptor by specifying the base rules
-     * directory. This directory should contain a rules file for each service
-     * and operation that the requires rule engine invocation. 
+     * Create an instance of the interceptor by specifying the directory
+     * rule source
+     * 
+     *  @param ruleSource
+     *                the directory rule source
      */
-    public DroolsRuleEngineInterceptor(String ruleDirectroy) {
-        this.ruleDirectory = ruleDirectroy;
-        cacheRuleSets();
+    public DroolsRuleEngineInterceptor(DirectoryRuleSource ruleSource) {
+        this.ruleSource = ruleSource;
     }
     
     /* (non-Javadoc)
@@ -112,21 +96,6 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
      */
     public void afterPropertiesSet() throws Exception {
         // no op
-
-    }
-
-    /**
-     * @return Returns the ruleDirectory.
-     */
-    public String getRuleDirectory() {
-        return ruleDirectory;
-    }
-
-    /**
-     * @param ruleDirectory The ruleDirectory to set.
-     */
-    public void setRuleDirectory(String ruleDirectory) {
-        this.ruleDirectory = ruleDirectory; 
     }
 
     /**
@@ -144,8 +113,7 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
         
         // only invoke the rule engine if there is an corresponding rule set
         // for the uri.
-        // TODO Need a standard mechanism to do it.
-        if (ruleSetNames.containsKey(uri)) {
+        if (ruleSource.hasRuleExecutionSet(uri)) {
             executeStateless(uri, Arrays.asList(invocation.getArguments()));
         }
     }
@@ -165,40 +133,8 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
 
         // only invoke the rule engine if there is an corresponding rule set
         // for the uri.
-        // TODO Need a standard mechanism to do it.
-        if (ruleSetNames.containsKey(uri)) {
+        if (ruleSource.hasRuleExecutionSet(uri)) {
             executeStateless(uri, Arrays.asList(invocation.getArguments()));
-        }
-    }
-
-    /**
-     * Iterate through the ruleDirectory and its sub-directories and cache
-     * the names of every Drools rule file (i.e. with extension drl). The
-     * file name determines when to apply the rule set.
-     * 
-     * @throws RuleEngineException
-     *            thrown if a rule directory was not specified or an invalud
-     *            rule directory was specified
-     */
-    private void cacheRuleSets() {
-        if (StringUtils.isEmpty(ruleDirectory)) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.NoRuleDirSpecified);
-        }
-        
-        // check that a valid directory was specified
-        File dir = new File(ruleDirectory);
-        if (!dir.isDirectory()) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidDir,
-                    new Object[] { ruleDirectory });
-        }
-        // cache all file names encountered
-        Collection collection = FileUtils.listFiles(dir, new String[] {"drl"}, true);
-        Iterator files = collection.iterator();
-        while (files.hasNext()) {
-            File file = (File)files.next();
-            ruleSetNames.put(file.getName(), file.getAbsolutePath());
         }
     }
 }
