@@ -28,12 +28,12 @@
 
   <repository>
     <connection>
-      scm:cvs:pserver:anonymous@cvs.mevenide.codehaus.org:/home/projects/mevenide/scm:${pom.artifactId}
+      scm:svn:svn://svn.openvpms.org/openvpms/trunk/${pom.artifactId}
     </connection>
     <developerConnection>
-      scm:cvs:ext:${maven.username}@cvs.mevenide.codehaus.org:/home/projects/mevenide/scm:${pom.artifactId}
+      scm:svn:svn://svn.openvpms.org/openvpms/trunk/${pom.artifactId}
     </developerConnection>
-    <url>http://cvs.openvpms.codehaus.org/${pom.artifactId}/</url>
+    <url>http://svn.openvpms.org</url>
   </repository>
 
   <mailingLists>
@@ -243,7 +243,7 @@
       <artifactId>springmodules</artifactId>
       <version>0.2</version>
       <type>jar</type>
-      <url>http://java.springmodules.net/</url>
+      <url>http://springmodules.dev.java.net/</url>
     </dependency>
     <dependency>
       <groupId>aopalliance</groupId>
