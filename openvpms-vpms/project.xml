@@ -26,15 +26,15 @@
 		<license></license>
 	</licenses>
 
-	<repository>
-		<connection>
-			scm:cvs:pserver:anonymous@cvs.mevenide.codehaus.org:/home/projects/mevenide/scm:${pom.artifactId}
-		</connection>
-		<developerConnection>
-			scm:cvs:ext:${maven.username}@cvs.mevenide.codehaus.org:/home/projects/mevenide/scm:${pom.artifactId}
-		</developerConnection>
-		<url>http://cvs.openvpms.codehaus.org/${pom.artifactId}/</url>
-	</repository>
+        <repository>
+            <connection>
+                scm:svn:svn://svn.openvpms.org/openvpms/trunk/${pom.artifactId}
+            </connection>
+            <developerConnection>
+                scm:svn:svn://svn.openvpms.org/openvpms/trunk/${pom.artifactId}
+            </developerConnection>
+            <url>http://svn.openvpms.org</url>
+        </repository>
 
 	<mailingLists>
 		<mailingList>
@@ -575,7 +575,7 @@
 			<groupId>tapestry</groupId>
 			<artifactId>tapestry-spring</artifactId>
 			<version>1.0-alpha</version>
-			<url>http://jakarta.apache.org/tapestry</url>
+			<url>http://diaphragma.sourceforge.net/</url>
 			<properties>
 				<war.bundle>false</war.bundle>
 			</properties>
