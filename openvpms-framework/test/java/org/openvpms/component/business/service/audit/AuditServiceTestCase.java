@@ -100,7 +100,7 @@ public class AuditServiceTestCase extends
     throws Exception {
         Person person = createPerson("Mr", "Jim", "Alateras");
         archetype.save(person);
-        List<AuditRecord> records = audit.getbyObjectId(
+        List<AuditRecord> records = audit.getByObjectId(
                 person.getArchetypeIdAsString(), person.getUid());
 
         assertTrue("The size " + records.size() + " for "  + person.getUid(), (records.size() == 1));
@@ -113,12 +113,12 @@ public class AuditServiceTestCase extends
     throws Exception {
         Person person = createPerson("Mr", "Jim", "Alateras");
         archetype.save(person);
-        assertTrue(audit.getbyObjectId(person.getArchetypeIdAsString(), 
+        assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 1);
         
         person.setFirstName("James");
         archetype.save(person);
-        assertTrue(audit.getbyObjectId(person.getArchetypeIdAsString(), 
+        assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 2);
     }
     
@@ -134,7 +134,7 @@ public class AuditServiceTestCase extends
             person.setFirstName(person.getFirstName() + index);
             archetype.save(person);
         }
-        assertTrue(audit.getbyObjectId(person.getArchetypeIdAsString(), 
+        assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 6);
     }
     
@@ -147,7 +147,7 @@ public class AuditServiceTestCase extends
          archetype.save(person);
          archetype.save(person);
          archetype.save(person);
-         List<AuditRecord> records = audit.getbyObjectId(
+         List<AuditRecord> records = audit.getByObjectId(
                  person.getArchetypeIdAsString(), person.getUid());
          assertTrue(records.size() == 3);
          
@@ -164,7 +164,7 @@ public class AuditServiceTestCase extends
          Person person = createPerson("Mr", "Jim", "Alateras");
          archetype.save(person);
          archetype.remove(person);
-         List<AuditRecord> records = audit.getbyObjectId(
+         List<AuditRecord> records = audit.getByObjectId(
                  person.getArchetypeIdAsString(), person.getUid());
          assertTrue(records.size() == 2);
          for (AuditRecord record : records) {

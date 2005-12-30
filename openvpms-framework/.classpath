@@ -21,13 +21,12 @@
 	<classpathentry kind="var" path="MAVEN_REPO/commons-beanutils/jars/commons-beanutils-core-1.7.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/castor/jars/castor-xml-0.9.7.jar"/>
 	<classpathentry sourcepath="/JXPATH_SRC" kind="var" path="MAVEN_REPO/commons-jxpath/jars/commons-jxpath-1.2.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPO/acegisecurity/jars/acegi-security-0.8.1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/ognl/jars/ognl-2.6.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/servletapi/jars/servletapi-2.4.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/oro/jars/oro-2.0.8.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-beans-1.2.5.jar"/>
+	<classpathentry sourcepath="/SPRING_HOME/src" kind="var" path="MAVEN_REPO/springframework/jars/spring-beans-1.2.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-context-1.2.5.jar"/>
-	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-core-1.2.5.jar"/>
+	<classpathentry sourcepath="/SPRING_HOME/src" kind="var" path="MAVEN_REPO/springframework/jars/spring-core-1.2.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-dao-1.2.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-hibernate-1.2.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/springframework/jars/spring-jdbc-1.2.5.jar"/>
@@ -61,5 +60,6 @@
 	<classpathentry kind="var" path="MAVEN_REPO/xpp3/jars/xpp3-1.1.2a.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/c3p0/jars/c3p0-0.9.0.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/odmg/jars/odmg-3.0.jar"/>
+	<classpathentry sourcepath="/ACEGI_HOME/src" kind="var" path="MAVEN_REPO/acegisecurity/jars/acegi-security-1.0.0-RC1.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

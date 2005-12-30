@@ -10,6 +10,10 @@
     		schema="src/java/org/openvpms/tools/lookup/loader/lookup-loader.xsd"
             package="org.openvpms.tools.lookup.loader"
             types="j2"/>
+    	<castor:generate 
+    		schema="src/java/org/openvpms/tools/security/loader/security-loader.xsd"
+            package="org.openvpms.tools.security.loader"
+            types="j2"/>
   	</preGoal>
 
 	<preGoal name="hibernate:schema-export">
@@ -28,7 +32,7 @@
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
             </ant:classpath>
-        	<arg line="${openvpms.lookup.data.file}"/>
+        	<arg line="${openvpms.lookup.loader.cmdline}"/>
     	</ant:java>	
     </goal>
 	
@@ -44,6 +48,21 @@
            		<ant:pathelement path="${maven.build.dest}"/>
             </ant:classpath>
         	<arg line="${openvpms.archetype.loader.cmdline}"/>
+    	</ant:java>	
+    </goal>
+	
+	<goal name="security:load" description="Load the Security Data into the database">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.security.loader.SecurityLoader"
+	        failonerror="true"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.security.loader.cmdline}"/>
     	</ant:java>	
     </goal>
 </project>

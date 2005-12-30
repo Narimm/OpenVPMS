@@ -120,6 +120,13 @@
     </property>
   </bean>
 
+  <!--  The Lookup DAO bean -->
+  <bean id="lookupDao"
+    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
 
   <!--  The AuditRecord DAO bean -->
   <bean id="auditDao"
@@ -131,15 +138,8 @@
 
   <!--  The Archetype Descriptor Cache -->
   <bean id="archetypeDescriptorCache"
-    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-    <constructor-arg index="0" value="target/classes/org/openvpms/archetype" />
-    <constructor-arg index="1">
-      <list>
-        <value>adl</value>
-      </list>
-    </constructor-arg>
-    <constructor-arg index="2"
-      value="org/openvpms/archetype/assertionTypes.xml" />
+    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
+    <constructor-arg index="0" ref="imObjectDao" />
   </bean>
 
   <!--  The Archetype Service -->
@@ -156,6 +156,17 @@
     </property>
   </bean>
 
+  <!--  The Lookup Service -->
+  <bean id="lookupService"
+    class="org.openvpms.component.business.service.lookup.LookupService">
+    <constructor-arg index="0">
+      <ref bean="archetypeService" />
+    </constructor-arg>
+    <constructor-arg index="1">
+      <ref bean="lookupDao" />
+    </constructor-arg>
+  </bean>
+  
   <!--  The Audit Service -->
   <bean id="auditService"
     class="org.openvpms.component.business.service.audit.AuditService">
@@ -164,9 +175,16 @@
     </constructor-arg>
   </bean>
 
+  <!--  The User Details Service -->
+  <bean id="hibernateUserDetailsService"
+    class="org.openvpms.component.business.service.security.hibernate.HibernateUserDetailsService">
+    <constructor-arg index="0">
+      <ref local="imObjectDao" />
+    </constructor-arg>
+  </bean>
 
-  <!--  Create a proxy for the ArchetypeService bean -->
-  <bean id="autoProxyCreator"
+  <!--  Create a proxy for the Sudit Service bean -->
+  <bean id="auditServiceProxyCreator"
     class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
     <property name="beanNames">
       <list>
@@ -190,6 +208,152 @@
       <list>
         <value>.*ArchetypeService\.save</value>
         <value>.*ArchetypeService\.remove</value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  Create a proxy for the Security Service bean -->
+  <bean id="securityserviceProxyCreator"
+    class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+    <property name="beanNames">
+      <list>
+        <value>archetypeService</value>
+      </list>
+    </property>
+    <property name="interceptorNames">
+      <list>
+        <value>securityAdvisor</value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  Configure the security advisor -->
+  <bean id='securityAdvisor'
+    class='org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor'>
+    <property name='authenticationManager' ref='authenticationManager' />
+    <property name='accessDecisionManager' ref='accessDecisionManager' />
+    <property name='objectDefinitionSource'>
+      <value>
+        org.openvpms.component.business.service.archetype.IArchetypeService.save=archetypeService.save
+        org.openvpms.component.business.service.archetype.IArchetypeService.remove=archetypeService.remove
+      </value>
+    </property>
+  </bean>
+
+  <!--  Define the Authentication Manager  -->
+  <bean id='authenticationManager'
+    class='org.acegisecurity.providers.ProviderManager'>
+    <property name='providers'>
+      <list>
+        <ref bean='daoAuthenticationProvider' />
+      </list>
+    </property>
+  </bean>
+
+  <!--  Define the authentication provider -->
+  <bean id='daoAuthenticationProvider'
+    class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
+    <property name="userDetailsService">
+      <ref bean="hibernateUserDetailsService" />
+    </property>
+  </bean>
+
+  <!--  Define thew access decision manager for authorization -->
+  <bean id='accessDecisionManager'
+    class='org.acegisecurity.vote.AffirmativeBased'>
+    <property name='decisionVoters'>
+      <list>
+        <ref bean='archetypeAwareVoter' />
+      </list>
+    </property>
+  </bean>
+
+  <!--  Use the standard role vote -->
+  <bean id='archetypeAwareVoter' class='org.openvpms.component.business.service.security.ArchetypeAwareVoter' />
+
+
+
+  <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
+  <bean id="ruleServiceProvider"
+    class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
+    <property name="provider">
+      <value>http://drools.org</value>
+    </property>
+    <property name="providerClass">
+      <value>org.drools.jsr94.rules.RuleServiceProviderImpl</value>
+    </property>
+  </bean>
+
+  <!-- The local ruleRuntime. Usually, there is one ruleRuntime bean for each ruleServiceProvider bean. -->
+  <bean id="ruleRuntime"
+    class="org.springmodules.jsr94.factory.RuleRuntimeFactoryBean">
+    <property name="serviceProvider">
+      <ref local="ruleServiceProvider" />
+    </property>
+  </bean>
+
+  <!-- the local ruleAdministrator. Usually, there is one ruleAdministrator bean for each ruleServiceProvider bean -->
+  <bean id="ruleAdministrator"
+    class="org.springmodules.jsr94.factory.RuleAdministratorFactoryBean">
+    <property name="serviceProvider">
+      <ref local="ruleServiceProvider" />
+    </property>
+  </bean>
+
+  <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
+  <bean id="ruleSource"
+    class="org.openvpms.component.business.service.ruleengine.DirectoryRuleSource">
+    <property name="ruleRuntime">
+      <ref local="ruleRuntime" />
+    </property>
+    <property name="ruleAdministrator">
+      <ref local="ruleAdministrator" />
+    </property>
+    <property name="directory" value="target/classes/org/openvpms/rules" />
+  </bean>
+
+  <!-- Jsr94Template -->
+  <bean id="jsr94Template" class="org.springmodules.jsr94.core.Jsr94Template">
+    <property name="ruleSource">
+      <ref local="ruleSource" />
+    </property>
+  </bean>
+
+  <!--  The DroolsRileEngine interceptor -->
+  <bean id="ruleEngineInterceptor"
+    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngineInterceptor">
+    <constructor-arg index="0">
+      <ref local="ruleSource" />
+    </constructor-arg>
+    <property name="template">
+      <ref local="jsr94Template" />
+    </property>
+  </bean>
+
+  <!--  Create a proxy for the ArchetypeService bean -->
+  <bean id="ruleEngineProxyCreator"
+    class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+    <property name="beanNames">
+      <list>
+        <idref local="archetypeService" />
+      </list>
+    </property>
+    <property name="interceptorNames">
+      <list>
+        <value>ruleEngineAdvisor</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- The advisor  -->
+  <bean id="ruleEngineAdvisor"
+    class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+    <property name="advice">
+      <ref local="ruleEngineInterceptor" />
+    </property>
+    <property name="patterns">
+      <list>
+        <value>.*save</value>
       </list>
     </property>
   </bean>

@@ -40,7 +40,7 @@ public class AssertionProperty extends NamedProperty {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The property type is a a fully qualified archetype id.
+     * The property type is a fully-qualified class name.
      */
     private String type = "java.lang.String";
     

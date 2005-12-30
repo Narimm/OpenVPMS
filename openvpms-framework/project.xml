@@ -424,8 +424,8 @@
     <dependency>
       <groupId>acegisecurity</groupId>
       <artifactId>acegi-security</artifactId>
-      <version>0.8.1</version>
-      <url>http://www.springframework.org</url>
+      <version>1.0.0-RC1</version>
+      <url>http://acegisecurity.sourceforge.net</url>
     </dependency>
     <dependency>
       <groupId>servletapi</groupId>
@@ -464,7 +464,6 @@
       <excludes>
         <exclude>**/BaseTestCase.java</exclude>
         <exclude>**/HibernateInfoModelTestCase.java</exclude>
-        <exclude>**/Hibernate*.java</exclude>
         <exclude>**/ServiceBaseTestCase.java</exclude>
       </excludes>
       <resources>

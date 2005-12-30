@@ -59,5 +59,5 @@ public interface IAuditService {
      *            the list of matching records or null
      * @throws AuditServiceException                                    
      */
-    public List<AuditRecord> getbyObjectId(String archetypeId, long id);
+    public List<AuditRecord> getByObjectId(String archetypeId, long id);
 }

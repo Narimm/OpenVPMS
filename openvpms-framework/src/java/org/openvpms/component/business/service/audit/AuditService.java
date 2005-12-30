@@ -101,7 +101,7 @@ public class AuditService implements MethodInterceptor, IAuditService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.audit.IAuditService#getbyObjectId(org.openvpms.component.business.domain.archetype.ArchetypeId, long)
      */
-    public List<AuditRecord> getbyObjectId(String archetypeId, long id) {
+    public List<AuditRecord> getByObjectId(String archetypeId, long id) {
         try {
             return dao.getByObjectId(archetypeId, id);
         } catch (Exception exception) {

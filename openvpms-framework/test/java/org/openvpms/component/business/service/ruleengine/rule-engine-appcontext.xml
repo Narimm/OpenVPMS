@@ -99,6 +99,12 @@
         <value>
           /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
         </value>
+        <value>
+          /org/openvpms/component/business/domain/im/security/SecurityRole.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
+        </value>
       </list>
     </property>
   </bean>

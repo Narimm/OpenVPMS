@@ -48,6 +48,8 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
+import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.system.common.test.BaseTestCase;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
@@ -123,6 +125,8 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         config.addClass(AssertionTypeDescriptor.class);
         config.addClass(ActionTypeDescriptor.class);
         config.addClass(ProductPrice.class);
+        config.addClass(SecurityRole.class);
+        config.addClass(ArchetypeAwareGrantedAuthority.class);
         this.sessionFactory = config.buildSessionFactory();
     }
 
