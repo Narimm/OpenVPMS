@@ -1,6 +1,9 @@
 package org.openvpms.web.app.editor;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
@@ -8,6 +11,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -18,11 +22,13 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.component.Editor;
 import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.app.OpenVPMSApp;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.spring.ServiceHelper;
 
 /**
  * Enter description here.
@@ -62,21 +68,17 @@ public class IMObjectEditor extends Column implements Editor {
     }
 
     /**
-     * Construct a new <code>IMObjectEditor</code> for an object that belongs to a collection.
+     * Construct a new <code>IMObjectEditor</code> for an object that belongs to
+     * a collection.
      *
-     * @param object the object to edit
-     * @param parent the parent object.
+     * @param object     the object to edit
+     * @param parent     the parent object.
      * @param descriptor the parent descriptor.
      */
     public IMObjectEditor(IMObject object, IMObject parent, NodeDescriptor descriptor) {
         _object = object;
         _parent = parent;
         _descriptor = descriptor;
-        setStyleName("Editor");
-    }
-
-    public void init() {
-        super.init();
         doLayout();
     }
 
@@ -116,19 +118,34 @@ public class IMObjectEditor extends Column implements Editor {
      *
      * @return the object being edited
      */
-    public Object getObject() {
+    public IMObject getObject() {
         return _object;
+    }
+
+    /**
+     * Create a new object.
+     */
+    public void create() {
+
     }
 
     /**
      * Save any edits.
      */
     public void save() {
-        IArchetypeService service = getArchetypeService();
-        boolean isNew = _object.isNew();
-        service.save(_object);
-        if (isNew && _parent != null) {
-            _descriptor.addChildToCollection(_parent, _object);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        if (doValidation()) {
+            if (_parent == null) {
+                try {
+                    service.save(_object);
+                } catch (RuntimeException exception) {
+                    ErrorDialog.show(exception);
+                }
+            } else {
+                if (_object.isNew()) {
+                    _descriptor.addChildToCollection(_parent, _object);
+                }
+            }
         }
     }
 
@@ -136,8 +153,14 @@ public class IMObjectEditor extends Column implements Editor {
      * Delete the current object.
      */
     public void delete() {
-        IArchetypeService service = getArchetypeService();
-        service.remove(_object);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        if (!_object.isNew()) {
+            try {
+                service.remove(_object);
+            } catch (RuntimeException exception) {
+                ErrorDialog.show(exception);
+            }
+        }
     }
 
     /**
@@ -150,6 +173,8 @@ public class IMObjectEditor extends Column implements Editor {
     }
 
     protected void doLayout() {
+        setStyleName("Editor");
+        ILookupService lookup = ServiceHelper.getLookupService();
         ArchetypeDescriptor descriptor = getArchetypeDescriptor(_object);
         List<NodeDescriptor> descriptors = descriptor.getSimpleNodeDescriptors();
         if (!descriptors.isEmpty()) {
@@ -159,7 +184,7 @@ public class IMObjectEditor extends Column implements Editor {
                     Label label = LabelFactory.create();
                     label.setText(nodeDesc.getDisplayName());
                     Component editor = NodeEditorFactory.create(_object, nodeDesc,
-                            getLookupService());
+                            lookup);
                     grid.add(label);
                     grid.add(editor);
                 }
@@ -171,7 +196,7 @@ public class IMObjectEditor extends Column implements Editor {
             DefaultTabModel model = new DefaultTabModel();
             for (NodeDescriptor nodeDesc : descriptors) {
                 Component editor = NodeEditorFactory.create(_object, nodeDesc,
-                        getLookupService());
+                        lookup);
                 model.addTab(nodeDesc.getDisplayName(), editor);
             }
             TabbedPane pane = new TabbedPane();
@@ -184,8 +209,9 @@ public class IMObjectEditor extends Column implements Editor {
     /**
      * Returns the archetype descriptor for an object.
      * <p/>
-     * TODO At the moment we have the logic to determine whether the descriptor is an AssertionTypeDescriptor and then
-     * switch accordingly in this object. This needs to be transparent
+     * TODO At the moment we have the logic to determine whether the descriptor
+     * is an AssertionTypeDescriptor and then switch accordingly in this object.
+     * This needs to be transparent
      *
      * @param object the object
      * @return the archetype descriptor for <code>object</code>
@@ -193,7 +219,7 @@ public class IMObjectEditor extends Column implements Editor {
     protected ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
         ArchetypeDescriptor descriptor;
         ArchetypeId archId = object.getArchetypeId();
-        IArchetypeService service = getArchetypeService();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
 
         //TODO This is a work around until we resolve the current
         // problem with archetyping and archetype. We need to
@@ -220,14 +246,147 @@ public class IMObjectEditor extends Column implements Editor {
         return descriptor;
     }
 
-    protected IArchetypeService getArchetypeService() {
-        return (IArchetypeService) OpenVPMSApp.getInstance().getApplicationContext().getBean(
-                "archetypeService");
+    protected boolean doValidation() {
+        List<ValidationError> errors = new ArrayList<ValidationError>();
+
+        // check that we can retrieve a valid archetype for this object
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(_object);
+
+        // if there are nodes attached to the archetype then validate the
+        // associated assertions
+        if (!descriptor.getNodeDescriptors().isEmpty()) {
+            JXPathContext context = JXPathContext.newContext(_object);
+            context.setLenient(true);
+            validateObject(context, descriptor.getNodeDescriptors(), errors);
+        }
+        boolean valid = errors.isEmpty();
+        if (!valid) {
+            ValidationError error = errors.get(0);
+            ErrorDialog.show("Error: " + error.getNodeName(),
+                    errors.get(0).getErrorMessage());
+        }
+        return valid;
     }
 
-    protected ILookupService getLookupService() {
-        return (ILookupService) OpenVPMSApp.getInstance().getApplicationContext().getBean(
-                "lookupService");
+    /**
+     * Iterate through all the nodes and ensure that the object meets all the
+     * specified assertions. The assertions are defined in the node and can be
+     * hierarchical, which means that this method is re-entrant.
+     *
+     * @param context holds the object to be validated
+     * @param nodes   assertions are managed by the nodes object
+     * @param errors  the errors are collected in this object
+     */
+    private void validateObject(JXPathContext context, Map<String, NodeDescriptor> nodes,
+                                List<ValidationError> errors) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        for (NodeDescriptor node : nodes.values()) {
+            Object value = null;
+            try {
+                value = context.getValue(node.getPath());
+            } catch (Exception ignore) {
+                // ignore since context.setLenient doesn't
+                // seem to be working.
+                // TODO Need to sort out a better way since this
+                // can also cause problems
+            }
+
+            // first check whether the value for this node is derived and if it
+            // is then derive the value
+            if (node.isDerived()) {
+                try {
+                    value = context.getValue(node.getDerivedValue());
+                    context.getPointer(node.getPath()).setValue(value);
+                } catch (Exception exception) {
+                    value = null;
+                    errors.add(new ValidationError(node.getName(),
+                            "Cannot derive value"));
+                }
+            }
+
+            // check the cardinality
+            int minCardinality = node.getMinCardinality();
+            int maxCardinality = node.getMaxCardinality();
+            if ((minCardinality == 1) && (value == null)) {
+                errors.add(new ValidationError(node.getName(),
+                        "value is required"));
+            }
+
+            // if the node is a collection and there are cardinality
+            // constraints then check them
+            if (node.isCollection()) {
+                if ((minCardinality > 0) && (getCollectionSize(value) < minCardinality))
+                {
+                    errors.add(new ValidationError(node.getName(),
+                            " must supply at least " + minCardinality + " "
+                                    + node.getBaseName()));
+
+                }
+
+                if ((maxCardinality > 0)
+                        && (maxCardinality != NodeDescriptor.UNBOUNDED)
+                        && (getCollectionSize(value) > maxCardinality)) {
+                    errors.add(new ValidationError(node.getName(),
+                            " cannot supply more than " + maxCardinality + " "
+                                    + node.getBaseName()));
+                }
+            }
+
+            if ((value != null)
+                    && (node.getAssertionDescriptorsAsArray().length > 0)) {
+                // only check the assertions for non-null values
+                for (AssertionDescriptor assertion : node
+                        .getAssertionDescriptorsAsArray()) {
+                    AssertionTypeDescriptor assertionType =
+                            service.getAssertionTypeDescriptor(assertion.getName());
+
+                    // TODO
+                    // no validation required where the type is not specified.
+                    // This is currently a work around since we need to deal
+                    // with assertions and some other type of declaration...
+                    // which I don't have a name for.
+                    if (assertionType.getActionType("assert") == null) {
+                        continue;
+                    }
+
+                    try {
+                        if (!assertionType.assertTrue(value, node, assertion)) {
+                            errors.add(new ValidationError(node.getName(),
+                                    assertion.getErrorMessage()));
+                        }
+                    } catch (Exception exception) {
+                        // log the error
+                        errors.add(new ValidationError(node.getName(),
+                                assertion.getErrorMessage()));
+                    }
+                }
+            }
+
+            // if this node has other nodes then re-enter this method
+            if (node.getNodeDescriptors().size() > 0) {
+                validateObject(context, node.getNodeDescriptors(), errors);
+            }
+        }
+    }
+
+    /**
+     * Determine the number of entries in the collection. If the collection is
+     * null then return 0. The node descriptor defines the type of the
+     * collection
+     *
+     * @param collection the collection item
+     * @return the collection size
+     */
+    private int getCollectionSize(Object collection) {
+        int size;
+        if (collection instanceof Map) {
+            size = ((Map) collection).size();
+        } else if (collection instanceof Collection) {
+            size = ((Collection) collection).size();
+        } else {
+            size = 0;
+        }
+        return size;
     }
 
 }

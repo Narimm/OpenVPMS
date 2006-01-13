@@ -1,8 +1,7 @@
 package org.openvpms.web.component;
 
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ImageReference;
-import org.openvpms.web.component.ComponentFactory;
+import nextapp.echo2.app.Label;
 
 
 /**
@@ -19,7 +18,7 @@ public final class LabelFactory extends ComponentFactory {
     private static final String TYPE = "label";
 
     /**
-     * Create a new label.
+     * Create a new label, with the default style.
      *
      * @return a new label
      */
@@ -42,14 +41,28 @@ public final class LabelFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new label with localised text.
+     * Create a new label with localised text, and default style.
      *
-     * @param key the resource bundle key
+     * @param key the resource bundle key. May be <code>null</code>
      * @return a new label
      */
     public static Label create(String key) {
         Label label = create();
-        label.setText(getString(TYPE, key));
+        if (key != null) {
+            label.setText(getString(TYPE, key, true));
+        }
+        return label;
+    }
+
+    /**
+     * Create a new label with localised text, and specific style.
+     *
+     * @param key the resource bundle key. May be <code>null</code>
+     * @return a new label
+     */
+    public static Label create(String key, String style) {
+        Label label = create(key);
+        label.setStyleName(style);
         return label;
     }
 

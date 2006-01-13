@@ -1,8 +1,10 @@
 package org.openvpms.web.app;
 
 import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Window;
 import nextapp.echo2.app.ContentPane;
+import nextapp.echo2.app.Window;
+
+import org.openvpms.web.app.login.LoginPane;
 import org.openvpms.web.component.Styles;
 import org.openvpms.web.spring.SpringApplicationInstance;
 

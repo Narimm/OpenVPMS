@@ -27,6 +27,7 @@ public class BoundTextField extends TextField {
      */
     public BoundTextField(Pointer pointer) {
         _pointer = pointer;
+
         setText(getValue());
 
         getDocument().addDocumentListener(new DocumentListener() {
@@ -42,7 +43,7 @@ public class BoundTextField extends TextField {
     }
 
     protected void setValue(String text) {
-        _pointer.setValue(getText());
+        _pointer.setValue(text);
     }
 
 }

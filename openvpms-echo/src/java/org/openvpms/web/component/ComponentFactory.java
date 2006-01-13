@@ -25,12 +25,15 @@ public class ComponentFactory {
     /**
      * Helper to return localised text for a component.
      *
-     * @param type the component type
-     * @param name the component instance name
+     * @param type      the component type
+     * @param name      the component instance name
+     * @param allowNull if <code>true</code> return <code>null</code> if there
+     *                  is no text for the give <code>type</code> and
+     *                  <code>name</code>
      * @return the localised string corresponding to <code>key</code>
      */
-    protected static String getString(String type, String name) {
-        return Messages.getString(type + "." + name);
+    protected static String getString(String type, String name, boolean allowNull) {
+        return Messages.get(type + "." + name, allowNull);
     }
 
     /**

@@ -1,16 +1,13 @@
 package org.openvpms.web.component;
 
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
+import org.apache.commons.jxpath.Pointer;
 
-import org.openvpms.web.component.ComponentFactory;
-import org.openvpms.web.component.Styles;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
-
-import org.apache.commons.jxpath.Pointer;
 
 
 /**

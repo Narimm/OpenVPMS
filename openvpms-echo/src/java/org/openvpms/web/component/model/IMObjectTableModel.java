@@ -1,11 +1,15 @@
 package org.openvpms.web.component.model;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-import nextapp.echo2.app.table.AbstractTableModel;
-import org.openvpms.web.util.Messages;
+import echopointng.table.DefaultPageableSortableTableModel;
+import echopointng.table.SortableTableColumn;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumnModel;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.util.Messages;
 
 
 /**
@@ -14,12 +18,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
  */
-public class IMObjectTableModel extends AbstractTableModel {
+public class IMObjectTableModel extends DefaultPageableSortableTableModel {
 
     /**
      * Id column index.
      */
-    public static final int ID_COLUMN  = 0;
+    public static final int ID_COLUMN = 0;
 
     /**
      * Type column index.
@@ -45,13 +49,13 @@ public class IMObjectTableModel extends AbstractTableModel {
      * Table column identifiers.
      */
     private static final String[] COLUMNS = {
-        "id", "type", "name", "description"};
+            "id", "type", "name", "description"};
 
     /**
      * Construct an unpopulated  <code>IMObjectTableModel</code>.
      */
-    public IMObjectTableModel() {
-        this(new ArrayList<IMObject>());
+    public IMObjectTableModel(TableColumnModel model) {
+        this(new ArrayList<IMObject>(), model);
     }
 
     /**
@@ -59,8 +63,14 @@ public class IMObjectTableModel extends AbstractTableModel {
      *
      * @param objects the objects to populate the model with
      */
-    public IMObjectTableModel(List<IMObject> objects) {
+    public IMObjectTableModel(List<IMObject> objects, TableColumnModel model) {
+        super(model);
         _objects = objects;
+        for (int row = 0; row < _objects.size(); ++row) {
+            for (int col = 0; col < getColumnCount(); ++col) {
+                setValueAt(getValue(col, row), col, row);
+            }
+        }
     }
 
     /**
@@ -80,26 +90,17 @@ public class IMObjectTableModel extends AbstractTableModel {
      */
     public String getColumnName(int column) {
         String key = "table.imobject." + COLUMNS[column];
-        return Messages.getString(key);
+        return Messages.get(key);
     }
 
     /**
-     * Returns the number of rows in the table.
-     *
-     * @return the row count
-     */
-    public int getRowCount() {
-        return _objects.size();
-    }
-
-    /**
-     * Returns the value found at the given coordinate within the table.
-     * Column and row values are 0-based.
+     * Returns the value found at the given coordinate within the table. Column
+     * and row values are 0-based.
      *
      * @param column the column index (0-based)
      * @param row    the row index (0-based)
      */
-    public Object getValueAt(int column, int row) {
+    protected Object getValue(int column, int row) {
         Object result = null;
         IMObject object = _objects.get(row);
         switch (column) {
@@ -119,5 +120,18 @@ public class IMObjectTableModel extends AbstractTableModel {
                 throw new IllegalArgumentException("Illegal column=" + column);
         }
         return result;
+    }
+
+    /**
+     * Helper to create a column model.
+     *
+     * @return a new column model
+     */
+    public static TableColumnModel createColumnModel() {
+        TableColumnModel model = new DefaultTableColumnModel();
+        for (int i = 0; i < COLUMNS.length; ++i) {
+            model.addColumn(new SortableTableColumn(i));
+        }
+        return model;
     }
 }

@@ -1,11 +1,8 @@
 package org.openvpms.web.component.bound;
 
-import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.TextArea;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.DocumentListener;
 import nextapp.echo2.app.event.DocumentEvent;
+import nextapp.echo2.app.event.DocumentListener;
 import org.apache.commons.jxpath.Pointer;
 
 

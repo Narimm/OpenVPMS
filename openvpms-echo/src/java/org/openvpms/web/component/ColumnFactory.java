@@ -15,6 +15,17 @@ public final class ColumnFactory extends ComponentFactory {
     /**
      * Create a new column.
      *
+     * @param style the style name
+     */
+    public static Column create(String style) {
+        Column column = new Column();
+        column.setStyleName(style);
+        return column;
+    }
+
+    /**
+     * Create a new column.
+     *
      * @return a new column
      */
     public static Column create() {
@@ -34,6 +45,5 @@ public final class ColumnFactory extends ComponentFactory {
         add(column, components);
         return column;
     }
-
 
 }

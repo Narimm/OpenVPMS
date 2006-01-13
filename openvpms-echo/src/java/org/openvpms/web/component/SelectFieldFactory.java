@@ -1,5 +1,7 @@
 package org.openvpms.web.component;
 
+import java.util.List;
+
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
@@ -15,12 +17,6 @@ import org.openvpms.web.component.bound.BoundSelectField;
  * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
  */
 public final class SelectFieldFactory extends ComponentFactory {
-
-    /**
-     * Component type.
-     */
-    private static final String TYPE = "select";
-
 
     /**
      * Creates a new select field with the provided model.
@@ -50,7 +46,19 @@ public final class SelectFieldFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new select field that will initially contain the provided array of items.
+     * Create a new select field that will initially contain the provided list
+     * of items.
+     *
+     * @param items the items to add
+     * @return a new select field
+     */
+    public static SelectField create(List items) {
+        return create(items.toArray());
+    }
+
+    /**
+     * Create a new select field that will initially contain the provided array
+     * of items.
      *
      * @param items the items to add
      * @return a new select field

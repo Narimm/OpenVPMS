@@ -2,7 +2,21 @@
 
 <stylesheet>
 
-    <style name="LoginPane.LoginWindow" base-name="default" type="nextapp.echo2.app.WindowPane">
+    <style name="LoginPane" type="nextapp.echo2.app.ContentPane">
+        <properties>
+            <property name="backgroundImage">
+                <fill-image repeat="vertical">
+                    <image type="nextapp.echo2.app.ResourceImageReference">
+                        <resource-image-reference
+                                resource="/org/openvpms/web/resource/image/loginbackground.png"/>
+                    </image>
+                </fill-image>
+            </property>
+        </properties>
+    </style>
+
+    <style name="LoginDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="resizable" value="false"/>
             <property name="positionX" value="160px"/>
@@ -12,26 +26,14 @@
         </properties>
     </style>
 
-    <style name="LoginPane.ContentPane" type="nextapp.echo2.app.ContentPane">
-        <properties>
-            <property name="backgroundImage">
-                <fill-image repeat="vertical">
-                    <image type="nextapp.echo2.app.ResourceImageReference">
-                        <resource-image-reference resource="/org/openvpms/web/resource/image/loginbackground.png"/>
-                    </image>
-                </fill-image>
-            </property>
-        </properties>
-    </style>
-
-    <style name="LoginPane.LayoutGrid" type="nextapp.echo2.app.Grid">
+    <style name="LoginDialog.Grid" type="nextapp.echo2.app.Grid">
         <properties>
             <property name="insets" value="5px"/>
             <property name="size" value="2"/>
         </properties>
     </style>
 
-    <style name="LoginPane.Prompt" type="nextapp.echo2.app.Label">
+    <style name="LoginDialog.Label" type="nextapp.echo2.app.Label">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.GridLayoutData">
@@ -45,34 +47,48 @@
         </properties>
     </style>
 
-    <style name="LoginScreen.Continue" type="nextapp.echo2.app.Button">
+    <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
         <properties>
-            <property name="layoutData">
-                <layout-data type="nextapp.echo2.app.layout.GridLayoutData">
-                    <properties>
-                        <property name="columnSpan" value="2"/>
-                    </properties>
-                </layout-data>
-            </property>
+            <property name="background" value="#6B6D84"/>
         </properties>
     </style>
 
-    <style name="ControlPane.Button" type="nextapp.echo2.app.button.AbstractButton">
+    <style name="MainPane.Layout" type="nextapp.echo2.app.SplitPane">
         <properties>
-            <property name="lineWrap" value="false"/>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="32px"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Menu" type="nextapp.echo2.app.ContentPane">
+        <properties>
+            <property name="background" value="#6B6D84"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Menu.Button"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
             <property name="insets" value="8px 0px"/>
-            <property name="foreground" value="#000000"/>
+            <property name="foreground" value="#fdf5e6"/>
+            <!-- oldlace -->
+            <property name="pressedEnabled" value="true"/>
+            <property name="pressedForeground" value="#000000"/>
+            <!-- black -->
             <property name="rolloverEnabled" value="true"/>
-            <property name="rolloverForeground" value="#6f0f0f"/>
+            <property name="rolloverForeground" value="#000000"/>
         </properties>
     </style>
 
-    <style name="ControlPane" type="nextapp.echo2.app.Row">
+    <style name="MainPane.Workspace" type="nextapp.echo2.app.ContentPane"/>
+
+    <style name="ButtonRow" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="10px 2px"/>
             <property name="cellSpacing" value="3px"/>
             <property name="layoutData">
-                <layout-data type="nextapp.echo2.app.layout.SplitPaneLayoutData">
+                <layout-data
+                        type="nextapp.echo2.app.layout.SplitPaneLayoutData">
                     <properties>
                         <property name="overflow" value="OVERFLOW_HIDDEN"/>
                         <property name="background" value="#cfcfdf"/>
@@ -80,7 +96,7 @@
                             <fill-image>
                                 <image type="nextapp.echo2.app.ResourceImageReference">
                                     <resource-image-reference
-                                            resource="/org/openvpms/web/resource/image/controlpanefill.png"/>
+                                            resource="/org/openvpms/web/resource/image/buttonrowfill.png"/>
                                 </image>
                             </fill-image>
                         </property>
@@ -91,6 +107,18 @@
         </properties>
     </style>
 
+    <style name="ButtonRow.Button"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="lineWrap" value="false"/>
+            <property name="insets" value="8px 0px"/>
+            <property name="foreground" value="#000000"/>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="rolloverForeground" value="#6f0f0f"/>
+        </properties>
+    </style>
+
+
     <style name="Editor" type="nextapp.echo2.app.Column">
         <properties>
             <property name="insets" value="20px 20px"/>
@@ -98,30 +126,66 @@
         </properties>
     </style>
 
-    <style name="Editor.ControlRow" type="nextapp.echo2.app.Row">
-        <properties>
-            <property name="insets" value="10px 2px"/>
-            <property name="cellSpacing" value="3px"/>
-        </properties>
-    </style>
-
-    <style name="EditWindowPane" base-name="default" type="nextapp.echo2.app.WindowPane">
+    <style name="EditWindowPane" base-name="default"
+           type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="modal" value="true"/>
-            <property name="resizable" value="true"/>
             <property name="closable" value="false"/>
             <property name="width" value="640px"/>
             <property name="height" value="480px"/>
         </properties>
     </style>
 
-    <style name="EditWindowPane.row" type="nextapp.echo2.app.Row">
+    <style name="BrowserDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane">
         <properties>
+            <property name="modal" value="true"/>
+            <property name="width" value="800px"/>
+            <property name="height" value="800px"/>
+        </properties>
+    </style>
+
+    <style name="Browser" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="separatorPosition" value="32px"/>
+        </properties>
+    </style>
+
+    <style name="Browser.Layout" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="400px"/>
+        </properties>
+    </style>
+
+    <style name="ControlRow" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="10px 2px"/>
             <property name="cellSpacing" value="3px"/>
         </properties>
     </style>
 
-    <style name="table.evenrow" type="nextapp.echo2.app.Label">
+    <style name="CRUDPane.Title" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="font">
+                <font size="14pt" bold="true"/>
+            </property>
+            <property name="insets" value="10px 2px"/>
+        </properties>
+    </style>
+
+    <style name="CRUDPane.ControlRow" base-name="ControlRow"
+           type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="background" value="#e1e1e1"/>
+        </properties>
+    </style>
+
+    <style name="ErrorDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane">
+    </style>
+
+    <style name="Table.EvenRow" type="nextapp.echo2.app.Label">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
@@ -134,7 +198,7 @@
         </properties>
     </style>
 
-    <style name="table.oddrow" type="nextapp.echo2.app.Label">
+    <style name="Table.OddRow" type="nextapp.echo2.app.Label">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
@@ -147,11 +211,52 @@
         </properties>
     </style>
 
+    <style name="navigation.first" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/first.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="navigation.previous" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/previous.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="navigation.next" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/next.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="navigation.last" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/last.png"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="default" type="nextapp.echo2.app.WindowPane">
         <properties>
             <!-- Container-specific property to enable Internet Explorer PNG Alpha Renderer for shadow window border. -->
             <property type="java.lang.Boolean"
-                      name="nextapp.echo2.webcontainer.syncpeer.WindowPanePeer.ieAlphaRenderBorder" value="true"/>
+                      name="nextapp.echo2.webcontainer.syncpeer.WindowPanePeer.ieAlphaRenderBorder"
+                      value="true"/>
             <property name="titleInsets" value="10px 5px"/>
             <property name="titleBackground" value="#2f2f4f"/>
             <property name="titleBackgroundImage">
@@ -164,7 +269,8 @@
             </property>
             <property name="titleForeground" value="#ffffff"/>
             <property name="border">
-                <fill-image-border content-insets="8px 8px 14px 14px" border-insets="17px 17px 23px 23px">
+                <fill-image-border content-insets="8px 8px 14px 14px"
+                                   border-insets="17px 17px 23px 23px">
                     <border-part position="top-left">
                         <fill-image>
                             <image type="nextapp.echo2.app.ResourceImageReference">
@@ -176,7 +282,8 @@
                     <border-part position="top">
                         <fill-image>
                             <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference resource="/org/openvpms/web/resource/image/border/top.png"/>
+                                <resource-image-reference
+                                        resource="/org/openvpms/web/resource/image/border/top.png"/>
                             </image>
                         </fill-image>
                     </border-part>
@@ -191,14 +298,16 @@
                     <border-part position="left">
                         <fill-image>
                             <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference resource="/org/openvpms/web/resource/image/border/left.png"/>
+                                <resource-image-reference
+                                        resource="/org/openvpms/web/resource/image/border/left.png"/>
                             </image>
                         </fill-image>
                     </border-part>
                     <border-part position="right">
                         <fill-image>
                             <image type="nextapp.echo2.app.ResourceImageReference">
-                                <resource-image-reference resource="/org/openvpms/web/resource/image/border/right.png"/>
+                                <resource-image-reference
+                                        resource="/org/openvpms/web/resource/image/border/right.png"/>
                             </image>
                         </fill-image>
                     </border-part>
@@ -233,17 +342,20 @@
 
     <style name="default" type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
-            <property name="background" value="#fffacd"/>          <!-- lemonchiffon -->
+            <property name="background" value="#fffacd"/>
+            <!-- lemonchiffon -->
             <property name="rolloverEnabled" value="true"/>
-            <property name="rolloverBackground" value="#98FB98"/>  <!-- palegreen -->
-            <property name="rolloverForeground" value="#000000"/>  <!-- black -->
+            <property name="rolloverBackground" value="#98FB98"/>
+            <!-- palegreen -->
+            <property name="rolloverForeground" value="#000000"/>
+            <!-- black -->
         </properties>
     </style>
 
     <style name="default" type="nextapp.echo2.app.Table">
         <properties>
             <property name="border">
-                 <border size="2px" style="groove" color="#cfdfff"/>
+                <border size="2px" style="groove" color="#cfdfff"/>
             </property>
             <property name="rolloverBackground" value="#85c1ff"/>
             <property name="rolloverEnabled" value="true"/>
@@ -269,41 +381,55 @@
 
     <style name="error" base-name="default" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="foreground" value="#b0e0e6"/>    <!-- powderblue -->
-            <property name="background" value="#ff0000"/>    <!-- red -->
+            <property name="foreground" value="#b0e0e6"/>
+            <!-- powderblue -->
+            <property name="background" value="#ff0000"/>
+            <!-- red -->
         </properties>
     </style>
 
     <style name="default" type="nextapp.echo2.app.button.AbstractButton">
         <properties>
-            <property name="background" value="#6a5acd"/>        <!-- slateblue -->
-            <property name="foreground" value="#fdf5e6"/>        <!-- oldlace -->
+            <property name="background" value="#6a5acd"/>
+            <!-- slateblue -->
+            <property name="foreground" value="#fdf5e6"/>
+            <!-- oldlace -->
             <property name="border">
-                <border size="1px" style="outset" color="#7b68ee"/>  <!-- mediumslateblue -->
+                <border size="1px" style="outset" color="#7b68ee"/>
+                <!-- mediumslateblue -->
             </property>
             <property name="pressedEnabled" value="true"/>
-            <property name="pressedBackground" value="#191970"/>  <!-- midnightblue -->
-            <property name="pressedForeground" value="#ffb6c1"/>  <!-- lightpink -->
+            <property name="pressedBackground" value="#191970"/>
+            <!-- midnightblue -->
+            <property name="pressedForeground" value="#ffb6c1"/>
+            <!-- lightpink -->
             <property name="pressedBorder">
-                <border size="1px" style="inset" color="#00000"/>  <!-- black -->
+                <border size="1px" style="inset" color="#00000"/>
+                <!-- black -->
             </property>
             <property name="insets" value="20px 3px"/>
         </properties>
     </style>
 
-    <style name="selected" base-name="default" type="nextapp.echo2.app.button.AbstractButton">
+    <style name="selected" base-name="default"
+           type="nextapp.echo2.app.button.AbstractButton">
         <properties>
-            <property name="background" value="#191970"/>  <!-- midnightblue -->
-            <property name="foreground" value="#fffacd"/>  <!-- lemonchiffon -->
+            <property name="background" value="#191970"/>
+            <!-- midnightblue -->
+            <property name="foreground" value="#fffacd"/>
+            <!-- lemonchiffon -->
         </properties>
     </style>
 
     <style name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
-            <property name="background" value="#fffacd"/> <!-- lemonchiffon -->
-            <property name="foreground" value="#000000"/> <!-- black -->
+            <property name="background" value="#fffacd"/>
+            <!-- lemonchiffon -->
+            <property name="foreground" value="#000000"/>
+            <!-- black -->
             <property name="border">
-                <border size="1px" style="inset" color="#f0e68c"/> <!-- khaki -->
+                <border size="1px" style="inset" color="#f0e68c"/>
+                <!-- khaki -->
             </property>
         </properties>
     </style>

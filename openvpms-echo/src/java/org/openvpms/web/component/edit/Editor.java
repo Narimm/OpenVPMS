@@ -1,6 +1,8 @@
-package org.openvpms.web.component;
+package org.openvpms.web.component.edit;
 
 import nextapp.echo2.app.Component;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * Enter description here.
@@ -12,7 +14,7 @@ public interface Editor {
 
     /**
      * Returns a title for the editor.
-
+     *
      * @return a title for the editor
      */
     String getTitle();
@@ -29,7 +31,12 @@ public interface Editor {
      *
      * @return the object being edited
      */
-    public Object getObject();
+    public IMObject getObject();
+
+    /**
+     * Create a new object.
+     */
+    void create();
 
     /**
      * Save any edits.
@@ -45,4 +52,5 @@ public interface Editor {
      * Cancel any edits.
      */
     void cancel();
+
 }

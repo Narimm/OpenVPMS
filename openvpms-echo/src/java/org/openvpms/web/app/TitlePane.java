@@ -1,19 +1,20 @@
 package org.openvpms.web.app;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.ContentPane;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Extent;
-import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.layout.RowLayoutData;
+
 import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.ComponentFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
+import org.openvpms.web.util.Messages;
 
 /**
  * Enter description here.
@@ -29,16 +30,12 @@ public class TitlePane extends ContentPane {
     private final String PATH
             = "/org/openvpms/web/resource/image/openvpms.gif";
 
-    public void init() {
-        doLayout();
-    }
-
-    protected void doLayout() {
-        ComponentFactory.setDefaults(this);
+    public TitlePane() {
+        setStyleName("TitlePane");
         Label title = LabelFactory.create(new ResourceImageReference(PATH));
-        Label label = LabelFactory.create("Welcome <foo>");
-        Button logout = ButtonFactory.create("logout");
-        logout.addActionListener(new ActionListener() {
+        Label label = LabelFactory.create();
+        label.setText(Messages.get("label.welcome", "<foo>"));
+        Button logout = ButtonFactory.create("logout", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 OpenVPMSApp.getInstance().logout();
             }
