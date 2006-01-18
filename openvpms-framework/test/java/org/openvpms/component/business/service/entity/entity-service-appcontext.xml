@@ -131,24 +131,4 @@
       <ref local="imObjectDao" />
     </property>
   </bean>
-
-  <!--  The Entity DAO bean -->
-  <bean id="entityDao"
-    class="org.openvpms.component.business.dao.hibernate.im.entity.EntityDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
-
-  <!--  The Entity Service -->
-  <bean id="entityService"
-    class="org.openvpms.component.business.service.entity.EntityService">
-    <constructor-arg index="0">
-      <ref bean="archetypeService" />
-    </constructor-arg>
-    <constructor-arg index="1">
-      <ref bean="entityDao" />
-    </constructor-arg>
-  </bean>
-
 </beans>

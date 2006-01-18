@@ -44,14 +44,9 @@ public class PersonContactTestCase extends
         AbstractDependencyInjectionSpringContextTests {
     
     /**
-     * Holds a reference to the entity service
-     */
-    private EntityService entityService;
-    
-    /**
      * Holds a reference to the archetype service
      */
-    private ArchetypeService archetypeService;
+    private ArchetypeService service;
     
 
     public static void main(String[] args) {
@@ -88,9 +83,9 @@ public class PersonContactTestCase extends
         
         contact.addAddress(address);
         person.addContact(contact);
-        entityService.save(person);
+        service.save(person);
         
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getContacts().size() == 1);
         assertTrue(((Contact)person.getContacts().iterator().next()).getAddresses().size() == 1);
@@ -112,21 +107,21 @@ public class PersonContactTestCase extends
         
         contact1.addAddress(address);
         person1.addContact(contact1);
-        entityService.save(person1);
+        service.save(person1);
 
         contact2.addAddress(address);
         person2.addContact(contact2);
-        entityService.save(person2);
+        service.save(person2);
         
         // save the entities
         
         // now attempt to retrieve the entities
-        person1 = (Person)entityService.getById(person1.getUid());
+        person1 = (Person)service.getById(person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 1);
         assertTrue(((Contact)person1.getContacts().iterator().next()).getAddresses().size() == 1);
 
-        person2 = (Person)entityService.getById(person2.getUid());
+        person2 = (Person)service.getById(person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
         assertTrue(((Contact)person2.getContacts().iterator().next()).getAddresses().size() == 1);
@@ -134,16 +129,16 @@ public class PersonContactTestCase extends
         // now delete the address from person1 and update it.
         ((Contact)person1.getContacts().iterator().next()).getAddresses().clear();
         assertTrue(((Contact)person1.getContacts().iterator().next()).getAddresses().size() == 0);
-        entityService.save(person1);
+        service.save(person1);
         
         // retrieve the entities again and check that the addresses are
         // still valid
-        person1 = (Person)entityService.getById(person1.getUid());
+        person1 = (Person)service.getById(person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 1);
         assertTrue(((Contact)person1.getContacts().iterator().next()).getAddresses().size() == 0);
         
-        person2 = (Person)entityService.getById(person2.getUid());
+        person2 = (Person)service.getById(person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
         assertTrue(((Contact)person2.getContacts().iterator().next()).getAddresses().size() == 1);
@@ -159,18 +154,18 @@ public class PersonContactTestCase extends
         person.addContact(createContact("contact.home"));
         person.addContact(createContact("contact.home"));
 
-        entityService.save(person);
+        service.save(person);
         
         // retrieve and remove the first contact and update
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 3);
         Contact contact = person.getContacts().iterator().next();
         person.getContacts().remove(contact);
         assertTrue(person.getContacts().size() == 2);
-        entityService.save(person);
+        service.save(person);
         
         // retrieve and ensure thagt there are only 2 contacts
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 2);
     }
     
@@ -185,26 +180,26 @@ public class PersonContactTestCase extends
         
         contact.addAddress(address);
         person.addContact(contact);
-        entityService.save(person);
+        service.save(person);
 
         // retrieve and add another address to the contact
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         contact = person.getContacts().iterator().next();
         assertTrue(contact.getAddresses().size() == 1);
         
         address = createLocationAddress();
         contact.addAddress(address);
-        entityService.save(person);
+        service.save(person);
         
         // retrieve and remove the first address
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         contact = person.getContacts().iterator().next();
         assertTrue(contact.getAddresses().size() == 2);
         contact.removeAddress(contact.getAddresses().iterator().next());
-        entityService.save(person);
+        service.save(person);
         
         // retrieve and check the number of addresses
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         contact = person.getContacts().iterator().next();
         assertTrue(contact.getAddresses().size() == 1);
     }
@@ -224,14 +219,14 @@ public class PersonContactTestCase extends
         person.addAddress(address1);
         person.addAddress(address2);
         person.addContact(contact);
-        entityService.save(person);
+        service.save(person);
 
         // now we want to test the NodeDescription for addresses
-        person = (Person)entityService.getById(person.getUid());
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getAddresses().size() == 2);
         
-        ArchetypeDescriptor adesc = archetypeService.getArchetypeDescriptor("contact.home");
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("contact.home");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("addresses");
         List list = ndesc.getCandidateChildren(person.getContacts().iterator().next());
         assertTrue(list.size() == 2);
@@ -239,7 +234,7 @@ public class PersonContactTestCase extends
         assertTrue(person != null);
         contact = person.getContacts().iterator().next();
         contact.addAddress((Address)list.get(0));
-        entityService.save(person);
+        service.save(person);
     }
     
     
@@ -250,7 +245,7 @@ public class PersonContactTestCase extends
      * @return
      */
     private Address createLocationAddress() {
-        Address address = (Address)archetypeService.create("address.location");
+        Address address = (Address)service.create("address.location");
         assertTrue(address instanceof Address);
         
         address.getDetails().setAttribute("address", "5 Kalulu Rd");
@@ -269,7 +264,7 @@ public class PersonContactTestCase extends
      * @return Contact
      */
     private Contact createContact(String shortName) {
-        Contact contact = (Contact)archetypeService.create("contact.home");
+        Contact contact = (Contact)service.create("contact.home");
         assertTrue(contact instanceof Contact);
         
         contact.setActiveStartTime(new Date());
@@ -288,7 +283,7 @@ public class PersonContactTestCase extends
      * @return Person                  
      */
     private Person createPerson(String title, String firstName, String lastName) {
-        Entity entity = entityService.create("person.person");
+        Entity entity = (Entity)service.create("person.person");
         assertTrue(entity instanceof Person);
         
         Person person = (Person)entity;
@@ -306,10 +301,7 @@ public class PersonContactTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
         
-        this.entityService = (EntityService)applicationContext.getBean(
-            "entityService");
-        this.archetypeService = (ArchetypeService)applicationContext.getBean(
-            "archetypeService");
+        this.service = (ArchetypeService)applicationContext.getBean("archetypeService");
     }
 
 }

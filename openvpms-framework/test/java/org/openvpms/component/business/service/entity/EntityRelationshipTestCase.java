@@ -42,14 +42,9 @@ public class EntityRelationshipTestCase extends
     ServiceBaseTestCase {
 
     /**
-     * Holds a reference to the entity service
-     */
-    private EntityService entityService;
-
-    /**
      * Holds a reference to the archetype service
      */
-    private ArchetypeService archetypeService;
+    private ArchetypeService service;
     
 
     public static void main(String[] args) {
@@ -82,15 +77,15 @@ public class EntityRelationshipTestCase extends
         try {
             Person person = createPerson("Mr", "Jim", "Alateras");
             Animal pet = createAnimal("buddy");
-            entityService.save(person);
-            entityService.save(pet);
+            service.save(person);
+            service.save(pet);
             
             // we can ony create entity relationship with persistent objects
             EntityRelationship rel = createEntityRelationship(person, pet);
             person.addSourceEntityRelationship(rel);
             pet.addTargetEntityRelationship(rel);
-            entityService.save(person);
-            entityService.save(pet);
+            service.save(person);
+            service.save(pet);
             
             // now retrieve them and ensure that the correct entity relationship
             // exists
@@ -114,15 +109,15 @@ public class EntityRelationshipTestCase extends
     throws Exception {
         Person person = createPerson("Mr", "Jim", "Alateras");
         Animal pet = createAnimal("buddy");
-        entityService.save(person);
-        entityService.save(pet);
+        service.save(person);
+        service.save(pet);
         
         // we can ony create entity relationship with persistent objects
         EntityRelationship rel = createEntityRelationship(person, pet);
         person.addSourceEntityRelationship(rel);
         pet.addTargetEntityRelationship(rel);
-        entityService.save(person);
-        entityService.save(pet);
+        service.save(person);
+        service.save(pet);
         
         // now retrieve them and ensure that the correct entity relationship
         // exists
@@ -136,7 +131,7 @@ public class EntityRelationshipTestCase extends
         // retrieve the entity relationship
         rel = person.getSourceEntityRelationships().iterator().next();
         person.removeSourceEntityRelationship(rel);
-        entityService.save(person);
+        service.save(person);
         
         // now retrieve both the animal and the person and check the entity
         // relatioships
@@ -161,7 +156,7 @@ public class EntityRelationshipTestCase extends
      * @return Person
      */
     private Person createPerson(String title, String firstName, String lastName) {
-        Entity entity = entityService.create("person.person");
+        Entity entity = (Entity)service.create("person.person");
         assertTrue(entity instanceof Person);
 
         Person person = (Person) entity;
@@ -180,7 +175,7 @@ public class EntityRelationshipTestCase extends
      * @return Animal
      */
     private Animal createAnimal(String name) {
-        Animal animal = (Animal)entityService.create("animal.pet");
+        Animal animal = (Animal)service.create("animal.pet");
         assertTrue(animal != null);
 
         animal.setSpecies("dog");
@@ -204,7 +199,7 @@ public class EntityRelationshipTestCase extends
      * @return EntityRelationship                        
      */
     private EntityRelationship createEntityRelationship(Entity source, Entity target) {
-        EntityRelationship rel = (EntityRelationship)archetypeService
+        EntityRelationship rel = (EntityRelationship)service
             .create("entityRelationship.animalCarer");
         
         rel.setActiveStartTime(new Date());
@@ -225,7 +220,7 @@ public class EntityRelationshipTestCase extends
      */
     @SuppressWarnings("unused")
     private EntityIdentity createEntityIdentity(String identity) {
-        EntityIdentity eidentity = (EntityIdentity) archetypeService
+        EntityIdentity eidentity = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
         assertTrue(eidentity != null);
 
@@ -242,11 +237,8 @@ public class EntityRelationshipTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.entityService = (EntityService) applicationContext
-                .getBean("entityService");
-        assertTrue(entityService != null);
-        this.archetypeService = (ArchetypeService) applicationContext
+        this.service = (ArchetypeService) applicationContext
                 .getBean("archetypeService");
-        assertTrue(archetypeService != null);
+        assertTrue(service != null);
     }
 }

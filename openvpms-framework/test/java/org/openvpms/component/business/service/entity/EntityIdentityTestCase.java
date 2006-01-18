@@ -36,14 +36,9 @@ public class EntityIdentityTestCase extends
     ServiceBaseTestCase {
 
     /**
-     * Holds a reference to the entity service
-     */
-    private EntityService entityService;
-
-    /**
      * Holds a reference to the archetype service
      */
-    private ArchetypeService archetypeService;
+    private ArchetypeService service;
     
 
     public static void main(String[] args) {
@@ -74,11 +69,11 @@ public class EntityIdentityTestCase extends
         EntityIdentity eidentity = createEntityIdentity("jimbo");
 
         person.addIdentity(eidentity);
-        entityService.save(person);
+        service.save(person);
 
         // retrieve the person and check that there is a single
         // entity identity
-        person = (Person) entityService.getById(person.getUid());
+        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         assertTrue(((EntityIdentity)person.getIdentities().iterator().next()).getUid() != -1);
@@ -97,20 +92,20 @@ public class EntityIdentityTestCase extends
         person.addIdentity(ident1);
         person.addIdentity(ident2);
         
-        entityService.save(person);
+        service.save(person);
         
         // retrieve the entity, check it and then remove an entity identity
-        person = (Person) entityService.getById(person.getUid());
+        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 2);
         
         ident1 = person.getIdentities().iterator().next();
         person.removeIdentity(ident1);
         assertTrue(person.getIdentities().size() == 1);
-        entityService.save(person);
+        service.save(person);
 
         assertTrue(getObjectById("entityIdentity.getById", ident1.getUid()) == null);
-        person = (Person) entityService.getById(person.getUid());
+        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
     }
@@ -123,19 +118,19 @@ public class EntityIdentityTestCase extends
         Person person = createPerson("Mr", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
         person.addIdentity(ident1);
-        entityService.save(person);
+        service.save(person);
         
         // retrieve the entity, check it and then update an entity identity
-        person = (Person) entityService.getById(person.getUid());
+        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
         assertTrue(ident1.getIdentity().equals("jimbo"));
         ident1.setIdentity("jimmya");
-        entityService.save(person);
+        service.save(person);
         
         // make sure the update happened
-        person = (Person) entityService.getById(person.getUid());
+        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
@@ -154,7 +149,7 @@ public class EntityIdentityTestCase extends
      * @return Person
      */
     private Person createPerson(String title, String firstName, String lastName) {
-        Entity entity = entityService.create("person.person");
+        Entity entity = (Entity)service.create("person.person");
         assertTrue(entity instanceof Person);
 
         Person person = (Person) entity;
@@ -173,7 +168,7 @@ public class EntityIdentityTestCase extends
      * @return EntityIdentity
      */
     private EntityIdentity createEntityIdentity(String identity) {
-        EntityIdentity eidentity = (EntityIdentity) archetypeService
+        EntityIdentity eidentity = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
         assertTrue(eidentity != null);
 
@@ -190,11 +185,8 @@ public class EntityIdentityTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.entityService = (EntityService) applicationContext
-                .getBean("entityService");
-        assertTrue(entityService != null);
-        this.archetypeService = (ArchetypeService) applicationContext
+        this.service = (ArchetypeService) applicationContext
                 .getBean("archetypeService");
-        assertTrue(archetypeService != null);
+        assertTrue(service != null);
     }
 }
