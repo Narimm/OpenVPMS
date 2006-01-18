@@ -50,6 +50,15 @@
     <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
         <properties>
             <property name="background" value="#6B6D84"/>
+            <property name="foreground" value="#fdf5e6"/>
+            <!-- oldlace -->
+        </properties>
+    </style>
+
+    <style name="MainPane" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="200px"/>
         </properties>
     </style>
 
@@ -162,6 +171,13 @@
         <properties>
             <property name="insets" value="10px 2px"/>
             <property name="cellSpacing" value="3px"/>
+        </properties>
+    </style>
+
+    <style name="ControlColumn" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="insets" value="10px 2px"/>
+            <property name="cellSpacing" value="10px"/>
         </properties>
     </style>
 

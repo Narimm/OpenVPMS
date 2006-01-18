@@ -1,12 +1,12 @@
-package org.openvpms.web.app.workspace;
+package org.openvpms.web.app.subsystem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import nextapp.echo2.app.Component;
 
-import org.openvpms.web.component.workspace.Action;
-import org.openvpms.web.component.workspace.Workspace;
+import org.openvpms.web.component.subsystem.Action;
+import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.util.Messages;
 
 
@@ -14,7 +14,7 @@ import org.openvpms.web.util.Messages;
  * Generic CRUD workspace.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class CRUDWorkspace implements Workspace {
 
@@ -49,14 +49,13 @@ public class CRUDWorkspace implements Workspace {
     /**
      * Construct a new <code>CRUDWorkspace</code>.
      *
+     * @param id           the localisation identfifier
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
-     * @param id           the localisation identfifier
      */
-    public CRUDWorkspace(String refModelName, String entityName,
-                         String conceptName,
-                         String id) {
+    public CRUDWorkspace(String id, String refModelName, String entityName,
+                         String conceptName) {
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
@@ -64,9 +63,9 @@ public class CRUDWorkspace implements Workspace {
     }
 
     /**
-     * Returns the localised title for this workspace.
+     * Returns the localised title of this workspace.
      *
-     * @return the localised title for this workspace
+     * @return the localised title if this workspace
      */
     public String getTitle() {
         return Messages.get("workspace." + _id);

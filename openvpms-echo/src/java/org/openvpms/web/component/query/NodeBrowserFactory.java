@@ -16,7 +16,7 @@ import org.openvpms.web.component.TextComponentFactory;
  * Enter description here.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class NodeBrowserFactory {
 
@@ -63,12 +63,17 @@ public class NodeBrowserFactory {
 
     private static Component getTextField(IMObject object,
                                           NodeDescriptor descriptor) {
+        final int maxColumns = 32;
         TextComponent result;
         Pointer pointer = object.pathToObject(descriptor.getPath());
         if (descriptor.isLarge()) {
             result = TextComponentFactory.createTextArea(pointer);
         } else {
-            result = TextComponentFactory.create(pointer);
+            int columns = descriptor.getMaxLength();
+            if (columns > maxColumns) {
+                columns = maxColumns;
+            }
+            result = TextComponentFactory.create(pointer, columns);
         }
         return result;
     }

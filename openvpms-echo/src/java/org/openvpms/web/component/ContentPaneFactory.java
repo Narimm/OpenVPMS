@@ -8,7 +8,7 @@ import nextapp.echo2.app.ContentPane;
  * Factory for {@link ContentPane}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class ContentPaneFactory extends ComponentFactory {
 
@@ -25,7 +25,7 @@ public class ContentPaneFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new content pane, with a specific style and child component
+     * Create a new content pane, with a specific style and child component.
      *
      * @param style the style to use
      * @param child the child component

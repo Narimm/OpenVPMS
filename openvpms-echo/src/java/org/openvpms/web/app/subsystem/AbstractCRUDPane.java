@@ -1,4 +1,4 @@
-package org.openvpms.web.app.workspace;
+package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
@@ -34,10 +34,10 @@ import org.openvpms.web.util.Messages;
 
 
 /**
- * Enter description here.
+ * Abstract CRUD pane.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public abstract class AbstractCRUDPane extends SplitPane {
 

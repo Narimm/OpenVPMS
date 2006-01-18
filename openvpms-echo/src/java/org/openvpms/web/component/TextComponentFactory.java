@@ -14,7 +14,7 @@ import org.openvpms.web.component.bound.BoundTextField;
  * Factory for {@link TextComponent}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class TextComponentFactory extends ComponentFactory {
 
@@ -33,10 +33,11 @@ public class TextComponentFactory extends ComponentFactory {
      * Create a new bound text field.
      *
      * @param pointer a pointer to the field to update
+     * @param columns the no. of columns to display
      * @return a new bound text field
      */
-    public static TextField create(Pointer pointer) {
-        TextField text = new BoundTextField(pointer);
+    public static TextField create(Pointer pointer, int columns) {
+        TextField text = new BoundTextField(pointer, columns);
         text.setStyleName(Styles.DEFAULT);
         return text;
     }

@@ -1,19 +1,20 @@
-package org.openvpms.web.app.workspace;
+package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 
-import org.openvpms.web.component.workspace.Action;
-import org.openvpms.web.component.workspace.Workspace;
+import org.openvpms.web.component.subsystem.Action;
+import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.util.Messages;
 
+
 /**
- * Enter description here.
+ * Dummy workspace.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class DummyWorkspace extends Column implements Workspace {
 
@@ -33,9 +34,9 @@ public class DummyWorkspace extends Column implements Workspace {
     }
 
     /**
-     * Returns the localised title for this workspace.
+     * Returns the localised title of this workspace.
      *
-     * @return the localised title for this workspace
+     * @return the localised title of this workspace
      */
     public String getTitle() {
         return _title;
