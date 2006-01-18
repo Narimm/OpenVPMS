@@ -64,7 +64,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         FailedToFindObject,
         FailedToFindObjects,
         NoDaoConfigured,
-        FailedInGetByNamedQuery
+        FailedInGetByNamedQuery,
+        InvalidDomainClass
     }
 
     /**

@@ -170,7 +170,7 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
-    public Object create(ArchetypeId id) {
+    public IMObject create(ArchetypeId id) {
         ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(id);
         if (desc != null) {
             return create(desc);
@@ -184,7 +184,7 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(java.lang.String)
      */
-    public Object create(String name) {
+    public IMObject create(String name) {
         ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(name);
         if (desc != null) {
             return create(desc);
@@ -595,28 +595,27 @@ public class ArchetypeService implements IArchetypeService {
      * 
      * @param descriptor
      *            the archetype descriptor
-     * @return Object
+     * @return IMObject
      * @throws ArchetypeServiceException
      *             if it failed to create the object
      */
-    private Object create(ArchetypeDescriptor descriptor) {
-        Object obj = null;
+    private IMObject create(ArchetypeDescriptor descriptor) {
+        IMObject imobj = null;
         try {
             Class domainClass = Thread.currentThread().getContextClassLoader()
                     .loadClass(descriptor.getClassName());
-            obj = domainClass.newInstance();
-
-            // if the object is an instance of {@link IMObject}
-            if (obj instanceof IMObject) {
-                // cast to imobject and set the archetype and the uuid.
-                IMObject imobj = (IMObject) obj;
-                imobj.setArchetypeId(descriptor.getType());
-            } 
-
+            if (IMObject.class.isAssignableFrom(domainClass) == false) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.InvalidDomainClass,
+                        new Object[] {descriptor.getClassName()});
+            }
+            
+            imobj = (IMObject)domainClass.newInstance();
+            imobj.setArchetypeId(descriptor.getType());
 
             // first create a JXPath context and use it to process the nodes
             // in the archetype
-            JXPathContext context = JXPathContext.newContext(obj);
+            JXPathContext context = JXPathContext.newContext(imobj);
             context.setFactory(new JXPathGenericObjectCreationFactory());
             create(context, descriptor.getNodeDescriptors());
         } catch (Exception exception) {
@@ -627,7 +626,7 @@ public class ArchetypeService implements IArchetypeService {
                     exception);
         }
 
-        return obj;
+        return imobj;
     }
 
     /**

@@ -68,11 +68,11 @@ public interface IArchetypeService {
      * 
      * @param name
      *            the short name
-     * @preturn Object
+     * @preturn IMObject
      * @thorws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
-    public Object create(String name);
+    public IMObject create(String name);
     
     /**
      * Create a default domain object given an {@link ArchetypeId}. If the 
@@ -80,11 +80,11 @@ public interface IArchetypeService {
      * 
      * @param id
      *            the archetype id
-     * @return Object
+     * @return IMObject
      * @throws ArchetypeServiceException
      *            if there is a problem creating the object.            
      */
-    public Object create(ArchetypeId id);
+    public IMObject create(ArchetypeId id);
     
     /**
      * Validate the specified {@link IMObject}. To validate the object it will
