@@ -4,11 +4,12 @@ import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 
+
 /**
  * Enter description here.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public interface Editor {
 
@@ -40,13 +41,17 @@ public interface Editor {
 
     /**
      * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
      */
-    void save();
+    boolean save();
 
     /**
      * Delete the current object.
+     *
+     * @return <code>true</code> if the object was deleted successfully
      */
-    void delete();
+    boolean delete();
 
     /**
      * Cancel any edits.

@@ -36,9 +36,14 @@ public class CRUDWorkspace implements Workspace {
     private final String _conceptName;
 
     /**
-     * The localisation id.
+     * The subsystem localistion id.
      */
-    private final String _id;
+    private final String _subsystemId;
+
+    /**
+     * The workspace localisation id.
+     */
+    private final String _workspaceId;
 
     /**
      * The edit pane.
@@ -49,17 +54,20 @@ public class CRUDWorkspace implements Workspace {
     /**
      * Construct a new <code>CRUDWorkspace</code>.
      *
-     * @param id           the localisation identfifier
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      */
-    public CRUDWorkspace(String id, String refModelName, String entityName,
+    public CRUDWorkspace(String subsystemId, String workspaceId,
+                         String refModelName, String entityName,
                          String conceptName) {
+        _subsystemId = subsystemId;
+        _workspaceId = workspaceId;
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
-        _id = id;
     }
 
     /**
@@ -68,7 +76,7 @@ public class CRUDWorkspace implements Workspace {
      * @return the localised title if this workspace
      */
     public String getTitle() {
-        return Messages.get("workspace." + _id);
+        return Messages.get("workspace." + _subsystemId + "." + _workspaceId);
     }
 
     /**
@@ -104,8 +112,8 @@ public class CRUDWorkspace implements Workspace {
      */
     public Component getComponent() {
         if (_editPane == null) {
-            _editPane = new CRUDPane(_refModelName, _entityName,
-                    _conceptName, _id);
+            _editPane = new CRUDPane(_subsystemId, _workspaceId, _refModelName,
+                    _entityName, _conceptName);
         }
         return _editPane;
     }

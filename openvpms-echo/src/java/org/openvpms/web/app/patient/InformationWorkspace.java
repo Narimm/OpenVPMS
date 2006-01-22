@@ -15,7 +15,7 @@ public class InformationWorkspace extends CRUDWorkspace {
      * Construct a new <code>InformationWorkspace</code>.
      */
     public InformationWorkspace() {
-        super("patient.info", "party", "animal", "pet");
+        super("patient", "info", "party", "animal", "pet");
     }
 
 }

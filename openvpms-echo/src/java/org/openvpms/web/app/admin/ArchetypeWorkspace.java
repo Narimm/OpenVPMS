@@ -15,7 +15,7 @@ public class ArchetypeWorkspace extends CRUDWorkspace {
      * Construct a new <code>ArchetypeWorkspace</code>.
      */
     public ArchetypeWorkspace() {
-        super("admin.archetype", "system", "descriptor", null);
+        super("admin", "archetype", "system", "descriptor", null);
     }
 
 }

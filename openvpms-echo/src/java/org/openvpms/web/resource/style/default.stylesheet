@@ -59,10 +59,25 @@
         <properties>
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="200px"/>
+            <property name="background" value="#6B6D84"/>
         </properties>
     </style>
 
-    <style name="MainPane.Layout" type="nextapp.echo2.app.SplitPane">
+    <style name="MainPane.Left" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="50px"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Right" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="50px"/>
+        </properties>
+    </style>
+
+    <!--style name="MainPane.Layout" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="32px"/>
@@ -73,7 +88,7 @@
         <properties>
             <property name="background" value="#6B6D84"/>
         </properties>
-    </style>
+    </style-->
 
     <style name="MainPane.Menu.Button"
            type="nextapp.echo2.app.button.AbstractButton">
@@ -89,7 +104,11 @@
         </properties>
     </style>
 
-    <style name="MainPane.Workspace" type="nextapp.echo2.app.ContentPane"/>
+    <style name="MainPane.Workspace" type="nextapp.echo2.app.ContentPane">
+        <properties>
+            <property name="background" value="#ffffff"/>
+        </properties>
+    </style>
 
     <style name="ButtonRow" type="nextapp.echo2.app.Row">
         <properties>

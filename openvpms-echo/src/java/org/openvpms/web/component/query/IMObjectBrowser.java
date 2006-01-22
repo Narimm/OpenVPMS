@@ -24,10 +24,10 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Enter description here.
+ * {@link IMObject} browser.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class IMObjectBrowser extends Column {
 
@@ -44,6 +44,15 @@ public class IMObjectBrowser extends Column {
     public IMObjectBrowser(IMObject object) {
         _object = object;
         doLayout();
+    }
+
+    /**
+     * Returns the object being browsed.
+     *
+     * @return the object being browsed
+     */
+    public IMObject getObject() {
+        return _object;
     }
 
     /**
@@ -130,6 +139,10 @@ public class IMObjectBrowser extends Column {
         if (descriptor == null) {
             descriptor = service.getArchetypeDescriptor(
                     _object.getArchetypeId().getShortName());
+        }
+        if (descriptor == null) {
+            throw new IllegalArgumentException(
+                    "IMObject has no ArchetypeDescriptor: " + object);
         }
         return descriptor;
     }

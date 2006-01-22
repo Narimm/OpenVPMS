@@ -3,11 +3,9 @@ package org.openvpms.web.component;
 import java.util.List;
 
 import echopointng.table.PageableSortableTable;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumnModel;
 
@@ -16,14 +14,13 @@ import org.openvpms.web.component.model.IMObjectTableModel;
 
 
 /**
- * Enter description here.
+ * Paged, sortable table of {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
-public class IMObjectTable extends Column {
+public class IMObjectTable extends PageableSortableTable {
 
-    private Table _table;
     private List<IMObject> _objects;
 
     /**
@@ -33,14 +30,14 @@ public class IMObjectTable extends Column {
 
 
     public IMObjectTable() {
+        setStyleName("default");
         TableColumnModel columns = IMObjectTableModel.createColumnModel();
 
         IMObjectTableModel model = new IMObjectTableModel(columns);
         model.setRowsPerPage(_rowsPerPage);
-        _table = new PageableSortableTable(model, columns);
-        _table.setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
-        add(_table);
-        add(new TableNavigator(_table));
+        setModel(model);
+        setColumnModel(columns);
+        setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
     }
 
     public void setObjects(List<IMObject> objects) {
@@ -48,17 +45,17 @@ public class IMObjectTable extends Column {
         _objects = objects;
         IMObjectTableModel model = new IMObjectTableModel(objects, columns);
         model.setRowsPerPage(_rowsPerPage);
-        _table.setModel(model);
-        _table.setSelectionEnabled(true);
-    }
-
-    public void addActionListener(ActionListener listener) {
-        _table.addActionListener(listener);
+        setModel(model);
+        setSelectionEnabled(true);
     }
 
     public IMObject getSelected() {
-        int index = _table.getSelectionModel().getMinSelectedIndex();
+        int index = getSelectionModel().getMinSelectedIndex();
         return (index != -1) ? _objects.get(index) : null;
+    }
+
+    public int getRowsPerPage() {
+        return ((IMObjectTableModel) getModel()).getRowsPerPage();
     }
 
     /**

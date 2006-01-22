@@ -30,11 +30,12 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.spring.ServiceHelper;
 
+
 /**
- * Enter description here.
+ * Editor for {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class IMObjectEditor extends Column implements Editor {
 
@@ -52,6 +53,16 @@ public class IMObjectEditor extends Column implements Editor {
      * The parent descriptor. May be <code>null</code>.
      */
     private NodeDescriptor _descriptor;
+
+    /**
+     * Indicates if the object was saved.
+     */
+    private boolean _saved = false;
+
+    /**
+     * Indicates if the object was deleted.
+     */
+    private boolean _deleted = false;
 
     /**
      * The logger.
@@ -123,6 +134,25 @@ public class IMObjectEditor extends Column implements Editor {
     }
 
     /**
+     * Determines if the object has been changed.
+     *
+     * @return <code>true</code> if the object has been modified
+     */
+    public boolean isModified() {
+        return _saved;
+    }
+
+    /**
+     * Determines if the object has been deleted.
+     *
+     * @return <code>true</code> if the object has been deleted
+     */
+    public boolean isDeleted() {
+        return _deleted;
+    }
+
+
+    /**
      * Create a new object.
      */
     public void create() {
@@ -131,36 +161,52 @@ public class IMObjectEditor extends Column implements Editor {
 
     /**
      * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
      */
-    public void save() {
+    public boolean save() {
+        boolean saved = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
         if (doValidation()) {
             if (_parent == null) {
                 try {
                     service.save(_object);
+                    saved = true;
                 } catch (RuntimeException exception) {
                     ErrorDialog.show(exception);
                 }
             } else {
                 if (_object.isNew()) {
                     _descriptor.addChildToCollection(_parent, _object);
+                    saved = true;
                 }
             }
         }
+        _saved = saved;
+        return saved;
     }
 
     /**
      * Delete the current object.
+     *
+     * @return <code>true</code> if the object was deleted successfully
      */
-    public void delete() {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        if (!_object.isNew()) {
+    public boolean delete() {
+        boolean deleted = false;
+        if (_parent != null) {
+            _descriptor.removeChildFromCollection(_parent, _object);
+            deleted = true;
+        } else if (!_object.isNew()) {
             try {
+                IArchetypeService service = ServiceHelper.getArchetypeService();
                 service.remove(_object);
+                deleted = true;
             } catch (RuntimeException exception) {
                 ErrorDialog.show(exception);
             }
         }
+        _deleted |= deleted;
+        return deleted;
     }
 
     /**

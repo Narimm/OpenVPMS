@@ -4,8 +4,6 @@ import java.util.List;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
@@ -18,17 +16,15 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.editor.IMObjectEditor;
 import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.ButtonRow;
 import org.openvpms.web.component.ColumnFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.edit.EditButtonRow;
-import org.openvpms.web.component.edit.EditButtonRow.Buttons;
-import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.edit.EditWindowPane;
 import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.query.BrowserDialog;
+import org.openvpms.web.component.query.IMObjectBrowser;
 import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.util.Messages;
 
@@ -59,47 +55,43 @@ public abstract class AbstractCRUDPane extends SplitPane {
     private final String _conceptName;
 
     /**
-     * Localisation identifier.
+     * The subsystem localisation identifier.
+     */
+    private final String _subsystemId;
+
+    /**
+     * The fully qualified localisation identifier: &lt;subsystemId&gt;.&lt;workspaceId&gt;
      */
     private final String _id;
 
     /**
-     * Heading label.
+     * Selected customer's summary.
      */
-    private Label _heading;
+    private Label _summary;
 
     /**
-     * Selected customer's description.
+     * The customer browser.
      */
-    private Label _description;
-
-    /**
-     * The editor.
-     */
-    private DelegatingEditor _editor;
-
-    /**
-     * The edit pane.
-     */
-    private SplitPane _editPane;
+    private IMObjectBrowser _browser;
 
 
     /**
      * Construct a new <code>AbstractCRUDPane</code>.
      *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
-     * @param id           the localisation identfifier
      */
-    public AbstractCRUDPane(String refModelName, String entityName,
-                            String conceptName,
-                            String id) {
+    public AbstractCRUDPane(String subsystemId, String workspaceId, String refModelName,
+                            String entityName, String conceptName) {
         super(ORIENTATION_VERTICAL);
+        _subsystemId = subsystemId;
+        _id = _subsystemId + "." + workspaceId;
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
-        _id = id;
 
         doLayout();
     }
@@ -108,28 +100,32 @@ public abstract class AbstractCRUDPane extends SplitPane {
      * Lay out the components.
      */
     protected void doLayout() {
-        _heading = LabelFactory.create();
-        _heading.setText(getHeading());
-        Row heading = RowFactory.create("CRUDPane.Title", _heading);
+        Label heading = LabelFactory.create();
+        heading.setText(getHeading());
+        Row headingRow = RowFactory.create("CRUDPane.Title", heading);
 
-        String key = _id + ".select";
-        Button button = ButtonFactory.create(key, new ActionListener() {
+        Button select = ButtonFactory.create("select", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();
             }
         });
+        Button create = ButtonFactory.create("new", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onNew();
+            }
+        });
+        Button edit = ButtonFactory.create("edit", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onEdit();
+            }
+        });
 
-        _description = LabelFactory.create();
-        Row control = RowFactory.create("CRUDPane.ControlRow", button, _description);
-        Column top = ColumnFactory.create(heading, control);
+        _summary = LabelFactory.create();
+        Row control = RowFactory.create("CRUDPane.ControlRow", select, create,
+                edit, _summary);
+
+        Column top = ColumnFactory.create(headingRow, control);
         add(top);
-
-        _editor = new DelegatingEditor();
-        ButtonRow buttons = new EditButtonRow(_editor, Buttons.NEW_SAVE_DELETE);
-        _editPane = new SplitPane(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                new Extent(32));              // @todo - stylehseet
-        _editPane.add(buttons);
-        add(_editPane);
     }
 
     /**
@@ -138,16 +134,9 @@ public abstract class AbstractCRUDPane extends SplitPane {
      * @return the heading
      */
     protected String getHeading() {
-        String result;
-        if (_editor == null) {
-            result = Messages.get("workspace." + _id);
-        } else {
-            result = _editor.getObject().getName();
-            if (result == null) {
-                result = Messages.get("workspace." + _id + ".new");
-            }
-        }
-        return result;
+        String subsystem = Messages.get("subsystem." + _subsystemId);
+        String workspace = Messages.get("workspace." + _id);
+        return subsystem + " - " + workspace;
     }
 
     /**
@@ -180,7 +169,7 @@ public abstract class AbstractCRUDPane extends SplitPane {
     protected void create(String shortName) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         IMObject object = (IMObject) service.create(shortName);
-        setObject(object);
+        edit(object);
     }
 
     /**
@@ -204,8 +193,24 @@ public abstract class AbstractCRUDPane extends SplitPane {
     }
 
     /**
+     * Edit an IMObject.
+     *
+     * @param object the object to edit
+     */
+    protected void edit(IMObject object) {
+        final IMObjectEditor editor = new IMObjectEditor((IMObject) object);
+        EditWindowPane pane = new EditWindowPane(editor);
+        pane.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                onEditCompleted(editor);
+            }
+
+        });
+    }
+
+    /**
      * Invoked when the select button is pressed. This pops up an {@link
-     * Browser} to select an object for editiing.
+     * Browser} to select an object.
      */
     protected void onSelect() {
         final Browser browser = new Browser(_refModelName, _entityName,
@@ -226,97 +231,64 @@ public abstract class AbstractCRUDPane extends SplitPane {
     }
 
     /**
+     * Invoked when the new button is pressed. This popups up an {@link
+     * Editor}.
+     */
+    protected void onNew() {
+        create();
+    }
+
+    /**
+     * Invoked when the edit button is pressed. This popups up an {@link
+     * Editor}.
+     */
+    protected void onEdit() {
+        if (_browser == null) {
+            // no current object, pop up the browser
+            onSelect();
+        } else {
+            edit(_browser.getObject());
+        }
+    }
+
+    /**
+     * Invoked when the editor is closed.
+     *
+     * @param editor the editor
+     */
+    protected void onEditCompleted(IMObjectEditor editor) {
+        if (editor.isModified()) {
+            setObject(editor.getObject());
+        } else if (editor.isDeleted()) {
+            onDelete();
+        }
+    }
+
+    /**
+     * Invoked when the delete button is pressed.
+     */
+    protected void onDelete() {
+        if (_browser != null) {
+            remove(_browser);
+        }
+    }
+
+    /**
      * Sets the object.
      *
      * @param object the object
      */
     protected void setObject(IMObject object) {
-        _description.setText(object.getDescription());
-        _editPane.remove(_editor.getComponent());
-        _editor.setEditor(new IMObjectEditor(object));
-        _editPane.add(_editor.getComponent());
-        _heading.setText(getHeading());
-    }
+        String key = _id + ".summary";
+        String summary = Messages.get(key, object.getName(),
+                object.getDescription());
+        _summary.setText(summary);
 
-    /**
-     * Helper class for delegating methods from an {@link EditButtonRow} to the
-     * appropriate editor.
-     */
-    private class DelegatingEditor implements Editor {
-
-        /**
-         * The editor to delegate to.
-         */
-        private Editor _editor;
-
-        /**
-         * Set the editor to delegate to.
-         */
-        public void setEditor(Editor editor) {
-            _editor = editor;
+        if (_browser != null) {
+            remove(_browser);
         }
-
-        /**
-         * Returns a title for the editor.
-         *
-         * @return a title for the editor
-         */
-        public String getTitle() {
-            return (_editor != null) ? _editor.getTitle() : null;
-        }
-
-        /**
-         * Returns the editing component.
-         *
-         * @return the editing component
-         */
-        public Component getComponent() {
-            return (_editor != null) ? _editor.getComponent() : null;
-        }
-
-        /**
-         * Returns the object being edited.
-         *
-         * @return the object being edited
-         */
-        public IMObject getObject() {
-            return (_editor != null) ? _editor.getObject() : null;
-        }
-
-        /**
-         * Create a new object.
-         */
-        public void create() {
-            AbstractCRUDPane.this.create();
-        }
-
-        /**
-         * Save any edits.
-         */
-        public void save() {
-            if (_editor != null) {
-                _editor.save();
-            }
-        }
-
-        /**
-         * Delete the current object.
-         */
-        public void delete() {
-            if (_editor != null) {
-                _editor.delete();
-            }
-        }
-
-        /**
-         * Cancel any edits.
-         */
-        public void cancel() {
-            if (_editor != null) {
-                _editor.cancel();
-            }
-        }
-
+        _browser = new IMObjectBrowser(object);
+        add(_browser);
     }
 
 }

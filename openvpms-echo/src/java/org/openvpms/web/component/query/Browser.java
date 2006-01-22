@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
@@ -20,9 +21,10 @@ import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.TableNavigator;
 import org.openvpms.web.component.TextComponentFactory;
+import org.openvpms.web.component.model.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.util.Messages;
 
 
 /**
@@ -31,7 +33,7 @@ import org.openvpms.web.util.Messages;
  * it is displayed in the lower pane.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class Browser extends SplitPane {
 
@@ -66,11 +68,6 @@ public class Browser extends SplitPane {
     private String _shortName;
 
     /**
-     * Localised text indicating to query using all matching short names.
-     */
-    private final String _selectAll;
-
-    /**
      * The table to display results.
      */
     private IMObjectTable _table;
@@ -86,7 +83,12 @@ public class Browser extends SplitPane {
     private IMObjectBrowser _browser;
 
     /**
-     * Split pane for laying out the table and browser
+     * Split pane for laying out the table and navigation control
+     */
+    private SplitPane _tableLayout;
+
+    /**
+     * Split pane for laying out the table and browser.
      */
     private SplitPane _layout;
 
@@ -109,11 +111,6 @@ public class Browser extends SplitPane {
      * Name label id.
      */
     private static final String NAME_ID = "name";
-
-    /**
-     * Localisation key for the short names combo box.
-     */
-    private static final String SELECT_ALL = "selectfield.all";
 
     /**
      * Button row style name.
@@ -140,7 +137,6 @@ public class Browser extends SplitPane {
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
-        _selectAll = Messages.get(SELECT_ALL);
         doLayout();
     }
 
@@ -204,10 +200,9 @@ public class Browser extends SplitPane {
         // one matching short name.
         List<String> shortNames = getShortNames();
         if (shortNames.size() > 1) {
-            shortNames.add(0, _selectAll);
-            final SelectField shortNameSelector = SelectFieldFactory.create(
-                    shortNames.toArray());
-
+            ArchetypeShortNameListModel model
+                    = new ArchetypeShortNameListModel(shortNames, true);
+            final SelectField shortNameSelector = SelectFieldFactory.create(model);
             shortNameSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     setShortName((String) shortNameSelector.getSelectedItem());
@@ -247,8 +242,12 @@ public class Browser extends SplitPane {
 
         add(row);
 
+        TableNavigator navigator = new TableNavigator(_table);
+        _tableLayout = SplitPaneFactory.create(ORIENTATION_VERTICAL,
+                navigator, _table);
+        _tableLayout.setSeparatorPosition(new Extent(0, Extent.PX));
         _layout = SplitPaneFactory.create(
-                ORIENTATION_VERTICAL, LAYOUT_STYLE, _table);
+                ORIENTATION_VERTICAL, LAYOUT_STYLE, _tableLayout);
         add(_layout);
 
         onQuery();
@@ -273,7 +272,7 @@ public class Browser extends SplitPane {
         String type = getShortName();
         IArchetypeService service = ServiceHelper.getArchetypeService();
         List<IMObject> result = null;
-        if (type == null || type.equals(_selectAll)) {
+        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             result = service.get(_refModelName, _entityName,
                     _conceptName, getInstanceName(), true, true);
         } else {
@@ -291,6 +290,11 @@ public class Browser extends SplitPane {
         }
 
         _table.setObjects(result);
+        if (result.size() <= _table.getRowsPerPage()) {
+            _tableLayout.setSeparatorPosition(new Extent(0, Extent.PX));
+        } else {
+            _tableLayout.setSeparatorPosition(new Extent(32, Extent.PX));
+        }
     }
 
     /**

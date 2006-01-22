@@ -12,15 +12,15 @@ public class CRUDPane extends AbstractCRUDPane {
     /**
      * Construct a new <code>CRUDPane</code>.
      *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param id           the workspace localisation identfifier
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
-     * @param id           the localisation identfifier
      */
-    public CRUDPane(String refModelName, String entityName,
-                    String conceptName,
-                    String id) {
-        super(refModelName, entityName, conceptName, id);
+    public CRUDPane(String subsystemId, String id, String refModelName,
+                    String entityName, String conceptName) {
+        super(subsystemId, id, refModelName, entityName, conceptName);
     }
 
 }

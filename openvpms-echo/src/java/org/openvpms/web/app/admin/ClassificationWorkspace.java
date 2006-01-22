@@ -15,7 +15,7 @@ public class ClassificationWorkspace extends CRUDWorkspace {
      * Construct a new <code>ClassificationWorkspace</code>.
      */
     public ClassificationWorkspace() {
-        super("admin.classification", "common", "classification", null);
+        super("admin", "classification", "common", "classification", null);
     }
 
 }

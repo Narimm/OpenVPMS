@@ -7,10 +7,10 @@ import org.openvpms.web.component.ButtonRow;
 
 
 /**
- * Enter description here.
+ * A row of edit buttons connected to an {@link Editor}.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class EditButtonRow extends ButtonRow {
 
@@ -144,7 +144,7 @@ public class EditButtonRow extends ButtonRow {
     }
 
     /**
-     * Discardi any unsaved changes.
+     * Discard any unsaved changes.
      */
     protected void onCancel() {
         _editor.cancel();

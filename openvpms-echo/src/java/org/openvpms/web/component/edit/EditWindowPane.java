@@ -5,11 +5,12 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.web.component.dialog.PopupWindow;
 
+
 /**
- * Enter description here.
+ * A popup window that displays an {@link Editor}.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class EditWindowPane extends PopupWindow {
 
@@ -80,7 +81,6 @@ public class EditWindowPane extends PopupWindow {
         show();
     }
 
-
     /**
      * Save the current object.
      */
@@ -92,16 +92,18 @@ public class EditWindowPane extends PopupWindow {
      * Save the current object, and close the editor.
      */
     protected void onOK() {
-        _editor.save();
-        close();
+        if (_editor.save()) {
+            close();
+        }
     }
 
     /**
      * Delete the current object, and close the editor.
      */
     protected void onDelete() {
-        _editor.delete();
-        close();
+        if (_editor.delete()) {
+            close();
+        }
     }
 
     /**

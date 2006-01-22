@@ -43,7 +43,7 @@ public class AbstractSubsystem implements Subsystem {
      * @return a localised title for the subsystem.
      */
     public String getTitle() {
-        return Messages.get("subsystem." + _id + ".title");
+        return Messages.get("subsystem." + _id);
     }
 
     /**

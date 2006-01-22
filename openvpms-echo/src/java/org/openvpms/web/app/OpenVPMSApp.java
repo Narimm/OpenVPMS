@@ -10,10 +10,10 @@ import org.openvpms.web.spring.SpringApplicationInstance;
 
 
 /**
- * Enter description here.
+ * The entry point to the OpenVPMS application.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class OpenVPMSApp extends SpringApplicationInstance {
 
