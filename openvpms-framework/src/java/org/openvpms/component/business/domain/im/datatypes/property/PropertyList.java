@@ -146,4 +146,15 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
         return ToStringBuilder.reflectionToString(this, 
                 ToStringStyle.MULTI_LINE_STYLE);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.datatypes.property.NamedProperty#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PropertyList copy = (PropertyList)super.clone();
+        copy.properties = new HashSet<NamedProperty>(this.properties);
+        
+        return copy;
+    }
 }

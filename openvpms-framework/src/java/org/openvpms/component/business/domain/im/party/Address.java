@@ -159,4 +159,18 @@ public class Address extends IMObject {
     public void setParty(Party party) {
         this.party = party;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Address copy = (Address)super.clone();
+        copy.contacts = new HashSet<Contact>(this.contacts);
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.party = this.party;
+        
+        return copy;
+    }
 }

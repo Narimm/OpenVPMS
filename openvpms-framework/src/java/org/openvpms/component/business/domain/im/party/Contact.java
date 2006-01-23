@@ -195,4 +195,20 @@ public class Contact extends IMObject {
         
         return buf.toString();
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Contact copy = (Contact)super.clone();
+        copy.activeEndTime = (Date)(this.activeEndTime == null ?
+                null : this.activeEndTime.clone());
+        copy.activeStartTime = (Date)(this.activeStartTime == null ?
+                null : this.activeStartTime.clone());
+        copy.addresses = new HashSet<Address>(this.addresses);
+        copy.party = this.party;
+
+        return copy;
+    }
 }

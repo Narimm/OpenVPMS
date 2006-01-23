@@ -564,6 +564,23 @@ public class ArchetypeDescriptor extends Descriptor {
         
         return total;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ArchetypeDescriptor copy = (ArchetypeDescriptor)super.clone();
+        copy.className = this.className;
+        copy.displayName = this.displayName;
+        copy.isLatest = this.isLatest;
+        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(this.nodeDescriptors);
+        copy.primary = this.primary;
+        copy.type = (ArchetypeId)(this.type == null ?
+                null : this.type.clone());
+        
+        return copy;
+    }
 }
 
 

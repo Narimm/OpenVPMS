@@ -246,4 +246,26 @@ public class Participation extends IMObject {
     public void setEntity(Entity entity) {
         this.entity = entity;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Participation copy = (Participation)super.clone();
+        copy.act = this.act;
+        copy.activeEndTime = (Date)(this.activeEndTime == null ?
+                null : this.activeEndTime.clone());
+        copy.activeStartTime = (Date)(this.activeStartTime == null ?
+                null : this.activeEndTime.clone());
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.entity = this.entity;
+        copy.mode = this.mode;
+        copy.negationInd = this.negationInd;
+        copy.percentage = this.percentage;
+        copy.sequence = this.sequence;
+
+        return copy;
+    }
 }

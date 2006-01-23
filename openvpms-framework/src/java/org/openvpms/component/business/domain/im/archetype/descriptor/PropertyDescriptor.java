@@ -155,4 +155,17 @@ public class PropertyDescriptor  extends Descriptor {
             .append("properties", propertyDescriptors == null ? " NULL" : propertyDescriptors)
             .toString();
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PropertyDescriptor copy = (PropertyDescriptor)super.clone();
+        copy.propertyDescriptors = new HashMap<String, PropertyDescriptor>(this.propertyDescriptors);
+        copy.type = this.type;
+        copy.value = this.value;
+        
+        return copy;
+    }
 }

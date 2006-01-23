@@ -151,4 +151,21 @@ public class ProductPrice extends IMObject {
         return ToStringBuilder.reflectionToString(this, 
                 ToStringStyle.MULTI_LINE_STYLE);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ProductPrice copy = (ProductPrice)super.clone();
+        copy.fixed = this.fixed;
+        copy.fromDate = (Date)(this.fromDate == null ?
+                null : this.fromDate.clone());;
+        copy.price = this.price;
+        copy.product = this.product;
+        copy.thruDate  = (Date)(this.thruDate == null ?
+                null : this.thruDate.clone());
+        
+        return copy;
+    }
 }

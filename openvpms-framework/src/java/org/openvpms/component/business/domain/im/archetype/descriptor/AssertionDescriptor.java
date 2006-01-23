@@ -166,4 +166,17 @@ public class AssertionDescriptor extends Descriptor {
                 ToStringStyle.MULTI_LINE_STYLE);
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        AssertionDescriptor copy = (AssertionDescriptor)super.clone();
+        copy.errorMessage = this.errorMessage;
+        copy.propertyMap = (PropertyMap)(this.propertyMap == null ?
+                null : this.propertyMap.clone());
+        
+        return copy;
+    }
+
 }

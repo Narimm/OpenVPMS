@@ -143,4 +143,21 @@ public class EntityClassification extends IMObject {
     public void setActiveStartTime(Date activeStartTime) {
         this.activeStartTime = activeStartTime;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        EntityClassification copy = (EntityClassification)super.clone();
+        
+        copy.activeEndTime = (Date)(this.activeEndTime == null ?
+                null : this.activeEndTime.clone());
+        copy.activeStartTime = (Date)(this.activeStartTime == null ?
+                null : this.activeStartTime.clone());
+        copy.entity = this.entity;
+        copy.classification = this.classification;
+        
+        return copy;
+    }
 }

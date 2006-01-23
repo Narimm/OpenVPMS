@@ -123,4 +123,19 @@ public class Role extends Party {
     public void setActor(Actor actor) {
         this.actor = actor;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.party.Party#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Role copy = (Role)super.clone();
+        copy.activeEndTime = (Date)(this.activeEndTime == null ?
+                null : this.activeEndTime.clone());
+        copy.activeStartTime = (Date)(this.activeStartTime == null ?
+                null : this.activeStartTime.clone());
+        copy.actor = this.actor;
+        
+        return copy;
+    }
 }

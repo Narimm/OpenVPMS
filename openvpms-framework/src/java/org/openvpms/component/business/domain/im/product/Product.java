@@ -152,4 +152,20 @@ public class Product extends Entity {
         return ToStringBuilder.reflectionToString(this, 
                 ToStringStyle.MULTI_LINE_STYLE);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.Entity#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Product copy = (Product)super.clone();
+        copy.discontinuedDate = (Date)(this.discontinuedDate == null ?
+                null : this.discontinuedDate.clone());
+        copy.introductionDate = (Date)(this.introductionDate == null ?
+                null : this.introductionDate.clone());
+        copy.printedName = this.printedName;
+        copy.productPrices = new HashSet<ProductPrice>(this.productPrices);
+
+        return copy;
+    }
 }

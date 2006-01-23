@@ -53,6 +53,12 @@ public class Entity extends IMObject {
     private static final Logger logger = Logger.getLogger(Entity.class);
 
     /**
+     * An alternative name for this object, unique wirhin the domain of
+     * objects it belongs too.
+     */
+    private String code;
+    
+    /**
      * A placeholder for all entity details, which denotes the dynamic and
      * adaptive details of the entity.
      */
@@ -121,6 +127,20 @@ public class Entity extends IMObject {
         }
         
         this.details = details;
+    }
+
+    /**
+     * @return Returns the code.
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param code The code to set.
+     */
+    public void setCode(String code) {
+        this.code = code;
     }
 
     /**
@@ -351,6 +371,24 @@ public class Entity extends IMObject {
     @SuppressWarnings("unused")
     private void setSourceRelationships(Set<EntityRelationship> sourceRelationships) {
         this.sourceRelationships = sourceRelationships;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Entity copy = (Entity)super.clone();
+        copy.classifications = new HashSet<Classification>(this.classifications);
+        copy.code = this.code;
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.identities = new HashSet<EntityIdentity>(this.identities);
+        copy.participations = new HashSet<Participation>(this.participations);
+        copy.sourceRelationships = new HashSet<EntityRelationship>(this.sourceRelationships);
+        copy.targetRelationships = new HashSet<EntityRelationship>(this.targetRelationships);
+
+        return copy;
     }
 
 }

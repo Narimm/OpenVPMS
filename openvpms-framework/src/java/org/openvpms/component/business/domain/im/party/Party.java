@@ -154,4 +154,16 @@ public abstract class Party extends Entity {
         address.setParty(null);
         addresses.remove(address);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.Entity#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Party copy = (Party)super.clone();
+        copy.addresses = new HashSet<Address>(this.addresses);
+        copy.contacts = new HashSet<Contact>(this.contacts);
+      
+        return copy;
+    }
 }

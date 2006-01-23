@@ -102,5 +102,15 @@ public class Actor extends Party {
         role.setActor(null);
         roles.remove(role);
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.Entity#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Actor copy = (Actor)super.clone();
+        copy.roles = new HashSet<Role>(this.roles);
+        
+        return copy;
+    }
 }

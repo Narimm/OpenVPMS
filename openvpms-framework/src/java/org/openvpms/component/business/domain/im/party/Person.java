@@ -144,5 +144,19 @@ public class Person extends Actor {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.party.Actor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Person copy = (Person)super.clone();
+        copy.firstName = this.firstName;
+        copy.initials = this.initials;
+        copy.lastName = this.lastName;
+        copy.title = this.title;
+
+        return copy;
+    }
 }
 

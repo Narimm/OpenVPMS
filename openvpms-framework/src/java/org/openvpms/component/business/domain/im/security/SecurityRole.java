@@ -124,4 +124,16 @@ public class SecurityRole extends IMObject {
     public void removeUser(User user) {
         users.remove(user);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        SecurityRole copy = (SecurityRole)super.clone();
+        copy.authorities = new HashSet<ArchetypeAwareGrantedAuthority>(this.authorities);
+        copy.users = new HashSet<User>(this.users);
+        
+        return copy;
+    }
 }

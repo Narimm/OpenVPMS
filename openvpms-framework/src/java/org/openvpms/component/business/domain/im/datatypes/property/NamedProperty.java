@@ -78,4 +78,14 @@ public abstract class NamedProperty extends IMObject {
         return ToStringBuilder.reflectionToString(this, 
                 ToStringStyle.MULTI_LINE_STYLE);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        NamedProperty copy = (NamedProperty)super.clone();
+        
+        return copy;
+    }
 }

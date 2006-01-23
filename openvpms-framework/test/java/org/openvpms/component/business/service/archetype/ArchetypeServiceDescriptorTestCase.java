@@ -173,6 +173,56 @@ public class ArchetypeServiceDescriptorTestCase extends
     }
     
     /**
+     * Test that we can clone and save the cloned object in to the database
+     */
+    public void testCloneOnCreateArchetypeWithNodeDescriptor()
+    throws Exception {
+        ArchetypeDescriptor desc = createArchetypeDescriptor(
+                "openvpms-test-archetype.dummy.1.0", "thisClass", 
+                "archetype.dummy", true);
+        
+        NodeDescriptor ndesc = createNodeDescriptor("name", "/name", 
+                "java.lang.String", 1, 1);
+        desc.addNodeDescriptor(ndesc);
+        
+        try {
+            service.save(desc);
+        } catch (ValidationException ex) {
+            dumpValidationException(ex);
+            throw ex;
+        }
+        
+        // clone the object and resave it
+        ArchetypeDescriptor copy = (ArchetypeDescriptor)desc.clone();
+        copy.setName("openvpms-test-archetype.dummy.2.0");
+        copy.setClassName("thisClassAgain");
+        assertTrue(copy.getName().equals(desc.getName()) == false);
+        assertTrue(copy.getClassName().equals(desc.getClassName()) == false);
+        service.save(copy);
+       
+        // retrieve the cloned and saved object and ensure that the values
+        // are correct
+        ArchetypeDescriptor obj = (ArchetypeDescriptor)service.getById(copy.getArchetypeId(), copy.getUid());
+        assertTrue(obj != null);
+        assertTrue(obj.getNodeDescriptors().size() == 1);
+        assertTrue(copy.getName().equals(obj.getName()));
+        assertTrue(copy.getClassName().equals(obj.getClassName()));
+        
+        // clone the object again 
+        ArchetypeDescriptor copy2 = (ArchetypeDescriptor)copy.clone();
+        copy2.getNodeDescriptors().clear();
+        assertTrue(copy2.getNodeDescriptors().size() != copy.getNodeDescriptors().size());
+        service.save(copy2);
+        
+         // retrieve the object again and check the info
+        obj = (ArchetypeDescriptor)service.getById(copy2.getArchetypeId(), copy2.getUid());
+        assertTrue(obj != null);
+        assertTrue(obj.getNodeDescriptors().size() == 0);
+        assertTrue(copy2.getName().equals(obj.getName()));
+        assertTrue(copy2.getClassName().equals(obj.getClassName()));
+    }
+    
+    /**
      * Test loading arhetypes from file system in to the database
      */
     public void testLoadingArchetypesFromXML()

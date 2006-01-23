@@ -217,4 +217,20 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
     public void setRole(SecurityRole role) {
         this.role = role;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ArchetypeAwareGrantedAuthority copy = (ArchetypeAwareGrantedAuthority)super.clone();
+        copy.archetypeShortName = this.archetypeShortName;
+        copy.authority = this.authority;
+        copy.method = this.method;
+        copy.prefix = this.prefix;
+        copy.role = this.role;
+        copy.serviceName  = this.serviceName;
+        
+        return copy;
+    }
 }

@@ -48,7 +48,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeId implements Serializable {
+public class ArchetypeId implements Serializable, Cloneable {
 
     /**
      * Generated SUID
@@ -390,5 +390,22 @@ public class ArchetypeId implements Serializable {
     @SuppressWarnings("unused")
     private void setVersion(String version) {
         this.version = version;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ArchetypeId copy = (ArchetypeId)super.clone();
+        copy.concept = this.concept;
+        copy.entityName = this.entityName;
+        copy.namespace = this.namespace;
+        copy.qName = this.qName;
+        copy.rmName = this.rmName;
+        copy.shortName = this.shortName;
+        copy.version = this.version;
+        
+        return copy;
     }
 }

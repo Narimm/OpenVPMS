@@ -267,4 +267,16 @@ public class AssertionTypeDescriptor extends Descriptor {
         
         return descriptor;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        AssertionTypeDescriptor copy = (AssertionTypeDescriptor)super.clone();
+        copy.actionTypes = new TreeSet<ActionTypeDescriptor>(this.actionTypes);
+        copy.propertyArchetype = this.propertyArchetype;
+        
+        return copy;
+    }
 }

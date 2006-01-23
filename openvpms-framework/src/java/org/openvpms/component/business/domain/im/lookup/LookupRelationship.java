@@ -113,4 +113,18 @@ public class LookupRelationship extends IMObject {
     public String getType() {
         return type;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        LookupRelationship copy = (LookupRelationship)super.clone();
+        copy.source = this.source;
+        copy.target = this.target;
+        copy.type = this.type;
+        
+        return copy;
+    }
+
 }

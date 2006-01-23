@@ -79,7 +79,16 @@ public class ActionTypeDescriptor extends Descriptor {
     public void setMethodName(String methodName) {
         this.methodName = methodName;
     }
-    
-    
-    
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        ActionTypeDescriptor copy = (ActionTypeDescriptor)super.clone();
+        copy.className = this.className;
+        copy.methodName = this.methodName;
+        
+        return copy;
+    }
 }

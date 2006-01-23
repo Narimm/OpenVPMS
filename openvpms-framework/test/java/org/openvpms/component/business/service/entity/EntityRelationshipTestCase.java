@@ -145,6 +145,20 @@ public class EntityRelationshipTestCase extends
     }
     
     /**
+     * Test the we can clone and entity relationship object
+     */
+    public void testEntityRelationshipClone()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        Animal pet = createAnimal("buddy");
+        EntityRelationship rel = createEntityRelationship(person, pet);
+        EntityRelationship copy = (EntityRelationship)rel.clone();
+        copy.setReason("none at all");
+        assertTrue(rel.getReason() == null || rel.getReason().length() == 0);
+        assertTrue(copy.getReason() != null && copy.getReason().length() > 0);
+    }
+    
+    /**
      * Create a person
      * 
      * @param title

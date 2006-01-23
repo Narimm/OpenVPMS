@@ -52,7 +52,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyColl
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class IMObject implements Serializable {
+public abstract class IMObject implements Serializable, Cloneable {
 
     /**
      * SUID.
@@ -288,6 +288,27 @@ public abstract class IMObject implements Serializable {
      */
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        IMObject copy = (IMObject)super.clone();
+        
+        copy.active = this.active;
+        copy.archetypeId = (ArchetypeId)(this.archetypeId == null ? 
+                null : this.archetypeId.clone());
+        copy.description = this.description; 
+        copy.lastModified = (Date)(this.lastModified == null ? 
+                null :this.lastModified.clone());
+        copy.linkId = this.linkId;
+        copy.name = this.name;
+        copy.uid = this.uid;
+        copy.version = this.version;
+        
+        return copy;
     }
 
     /* (non-Javadoc)

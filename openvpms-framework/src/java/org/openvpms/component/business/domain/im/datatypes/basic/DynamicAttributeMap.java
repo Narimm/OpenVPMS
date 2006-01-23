@@ -23,6 +23,7 @@ package org.openvpms.component.business.domain.im.datatypes.basic;
 import java.io.Serializable;
 import java.util.HashMap;
 
+
 /**
  * This class is used to support dynamic attributes of a class, which is 
  * fundamental for dynamic object models. All dymamic attributes must support
@@ -32,11 +33,11 @@ import java.util.HashMap;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class DynamicAttributeMap extends DataValue {
+public class DynamicAttributeMap implements Serializable, Cloneable {
     /**
      * Generated SUID
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; 
     
     /**
      * Caches all the dynamic attributes
@@ -108,4 +109,14 @@ public class DynamicAttributeMap extends DataValue {
                 new Serializable[attributes.size()]);
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        DynamicAttributeMap copy = (DynamicAttributeMap)super.clone();
+        
+        copy.attributes = new HashMap<String, Serializable>(this.attributes);
+        return copy;
+    }
 }

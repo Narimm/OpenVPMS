@@ -102,4 +102,16 @@ public class AssertionProperty extends NamedProperty {
                 ToStringStyle.MULTI_LINE_STYLE);
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.datatypes.property.NamedProperty#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        AssertionProperty copy = (AssertionProperty)super.clone();
+        copy.type = this.type;
+        copy.value = this.value;
+        
+        return copy;
+    }
+
 }

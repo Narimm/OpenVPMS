@@ -138,6 +138,16 @@ public class EntityIdentityTestCase extends
     }
 
     /**
+     * Test that we can clone anEntityIdentities object.
+     */
+    public void testEntityIdentityClone() throws Exception {
+        EntityIdentity eidentity = createEntityIdentity("jimbo");
+        EntityIdentity copy = (EntityIdentity)eidentity.clone();
+        copy.setIdentity("jimmya");
+        assertTrue(copy.getIdentity().equals(eidentity.getIdentity()) == false);
+    }
+
+    /**
      * Create a person
      * 
      * @param title

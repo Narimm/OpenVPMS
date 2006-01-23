@@ -424,4 +424,36 @@ public class Act extends IMObject {
     public void removeParticipation(Participation participation) {
         this.participations.remove(participation);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Act copy = (Act)super.clone();
+        
+        copy.activityEndTime = (Date)(this.activityEndTime == null ?
+                null : this.activityEndTime.clone());
+        copy.activityStartTime = (Date)(this.activityStartTime == null ?
+                null : this.activityStartTime.clone());
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.effectiveEndTime = (Date)(this.effectiveEndTime == null ?
+                null : this.effectiveEndTime.clone());
+        copy.effectiveStartTime = (Date)(this.effectiveStartTime == null ?
+                null : this.effectiveStartTime.clone());
+        copy.mood = this.mood;
+        copy.negationInd = this.negationInd;
+        copy.participations = new HashSet<Participation>(this.participations);
+        copy.priority = this.priority;
+        copy.reason = this.reason;
+        copy.repeatNumber = this.repeatNumber;
+        copy.sourceActRelationships = new HashSet<ActRelationship>(this.sourceActRelationships);
+        copy.status = this.status;
+        copy.targetActRelationships = new HashSet<ActRelationship>(this.targetActRelationships);
+        copy.title = this.title;
+        
+        return copy;
+    }
+
 }

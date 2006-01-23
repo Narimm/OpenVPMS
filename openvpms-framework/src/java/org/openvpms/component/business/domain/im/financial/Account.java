@@ -67,4 +67,14 @@ public class Account extends Role {
             Set<Contact> contacts, DynamicAttributeMap details) {
         super(archetypeId, name, description, contacts, details);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.party.Role#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Account copy = (Account)super.clone();
+        
+        return copy;
+    }
 }

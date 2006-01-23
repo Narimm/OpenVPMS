@@ -223,4 +223,25 @@ public class EntityRelationship extends IMObject {
     public void setIdentity(EntityIdentity identity) {
         this.identity = identity;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        EntityRelationship copy = (EntityRelationship)super.clone();
+        copy.activeEndTime = (Date)(this.activeEndTime == null ?
+                null : this.activeEndTime.clone());
+        copy.activeStartTime = (Date)(this.activeStartTime == null ?
+                null : this.activeStartTime.clone());
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.identity = this.identity;
+        copy.reason = this.reason;
+        copy.sequence = this.sequence;
+        copy.source = this.source;
+        copy.target = this.target;
+        
+        return copy;
+    }
 }

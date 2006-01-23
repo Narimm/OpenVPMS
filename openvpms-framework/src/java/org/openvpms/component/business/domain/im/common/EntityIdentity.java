@@ -122,4 +122,18 @@ public class EntityIdentity extends IMObject {
     public void setEntity(Entity entity) {
         this.entity = entity;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        EntityIdentity copy = (EntityIdentity)super.clone();
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.entity = this.entity;
+        copy.identity = this.identity;
+        
+        return copy;
+    }
 }

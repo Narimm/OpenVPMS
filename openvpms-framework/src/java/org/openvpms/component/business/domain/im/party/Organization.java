@@ -55,4 +55,14 @@ public class Organization extends Actor {
     public Organization(ArchetypeId archetypeId, String name, String description) {
         super(archetypeId, name, description);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.party.Actor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Organization copy = (Organization)super.clone();
+
+        return copy;
+    }
 }

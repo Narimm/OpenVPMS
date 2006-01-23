@@ -171,4 +171,18 @@ public class Lookup extends IMObject {
             .append("code", code)
             .toString();
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Lookup copy = (Lookup)super.clone();
+        copy.code = this.code;
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.value = this.value;
+        
+        return copy;
+    }
 }

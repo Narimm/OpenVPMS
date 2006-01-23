@@ -157,4 +157,15 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
         return ToStringBuilder.reflectionToString(this, 
                 ToStringStyle.MULTI_LINE_STYLE);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.datatypes.property.NamedProperty#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PropertyMap copy = (PropertyMap)super.clone();
+        copy.properties = new HashMap<String, NamedProperty>(this.properties);
+        
+        return copy;
+    }
 }

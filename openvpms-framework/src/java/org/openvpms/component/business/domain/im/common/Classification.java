@@ -150,4 +150,19 @@ public class Classification extends IMObject {
     public void setDetails(DynamicAttributeMap details) {
         this.details = details;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Classification copy = (Classification)super.clone();
+        
+        copy.children = new HashSet<Classification>(this.children);
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
+        copy.parent = this.parent;
+
+        return copy;
+    }
 }

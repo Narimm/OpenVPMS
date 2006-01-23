@@ -82,5 +82,17 @@ public class PropertyTypeDescriptor extends Descriptor {
     public void setType(String type) {
         this.type = type;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PropertyTypeDescriptor copy = (PropertyTypeDescriptor)super.clone();
+        copy.required = this.required;
+        copy.type = this.type;
+        
+        return copy;
+    }
     
 }

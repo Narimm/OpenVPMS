@@ -182,4 +182,20 @@ public class Animal extends Actor {
     public void setSpecies(String species) {
         this.species = species;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.party.Actor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Animal copy = (Animal)super.clone();
+        copy.breed = this.breed;
+        copy.colour = this.colour;
+        copy.dateOfBirth = (Date)(this.dateOfBirth == null ?
+                null : this.dateOfBirth.clone());
+        copy.desexed = this.desexed;
+        copy.species = this.species;
+        
+        return copy;
+    }
 }

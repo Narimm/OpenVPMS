@@ -62,4 +62,14 @@ public abstract class Descriptor extends IMObject {
     public Descriptor() {
         super();
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Descriptor copy = (Descriptor)super.clone();
+        
+        return copy;
+    }
 }

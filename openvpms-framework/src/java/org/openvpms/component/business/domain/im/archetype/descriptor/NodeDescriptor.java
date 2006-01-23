@@ -22,6 +22,7 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1172,5 +1173,31 @@ public class NodeDescriptor  extends Descriptor {
         }
         
         return clazz;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        NodeDescriptor copy = (NodeDescriptor)super.clone();
+        copy.assertionDescriptors = new HashMap<String, AssertionDescriptor>(this.assertionDescriptors);
+        copy.baseName = this.baseName;
+        copy.clazz = this.clazz;
+        copy.defaultValue = this.defaultValue;
+        copy.derivedValue =  this.derivedValue;
+        copy.index = this.index;
+        copy.isDerived = this.isDerived;
+        copy.isHidden = this.isHidden;
+        copy.isParentChild = this.isParentChild;
+        copy.maxCardinality = this.maxCardinality;
+        copy.maxLength = this.maxLength;
+        copy.minCardinality = this.minCardinality;
+        copy.minLength = this.minLength;
+        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(this.nodeDescriptors);
+        copy.path = this.path;
+        copy.type = this.type;
+        
+        return copy;
     }
 }

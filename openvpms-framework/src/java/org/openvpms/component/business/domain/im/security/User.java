@@ -176,4 +176,16 @@ public class User extends Entity implements UserDetails {
         role.removeUser(this);
         roles.remove(role);
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.Entity#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        User copy = (User)super.clone();
+        copy.password = this.password;
+        copy.roles = new HashSet<SecurityRole>(this.roles);
+        
+        return copy;
+    }
 }
