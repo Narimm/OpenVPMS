@@ -17,7 +17,7 @@ import org.openvpms.web.component.model.IMObjectTableModel;
  * Paged, sortable table of {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class IMObjectTable extends PageableSortableTable {
 
@@ -28,10 +28,30 @@ public class IMObjectTable extends PageableSortableTable {
      */
     int _rowsPerPage = 15;
 
+    /**
+     * Determines if object may be deleted.
+     */
+    private final boolean _deletable;
 
+
+    /**
+     * Construct a new <code>IMObjectTable</code>.
+     */
     public IMObjectTable() {
+        this(false);
+    }
+
+    /**
+     * Construct a new <code>IMObjectTable</code>.
+     *
+     * @param deletable if <code>true</code>, add a column to mark objects for
+     *                  deletion
+     */
+    public IMObjectTable(boolean deletable) {
+        _deletable = deletable;
         setStyleName("default");
-        TableColumnModel columns = IMObjectTableModel.createColumnModel();
+        TableColumnModel columns
+                = IMObjectTableModel.createColumnModel(_deletable);
 
         IMObjectTableModel model = new IMObjectTableModel(columns);
         model.setRowsPerPage(_rowsPerPage);
@@ -40,8 +60,13 @@ public class IMObjectTable extends PageableSortableTable {
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
     }
 
+    /**
+     * Sets the objects to display in the table.
+     *
+     * @param objects the objects to display
+     */
     public void setObjects(List<IMObject> objects) {
-        TableColumnModel columns = IMObjectTableModel.createColumnModel();
+        TableColumnModel columns = IMObjectTableModel.createColumnModel(_deletable);
         _objects = objects;
         IMObjectTableModel model = new IMObjectTableModel(objects, columns);
         model.setRowsPerPage(_rowsPerPage);
@@ -49,11 +74,31 @@ public class IMObjectTable extends PageableSortableTable {
         setSelectionEnabled(true);
     }
 
+    /**
+     * Returns the selected object.
+     *
+     * @return the selected object, or <code>null</code> if no object is
+     *         selected
+     */
     public IMObject getSelected() {
         int index = getSelectionModel().getMinSelectedIndex();
         return (index != -1) ? _objects.get(index) : null;
     }
 
+    /**
+     * Returns the objects marked for deletion.
+     *
+     * @return the objects marked for deletion
+     */
+    public List<IMObject> getMarked() {
+        return ((IMObjectTableModel) getModel()).getMarked();
+    }
+
+    /**
+     * Returns the no. of rows per page.
+     *
+     * @return the no. of rows per page
+     */
     public int getRowsPerPage() {
         return ((IMObjectTableModel) getModel()).getRowsPerPage();
     }
@@ -79,18 +124,24 @@ public class IMObjectTable extends PageableSortableTable {
          *         behavior.)
          */
         public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
-            Label label;
-            if (value != null) {
-                label = new Label(value.toString());
+            Component component;
+            if (value instanceof Component) {
+                component = (Component) value;
             } else {
-                label = new Label();
+                Label label;
+                if (value != null) {
+                    label = new Label(value.toString());
+                } else {
+                    label = new Label();
+                }
+                component = label;
             }
             if (row % 2 == 0) {
-                label.setStyleName("Table.EvenRow");
+                component.setStyleName("Table.EvenRow");
             } else {
-                label.setStyleName("Table.OddRow");
+                component.setStyleName("Table.OddRow");
             }
-            return label;
+            return component;
         }
 
     }

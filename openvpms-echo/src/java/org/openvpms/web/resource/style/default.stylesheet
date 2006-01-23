@@ -47,6 +47,15 @@
         </properties>
     </style>
 
+    <style name="ApplicationContentPane.Layout"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="50px"/>
+            <property name="background" value="#6B6D84"/>
+        </properties>
+    </style>
+
     <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
         <properties>
             <property name="background" value="#6B6D84"/>
@@ -66,14 +75,14 @@
     <style name="MainPane.Left" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="50px"/>
+            <property name="separatorPosition" value="32px"/>
         </properties>
     </style>
 
     <style name="MainPane.Right" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="50px"/>
+            <property name="separatorPosition" value="32px"/>
         </properties>
     </style>
 
@@ -220,7 +229,7 @@
            type="nextapp.echo2.app.WindowPane">
     </style>
 
-    <style name="Table.EvenRow" type="nextapp.echo2.app.Label">
+    <style name="Table.EvenRow" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
@@ -233,7 +242,7 @@
         </properties>
     </style>
 
-    <style name="Table.OddRow" type="nextapp.echo2.app.Label">
+    <style name="Table.OddRow" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
                 <layout-data type="nextapp.echo2.app.layout.TableLayoutData">

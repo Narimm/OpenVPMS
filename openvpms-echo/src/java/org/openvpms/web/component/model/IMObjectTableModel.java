@@ -5,40 +5,52 @@ import java.util.List;
 
 import echopointng.table.DefaultPageableSortableTableModel;
 import echopointng.table.SortableTableColumn;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.IMObjectTable;
 import org.openvpms.web.util.Messages;
 
 
 /**
- * Enter description here.
+ * Table model for {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate$
+ * @see IMObjectTable
  */
 public class IMObjectTableModel extends DefaultPageableSortableTableModel {
 
     /**
-     * Id column index.
+     * Delete column index.
      */
-    public static final int ID_COLUMN = 0;
+    public static final int DELETE_INDEX = 0;
 
     /**
-     * Type column index.
+     * Id column index.
      */
-    public static final int TYPE_COLUMN = 1;
+    public static final int ID_INDEX = 1;
 
     /**
      * Name column index.
      */
-    public static final int NAME_COLUMN = 2;
+    public static final int NAME_INDEX = 2;
 
     /**
      * Description column index.
      */
-    public static final int DESCRIPTION_COLUMN = 3;
+    public static final int DESCRIPTION_INDEX = 3;
+
+    /**
+     * Determines if the delete column is displayed.
+     */
+    private boolean _showDelete;
 
     /**
      * The objects.
@@ -46,10 +58,16 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     private List<IMObject> _objects;
 
     /**
+     * Check boxes to mark objects for deletion. @todo should only need two, one
+     * per state.
+     */
+    private List<CheckBox> _marks;
+
+    /**
      * Table column identifiers.
      */
     private static final String[] COLUMNS = {
-            "id", "type", "name", "description"};
+            "delete", "id", "name", "description"};
 
     /**
      * Construct an unpopulated  <code>IMObjectTableModel</code>.
@@ -66,6 +84,21 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     public IMObjectTableModel(List<IMObject> objects, TableColumnModel model) {
         super(model);
         _objects = objects;
+        _showDelete = (model.getColumnCount() == COLUMNS.length);
+
+        if (_showDelete) {
+            _marks = new ArrayList<CheckBox>(_objects.size());
+            ActionListener listener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                }
+            };
+            for (int i = 0; i < _objects.size(); ++i) {
+                CheckBox box = new CheckBox();
+                box.addActionListener(listener);
+                _marks.add(box);
+            }
+        }
+
         for (int row = 0; row < _objects.size(); ++row) {
             for (int col = 0; col < getColumnCount(); ++col) {
                 setValueAt(getValue(col, row), col, row);
@@ -74,23 +107,55 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     }
 
     /**
-     * Returns the number of COLUMNS in the table.
-     *
-     * @return the column count
+     * @see TableModel#getColumnCount()
      */
     public int getColumnCount() {
-        return COLUMNS.length;
+        return (_showDelete) ? COLUMNS.length : COLUMNS.length - 1;
     }
 
     /**
-     * Returns the name of the specified column number.
-     *
-     * @param column the column index (0-based)
-     * @return the column name
+     * @see TableModel#getColumnName
      */
     public String getColumnName(int column) {
-        String key = "table.imobject." + COLUMNS[column];
+        int index = (_showDelete) ? column : column + 1;
+        String key = "table.imobject." + COLUMNS[index];
         return Messages.get(key);
+    }
+
+    /**
+     * Returns the list of objects marked for deletion.
+     *
+     * @return the list of objects marked for deletion
+     */
+    public List<IMObject> getMarked() {
+        List<IMObject> result = new ArrayList<IMObject>();
+        if (_showDelete) {
+            int rows = getTotalRows();
+            for (int row = 0; row < rows; ++row) {
+                if (_marks.get(row).isSelected()) {
+                    result.add(_objects.get(row));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Helper to create a column model.
+     *
+     * @param deletable if <code>true</code>, add a column to enable deletions
+     * @return a new column model
+     */
+    public static TableColumnModel createColumnModel(boolean deletable) {
+        TableColumnModel model = new DefaultTableColumnModel();
+        int index = 0;
+        if (deletable) {
+            model.addColumn(new TableColumn(index));
+        }
+        for (++index; index < COLUMNS.length; ++index) {
+            model.addColumn(new SortableTableColumn(index));
+        }
+        return model;
     }
 
     /**
@@ -101,19 +166,20 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
      * @param row    the row index (0-based)
      */
     protected Object getValue(int column, int row) {
-        Object result = null;
+        Object result;
         IMObject object = _objects.get(row);
-        switch (column) {
-            case ID_COLUMN:
+        int index = getIndex(column);
+        switch (index) {
+            case DELETE_INDEX:
+                result = _marks.get(row);
+                break;
+            case ID_INDEX:
                 result = new Long(object.getUid());
                 break;
-            case TYPE_COLUMN:
-                result = object.getArchetypeId().getConcept();
-                break;
-            case NAME_COLUMN:
+            case NAME_INDEX:
                 result = object.getName();
                 break;
-            case DESCRIPTION_COLUMN:
+            case DESCRIPTION_INDEX:
                 result = object.getDescription();
                 break;
             default:
@@ -123,15 +189,12 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     }
 
     /**
-     * Helper to create a column model.
+     * Returns the index of a column.
      *
-     * @return a new column model
+     * @param column the column
+     * @return the index corresponding to <code>column</code<
      */
-    public static TableColumnModel createColumnModel() {
-        TableColumnModel model = new DefaultTableColumnModel();
-        for (int i = 0; i < COLUMNS.length; ++i) {
-            model.addColumn(new SortableTableColumn(i));
-        }
-        return model;
+    private int getIndex(int column) {
+        return (_showDelete) ? column : column + 1;
     }
 }

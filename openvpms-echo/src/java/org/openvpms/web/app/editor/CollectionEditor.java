@@ -2,9 +2,7 @@ package org.openvpms.web.app.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -14,10 +12,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.IMObjectTable;
@@ -30,10 +28,11 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Enter description here.
+ * Editor for a collection of {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
+ * @see IMObjectEditor
  */
 public class CollectionEditor extends Column {
 
@@ -74,20 +73,25 @@ public class CollectionEditor extends Column {
         doLayout();
     }
 
+    /**
+     * Lays out the component.
+     */
     protected void doLayout() {
         setStyleName("Editor");
-        Button create = ButtonFactory.create("new", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onNew();
-            }
-        });
 
         Button delete = ButtonFactory.create("delete", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onDelete();
             }
         });
-        Row row = RowFactory.create(create, delete);
+
+        Button create = ButtonFactory.create("new", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onNew();
+            }
+        });
+
+        Row row = RowFactory.create(delete, create);
         row.setStyleName("Editor.ControlRow");
 
         String[] range = _descriptor.getArchetypeRange();
@@ -97,6 +101,8 @@ public class CollectionEditor extends Column {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(range);
             final SelectField archetypeNames = SelectFieldFactory.create(range);
+            _shortname = (String) archetypeNames.getSelectedItem();
+
             archetypeNames.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     int index = archetypeNames.getSelectedIndex();
@@ -112,12 +118,19 @@ public class CollectionEditor extends Column {
         populate();
     }
 
+    /**
+     * Populates the table.
+     */
     protected void populate() {
         Collection values = getValues();
         int size = values.size();
         if (size != 0) {
             if (_table == null) {
-                _table = new IMObjectTable();
+                boolean deletable = false;
+                if (_descriptor.isParentChild()) {
+                    deletable = true;
+                }
+                _table = new IMObjectTable(deletable);
                 _table.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         onEdit();
@@ -148,6 +161,10 @@ public class CollectionEditor extends Column {
         }
     }
 
+    /**
+     * Invoked when the "New" button is pressed. Creates a new instance of the
+     * selected archetype, and pops up an editor for it.
+     */
     protected void onNew() {
         if (_shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -158,9 +175,27 @@ public class CollectionEditor extends Column {
         }
     }
 
+    /**
+     * Deletes the selected object.
+     */
     protected void onDelete() {
+        List<IMObject> marked = _table.getMarked();
+        if (!marked.isEmpty()) {
+            Collection values = getValues();
+            values.removeAll(marked);
+
+/*
+            for (IMObject child : marked) {
+                _descriptor.removeChildFromCollection(_object, child);
+            }
+*/
+            populate();
+        }
     }
 
+    /**
+     * Edits the selected object.
+     */
     protected void onEdit() {
         IMObject object = _table.getSelected();
         if (object != null) {
@@ -170,6 +205,11 @@ public class CollectionEditor extends Column {
         }
     }
 
+    /**
+     * Edit an object. This pops up a window containing the editor.
+     *
+     * @param editor the editor
+     */
     protected void edit(final IMObjectEditor editor) {
         EditWindowPane pane = new EditWindowPane(editor);
         pane.addWindowPaneListener(new WindowPaneListener() {
@@ -179,26 +219,25 @@ public class CollectionEditor extends Column {
         });
     }
 
-
+    /**
+     * Invoked when an editor is closed. This populates the table if the edited
+     * object changed.
+     *
+     * @param editor the editor
+     */
     private void onEditCompleted(IMObjectEditor editor) {
         if (editor.isModified() || editor.isDeleted()) {
             populate();
         }
     }
 
+    /**
+     * Helper to return the underlying collection.
+     *
+     * @return the underlying collection
+     */
     private Collection getValues() {
-        Object object = _descriptor.getValue(_object);
-        Collection values = null;
-        if (object instanceof Collection) {
-            values = (Collection) object;
-        } else if (object instanceof Map) {
-            values = ((Map) object).values();
-        } else if (object instanceof PropertyList) {
-            values = ((PropertyList) object).values();
-        }
-        if (values == null) {
-            values = Collections.EMPTY_LIST;
-        }
-        return values;
+        Pointer pointer = _object.pathToCollection(_descriptor.getPath());
+        return (Collection) pointer.getValue();
     }
 }

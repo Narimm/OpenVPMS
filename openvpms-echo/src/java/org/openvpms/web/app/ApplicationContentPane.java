@@ -1,8 +1,10 @@
 package org.openvpms.web.app;
 
 import nextapp.echo2.app.ContentPane;
+import nextapp.echo2.app.SplitPane;
 
 import org.openvpms.web.component.ComponentFactory;
+import org.openvpms.web.component.SplitPaneFactory;
 
 /**
  * Enter description here.
@@ -11,6 +13,12 @@ import org.openvpms.web.component.ComponentFactory;
  * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
 public class ApplicationContentPane extends ContentPane {
+
+    /**
+     * The layout pane style name.
+     */
+    private static final String LAYOUT_STYLE = "ApplicationContentPane.Layout";
+
 
     /**
      * Construact a new <code>ApplicationContentPane</code>
@@ -28,13 +36,11 @@ public class ApplicationContentPane extends ContentPane {
 
     protected void doLayout() {
         ComponentFactory.setDefaults(this);
-/*
-        SplitPane split = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL);
-        split.add(new TitlePane());
-        split.add(new MainPane());
-        add(split);
-*/
-        add(new MainPane());
+        SplitPane layout = SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
+        layout.add(new TitlePane());
+        layout.add(new MainPane());
+        add(layout);
     }
 
 }

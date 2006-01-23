@@ -168,21 +168,28 @@ public class IMObjectEditor extends Column implements Editor {
         boolean saved = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
         if (doValidation()) {
-            if (_parent == null) {
-                try {
+            try {
+                if (_parent == null) {
                     service.save(_object);
                     saved = true;
-                } catch (RuntimeException exception) {
-                    ErrorDialog.show(exception);
+                } else {
+                    if (_object.isNew()) {
+                        _descriptor.addChildToCollection(_parent, _object);
+                        saved = true;
+                    } else if (_parent != null && !_parent.isNew()) {
+                        service.save(_object);
+                        saved = true;
+                    } else {
+                        // new parent, new child. Parent must be saved first.
+                        // Not a failure, so return true.
+                        saved = true;
+                    }
                 }
-            } else {
-                if (_object.isNew()) {
-                    _descriptor.addChildToCollection(_parent, _object);
-                    saved = true;
-                }
+            } catch (RuntimeException exception) {
+                ErrorDialog.show(exception);
             }
         }
-        _saved = saved;
+        _saved |= saved;
         return saved;
     }
 
