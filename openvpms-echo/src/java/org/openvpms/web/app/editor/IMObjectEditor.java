@@ -11,6 +11,9 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +31,7 @@ import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.list.LookupListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -53,6 +57,11 @@ public class IMObjectEditor extends Column implements Editor {
      * The parent descriptor. May be <code>null</code>.
      */
     private NodeDescriptor _descriptor;
+
+    /**
+     * Lookup fields. These may beed to be refreshed.
+     */
+    private List<SelectField> _lookups = new ArrayList<SelectField>();
 
     /**
      * Indicates if the object was saved.
@@ -151,7 +160,6 @@ public class IMObjectEditor extends Column implements Editor {
         return _deleted;
     }
 
-
     /**
      * Create a new object.
      */
@@ -227,7 +235,7 @@ public class IMObjectEditor extends Column implements Editor {
 
     protected void doLayout() {
         setStyleName("Editor");
-        ILookupService lookup = ServiceHelper.getLookupService();
+        ILookupService service = ServiceHelper.getLookupService();
         ArchetypeDescriptor descriptor = getArchetypeDescriptor(_object);
         List<NodeDescriptor> descriptors = descriptor.getSimpleNodeDescriptors();
         if (!descriptors.isEmpty()) {
@@ -237,7 +245,16 @@ public class IMObjectEditor extends Column implements Editor {
                     Label label = LabelFactory.create();
                     label.setText(nodeDesc.getDisplayName());
                     Component editor = NodeEditorFactory.create(_object, nodeDesc,
-                            lookup);
+                            service);
+                    if (editor instanceof SelectField) {
+                        SelectField lookup = (SelectField) editor;
+                        lookup.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent event) {
+                                refreshLookups((SelectField) event.getSource());
+                            }
+                        });
+                        _lookups.add(lookup);
+                    }
                     grid.add(label);
                     grid.add(editor);
                 }
@@ -249,7 +266,7 @@ public class IMObjectEditor extends Column implements Editor {
             DefaultTabModel model = new DefaultTabModel();
             for (NodeDescriptor nodeDesc : descriptors) {
                 Component editor = NodeEditorFactory.create(_object, nodeDesc,
-                        lookup);
+                        service);
                 model.addTab(nodeDesc.getDisplayName(), editor);
             }
             TabbedPane pane = new TabbedPane();
@@ -297,6 +314,15 @@ public class IMObjectEditor extends Column implements Editor {
                     _object.getArchetypeId().getShortName());
         }
         return descriptor;
+    }
+
+    protected void refreshLookups(SelectField source) {
+        for (SelectField lookup : _lookups) {
+            if (source != lookup) {
+                LookupListModel model = (LookupListModel) lookup.getModel();
+                model.refresh();
+            }
+        }
     }
 
     protected boolean doValidation() {

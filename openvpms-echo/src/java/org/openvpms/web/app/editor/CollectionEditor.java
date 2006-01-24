@@ -79,13 +79,13 @@ public class CollectionEditor extends Column {
     protected void doLayout() {
         setStyleName("Editor");
 
-        Button delete = ButtonFactory.create("delete", new ActionListener() {
+        Button delete = ButtonFactory.create("minus", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onDelete();
             }
         });
 
-        Button create = ButtonFactory.create("new", new ActionListener() {
+        Button create = ButtonFactory.create("plus", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
             }
@@ -115,6 +115,19 @@ public class CollectionEditor extends Column {
         }
 
         add(row);
+
+        boolean deletable = false;
+        if (_descriptor.isParentChild()) {
+            deletable = true;
+        }
+        _table = new IMObjectTable(deletable);
+        _table.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onEdit();
+            }
+        });
+        add(_table);
+
         populate();
     }
 
@@ -125,20 +138,6 @@ public class CollectionEditor extends Column {
         Collection values = getValues();
         int size = values.size();
         if (size != 0) {
-            if (_table == null) {
-                boolean deletable = false;
-                if (_descriptor.isParentChild()) {
-                    deletable = true;
-                }
-                _table = new IMObjectTable(deletable);
-                _table.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        onEdit();
-                    }
-                });
-                add(_table);
-            }
-
             List<IMObject> objects = new ArrayList<IMObject>();
             for (Object value : values) {
                 objects.add((IMObject) value);
@@ -153,7 +152,7 @@ public class CollectionEditor extends Column {
             } else if (_navigator != null && size <= rowsPerPage) {
                 remove(_navigator);
             }
-        } else if (_table != null) {
+        } else {
             _table.setObjects(new ArrayList<IMObject>());
             if (_navigator != null) {
                 remove(_navigator);
@@ -169,7 +168,7 @@ public class CollectionEditor extends Column {
         if (_shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             IMObject object = (IMObject) service.create(_shortname);
-            IMObjectEditor editor = new IMObjectEditor((IMObject) object,
+            IMObjectEditor editor = new IMObjectEditor(object,
                     _object, _descriptor);
             edit(editor);
         }
@@ -183,12 +182,6 @@ public class CollectionEditor extends Column {
         if (!marked.isEmpty()) {
             Collection values = getValues();
             values.removeAll(marked);
-
-/*
-            for (IMObject child : marked) {
-                _descriptor.removeChildFromCollection(_object, child);
-            }
-*/
             populate();
         }
     }

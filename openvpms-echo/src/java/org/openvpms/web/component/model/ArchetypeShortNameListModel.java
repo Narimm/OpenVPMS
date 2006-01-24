@@ -15,7 +15,7 @@ import org.openvpms.web.util.Messages;
  * Archetype short name list model.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class ArchetypeShortNameListModel extends AbstractListModel {
 
@@ -27,7 +27,7 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
     /**
      * Localised displlay name for "all".
      */
-    private final String ALL_LOCALISED = Messages.get("selectfield.all");
+    private final String ALL_LOCALISED = Messages.get("list.all");
 
     /**
      * The short names. The first column is the short name, the second the
@@ -119,7 +119,7 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
     }
 
     /**
-     * Returns the short name at the specified index in the list
+     * Returns the short name at the specified index in the list.
      *
      * @param index the index
      * @return the short name

@@ -1,22 +1,22 @@
 package org.openvpms.web.app.editor;
 
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.list.ListModel;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.TextComponentFactory;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateField;
-import org.openvpms.web.component.model.LookupListModel;
+import org.openvpms.web.component.list.LookupListCellRenderer;
+import org.openvpms.web.component.list.LookupListModel;
 import org.openvpms.web.component.validator.NodeValidator;
 import org.openvpms.web.component.validator.ValidatingPointer;
 
@@ -89,10 +89,10 @@ public class NodeEditorFactory {
                                              NodeDescriptor descriptor,
                                              ILookupService lookup) {
         Pointer pointer = getPointer(object, descriptor);
-        List<Lookup> values = lookup.get(descriptor, object);
-        LookupListModel list = new LookupListModel(values,
-                !descriptor.isRequired());
-        return SelectFieldFactory.create(pointer, list);
+        ListModel model = new LookupListModel(object, descriptor, lookup);
+        SelectField field = SelectFieldFactory.create(pointer, model);
+        field.setCellRenderer(new LookupListCellRenderer());
+        return field;
     }
 
     private static Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
