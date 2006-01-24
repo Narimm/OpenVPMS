@@ -178,7 +178,7 @@
         <properties>
             <property name="modal" value="true"/>
             <property name="width" value="800px"/>
-            <property name="height" value="800px"/>
+            <property name="height" value="600px"/>
         </properties>
     </style>
 

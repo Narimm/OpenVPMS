@@ -33,7 +33,7 @@ import org.openvpms.web.util.Messages;
  * Abstract CRUD pane.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public abstract class AbstractCRUDPane extends SplitPane {
 
@@ -204,7 +204,6 @@ public abstract class AbstractCRUDPane extends SplitPane {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor);
             }
-
         });
     }
 
@@ -257,10 +256,10 @@ public abstract class AbstractCRUDPane extends SplitPane {
      * @param editor the editor
      */
     protected void onEditCompleted(IMObjectEditor editor) {
-        if (editor.isModified()) {
-            setObject(editor.getObject());
-        } else if (editor.isDeleted()) {
+        if (editor.isDeleted()) {
             onDelete();
+        } else if (editor.isModified()) {
+            setObject(editor.getObject());
         }
     }
 
@@ -269,7 +268,7 @@ public abstract class AbstractCRUDPane extends SplitPane {
      */
     protected void onDelete() {
         if (_browser != null) {
-            remove(_browser);
+            remove(_browser.getComponent());
         }
     }
 
@@ -285,10 +284,10 @@ public abstract class AbstractCRUDPane extends SplitPane {
         _summary.setText(summary);
 
         if (_browser != null) {
-            remove(_browser);
+            remove(_browser.getComponent());
         }
         _browser = new IMObjectBrowser(object);
-        add(_browser);
+        add(_browser.getComponent());
     }
 
 }

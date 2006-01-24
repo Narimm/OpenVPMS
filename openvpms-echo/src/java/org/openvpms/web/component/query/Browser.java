@@ -23,17 +23,19 @@ import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.TableNavigator;
 import org.openvpms.web.component.TextComponentFactory;
+import org.openvpms.web.component.im.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.SinglePageLayoutStrategy;
 import org.openvpms.web.component.model.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Browser of IMObject instances. In the upper pane, a table displays criteria a
- * displayed in a table. When an object is selected from the table, a summary of
- * it is displayed in the lower pane.
+ * Browser of IMObject instances. In the left pane, a table displays IMObjects
+ * matching the specified criteria. When an object is selected from the table, a
+ * summary of it is displayed in the right pane.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class Browser extends SplitPane {
 
@@ -247,7 +249,7 @@ public class Browser extends SplitPane {
                 navigator, _table);
         _tableLayout.setSeparatorPosition(new Extent(0, Extent.PX));
         _layout = SplitPaneFactory.create(
-                ORIENTATION_VERTICAL, LAYOUT_STYLE, _tableLayout);
+                ORIENTATION_HORIZONTAL, LAYOUT_STYLE, _tableLayout);
         add(_layout);
 
         onQuery();
@@ -303,10 +305,11 @@ public class Browser extends SplitPane {
     private void onSelect() {
         _selected = _table.getSelected();
         if (_browser != null) {
-            _layout.remove(_browser);
+            _layout.remove(_browser.getComponent());
         }
-        _browser = new IMObjectBrowser(_selected);
-        _layout.add(_browser);
+        IMObjectLayoutStrategy layout = new SinglePageLayoutStrategy(true);
+        _browser = new IMObjectBrowser(_selected, layout);
+        _layout.add(_browser.getComponent());
     }
 
 }

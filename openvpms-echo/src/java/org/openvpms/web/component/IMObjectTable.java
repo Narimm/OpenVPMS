@@ -116,8 +116,8 @@ public class IMObjectTable extends PageableSortableTable {
          *               occurring
          * @param value  the value retrieved from the <code>TableModel</code>
          *               for the specified coordinate
-         * @param column the column index to render
-         * @param row    the row index to render
+         * @param column the column index to apply
+         * @param row    the row index to apply
          * @return a component representation  of the value (This component must
          *         be unique.  Returning a single instance of a component across
          *         multiple calls to this method will result in undefined

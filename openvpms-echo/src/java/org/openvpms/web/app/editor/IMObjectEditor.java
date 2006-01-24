@@ -5,18 +5,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import echopointng.TabbedPane;
-import echopointng.tabbedpane.DefaultTabModel;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -26,13 +19,14 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.component.GridFactory;
-import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.im.DefaultLayoutStrategy;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.IMObjectViewer;
 import org.openvpms.web.component.list.LookupListModel;
 import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.util.DescriptorHelper;
 
 
 /**
@@ -41,12 +35,12 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
-public class IMObjectEditor extends Column implements Editor {
+public class IMObjectEditor extends IMObjectViewer implements Editor {
 
     /**
-     * The object to edit.
+     * The component factory.
      */
-    private IMObject _object;
+    private IMObjectComponentFactory _factory = new NodeEditorFactory();
 
     /**
      * The parent object. May be <code>null</code>.
@@ -73,10 +67,6 @@ public class IMObjectEditor extends Column implements Editor {
      */
     private boolean _deleted = false;
 
-    /**
-     * The logger.
-     */
-    private final Log _log = LogFactory.getLog(IMObjectEditor.class);
 
     /**
      * Construct a new <code>IMObjectEditor</code>.
@@ -96,10 +86,9 @@ public class IMObjectEditor extends Column implements Editor {
      * @param descriptor the parent descriptor.
      */
     public IMObjectEditor(IMObject object, IMObject parent, NodeDescriptor descriptor) {
-        _object = object;
+        super(object, new DefaultLayoutStrategy());
         _parent = parent;
         _descriptor = descriptor;
-        doLayout();
     }
 
     /**
@@ -108,38 +97,21 @@ public class IMObjectEditor extends Column implements Editor {
      * @return a title for the editor
      */
     public String getTitle() {
-        ArchetypeId archId = _object.getArchetypeId();
+        IMObject object = getObject();
+        ArchetypeId archId = object.getArchetypeId();
         String conceptName;
 
         if (archId == null) {
-            conceptName = _object.getClass().getName();
+            conceptName = object.getClass().getName();
         } else {
             conceptName = archId.getConcept();
         }
 
-        if (_object.isNew()) {
+        if (object.isNew()) {
             return "New " + conceptName;
         } else {
             return "Edit " + conceptName;
         }
-    }
-
-    /**
-     * Returns the editing component.
-     *
-     * @return the editing component
-     */
-    public Component getComponent() {
-        return this;
-    }
-
-    /**
-     * Returns the object being edited.
-     *
-     * @return the object being edited
-     */
-    public IMObject getObject() {
-        return _object;
     }
 
     /**
@@ -173,19 +145,20 @@ public class IMObjectEditor extends Column implements Editor {
      * @return <code>true</code> if the save was successful
      */
     public boolean save() {
+        IMObject object = getObject();
         boolean saved = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
         if (doValidation()) {
             try {
                 if (_parent == null) {
-                    service.save(_object);
+                    service.save(object);
                     saved = true;
                 } else {
-                    if (_object.isNew()) {
-                        _descriptor.addChildToCollection(_parent, _object);
+                    if (object.isNew()) {
+                        _descriptor.addChildToCollection(_parent, object);
                         saved = true;
                     } else if (_parent != null && !_parent.isNew()) {
-                        service.save(_object);
+                        service.save(object);
                         saved = true;
                     } else {
                         // new parent, new child. Parent must be saved first.
@@ -208,13 +181,14 @@ public class IMObjectEditor extends Column implements Editor {
      */
     public boolean delete() {
         boolean deleted = false;
+        IMObject object = getObject();
         if (_parent != null) {
-            _descriptor.removeChildFromCollection(_parent, _object);
+            _descriptor.removeChildFromCollection(_parent, object);
             deleted = true;
-        } else if (!_object.isNew()) {
+        } else if (!object.isNew()) {
             try {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
-                service.remove(_object);
+                service.remove(object);
                 deleted = true;
             } catch (RuntimeException exception) {
                 ErrorDialog.show(exception);
@@ -228,92 +202,37 @@ public class IMObjectEditor extends Column implements Editor {
      * Cancel any edits.
      */
     public void cancel() {
-        _object = null;
         _parent = null;
         _descriptor = null;
     }
 
-    protected void doLayout() {
-        setStyleName("Editor");
-        ILookupService service = ServiceHelper.getLookupService();
-        ArchetypeDescriptor descriptor = getArchetypeDescriptor(_object);
-        List<NodeDescriptor> descriptors = descriptor.getSimpleNodeDescriptors();
-        if (!descriptors.isEmpty()) {
-            Grid grid = GridFactory.create(2);
-            for (NodeDescriptor nodeDesc : descriptors) {
-                if (!nodeDesc.isHidden()) {
-                    Label label = LabelFactory.create();
-                    label.setText(nodeDesc.getDisplayName());
-                    Component editor = NodeEditorFactory.create(_object, nodeDesc,
-                            service);
-                    if (editor instanceof SelectField) {
-                        SelectField lookup = (SelectField) editor;
-                        lookup.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent event) {
-                                refreshLookups((SelectField) event.getSource());
-                            }
-                        });
-                        _lookups.add(lookup);
-                    }
-                    grid.add(label);
-                    grid.add(editor);
-                }
+    /**
+     * Returns the factory for creating components for displaying the object.
+     *
+     * @return the component factory
+     */
+    protected IMObjectComponentFactory getComponentFactory() {
+        return new IMObjectComponentFactory() {
+            public Component create(IMObject object, NodeDescriptor descriptor) {
+                return createComponent(object, descriptor);
             }
-            add(grid);
-        }
-        descriptors = descriptor.getComplexNodeDescriptors();
-        if (!descriptors.isEmpty()) {
-            DefaultTabModel model = new DefaultTabModel();
-            for (NodeDescriptor nodeDesc : descriptors) {
-                Component editor = NodeEditorFactory.create(_object, nodeDesc,
-                        service);
-                model.addTab(nodeDesc.getDisplayName(), editor);
-            }
-            TabbedPane pane = new TabbedPane();
-            pane.setModel(model);
-            pane.setSelectedIndex(0);
-            add(pane);
-        }
+
+        };
     }
 
-    /**
-     * Returns the archetype descriptor for an object.
-     * <p/>
-     * TODO At the moment we have the logic to determine whether the descriptor
-     * is an AssertionTypeDescriptor and then switch accordingly in this object.
-     * This needs to be transparent
-     *
-     * @param object the object
-     * @return the archetype descriptor for <code>object</code>
-     */
-    protected ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
-        ArchetypeDescriptor descriptor;
-        ArchetypeId archId = object.getArchetypeId();
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-
-        //TODO This is a work around until we resolve the current
-        // problem with archetyping and archetype. We need to
-        // extend this page and create a new archetype specific
-        // edit page.
-        if (object instanceof AssertionDescriptor) {
-            AssertionTypeDescriptor atDesc = service.getAssertionTypeDescriptor(
-                    _object.getName());
-            archId = new ArchetypeId(atDesc.getPropertyArchetype());
+    private Component createComponent(IMObject object,
+                                      NodeDescriptor descriptor) {
+        Component editor = _factory.create(object, descriptor);
+        if (editor instanceof SelectField) {
+            SelectField lookup = (SelectField) editor;
+            lookup.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    refreshLookups((SelectField) event.getSource());
+                }
+            });
+            _lookups.add(lookup);
         }
-
-        descriptor = service.getArchetypeDescriptor(archId);
-        if (_log.isDebugEnabled()) {
-            _log.debug("Returning archetypeDescriptor="
-                    + (descriptor == null ? null : descriptor.getName())
-                    + " for archId=" + archId
-                    + " and object=" + object.getClass().getName());
-        }
-
-        if (descriptor == null) {
-            descriptor = service.getArchetypeDescriptor(
-                    _object.getArchetypeId().getShortName());
-        }
-        return descriptor;
+        return editor;
     }
 
     protected void refreshLookups(SelectField source) {
@@ -327,14 +246,16 @@ public class IMObjectEditor extends Column implements Editor {
 
     protected boolean doValidation() {
         List<ValidationError> errors = new ArrayList<ValidationError>();
+        IMObject object = getObject();
 
         // check that we can retrieve a valid archetype for this object
-        ArchetypeDescriptor descriptor = getArchetypeDescriptor(_object);
+        ArchetypeDescriptor descriptor
+                = DescriptorHelper.getArchetypeDescriptor(object);
 
         // if there are nodes attached to the archetype then validate the
         // associated assertions
         if (!descriptor.getNodeDescriptors().isEmpty()) {
-            JXPathContext context = JXPathContext.newContext(_object);
+            JXPathContext context = JXPathContext.newContext(object);
             context.setLenient(true);
             validateObject(context, descriptor.getNodeDescriptors(), errors);
         }

@@ -15,25 +15,38 @@ import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.TextComponentFactory;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateField;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
 import org.openvpms.web.component.list.LookupListCellRenderer;
 import org.openvpms.web.component.list.LookupListModel;
 import org.openvpms.web.component.validator.NodeValidator;
 import org.openvpms.web.component.validator.ValidatingPointer;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
  * Factory for editors for {@link IMObject} instances.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
-public class NodeEditorFactory {
+public class NodeEditorFactory implements IMObjectComponentFactory {
 
-    public static Component create(IMObject object, NodeDescriptor descriptor,
-                                   ILookupService lookup) {
+    /**
+     * The lookup service.
+     */
+    private ILookupService _lookup;
+
+    /**
+     * Create a component to display the supplied object.
+     *
+     * @param object     the object to display
+     * @param descriptor the object's descriptor
+     * @return a component to display <code>object</code>
+     */
+    public Component create(IMObject object, NodeDescriptor descriptor) {
         Component result;
         if (descriptor.isLookup()) {
-            result = getSelectEditor(object, descriptor, lookup);
+            result = getSelectEditor(object, descriptor);
         } else if (descriptor.isBoolean()) {
             result = getBooleanEditor(object, descriptor);
         } else if (descriptor.isString()) {
@@ -56,20 +69,20 @@ public class NodeEditorFactory {
         return result;
     }
 
-    private static Component getBooleanEditor(IMObject object,
-                                              NodeDescriptor descriptor) {
+    private Component getBooleanEditor(IMObject object,
+                                       NodeDescriptor descriptor) {
         Pointer pointer = getPointer(object, descriptor);
         return new BoundCheckBox(pointer);
     }
 
-    private static Component getDateEditor(IMObject object,
-                                           NodeDescriptor descriptor) {
+    private Component getDateEditor(IMObject object,
+                                    NodeDescriptor descriptor) {
         Pointer pointer = getPointer(object, descriptor);
         return new BoundDateField(pointer);
     }
 
-    private static Component getTextEditor(IMObject object,
-                                           NodeDescriptor descriptor) {
+    private Component getTextEditor(IMObject object,
+                                    NodeDescriptor descriptor) {
         final int maxColumns = 32;
         TextComponent result;
         Pointer pointer = getPointer(object, descriptor);
@@ -85,24 +98,31 @@ public class NodeEditorFactory {
         return result;
     }
 
-    private static Component getSelectEditor(IMObject object,
-                                             NodeDescriptor descriptor,
-                                             ILookupService lookup) {
+    private Component getSelectEditor(IMObject object,
+                                      NodeDescriptor descriptor) {
         Pointer pointer = getPointer(object, descriptor);
-        ListModel model = new LookupListModel(object, descriptor, lookup);
+        ListModel model = new LookupListModel(object, descriptor,
+                getLookupService());
         SelectField field = SelectFieldFactory.create(pointer, model);
         field.setCellRenderer(new LookupListCellRenderer());
         return field;
     }
 
-    private static Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
+    private Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
         return new CollectionEditor(object, descriptor);
     }
 
-    private static Pointer getPointer(IMObject object, NodeDescriptor descriptor) {
+    private Pointer getPointer(IMObject object, NodeDescriptor descriptor) {
         Pointer pointer = object.pathToObject(descriptor.getPath());
         NodeValidator validator = new NodeValidator(descriptor);
         return new ValidatingPointer(pointer, validator);
+    }
+
+    private ILookupService getLookupService() {
+        if (_lookup == null) {
+            _lookup = ServiceHelper.getLookupService();
+        }
+        return _lookup;
     }
 
 
