@@ -19,18 +19,17 @@
 package org.openvpms.component.business.dao.hibernate.im.party;
 
 // java core
-import java.util.List;
+import java.util.Date;
 
 // hibernate
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.ContactPurpose;
 import org.openvpms.component.business.domain.im.party.Person;
 
 /**
@@ -78,23 +77,17 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             HibernatePartyUtil.deleteAllContacts(session);
             
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "address");
             int ccount = HibernatePartyUtil.getTableRowCount(session, "contact");
             // execute the test
             tx = session.beginTransaction();
             Person person = createPerson();
-            Address address = createAddress();
-            
-            Contact contact = new Contact(createContactArchetypeId());
-            person.addAddress(address);
+            Contact contact = createContact();
             person.addContact(contact);
-            contact.addAddress(address);
+            contact.addContactPurpose(createContactPurpose("purpose"));
             session.save(person);
             tx.commit();
             
             // ensure that the correct rows have been inserted
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
-            assertTrue(acount1 == acount + 1);
             int ccount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
             assertTrue(ccount1 == ccount + 1);
         } catch (Exception exception) { 
@@ -108,50 +101,63 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     }
     
     /**
-     * Test the addition of an address to a contact
+     * Test the addition of a contact purpose for a contact
      */
-    public void testAddressAdditionForContact() throws Exception {
+    public void testContactPurposeAdditionForContact() throws Exception {
 
         Session session = currentSession();
         Transaction tx = null;
         
         try {
-            // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "address");
+            // get initial contact count
+            int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
             // execute the test
             tx = session.beginTransaction();
             
             Person person = createPerson();
-            Contact contact = new Contact(createContactArchetypeId());
+            Contact contact = createContact();
             person.addContact(contact);
             session.save(person);
             tx.commit();
             
-            // Retrieve the person and add a contact
+            // Retrieve the person and add a contact purpose to the contact
             person = (Person)session.get(Person.class, person.getUid());
 
             tx = session.beginTransaction();
-            Address address = createAddress();
-            person.addAddress(address);
+            ContactPurpose purpose = createContactPurpose("now");
+            contact = person.getContacts().iterator().next();
+            contact.addContactPurpose(purpose);
             session.save(person);
+            tx.commit();
             
-            // Retrieve the contact and add the address
+            // Retrieve the contact check that  there is one contact purpose
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            contact.addAddress(address);
+            assertTrue(contact.getContactPurposes().size() == 1);
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount + 1);
+            
+            // add another contract purpose
+            tx = session.beginTransaction();
+            contact.addContactPurpose(createContactPurpose("now1"));
             session.save(contact);
             tx.commit();
             
-            // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
+            // check that there is only one contact added to the database 
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
             assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount + 2);
             
-            // retrieve the contact and make sure there is only one address
+            // retrieve the contact and make sure there are 2 purposes
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 1);
+            assertTrue(contact.getContactPurposes().size() == 2);
             
             // retrieve the person and ensure that there is only one address
             person = (Person)session.get(Person.class, person.getUid());
-            assertTrue(person.getAddresses().size() == 1);
+            assertTrue(person.getContacts().size() == 1);
             
         } catch (Exception exception) { 
             if (tx != null) {
@@ -166,60 +172,53 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the removal of an address for a contact
      */
-    public void testAddressDeleteForContact()
+    public void testContactPurposeDeletionForContact()
     throws Exception {
 
         Session session = currentSession();
         Transaction tx = null;
         
         try {
-            // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "address");
-            // execute the test
+            // get initial contact count
+            int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            
             tx = session.beginTransaction();
             
             Person person = createPerson();
-            Contact contact = new Contact(createContactArchetypeId());
+            Contact contact = createContact();
+            contact.addContactPurpose(createContactPurpose("now"));
             person.addContact(contact);
             session.save(person);
             tx.commit();
             
-            // retrieve the person and add an address
+            // check the row counts
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount + 1);
+            
+            // retrieve the person and delete a contact purpose from the contact
             tx = session.beginTransaction();
             person = (Person)session.get(Person.class, person.getUid());
             assertTrue(person != null);
+            assertTrue(person.getContacts().size() == 1);
+            assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 1);
             
-            Address address = createAddress();
-            person.addAddress(address);
-            contact.addAddress(address);
+            contact = person.getContacts().iterator().next();
+            contact.getContactPurposes().clear();
             session.save(person);
-            tx.commit();
             
-            // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
-            assertTrue(acount1 == acount + 1);
-            
-            // retrieve the contact and check that the address is also
-            // retrieved
+            // retrieve the contact and check the contact purposes
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 1);
+            assertTrue(contact.getContactPurposes().size() == 0);
             
-            // remove the address and save it
-            tx = session.beginTransaction();
-            contact.removeAddress(address);
-            tx.commit();
-            
-            // check that the address removal worked
-            contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 0);
-            
-            // check that the address still exists on the person
-            person = (Person)session.get(Person.class, person.getUid());
-            assertTrue(person.getAddresses().size() == 1);
-            
-            // ensure that the address row count is correct
-            acount1 = HibernatePartyUtil.getTableRowCount(session, "address");
+            // check the row counts
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
             assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount);
+            
         } catch (Exception exception) { 
             if (tx != null) {
                 tx.rollback();
@@ -234,56 +233,53 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     /**
      * Test the update of an address for a contact
      */
-    public void testAddressUpdateForContact()
+    public void testContactPurposeUpdateForContact()
     throws Exception {
 
         Session session = currentSession();
         Transaction tx = null;
         
         try {
+            // get initial contact count
+            int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            
             tx = session.beginTransaction();
+            
             Person person = createPerson();
-            Contact contact = new Contact(createContactArchetypeId());
+            Contact contact = createContact();
+            contact.addContactPurpose(createContactPurpose("now"));
             person.addContact(contact);
             session.save(person);
             tx.commit();
-
-            // retrieve the person and add an address
+            
+            // check row counts
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount + 1);
+            
+            // retrieve the person and delete a contact purpose from the contact
             tx = session.beginTransaction();
             person = (Person)session.get(Person.class, person.getUid());
             assertTrue(person != null);
+            assertTrue(person.getContacts().size() == 1);
+            assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 1);
             
-            Address address = createAddress();
-            person.addAddress(address);
-            contact.addAddress(address);
+            contact = person.getContacts().iterator().next();
+            contact.getContactPurposes().iterator().next().setName("later");
             session.save(person);
-            tx.commit();
             
-            // ensure that there is still one more address
-            contact = getContactById(session, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 1);
-            
-            // retrieve the contact and check that the address is also
-            // retrieved
-            tx = session.beginTransaction();
+            // retrieve the contact and check the contact purposes
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 1);
+            assertTrue(contact.getContactPurposes().size() == 1);
+            assertTrue(contact.getContactPurposes().iterator().next().getName().equals("later"));
             
-            // retrieve the first address
-            Address theAddress = contact.getAddressesAsArray()[0];
-            assertTrue(theAddress != null);
-            
-            // add another element to the addresss
-            address.getDetails().setAttribute("mobile", "04222368612");
-            
-            // remove the address and save it
-            contact.addAddress(address);
-            session.update(contact);
-            tx.commit();
-            
-            // check that the address removal worked
-            contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getNumOfAddresses() == 1);
+            // check row counts
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount + 1);
             
         } catch (Exception exception) { 
             if (tx != null) {
@@ -296,51 +292,62 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     }
     
     /**
-     * Test case for OVPMS37
+     * Test deletion of Contact and associated ContactPurposes
      */
-    public void testOVPMS37()
+    public void testContactDeletion()
     throws Exception {
-        Contact contact = new Contact(createContactArchetypeId());
-        contact.addAddress(createAddress()); 
-
-        Address address = contact.getAddressesAsArray()[0];
-        assertTrue(address != null);
+        Session session = currentSession();
+        Transaction tx = null;
         
-        // add another element to the addresss
-        address.getDetails().setAttribute("mobile", "04222368612");
-        
-        // adding the address to the contact should be cool since it
-        // should replace the older object
-        contact.addAddress(address);
-        assertTrue(contact.getNumOfAddresses() == 1);
-    }
-
-    /**
-     * Retrieve the contact with the specified id
-     * 
-     * @param session
-     *            the session to use
-     * @param id
-     *          the identity of the contact
-     * @return Contact
-     */
-    private Contact getContactById(Session session, long id) {
-        Contact result = null;
         try {
-            Query query = session.getNamedQuery("contact.getContactById");
-            query.setLong("id", id);
-            List rs = query.list();
+            // get initial contact count
+            int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
             
-            if (rs.size() != 1) {
-                this.error("The query to contact.getContactById returned more than 1 record.");
-            } else {
-                result = (Contact)rs.get(0);
+            tx = session.beginTransaction();
+            
+            Person person = createPerson();
+            Contact contact = createContact();
+            contact.addContactPurpose(createContactPurpose("now"));
+            contact.addContactPurpose(createContactPurpose("later"));
+            person.addContact(contact);
+            session.save(person);
+            tx.commit();
+            
+            // check row counts
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            assertTrue(acount1 == acount + 1);
+            assertTrue(bcount1 == bcount + 2);
+            
+            // retrieve the person and delete all contacts 
+            tx = session.beginTransaction();
+            person = (Person)session.get(Person.class, person.getUid());
+            assertTrue(person != null);
+            assertTrue(person.getContacts().size() == 1);
+            assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 2);
+            
+            person.getContacts().clear();
+            session.save(person);
+            
+            // retrieve and check the contacts
+            person = (Person)session.get(Person.class, person.getUid());
+            assertTrue(person != null);
+            assertTrue(person.getContacts().size() == 0);
+
+            // check row counts
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            assertTrue(acount1 == acount);
+            assertTrue(bcount1 == bcount);
+        } catch (Exception exception) { 
+            if (tx != null) {
+                tx.rollback();
             }
-        } catch (Exception exception) {
-            this.error("Failed in getContactById", exception);
+            throw exception;
+        } finally {
+            closeSession();
         }
-        
-        return result;
     }
 
     /*
@@ -362,12 +369,33 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
-     * Create a simple address
+     * Create a simple contact
      * 
-     * @return Address
+     * @return Contact
      */
-    private Address createAddress() throws Exception {
-        return new Address(createAddressArchetypeId(), createSimpleAttributeMap());
+    private Contact createContact() throws Exception {
+        Contact contact = new Contact();
+        contact.setArchetypeId(createContactArchetypeId());
+        contact.setDetails(createSimpleAttributeMap());
+        
+        return contact;
+    }
+    
+    /**
+     * Create a simple contact purpose with the specified name
+     * 
+     * @param purpose
+     *            the name of the purpose
+     * @return ContactPurpose
+     */
+    private ContactPurpose createContactPurpose(String purpose) throws Exception {
+        ContactPurpose cpur = new ContactPurpose();
+        cpur.setArchetypeIdAsString("penvpms-party-contactPurpose.current.1.0");
+        cpur.setFromDate(new Date());
+        cpur.setThruDate(new Date());
+        cpur.setName(purpose);
+        
+        return cpur;
     }
     
     /**
@@ -397,12 +425,4 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         return new ArchetypeId("openvpms-party-contact.contact.1.0");
     }
     
-    /**
-     * Return an address archetype Id
-     * 
-     * @return ArchetypeId
-     */
-    private ArchetypeId createAddressArchetypeId() {
-        return new ArchetypeId("openvpms-party-address.address.1.0");
-    }
 }

@@ -32,8 +32,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.party.Contact;
 
 /**
  * 
@@ -238,7 +238,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             int ncount = HibernateDescriptorUtil.getTableRowCount(
                     session, "nodeDescriptor");
             tx = session.beginTransaction();
-            desc.setClassName(Address.class.getName());
+            desc.setClassName(Contact.class.getName());
             desc.addNodeDescriptor(createNodeDescriptor("uid", "/uid", 
                     "java.lang.Long", 1, 1));
             desc.addNodeDescriptor(createNodeDescriptor("name", "/name", 

@@ -18,18 +18,11 @@
 
 package org.openvpms.component.business.service.entity;
 
-// java core
-import java.util.Date;
-import java.util.List;
-
 //spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
@@ -75,41 +68,32 @@ public class PersonContactTestCase extends
      * Test the creation of a person with contacts and addresses as 
      * specified in the archetype
      */
-    public void testValidPersonContactAddressCreation() 
+    public void testValidPersonContactCreation() 
     throws Exception {
         Person person = createPerson("Mr", "John", "Dillon");
-        Contact contact = createContact("contact.home");
-        Address address = createLocationAddress();
-        
-        contact.addAddress(address);
+        Contact contact = createLocationContact();
         person.addContact(contact);
         service.save(person);
         
         person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getContacts().size() == 1);
-        assertTrue(((Contact)person.getContacts().iterator().next()).getAddresses().size() == 1);
     }
     
     /**
      * Test that the many-to-many relationship between contact and 
      * address works.
      */
-    public void testContactAddressRelationship()
+    public void testContactRelationship()
     throws Exception {
         Person person1 = createPerson("Mr", "John", "Dimantaris");
         Person person2 = createPerson("Ms", "Jenny", "Love");
         
-        Contact contact1 = createContact("contact.home");
-        Contact contact2 = createContact("contact.home");
-        
-        Address address = createLocationAddress();
-        
-        contact1.addAddress(address);
+        Contact contact1 = createLocationContact();
+        Contact contact2 = createLocationContact();
         person1.addContact(contact1);
         service.save(person1);
 
-        contact2.addAddress(address);
         person2.addContact(contact2);
         service.save(person2);
         
@@ -119,29 +103,25 @@ public class PersonContactTestCase extends
         person1 = (Person)service.getById(person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 1);
-        assertTrue(((Contact)person1.getContacts().iterator().next()).getAddresses().size() == 1);
 
         person2 = (Person)service.getById(person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
-        assertTrue(((Contact)person2.getContacts().iterator().next()).getAddresses().size() == 1);
         
         // now delete the address from person1 and update it.
-        ((Contact)person1.getContacts().iterator().next()).getAddresses().clear();
-        assertTrue(((Contact)person1.getContacts().iterator().next()).getAddresses().size() == 0);
+        person1.getContacts().clear();
+        assertTrue(person1.getContacts().size() == 0);
         service.save(person1);
         
         // retrieve the entities again and check that the addresses are
         // still valid
         person1 = (Person)service.getById(person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
-        assertTrue(person1.getContacts().size() == 1);
-        assertTrue(((Contact)person1.getContacts().iterator().next()).getAddresses().size() == 0);
+        assertTrue(person1.getContacts().size() == 0);
         
         person2 = (Person)service.getById(person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
-        assertTrue(((Contact)person2.getContacts().iterator().next()).getAddresses().size() == 1);
     }
     
     /**
@@ -150,9 +130,9 @@ public class PersonContactTestCase extends
     public void testContactLifecycle() 
     throws Exception {
         Person person = createPerson("Mr", "Jim", "Alateras");
-        person.addContact(createContact("contact.home"));
-        person.addContact(createContact("contact.home"));
-        person.addContact(createContact("contact.home"));
+        person.addContact(createLocationContact());
+        person.addContact(createLocationContact());
+        person.addContact(createLocationContact());
 
         service.save(person);
         
@@ -169,108 +149,24 @@ public class PersonContactTestCase extends
         assertTrue(person.getContacts().size() == 2);
     }
     
-    /**
-     * Test the addtion and remove of address to contact
-     */
-    public void testAddressLifecycle()
-    throws Exception {
-        Person person = createPerson("Ms", "Bernadette", "Feeney");
-        Contact contact = createContact("contact.home");
-        Address address = createLocationAddress();
-        
-        contact.addAddress(address);
-        person.addContact(contact);
-        service.save(person);
-
-        // retrieve and add another address to the contact
-        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
-        contact = person.getContacts().iterator().next();
-        assertTrue(contact.getAddresses().size() == 1);
-        
-        address = createLocationAddress();
-        contact.addAddress(address);
-        service.save(person);
-        
-        // retrieve and remove the first address
-        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
-        contact = person.getContacts().iterator().next();
-        assertTrue(contact.getAddresses().size() == 2);
-        contact.removeAddress(contact.getAddresses().iterator().next());
-        service.save(person);
-        
-        // retrieve and check the number of addresses
-        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
-        contact = person.getContacts().iterator().next();
-        assertTrue(contact.getAddresses().size() == 1);
-    }
-    
-    /**
-     * Test that the many-to-many relationship between contact and 
-     * address works.
-     */
-    public void testOVPMS40()
-    throws Exception {
-        Person person = createPerson("Mr", "Johnny", "D");
-        Contact contact = createContact("contact.home");
-        
-        Address address1 = createLocationAddress();
-        Address address2 = createLocationAddress();
-        
-        person.addAddress(address1);
-        person.addAddress(address2);
-        person.addContact(contact);
-        service.save(person);
-
-        // now we want to test the NodeDescription for addresses
-        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
-        assertTrue(person != null);
-        assertTrue(person.getAddresses().size() == 2);
-        
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("contact.home");
-        NodeDescriptor ndesc = adesc.getNodeDescriptor("addresses");
-        List list = ndesc.getCandidateChildren(person.getContacts().iterator().next());
-        assertTrue(list.size() == 2);
-        
-        assertTrue(person != null);
-        contact = person.getContacts().iterator().next();
-        contact.addAddress((Address)list.get(0));
-        service.save(person);
-    }
-    
     
     
     /**
-     * Create a valid location address
+     * Create a valid location contact
      * 
      * @return
      */
-    private Address createLocationAddress() {
-        Address address = (Address)service.create("address.location");
-        assertTrue(address instanceof Address);
+    private Contact createLocationContact() {
+        Contact contact = (Contact)service.create("contact.location");
         
-        address.getDetails().setAttribute("address", "5 Kalulu Rd");
-        address.getDetails().setAttribute("suburb", "Belgrave");
-        address.getDetails().setAttribute("postcode", "3160");
-        address.getDetails().setAttribute("state", "Victoria");
-        address.getDetails().setAttribute("country", "Australia");
-        return address;
-    }
-
-    /**
-     * Create a contact of the specified type 
-     * 
-     * @param shortName
-     *            the archetype shortname
-     * @return Contact
-     */
-    private Contact createContact(String shortName) {
-        Contact contact = (Contact)service.create("contact.home");
-        assertTrue(contact instanceof Contact);
-        
-        contact.setActiveStartTime(new Date());
+        contact.getDetails().setAttribute("address", "5 Kalulu Rd");
+        contact.getDetails().setAttribute("suburb", "Belgrave");
+        contact.getDetails().setAttribute("postcode", "3160");
+        contact.getDetails().setAttribute("state", "Victoria");
+        contact.getDetails().setAttribute("country", "Australia");
         return contact;
     }
-
+    
     /**
      * Create a person
      * 

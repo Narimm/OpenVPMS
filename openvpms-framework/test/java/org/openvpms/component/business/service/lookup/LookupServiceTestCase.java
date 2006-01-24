@@ -27,7 +27,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 /**
@@ -133,7 +133,7 @@ public class LookupServiceTestCase extends
     public void testDatabaseLookupRetrievalFromNodeDescriptor()
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("address.location");
+            .getArchetypeDescriptor("contact.location");
         assertTrue(descriptor.getNodeDescriptor("country") != null);
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("country")).size() > 0);
@@ -145,7 +145,7 @@ public class LookupServiceTestCase extends
     public void testDatabaseLookupRetrievalFromNodeDescriptor2()
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("address.location");
+            .getArchetypeDescriptor("contact.location");
         assertTrue(descriptor.getNodeDescriptor("country") != null);
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("country"), null).size() > 0);
@@ -158,13 +158,13 @@ public class LookupServiceTestCase extends
     public void testConstrainedLookupRetrievalFromNodeDescriptor()
     throws Exception {
         ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("address.location");
-        Address address = (Address)archetypeService.create(
+            .getArchetypeDescriptor("contact.location");
+        Contact contact = (Contact)archetypeService.create(
             descriptor.getType());
-        address.getDetails().setAttribute("country", "Australia");
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() > 0);
-        address.getDetails().setAttribute("country", "Tasmania");
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), address).size() == 0);
+        contact.getDetails().setAttribute("country", "Australia");
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), contact).size() > 0);
+        contact.getDetails().setAttribute("country", "Tasmania");
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), contact).size() == 0);
     }
     
     /**

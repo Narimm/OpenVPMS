@@ -47,8 +47,8 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.ContactPurpose;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
@@ -245,8 +245,8 @@ public class SecurityLoader {
      */
     private void init() throws Exception {
         Configuration config = new Configuration();
-        config.addClass(Address.class);
         config.addClass(Contact.class);
+        config.addClass(ContactPurpose.class);
         config.addClass(Classification.class);
         config.addClass(Entity.class);
         config.addClass(Act.class);

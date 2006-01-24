@@ -23,9 +23,11 @@ package org.openvpms.component.business.service.ruleengine;
 import org.apache.log4j.Logger;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.ValidationError;
 
 // openvpms-test-component
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
@@ -88,8 +90,17 @@ public class DroolsRuleEngineTestCase extends
      */
     public void testRuleEngineOnSave()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
-        archetype.save(person);
+        try {
+            Person person = createPerson("Mr", "Jim", "Alateras");
+            archetype.save(person);
+        } catch (ValidationException exception) {
+            for (ValidationError error : exception.getErrors()) {
+                logger.error(error.toString());
+            }
+            
+            //rethrow exception
+            throw exception;
+        }
     }
     
     /**
@@ -108,22 +119,22 @@ public class DroolsRuleEngineTestCase extends
         person.setTitle(title);
         person.setFirstName(firstName);
         person.setLastName(lastName);
-        person.addAddress(createPhoneAddress());
+        person.addContact(createPhoneContact());
 
         return person;
     }
     
     /**
-     * Create a phone address
+     * Create a phone contact
      * 
-     * @return Address
+     * @return Contact
      */
-    private Address createPhoneAddress() {
-        Address address = (Address)archetype.create("address.phoneNumber");
-        address.getDetails().setAttribute("areaCode", "03");
-        address.getDetails().setAttribute("telephoneNumber", "1234567");
-        address.getDetails().setAttribute("preferred", new Boolean(true));
+    private Contact createPhoneContact() {
+        Contact contact = (Contact)archetype.create("contact.phoneNumber");
+        contact.getDetails().setAttribute("areaCode", "03");
+        contact.getDetails().setAttribute("telephoneNumber", "1234567");
+        contact.getDetails().setAttribute("preferred", new Boolean(true));
         
-        return address;
+        return contact;
     }
 }

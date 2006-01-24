@@ -20,15 +20,15 @@
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-  <class name="org.openvpms.component.business.domain.im.party.Contact"
-    table="contacts">
+  <class name="org.openvpms.component.business.domain.im.party.ContactPurpose"
+    table="contact_purposes">
     <id name="uid" type="long" unsaved-value="-1">
-      <column name="contact_id" index="contact_id_idx" />
+      <column name="contact_purpose_id" index="contact_purposes_id_idx" />
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
     <property name="linkId" access="property" type="string" />
-    <many-to-one name="party" column="party_id" />
+    <many-to-one name="contact" column="contact_id" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"
         type="string" />
@@ -45,38 +45,23 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="activeStartTime" access="property"
-      column="active_start_time" type="date" />
-    <property name="activeEndTime" access="property" column="active_end_time"
-      type="date" />
+    <property name="fromDate" access="property" column="from_date" type="date" />
+    <property name="thruDate" access="property" column="thru_date" type="date" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-    <set name="contactPurposes" lazy="false" inverse="true"
-      cascade="all, delete-orphan">
-      <key column="contact_id" not-null="true" />
-      <one-to-many
-        class="org.openvpms.component.business.domain.im.party.ContactPurpose" />
-    </set>
   </class>
 
-  <query name="contact.getById">
+  <query name="contactPurpose.getById">
     <![CDATA[
-			from org.openvpms.component.business.domain.im.party.Contact as
-			contact where contact.id = :id
+			from org.openvpms.component.business.domain.im.party.ContactPurpose as 
+			purpose where purpose.id = :id
 		]]>
   </query>
 
-  <query name="contact.getAllContacts">
+  <query name="contactPurpose.getRowCount">
     <![CDATA[
-			from org.openvpms.component.business.domain.im.party.Contact as 
-			contact
-		]]>
-  </query>
-
-  <query name="contact.getRowCount">
-    <![CDATA[
-			select count(contact) from org.openvpms.component.business.domain.im.party.Contact as 
-			contact
+			select count(purpose) from org.openvpms.component.business.domain.im.party.ContactPurpose as 
+			purpose
 		]]>
   </query>
 </hibernate-mapping>

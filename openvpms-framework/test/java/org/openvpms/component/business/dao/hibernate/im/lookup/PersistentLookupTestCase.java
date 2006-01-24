@@ -214,6 +214,19 @@ public class PersistentLookupTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
+     * Test lookup equality
+     */
+    public void testOVPMS84() throws Exception {
+        Lookup lookup = new Lookup( 
+                createLookArchetypeId("species"), "dog", "dog");
+        Lookup copy = (Lookup)lookup.clone();
+        assertTrue(lookup.equals(copy));
+        
+        copy.setValue("doggy");
+        assertFalse(lookup.equals(copy));
+    }
+
+    /**
      * Test the creation of a simple lookup
      */
     public void testMultipleCategoryLookupCreation()

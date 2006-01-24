@@ -33,7 +33,7 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class Address extends IMObject {
+class Address extends IMObject {
 
     /**
      * Generated SUID

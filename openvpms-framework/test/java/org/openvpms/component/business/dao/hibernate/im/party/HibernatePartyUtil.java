@@ -28,7 +28,6 @@ import org.hibernate.Transaction;
 
 // openvpms framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateUtil;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
 
 /**
@@ -39,38 +38,6 @@ import org.openvpms.component.business.domain.im.party.Contact;
  * @version  $LastChangedDate$
  */
 public class HibernatePartyUtil extends HibernateUtil {
-    /**
-     * Retrieve all the persistent address instances
-     * 
-     * @param session
-     *            the hibernate session to use
-     * @return List
-     * @throws Exception
-     *            propagate all the exceptions to the caller            
-     */
-    static List getAllAddresses(Session session)
-    throws Exception {
-        return session.getNamedQuery("address.getAllAddresses").list();
-    }
-    
-    /**
-     * Delete all the address records
-     * 
-     * @throws Exception
-     */
-    static  void deleteAllAddresses(Session session)
-    throws Exception {
-        List list = getAllAddresses(session);
-        Transaction tx = session.beginTransaction();
-        for (Object element : list) {
-            Address address = (Address)element;
-            address.setContacts(null);
-            session.delete(address);
-            
-        }
-        tx.commit();
-    }
-    
     /**
      * Retrieve all the persistent contact instances
      * 
@@ -96,10 +63,6 @@ public class HibernatePartyUtil extends HibernateUtil {
         Transaction tx = session.beginTransaction();
         for (Object element : list) {
             Contact contact = (Contact)element;
-            for (Address address : contact.getAddressesAsArray()) {
-                contact.removeAddress(address);
-                session.delete(address);
-            }
             session.delete(contact);
         }
         tx.commit();

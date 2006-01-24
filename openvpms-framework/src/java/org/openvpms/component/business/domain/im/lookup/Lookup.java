@@ -141,8 +141,8 @@ public class Lookup extends IMObject {
         Lookup rhs = (Lookup) obj;
         return new EqualsBuilder()
             .append(getArchetypeId(), rhs.getArchetypeId())
-            .append("value", value)
-            .append("code", code)
+            .append(value, rhs.value)
+            .append(code, rhs.code)
             .isEquals();
     }
 

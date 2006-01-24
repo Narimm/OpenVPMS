@@ -45,8 +45,8 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.ContactPurpose;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
@@ -108,7 +108,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         
         // create the hibernate session factory
         Configuration config = new Configuration();
-        config.addClass(Address.class);
+        config.addClass(ContactPurpose.class);
         config.addClass(Contact.class);
         config.addClass(Classification.class);
         config.addClass(Entity.class);

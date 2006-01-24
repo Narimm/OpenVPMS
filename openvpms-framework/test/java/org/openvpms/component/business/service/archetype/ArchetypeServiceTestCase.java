@@ -27,8 +27,8 @@ import org.apache.commons.lang.StringUtils;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
@@ -111,17 +111,16 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * Test that default vcalues are assigned for lookups
      */
     public void testDefaultValuesForLookups() throws Exception {
-        Address address = (Address) service
-                .create("address.location");
-        assertTrue(address.getDetails().getAttribute("country") != null);
-        assertTrue(address.getDetails().getAttribute("country").equals(
+        Contact contact = (Contact) service.create("contact.location");
+        assertTrue(contact.getDetails().getAttribute("country") != null);
+        assertTrue(contact.getDetails().getAttribute("country").equals(
                 "Australia"));
-        assertTrue(address.getDetails().getAttribute("state") != null);
-        assertTrue(address.getDetails().getAttribute("state")
+        assertTrue(contact.getDetails().getAttribute("state") != null);
+        assertTrue(contact.getDetails().getAttribute("state")
                 .equals("Victoria"));
-        assertTrue(StringUtils.isEmpty((String) address.getDetails()
+        assertTrue(StringUtils.isEmpty((String) contact.getDetails()
                 .getAttribute("suburb")));
-        assertTrue(StringUtils.isEmpty((String) address.getDetails()
+        assertTrue(StringUtils.isEmpty((String) contact.getDetails()
                 .getAttribute("postCode")));
 
         Person person = (Person) service.create("person.person");

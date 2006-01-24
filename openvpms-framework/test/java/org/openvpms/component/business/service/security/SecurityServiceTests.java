@@ -25,7 +25,7 @@ import org.acegisecurity.AccessDeniedException;
 import org.apache.log4j.Logger;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.im.party.Address;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -183,23 +183,23 @@ public abstract class SecurityServiceTests extends
         person.setTitle(title);
         person.setFirstName(firstName);
         person.setLastName(lastName);
-        person.addAddress(createPhoneAddress());
+        person.addContact(createPhoneContact());
 
         return person;
     }
     
     /**
-     * Create a phone address
+     * Create a phone contact
      * 
-     * @return Address
+     * @return Contact
      */
-    private Address createPhoneAddress() {
-        Address address = (Address)archetype.create("address.phoneNumber");
-        address.getDetails().setAttribute("areaCode", "03");
-        address.getDetails().setAttribute("telephoneNumber", "1234567");
-        address.getDetails().setAttribute("preferred", new Boolean(true));
+    private Contact createPhoneContact() {
+        Contact contact = (Contact)archetype.create("contact.phoneNumber");
+        contact.getDetails().setAttribute("areaCode", "03");
+        contact.getDetails().setAttribute("telephoneNumber", "1234567");
+        contact.getDetails().setAttribute("preferred", new Boolean(true));
         
-        return address;
+        return contact;
     }
 
     /**

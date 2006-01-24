@@ -1,7 +1,7 @@
 <archetypes>
-	<archetype name="openvpms-party-address.phoneNumber.1.0"
+	<archetype name="openvpms-party-contact.phoneNumber.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.party.Address">
+		type="org.openvpms.component.business.domain.im.party.Contact">
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" derived="true" derivedValue="archetypeId/concept" />
 		<node name="description" type="java.lang.String"

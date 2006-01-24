@@ -26,8 +26,8 @@ import java.util.Hashtable;
 
 //openvpms-framework
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.party.Address;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
@@ -243,16 +243,16 @@ public class ValidationErrorTestCase extends BaseTestCase {
                (String) params.get("file"), (String)cparams.get("assertionFile"));
        ArchetypeService service = new ArchetypeService(cache);
        
-       assertTrue(service.getArchetypeDescriptor("address.phoneNumber") != null);
-       Address address = (Address)service.create("address.phoneNumber");
-       address.getDetails().setAttribute("areaCode", "03");
-       address.getDetails().setAttribute("telephoneNumber", "976767666");
-       service.validateObject(address);
+       assertTrue(service.getArchetypeDescriptor("contact.phoneNumber") != null);
+       Contact contact = (Contact)service.create("contact.phoneNumber");
+       contact.getDetails().setAttribute("areaCode", "03");
+       contact.getDetails().setAttribute("telephoneNumber", "976767666");
+       service.validateObject(contact);
        
        // test for a failure
        try {
-           address.getDetails().setAttribute("areaCode", "ABCD");
-           service.validateObject(address);
+           contact.getDetails().setAttribute("areaCode", "ABCD");
+           service.validateObject(contact);
            fail("Validation should have failed");
        } catch (Exception exception) {
            assertTrue(exception instanceof ValidationException);

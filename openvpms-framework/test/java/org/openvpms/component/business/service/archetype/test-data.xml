@@ -40,7 +40,7 @@
 		<method name="testRegExValidation" test-case="normal">
 			<params>
 				<param name="file" type="java.lang.String">
-					org/openvpms/component/business/service/archetype/address.phoneNumber.xml
+					org/openvpms/component/business/service/archetype/contact.phoneNumber.xml
 				</param>
 			</params>
 		</method>

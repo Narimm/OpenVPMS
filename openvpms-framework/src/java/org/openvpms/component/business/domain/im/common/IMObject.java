@@ -381,7 +381,7 @@ public abstract class IMObject implements Serializable, Cloneable {
      * This method will retrieve a reference to a value collection. If the 
      * returned object is already an instance of a collection then it will
      * return it as is. If the returned object is an instance of a Map then
-     * it will return the the value objects
+     * it will return the value objects
      * 
      * @param path
      *            a xpath expression in to this object

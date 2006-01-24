@@ -397,14 +397,14 @@ public class ArchetypeServicePersistenceTestCase extends
         }
         
         // test with a partial entity name
-        shortNames = service.getArchetypeShortNames("party", "*dress", 
+        shortNames = service.getArchetypeShortNames("party", "*tact", 
                 null, false);
         assertTrue(shortNames.size() > 0);
         for (String shortName : shortNames) {
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
             ArchetypeId archId = desc.getType();
             if ((archId.getRmName().matches("party")) &&
-                (archId.getEntityName().matches(".*dress"))) {
+                (archId.getEntityName().matches(".*tact"))) {
                 continue;
             }
             fail("shortName: " + shortName + " in invalid for rmName=party,entityName=*dress");
