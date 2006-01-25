@@ -1,0 +1,24 @@
+<archetypes>
+	<archetype name="openvpms-product-product.product.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.product.Product">
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" />
+		<node name="name" path="/name" displayName="Product Name"
+			minCardinality="1" />
+		<node name="productPrices" path="/productPrices"
+			parentChild="true" type="java.util.HashSet"
+			baseName="productPrice">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="product.productPrice" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>
+					Invalid product price specified
+				</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
