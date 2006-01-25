@@ -1,0 +1,61 @@
+<lookupData>
+	<lookupItem id="country" country="Australia" />
+	<lookupItem id="country" country="New Zealand" />
+	<lookupItem id="country" country="Greece" />
+	<lookupItem id="country" country="Spain" />
+	<lookupItem id="state" state="Victoria" />
+    <lookupItem id="suburb" suburb="Belgrave" postCode="3160" />
+    <lookupItem id="suburb" suburb="Tecoma" postCode="3160" />
+	<lookupItem id="postcode" postCode="3160" />
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Victoria" />
+	</lookupRel>
+	<lookupRel>
+		<source id="state" value="Victoria" />
+		<target id="suburb" value="Belgrave" />
+	</lookupRel>
+	<lookupRel>
+		<source id="state" value="Victoria" />
+		<target id="postcode" value="3160" />
+	</lookupRel>
+	<lookupRel>
+		<source id="suburb" value="Belgrave" />
+		<target id="postcode" value="3160" />
+	</lookupRel>
+	<lookupItem id="species" species="Canine" />
+	<lookupItem id="species" species="Feline" />
+	<lookupItem id="species" species="Equine" />
+	<lookupItem id="species" species="Porcine" />
+	<lookupItem id="species" species="Bovine" />
+	<lookupItem id="species" species="Avian" />
+
+	<lookupItem id="breed" breed="German Sheperd" />
+	<lookupItem id="breed" breed="Dalmation" />
+	<lookupItem id="breed" breed="Rottweiler" />
+	<lookupItem id="breed" breed="Domestic Shorthair" />
+	<lookupItem id="breed" breed="Persian" />
+	<lookupRel>
+		<source id="species" value="Canine" />
+		<target id="breed" value="Dalmation" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Canine" />
+		<target id="breed" value="German Sheperd" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Canine" />
+		<target id="breed" value="Rottweiler" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Feline" />
+		<target id="breed" value="Domestic Shorthair" />
+	</lookupRel>
+	<lookupRel>
+		<source id="species" value="Feline" />
+		<target id="breed" value="Persian" />
+	</lookupRel>
+	<lookupItem id="colour" colour="Black" />
+	<lookupItem id="colour" colour="White" />
+	
+</lookupData>
