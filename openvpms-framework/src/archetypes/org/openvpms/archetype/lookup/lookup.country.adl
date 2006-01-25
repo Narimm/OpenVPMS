@@ -2,7 +2,7 @@
 	<archetype name="openvpms-lookup-lookup.country.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.lookup.Lookup">
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
-		<node name="value" path="/value" type="java.lang.String" minCardinality="1" />
-		<node name="code" path="/code" type="java.lang.String" minCardinality="1" />
+		<node name="country" path="/value" type="java.lang.String" minCardinality="1" />
+		<node name="isoCode" path="/code" type="java.lang.String" minCardinality="0" />
 	</archetype>
 </archetypes>

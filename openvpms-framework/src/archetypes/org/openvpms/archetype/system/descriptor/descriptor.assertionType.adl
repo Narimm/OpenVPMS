@@ -1,6 +1,6 @@
 <archetypes>
 	<archetype name="openvpms-system-descriptor.assertionType.1.0"
-		latest="true" primary="true"
+		latest="true" primary="false"
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor">
 		<node name="name" path="/name" displayName="Action Name"
 			type="java.lang.String" minCardinality="1" />

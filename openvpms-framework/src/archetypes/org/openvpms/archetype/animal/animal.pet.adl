@@ -5,10 +5,13 @@
 			type="java.lang.Long" />
 		<node name="name" path="/name" type="java.lang.String"
 			minCardinality="1" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(/sex, ' ', /colour, ' ', /breed)" />
 		<node name="species" path="/species" type="java.lang.String"
 			minCardinality="1">
 			<assertion name="lookup">
-				<property name="type" value="targetLookup" />
+				<property name="type" value="lookup" />
 				<property name="concept" value="species" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
@@ -23,17 +26,18 @@
 		</node>
 		<node name="colour" path="/colour" type="java.lang.String">
 			<assertion name="lookup">
-				<property name="type" value="targetLookup" />
-				<property name="concept" value="breed.colour" />
-				<property name="source" value="breed" />
+				<property name="type" value="lookup" />
+				<property name="concept" value="colour" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="sex" path="/sex" type="java.lang.String">
-			<assertion name="lookup">
-				<property name="male" value="male" />
-				<property name="female" value="female" />
-				<property name="unspecified" value="unspecified" />
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="male" value="male" />
+					<property name="female" value="female" />
+					<property name="unspecified" value="unspecified" />
+				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
@@ -42,7 +46,8 @@
 		<node name="dateOfBirth" path="/dateOfBirth"
 			type="java.util.Date" minCardinality="1" />
 		<node name="identities" path="/identities"
-			type="org.openvpms.component.business.domain.im.common.EntityIdentity">
+			type="java.util.HashSet" baseName="Identity" minCardinality="0"
+			maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -53,9 +58,5 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="contacts" path="/contacts"
-			type="org.openvpms.component.business.domain.im.party.Contact"
-			maxCardinality="0" />
-
 	</archetype>
 </archetypes>
