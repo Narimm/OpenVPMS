@@ -4,20 +4,15 @@
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/companyName)" />
+			derivedValue="/details/attributes/companyName" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/companyName)" />
+			derivedValue="/details/attributes/companyName" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="companyName" path="/details/attributes/companyName"
-				type="java.lang.String">
-				<assertion name="regularExpression">
-					<property name="expression" value="*@*" />
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
+			<node name="companyName" path="/details/attributes/companyName" type="java.lang.String"
+				minCardinality="1" maxLength="50" />
 		</node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
@@ -50,42 +45,6 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="classification.accountType" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="identities" path="/identities"
-			type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="entityIdentity.Alias" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="roles" path="/roles" type="java.util.HashSet" baseName="Role" 
-			minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="role.veterinarian" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="role.customer" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="role.supplier" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="role.employee" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

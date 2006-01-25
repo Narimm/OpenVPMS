@@ -4,5 +4,11 @@
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
 		<node name="state" path="/value" type="java.lang.String" minCardinality="1" />
 		<node name="abbreviation" path="/code" type="java.lang.String" minCardinality="0" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="/value" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat (/value, ' ', /code)" />
 	</archetype>
 </archetypes>
