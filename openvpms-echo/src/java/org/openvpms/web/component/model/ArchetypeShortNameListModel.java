@@ -4,6 +4,8 @@ import java.util.List;
 
 import nextapp.echo2.app.list.AbstractListModel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -34,6 +36,12 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
      * corresponding display name.
      */
     private final String[][] _shortNames;
+
+    /**
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(ArchetypeShortNameListModel.class);
 
     /**
      * Construct a new <code>LookupListModel</code>.
@@ -88,10 +96,15 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
         }
         for (int i = 0; i < shortNames.length; ++i, ++index) {
             String shortName = shortNames[i];
+            _shortNames[index][0] = shortName;
             ArchetypeDescriptor descriptor
                     = service.getArchetypeDescriptor(shortName);
-            _shortNames[index][0] = shortName;
-            String displayName = descriptor.getDisplayName();
+            String displayName = null;
+            if (descriptor != null) {
+                displayName = descriptor.getDisplayName();
+            } else {
+                _log.error("No archetype descriptor for shortname=" + shortName);
+            }
             if (StringUtils.isEmpty(displayName)) {
                 displayName = shortName;
             }
