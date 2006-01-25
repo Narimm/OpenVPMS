@@ -21,8 +21,6 @@ import org.openvpms.web.component.model.IMObjectTableModel;
  */
 public class IMObjectTable extends PageableSortableTable {
 
-    private List<IMObject> _objects;
-
     /**
      * The no. of rows per page.
      */
@@ -67,7 +65,6 @@ public class IMObjectTable extends PageableSortableTable {
      */
     public void setObjects(List<IMObject> objects) {
         TableColumnModel columns = IMObjectTableModel.createColumnModel(_deletable);
-        _objects = objects;
         IMObjectTableModel model = new IMObjectTableModel(objects, columns);
         model.setRowsPerPage(_rowsPerPage);
         setModel(model);
@@ -81,8 +78,14 @@ public class IMObjectTable extends PageableSortableTable {
      *         selected
      */
     public IMObject getSelected() {
+        IMObject result = null;
         int index = getSelectionModel().getMinSelectedIndex();
-        return (index != -1) ? _objects.get(index) : null;
+        if (index != -1) {
+            IMObjectTableModel model = (IMObjectTableModel) getModel();
+            int row = model.getAbsRow(index);
+            result = model.getObject(row);
+        }
+        return result;
     }
 
     /**

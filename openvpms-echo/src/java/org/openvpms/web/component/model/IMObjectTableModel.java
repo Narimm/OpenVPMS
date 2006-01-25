@@ -123,6 +123,16 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     }
 
     /**
+     * Returns the absolute row, given one relative to the current page.
+     *
+     * @param row a row in the current page
+     * @return the absolute row
+     */
+    public int getAbsRow(int row) {
+        return (getCurrentPage() * getRowsPerPage()) + row;
+    }
+
+    /**
      * Returns the list of objects marked for deletion.
      *
      * @return the list of objects marked for deletion
@@ -138,6 +148,16 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
             }
         }
         return result;
+    }
+
+    /**
+     * Return the object at the given sbsolute row.
+     *
+     * @param row the row
+     * @return the object at <code>row</code>
+     */
+    public IMObject getObject(int row) {
+        return _objects.get(row);
     }
 
     /**
@@ -197,4 +217,5 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     private int getIndex(int column) {
         return (_showDelete) ? column : column + 1;
     }
+
 }
