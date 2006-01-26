@@ -8,7 +8,7 @@ import nextapp.echo2.app.Label;
  * Factory for {@link Label}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate$
  */
 public final class LabelFactory extends ComponentFactory {
 
@@ -16,6 +16,7 @@ public final class LabelFactory extends ComponentFactory {
      * Component type.
      */
     private static final String TYPE = "label";
+
 
     /**
      * Create a new label, with the default style.
@@ -49,7 +50,7 @@ public final class LabelFactory extends ComponentFactory {
     public static Label create(String key) {
         Label label = create();
         if (key != null) {
-            label.setText(getString(TYPE, key, true));
+            label.setText(getString(TYPE, key, false));
         }
         return label;
     }

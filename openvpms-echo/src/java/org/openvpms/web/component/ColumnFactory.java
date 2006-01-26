@@ -44,4 +44,17 @@ public final class ColumnFactory extends ComponentFactory {
         return column;
     }
 
+    /**
+     * Create a new column with a specific style, and containing a set of
+     * components.
+     *
+     * @return a new column
+     */
+    public static Column create(String style, Component ... components) {
+        Column column = create(style);
+        add(column, components);
+        return column;
+    }
+
+
 }

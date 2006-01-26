@@ -10,10 +10,10 @@ import org.apache.commons.jxpath.Pointer;
 
 
 /**
- * Enter description here.
+ * Binds a <code>Pointer</code> to a <code>DateField</code>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate$
  */
 public class BoundDateField extends DateField {
 

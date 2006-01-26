@@ -214,6 +214,22 @@
            type="nextapp.echo2.app.WindowPane">
     </style>
 
+    <style name="Palette" type="nextapp.echo2.app.Row">
+        <propertiesr>
+            <property name="insets" value="10px 10px"/>
+            <property name="cellSpacing" value="10px"/>
+        </propertiesr>
+    </style>
+
+    <style name="Palette.ListColumn" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="cellSpacing" value="3px"/>
+            <property name="insets" value="10px 10px"/>
+        </properties>
+    </style>
+
+    <style name="Palette.ListLabel" type="nextapp.echo2.app.Label"/>
+
     <style name="Table.EvenRow" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">

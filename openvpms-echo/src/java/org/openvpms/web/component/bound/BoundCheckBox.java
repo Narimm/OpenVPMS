@@ -1,15 +1,16 @@
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.jxpath.Pointer;
 
+
 /**
- * Enter description here.
+ * Binds a <code>Pointer</code> to a <code>CheckBox</code>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate$
  */
 public class BoundCheckBox extends CheckBox {
 

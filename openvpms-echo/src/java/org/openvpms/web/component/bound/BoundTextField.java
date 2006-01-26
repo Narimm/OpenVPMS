@@ -8,10 +8,10 @@ import org.apache.commons.jxpath.Pointer;
 
 
 /**
- * Bounds a text field to a {@link Pointer}.
+ * Binds a <code>Pointer</code> to a <code>TextField</code>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class BoundTextField extends TextField {
 

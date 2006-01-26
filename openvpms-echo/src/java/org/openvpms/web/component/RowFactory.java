@@ -18,9 +18,7 @@ public final class RowFactory extends ComponentFactory {
      * @return a new row
      */
     public static Row create() {
-        Row row = new Row();
-        setDefaults(row);
-        return row;
+        return new Row();
     }
 
     /**

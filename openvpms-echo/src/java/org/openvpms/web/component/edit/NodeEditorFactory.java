@@ -1,5 +1,7 @@
 package org.openvpms.web.component.edit;
 
+import java.util.List;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
@@ -8,13 +10,18 @@ import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.bound.BoundDateField;
+import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.im.AbstractIMObjectComponentFactory;
+import org.openvpms.web.component.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.list.LookupListCellRenderer;
 import org.openvpms.web.component.list.LookupListModel;
+import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.validator.NodeValidator;
 import org.openvpms.web.component.validator.ValidatingPointer;
 import org.openvpms.web.spring.ServiceHelper;
@@ -65,7 +72,6 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         return result;
     }
 
-
     /**
      * Returns a component to edit a date node.
      *
@@ -104,7 +110,19 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a component to edit the node
      */
     protected Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
-        return new CollectionEditor(object, descriptor);
+        Component result;
+        if (descriptor.isParentChild()) {
+            result = new CollectionEditor(object, descriptor);
+        } else {
+            List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(
+                    (ArchetypeService) ServiceHelper.getArchetypeService(),  //@todo OVPMS-108
+                    descriptor, object);
+            Pointer pointer = getPointer(object, descriptor);
+            Palette palette = new BoundPalette(identifiers, pointer);
+            palette.setCellRenderer(new IMObjectListCellRenderer());
+            result = palette;
+        }
+        return result;
     }
 
     /**
