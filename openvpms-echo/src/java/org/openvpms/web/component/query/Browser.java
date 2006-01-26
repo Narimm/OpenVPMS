@@ -222,6 +222,7 @@ public class Browser extends SplitPane {
 
         // instance name text field
         _instanceName = TextComponentFactory.create();
+        Label nameLabel = LabelFactory.create(NAME_ID);
 
         // query button
         Button query = ButtonFactory.create(QUERY_ID, new ActionListener() {
@@ -230,7 +231,6 @@ public class Browser extends SplitPane {
             }
         });
 
-        Label nameLabel = LabelFactory.create(NAME_ID);
         row.add(nameLabel);
         row.add(_instanceName);
         row.add(query);
@@ -297,6 +297,13 @@ public class Browser extends SplitPane {
         } else {
             _tableLayout.setSeparatorPosition(new Extent(32, Extent.PX));
         }
+    }
+
+    /**
+     * Create a new object and edit it.
+     */
+    protected void onNew() {
+
     }
 
     /**

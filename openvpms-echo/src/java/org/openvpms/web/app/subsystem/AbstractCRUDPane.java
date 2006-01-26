@@ -14,14 +14,14 @@ import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.app.editor.IMObjectEditor;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.ColumnFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.edit.EditWindowPane;
+import org.openvpms.web.component.edit.EditDialog;
+import org.openvpms.web.component.edit.IMObjectEditor;
 import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.query.BrowserDialog;
 import org.openvpms.web.component.query.IMObjectBrowser;
@@ -198,13 +198,14 @@ public abstract class AbstractCRUDPane extends SplitPane {
      * @param object the object to edit
      */
     protected void edit(IMObject object) {
-        final IMObjectEditor editor = new IMObjectEditor((IMObject) object);
-        EditWindowPane pane = new EditWindowPane(editor);
-        pane.addWindowPaneListener(new WindowPaneListener() {
+        final IMObjectEditor editor = new IMObjectEditor(object);
+        EditDialog dialog = new EditDialog(editor);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor);
             }
         });
+        dialog.show();
     }
 
     /**
@@ -219,9 +220,13 @@ public abstract class AbstractCRUDPane extends SplitPane {
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
-                IMObject selected = popup.getSelected();
-                if (selected != null) {
-                    setObject(selected);
+                if (popup.createNew()) {
+                    onNew();
+                } else {
+                    IMObject selected = popup.getSelected();
+                    if (selected != null) {
+                        setObject(selected);
+                    }
                 }
             }
         });
@@ -231,7 +236,7 @@ public abstract class AbstractCRUDPane extends SplitPane {
 
     /**
      * Invoked when the new button is pressed. This popups up an {@link
-     * Editor}.
+     * Editable}.
      */
     protected void onNew() {
         create();
@@ -239,7 +244,7 @@ public abstract class AbstractCRUDPane extends SplitPane {
 
     /**
      * Invoked when the edit button is pressed. This popups up an {@link
-     * Editor}.
+     * Editable}.
      */
     protected void onEdit() {
         if (_browser == null) {

@@ -1,16 +1,24 @@
 package org.openvpms.web.component.query;
 
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
 
 
 /**
- * Enter description here.
+ * Displays an {@link Browser} in a popup dialog.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate$
  */
 public class BrowserDialog extends PopupDialog {
+
+    /**
+     * New button identifier.
+     */
+    public static final String NEW_ID = "new";
 
     /**
      * The browser.
@@ -21,6 +29,12 @@ public class BrowserDialog extends PopupDialog {
      * The selected object.
      */
     private IMObject _selected;
+
+    /**
+     * Determines if the user wants to create a new object. Set when the 'New'
+     * button is pressed.
+     */
+    private boolean _createNew = false;
 
     /**
      * Window style name.
@@ -37,6 +51,12 @@ public class BrowserDialog extends PopupDialog {
         super(title, STYLE, Buttons.OK_CANCEL);
         _browser = browser;
         getLayout().add(browser);
+
+        addButton(NEW_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onNew();
+            }
+        });
     }
 
     /**
@@ -49,6 +69,16 @@ public class BrowserDialog extends PopupDialog {
     }
 
     /**
+     * Determines if the 'New' button was selected, indicating that a new object
+     * should be created.
+     *
+     * @return <code>true</code> if 'New' was selected
+     */
+    public boolean createNew() {
+        return _createNew;
+    }
+
+    /**
      * Select the current object, and close the browser.
      */
     @Override
@@ -57,5 +87,13 @@ public class BrowserDialog extends PopupDialog {
         close();
     }
 
+    /**
+     * Flags that the user wants to create a new instance, and closes the
+     * browser.
+     */
+    protected void onNew() {
+        _createNew = true;
+        close();
+    }
 
 }
