@@ -53,39 +53,68 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvD
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class NodeDescriptor  extends Descriptor {
+public class NodeDescriptor extends Descriptor {
+    /**
+     * The default display length if one is not defined in the node definition
+     */
+    public static final int DEFAULT_DISPLAY_LENGTH = 50;
+
+    /**
+     * The default maximum Length if one is not defined in the node definition
+     */
+    public static final int DEFAULT_MAX_LENGTH = 255;
+
+    /**
+     * The name given to the object id node
+     */
+    public static final String IDENTIFIER_NODE_NAME = "uid";
+
     /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(NodeDescriptor.class);
-    
+    private static final Logger logger = Logger.getLogger(NodeDescriptor.class);
+
     /**
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * The name given to the object id node
-     */
-    public static final String IDENTIFIER_NODE_NAME = "uid";
-    
-    /**
      * This is used to identify a max cardinality that is unbounded
      */
     public static final int UNBOUNDED = -1;
-    public static final String UNBOUNDED_AS_STRING = "*";
-    
-    /** 
-     * The default maximum Length if one is not defined in the node definition 
-     */
-    public static final int DEFAULT_MAX_LENGTH = 255;
 
-    /** 
-     * The default display length if one is not defined in the node definition 
+    public static final String UNBOUNDED_AS_STRING = "*";
+
+    /**
+     * Contains a list of {@link AssertionDescriptor} instances
      */
-    public static final int DEFAULT_DISPLAY_LENGTH = 50;
+    private Map<String, AssertionDescriptor> assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
+
+    /**
+     * This is an option property, which is required for nodes that represent
+     * collections. It is the name that denotes the individual elements stored
+     * in the collection.
+     */
+    private String baseName;
+
+    /**
+     * Cache the clazz. Do not access this directly. Use the {@link #getClazz()}
+     * method instead.
+     */
+    private Class clazz;
+
+    /**
+     * The default value
+     */
+    private String defaultValue;
+
+    /**
+     * This is a jxpath expression, which is used to determine the value of the
+     * node
+     */
+    private String derivedValue;
 
     /**
      * This is the display name, which is only supplied if it is different to
@@ -94,21 +123,58 @@ public class NodeDescriptor  extends Descriptor {
     private String displayName;
 
     /**
-     * Attribute, which defines whether this node is hidden or can be displayed
+     * The index of this discriptor within the collection
      */
-    private boolean isHidden = false;
-    
+    private int index;
+
     /**
      * Determine whether the value for this node is derived
      */
     private boolean isDerived = false;
 
     /**
-     * This is a jxpath expression, which is used to determine the 
-     * value of the node
+     * Attribute, which defines whether this node is hidden or can be displayed
      */
-    private String derivedValue;
-    
+    private boolean isHidden = false;
+
+    /**
+     * Indicates that the collection type is a parentChild relationship, which
+     * is the default for a collection. If this attribute is set to false then
+     * the child lifecycle is independent of the parent lifecycle. This
+     * attribute is only meaningful for a collection
+     */
+    private boolean isParentChild = true;
+
+    /**
+     * Indicates whether the descriptor is readOnly
+     */
+    private boolean isReadOnly = false;
+
+    /**
+     * The maximum cardinality, which defaults to 1
+     */
+    private int maxCardinality = 1;
+
+    /**
+     * The maximum length
+     */
+    private int maxLength;
+
+    /**
+     * The minimum cardinality, which defaults to 0
+     */
+    private int minCardinality = 0;
+
+    /**
+     * The minimum length
+     */
+    private int minLength;
+
+    /**
+     * A node can have other nodeDescriptors to define a nested structure
+     */
+    private Map<String, NodeDescriptor> nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+
     /**
      * The XPath/JXPath expression that is used to resolve this node within the
      * associated domain object.
@@ -121,69 +187,6 @@ public class NodeDescriptor  extends Descriptor {
     private String type;
 
     /**
-     * The default value
-     */
-    private String defaultValue;
-    
-    /**
-     * The minimum cardinality, which defaults to 0
-     */
-    private int minCardinality = 0;
-
-    /**
-     * The maximum cardinality, which defaults to 1
-     */
-    private int maxCardinality = 1;
-
-    /**
-     * The minimum length
-     */
-    private int minLength;
-    
-    /**
-     * The maximum length
-     */
-    private int maxLength;
-    
-    /**
-     * This is an option property, which is required for nodes that 
-     * represent collections. It is the name that denotes the individual
-     * elements stored in the collection.
-     */
-    private String baseName;
-    
-    /**
-     * Indicates that the collection type is a parentChild relationship, which 
-     * is the default for a collection. If this attribute is set to false then
-     * the child lifecycle is independent of the parent lifecycle. This 
-     * attribute is only meaningful for a collection
-     */
-    private boolean isParentChild = true;
-
-    /**
-     * Contains a list of {@link AssertionDescriptor} instances
-     */
-    private Map<String, AssertionDescriptor> assertionDescriptors = 
-        new LinkedHashMap<String, AssertionDescriptor>();
-
-    /**
-     * A node can have other nodeDescriptors to define a nested structure
-     */
-    private Map<String, NodeDescriptor> nodeDescriptors = 
-        new LinkedHashMap<String, NodeDescriptor>();
-
-    /**
-     * Cache the clazz. Do not access this directly. Use the {@link #getClazz()}
-     * method instead.
-     */
-    private Class clazz;
-
-    /**
-     * The index of this discriptor within the collection
-     */
-    private int index;
-    
-    /**
      * Default constructor
      */
     public NodeDescriptor() {
@@ -191,241 +194,73 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
-     * @return Returns the maxCardinality.
+     * Add an assertion descriptor to this node
+     * 
+     * @param descriptor
      */
-    public int getMaxCardinality() {
-        return maxCardinality;
+    public void addAssertionDescriptor(AssertionDescriptor descriptor) {
+        assertionDescriptors.put(descriptor.getName(), descriptor);
     }
 
     /**
-     * @param maxCardinality
-     *            The maxCardinality to set.
-     */
-    public void setMaxCardinality(int maxCardinality) {
-        this.maxCardinality = maxCardinality;
-    }
-    
-    /**
-     * This setter enabled the user to specify an unbounded maximum
-     * collection using '*'. 
+     * Add a child object to this node descriptor using the specified
+     * {@link IMObject} as the context. If this node descriptor is not of type
+     * collection, or the context object is null it will raise an exception.
      * 
-     * @param maxCardinality
-     *            The maxCardinality to set.
+     * @param context
+     *            the context object, which will be the target of the add
+     * @param child
+     *            the child element to add
+     * @thorws DescriptorException if it fails to complete this request
      */
-    public void setMaxCardinalityAsString(String maxCardinality) {
-        if (maxCardinality.equals(UNBOUNDED_AS_STRING)) {
-            setMaxCardinality(UNBOUNDED);
-        } else {
-            setMaxCardinality(Integer.parseInt(maxCardinality));
+    public void addChildToCollection(IMObject context, Object child) {
+        if (context == null) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToAddChildElement,
+                    new Object[] { getName() });
         }
-    }
-    
-    /**
-     * The getterthat returns the max cardinality as a string
-     * 
-     * @return String
-     */
-    public String getMaxCardinalityAsString() {
-        if (maxCardinality == UNBOUNDED) {
-            return UNBOUNDED_AS_STRING;
-        } else {
-            return Integer.toString(maxCardinality);
+
+        if (!isCollection()) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToAddChildElement,
+                    new Object[] { getName() });
         }
-    }
-    
-    /**
-     * @return Returns the minCardinality.
-     */
-    public int getMinCardinality() {
-        return minCardinality;
-    }
 
-    /**
-     * @param minCardinality
-     *            The minCardinality to set.
-     */
-    public void setMinCardinality(int minCardinality) {
-        this.minCardinality = minCardinality;
-    }
+        try {
+            if (StringUtils.isEmpty(baseName)) {
+                // no base name specified look at the type to determine
+                // what method to call
+                Class tClass = getClazz();
+                if (Collection.class.isAssignableFrom(tClass)) {
+                    MethodUtils.invokeMethod(getValue(context), "add", child);
+                } else if (Map.class.isAssignableFrom(tClass)) {
+                    MethodUtils.invokeMethod(getValue(context), "put",
+                            new Object[] { child, child });
+                } else {
+                    throw new DescriptorException(
+                            DescriptorException.ErrorCode.FailedToAddChildElement,
+                            new Object[] { getName() });
+                }
+            } else {
+                // if a baseName has been specified then prepend 'add' to the
+                // base name and excute the derived method on context object
+                String methodName = "add" + StringUtils.capitalize(baseName);
 
-    /**
-     * @return Returns the displayName.
-     */
-    public String getDisplayName() {
-        return StringUtils.isEmpty(displayName) ? unCamelCase(getName()) : displayName;
-    }
+                // TODO This is a tempoaray fix until we resolve the discrepency
+                // with collections.
+                if (getValue(context) instanceof IMObject) {
+                    MethodUtils.invokeMethod(getValue(context), methodName,
+                            child);
+                } else {
+                    MethodUtils.invokeMethod(context, methodName, child);
+                }
 
-    /**
-     * @param displayName
-     *            The displayName to set.
-     */
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    /**
-     * @return Returns the isHidden.
-     */
-    public boolean isHidden() {
-        return isHidden;
-    }
-
-    /**
-     * @param isHidden
-     *            The isHidden to set.
-     */
-    public void setHidden(boolean isHidden) {
-        this.isHidden = isHidden;
-    }
-
-    /**
-     * @return Returns the isDerived.
-     */
-    public boolean isDerived() {
-        return isDerived;
-    }
-
-    /**
-     * @return Returns the derivedValue.
-     */
-    public String getDerivedValue() {
-        return derivedValue;
-    }
-
-    /**
-     * @param derivedValue The derivedValue to set.
-     */
-    public void setDerivedValue(String derivedValue) {
-        this.derivedValue = derivedValue;
-    }
-
-    /**
-     * @param isDerived The isDerived to set.
-     */
-    public void setDerived(boolean isDerived) {
-        this.isDerived = isDerived;
-    }
-
-    /**
-     * @return Returns the path.
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * @param path
-     *            The path to set.
-     */
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    /**
-     * @return Returns the typeName.
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * @param type
-     *            The type to set.
-     */
-    public void setType(String type) {
-        this.type  = type;
-    }
-
-    /**
-     * @return Returns the defaultValue.
-     */
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    /**
-     * This is a convenience method that checks whether there 
-     * is a parent child relationship within this node. A 
-     * parent child relationship only applicable for node descriptors
-     * that reference a collection.
-     * 
-     * @return boolean
-     */
-    public boolean isParentChild() {
-        return isCollection() && isParentChild;
-    }
-
-    /**
-     * @param parentChild The parentChild to set.
-     */
-    public void setParentChild(boolean parentChild) {
-        this.isParentChild = parentChild;
-    }
-
-
-    /**
-     * @return Returns the index.
-     */
-    public int getIndex() {
-        return index;
-    }
-
-    /**
-     * @param index The index to set.
-     */
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    /**
-     * @return Returns the minLength.
-     */
-    public int getMinLength() {
-        return minLength;
-    }
-
-    /**
-     * @param minLength The minLength to set.
-     */
-    public void setMinLength(int minLength) {
-        this.minLength = minLength;
-    }
-
-    /**
-     * @return Returns the maxLength.
-     */
-    public int getMaxLength() {
-        return maxLength <= 0 ? DEFAULT_MAX_LENGTH : maxLength;
-    }
-
-    /**
-     * @param maxLength
-     *            The maxLength to set.
-     */
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
-    }
-
-    /**
-     * @param defaultValue
-     *            The defaultValue to set.
-     */
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-    /**
-     * @return Returns the baseName.
-     */
-    public String getBaseName() {
-        return baseName;
-    }
-
-    /**
-     * @param baseName The baseName to set.
-     */
-    public void setBaseName(String baseName) {
-        this.baseName = baseName;
+            }
+        } catch (Exception exception) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToAddChildElement,
+                    new Object[] { getName() }, exception);
+        }
     }
 
     /**
@@ -437,48 +272,135 @@ public class NodeDescriptor  extends Descriptor {
     public void addNodeDescriptor(NodeDescriptor child) {
         nodeDescriptors.put(child.getName(), child);
     }
-    
+
     /**
-     * Add an assertion descriptor to this node
-     * 
-     * @param descriptor
+     * Check and adjust the archetype id. If the node descriptor has other
+     * children then set the archetypeId to collection node, otherwise set it to
+     * normal node.
+     * <p>
+     * TODO This will disappear when we introduce a new collection node class.
      */
-    public void addAssertionDescriptor(AssertionDescriptor descriptor) {
-        assertionDescriptors.put(descriptor.getName(), descriptor);
+    private void checkArchetypeId() {
+        if ((nodeDescriptors != null) && (nodeDescriptors.size() > 0)) {
+            if (getArchetypeId().getConcept().equals("node")) {
+                setArchetypeId(new ArchetypeId(
+                        "openvpms-system-descriptor.collectionNode.1.0"));
+            }
+        } else {
+            if (getArchetypeId().getConcept().equals("collectionNode")) {
+                setArchetypeId(new ArchetypeId(
+                        "openvpms-system-descriptor.node.1.0"));
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        NodeDescriptor copy = (NodeDescriptor) super.clone();
+        copy.assertionDescriptors = new HashMap<String, AssertionDescriptor>(
+                this.assertionDescriptors);
+        copy.baseName = this.baseName;
+        copy.clazz = this.clazz;
+        copy.defaultValue = this.defaultValue;
+        copy.derivedValue = this.derivedValue;
+        copy.index = this.index;
+        copy.isDerived = this.isDerived;
+        copy.isHidden = this.isHidden;
+        copy.isParentChild = this.isParentChild;
+        copy.maxCardinality = this.maxCardinality;
+        copy.maxLength = this.maxLength;
+        copy.minCardinality = this.minCardinality;
+        copy.minLength = this.minLength;
+        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
+                this.nodeDescriptors);
+        copy.path = this.path;
+        copy.type = this.type;
+
+        return copy;
     }
 
     /**
-     * Delete the specified assertion descriptor
-     * 
-     * @param assertion
-     *            the assertion to delete
-     */
-    public void removeAssertionDescriptor(AssertionDescriptor descriptor) {
-        assertionDescriptors.remove(descriptor.getName());
-    }
-    
-    /**
-     * Delete the assertion descriptor with the specified type
+     * Check whether this assertion type is defined for this node
      * 
      * @param type
-     *            the type name
+     *            the assertion type
+     * @return boolean
      */
-    public void removeAssertionDescriptor(String type) {
-        assertionDescriptors.remove(type);
+    public boolean containsAssertionType(String type) {
+        return assertionDescriptors.containsKey(type);
     }
-    
+
     /**
-     * Retrieve the assertion descriptor with the specified type or
-     * null if one does not exist.
+     * Return the archetype names associated with a particular object reference
+     * or collection.
+     * 
+     * @return String pattern
+     */
+    @SuppressWarnings("unchecked")
+    public String[] getArchetypeNames() {
+        ArrayList<String> result = new ArrayList<String>();
+
+        AssertionDescriptor desc = (AssertionDescriptor) assertionDescriptors
+                .get("validArchetypes");
+        if (desc != null) {
+            PropertyList archetypes = (PropertyList) desc.getPropertyMap()
+                    .getProperties().get("archetypes");
+            for (NamedProperty archetype : archetypes.getProperties()) {
+                AssertionProperty shortName = (AssertionProperty) ((PropertyMap) archetype)
+                        .getProperties().get("shortName");
+                result.add(shortName.getValue());
+            }
+        }
+
+        return (String[]) result.toArray(new String[result.size()]);
+    }
+
+    /**
+     * Return an array of short names or short name regular expression that are
+     * associated with the archetypeRange assertion. If the node does not have
+     * such an assertion then return a zero length string array
+     * 
+     * TODO Should we more this into a utility class TODO Change return type to
+     * List
+     * 
+     * @return String[] the array of short names
+     */
+    public String[] getArchetypeRange() {
+        if (assertionDescriptors.containsKey("archetypeRange")) {
+            ArrayList<String> range = new ArrayList<String>();
+            AssertionDescriptor desc = assertionDescriptors
+                    .get("archetypeRange");
+            PropertyList archetypes = (PropertyList) desc.getPropertyMap()
+                    .getProperties().get("archetypes");
+            for (NamedProperty archetype : archetypes.getProperties()) {
+                AssertionProperty shortName = (AssertionProperty) ((PropertyMap) archetype)
+                        .getProperties().get("shortName");
+                range.add(shortName.getValue());
+            }
+
+            return (String[]) range.toArray(new String[range.size()]);
+        } else {
+            return new String[0];
+        }
+    }
+
+    /**
+     * Retrieve the assertion descriptor with the specified type or null if one
+     * does not exist.
      * 
      * @param type
      *            the type of the assertion descriptor
-     * @return AssertionDescriptor            
+     * @return AssertionDescriptor
      */
     public AssertionDescriptor getAssertionDescriptor(String type) {
         return assertionDescriptors.get(type);
     }
-    
+
     /**
      * Return the assertion descriptors as a map
      * 
@@ -492,38 +414,219 @@ public class NodeDescriptor  extends Descriptor {
      * Return the assertion descriptors as a map
      */
     public AssertionDescriptor[] getAssertionDescriptorsAsArray() {
-        return (AssertionDescriptor[])assertionDescriptors.values().toArray(
+        return (AssertionDescriptor[]) assertionDescriptors.values().toArray(
                 new AssertionDescriptor[assertionDescriptors.size()]);
     }
 
     /**
-     * @param assertionDescriptors
-     *            The assertionDescriptors to set.
+     * @return Returns the baseName.
      */
-    public void setAssertionDescriptorsAsArray(AssertionDescriptor[] assertionDescriptors) {
-        this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
-        for (AssertionDescriptor descriptor : assertionDescriptors) {
-            this.assertionDescriptors.put(descriptor.getName(), descriptor);
+    public String getBaseName() {
+        return baseName;
+    }
+
+    /**
+     * Return a list of candiate children for the specified node. This is only
+     * applicable for collection nodes that have a candidateChildren assertion
+     * defined.
+     * 
+     * @param context
+     *            the context object
+     * @return List a list of candiate children, which can also be an empty list
+     */
+    @SuppressWarnings("unchecked")
+    public List<IMObject> getCandidateChildren(IMObject context) {
+        List<IMObject> result = null;
+        AssertionDescriptor descriptor = assertionDescriptors
+                .get("candidateChildren");
+
+        if ((descriptor == null)
+                || (descriptor.getPropertyMap().getProperties().containsKey(
+                        "path") == false)) {
+            return result;
+        }
+
+        String path = (String) descriptor.getPropertyMap().getProperties().get(
+                "path").getValue();
+        try {
+            Object obj = JXPathContext.newContext(context).getValue(path);
+            if (obj == null) {
+                result = new ArrayList<IMObject>();
+            } else if (obj instanceof Collection) {
+                result = new ArrayList<IMObject>((Collection) obj);
+            } else {
+                logger.warn("getCandidateChildren for path " + path
+                        + " returned object of type "
+                        + obj.getClass().getName());
+            }
+        } catch (Exception exception) {
+            logger.warn("Failed in getCandidateChildren for path " + path,
+                    exception);
+        }
+
+        return result;
+    }
+
+    /**
+     * Return the class for the specified type
+     * 
+     * @param Class
+     *            The class
+     */
+    private Class getClazz() {
+        if (clazz == null) {
+            if (StringUtils.isEmpty(type)) {
+                clazz = null;
+            } else {
+                try {
+                    clazz = Thread.currentThread().getContextClassLoader()
+                            .loadClass(type);
+                } catch (Exception exception) {
+                    throw new DescriptorException(
+                            DescriptorException.ErrorCode.InvalidType,
+                            new Object[] { type }, exception);
+                }
+            }
+        }
+
+        return clazz;
+    }
+
+    /**
+     * @return Returns the defaultValue.
+     */
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    /**
+     * @return Returns the derivedValue.
+     */
+    public String getDerivedValue() {
+        return derivedValue;
+    }
+
+    /**
+     * Return the length of the displayed field. Not currently defined in
+     * archetype so set to minimum of maxlength or DEFAULT_DISPLAY_LENGTH. Used
+     * for Strings or Numerics.
+     * 
+     * @return int the display length
+     */
+    public int getDisplayLength() {
+        return DEFAULT_DISPLAY_LENGTH;
+    }
+
+    /**
+     * @return Returns the displayName.
+     */
+    public String getDisplayName() {
+        return StringUtils.isEmpty(displayName) ? unCamelCase(getName())
+                : displayName;
+    }
+
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @return Returns the maxCardinality.
+     */
+    public int getMaxCardinality() {
+        return maxCardinality;
+    }
+
+    /**
+     * The getterthat returns the max cardinality as a string
+     * 
+     * @return String
+     */
+    public String getMaxCardinalityAsString() {
+        if (maxCardinality == UNBOUNDED) {
+            return UNBOUNDED_AS_STRING;
+        } else {
+            return Integer.toString(maxCardinality);
         }
     }
 
     /**
-     * @return Returns the nodeDescriptors.
+     * @return Returns the maxLength.
      */
-    public NodeDescriptor[] getNodeDescriptorsAsArray() {
-        return (NodeDescriptor[])nodeDescriptors.values().toArray(
-                new NodeDescriptor[nodeDescriptors.size()]);
+    public int getMaxLength() {
+        return maxLength <= 0 ? DEFAULT_MAX_LENGTH : maxLength;
     }
 
     /**
-     * Return the {@link NodeDescriptor} instances as a map of name and 
-     * descriptor
-     * @return Returns the nodeDescriptors.
+     * Return the maximum value of the node. If no maximum defined for node then
+     * return 0. Only valid for numeric nodes.
+     * 
+     * @return Number the minimum value
+     * @throws DescriptorException
+     *             a runtim exception
      */
-    public Map<String, NodeDescriptor> getNodeDescriptors() {
-        return nodeDescriptors;
+    public Number getMaxValue() {
+        Number number = null;
+        if (isNumeric()) {
+            AssertionDescriptor descriptor = (AssertionDescriptor) assertionDescriptors
+                    .get("numericRange");
+            if (descriptor != null) {
+                number = NumberUtils.createNumber((String) descriptor
+                        .getPropertyMap().getProperties().get("maxValue")
+                        .getValue());
+            }
+        } else {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.UnsupportedOperation,
+                    new Object[] { "getMaxValue", getType() });
+        }
+
+        return number;
     }
-    
+
+    /**
+     * @return Returns the minCardinality.
+     */
+    public int getMinCardinality() {
+        return minCardinality;
+    }
+
+    /**
+     * @return Returns the minLength.
+     */
+    public int getMinLength() {
+        return minLength;
+    }
+
+    /**
+     * Return the minimum value of the node. If no minimum defined for node then
+     * return 0. Only valid for numeric nodes.
+     * 
+     * @return Number the minimum value
+     * @throws DescriptorException
+     *             a runtim exception
+     */
+    public Number getMinValue() {
+        Number number = null;
+        if (isNumeric()) {
+            AssertionDescriptor descriptor = (AssertionDescriptor) assertionDescriptors
+                    .get("numericRange");
+            if (descriptor != null) {
+                number = NumberUtils.createNumber((String) descriptor
+                        .getPropertyMap().getProperties().get("minValue")
+                        .getValue());
+            }
+        } else {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.UnsupportedOperation,
+                    new Object[] { "getMinValue", getType() });
+        }
+
+        return number;
+    }
+
     /**
      * Return the number of children node descriptors
      * 
@@ -534,155 +637,150 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
-     * @param assertionDescriptors The assertionDescriptors to set.
+     * Return the {@link NodeDescriptor} instances as a map of name and
+     * descriptor
+     * 
+     * @return Returns the nodeDescriptors.
      */
-    public void setAssertionDescriptors(
-            Map<String, AssertionDescriptor> assertionDescriptors) {
-        this.assertionDescriptors = assertionDescriptors;
+    public Map<String, NodeDescriptor> getNodeDescriptors() {
+        return nodeDescriptors;
     }
 
     /**
-     * @param nodeDescriptors The nodeDescriptors to set.
+     * @return Returns the nodeDescriptors.
      */
-    public void setNodeDescriptors(Map<String, NodeDescriptor> nodeDescriptors) {
-        this.nodeDescriptors = nodeDescriptors;
-        checkArchetypeId();
+    public NodeDescriptor[] getNodeDescriptorsAsArray() {
+        return (NodeDescriptor[]) nodeDescriptors.values().toArray(
+                new NodeDescriptor[nodeDescriptors.size()]);
     }
 
     /**
-     * Add a child object to this node descriptor using the specified 
-     * {@link IMObject} as the context. If this node descriptor is not 
-     * of type collection, or the context object is null it will raise an
-     * exception.
+     * @return Returns the path.
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
+     * Return the regular expression associated with the node. Only valid for
+     * string nodes.
+     * 
+     * @return String regular expression pattern
+     */
+    public String getStringPattern() {
+        String expression = null;
+        if (isString()) {
+            AssertionDescriptor descriptor = (AssertionDescriptor) assertionDescriptors
+                    .get("regularExpression");
+            if (descriptor != null) {
+                expression = (String) descriptor.getPropertyMap()
+                        .getProperties().get("expression").getValue();
+            }
+        } else {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.UnsupportedOperation,
+                    new Object[] { "getMinValue", getType() });
+        }
+
+        return expression;
+    }
+
+    /**
+     * @return Returns the typeName.
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * This will return the node value for the supplied {@link IMObject}. If
+     * the node is derived then it will return the derived value. If the node is
+     * not dervied then it will use the path to return the value.
      * 
      * @param context
-     *            the context object, which will be the target of the add
-     * @param child
-     *            the child element to add            
-     * @thorws DescriptorException
-     *            if it fails to complete this request            
+     *            the context object to work from
+     * @return Object the returned object
      */
-    public void addChildToCollection(IMObject context, Object child) {
-        if (context == null) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToAddChildElement,
-                    new Object[] { getName() });
+    public Object getValue(IMObject context) {
+        if (isDerived()) {
+            return JXPathContext.newContext(context)
+                    .getValue(getDerivedValue());
+        } else {
+            return JXPathContext.newContext(context).getValue(getPath());
         }
-        
-        if (!isCollection()) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToAddChildElement,
-                    new Object[] { getName() });
-        }
-        
-        try {
-            if (StringUtils.isEmpty(baseName)) {
-             // no base name specified look at the type to determine 
-             // what method to call
-             Class tClass = getClazz();
-             if (Collection.class.isAssignableFrom(tClass)) {
-                 MethodUtils.invokeMethod(getValue(context), "add", child);
-             } else if (Map.class.isAssignableFrom(tClass)) {
-                 MethodUtils.invokeMethod(getValue(context), "put",
-                         new Object[] { child, child});
-             } else {
-                 throw new DescriptorException(
-                         DescriptorException.ErrorCode.FailedToAddChildElement,
-                         new Object[] { getName() });
-             }
-            } else {
-                // if a baseName has been specified then prepend 'add' to the 
-                // base name and excute the derived method on context object
-                String methodName = "add" + StringUtils.capitalize(baseName);
+    }
 
-                // TODO This is a tempoaray fix until we resolve the discrepency 
-                // with collections.
-                if (getValue(context) instanceof IMObject) {
-                    MethodUtils.invokeMethod(getValue(context), methodName, child);
-                } else {
-                    MethodUtils.invokeMethod(context, methodName, child);
-                }
-                
-            }
-        } catch (Exception exception) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToAddChildElement,
-                    new Object[] { getName() }, exception);
-        }
-    }
-    
     /**
-     * Remove the specified child object from the collection defined by this
-     * node descriptor using the nominated {@link IMObject} as the root context.
-     * <p>
-     * If this node descriptor is not of type collection, or the context object 
-     * is null it will raise an exception.
+     * Check whether this node is a boolean type.
      * 
-     * @param context
-     *            the root context object
-     * @param child
-     *            the child element to remove            
-     * @thorws DescriptorException
-     *            if it fails to complete this request            
+     * @return boolean
      */
-    public void removeChildFromCollection(IMObject context, Object child) {
-        if (context == null) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                    new Object[] { getName() });
+    public boolean isBoolean() {
+        Class aclass = getClazz();
+        if ((Boolean.class == aclass) || (boolean.class == aclass)) {
+            return true;
         }
-        
-        if (!isCollection()) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                    new Object[] { getName() });
-        }
-        
+
+        return false;
+    }
+
+    /**
+     * Check whether this node is a collection
+     * 
+     * @return boolean
+     */
+    public boolean isCollection() {
         try {
-            if (StringUtils.isEmpty(baseName)) {
-             // no base name specified look at the type to determine 
-             // what method to call
-             Class tClass = getClazz();
-             if (Collection.class.isAssignableFrom(tClass)) {
-                 MethodUtils.invokeMethod(getValue(context), "remove", child);
-             } else if (Map.class.isAssignableFrom(tClass)) {
-                 MethodUtils.invokeMethod(getValue(context), "remove", child);
-             } else {
-                 throw new DescriptorException(
-                         DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                         new Object[] { getName() });
-             }
-            } else {
-                // if a baseName has been specified then prepend 'add' to the 
-                // base name and excute the derived method on contxt object
-                String methodName = "remove" + StringUtils.capitalize(baseName);
-                
-                // TODO This is a tempoaray fix until we resolve the discrepency 
-                // with collections.
-                if (getValue(context) instanceof IMObject) {
-                    MethodUtils.invokeMethod(getValue(context), methodName, child);
-                } else {
-                    MethodUtils.invokeMethod(context, methodName, child);
-                }
-                
-            }
-        } catch (Exception exception) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
-                    new Object[] { getName() }, exception);
+            Class aclass = Thread.currentThread().getContextClassLoader()
+                    .loadClass(getType());
+
+            return Collection.class.isAssignableFrom(aclass)
+                    || Map.class.isAssignableFrom(aclass)
+                    || PropertyCollection.class.isAssignableFrom(aclass);
+        } catch (Exception ignore) {
+            return false;
         }
     }
-    
+
     /**
-     * @param nodeDescriptors The nodeDescriptors to set.
+     * Indicates if this node is acomplex node. If the node has an
+     * archetypeRange assertion or the node has a cardinality > 1 then the node
+     * is deemed to be a complex node
+     * 
+     * @return boolean true if complex
      */
-    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
-        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
-        int index = 0;
-        for (NodeDescriptor node : nodes) {
-            node.setIndex(index++);
-            addNodeDescriptor(node);
+    public boolean isComplexNode() {
+        return (getMaxCardinality() == NodeDescriptor.UNBOUNDED)
+                || (getMaxCardinality() > 1)
+                || (containsAssertionType("archetypeRange"));
+    }
+
+    /**
+     * Check whether this node a date type.
+     * 
+     * @return boolean
+     */
+    public boolean isDate() {
+        Class aclass = getClazz();
+        if ((Date.class == aclass) || (DvDateTime.class == aclass)) {
+            return true;
         }
+
+        return false;
+    }
+
+    /**
+     * @return Returns the isDerived.
+     */
+    public boolean isDerived() {
+        return isDerived;
+    }
+
+    /**
+     * @return Returns the isHidden.
+     */
+    public boolean isHidden() {
+        return isHidden;
     }
 
     /**
@@ -700,82 +798,15 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
-     * Check whether this node is a numeric type.
+     * Check whether the node maximum length is large. Should be set to true for
+     * string nodes where the display length > DEFAULT_DISPLAY_LENGTH.
+     * Presentation layer will utilise this to decide whether to display as
+     * TextField or TextArea.
      * 
      * @return boolean
      */
-    public boolean isNumeric() {
-
-        Class aclass = getClazz();
-        if ((Number.class.isAssignableFrom(aclass)) || 
-            (byte.class == aclass) || 
-            (short.class == aclass) || 
-            (int.class == aclass) || 
-            (long.class == aclass) || 
-            (float.class == aclass) || 
-            (double.class == aclass)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Check whether this node is a boolean type.
-     * 
-     * @return boolean
-     */
-    public boolean isBoolean() {
-        Class aclass = getClazz();
-        if ((Boolean.class == aclass) || 
-            (boolean.class == aclass)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Check whether this node a date type.
-     * 
-     * @return boolean
-     */
-    public boolean isDate() {
-        Class aclass = getClazz();
-        if ((Date.class == aclass) || 
-            (DvDateTime.class == aclass)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Check whether this node is a string
-     * 
-     * @return boolean
-     */
-    public boolean isString() {
-        Class aclass = getClazz();
-        if (String.class == aclass) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Check whether this node is an object reference. An object reference is a
-     * node that references another oject subclassed from IMObject.
-     * 
-     * @return boolean
-     */
-    public boolean isObjectReference() {
-        if (IMObject.class.isAssignableFrom(getClazz())) {
-            return true;
-        }
-        
-        return false;
+    public boolean isLarge() {
+        return getMaxLength() > DEFAULT_MAX_LENGTH;
     }
 
     /**
@@ -791,28 +822,62 @@ public class NodeDescriptor  extends Descriptor {
                 break;
             }
         }
-        
+
         return result;
-        
+
     }
 
     /**
-     * Check whether this node is a collection
+     * Check whether this node is a numeric type.
      * 
      * @return boolean
      */
-    public boolean isCollection() {
-        try {
-            Class aclass = Thread.currentThread().getContextClassLoader()
-                .loadClass(getType());
-            
-            return 
-                Collection.class.isAssignableFrom(aclass) ||
-                Map.class.isAssignableFrom(aclass) ||
-                PropertyCollection.class.isAssignableFrom(aclass);
-        } catch (Exception ignore) {
-            return false;
+    public boolean isNumeric() {
+
+        Class aclass = getClazz();
+        if ((Number.class.isAssignableFrom(aclass)) || (byte.class == aclass)
+                || (short.class == aclass) || (int.class == aclass)
+                || (long.class == aclass) || (float.class == aclass)
+                || (double.class == aclass)) {
+            return true;
         }
+
+        return false;
+    }
+
+    /**
+     * Check whether this node is an object reference. An object reference is a
+     * node that references another oject subclassed from IMObject.
+     * 
+     * @return boolean
+     */
+    public boolean isObjectReference() {
+        if (IMObject.class.isAssignableFrom(getClazz())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This is a convenience method that checks whether there is a parent child
+     * relationship within this node. A parent child relationship only
+     * applicable for node descriptors that reference a collection.
+     * 
+     * @return boolean
+     */
+    public boolean isParentChild() {
+        return isCollection() && isParentChild;
+    }
+
+    /**
+     * This method indicates that this node descriptor is readOnly and a call to
+     * {@link #setValue(IMObject, Object) will throw an exception.
+     * 
+     * @return boolean
+     */
+    public boolean isReadOnly() {
+        return isReadOnly;
     }
 
     /**
@@ -825,248 +890,305 @@ public class NodeDescriptor  extends Descriptor {
     }
 
     /**
-     * Method to indicate if the node is read only. Note: Should be set to true
-     * for identifier nodes and any additional nodes were the values are not set
-     * by the presentation layer but by the service layer during processing. i.e
-     * timestamps, createduser etc
+     * Check whether this node is a string
      * 
      * @return boolean
      */
-    public boolean isReadOnly() {
-        return isIdentifier();
-    }
-
-    /**
-     * Check whether the node maximum length is large. Should be set to true for
-     * string nodes where the display length > DEFAULT_DISPLAY_LENGTH.
-     * Presentation layer will utilise this to decide whether to display as
-     * TextField or TextArea.
-     * 
-     * @return boolean
-     */
-    public boolean isLarge() {
-        return getMaxLength() > DEFAULT_MAX_LENGTH;
-    }
-
-    /**
-     * Return the length of the displayed field. Not currently defined in
-     * archetype so set to minimum of maxlength or DEFAULT_DISPLAY_LENGTH. Used
-     * for Strings or Numerics.
-     * 
-     * @return int the display length
-     */
-    public int getDisplayLength() {
-        return DEFAULT_DISPLAY_LENGTH;
-    }
-
-    /**
-     * Return the maximum value of the node. If no maximum defined for node then
-     * return 0. Only valid for numeric nodes.
-     * 
-     * @return Number 
-     *            the minimum value
-     * @throws DescriptorException
-     *            a runtim exception            
-     */
-    public Number getMaxValue() {
-        Number number = null;
-        if (isNumeric()) {
-            AssertionDescriptor descriptor = (AssertionDescriptor)
-                assertionDescriptors.get("numericRange");
-            if (descriptor != null) {
-             number = NumberUtils.createNumber((String)
-                     descriptor.getPropertyMap().getProperties().get("maxValue").getValue());    
-            }
-        } else {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.UnsupportedOperation,
-                    new Object[] {"getMaxValue", getType()});
+    public boolean isString() {
+        Class aclass = getClazz();
+        if (String.class == aclass) {
+            return true;
         }
-        
-        return number;
+
+        return false;
     }
 
     /**
-     * Return the minimum value of the node. If no minimum defined for node then
-     * return 0. Only valid for numeric nodes.
+     * Delete the specified assertion descriptor
      * 
-     * @return Number 
-     *            the minimum value
-     * @throws DescriptorException
-     *            a runtim exception            
+     * @param assertion
+     *            the assertion to delete
      */
-    public Number getMinValue() {
-        Number number = null;
-        if (isNumeric()) {
-            AssertionDescriptor descriptor = (AssertionDescriptor)
-                assertionDescriptors.get("numericRange");
-            if (descriptor != null) {
-             number = NumberUtils.createNumber((String)
-                     descriptor.getPropertyMap().getProperties().get("minValue").getValue());    
-            }
-        } else {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.UnsupportedOperation,
-                    new Object[] {"getMinValue", getType()});
-        }
-        
-        return number;
+    public void removeAssertionDescriptor(AssertionDescriptor descriptor) {
+        assertionDescriptors.remove(descriptor.getName());
     }
 
     /**
-     * Return the regular expression associated with the node. Only valid for
-     * string nodes.
+     * Delete the assertion descriptor with the specified type
      * 
-     * @return String regular expression pattern
+     * @param type
+     *            the type name
      */
-    public String getStringPattern() {
-        String expression = null;
-        if (isString()) {
-            AssertionDescriptor descriptor = (AssertionDescriptor)
-                assertionDescriptors.get("regularExpression");
-            if (descriptor != null) {
-             expression = (String)descriptor.getPropertyMap().getProperties()
-                 .get("expression").getValue();    
-            }
-        } else {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.UnsupportedOperation,
-                    new Object[] {"getMinValue", getType()});
-        }
-        
-        return expression;
+    public void removeAssertionDescriptor(String type) {
+        assertionDescriptors.remove(type);
     }
 
     /**
-     * Return the archetype names associated with a particular object reference
-     * or collection.
-     * 
-     * @return String pattern
-     */
-    @SuppressWarnings("unchecked")
-    public String[] getArchetypeNames() {
-        ArrayList<String> result = new ArrayList<String>();
-        
-        AssertionDescriptor desc = (AssertionDescriptor)
-            assertionDescriptors.get("validArchetypes");
-        if (desc != null) {
-            PropertyList archetypes = (PropertyList)desc.getPropertyMap().
-                getProperties().get("archetypes");
-            for (NamedProperty archetype : archetypes.getProperties()) {
-                AssertionProperty shortName= (AssertionProperty)((PropertyMap)
-                        archetype).getProperties().get("shortName");
-                result.add(shortName.getValue());
-            }
-        }
-        
-        return (String[])result.toArray(new String[result.size()]);
-    }
-    
-    /**
-     * Return an array of short names or short name regular expression that
-     * are associated with the archetypeRange assertion. If the node does
-     * not have such an assertion then return a zero length string array
-     * 
-     * TODO Should we more this into a utility class
-     * TODO Change return type to List
-     * 
-     * @return String[]
-     *            the array of short names
-     */
-    public String[] getArchetypeRange() {
-        if (assertionDescriptors.containsKey("archetypeRange")) {
-            ArrayList<String> range = new ArrayList<String>();
-            AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
-            PropertyList archetypes = (PropertyList)desc.getPropertyMap()
-                .getProperties().get("archetypes");
-            for (NamedProperty archetype : archetypes.getProperties()) {
-                AssertionProperty shortName= (AssertionProperty)((PropertyMap)
-                        archetype).getProperties().get("shortName");
-                range.add(shortName.getValue());
-            }
-            
-            return (String[])range.toArray(new String[range.size()]);
-        } else {
-            return new String[0];
-        }
-    }
-    
-    /**
-     * Return a list of candiate children for the specified node. This is only 
-     * applicable for collection nodes that have a candidateChildren assertion
-     * defined.
+     * Remove the specified child object from the collection defined by this
+     * node descriptor using the nominated {@link IMObject} as the root context.
+     * <p>
+     * If this node descriptor is not of type collection, or the context object
+     * is null it will raise an exception.
      * 
      * @param context
-     *            the context object 
-     * @return List
-     *            a list of candiate children, which can also be an empty list          
+     *            the root context object
+     * @param child
+     *            the child element to remove
+     * @thorws DescriptorException if it fails to complete this request
      */
-    @SuppressWarnings("unchecked")
-    public List<IMObject> getCandidateChildren(IMObject context) {
-        List<IMObject> result = null;
-        AssertionDescriptor descriptor = assertionDescriptors.get(
-                "candidateChildren");
-
-        if ((descriptor == null) ||
-            (descriptor.getPropertyMap().getProperties().containsKey("path") == false)) {
-            return result;
+    public void removeChildFromCollection(IMObject context, Object child) {
+        if (context == null) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                    new Object[] { getName() });
         }
 
-        String path = (String)descriptor.getPropertyMap().getProperties().
-            get("path").getValue();
+        if (!isCollection()) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                    new Object[] { getName() });
+        }
+
         try {
-            Object obj = JXPathContext.newContext(context).getValue(path);
-            if (obj == null) {
-                result = new ArrayList<IMObject>();
-            } else if (obj instanceof Collection) {
-                result = new ArrayList<IMObject>((Collection)obj);
+            if (StringUtils.isEmpty(baseName)) {
+                // no base name specified look at the type to determine
+                // what method to call
+                Class tClass = getClazz();
+                if (Collection.class.isAssignableFrom(tClass)) {
+                    MethodUtils
+                            .invokeMethod(getValue(context), "remove", child);
+                } else if (Map.class.isAssignableFrom(tClass)) {
+                    MethodUtils
+                            .invokeMethod(getValue(context), "remove", child);
+                } else {
+                    throw new DescriptorException(
+                            DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                            new Object[] { getName() });
+                }
             } else {
-                logger.warn("getCandidateChildren for path " + path +
-                        " returned object of type " + obj.getClass().getName());
+                // if a baseName has been specified then prepend 'add' to the
+                // base name and excute the derived method on contxt object
+                String methodName = "remove" + StringUtils.capitalize(baseName);
+
+                // TODO This is a tempoaray fix until we resolve the discrepency
+                // with collections.
+                if (getValue(context) instanceof IMObject) {
+                    MethodUtils.invokeMethod(getValue(context), methodName,
+                            child);
+                } else {
+                    MethodUtils.invokeMethod(context, methodName, child);
+                }
+
             }
         } catch (Exception exception) {
-            logger.warn("Failed in getCandidateChildren for path " + path,
-                    exception);
-        }
-        
-        return result;
-    }
-    
-    /**
-     * This will return the node value for the supplied {@link IMObject}. If 
-     * the node is derived then it will return the derived value. If the node is 
-     * not dervied then it will use the path to return the value.
-     * 
-     * @param context
-     *            the context object to work from
-     * @return Object
-     *            the returned object            
-     */
-    public Object getValue(IMObject context) {
-        if (isDerived()) {
-            return JXPathContext.newContext(context).getValue(getDerivedValue());
-        } else {
-            return JXPathContext.newContext(context).getValue(getPath());
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToRemoveChildElement,
+                    new Object[] { getName() }, exception);
         }
     }
 
     /**
-     * Set the node value for the specified {@link IMObject}. 
+     * @param assertionDescriptors
+     *            The assertionDescriptors to set.
+     */
+    public void setAssertionDescriptors(
+            Map<String, AssertionDescriptor> assertionDescriptors) {
+        this.assertionDescriptors = assertionDescriptors;
+    }
+
+    /**
+     * @param assertionDescriptors
+     *            The assertionDescriptors to set.
+     */
+    public void setAssertionDescriptorsAsArray(
+            AssertionDescriptor[] assertionDescriptors) {
+        this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
+        for (AssertionDescriptor descriptor : assertionDescriptors) {
+            this.assertionDescriptors.put(descriptor.getName(), descriptor);
+        }
+    }
+
+    /**
+     * @param baseName
+     *            The baseName to set.
+     */
+    public void setBaseName(String baseName) {
+        this.baseName = baseName;
+    }
+
+    /**
+     * @param defaultValue
+     *            The defaultValue to set.
+     */
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    /**
+     * @param isDerived
+     *            The isDerived to set.
+     */
+    public void setDerived(boolean isDerived) {
+        this.isDerived = isDerived;
+    }
+
+    /**
+     * @param derivedValue
+     *            The derivedValue to set.
+     */
+    public void setDerivedValue(String derivedValue) {
+        this.derivedValue = derivedValue;
+    }
+
+    /**
+     * @param displayName
+     *            The displayName to set.
+     */
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    /**
+     * @param isHidden
+     *            The isHidden to set.
+     */
+    public void setHidden(boolean isHidden) {
+        this.isHidden = isHidden;
+    }
+
+    /**
+     * @param index
+     *            The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    /**
+     * @param maxCardinality
+     *            The maxCardinality to set.
+     */
+    public void setMaxCardinality(int maxCardinality) {
+        this.maxCardinality = maxCardinality;
+    }
+
+    /**
+     * This setter enabled the user to specify an unbounded maximum collection
+     * using '*'.
+     * 
+     * @param maxCardinality
+     *            The maxCardinality to set.
+     */
+    public void setMaxCardinalityAsString(String maxCardinality) {
+        if (maxCardinality.equals(UNBOUNDED_AS_STRING)) {
+            setMaxCardinality(UNBOUNDED);
+        } else {
+            setMaxCardinality(Integer.parseInt(maxCardinality));
+        }
+    }
+
+    /**
+     * @param maxLength
+     *            The maxLength to set.
+     */
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+    }
+
+    /**
+     * @param minCardinality
+     *            The minCardinality to set.
+     */
+    public void setMinCardinality(int minCardinality) {
+        this.minCardinality = minCardinality;
+    }
+
+    /**
+     * @param minLength
+     *            The minLength to set.
+     */
+    public void setMinLength(int minLength) {
+        this.minLength = minLength;
+    }
+
+    /**
+     * @param nodeDescriptors
+     *            The nodeDescriptors to set.
+     */
+    public void setNodeDescriptors(Map<String, NodeDescriptor> nodeDescriptors) {
+        this.nodeDescriptors = nodeDescriptors;
+        checkArchetypeId();
+    }
+
+    /**
+     * @param nodeDescriptors
+     *            The nodeDescriptors to set.
+     */
+    public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
+        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+        int index = 0;
+        for (NodeDescriptor node : nodes) {
+            node.setIndex(index++);
+            addNodeDescriptor(node);
+        }
+    }
+
+    /**
+     * @param parentChild
+     *            The parentChild to set.
+     */
+    public void setParentChild(boolean parentChild) {
+        this.isParentChild = parentChild;
+    }
+
+    /**
+     * @param path
+     *            The path to set.
+     */
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    /**
+     * Set the value of the readOnly attribute
+     * 
+     * @param value
+     */
+    public void setReadOnly(boolean value) {
+        this.isReadOnly = value;
+    }
+
+    /**
+     * @param type
+     *            The type to set.
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * Set the node value for the specified {@link IMObject}.
      * 
      * @param context
      *            the context object, which will be the target of the set
      * @param value
      *            the value to set
      * @throws DescriptorException
-     *            if it cannot set the value                        
+     *             if it cannot set the value
      */
     public void setValue(IMObject context, Object value) {
+        if (isReadOnly()) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.CannotSetValueForReadOnlyNode,
+                    new Object[] { getName() });
+        }
+        
         if (context == null) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.NullContextForSetValue,
                     new Object[] { getName() });
         }
-        
+
         try {
             JXPathContext.newContext(context).setValue(getPath(), value);
         } catch (Exception exception) {
@@ -1075,62 +1197,32 @@ public class NodeDescriptor  extends Descriptor {
                     new Object[] { getName() }, exception);
         }
     }
-    
-    /**
-     * Check whether this assertion type is defined for this node
-     * 
-     * @param type
-     *            the assertion type
-     * @return boolean
-     */
-    public boolean containsAssertionType(String type) {
-        return assertionDescriptors.containsKey(type);
-    }
-    
-    /**
-     * Indicates if this node is acomplex node. If the node has
-     * an archetypeRange assertion or the node has a cardinality > 1 then 
-     * the node is deemed to be a complex node
-     * 
-     * @return boolean
-     *            true if complex
-     */
-    public boolean isComplexNode() {
-        return (getMaxCardinality() == NodeDescriptor.UNBOUNDED) ||
-               (getMaxCardinality() > 1) || 
-               (containsAssertionType("archetypeRange"));
-    }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-             .append("name", getName())
-            .append("displayName", displayName)
-            .append("isHidden", isHidden)
-            .append("isDerived", isDerived)
-            .append("derivedValue", derivedValue)
-            .append("path", path)
-            .append("type", type)
-            .append("defaultValue", defaultValue)
-            .append("minCardinality", minCardinality)
-            .append("maxCardinality", maxCardinality)
-            .append("minLength", minLength)
-            .append("maxLength", maxLength)
-            .append("baseName", baseName)
-            .append("isParentChild", isParentChild)
-            .append("clazz", clazz)
-            .append("index", index)
-            .append("assertionDescriptors", assertionDescriptors)
-            .append("nodeDescriptors", nodeDescriptors)
-            .toString();
+        return new ToStringBuilder(this).append("name", getName()).append(
+                "displayName", displayName).append("isHidden", isHidden)
+                .append("isDerived", isDerived).append("derivedValue",
+                        derivedValue).append("path", path).append("type", type)
+                .append("defaultValue", defaultValue).append("minCardinality",
+                        minCardinality)
+                .append("maxCardinality", maxCardinality).append("minLength",
+                        minLength).append("maxLength", maxLength).append(
+                        "baseName", baseName).append("isParentChild",
+                        isParentChild).append("clazz", clazz).append("index",
+                        index).append("assertionDescriptors",
+                        assertionDescriptors).append("nodeDescriptors",
+                        nodeDescriptors).toString();
     }
 
     /**
-     * This method will uncamel case the speified string and return
-     * it to the caller
+     * This method will uncamel case the speified string and return it to the
+     * caller
      * 
      * @param name
      *            the camel cased strig
@@ -1140,7 +1232,7 @@ public class NodeDescriptor  extends Descriptor {
         if (StringUtils.isEmpty(name)) {
             return null;
         }
-        
+
         ArrayList<String> words = new ArrayList<String>();
         Perl5Util perl = new Perl5Util();
 
@@ -1153,77 +1245,5 @@ public class NodeDescriptor  extends Descriptor {
         words.add(StringUtils.capitalize(name));
 
         return StringUtils.join(words.iterator(), " ");
-    }
-
-    /**
-     * Check and adjust the archetype id. If the node descriptor 
-     * has other children then set the archetypeId to collection
-     * node, otherwise set it to normal node.
-     * <p>
-     * TODO This will disappear when we introduce a new collection node
-     * class.
-     */
-    private void checkArchetypeId() {
-        if ((nodeDescriptors != null) &&
-            (nodeDescriptors.size() > 0)) {
-            if (getArchetypeId().getConcept().equals("node")) {
-                setArchetypeId(new ArchetypeId("openvpms-system-descriptor.collectionNode.1.0"));
-            }
-        } else {
-            if (getArchetypeId().getConcept().equals("collectionNode")) {
-                setArchetypeId(new ArchetypeId("openvpms-system-descriptor.node.1.0"));
-            }
-        }
-    }
-
-    /**
-     * Return the class for the specified type
-     * 
-     * @param Class
-     *            The class
-     */
-    private Class getClazz() {
-        if (clazz == null) {
-            if (StringUtils.isEmpty(type)) {
-                clazz = null;
-            } else {
-                try {
-                    clazz = Thread.currentThread().getContextClassLoader()
-                        .loadClass(type);
-                } catch (Exception exception) {
-                    throw new DescriptorException(
-                            DescriptorException.ErrorCode.InvalidType,
-                            new Object[] { type }, exception);
-                }
-            }
-        }
-        
-        return clazz;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
-     */
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        NodeDescriptor copy = (NodeDescriptor)super.clone();
-        copy.assertionDescriptors = new HashMap<String, AssertionDescriptor>(this.assertionDescriptors);
-        copy.baseName = this.baseName;
-        copy.clazz = this.clazz;
-        copy.defaultValue = this.defaultValue;
-        copy.derivedValue =  this.derivedValue;
-        copy.index = this.index;
-        copy.isDerived = this.isDerived;
-        copy.isHidden = this.isHidden;
-        copy.isParentChild = this.isParentChild;
-        copy.maxCardinality = this.maxCardinality;
-        copy.maxLength = this.maxLength;
-        copy.minCardinality = this.minCardinality;
-        copy.minLength = this.minLength;
-        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(this.nodeDescriptors);
-        copy.path = this.path;
-        copy.type = this.type;
-        
-        return copy;
     }
 }

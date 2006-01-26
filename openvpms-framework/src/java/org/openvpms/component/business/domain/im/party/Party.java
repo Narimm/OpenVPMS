@@ -49,12 +49,6 @@ public class Party extends Entity {
     private Set<Contact> contacts = new HashSet<Contact>();
     
     /**
-     * The list of addresses for the party. The address' lifecycle is 
-     * controlled by the party object
-     */
-    private Set<Address> addresses = new HashSet<Address>();
-
-    /**
      * Default Constructor
      */
     public Party() {
@@ -119,49 +113,12 @@ public class Party extends Entity {
         contacts.remove(contact);
     }
 
-    /**
-     * @return Returns the addresses.
-     */
-    public Set<Address> getAddresses() {
-        return addresses;
-    }
-
-    /**
-     * @param addresses The addresses to set.
-     */
-    public void setAddresses(Set<Address> addresses) {
-        this.addresses = addresses;
-    }
-
-    /**
-     * Add an {@link Address} to party
-     * 
-     * @param address
-     *            address to add
-     */
-    public void addAddress(Address address) {
-        address.setParty(this);
-        addresses.add(address);
-    }
-    
-    /**
-     * Remove the {@link Address} from this party.
-     * 
-     * @param address
-     *            the address to remove
-     */
-    public void removeContact(Address address) {
-        address.setParty(null);
-        addresses.remove(address);
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.Entity#clone()
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
         Party copy = (Party)super.clone();
-        copy.addresses = new HashSet<Address>(this.addresses);
         copy.contacts = new HashSet<Contact>(this.contacts);
       
         return copy;
