@@ -4,7 +4,17 @@
 	<lookupItem id="country" country="Greece" />
 	<lookupItem id="country" country="Spain" />
 	<lookupItem id="state" state="Victoria" />
+	<lookupItem id="state" state="New South Wales" />
+	<lookupItem id="state" state="Western Australia" />
+	<lookupItem id="state" state="South Australia" />
+	<lookupItem id="state" state="Northern Territory" />
+	<lookupItem id="state" state="Tasmania" />
+	<lookupItem id="state" state="Australian Capital Territory" />
+	<lookupItem id="state" state="Queensland" />
     <lookupItem id="suburb" suburb="Belgrave" postCode="3160" />
+    <lookupItem id="suburb" suburb="Croydon" postCode="3136" />
+    <lookupItem id="suburb" suburb="Croydon Hills" postCode="3136" />
+    <lookupItem id="suburb" suburb="Croydon North" postCode="3136" />
     <lookupItem id="suburb" suburb="Tecoma" postCode="3160" />
 	<lookupItem id="postcode" postCode="3160" />
 	<lookupRel>
@@ -12,16 +22,52 @@
 		<target id="state" value="Victoria" />
 	</lookupRel>
 	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="New South Wales" />
+	</lookupRel>
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Western Australia" />
+	</lookupRel>
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="South Australia" />
+	</lookupRel>
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Northern Territory" />
+	</lookupRel>
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Tasmania" />
+	</lookupRel>
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Queensland" />
+	</lookupRel>
+	<lookupRel>
+		<source id="country" value="Australia" />
+		<target id="state" value="Australian Capital Territory" />
+	</lookupRel>
+	<lookupRel>
 		<source id="state" value="Victoria" />
 		<target id="suburb" value="Belgrave" />
 	</lookupRel>
 	<lookupRel>
 		<source id="state" value="Victoria" />
-		<target id="postcode" value="3160" />
+		<target id="suburb" value="Tecoma" />
 	</lookupRel>
 	<lookupRel>
-		<source id="suburb" value="Belgrave" />
-		<target id="postcode" value="3160" />
+		<source id="state" value="Victoria" />
+		<target id="suburb" value="Croydon" />
+	</lookupRel>
+	<lookupRel>
+		<source id="state" value="Victoria" />
+		<target id="suburb" value="Croydon Hills" />
+	</lookupRel>
+	<lookupRel>
+		<source id="state" value="Victoria" />
+		<target id="suburb" value="Croydon North" />
 	</lookupRel>
 	<lookupItem id="species" species="Canine" />
 	<lookupItem id="species" species="Feline" />
