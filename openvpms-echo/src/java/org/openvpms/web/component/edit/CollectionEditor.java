@@ -1,4 +1,4 @@
-package org.openvpms.web.app.editor;
+package org.openvpms.web.component.edit;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,13 +22,12 @@ import org.openvpms.web.component.IMObjectTable;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.TableNavigator;
-import org.openvpms.web.component.edit.EditWindowPane;
 import org.openvpms.web.component.model.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Editor for a collection of {@link IMObject}s.
+ * Editable for a collection of {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -167,9 +166,8 @@ public class CollectionEditor extends Column {
     protected void onNew() {
         if (_shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            IMObject object = (IMObject) service.create(_shortname);
-            IMObjectEditor editor = new IMObjectEditor(object,
-                    _object, _descriptor);
+            IMObject object = service.create(_shortname);
+            IMObjectEditor editor = new IMObjectEditor(object, _object, _descriptor);
             edit(editor);
         }
     }
@@ -192,8 +190,7 @@ public class CollectionEditor extends Column {
     protected void onEdit() {
         IMObject object = _table.getSelected();
         if (object != null) {
-            IMObjectEditor editor
-                    = new IMObjectEditor(object, _object, _descriptor);
+            IMObjectEditor editor = new IMObjectEditor(object, _object, _descriptor);
             edit(editor);
         }
     }
@@ -204,12 +201,13 @@ public class CollectionEditor extends Column {
      * @param editor the editor
      */
     protected void edit(final IMObjectEditor editor) {
-        EditWindowPane pane = new EditWindowPane(editor);
-        pane.addWindowPaneListener(new WindowPaneListener() {
+        EditDialog dialog = new EditDialog(editor);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor);
             }
         });
+        dialog.show();
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.openvpms.web.component.edit;
 
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -7,17 +8,22 @@ import org.openvpms.web.component.dialog.PopupWindow;
 
 
 /**
- * A popup window that displays an {@link Editor}.
+ * A popup window that displays an {@link IMObjectEditor}.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
-public class EditWindowPane extends PopupWindow {
+public class EditDialog extends PopupWindow {
 
     /**
      * The editor.
      */
-    private final Editor _editor;
+    private final IMObjectEditor _editor;
+
+    /**
+     * The editor component.
+     */
+    private Component _component;
 
     /**
      * Apply button identifier.
@@ -42,15 +48,15 @@ public class EditWindowPane extends PopupWindow {
     /**
      * Edit window style name.
      */
-    private static final String STYLE = "EditWindowPane";
+    private static final String STYLE = "EditDialog";
 
 
     /**
-     * Construct a new <code>EditWindowPane</code>.
+     * Construct a new <code>EditDialog</code>.
      *
      * @param editor the editor
      */
-    public EditWindowPane(Editor editor) {
+    public EditDialog(IMObjectEditor editor) {
         super(editor.getTitle(), STYLE);
         _editor = editor;
         setModal(true);
@@ -75,10 +81,13 @@ public class EditWindowPane extends PopupWindow {
                 onCancel();
             }
         });
-
-        getLayout().add(editor.getComponent());
-
-        show();
+        _component = _editor.getComponent();
+        getLayout().add(_component);
+        _editor.setLayoutListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onLayout();
+            }
+        });
     }
 
     /**
@@ -112,6 +121,15 @@ public class EditWindowPane extends PopupWindow {
     protected void onCancel() {
         _editor.cancel();
         close();
+    }
+
+    /**
+     * Invoked when the layout changes.
+     */
+    protected void onLayout() {
+        getLayout().remove(_component);
+        _component = _editor.getComponent();
+        getLayout().add(_component);
     }
 
 }

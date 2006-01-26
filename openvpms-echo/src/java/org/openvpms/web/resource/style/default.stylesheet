@@ -86,19 +86,6 @@
         </properties>
     </style>
 
-    <!--style name="MainPane.Layout" type="nextapp.echo2.app.SplitPane">
-        <properties>
-            <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="32px"/>
-        </properties>
-    </style>
-
-    <style name="MainPane.Menu" type="nextapp.echo2.app.ContentPane">
-        <properties>
-            <property name="background" value="#6B6D84"/>
-        </properties>
-    </style-->
-
     <style name="MainPane.Menu.Button"
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
@@ -156,14 +143,7 @@
     </style>
 
 
-    <style name="Editor" type="nextapp.echo2.app.Column">
-        <properties>
-            <property name="insets" value="20px 20px"/>
-            <property name="cellSpacing" value="20px"/>
-        </properties>
-    </style>
-
-    <style name="EditWindowPane" base-name="default"
+    <style name="EditDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="modal" value="true"/>
@@ -172,6 +152,7 @@
             <property name="height" value="480px"/>
         </properties>
     </style>
+
 
     <style name="BrowserDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
@@ -223,6 +204,10 @@
         <properties>
             <property name="background" value="#e1e1e1"/>
         </properties>
+    </style>
+
+    <style name="SelectionDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane">
     </style>
 
     <style name="ErrorDialog" base-name="default"

@@ -1,26 +1,29 @@
 package org.openvpms.web.component.query;
 
-import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.text.TextComponent;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.component.TextComponentFactory;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.AbstractIMObjectComponentFactory;
 
 
 /**
- * Enter description here.
+ * Component factory that returns read-only components.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
-public class NodeBrowserFactory implements IMObjectComponentFactory {
+public class NodeBrowserFactory extends AbstractIMObjectComponentFactory {
 
+    /**
+     * Create a component to display the supplied object.
+     *
+     * @param object     the object to display
+     * @param descriptor the object's descriptor
+     * @return a component to display <code>object</code>
+     */
     public Component create(IMObject object, NodeDescriptor descriptor) {
         Component result;
         boolean enable = false;
@@ -29,7 +32,7 @@ public class NodeBrowserFactory implements IMObjectComponentFactory {
         } else if (descriptor.isBoolean()) {
             result = getCheckBox(object, descriptor);
         } else if (descriptor.isString()) {
-            result = getTextField(object, descriptor);
+            result = getTextComponent(object, descriptor);
         } else if (descriptor.isNumeric()) {
             result = getLabel(object, descriptor);
         } else if (descriptor.isDate()) {
@@ -47,45 +50,15 @@ public class NodeBrowserFactory implements IMObjectComponentFactory {
         return result;
     }
 
-
-    private Component getLabel(IMObject object, NodeDescriptor descriptor) {
-        Pointer pointer = object.pathToObject(descriptor.getPath());
-        Label label = LabelFactory.create();
-        Object value = pointer.getValue();
-        if (value != null) {
-            label.setText(value.toString());
-        }
-        return label;
-    }
-
-    private Component getCheckBox(IMObject object, NodeDescriptor descriptor) {
-        Pointer pointer = object.pathToObject(descriptor.getPath());
-        Boolean value = (Boolean) pointer.getValue();
-        CheckBox checkBox = new CheckBox();
-        checkBox.setSelected(value);
-        return checkBox;
-    }
-
-    private Component getTextField(IMObject object,
-                                   NodeDescriptor descriptor) {
-        final int maxColumns = 32;
-        TextComponent result;
-        Pointer pointer = object.pathToObject(descriptor.getPath());
-        if (descriptor.isLarge()) {
-            result = TextComponentFactory.createTextArea(pointer);
-        } else {
-            int columns = descriptor.getMaxLength();
-            if (columns > maxColumns) {
-                columns = maxColumns;
-            }
-            result = TextComponentFactory.create(pointer, columns);
-        }
-        return result;
-    }
-
+    /**
+     * Returns a component to display a collection.
+     *
+     * @param object     the parent object
+     * @param descriptor the node descriptor
+     * @return a collection to display the node
+     */
     private Component getCollectionBrowser(IMObject object, NodeDescriptor descriptor) {
         return new CollectionBrowser(object, descriptor);
     }
-
 
 }

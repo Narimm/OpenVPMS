@@ -1,10 +1,11 @@
-package org.openvpms.web.app.editor;
+package org.openvpms.web.component.edit;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -20,8 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.DefaultLayoutStrategy;
+import org.openvpms.web.component.im.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
 import org.openvpms.web.component.im.IMObjectViewer;
 import org.openvpms.web.component.list.LookupListModel;
@@ -30,12 +30,12 @@ import org.openvpms.web.util.DescriptorHelper;
 
 
 /**
- * Editor for {@link IMObject}s.
+ * Editable for {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
-public class IMObjectEditor extends IMObjectViewer implements Editor {
+public class IMObjectEditor extends IMObjectViewer {
 
     /**
      * The component factory.
@@ -67,6 +67,16 @@ public class IMObjectEditor extends IMObjectViewer implements Editor {
      */
     private boolean _deleted = false;
 
+    /**
+     * If <code>true</code> show required and optional fields.
+     */
+    private boolean _showAll;
+
+    /**
+     * Action listener for layout changes.
+     */
+    private ActionListener _layoutChangeListener;
+
 
     /**
      * Construct a new <code>IMObjectEditor</code>.
@@ -83,12 +93,14 @@ public class IMObjectEditor extends IMObjectViewer implements Editor {
      *
      * @param object     the object to edit
      * @param parent     the parent object.
-     * @param descriptor the parent descriptor.
+     * @param descriptor the parent descriptor
      */
     public IMObjectEditor(IMObject object, IMObject parent, NodeDescriptor descriptor) {
-        super(object, new DefaultLayoutStrategy());
+        super(object);
         _parent = parent;
         _descriptor = descriptor;
+        _showAll = false;
+        initLayout();
     }
 
     /**
@@ -112,31 +124,6 @@ public class IMObjectEditor extends IMObjectViewer implements Editor {
         } else {
             return "Edit " + conceptName;
         }
-    }
-
-    /**
-     * Determines if the object has been changed.
-     *
-     * @return <code>true</code> if the object has been modified
-     */
-    public boolean isModified() {
-        return _saved;
-    }
-
-    /**
-     * Determines if the object has been deleted.
-     *
-     * @return <code>true</code> if the object has been deleted
-     */
-    public boolean isDeleted() {
-        return _deleted;
-    }
-
-    /**
-     * Create a new object.
-     */
-    public void create() {
-
     }
 
     /**
@@ -207,11 +194,58 @@ public class IMObjectEditor extends IMObjectViewer implements Editor {
     }
 
     /**
+     * Determines if the object has been changed.
+     *
+     * @return <code>true</code> if the object has been modified
+     */
+    public boolean isModified() {
+        return _saved;
+    }
+
+    /**
+     * Determines if the object has been deleted.
+     *
+     * @return <code>true</code> if the object has been deleted
+     */
+    public boolean isDeleted() {
+        return _deleted;
+    }
+
+    /**
+     * Initialises the layout.
+     */
+    protected void initLayout() {
+        ExpandableLayoutStrategy layout = (ExpandableLayoutStrategy) getLayout();
+        ActionListener listener = getLayoutChangeListener();
+        if (layout != null) {
+            Button button = layout.getButton();
+            if (button != null) {
+                button.removeActionListener(listener);
+            }
+        }
+        layout = new ExpandableLayoutStrategy(_showAll);
+        setLayout(layout);
+        Button button = layout.getButton();
+        if (button != null) {
+            button.addActionListener(listener);
+        }
+    }
+
+    /**
+     * Change the layout/
+     */
+    protected void onLayout() {
+        _showAll = !_showAll;
+        initLayout();
+    }
+
+    /**
      * Returns the factory for creating components for displaying the object.
      *
      * @return the component factory
      */
     protected IMObjectComponentFactory getComponentFactory() {
+        _lookups.clear();
         return new IMObjectComponentFactory() {
             public Component create(IMObject object, NodeDescriptor descriptor) {
                 return createComponent(object, descriptor);
@@ -266,6 +300,22 @@ public class IMObjectEditor extends IMObjectViewer implements Editor {
                     errors.get(0).getErrorMessage());
         }
         return valid;
+    }
+
+    /**
+     * Returns the layout change action listener.
+     *
+     * @return the layout change listener
+     */
+    protected ActionListener getLayoutChangeListener() {
+        if (_layoutChangeListener == null) {
+            _layoutChangeListener = new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onLayout();
+                }
+            };
+        }
+        return _layoutChangeListener;
     }
 
     /**
@@ -388,5 +438,6 @@ public class IMObjectEditor extends IMObjectViewer implements Editor {
         }
         return size;
     }
+
 
 }
