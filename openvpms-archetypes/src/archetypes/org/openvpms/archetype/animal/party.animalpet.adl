@@ -23,7 +23,7 @@
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
 					<property name="concept" value="species.breed" />
-					<property name="source" value="species" />
+					<property name="source" value="/details/attributes/species" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
