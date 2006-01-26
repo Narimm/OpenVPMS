@@ -2,6 +2,7 @@ package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
+import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
@@ -65,14 +66,19 @@ public abstract class AbstractCRUDPane extends SplitPane {
     private final String _id;
 
     /**
-     * Selected customer's summary.
+     * Selected object's summary.
      */
     private Label _summary;
 
     /**
-     * The customer browser.
+     * The object browser.
      */
     private IMObjectBrowser _browser;
+
+    /**
+     * Container for the selected object.
+     */
+    private GroupBox _container;
 
 
     /**
@@ -114,15 +120,9 @@ public abstract class AbstractCRUDPane extends SplitPane {
                 onNew();
             }
         });
-        Button edit = ButtonFactory.create("edit", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onEdit();
-            }
-        });
-
         _summary = LabelFactory.create();
         Row control = RowFactory.create("CRUDPane.ControlRow", select, create,
-                edit, _summary);
+                _summary);
 
         Column top = ColumnFactory.create(headingRow, control);
         add(top);
@@ -169,7 +169,7 @@ public abstract class AbstractCRUDPane extends SplitPane {
     protected void create(String shortName) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         IMObject object = (IMObject) service.create(shortName);
-        edit(object);
+        edit(object, false);
     }
 
     /**
@@ -195,10 +195,12 @@ public abstract class AbstractCRUDPane extends SplitPane {
     /**
      * Edit an IMObject.
      *
-     * @param object the object to edit
+     * @param object  the object to edit
+     * @param showAll if <code>true</code> show optional and required fields;
+     *                otherwise show required fields.
      */
-    protected void edit(IMObject object) {
-        final IMObjectEditor editor = new IMObjectEditor(object);
+    protected void edit(IMObject object, boolean showAll) {
+        final IMObjectEditor editor = new IMObjectEditor(object, showAll);
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -244,15 +246,10 @@ public abstract class AbstractCRUDPane extends SplitPane {
 
     /**
      * Invoked when the edit button is pressed. This popups up an {@link
-     * Editable}.
+     * EditDialog}.
      */
     protected void onEdit() {
-        if (_browser == null) {
-            // no current object, pop up the browser
-            onSelect();
-        } else {
-            edit(_browser.getObject());
-        }
+        edit(_browser.getObject(), true);
     }
 
     /**
@@ -288,11 +285,22 @@ public abstract class AbstractCRUDPane extends SplitPane {
                 object.getDescription());
         _summary.setText(summary);
 
-        if (_browser != null) {
-            remove(_browser.getComponent());
+        if (_container == null) {
+            Button edit = ButtonFactory.create("edit", new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onEdit();
+                }
+            });
+            Row control = RowFactory.create("CRUDPane.ControlRow", edit);
+            _container = new GroupBox();
+            Column column = ColumnFactory.create(_container, control);
+            add(column);
+        } else {
+            _container.remove(_browser.getComponent());
         }
+
         _browser = new IMObjectBrowser(object);
-        add(_browser.getComponent());
+        _container.add(_browser.getComponent());
     }
 
 }

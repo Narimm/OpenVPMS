@@ -30,7 +30,7 @@ import org.openvpms.web.util.DescriptorHelper;
 
 
 /**
- * Editable for {@link IMObject}s.
+ * Editor for {@link IMObject}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -81,10 +81,12 @@ public class IMObjectEditor extends IMObjectViewer {
     /**
      * Construct a new <code>IMObjectEditor</code>.
      *
-     * @param object the object to edit
+     * @param object  the object to edit
+     * @param showAll if <code>true</code> show optional and required fields;
+     *                otherwise show required fields.
      */
-    public IMObjectEditor(IMObject object) {
-        this(object, null, null);
+    public IMObjectEditor(IMObject object, boolean showAll) {
+        this(object, null, null, showAll);
     }
 
     /**
@@ -95,11 +97,27 @@ public class IMObjectEditor extends IMObjectViewer {
      * @param parent     the parent object.
      * @param descriptor the parent descriptor
      */
-    public IMObjectEditor(IMObject object, IMObject parent, NodeDescriptor descriptor) {
+    public IMObjectEditor(IMObject object, IMObject parent,
+                          NodeDescriptor descriptor) {
+        this(object, parent, descriptor, false);
+    }
+
+    /**
+     * Construct a new <code>IMObjectEditor</code> for an object that belongs to
+     * a collection.
+     *
+     * @param object     the object to edit
+     * @param parent     the parent object.
+     * @param descriptor the parent descriptor
+     * @param showAll    if <code>true</code> show optional and required fields;
+     *                   otherwise show required fields.
+     */
+    public IMObjectEditor(IMObject object, IMObject parent,
+                          NodeDescriptor descriptor, boolean showAll) {
         super(object);
         _parent = parent;
         _descriptor = descriptor;
-        _showAll = false;
+        _showAll = showAll;
         initLayout();
     }
 
