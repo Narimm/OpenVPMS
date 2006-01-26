@@ -25,13 +25,6 @@
 			</node>
 			<node name="postcode" path="/details/attributes/postCode"
 				type="java.lang.String">
-				<assertion name="lookup">
-					<property name="type" value="targetLookup" />
-					<property name="concept" value="suburb.postCode" />
-					<property name="source"
-						value="/details/attributes/suburb" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
 			</node>
 			<node name="state" path="/details/attributes/state"
 				type="java.lang.String" defaultValue="'Victoria'"
