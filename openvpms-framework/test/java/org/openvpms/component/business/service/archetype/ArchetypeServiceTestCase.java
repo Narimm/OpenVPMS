@@ -86,7 +86,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Animal animal = (Animal) service.create("animal.pet");
         assertTrue(animal != null);
     }
-
+    
     /**
      * Test that a node value for an {@link IMObject can be retrieved from a
      * {@link NodeDescriptor}

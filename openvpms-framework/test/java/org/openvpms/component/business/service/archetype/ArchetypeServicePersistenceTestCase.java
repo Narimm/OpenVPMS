@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
 
@@ -153,8 +154,9 @@ public class ArchetypeServicePersistenceTestCase extends
 
     /**
      * Test that we can locate entities by RmName only
+     * @TODO This is not currently supported.
      */
-    public void  testFindWithRmName()
+    public void  xtestFindWithRmName()
     throws Exception {
         
         // get the initial count
@@ -170,8 +172,9 @@ public class ArchetypeServicePersistenceTestCase extends
 
     /**
      * Test that we can locate entities by partial RmName only
+     * @TODO This is not currently supported.
      */
-    public void  testFindWithPartialRmName()
+    public void  xtestFindWithPartialRmName()
     throws Exception {
         
         // get the initial count..this should not be allowed
@@ -484,6 +487,34 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(retrievePet.isActive() == false);
     }
     
+    /**
+     * Test the we can retrieve values for each NodeDescriptor specified 
+     * for the Archetype
+     */
+    public void testGetValueForEachNodeDescriptor() throws Exception {
+        Party party = (Party)service.create("party.customerperson");
+        assertTrue(party != null);
+        assertTrue(party.getDetails() != null);
+        
+        party.getDetails().setAttribute("title", "Mr");
+        party.getDetails().setAttribute("firstName", "Jim");
+        party.getDetails().setAttribute("lastName", "Alateras");
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(party.getArchetypeId());
+        for (NodeDescriptor ndesc : adesc.getAllNodeDescriptors()) {
+            //party.pathToObject(ndesc.getPath());
+            //error("Value for " + ndesc.getName() + " is " + party.pathToObject(ndesc.getName()) == null ? null : party.pathToObject(ndesc.getName()).getValue());
+            ndesc.getValue(party);
+        }
+        
+        
+        service.save(party);
+        party = (Party)service.getById(party.getArchetypeId(), party.getUid());
+        assertTrue(party != null);
+        assertTrue(party.getDetails() != null);
+        assertTrue(party != null);
+        assertTrue(party.getDetails().getAttribute("title").equals("Mr"));
+    }
+
     /**
      * Create a pet with the specified name
      * 

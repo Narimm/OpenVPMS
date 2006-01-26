@@ -45,7 +45,7 @@
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
     <property name="code" access="property" column="code" type="string" />
-    <property name="details" column="details" length="5000"
+    <property name="details" column="details" access="property" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <set name="classifications" access="property" lazy="false" inverse="false"
       table="entity_classifications" cascade="none">
