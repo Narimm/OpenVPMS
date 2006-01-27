@@ -1,7 +1,7 @@
 <archetypes>
 	<archetype name="openvpms-party-party.supplierperson.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.party.Party">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat(/details/attributes/lastName, ',', /details/attributes/firstName)" />

@@ -1,7 +1,7 @@
 <archetypes>
 	<archetype name="openvpms-lookup-lookup.suburb.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.lookup.Lookup">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="suburb" path="/value" type="java.lang.String" minCardinality="1" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
