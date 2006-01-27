@@ -18,7 +18,8 @@ public class AdminSubsystem extends AbstractSubsystem {
     public AdminSubsystem() {
         super("admin");
         addWorkspace(new DummyWorkspace("admin.organisation"));
-        addWorkspace(new DummyWorkspace("admin.user"));
+        addWorkspace(new UserWorkspace());
+        addWorkspace(new RoleWorkspace());
         addWorkspace(new LookupWorkspace());
         addWorkspace(new ClassificationWorkspace());
         addWorkspace(new ArchetypeWorkspace());
