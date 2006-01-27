@@ -1,6 +1,6 @@
 <archetypes>
-	<archetype name="openvpms-product-product.goodMedication.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.product.Product">
+	<archetype name="openvpms-product-product.medication.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.product.Product" displayName="Product(Medication)">
 		<node name="uid" path="/uid" displayName="id"
 			type="java.lang.Long" readOnly="true"/>
 		<node name="name" path="/name" type="java.lang.String"

@@ -1,6 +1,6 @@
 <archetypes>
 	<archetype name="openvpms-lookup-lookup.state.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.lookup.Lookup">
+		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="State" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true"/>
 		<node name="state" path="/value" type="java.lang.String" minCardinality="1" />
 		<node name="abbreviation" path="/code" type="java.lang.String" minCardinality="0" />
