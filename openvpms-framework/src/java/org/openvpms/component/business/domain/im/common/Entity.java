@@ -85,19 +85,12 @@ public class Entity extends IMObject {
         new HashSet<Participation>();
     
     /**
-     * Return a set of {@link EntityRelationships} that this entity is the 
-     * source off.
+     * Return a set of {@link EntityRelationships} that this entity participates
+     * in.
      */
-    private Set<EntityRelationship> sourceRelationships = 
+    private Set<EntityRelationship> entityRelationships = 
         new HashSet<EntityRelationship>();
     
-    /**
-     * The {@link EntityRelationship} instances where this entity is a
-     * target
-     */
-    private Set<EntityRelationship> targetRelationships =
-        new HashSet<EntityRelationship>();
-
     /**
      * Default constructor
      */
@@ -151,17 +144,17 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @return Returns the targetRelationships.
+     * @return Returns the entityRelationships.
      */
-    public Set<EntityRelationship> getTargetRelationships() {
-        return targetRelationships;
+    public Set<EntityRelationship> getEntityRelationships() {
+        return entityRelationships;
     }
 
     /**
-     * @param targetRelationships The targetRelationships to set.
+     * @param targetRelationships The entityRelationships to set.
      */
-    public void setTargetRelationships(Set<EntityRelationship> targetRelationships) {
-        this.targetRelationships = targetRelationships;
+    public void setEntityRelationships(Set<EntityRelationship> entityRelationships) {
+        this.entityRelationships = entityRelationships;
     }
     
     /**
@@ -202,67 +195,20 @@ public class Entity extends IMObject {
      * @param entityRel 
      *            the entity relationship to add
      */
-    public void addSourceEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setSource(this);
-        this.sourceRelationships.add(entityRel);
+    public void addEntityRelationship(EntityRelationship entityRel) {
+        entityRel.setEntity(this);
+        this.entityRelationships.add(entityRel);
     }
     
     /**
      * Remove the {@link EntityRelationship} from this entity
      * 
-     * TODO Don't think we need the remove and add source entity relationship
-     * methods.
-     * 
-     * @oparam entityRel
+     * @param entityRel
      *            the entity relationship to remove
      */
-    public void removeSourceEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setSource(null);
-        this.sourceRelationships.remove(entityRel);
-    }
-    
-    /**
-     * Return all the {@link EntityRelationship} objects that this entity is 
-     * the source off
-     * 
-     * @return Set<EntityRelationship>
-     */
-    public Set<EntityRelationship> getSourceEntityRelationships() {
-        return sourceRelationships;
-    }
-    
-    /**
-     * Add a target {@link EntityRelationship} to this entity
-     * 
-     * @param entityRel 
-     *            the entity relationship to add
-     */
-    public void addTargetEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setTarget(this);
-        this.targetRelationships.add(entityRel);
-    }
-    
-    /**
-     * Remove the target {@link EntityRelationship} from this entity
-     * 
-     * TODO Don't think we need the remove and add source entity relationship
-     * methods.
-     * 
-     * @oparam entityRel
-     *            the entity relationship to remove
-     */
-    public void removeTargetEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setTarget(null);
-        this.targetRelationships.remove(entityRel);
-    }
-    
-    /**
-     * Return all the target {@link EntityRelationship} for this entity
-     * 
-     * @return Set<EntityRelationship>
-     */
-    public Set<EntityRelationship> getTargetEntityRelationships() {
-        return targetRelationships;
+    public void removeEntityRelationship(EntityRelationship entityRel) {
+        entityRel.setEntity(null);
+        this.entityRelationships.remove(entityRel);
     }
     
     /**
@@ -346,7 +292,6 @@ public class Entity extends IMObject {
      * @param details The details to set.
      */
     public void setDetails(DynamicAttributeMap details) {
-//        logger.error("Details is being set " + details.toString());
         this.details = details;
     }
 
@@ -356,22 +301,6 @@ public class Entity extends IMObject {
     @SuppressWarnings("unused")
     public void setIdentities(Set<EntityIdentity> identities) {
         this.identities = identities;
-    }
-
-    /**
-     * @return Returns the sourceRelationships.
-     */
-    @SuppressWarnings("unused")
-    private Set<EntityRelationship> getSourceRelationships() {
-        return sourceRelationships;
-    }
-
-    /**
-     * @param sourceRelationships The sourceRelationships to set.
-     */
-    @SuppressWarnings("unused")
-    private void setSourceRelationships(Set<EntityRelationship> sourceRelationships) {
-        this.sourceRelationships = sourceRelationships;
     }
 
     /* (non-Javadoc)
@@ -386,8 +315,7 @@ public class Entity extends IMObject {
                 null : this.details.clone());
         copy.identities = new HashSet<EntityIdentity>(this.identities);
         copy.participations = new HashSet<Participation>(this.participations);
-        copy.sourceRelationships = new HashSet<EntityRelationship>(this.sourceRelationships);
-        copy.targetRelationships = new HashSet<EntityRelationship>(this.targetRelationships);
+        copy.entityRelationships = new HashSet<EntityRelationship>(this.entityRelationships);
 
         return copy;
     }

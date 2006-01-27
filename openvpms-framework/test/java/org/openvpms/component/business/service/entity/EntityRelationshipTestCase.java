@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
@@ -82,19 +83,17 @@ public class EntityRelationshipTestCase extends
             
             // we can ony create entity relationship with persistent objects
             EntityRelationship rel = createEntityRelationship(person, pet);
-            person.addSourceEntityRelationship(rel);
-            pet.addTargetEntityRelationship(rel);
+            person.addEntityRelationship(rel);
+            pet.addEntityRelationship((EntityRelationship)rel.clone());
             service.save(person);
             service.save(pet);
             
             // now retrieve them and ensure that the correct entity relationship
             // exists
-            person = (Person)getObjectById("entity.getEntityById", person.getUid());
-            assertTrue(person.getSourceEntityRelationships().size() == 1);
-            pet = (Animal)getObjectById("entity.getEntityById", pet.getUid());
-            assertTrue(pet.getTargetEntityRelationships().size() == 1);
-            assertTrue(person.getSourceEntityRelationships().iterator().next()
-                    .equals(pet.getTargetEntityRelationships().iterator().next()));
+            person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+            assertTrue(person.getEntityRelationships().size() == 1);
+            pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
+            assertTrue(pet.getEntityRelationships().size() == 1);
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
                 logger.error("Node:" + error.getNodeName() + " Error:" + error.getErrorMessage());
@@ -114,34 +113,29 @@ public class EntityRelationshipTestCase extends
         
         // we can ony create entity relationship with persistent objects
         EntityRelationship rel = createEntityRelationship(person, pet);
-        person.addSourceEntityRelationship(rel);
-        pet.addTargetEntityRelationship(rel);
+        person.addEntityRelationship(rel);
+        pet.addEntityRelationship((EntityRelationship)rel.clone());
         service.save(person);
         service.save(pet);
         
         // now retrieve them and ensure that the correct entity relationship
         // exists
-        person = (Person)getObjectById("entity.getEntityById", person.getUid());
-        assertTrue(person.getSourceEntityRelationships().size() == 1);
-        pet = (Animal)getObjectById("entity.getEntityById", pet.getUid());
-        assertTrue(pet.getTargetEntityRelationships().size() == 1);
-        assertTrue(person.getSourceEntityRelationships().iterator().next()
-                .equals(pet.getTargetEntityRelationships().iterator().next()));
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 1);
+        pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
+        assertTrue(pet.getEntityRelationships().size() == 1);
         
         // retrieve the entity relationship
-        rel = person.getSourceEntityRelationships().iterator().next();
-        person.removeSourceEntityRelationship(rel);
+        rel = person.getEntityRelationships().iterator().next();
+        person.removeEntityRelationship(rel);
         service.save(person);
         
         // now retrieve both the animal and the person and check the entity
         // relatioships
-        person = (Person)getObjectById("entity.getEntityById", person.getUid());
-        assertTrue(person.getSourceEntityRelationships().size() == 0);
-        pet = (Animal)getObjectById("entity.getEntityById", pet.getUid());
-        assertTrue(pet.getTargetEntityRelationships().size() == 0);
-        
-        // check that the entity relationship no longer exists
-        assertTrue(getObjectById("entityRelationship.getById", rel.getUid()) == null);
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 0);
+        pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
+        assertTrue(pet.getEntityRelationships().size() == 1);
     }
     
     /**
@@ -218,8 +212,8 @@ public class EntityRelationshipTestCase extends
         
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);
-        rel.setSource(source);
-        rel.setTarget(target);
+        rel.setSource(new IMObjectReference(source));
+        rel.setTarget(new IMObjectReference(target));
 
         return rel;
         

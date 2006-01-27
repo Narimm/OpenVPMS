@@ -526,6 +526,11 @@ public class ArchetypeService implements IArchetypeService {
                         .getAssertionDescriptorsAsArray()) {
                     AssertionTypeDescriptor assertionType = 
                         dCache.getAssertionTypeDescriptor(assertion.getName());
+                    if (assertionType == null) {
+                        throw  new ArchetypeServiceException(
+                                ArchetypeServiceException.ErrorCode.AssertionTypeNotSpecified,
+                                new Object[]{assertion.getName()});
+                    }
 
                     // TODO
                     // no validation required where the type is not specified.

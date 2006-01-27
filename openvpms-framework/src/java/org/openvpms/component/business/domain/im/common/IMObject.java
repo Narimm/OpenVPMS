@@ -55,11 +55,6 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyColl
 public abstract class IMObject implements Serializable, Cloneable {
 
     /**
-     * SUID.
-     */
-    private static final long serialVersionUID = 1L;
-    
-    /**
      * An internal UUID generator
      */
     @SuppressWarnings("unused")
@@ -71,11 +66,32 @@ public abstract class IMObject implements Serializable, Cloneable {
      */
     @SuppressWarnings("unused")
     private static final Logger logger = Logger.getLogger(IMObject.class);
+    
+    /**
+     * SUID.
+     */
+    private static final long serialVersionUID = 1L;
 
     /**
-     * Indicates the version of this object
+     * Indicates whether this object is active
      */
-    private long version;
+    private boolean active = true;
+    
+    /**
+     * The archetype that is attached to this object. which defines
+     * 
+     */
+    private ArchetypeId archetypeId;
+    
+    /**
+     * Description of this entity
+     */
+    private String description;
+    
+    /**
+     * This is the date and time that this object was last modified
+     */
+    private Date lastModified;
     
     /**
      * This is the link id for the object, which is used to associated one 
@@ -87,37 +103,21 @@ public abstract class IMObject implements Serializable, Cloneable {
     private String linkId;
     
     /**
-     * Uniquely identifies an instance of this class. This is the identifier
-     * that is used for persistence.
-     */
-    private long uid = -1;
-    
-    /**
      * This is the name that this entity is known by. Each concrete instance 
      * must supply this.
      */
     private String name;
     
     /**
-     * Description of this entity
+     * Uniquely identifies an instance of this class. This is the identifier
+     * that is used for persistence.
      */
-    private String description;
+    private long uid = -1;
     
     /**
-     * The archetype that is attached to this object. which defines
-     * 
+     * Indicates the version of this object
      */
-    private ArchetypeId archetypeId;
-    
-    /**
-     * This is the date and time that this object was last modified
-     */
-    private Date lastModified;
-    
-    /**
-     * Indicates whether this object is active
-     */
-    private boolean active = true;
+    private long version;
     
     
     /**
@@ -158,138 +158,6 @@ public abstract class IMObject implements Serializable, Cloneable {
         this.description = description;
     }
 
-    /**
-     * @return Returns the version.
-     */
-    public long getVersion() {
-        return version;
-    }
-
-    /**
-     * @param version The version to set.
-     */
-    public void setVersion(long version) { 
-        this.version = version;
-    }
-
-    /**
-     * @return Returns the id.
-     */
-    public long getUid() {
-        return this.uid;
-    }
-
-    /**
-     * @param id The id to set.
-     */
-    public void setUid(long id) {
-        this.uid = id;
-    }
-    
-    /**
-     * @return Returns the lastModified.
-     */
-    public Date getLastModified() {
-        return lastModified;
-    }
-
-    /**
-     * @param lastModified The lastModified to set.
-     */
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
-
-    /**
-     * @return Returns the linkId.
-     */
-    public String getLinkId() {
-        return linkId;
-    }
-
-    /**
-     * @param linkId The linkId to set.
-     */
-    @SuppressWarnings("unused")
-    private void setLinkId(String linkId) {
-        this.linkId = linkId;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return Returns the description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @param description The description to set.
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * @return Returns the archetypeId.
-     */
-    public ArchetypeId getArchetypeId() {
-        return archetypeId;
-    }
-
-    /**
-     * @param archetypeId The archetypeId to set.
-     */
-    public void setArchetypeId(ArchetypeId archetypeId) {
-        this.archetypeId = archetypeId;
-    }
-
-    /**
-     * Return the archetypeId as a string
-     * 
-     * @return String
-     *            the fully qualified archetype id
-     */
-    public String getArchetypeIdAsString() {
-        return (this.archetypeId == null) ? null : archetypeId.getQName();
-    }
-    
-    /**
-     * Set the archetypeId from a string
-     * 
-     * @param archId
-     *            the fully qualified archetype name
-     */
-    public void setArchetypeIdAsString(String archId) {
-        this.archetypeId = new ArchetypeId(archId);
-    }
-    /**
-     * @return Returns the active.
-     */
-    public boolean isActive() {
-        return active;
-    }
-
-    /**
-     * @param active The active to set.
-     */
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
@@ -323,6 +191,72 @@ public abstract class IMObject implements Serializable, Cloneable {
             .isEquals();
     }
 
+    /**
+     * @return Returns the archetypeId.
+     */
+    public ArchetypeId getArchetypeId() {
+        return archetypeId;
+    }
+
+    /**
+     * Return the archetypeId as a string
+     * 
+     * @return String
+     *            the fully qualified archetype id
+     */
+    public String getArchetypeIdAsString() {
+        return (this.archetypeId == null) ? null : archetypeId.getQName();
+    }
+    
+    /**
+     * @return Returns the description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @return Returns the lastModified.
+     */
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     * @return Returns the linkId.
+     */
+    public String getLinkId() {
+        return linkId;
+    }
+    
+    /**
+     * Return the object reference for this object. 
+     * 
+     * @return IMObjectReference
+     * @throws 
+     */
+
+    /**
+     * @return Returns the name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return Returns the id.
+     */
+    public long getUid() {
+        return this.uid;
+    }
+
+    /**
+     * @return Returns the version.
+     */
+    public long getVersion() {
+        return version;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -333,18 +267,13 @@ public abstract class IMObject implements Serializable, Cloneable {
             .toHashCode();
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+     * @return Returns the active.
      */
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-            .append("uid", uid)
-            .append("archetypeId", archetypeId)
-            .append("linkId", linkId)
-            .toString();
+    public boolean isActive() {
+        return active;
     }
-    
+
     /**
      * Return true if this is a new object and false otherwise. A new object
      * is one that has been created but not yet persisted
@@ -353,6 +282,31 @@ public abstract class IMObject implements Serializable, Cloneable {
      */
     public boolean isNew() {
         return uid == -1;
+    }
+
+    /**
+     * This method will retrieve a reference to a value collection. If the 
+     * returned object is already an instance of a collection then it will
+     * return it as is. If the returned object is an instance of a Map then
+     * it will return the value objects
+     * 
+     * @param path
+     *            a xpath expression in to this object
+     * @return Pointer   
+     *            a pointer to the location         
+     */
+    public Pointer pathToCollection(String path) {
+        Pointer ptr = pathToObject(path);
+        if (ptr != null) {
+            Object obj  = ptr.getValue();
+            if (obj instanceof Map) {
+                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
+            } else if (obj instanceof PropertyCollection){
+                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
+            }
+        }
+        
+        return ptr;
     }
 
     /**
@@ -378,28 +332,81 @@ public abstract class IMObject implements Serializable, Cloneable {
     }
     
     /**
-     * This method will retrieve a reference to a value collection. If the 
-     * returned object is already an instance of a collection then it will
-     * return it as is. If the returned object is an instance of a Map then
-     * it will return the value objects
-     * 
-     * @param path
-     *            a xpath expression in to this object
-     * @return Pointer   
-     *            a pointer to the location         
+     * @param active The active to set.
      */
-    public Pointer pathToCollection(String path) {
-        Pointer ptr = pathToObject(path);
-        if (ptr != null) {
-            Object obj  = ptr.getValue();
-            if (obj instanceof Map) {
-                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
-            } else if (obj instanceof PropertyCollection){
-                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
-            }
-        }
-        
-        return ptr;
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+    /**
+     * @param archetypeId The archetypeId to set.
+     */
+    public void setArchetypeId(ArchetypeId archetypeId) {
+        this.archetypeId = archetypeId;
+    }
+
+    /**
+     * Set the archetypeId from a string
+     * 
+     * @param archId
+     *            the fully qualified archetype name
+     */
+    public void setArchetypeIdAsString(String archId) {
+        this.archetypeId = new ArchetypeId(archId);
+    }
+
+    /**
+     * @param description The description to set.
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * @param lastModified The lastModified to set.
+     */
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    /**
+     * @param linkId The linkId to set.
+     */
+    @SuppressWarnings("unused")
+    private void setLinkId(String linkId) {
+        this.linkId = linkId;
+    }
+
+    /**
+     * @param name The name to set.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    /**
+     * @param id The id to set.
+     */
+    public void setUid(long id) {
+        this.uid = id;
+    }
+
+    /**
+     * @param version The version to set.
+     */
+    public void setVersion(long version) { 
+        this.version = version;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("uid", uid)
+            .append("archetypeId", archetypeId)
+            .append("linkId", linkId)
+            .toString();
     }
 }
 

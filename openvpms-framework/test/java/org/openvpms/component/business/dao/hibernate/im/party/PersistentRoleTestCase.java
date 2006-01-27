@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Role;
 
 /**
@@ -231,7 +232,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             target = (Role) session.load(Role.class, target.getUid());
 
             EntityRelationship erel = createEntityRelationship(role, target);
-            role.addSourceEntityRelationship(erel);
+            role.addEntityRelationship(erel);
             session.saveOrUpdate(role);
             tx.commit();
 
@@ -271,28 +272,29 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             session.save(source);
 
             EntityRelationship erel = createEntityRelationship(role, target);
-            session.save(erel);
-            role.addSourceEntityRelationship(erel);
-            target.addTargetEntityRelationship(erel);
+            role.addEntityRelationship(erel);
+            target.addEntityRelationship((EntityRelationship)erel.clone());
+            
             erel = createEntityRelationship(source, role);
-            session.save(erel);
-            source.addSourceEntityRelationship(erel);
-            role.addTargetEntityRelationship(erel);
+            source.addEntityRelationship(erel);
+            role.addEntityRelationship((EntityRelationship)erel.clone());
+            session.save(role);
+            session.save(target);
+            session.save(source);
             tx.commit();
 
             int acount1 = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            assertTrue(acount1 == (acount + 2));
+            assertTrue(acount1 == (acount + 4));
 
             // now retrieve the role and check that there is one source and
             // one target relationship entry
             role = (Role) session.load(Role.class, role.getUid());
-            assertTrue(role.getSourceEntityRelationships().size() == 1);
-            assertTrue(role.getTargetEntityRelationships().size() == 1);
-            assertTrue(source.getSourceEntityRelationships().iterator().next()
-                    .getTarget().getSourceEntityRelationships().size() == 1);
-            assertTrue(source.getSourceEntityRelationships().iterator().next()
-                    .getTarget().getUid() == role.getUid());
+            assertTrue(role.getEntityRelationships().size() == 2);
+            source = (Role) session.load(Role.class, source.getUid());
+            assertTrue(source.getEntityRelationships().size() == 1);
+            target = (Role) session.load(Role.class, target.getUid());
+            assertTrue(target.getEntityRelationships().size() == 1);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -322,7 +324,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             EntityRelationship erel = createEntityRelationship(role, role);
             session.save(erel);
-            role.addSourceEntityRelationship(erel);
+            role.addEntityRelationship(erel);
             tx.commit();
 
             int acount1 = HibernateUtil.getTableRowCount(session,
@@ -332,8 +334,8 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // now retrieve the role and remove the erel
             tx = session.beginTransaction();
             role = (Role) session.load(Role.class, role.getUid());
-            erel = role.getSourceEntityRelationships().iterator().next();
-            role.removeSourceEntityRelationship(erel);
+            erel = role.getEntityRelationships().iterator().next();
+            role.removeEntityRelationship(erel);
             session.delete(erel);
             tx.commit();
 
@@ -345,8 +347,8 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // check that the role now has zero entity relationships
             session.flush();
             role = (Role) session.load(Role.class, role.getUid());
-            assertTrue((role.getSourceEntityRelationships() == null)
-                    || (role.getSourceEntityRelationships().size() == 0));
+            assertTrue((role.getEntityRelationships() == null)
+                    || (role.getEntityRelationships().size() == 0));
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -380,7 +382,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             Classification class1 = createClassification();
             session.save(erel);
             session.save(class1);
-            role.addSourceEntityRelationship(erel);
+            role.addEntityRelationship(erel);
             role.addClassification(class1);
             tx.commit();
 
@@ -395,7 +397,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             session.flush();
             role = (Role) session.load(Role.class, role.getUid());
             assertTrue(role.getClassifications().size() == 1);
-            assertTrue(role.getSourceEntityRelationships().size() == 1);
+            assertTrue(role.getEntityRelationships().size() == 1);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -422,7 +424,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             session.save(role);
             EntityRelationship erel = createEntityRelationship(role, role);
             session.save(erel);
-            role.addSourceEntityRelationship(erel);
+            role.addEntityRelationship(erel);
             tx.commit();
 
             // retrieve the entity classification count
@@ -502,7 +504,10 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      */
     private EntityRelationship createEntityRelationship(Entity source,
             Entity target) {
-        return new EntityRelationship(createArchetypeId(), source, target, null);
+        return new EntityRelationship( 
+                new ArchetypeId("openvpms-common-entity.basicEntityRel.1.0"), 
+                new IMObjectReference(source), 
+                new IMObjectReference(target), null);
     }
 
     /**
