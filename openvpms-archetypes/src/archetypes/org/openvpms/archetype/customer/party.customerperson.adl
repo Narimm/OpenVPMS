@@ -77,5 +77,21 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+		<node name="relationships" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationships" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.patientOwner" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.patientLocation" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
 	</archetype>
 </archetypes>

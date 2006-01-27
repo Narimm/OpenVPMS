@@ -10,7 +10,7 @@
 		<node name="password" path="/password" type="java.lang.String" displayName="Password"
 			minCardinality="1" />
 		<node name="roles" path="/roles" type="java.util.HashSet" displayName="Roles"
-			maxCardinality="*" parentChild="false" baseName="role">
+			minCardinality="0" maxCardinality="*" parentChild="false" baseName="Role">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
