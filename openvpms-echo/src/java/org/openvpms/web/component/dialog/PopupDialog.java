@@ -5,10 +5,10 @@ import nextapp.echo2.app.event.ActionListener;
 
 
 /**
- * Generic popup dialog, providing OK or OK and Cancel buttons.
+ * Generic popup dialog, providing OK and Cancel buttons.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $LastChangedDate$
  */
 public abstract class PopupDialog extends PopupWindow {
 
@@ -27,6 +27,7 @@ public abstract class PopupDialog extends PopupWindow {
      */
     public static enum Buttons {
         OK,
+        CANCEL,
         OK_CANCEL
     }
 
@@ -50,12 +51,14 @@ public abstract class PopupDialog extends PopupWindow {
     public PopupDialog(String title, String style, Buttons buttons) {
         super(title, style);
 
-        addButton(OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onOK();
-            }
-        });
-        if (buttons == Buttons.OK_CANCEL) {
+        if (buttons == Buttons.OK || buttons == Buttons.OK_CANCEL) {
+            addButton(OK_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onOK();
+                }
+            });
+        }
+        if (buttons == Buttons.CANCEL || buttons == Buttons.OK_CANCEL) {
             addButton(CANCEL_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onCancel();

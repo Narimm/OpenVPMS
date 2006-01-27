@@ -169,13 +169,6 @@
         </properties>
     </style>
 
-    <style name="Browser.Layout" type="nextapp.echo2.app.SplitPane">
-        <properties>
-            <property name="resizable" value="true"/>
-            <property name="separatorPosition" value="400px"/>
-        </properties>
-    </style>
-
     <style name="ControlRow" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="10px 2px"/>

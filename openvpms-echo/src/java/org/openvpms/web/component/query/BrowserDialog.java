@@ -48,13 +48,18 @@ public class BrowserDialog extends PopupDialog {
      * @param browser the editor
      */
     public BrowserDialog(String title, Browser browser) {
-        super(title, STYLE, Buttons.OK_CANCEL);
+        super(title, STYLE, Buttons.CANCEL);
         _browser = browser;
         getLayout().add(browser);
 
         addButton(NEW_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
+            }
+        });
+        _browser.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onSelected();
             }
         });
     }
@@ -81,10 +86,11 @@ public class BrowserDialog extends PopupDialog {
     /**
      * Select the current object, and close the browser.
      */
-    @Override
-    protected void onOK() {
+    protected void onSelected() {
         _selected = _browser.getSelected();
-        close();
+        if (_selected != null) {
+            close();
+        }
     }
 
     /**

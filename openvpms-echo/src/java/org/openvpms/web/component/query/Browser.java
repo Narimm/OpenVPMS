@@ -1,9 +1,11 @@
 package org.openvpms.web.component.query;
 
+import java.util.EventListener;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
@@ -12,6 +14,7 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -23,8 +26,6 @@ import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.TableNavigator;
 import org.openvpms.web.component.TextComponentFactory;
-import org.openvpms.web.component.im.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.SinglePageLayoutStrategy;
 import org.openvpms.web.component.model.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -38,6 +39,11 @@ import org.openvpms.web.spring.ServiceHelper;
  * @version $LastChangedDate$
  */
 public class Browser extends SplitPane {
+
+    /**
+     * The selected action command.
+     */
+    public static final String SELECTED = "selected";
 
     /**
      * The archetype reference model name.
@@ -63,6 +69,12 @@ public class Browser extends SplitPane {
     private TextField _instanceName;
 
     /**
+     * The deactived check box. If selected, deactived instances will be
+     * returned along with the active ones.
+     */
+    private CheckBox _deactived;
+
+    /**
      * The archetype short name. If <code>null</code>, or
      * <code>_selectAll</code>, indicates to query using all matching short
      * names.
@@ -80,17 +92,7 @@ public class Browser extends SplitPane {
     private IMObject _selected;
 
     /**
-     * The selected object browser.
-     */
-    private IMObjectBrowser _browser;
-
-    /**
      * Split pane for laying out the table and navigation control
-     */
-    private SplitPane _tableLayout;
-
-    /**
-     * Split pane for laying out the table and browser.
      */
     private SplitPane _layout;
 
@@ -115,14 +117,14 @@ public class Browser extends SplitPane {
     private static final String NAME_ID = "name";
 
     /**
+     * Deactivated label id.
+     */
+    private static final String DEACTIVATED_ID = "deactivated";
+
+    /**
      * Button row style name.
      */
     private static final String ROW_STYLE = "ControlRow";
-
-    /**
-     * Layout style name,
-     */
-    private static final String LAYOUT_STYLE = "Browser.Layout";
 
 
     /**
@@ -153,12 +155,26 @@ public class Browser extends SplitPane {
     }
 
     /**
-     * Returns the archetype instance name.
+     * Returns the archetype instance name, including wildcards.
      *
      * @return the archetype instance name. Nay be <code>null</code>
      */
     public String getInstanceName() {
-        return _instanceName.getText();
+        String name = _instanceName.getText();
+        if (!StringUtils.isEmpty(name)) {
+            name = "*" + name + "*";
+        }
+        return name;
+    }
+
+    /**
+     * Determines if deactived instances should be returned.
+     *
+     * @return <code>true</code> if deactived instances should be retured;
+     *         <code>false</code>
+     */
+    public boolean includeDeactived() {
+        return _deactived.isSelected();
     }
 
     /**
@@ -188,6 +204,16 @@ public class Browser extends SplitPane {
      */
     public IMObject getSelected() {
         return _selected;
+    }
+
+    /**
+     * Adds an <code>ActionListener</code> to receive notification of selection
+     * actions.
+     *
+     * @param listener the listener to add
+     */
+    public void addActionListener(ActionListener listener) {
+        getEventListenerList().addListener(ActionListener.class, listener);
     }
 
     /**
@@ -224,6 +250,10 @@ public class Browser extends SplitPane {
         _instanceName = TextComponentFactory.create();
         Label nameLabel = LabelFactory.create(NAME_ID);
 
+        _deactived = new CheckBox();
+        _deactived.setSelected(false);
+        Label deactivedLabel = LabelFactory.create(DEACTIVATED_ID);
+
         // query button
         Button query = ButtonFactory.create(QUERY_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -233,6 +263,8 @@ public class Browser extends SplitPane {
 
         row.add(nameLabel);
         row.add(_instanceName);
+        row.add(deactivedLabel);
+        row.add(_deactived);
         row.add(query);
 
         _table = new IMObjectTable();
@@ -245,11 +277,9 @@ public class Browser extends SplitPane {
         add(row);
 
         TableNavigator navigator = new TableNavigator(_table);
-        _tableLayout = SplitPaneFactory.create(ORIENTATION_VERTICAL,
+        _layout = SplitPaneFactory.create(ORIENTATION_VERTICAL,
                 navigator, _table);
-        _tableLayout.setSeparatorPosition(new Extent(0, Extent.PX));
-        _layout = SplitPaneFactory.create(
-                ORIENTATION_HORIZONTAL, LAYOUT_STYLE, _tableLayout);
+        _layout.setSeparatorPosition(new Extent(0, Extent.PX));
         add(_layout);
 
         onQuery();
@@ -276,7 +306,7 @@ public class Browser extends SplitPane {
         List<IMObject> result = null;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             result = service.get(_refModelName, _entityName,
-                    _conceptName, getInstanceName(), true, true);
+                    _conceptName, getInstanceName(), true, includeDeactived());
         } else {
             StringTokenizer tokens = new StringTokenizer(type, ".");
             if (tokens.countTokens() != 2) {
@@ -287,36 +317,38 @@ public class Browser extends SplitPane {
                 String entityName = tokens.nextToken();
                 String conceptName = tokens.nextToken();
                 result = service.get(_refModelName, entityName, conceptName,
-                        getInstanceName(), true, true);
+                        getInstanceName(), true, includeDeactived());
             }
         }
 
         _table.setObjects(result);
         if (result.size() <= _table.getRowsPerPage()) {
-            _tableLayout.setSeparatorPosition(new Extent(0, Extent.PX));
+            _layout.setSeparatorPosition(new Extent(0, Extent.PX));
         } else {
-            _tableLayout.setSeparatorPosition(new Extent(32, Extent.PX));
+            _layout.setSeparatorPosition(new Extent(32, Extent.PX));
         }
     }
 
     /**
-     * Create a new object and edit it.
+     * Notifies all listeners that have registered for this event type.
+     *
+     * @param event the <code>ActionEvent</code> to send
      */
-    protected void onNew() {
-
+    protected void fireActionPerformed(ActionEvent event) {
+        EventListener[] listeners = getEventListenerList().getListeners(
+                ActionListener.class);
+        for (int index = 0; index < listeners.length; ++index) {
+            ((ActionListener) listeners[index]).actionPerformed(event);
+        }
     }
 
     /**
-     * Updates the selected IMObject from the table.
+     * Updates the selected IMObject from the table, and notifies any
+     * listeners.
      */
     private void onSelect() {
         _selected = _table.getSelected();
-        if (_browser != null) {
-            _layout.remove(_browser.getComponent());
-        }
-        IMObjectLayoutStrategy layout = new SinglePageLayoutStrategy(true);
-        _browser = new IMObjectBrowser(_selected, layout);
-        _layout.add(_browser.getComponent());
+        fireActionPerformed(new ActionEvent(this, SELECTED));
     }
 
 }
