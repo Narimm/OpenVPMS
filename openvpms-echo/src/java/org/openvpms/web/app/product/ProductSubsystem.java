@@ -17,7 +17,7 @@ public class ProductSubsystem extends AbstractSubsystem {
      */
     public ProductSubsystem() {
         super("product");
-        addWorkspace(new DummyWorkspace("product.info"));
+        addWorkspace(new InformationWorkspace());
         addWorkspace(new DummyWorkspace("product.pricing"));
         addWorkspace(new DummyWorkspace("product.inventory"));
     }

@@ -1,6 +1,5 @@
 package org.openvpms.web.app.supplier;
 
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
@@ -18,7 +17,7 @@ public class SupplierSubsystem extends AbstractSubsystem {
      */
     public SupplierSubsystem() {
         super("supplier");
-        addWorkspace(new CRUDWorkspace("supplier","info","party", "party", "supplier*"));
+        addWorkspace(new InformationWorkspace());
         addWorkspace(new DummyWorkspace("supplier.document"));
         addWorkspace(new DummyWorkspace("supplier.order"));
         addWorkspace(new DummyWorkspace("supplier.charge"));
