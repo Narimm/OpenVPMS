@@ -22,6 +22,11 @@ public class OpenVPMSApp extends SpringApplicationInstance {
      */
     private Window _window;
 
+    /**
+     * Application context.
+     */
+    private Context _context = new Context();
+
 
     /**
      * Invoked to initialize the application, returning the default window.
@@ -46,6 +51,15 @@ public class OpenVPMSApp extends SpringApplicationInstance {
     }
 
     /**
+     * Returns the current context.
+     *
+     * @return the current context
+     */
+    public Context getContext() {
+        return _context;
+    }
+
+    /**
      * Sets the content pane.
      *
      * @param content the content pane
@@ -63,8 +77,12 @@ public class OpenVPMSApp extends SpringApplicationInstance {
         return _window.getContent();
     }
 
+    /**
+     * Logout the current user.
+     */
     public void logout() {
         getDefaultWindow().removeAll();
         setContent(new LoginPane());
+        _context = new Context();
     }
 }

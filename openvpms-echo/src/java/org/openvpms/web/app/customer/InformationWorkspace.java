@@ -1,5 +1,6 @@
 package org.openvpms.web.app.customer;
 
+import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -18,4 +19,24 @@ public class InformationWorkspace extends CRUDWorkspace {
         super("customer", "info", "party", "party", "customer*");
     }
 
+    /**
+     * Create a new CRUD component.
+     *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     */
+    @Override
+    protected CRUDWindow createCRUDWindow(String subsystemId,
+                                          String workspaceId,
+                                          String refModelName,
+                                          String entityName,
+                                          String conceptName) {
+        CRUDWindow window = super.createCRUDWindow(subsystemId, workspaceId,
+                refModelName, entityName, conceptName);
+        window.setCRUDPaneListener(new CustomerCRUDWindowListener());
+        return window;
+    }
 }

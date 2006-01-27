@@ -5,6 +5,7 @@ import java.util.List;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
@@ -31,12 +32,12 @@ import org.openvpms.web.util.Messages;
 
 
 /**
- * Abstract CRUD pane.
+ * Abstract implementation of the {@link CRUDWindow} interface.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractCRUDPane extends SplitPane {
+public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
 
     /**
      * The archetype reference model name, used to query objects.
@@ -66,6 +67,11 @@ public abstract class AbstractCRUDPane extends SplitPane {
     private final String _id;
 
     /**
+     * The listener.
+     */
+    private CRUDWindowListener _listener;
+
+    /**
      * Selected object's summary.
      */
     private Label _summary;
@@ -74,6 +80,11 @@ public abstract class AbstractCRUDPane extends SplitPane {
      * The object browser.
      */
     private IMObjectBrowser _browser;
+
+    /**
+     * Container for the selected object and edit button.
+     */
+    private Column _viewContainer;
 
     /**
      * Container for the selected object.
@@ -100,6 +111,24 @@ public abstract class AbstractCRUDPane extends SplitPane {
         _conceptName = conceptName;
 
         doLayout();
+    }
+
+    /**
+     * Sets a listener for events.
+     *
+     * @param listener the listener
+     */
+    public void setCRUDPaneListener(CRUDWindowListener listener) {
+        _listener = listener;
+    }
+
+    /**
+     * Returns the CRUD component.
+     *
+     * @return the CRUD component
+     */
+    public Component getComponent() {
+        return this;
     }
 
     /**
@@ -225,9 +254,9 @@ public abstract class AbstractCRUDPane extends SplitPane {
                 if (popup.createNew()) {
                     onNew();
                 } else {
-                    IMObject selected = popup.getSelected();
-                    if (selected != null) {
-                        setObject(selected);
+                    IMObject object = popup.getSelected();
+                    if (object != null) {
+                        onSelected(object);
                     }
                 }
             }
@@ -245,6 +274,18 @@ public abstract class AbstractCRUDPane extends SplitPane {
     }
 
     /**
+     * Invoked when an object is selected.
+     *
+     * @param object the selected object
+     */
+    protected void onSelected(IMObject object) {
+        setObject(object);
+        if (_listener != null) {
+            _listener.selected(object);
+        }
+    }
+
+    /**
      * Invoked when the edit button is pressed. This popups up an {@link
      * EditDialog}.
      */
@@ -259,18 +300,33 @@ public abstract class AbstractCRUDPane extends SplitPane {
      */
     protected void onEditCompleted(IMObjectEditor editor) {
         if (editor.isDeleted()) {
-            onDelete();
+            onDelete(editor);
         } else if (editor.isModified()) {
-            setObject(editor.getObject());
+            onSave(editor);
+        }
+    }
+
+    /**
+     * Invoked when the object is saved.
+     *
+     * @param editor the editor
+     */
+    protected void onSave(IMObjectEditor editor) {
+        setObject(editor.getObject());
+        if (_listener != null) {
+            _listener.saved(editor.getObject());
         }
     }
 
     /**
      * Invoked when the delete button is pressed.
+     *
+     * @param editor the editor
      */
-    protected void onDelete() {
-        if (_browser != null) {
-            remove(_browser.getComponent());
+    protected void onDelete(IMObjectEditor editor) {
+        clearObject();
+        if (_listener != null) {
+            _listener.deleted(editor.getObject());
         }
     }
 
@@ -285,7 +341,7 @@ public abstract class AbstractCRUDPane extends SplitPane {
                 object.getDescription());
         _summary.setText(summary);
 
-        if (_container == null) {
+        if (_viewContainer == null) {
             Button edit = ButtonFactory.create("edit", new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onEdit();
@@ -293,14 +349,25 @@ public abstract class AbstractCRUDPane extends SplitPane {
             });
             Row control = RowFactory.create("CRUDPane.ControlRow", edit);
             _container = new GroupBox();
-            Column column = ColumnFactory.create(_container, control);
-            add(column);
+            _viewContainer = ColumnFactory.create(_container, control);
+            add(_viewContainer);
         } else {
             _container.remove(_browser.getComponent());
         }
 
         _browser = new IMObjectBrowser(object);
         _container.add(_browser.getComponent());
+    }
+
+    /**
+     * Clears the current object.
+     */
+    protected void clearObject() {
+        remove(_viewContainer);
+        _viewContainer = null;
+        _container = null;
+        _browser = null;
+        _summary.setText(null);
     }
 
 }

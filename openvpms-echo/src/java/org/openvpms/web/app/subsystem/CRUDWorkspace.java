@@ -14,7 +14,7 @@ import org.openvpms.web.util.Messages;
  * Generic CRUD workspace.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class CRUDWorkspace implements Workspace {
 
@@ -46,9 +46,9 @@ public class CRUDWorkspace implements Workspace {
     private final String _workspaceId;
 
     /**
-     * The edit pane.
+     * The CRUD window.
      */
-    private Component _editPane;
+    private CRUDWindow _window;
 
 
     /**
@@ -111,10 +111,28 @@ public class CRUDWorkspace implements Workspace {
      * @return the component for the current action
      */
     public Component getComponent() {
-        if (_editPane == null) {
-            _editPane = new CRUDPane(_subsystemId, _workspaceId, _refModelName,
-                    _entityName, _conceptName);
+        if (_window == null) {
+            _window = createCRUDWindow(_subsystemId, _workspaceId,
+                    _refModelName, _entityName, _conceptName);
         }
-        return _editPane;
+        return _window.getComponent();
+    }
+
+    /**
+     * Create a new CRUD component.
+     *
+     * @param subsystemId  the subsystem localisation identifier
+     * @param workspaceId  the workspace localisation identfifier
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     */
+    protected CRUDWindow createCRUDWindow(String subsystemId,
+                                          String workspaceId,
+                                          String refModelName,
+                                          String entityName,
+                                          String conceptName) {
+        return new DefaultCRUDPane(subsystemId, workspaceId, refModelName, entityName,
+                conceptName);
     }
 }
