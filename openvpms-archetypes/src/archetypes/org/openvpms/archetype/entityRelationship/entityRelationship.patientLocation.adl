@@ -1,25 +1,22 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.animalOwner.1.0"
+	<archetype name="openvpms-common-entityRelationship.patientLocation.1.0"
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship">
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
-		<node name="sequence" path="/sequence" type="java.lang.Integer"
-			minCardinality="1" />
-		<node name="reason" path="/reason" type="java.lang.String" />
 		<node name="activeStartTime" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
-			defaultValue="java.util.Date.new()" />
+			hidden="true" defaultValue="java.util.Date.new()" />
 		<node name="source" path="/source"
 			type="org.openvpms.component.business.domain.im.common.Entity">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="person.person" />
+							value="party.customerperson" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="organization.organization" />
+							value="party.customerorganisation" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
@@ -31,7 +28,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="animal.animal" />
+							value="party.animalpet" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

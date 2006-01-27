@@ -1,0 +1,44 @@
+<archetypes>
+	<archetype name="openvpms-product-product.goodMedication.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.product.Product">
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" readOnly="true"/>
+		<node name="name" path="/name" type="java.lang.String"
+			minCardinality="1" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="/name" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="printedName" path="/details/attributes/printedName" type="java.lang.String"
+				minCardinality="0" />
+			<node name="species" path="/details/attributes/species" type="java.lang.String"
+				minCardinality="0">
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="concept" value="species" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
+			<node name="drugSchedule" path="/details/attributes/drugSchedule" type="java.lang.String"
+				minCardinality="0">
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="S1" value="S1" />
+						<property name="S2" value="S2" />
+						<property name="S3" value="S3" />
+						<property name="S4" value="S4" />
+						<property name="S5" value="S5" />
+						<property name="S6" value="S6" />
+						<property name="S7" value="S7" />
+						<property name="S8" value="S8" />
+					</propertyList>
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
+			<node name="activeIngredients" path="/details/attributes/activeIngredients" type="java.lang.String"
+				minCardinality="0" />
+		</node>
+	</archetype>
+</archetypes>

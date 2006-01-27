@@ -48,19 +48,19 @@
 				defaultValue="false()" />
 			<node name="dateOfBirth" path="/details/attributes/dateOfBirth"
 				type="java.util.Date" minCardinality="1" />
-			<node name="identities" path="/identities"
-				type="java.util.HashSet" baseName="Identity" minCardinality="0"
-				maxCardinality="*">
-				<assertion name="archetypeRange">
-					<propertyList name="archetypes">
-						<propertyMap name="archetype">
-							<property name="shortName"
-								value="entityIdentity.animalAlias" />
-						</propertyMap>
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
+		</node>
+		<node name="identities" path="/identities"
+			type="java.util.HashSet" baseName="Identity" minCardinality="0"
+			maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityIdentity.animalAlias" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
 		</node>
 	</archetype>
 </archetypes>
