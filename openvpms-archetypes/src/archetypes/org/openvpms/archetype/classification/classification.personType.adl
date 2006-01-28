@@ -7,6 +7,6 @@
 			minCardinality="1" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="/name" />
+			derivedValue="concat(/name, ' Person Type')" />
 	</archetype>
 </archetypes>
