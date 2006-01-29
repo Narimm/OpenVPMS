@@ -1,6 +1,5 @@
 package org.openvpms.web.app.admin;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -17,7 +16,7 @@ public class AdminSubsystem extends AbstractSubsystem {
      */
     public AdminSubsystem() {
         super("admin");
-        addWorkspace(new DummyWorkspace("admin.organisation"));
+        addWorkspace(new OrganisationWorkspace());
         addWorkspace(new UserWorkspace());
         addWorkspace(new RoleWorkspace());
         addWorkspace(new LookupWorkspace());
