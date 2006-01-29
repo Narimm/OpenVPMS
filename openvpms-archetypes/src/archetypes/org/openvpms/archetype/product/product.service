@@ -23,7 +23,7 @@
 			</node>
 		</node>
 		<node name="prices" path="/productPrices" parentChild="true"
-			type="java.util.HashSet" baseName="ProductPrices" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="ProductPrice" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
