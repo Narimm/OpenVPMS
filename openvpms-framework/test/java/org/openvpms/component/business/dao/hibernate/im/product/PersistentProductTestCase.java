@@ -27,6 +27,7 @@ import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 
@@ -66,7 +67,7 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
     }
 
     /**
-     * Test the simple creation of a role
+     * Test the simple creation of a product
      */
     public void testSimpleProductCreation() throws Exception {
         Session session = currentSession();
@@ -88,6 +89,46 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
             
             product = (Product)session.load(Product.class, product.getUid());
             assertTrue(product != null);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Test the creation of a product with some dynamic attributes
+     */
+    public void testProductCreationWithDynamicAttributes() throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // get initial number of rows
+            int acount = HibernateProductUtil.getTableRowCount(session, "product");
+
+            // execute the test
+            tx = session.beginTransaction();
+            Product product = createProduct("pill");
+            product.setDetails(new DynamicAttributeMap());
+            product.getDetails().setAttribute("supplier", "jima");
+            product.getDetails().setAttribute("code", "1123");
+            product.getDetails().setAttribute("overpriced", new Boolean(true));
+            session.save(product);
+            tx.commit();
+
+            // ensure that the appropriate rows have been added to the database
+            int acount1 = HibernateProductUtil.getTableRowCount(session, "product");
+            assertTrue(acount1 == acount + 1); 
+            
+            product = (Product)session.load(Product.class, product.getUid());
+            assertTrue(product != null);
+            assertTrue(product.getDetails().getAttribute("supplier").equals("jima"));
+            assertTrue(product.getDetails().getAttribute("code").equals("1123"));
+            assertTrue(((Boolean)product.getDetails().getAttribute("overpriced")).booleanValue() == true);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
