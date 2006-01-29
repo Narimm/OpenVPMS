@@ -1,10 +1,10 @@
 <archetypes>
-	<archetype name="openvpms-product-productPrice.fixedPrice.1.0"
+	<archetype name="openvpms-product-productPrice.maximumPrice.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Fixed Price" >
+		type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Maximum Price" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="name" path="/name" type="java.lang.String" derived="true" hidden="true"
-			minCardinality="1" derivedValue="concat('Fixed Price','')" />
+			minCardinality="1" derivedValue="concat('Maximum Price','')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat(/name, ' ')" />

@@ -14,7 +14,7 @@
 			<node name="address" path="/details/attributes/address"
 				type="java.lang.String" minCardinality="1" />
 			<node name="suburb" path="/details/attributes/suburb"
-				type="java.lang.String">
+				type="java.lang.String" minCardinality="1" >
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
 					<property name="concept" value="state.suburb" />
@@ -24,7 +24,7 @@
 				</assertion>
 			</node>
 			<node name="postcode" path="/details/attributes/postCode"
-				type="java.lang.String">
+				type="java.lang.String" minCardinality="1" >
 			</node>
 			<node name="state" path="/details/attributes/state"
 				type="java.lang.String" defaultValue="'Victoria'"
@@ -48,8 +48,8 @@
 			</node>			
 		</node>
 		<node name="startDate" path="/activeStartTime"
-			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()"/>
+			type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"
-			type="java.util.Date" minCardinality="0" />		
+			type="java.util.Date" hidden="true" minCardinality="0" />		
 	</archetype>
 </archetypes>
