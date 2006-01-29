@@ -2,7 +2,6 @@ package org.openvpms.web.component.query;
 
 import java.util.EventListener;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
@@ -16,6 +15,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.ButtonFactory;
@@ -46,21 +47,9 @@ public class Browser extends SplitPane {
     public static final String SELECTED = "selected";
 
     /**
-     * The archetype reference model name.
+     * Archetype short names to match on.
      */
-    private final String _refModelName;
-
-    /**
-     * The archetype entity name. If <code>null</code>, indicates to to query
-     * all entities.
-     */
-    private final String _entityName;
-
-    /**
-     * The archetype concept name. If <code>null</code>, indicates to query all
-     * concepts.
-     */
-    private final String _conceptName;
+    private final String[] _shortNames;
 
     /**
      * The instance name. If the text is <code>null</code> or empty, indicates
@@ -75,9 +64,9 @@ public class Browser extends SplitPane {
     private CheckBox _deactived;
 
     /**
-     * The archetype short name. If <code>null</code>, or
-     * <code>_selectAll</code>, indicates to query using all matching short
-     * names.
+     * The selected archetype short name. If <code>null</code>, or {@link
+     * ArchetypeShortNameListModel#ALL}, indicates to query using all matching
+     * short names.
      */
     private String _shortName;
 
@@ -92,7 +81,7 @@ public class Browser extends SplitPane {
     private IMObject _selected;
 
     /**
-     * Split pane for laying out the table and navigation control
+     * Split pane for laying out the table and navigation control.
      */
     private SplitPane _layout;
 
@@ -126,9 +115,18 @@ public class Browser extends SplitPane {
      */
     private static final String ROW_STYLE = "ControlRow";
 
+    /**
+     * Construct a new <code>Browser</code> that queries IMObjects with the
+     * specified short names.
+     */
+    public Browser(String[] shortNames) {
+        super(ORIENTATION_VERTICAL);
+        _shortNames = shortNames;
+        doLayout();
+    }
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObject's with the
+     * Construct a new <code>Browser</code> that queries IMObjects with the
      * specified criteria.
      *
      * @param refModelName the archetype reference model name
@@ -137,11 +135,7 @@ public class Browser extends SplitPane {
      */
     public Browser(String refModelName, String entityName,
                    String conceptName) {
-        super(ORIENTATION_VERTICAL);
-        _refModelName = refModelName;
-        _entityName = entityName;
-        _conceptName = conceptName;
-        doLayout();
+        this(getShortNames(refModelName, entityName, conceptName));
     }
 
     /**
@@ -160,9 +154,17 @@ public class Browser extends SplitPane {
      * @return the archetype instance name. Nay be <code>null</code>
      */
     public String getInstanceName() {
+        final String wildcard = "*";
         String name = _instanceName.getText();
         if (!StringUtils.isEmpty(name)) {
-            name = "*" + name + "*";
+            boolean start = name.startsWith(wildcard);
+            boolean end = name.endsWith(wildcard);
+            if (!start) {
+                name = wildcard + name;
+            }
+            if (!end) {
+                name = name + wildcard;
+            }
         }
         return name;
     }
@@ -178,17 +180,7 @@ public class Browser extends SplitPane {
     }
 
     /**
-     * Set the archetype short name.
-     *
-     * @param name the archetype short name. If <code>null</code>, indicates to
-     *             query using all matching short names.
-     */
-    public void setShortName(String name) {
-        _shortName = name;
-    }
-
-    /**
-     * Returns the archetype short name.
+     * Returns the selected archetype short name.
      *
      * @return the archetype short name. May be <code>null</code>
      */
@@ -217,6 +209,16 @@ public class Browser extends SplitPane {
     }
 
     /**
+     * Set the archetype short name.
+     *
+     * @param name the archetype short name. If <code>null</code>, indicates to
+     *             query using all matching short names.
+     */
+    protected void setShortName(String name) {
+        _shortName = name;
+    }
+
+    /**
      * Layout this component.
      */
     protected void doLayout() {
@@ -226,20 +228,17 @@ public class Browser extends SplitPane {
 
         // set up the short names select field, iff there is more than
         // one matching short name.
-        List<String> shortNames = getShortNames();
-        if (shortNames.size() > 1) {
-            ArchetypeShortNameListModel model
-                    = new ArchetypeShortNameListModel(shortNames, true);
+        if (_shortNames.length > 1) {
+            final ArchetypeShortNameListModel model
+                    = new ArchetypeShortNameListModel(_shortNames, true);
             final SelectField shortNameSelector = SelectFieldFactory.create(model);
             shortNameSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    setShortName((String) shortNameSelector.getSelectedItem());
+                    int index = shortNameSelector.getSelectedIndex();
+                    String shortName = model.getShortName(index);
+                    setShortName(shortName);
                 }
             });
-            int index = shortNames.indexOf(getShortName());
-            if (index != -1) {
-                shortNameSelector.setSelectedIndex(index);
-            }
 
             Label typeLabel = LabelFactory.create(TYPE_ID);
             row.add(typeLabel);
@@ -286,39 +285,27 @@ public class Browser extends SplitPane {
     }
 
     /**
-     * Returns the archetype short names matching the specified reference model,
-     * entity and concept names.
-     *
-     * @return the archetype short names
-     */
-    protected List<String> getShortNames() {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        return service.getArchetypeShortNames(_refModelName, _entityName,
-                _conceptName, true);
-    }
-
-    /**
      * Query using the specified criteria, and populate the table with matches.
      */
     protected void onQuery() {
         String type = getShortName();
+        String name = getInstanceName();
+        boolean activeOnly = !includeDeactived();
+
         IArchetypeService service = ServiceHelper.getArchetypeService();
         List<IMObject> result = null;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            result = service.get(_refModelName, _entityName,
-                    _conceptName, getInstanceName(), true, includeDeactived());
-        } else {
-            StringTokenizer tokens = new StringTokenizer(type, ".");
-            if (tokens.countTokens() != 2) {
-                throw new IllegalArgumentException(
-                        "Invalid no. of tokens in archetype short name: "
-                                + type);
-            } else {
-                String entityName = tokens.nextToken();
-                String conceptName = tokens.nextToken();
-                result = service.get(_refModelName, entityName, conceptName,
-                        getInstanceName(), true, includeDeactived());
+            for (String shortName : _shortNames) {
+                List<IMObject> matches
+                        = get(shortName, name, activeOnly, service);
+                if (result == null) {
+                    result = matches;
+                } else {
+                    result.addAll(matches);
+                }
             }
+        } else {
+            result = get(type, name, activeOnly, service);
         }
 
         _table.setObjects(result);
@@ -343,6 +330,22 @@ public class Browser extends SplitPane {
     }
 
     /**
+     * Returns all matching objects for the specified criteria
+     *
+     * @param shortName    the archetype shortname to match on
+     * @param instanceName the object instance name
+     * @param activeOnly   if <code>true</code>, only include active objects
+     */
+    private List<IMObject> get(String shortName, String instanceName,
+                               boolean activeOnly, IArchetypeService service) {
+        ArchetypeDescriptor descriptor
+                = service.getArchetypeDescriptor(shortName);
+        ArchetypeId type = descriptor.getType();
+        return service.get(type.getRmName(), type.getEntityName(),
+                type.getConcept(), instanceName, true, activeOnly);
+    }
+
+    /**
      * Updates the selected IMObject from the table, and notifies any
      * listeners.
      */
@@ -350,5 +353,21 @@ public class Browser extends SplitPane {
         _selected = _table.getSelected();
         fireActionPerformed(new ActionEvent(this, SELECTED));
     }
+
+    /**
+     * Helper to return short names matching certain criteria.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a list of short names matching the criteria
+     */
+    private static String[] getShortNames(String refModelName, String entityName, String conceptName) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<String> names = service.getArchetypeShortNames(refModelName,
+                entityName, conceptName, true);
+        return names.toArray(new String[0]);
+    }
+
 
 }

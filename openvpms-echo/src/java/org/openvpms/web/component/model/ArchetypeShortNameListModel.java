@@ -141,4 +141,22 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
         return _shortNames[index][0];
     }
 
+    /**
+     * Returns the index of the specified short name.
+     *
+     * @param shortName the short name
+     * @return the index of <code>shortName</code>, or <code>-1</code> if it
+     *         doesn't exist
+     */
+    public int indexOf(String shortName) {
+        int result = -1;
+        for (int i = 0; i < _shortNames.length; ++i) {
+            if (_shortNames[i][0].equals(shortName)) {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
 }

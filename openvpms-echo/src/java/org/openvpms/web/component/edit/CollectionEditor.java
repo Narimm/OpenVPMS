@@ -167,8 +167,7 @@ public class CollectionEditor extends Column {
         if (_shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             IMObject object = service.create(_shortname);
-            IMObjectEditor editor = new IMObjectEditor(object, _object, _descriptor);
-            edit(editor);
+            edit(object);
         }
     }
 
@@ -190,17 +189,19 @@ public class CollectionEditor extends Column {
     protected void onEdit() {
         IMObject object = _table.getSelected();
         if (object != null) {
-            IMObjectEditor editor = new IMObjectEditor(object, _object, _descriptor);
-            edit(editor);
+            edit(object);
         }
     }
 
     /**
      * Edit an object. This pops up a window containing the editor.
      *
-     * @param editor the editor
+     * @param object the object to edit
      */
-    protected void edit(final IMObjectEditor editor) {
+    protected void edit(final IMObject object) {
+        final IMObjectEditor editor
+                = IMObjectEditorFactory.create(object, _object, _descriptor);
+
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

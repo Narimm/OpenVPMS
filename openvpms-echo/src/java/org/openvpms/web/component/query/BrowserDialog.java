@@ -45,18 +45,32 @@ public class BrowserDialog extends PopupDialog {
     /**
      * Construct a new <code>BrowserDialog</code>.
      *
+     * @param title   the dialog title
      * @param browser the editor
      */
     public BrowserDialog(String title, Browser browser) {
+        this(title, browser, false);
+    }
+
+    /**
+     * Construct a new <code>BrowserDialog</code>.
+     *
+     * @param title   the dialog title
+     * @param browser the editor
+     * @param addNew  if <code>true</code> add a 'new' button
+     */
+    public BrowserDialog(String title, Browser browser, boolean addNew) {
         super(title, STYLE, Buttons.CANCEL);
         _browser = browser;
         getLayout().add(browser);
 
-        addButton(NEW_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onNew();
-            }
-        });
+        if (addNew) {
+            addButton(NEW_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onNew();
+                }
+            });
+        }
         _browser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelected();

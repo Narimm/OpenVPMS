@@ -22,6 +22,7 @@ import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
+import org.openvpms.web.component.edit.DefaultIMObjectEditor;
 import org.openvpms.web.component.edit.EditDialog;
 import org.openvpms.web.component.edit.IMObjectEditor;
 import org.openvpms.web.component.query.Browser;
@@ -101,8 +102,9 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      */
-    public AbstractCRUDPane(String subsystemId, String workspaceId, String refModelName,
-                            String entityName, String conceptName) {
+    public AbstractCRUDPane(String subsystemId, String workspaceId,
+                            String refModelName, String entityName,
+                            String conceptName) {
         super(ORIENTATION_VERTICAL);
         _subsystemId = subsystemId;
         _id = _subsystemId + "." + workspaceId;
@@ -229,7 +231,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      *                otherwise show required fields.
      */
     protected void edit(IMObject object, boolean showAll) {
-        final IMObjectEditor editor = new IMObjectEditor(object, showAll);
+        final DefaultIMObjectEditor editor = new DefaultIMObjectEditor(object, showAll);
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -247,7 +249,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
         final Browser browser = new Browser(_refModelName, _entityName,
                 _conceptName);
         String title = Messages.get("label." + _id + ".select");
-        final BrowserDialog popup = new BrowserDialog(title, browser);
+        final BrowserDialog popup = new BrowserDialog(title, browser, true);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

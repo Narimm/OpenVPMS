@@ -50,6 +50,25 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
+     * Lay out out the object in the specified container.
+     *
+     * @param object    the object to lay out
+     * @param container the container to use
+     * @param factory   the component factory
+     */
+    @Override
+    protected void doLayout(IMObject object, Component container, IMObjectComponentFactory factory) {
+        super.doLayout(object, container, factory);
+        if (_button == null) {
+            Row row = getButtonRow();
+            ColumnLayoutData right = new ColumnLayoutData();
+            right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
+            row.setLayoutData(right);
+            container.add(row);
+        }
+    }
+
+    /**
      * Lays out child components in a 2x2 grid.
      *
      * @param object      the parent object

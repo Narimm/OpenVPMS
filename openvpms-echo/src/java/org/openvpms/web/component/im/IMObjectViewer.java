@@ -78,6 +78,29 @@ public abstract class IMObjectViewer {
     }
 
     /**
+     * Changes the layout.
+     *
+     * @param layout the new layout strategy
+     */
+    public void setLayout(IMObjectLayoutStrategy layout) {
+        _component = null;
+        _layout = layout;
+        getComponent();
+        if (_layoutListener != null) {
+            _layoutListener.actionPerformed(new ActionEvent(this, null));
+        }
+    }
+
+    /**
+     * Returns the current layout.
+     *
+     * @return the layout. May be <code>null</code>
+     */
+    public IMObjectLayoutStrategy getLayout() {
+        return _layout;
+    }
+
+    /**
      * Sets a listener to be notified when the layout changes.
      *
      * @param listener the listener
@@ -92,28 +115,5 @@ public abstract class IMObjectViewer {
      * @return the component factory
      */
     protected abstract IMObjectComponentFactory getComponentFactory();
-
-    /**
-     * Changes the layout.
-     *
-     * @param layout the new layout strategy
-     */
-    protected void setLayout(IMObjectLayoutStrategy layout) {
-        _component = null;
-        _layout = layout;
-        getComponent();
-        if (_layoutListener != null) {
-            _layoutListener.actionPerformed(new ActionEvent(this, null));
-        }
-    }
-
-    /**
-     * Returns the current layout.
-     *
-     * @return the layout. May be <code>null</code>
-     */
-    protected IMObjectLayoutStrategy getLayout() {
-        return _layout;
-    }
 
 }

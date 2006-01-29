@@ -1,5 +1,8 @@
 package org.openvpms.web.component.edit;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -19,11 +22,6 @@ public class EditDialog extends PopupWindow {
      * The editor.
      */
     private final IMObjectEditor _editor;
-
-    /**
-     * The editor component.
-     */
-    private Component _component;
 
     /**
      * Apply button identifier.
@@ -81,13 +79,15 @@ public class EditDialog extends PopupWindow {
                 onCancel();
             }
         });
-        _component = _editor.getComponent();
-        getLayout().add(_component);
-        _editor.setLayoutListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onLayout();
-            }
-        });
+        getLayout().add(_editor.getComponent());
+        _editor.addPropertyChangeListener(
+                IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                        onComponentChange(event);
+                    }
+                });
+
     }
 
     /**
@@ -124,12 +124,13 @@ public class EditDialog extends PopupWindow {
     }
 
     /**
-     * Invoked when the layout changes.
+     * Invoked when the component changes.
+     *
+     * @param event the component change event
      */
-    protected void onLayout() {
-        getLayout().remove(_component);
-        _component = _editor.getComponent();
-        getLayout().add(_component);
+    protected void onComponentChange(PropertyChangeEvent event) {
+        getLayout().remove((Component) event.getOldValue());
+        getLayout().add((Component) event.getNewValue());
     }
 
 }
