@@ -83,6 +83,7 @@ public class EntityRelationshipTestCase extends
             
             // we can ony create entity relationship with persistent objects
             EntityRelationship rel = createEntityRelationship(person, pet);
+            service.validateObject(rel);
             person.addEntityRelationship(rel);
             pet.addEntityRelationship((EntityRelationship)rel.clone());
             service.save(person);

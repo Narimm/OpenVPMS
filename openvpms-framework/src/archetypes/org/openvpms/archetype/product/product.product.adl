@@ -4,7 +4,7 @@
 		<node name="uid" path="/uid" displayName="id"
 			type="java.lang.Long" />
 		<node name="name" path="/name" displayName="Product Name"
-			minCardinality="1" />
+			type="java.lang.String" minCardinality="1" />
 		<node name="productPrices" path="/productPrices"
 			parentChild="true" type="java.util.HashSet"
 			baseName="productPrice">
