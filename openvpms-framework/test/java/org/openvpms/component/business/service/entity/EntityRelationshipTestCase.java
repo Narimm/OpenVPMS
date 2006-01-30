@@ -95,6 +95,7 @@ public class EntityRelationshipTestCase extends
             assertTrue(person.getEntityRelationships().size() == 1);
             pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
             assertTrue(pet.getEntityRelationships().size() == 1);
+            service.validateObject(person.getEntityRelationships().iterator().next());
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
                 logger.error("Node:" + error.getNodeName() + " Error:" + error.getErrorMessage());

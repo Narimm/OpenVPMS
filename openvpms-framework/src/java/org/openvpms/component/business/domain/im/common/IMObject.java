@@ -205,7 +205,7 @@ public abstract class IMObject implements Serializable, Cloneable {
      *            the fully qualified archetype id
      */
     public String getArchetypeIdAsString() {
-        return (this.archetypeId == null) ? null : archetypeId.getQName();
+        return (this.archetypeId == null) ? null : archetypeId.getQualifiedName();
     }
     
     /**

@@ -109,7 +109,7 @@ public class IMObjectReference implements Serializable, Cloneable {
      * @return String
      */
     public String getArchetypeIdAsString() {
-        return archetypeId.getQName();
+        return archetypeId.getQualifiedName();
     }
 
     /**

@@ -587,7 +587,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
         String concept, String version) {
         ArchetypeDescriptor desc =  new ArchetypeDescriptor();
         desc.setName(new ArchetypeId("openvpms", rmName, 
-                entityName, concept, version).getQName());
+                entityName, concept, version).getQualifiedName());
         desc.setLatest(true);
 
         return desc;
