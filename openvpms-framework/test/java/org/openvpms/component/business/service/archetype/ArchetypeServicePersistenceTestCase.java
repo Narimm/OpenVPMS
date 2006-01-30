@@ -37,6 +37,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.security.SecurityRole;
 
 /**
  * Test the persistence side of the archetype service
@@ -515,6 +516,28 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(party.getDetails().getAttribute("title").equals("Mr"));
     }
 
+    /**
+     * Test the creation of a SecurityRole
+     */
+    public void testOVPMS115()
+    throws Exception {
+        
+        // retrieve the initial count
+        int count = service.get("system", "security", "role", null, true).size();
+        SecurityRole role = (SecurityRole)service.create("security.role");
+        role.setName("administrator");
+        service.save(role);
+        
+        // retrieve by id
+        role = (SecurityRole)service.getById(role.getArchetypeId(), role.getUid());
+        assertTrue(role != null);
+        assertTrue(role.getName().equals("administrator"));
+        
+        // retrieve the count after the add
+        int count1 = service.get("system", "security", "role", null, true).size();
+        assertTrue(count1 == count + 1);
+    }
+    
     /**
      * Create a pet with the specified name
      * 
