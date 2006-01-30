@@ -1,4 +1,8 @@
-package org.openvpms.web.component.im;
+package org.openvpms.web.component.im.layout;
+
+import org.openvpms.web.component.im.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.filter.BasicNodeFilter;
+
 
 /**
  * Default implementation of the {@link IMObjectLayoutStrategy} interface.
@@ -23,6 +27,6 @@ public class DefaultLayoutStrategy extends AbstractLayoutStrategy {
      *                otherwise show required fields.
      */
     public DefaultLayoutStrategy(boolean showAll) {
-        super(showAll, false);
+        super(new BasicNodeFilter(showAll, false));
     }
 }

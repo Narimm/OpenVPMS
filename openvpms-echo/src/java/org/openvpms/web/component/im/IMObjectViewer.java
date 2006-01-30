@@ -72,7 +72,7 @@ public abstract class IMObjectViewer {
      */
     public Component getComponent() {
         if (_component == null) {
-            _component = _layout.apply(_object, getComponentFactory());
+            _component = createComponent();
         }
         return _component;
     }
@@ -107,6 +107,15 @@ public abstract class IMObjectViewer {
      */
     public void setLayoutListener(ActionListener listener) {
         _layoutListener = listener;
+    }
+
+    /**
+     * Creates the component to display the object.
+     *
+     * @return a new component
+     */
+    protected Component createComponent() {
+        return _layout.apply(_object, getComponentFactory());
     }
 
     /**

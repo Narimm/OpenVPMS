@@ -1,14 +1,17 @@
 package org.openvpms.web.component.edit;
 
-import echopointng.GroupBox;
+import java.util.List;
+
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -17,8 +20,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.LabelFactory;
+import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.RowFactory;
+import org.openvpms.web.component.TextComponentFactory;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.filter.BasicNodeFilter;
+import org.openvpms.web.component.im.filter.ChainedNodeFilter;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.query.BrowserDialog;
 import org.openvpms.web.spring.ServiceHelper;
@@ -39,16 +48,6 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     private final EntityRelationship _relationship;
 
     /**
-     * The source descriptor.
-     */
-    private final NodeDescriptor _sourceDesc;
-
-    /**
-     * The target descriptor.
-     */
-    private final NodeDescriptor _targetDesc;
-
-    /**
      * The entity representing the source of the relationship.
      */
     private Entity _source;
@@ -57,11 +56,6 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * The entity representing the target of the relationship.
      */
     private Entity _target;
-
-    /**
-     * The component.
-     */
-    private Component _component;
 
 
     /**
@@ -73,41 +67,36 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      */
     public RelationshipEditor(EntityRelationship relationship, IMObject parent,
                               NodeDescriptor descriptor) {
-        super(relationship, parent, descriptor);
+        super(relationship, parent, descriptor, true);
         _relationship = relationship;
         ArchetypeDescriptor archetype = getArchetypeDescriptor();
-        _sourceDesc = archetype.getNodeDescriptor("source");
-        _targetDesc = archetype.getNodeDescriptor("target");
-    }
+        NodeDescriptor sourceDesc = archetype.getNodeDescriptor("source");
+        NodeDescriptor targetDesc = archetype.getNodeDescriptor("target");
 
-    /**
-     * Returns the rendered object.
-     *
-     * @return the rendered object
-     */
-    public Component getComponent() {
-        if (_component == null) {
-            _component = doLayout();
-        }
-        return _component;
-    }
-
-    protected Component doLayout() {
-        _source = new Entity(_relationship.getSource(), _sourceDesc);
+        _source = new Entity(_relationship.getSource(), sourceDesc);
         _source.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect(_source);
             }
         });
-        _target = new Entity(_relationship.getTarget(), _targetDesc);
+        _target = new Entity(_relationship.getTarget(), targetDesc);
         _target.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect(_target);
             }
         });
+    }
 
-        return RowFactory.create(_source.getComponent(),
-                _target.getComponent());
+    /**
+     * Creates the layout strategy.
+     *
+     * @param showAll if <code>true</code> show required and optional fields;
+     *                otherwise show required fields.
+     * @return a new layout strategy
+     */
+    @Override
+    protected ExpandableLayoutStrategy createLayoutStrategy(boolean showAll) {
+        return new LayoutStrategy(showAll);
     }
 
     protected void onSelect(final Entity entity) {
@@ -131,18 +120,70 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
 
     protected void onSelected(Entity entity, IMObject object) {
         entity.setObject(object);
+        IMObjectReference reference = new IMObjectReference(object);
+        if (entity == _source) {
+            _relationship.setSource(reference);
+        } else {
+            _relationship.setTarget(reference);
+        }
     }
+
+    private class LayoutStrategy extends ExpandableLayoutStrategy {
+
+        /**
+         * Construct a new <code>LayoutStrategy</code>.
+         *
+         * @param showOptional if <code>true</code> show optional fields as well
+         *                     as mandatory ones.
+         */
+        public LayoutStrategy(boolean showOptional) {
+            super(showOptional);
+            ChainedNodeFilter filter = new ChainedNodeFilter();
+            filter.add(new BasicNodeFilter(showOptional, false));
+            filter.add(new NamedNodeFilter("source", "target"));
+            setNodeFilter(filter);
+        }
+
+        /**
+         * Lays out child components in a 2x2 grid.
+         *
+         * @param object      the parent object
+         * @param descriptors the child descriptors
+         * @param container   the container to use
+         * @param factory     the component factory
+         */
+        @Override
+        protected void doSimpleLayout(IMObject object,
+                                      List<NodeDescriptor> descriptors,
+                                      Component container,
+                                      IMObjectComponentFactory factory) {
+            Grid grid = GridFactory.create(2);
+            add(grid, _source.getDescriptor().getDisplayName(),
+                    _source.getComponent());
+            add(grid, _target.getDescriptor().getDisplayName(),
+                    _target.getComponent());
+            for (NodeDescriptor descriptor : descriptors) {
+                Component component = factory.create(object, descriptor);
+                add(grid, descriptor.getDisplayName(), component);
+            }
+
+            Row group = RowFactory.create(grid, getButtonRow());
+            container.add(group);
+        }
+
+    }
+
 
     private class Entity {
 
         private NodeDescriptor _descriptor;
-        private Label _label;
+        private TextComponent _label;
         private Button _select;
         private Component _component;
 
         public Entity(IMObjectReference reference, NodeDescriptor descriptor) {
             _descriptor = descriptor;
-            doLayout(descriptor);
+            doLayout();
             setObject(reference);
         }
 
@@ -171,24 +212,24 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         public void setObject(IMObject object) {
             if (object != null) {
                 String key = "relationship.entity.summary";
-                String summary = Messages.get(key, object.getName(), object.getDescription());
+                String summary = Messages.get(key, object.getName(),
+                        object.getDescription());
                 _label.setText(summary);
             } else {
                 _label.setText(Messages.get("relationship.select"));
             }
         }
 
-        protected void doLayout(NodeDescriptor descriptor) {
+        protected void doLayout() {
+            final int columns = 32; // @todo
             _select = ButtonFactory.create("select");
-            _label = LabelFactory.create();
-            Row row = RowFactory.create(_select, _label);
-            GroupBox box = new GroupBox();
-            box.setTitle(descriptor.getDisplayName());
-            box.add(row);
-            _component = box;
+            _label = TextComponentFactory.create();
+            _label.setWidth(new Extent(columns, Extent.EX));
+            _label.setEnabled(false);
+            _component = RowFactory.create("RelationshipEditor.EntityRow", _label, _select);
         }
 
-
     }
+
 
 }

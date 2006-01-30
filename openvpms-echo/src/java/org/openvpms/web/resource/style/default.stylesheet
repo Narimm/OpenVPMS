@@ -199,6 +199,12 @@
         </properties>
     </style>
 
+    <style name="CRUDPane.Container" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="separatorPosition" value="32px"/>
+        </properties>
+    </style>
+
     <style name="SelectionDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
     </style>
@@ -233,6 +239,12 @@
                     </properties>
                 </layout-data>
             </property>
+        </properties>
+    </style>
+
+    <style name="RelationshipEditor.EntityRow" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="cellSpacing" value="3px"/>
         </properties>
     </style>
 

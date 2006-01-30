@@ -3,22 +3,24 @@ package org.openvpms.web.component.edit;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.jxpath.JXPathContext;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.IMObjectViewer;
+import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.list.LookupListModel;
 import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.util.DescriptorHelper;
 import org.openvpms.web.util.Messages;
 
 
@@ -51,6 +53,31 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
     private final NodeDescriptor _descriptor;
 
     /**
+     * The object viewer.
+     */
+    private IMObjectViewer _viewer;
+
+    /**
+     * The component factory.
+     */
+    private NodeEditorFactory _factory = new ComponentFactory();
+
+    /**
+     * Lookup fields. These may beed to be refreshed.
+     */
+    private List<SelectField> _lookups = new ArrayList<SelectField>();
+
+    /**
+     * If <code>true</code> show required and optional fields.
+     */
+    private boolean _showAll;
+
+    /**
+     * Action listener for layout changes.
+     */
+    private ActionListener _layoutChangeListener;
+
+    /**
      * Indicates if the object was saved.
      */
     private boolean _saved = false;
@@ -73,12 +100,15 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
      * @param object     the object to edit
      * @param parent     the parent object
      * @param descriptor the parent descriptor
+     * @param showAll    if <code>true</code> show optional and required fields;
+     *                   otherwise show required fields.
      */
     public AbstractIMObjectEditor(IMObject object, IMObject parent,
-                                  NodeDescriptor descriptor) {
+                                  NodeDescriptor descriptor, boolean showAll) {
         _object = object;
         _parent = parent;
         _descriptor = descriptor;
+        _showAll = showAll;
         _archetype = ServiceHelper.getArchetypeService().getArchetypeDescriptor(
                 object.getArchetypeId());
     }
@@ -127,7 +157,7 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
         IMObject object = getObject();
         boolean saved = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        if (doValidation()) {
+        if (ValidationHelper.isValid(object)) {
             try {
                 if (_parent == null) {
                     service.save(object);
@@ -202,6 +232,15 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
     }
 
     /**
+     * Returns the rendered object.
+     *
+     * @return the rendered object
+     */
+    public Component getComponent() {
+        return getViewer().getComponent();
+    }
+
+    /**
      * Add a property change listener.
      *
      * @param name     the property name to listen on
@@ -230,148 +269,118 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
         }
     }
 
-    protected boolean doValidation() {
-        List<ValidationError> errors = new ArrayList<ValidationError>();
-        IMObject object = getObject();
-
-        // check that we can retrieve a valid archetype for this object
-        ArchetypeDescriptor descriptor
-                = DescriptorHelper.getArchetypeDescriptor(object);
-
-        // if there are nodes attached to the archetype then validate the
-        // associated assertions
-        if (!descriptor.getNodeDescriptors().isEmpty()) {
-            JXPathContext context = JXPathContext.newContext(object);
-            context.setLenient(true);
-            validateObject(context, descriptor.getNodeDescriptors(), errors);
+    /**
+     * Returns the viewer, creating it if it doesn't exist.
+     *
+     * @return the viewer
+     */
+    protected IMObjectViewer getViewer() {
+        if (_viewer == null) {
+            _viewer = createViewer(_object);
         }
-        boolean valid = errors.isEmpty();
-        if (!valid) {
-            ValidationError error = errors.get(0);
-            ErrorDialog.show("Error: " + error.getNodeName(),
-                    errors.get(0).getErrorMessage());
-        }
-        return valid;
+        return _viewer;
     }
 
     /**
-     * Iterate through all the nodes and ensure that the object meets all the
-     * specified assertions. The assertions are defined in the node and can be
-     * hierarchical, which means that this method is re-entrant.
+     * Creates an {@link IMObjectViewer} to render the object.
      *
-     * @param context holds the object to be validated
-     * @param nodes   assertions are managed by the nodes object
-     * @param errors  the errors are collected in this object
+     * @param object the object to view
+     * @return a new object viewer
      */
-    private void validateObject(JXPathContext context, Map<String, NodeDescriptor> nodes,
-                                List<ValidationError> errors) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        for (NodeDescriptor node : nodes.values()) {
-            Object value = null;
-            try {
-                value = context.getValue(node.getPath());
-            } catch (Exception ignore) {
-                // ignore since context.setLenient doesn't
-                // seem to be working.
-                // TODO Need to sort out a better way since this
-                // can also cause problems
+    protected IMObjectViewer createViewer(IMObject object) {
+        ExpandableLayoutStrategy layout = createLayoutStrategy(_showAll);
+        IMObjectViewer viewer = new IMObjectViewer(object, layout) {
+            @Override
+            protected Component createComponent() {
+                _lookups.clear();
+                return super.createComponent();
             }
 
-            // first check whether the value for this node is derived and if it
-            // is then derive the value
-            if (node.isDerived()) {
-                try {
-                    value = context.getValue(node.getDerivedValue());
-                    context.getPointer(node.getPath()).setValue(value);
-                } catch (Exception exception) {
-                    value = null;
-                    errors.add(new ValidationError(node.getName(),
-                            "Cannot derive value"));
-                }
+            protected IMObjectComponentFactory getComponentFactory() {
+                return _factory;
             }
+        };
+        viewer.getComponent(); // make sure the component's rendered.
+        Button button = layout.getButton();
+        if (button != null) {
+            button.addActionListener(getLayoutChangeListener());
+        }
+        return viewer;
+    }
 
-            // check the cardinality
-            int minCardinality = node.getMinCardinality();
-            int maxCardinality = node.getMaxCardinality();
-            if ((minCardinality == 1) && (value == null)) {
-                errors.add(new ValidationError(node.getName(),
-                        "value is required"));
-            }
+    /**
+     * Creates the layout strategy.
+     *
+     * @param showAll if <code>true</code> show required and optional fields;
+     *                otherwise show required fields.
+     * @return a new layout strategy
+     */
+    protected ExpandableLayoutStrategy createLayoutStrategy(boolean showAll) {
+        return new ExpandableLayoutStrategy(showAll);
+    }
 
-            // if the node is a collection and there are cardinality
-            // constraints then check them
-            if (node.isCollection()) {
-                if ((minCardinality > 0) && (getCollectionSize(value) < minCardinality))
-                {
-                    errors.add(new ValidationError(node.getName(),
-                            " must supply at least " + minCardinality + " "
-                                    + node.getBaseName()));
+    /**
+     * Change the layout.
+     */
+    protected void onLayout() {
+        _showAll = !_showAll;
+        Component oldValue = getComponent();
+        ExpandableLayoutStrategy layout = createLayoutStrategy(_showAll);
+        getViewer().setLayout(layout);
+        Button button = layout.getButton();
+        if (button != null) {
+            button.addActionListener(getLayoutChangeListener());
+        }
+        Component newValue = getComponent();
+        firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);
+    }
 
-                }
-
-                if ((maxCardinality > 0)
-                        && (maxCardinality != NodeDescriptor.UNBOUNDED)
-                        && (getCollectionSize(value) > maxCardinality)) {
-                    errors.add(new ValidationError(node.getName(),
-                            " cannot supply more than " + maxCardinality + " "
-                                    + node.getBaseName()));
-                }
-            }
-
-            if ((value != null)
-                    && (node.getAssertionDescriptorsAsArray().length > 0)) {
-                // only check the assertions for non-null values
-                for (AssertionDescriptor assertion : node
-                        .getAssertionDescriptorsAsArray()) {
-                    AssertionTypeDescriptor assertionType =
-                            service.getAssertionTypeDescriptor(assertion.getName());
-
-                    // TODO
-                    // no validation required where the type is not specified.
-                    // This is currently a work around since we need to deal
-                    // with assertions and some other type of declaration...
-                    // which I don't have a name for.
-                    if (assertionType.getActionType("assert") == null) {
-                        continue;
-                    }
-
-                    try {
-                        if (!assertionType.assertTrue(value, node, assertion)) {
-                            errors.add(new ValidationError(node.getName(),
-                                    assertion.getErrorMessage()));
-                        }
-                    } catch (Exception exception) {
-                        // log the error
-                        errors.add(new ValidationError(node.getName(),
-                                assertion.getErrorMessage()));
-                    }
-                }
-            }
-
-            // if this node has other nodes then re-enter this method
-            if (node.getNodeDescriptors().size() > 0) {
-                validateObject(context, node.getNodeDescriptors(), errors);
+    protected void refreshLookups(SelectField source) {
+        for (SelectField lookup : _lookups) {
+            if (source != lookup) {
+                LookupListModel model = (LookupListModel) lookup.getModel();
+                model.refresh();
             }
         }
     }
 
     /**
-     * Determine the number of entries in the collection. If the collection is
-     * null then return 0. The node descriptor defines the type of the
-     * collection
+     * Returns the layout change action listener.
      *
-     * @param collection the collection item
-     * @return the collection size
+     * @return the layout change listener
      */
-    private int getCollectionSize(Object collection) {
-        int size;
-        if (collection instanceof Map) {
-            size = ((Map) collection).size();
-        } else if (collection instanceof Collection) {
-            size = ((Collection) collection).size();
-        } else {
-            size = 0;
+    protected ActionListener getLayoutChangeListener() {
+        if (_layoutChangeListener == null) {
+            _layoutChangeListener = new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onLayout();
+                }
+            };
         }
-        return size;
+        return _layoutChangeListener;
+    }
+
+    private class ComponentFactory extends NodeEditorFactory {
+
+        /**
+         * Returns a component to edit a lookup node.
+         *
+         * @param object     the parent object
+         * @param descriptor the node descriptor
+         * @return a component to edit the node
+         */
+        @Override
+        protected Component getSelectEditor(IMObject object,
+                                            NodeDescriptor descriptor) {
+            Component editor = super.getSelectEditor(object, descriptor);
+            SelectField lookup = (SelectField) editor;
+            lookup.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    refreshLookups((SelectField) event.getSource());
+                }
+            });
+            _lookups.add(lookup);
+            return lookup;
+        }
     }
 }

@@ -1,10 +1,10 @@
 package org.openvpms.web.component.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
 import org.openvpms.web.component.im.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.IMObjectViewer;
+import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 
 
 /**

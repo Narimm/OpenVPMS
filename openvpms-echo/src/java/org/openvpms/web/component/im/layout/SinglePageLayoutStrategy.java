@@ -1,4 +1,4 @@
-package org.openvpms.web.component.im;
+package org.openvpms.web.component.im.layout;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +9,9 @@ import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.filter.BasicNodeFilter;
 
 
 /**
@@ -26,7 +29,7 @@ public class SinglePageLayoutStrategy extends AbstractLayoutStrategy {
      * @param summary if <code>true</code>, only display a summary
      */
     public SinglePageLayoutStrategy(boolean summary) {
-        super(!summary, false);
+        super(new BasicNodeFilter(!summary, false));
     }
 
     /**

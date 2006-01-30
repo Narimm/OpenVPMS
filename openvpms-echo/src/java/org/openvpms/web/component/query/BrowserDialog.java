@@ -61,6 +61,7 @@ public class BrowserDialog extends PopupDialog {
      */
     public BrowserDialog(String title, Browser browser, boolean addNew) {
         super(title, STYLE, Buttons.CANCEL);
+        setModal(true);
         _browser = browser;
         getLayout().add(browser);
 

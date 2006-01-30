@@ -1,4 +1,4 @@
-package org.openvpms.web.component.im;
+package org.openvpms.web.component.im.layout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +15,14 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.LabelFactory;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.NodeFilter;
 import org.openvpms.web.util.DescriptorHelper;
 
 
 /**
- * Enter description here.
+ * Abstract implementation of the {@link IMObjectLayoutStrategy} interface.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -27,26 +30,24 @@ import org.openvpms.web.util.DescriptorHelper;
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * If <code>true</code> show optional fields, as well as mandatory ones.
+     * The node filter. May be <code>null</code>.
      */
-    private final boolean _showOptional;
+    private NodeFilter _filter;
 
     /**
-     * If <code>true</code>, show hidden fields.
+     * Construct a new <code>AbstractLayoutStrategy</code>.
      */
-    private final boolean _showHidden;
-
+    public AbstractLayoutStrategy() {
+        this(null);
+    }
 
     /**
      * Construct a new <code>AbstractLayoutStrategy</code>.
      *
-     * @param showOptional if <code>true</code> show optional fields as well as
-     *                     mandatory ones.
-     * @param showHidden   if <code>true</code> show hidden fields
+     * @param filter the node filter. May be <code>null</code>.
      */
-    public AbstractLayoutStrategy(boolean showOptional, boolean showHidden) {
-        _showOptional = showOptional;
-        _showHidden = showHidden;
+    public AbstractLayoutStrategy(NodeFilter filter) {
+        _filter = filter;
     }
 
     /**
@@ -75,32 +76,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 = DescriptorHelper.getArchetypeDescriptor(object);
         List<NodeDescriptor> simple
                 = filter(descriptor.getSimpleNodeDescriptors());
-        if (!simple.isEmpty()) {
-            doSimpleLayout(object, simple, container, factory);
-        }
+        doSimpleLayout(object, simple, container, factory);
         List<NodeDescriptor> complex
                 = filter(descriptor.getComplexNodeDescriptors());
-        if (!complex.isEmpty()) {
-            doComplexLayout(object, complex, container, factory);
-        }
-    }
-
-    /**
-     * Determines if optional fields should be displayed.
-     *
-     * @return <code>true</code> if optional fields should be displayed
-     */
-    public boolean showOptional() {
-        return _showOptional;
-    }
-
-    /**
-     * Determines if hidden fields should be displayed.
-     *
-     * @return <code>true</code> if hidden fields should be displayed
-     */
-    public boolean showHidden() {
-        return _showHidden;
+        doComplexLayout(object, complex, container, factory);
     }
 
     /**
@@ -113,15 +92,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected void doSimpleLayout(IMObject object, List<NodeDescriptor> descriptors,
                                   Component container, IMObjectComponentFactory factory) {
-        Grid grid = GridFactory.create(2);
-        for (NodeDescriptor nodeDesc : descriptors) {
-            Label label = LabelFactory.create();
-            label.setText(nodeDesc.getDisplayName());
-            Component child = factory.create(object, nodeDesc);
-            grid.add(label);
-            grid.add(child);
+        if (!descriptors.isEmpty()) {
+            Grid grid = GridFactory.create(2);
+            for (NodeDescriptor descriptor : descriptors) {
+                Component child = factory.create(object, descriptor);
+                add(grid, descriptor.getDisplayName(), child);
+            }
+            container.add(grid);
         }
-        container.add(grid);
     }
 
     /**
@@ -134,15 +112,17 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected void doComplexLayout(IMObject object, List<NodeDescriptor> descriptors,
                                    Component container, IMObjectComponentFactory factory) {
-        DefaultTabModel model = new DefaultTabModel();
-        for (NodeDescriptor nodeDesc : descriptors) {
-            Component child = factory.create(object, nodeDesc);
-            model.addTab(nodeDesc.getDisplayName(), child);
+        if (!descriptors.isEmpty()) {
+            DefaultTabModel model = new DefaultTabModel();
+            for (NodeDescriptor nodeDesc : descriptors) {
+                Component child = factory.create(object, nodeDesc);
+                model.addTab(nodeDesc.getDisplayName(), child);
+            }
+            TabbedPane pane = new TabbedPane();
+            pane.setModel(model);
+            pane.setSelectedIndex(0);
+            container.add(pane);
         }
-        TabbedPane pane = new TabbedPane();
-        pane.setModel(model);
-        pane.setSelectedIndex(0);
-        container.add(pane);
     }
 
     /**
@@ -156,7 +136,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors) {
         List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
         for (NodeDescriptor descriptor : descriptors) {
-            if (show(descriptor)) {
+            if (_filter != null && _filter.include(descriptor)) {
                 result.add(descriptor);
             }
         }
@@ -164,22 +144,35 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Determines if a node should be displayed.
+     * Sets the node filter.
      *
-     * @param node the node
-     * @return <code>true<code> if the node should be displayed
+     * @param filter the node filter
      */
-    protected boolean show(NodeDescriptor node) {
-        boolean result = false;
-        if (node.isHidden()) {
-            if (showHidden()) {
-                result = true;
-            }
-        } else if (showOptional()) {
-            result = true;
-        } else {
-            result = node.isRequired();
-        }
-        return result;
+    protected void setNodeFilter(NodeFilter filter) {
+        _filter = filter;
     }
+
+    /**
+     * Returns the node filter.
+     *
+     * @return the node filter
+     */
+    protected NodeFilter getNodeFilter() {
+        return _filter;
+    }
+
+    /**
+     * Helper to add a node to a grid
+     *
+     * @param grid      the grid
+     * @param name      the node display name
+     * @param component the component representing the node
+     */
+    protected void add(Grid grid, String name, Component component) {
+        Label label = LabelFactory.create();
+        label.setText(name);
+        grid.add(label);
+        grid.add(component);
+    }
+
 }

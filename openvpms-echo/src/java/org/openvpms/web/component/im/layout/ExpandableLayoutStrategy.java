@@ -1,4 +1,4 @@
-package org.openvpms.web.component.im;
+package org.openvpms.web.component.im.layout;
 
 import java.util.List;
 
@@ -14,6 +14,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.RowFactory;
+import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.filter.BasicNodeFilter;
 
 
 /**
@@ -25,6 +27,11 @@ import org.openvpms.web.component.RowFactory;
 public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
+     * Determines if only required nodes should be shown.
+     */
+    private final boolean _showRequiredOnly;
+
+    /**
      * Button indicating to expand/collapse the layout.
      */
     private Button _button;
@@ -33,10 +40,12 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Construct a new <code>ExpandableLayoutStrategy</code>.
      *
-     * @param showRequiredOnly
+     * @param showOptional if <code>true</code> show optional fields as well as
+     *                     mandatory ones.
      */
-    public ExpandableLayoutStrategy(boolean showRequiredOnly) {
-        super(showRequiredOnly, false);
+    public ExpandableLayoutStrategy(boolean showOptional) {
+        super(new BasicNodeFilter(showOptional, false));
+        _showRequiredOnly = !showOptional;
     }
 
     /**
@@ -57,7 +66,8 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @param factory   the component factory
      */
     @Override
-    protected void doLayout(IMObject object, Component container, IMObjectComponentFactory factory) {
+    protected void doLayout(IMObject object, Component container,
+                            IMObjectComponentFactory factory) {
         super.doLayout(object, container, factory);
         if (_button == null) {
             Row row = getButtonRow();
@@ -77,13 +87,18 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @param factory     the component factory
      */
     @Override
-    protected void doSimpleLayout(IMObject object, List<NodeDescriptor> descriptors,
-                                  Component container, IMObjectComponentFactory factory) {
-        Row group = RowFactory.create();
-
-        super.doSimpleLayout(object, descriptors, group, factory);
-        group.add(getButtonRow());
-        container.add(group);
+    protected void doSimpleLayout(IMObject object,
+                                  List<NodeDescriptor> descriptors,
+                                  Component container,
+                                  IMObjectComponentFactory factory) {
+        if (_button != null) {
+            super.doSimpleLayout(object, descriptors, container, factory);
+        } else if (!descriptors.isEmpty()) {
+            Row group = RowFactory.create();
+            super.doSimpleLayout(object, descriptors, group, factory);
+            group.add(getButtonRow());
+            container.add(group);
+        }
     }
 
     /**
@@ -95,16 +110,18 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @param factory     the component factory
      */
     @Override
-    protected void doComplexLayout(IMObject object, List<NodeDescriptor> descriptors,
-                                   Component container, IMObjectComponentFactory factory) {
-        if (_button == null) {
+    protected void doComplexLayout(IMObject object,
+                                   List<NodeDescriptor> descriptors,
+                                   Component container,
+                                   IMObjectComponentFactory factory) {
+        if (_button != null) {
+            super.doComplexLayout(object, descriptors, container, factory);
+        } else if (!descriptors.isEmpty()) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
             right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
             row.setLayoutData(right);
             container.add(row);
-            super.doComplexLayout(object, descriptors, container, factory);
-        } else {
             super.doComplexLayout(object, descriptors, container, factory);
         }
     }
@@ -115,7 +132,7 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @return a new row
      */
     protected Row getButtonRow() {
-        String key = (showOptional()) ? "minus" : "plus";
+        String key = (_showRequiredOnly) ? "plus" : "minus";
         _button = ButtonFactory.create(key);
         RowLayoutData right = new RowLayoutData();
         right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
@@ -126,5 +143,6 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
         wrapper.setLayoutData(right);
         return wrapper;
     }
+
 
 }

@@ -2,7 +2,6 @@ package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -20,6 +19,7 @@ import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.ColumnFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
+import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.edit.DefaultIMObjectEditor;
@@ -83,14 +83,14 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
     private IMObjectBrowser _browser;
 
     /**
-     * Container for the selected object and edit button.
+     * Container for the selected object and edit buttons.
      */
-    private Column _viewContainer;
+    private SplitPane _container;
 
     /**
-     * Container for the selected object.
+     * The edit button.
      */
-    private GroupBox _container;
+    private Button _edit;
 
 
     /**
@@ -146,17 +146,27 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
                 onSelect();
             }
         });
+        _summary = LabelFactory.create();
+        Row control = RowFactory.create("CRUDPane.ControlRow", select, _summary);
+
+        Column top = ColumnFactory.create(headingRow, control);
+        add(top);
+        _edit = ButtonFactory.create("edit", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onEdit();
+            }
+        });
+        _edit.setEnabled(false);
         Button create = ButtonFactory.create("new", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
             }
         });
-        _summary = LabelFactory.create();
-        Row control = RowFactory.create("CRUDPane.ControlRow", select, create,
-                _summary);
+        Row buttons = RowFactory.create("ControlRow", _edit, create);
+        _container = SplitPaneFactory.create(ORIENTATION_VERTICAL_BOTTOM_TOP,
+                "CRUDPane.Container", buttons);
+        add(_container);
 
-        Column top = ColumnFactory.create(headingRow, control);
-        add(top);
     }
 
     /**
@@ -292,7 +302,9 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * EditDialog}.
      */
     protected void onEdit() {
-        edit(_browser.getObject(), true);
+        if (_browser != null) {
+            edit(_browser.getObject(), true);
+        }
     }
 
     /**
@@ -343,33 +355,24 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
                 object.getDescription());
         _summary.setText(summary);
 
-        if (_viewContainer == null) {
-            Button edit = ButtonFactory.create("edit", new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onEdit();
-                }
-            });
-            Row control = RowFactory.create("CRUDPane.ControlRow", edit);
-            _container = new GroupBox();
-            _viewContainer = ColumnFactory.create(_container, control);
-            add(_viewContainer);
-        } else {
+        if (_browser != null) {
             _container.remove(_browser.getComponent());
         }
-
         _browser = new IMObjectBrowser(object);
         _container.add(_browser.getComponent());
+        _edit.setEnabled(true);
     }
 
     /**
      * Clears the current object.
      */
     protected void clearObject() {
-        remove(_viewContainer);
-        _viewContainer = null;
-        _container = null;
-        _browser = null;
+        if (_browser != null) {
+            _container.remove(_browser.getComponent());
+            _browser = null;
+        }
         _summary.setText(null);
+        _edit.setEnabled(false);
     }
 
 }
