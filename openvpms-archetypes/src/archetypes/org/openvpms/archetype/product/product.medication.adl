@@ -40,6 +40,7 @@
 			<node name="activeIngredients" path="/details/attributes/activeIngredients" type="java.lang.String"
 				minCardinality="0" />
 		</node>
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"
 			type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

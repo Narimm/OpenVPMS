@@ -6,6 +6,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="/details/attributes/companyName" />
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

@@ -22,6 +22,7 @@
 				</assertion>
 			</node>
 		</node>
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="classifications" path="/classifications" parentChild="false"
 			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

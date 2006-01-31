@@ -3,6 +3,12 @@
 		latest="true"
 		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Patient Location Relationship" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat('Patient Owner', '')" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(/activeStartTime, ' - ',/activeEndTime)" />
 		<node name="activeStartTime" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
 			hidden="true" defaultValue="java.util.Date.new()" />
