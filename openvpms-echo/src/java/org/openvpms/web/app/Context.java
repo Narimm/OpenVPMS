@@ -1,6 +1,7 @@
 package org.openvpms.web.app;
 
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 
 
 /**
@@ -15,6 +16,11 @@ public class Context {
      * The current customer.
      */
     private Party _customer;
+
+    /**
+     * The current product.
+     */
+    private Product _product;
 
 
     /**
@@ -42,6 +48,24 @@ public class Context {
     }
 
     /**
+     * Sets the current product.
+     *
+     * @param product the current product.
+     */
+    public void setProduct(Product product) {
+        _product = product;
+    }
+
+    /**
+     * Returns the current product.
+     *
+     * @return the current product
+     */
+    public Product getProduct() {
+        return _product;
+    }
+
+    /**
      * Returns the singleton instance.
      *
      * @return the singleton instance
@@ -49,4 +73,5 @@ public class Context {
     public static Context getInstance() {
         return OpenVPMSApp.getInstance().getContext();
     }
+
 }
