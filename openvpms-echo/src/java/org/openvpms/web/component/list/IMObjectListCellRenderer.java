@@ -24,11 +24,12 @@ public class IMObjectListCellRenderer implements ListCellRenderer {
      */
     public Object getListCellRendererComponent(Component list, Object value,
                                                int index) {
-        String result;
+        String result = null;
         if (value instanceof IMObject) {
             result = ((IMObject) value).getDescription();
-        } else {
-            result = null;
+        }
+        if (result == null) {
+            result = "";
         }
         return result;
     }
