@@ -205,6 +205,10 @@
         </properties>
     </style>
 
+    <style name="ConfirmationDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane">
+    </style>
+
     <style name="SelectionDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
     </style>

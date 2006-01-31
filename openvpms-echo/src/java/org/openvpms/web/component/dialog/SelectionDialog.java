@@ -48,7 +48,6 @@ public class SelectionDialog extends PopupDialog {
      */
     public SelectionDialog(String title, String message, List list) {
         super(title, STYLE, Buttons.OK_CANCEL);
-        setClosable(false);
         setModal(true);
 
         _list = new ListBox(list.toArray());

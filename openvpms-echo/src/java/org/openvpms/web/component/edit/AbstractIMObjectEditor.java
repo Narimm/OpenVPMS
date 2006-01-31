@@ -12,8 +12,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
@@ -175,7 +177,9 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
                         saved = true;
                     }
                 }
-            } catch (RuntimeException exception) {
+            } catch (ArchetypeServiceException exception) {
+                ErrorDialog.show(exception);
+            } catch (DescriptorException exception) {
                 ErrorDialog.show(exception);
             }
         }
@@ -192,14 +196,18 @@ public abstract class AbstractIMObjectEditor implements IMObjectEditor {
         boolean deleted = false;
         IMObject object = getObject();
         if (_parent != null) {
-            _descriptor.removeChildFromCollection(_parent, object);
-            deleted = true;
+            try {
+                _descriptor.removeChildFromCollection(_parent, object);
+                deleted = true;
+            } catch (DescriptorException exception) {
+                ErrorDialog.show(exception);
+            }
         } else if (!object.isNew()) {
             try {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 service.remove(object);
                 deleted = true;
-            } catch (RuntimeException exception) {
+            } catch (ArchetypeServiceException exception) {
                 ErrorDialog.show(exception);
             }
         }

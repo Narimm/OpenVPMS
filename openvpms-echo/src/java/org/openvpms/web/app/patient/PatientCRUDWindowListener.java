@@ -1,7 +1,9 @@
 package org.openvpms.web.app.patient;
 
 import java.util.Date;
+import java.util.Set;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -19,6 +21,13 @@ import org.openvpms.web.spring.ServiceHelper;
  * @version $LastChangedDate$
  */
 public class PatientCRUDWindowListener implements CRUDWindowListener {
+
+    /**
+     * Patient/owner relationship short name.
+     */
+    private static final String PATIENT_OWNER
+            = "entityRelationship.patientOwner";
+
 
     /**
      * Invoked when a new object is selected.
@@ -39,23 +48,25 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
         Entity customer = context.getCustomer();
         if (customer != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            EntityRelationship relationship
-                    = (EntityRelationship) service.create("entityRelationship.patientOwner");
-            relationship.setActiveStartTime(new Date());
-            relationship.setSequence(1);
-            relationship.setSource(new IMObjectReference(customer));
-            relationship.setTarget(new IMObjectReference(patient));
+            if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
+                EntityRelationship relationship
+                        = (EntityRelationship) service.create(PATIENT_OWNER);
+                relationship.setActiveStartTime(new Date());
+                relationship.setSequence(1);
+                relationship.setSource(new IMObjectReference(customer));
+                relationship.setTarget(new IMObjectReference(patient));
 
-            EntityRelationship copy;
-            try {
-                copy = (EntityRelationship) relationship.clone();
-            } catch (CloneNotSupportedException exception) {
-                throw new IllegalArgumentException(exception);
+                EntityRelationship copy;
+                try {
+                    copy = (EntityRelationship) relationship.clone();
+                } catch (CloneNotSupportedException exception) {
+                    throw new IllegalArgumentException(exception);
+                }
+                customer.addEntityRelationship(relationship);
+                patient.addEntityRelationship(copy);
+                service.save(customer);
+                service.save(patient);
             }
-            customer.addEntityRelationship(relationship);
-            patient.addEntityRelationship(copy);
-            service.save(customer);
-            service.save(patient);
         }
     }
 
@@ -66,4 +77,35 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
      */
     public void deleted(IMObject object) {
     }
+
+    /**
+     * Determines if a relationship of the specified type exists.
+     *
+     * @param shortName the relationship short name
+     * @param patient   the patient
+     * @param customer  the customer
+     * @return <code>true</code> if a relationship exists; otherwsie
+     *         <code>false</code>
+     */
+    private boolean hasRelationship(String shortName, Entity patient,
+                                    Entity customer) {
+        boolean result = false;
+        Set<EntityRelationship> relationships
+                = patient.getEntityRelationships();
+        IMObjectReference source = new IMObjectReference(customer);
+        IMObjectReference target = new IMObjectReference(patient);
+
+        for (EntityRelationship relationship : relationships) {
+            ArchetypeId id = relationship.getArchetypeId();
+            if (id.getShortName().equals(shortName)) {
+                if (source.equals(relationship.getSource())
+                        && target.equals(relationship.getTarget())) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
 }

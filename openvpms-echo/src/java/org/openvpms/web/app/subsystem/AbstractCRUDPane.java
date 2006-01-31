@@ -2,6 +2,7 @@ package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -12,14 +13,18 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import nextapp.echo2.app.layout.RowLayoutData;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.ColumnFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.edit.DefaultIMObjectEditor;
@@ -78,6 +83,11 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
     private Label _summary;
 
     /**
+     * Deactivated label.
+     */
+    private Label _deactivated;
+
+    /**
      * The object browser.
      */
     private IMObjectBrowser _browser;
@@ -91,6 +101,11 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * The edit button.
      */
     private Button _edit;
+
+    /**
+     * The delete button.
+     */
+    private Button _delete;
 
 
     /**
@@ -147,7 +162,12 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
             }
         });
         _summary = LabelFactory.create();
-        Row control = RowFactory.create("CRUDPane.ControlRow", select, _summary);
+        _deactivated = LabelFactory.create();
+        RowLayoutData right = new RowLayoutData();
+        right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
+        _deactivated.setLayoutData(right);
+        Row control = RowFactory.create("CRUDPane.ControlRow", select, _summary,
+                _deactivated);
 
         Column top = ColumnFactory.create(headingRow, control);
         add(top);
@@ -162,7 +182,13 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
                 onNew();
             }
         });
-        Row buttons = RowFactory.create("ControlRow", _edit, create);
+        _delete = ButtonFactory.create("delete", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onDelete();
+            }
+        });
+        _delete.setEnabled(false);
+        Row buttons = RowFactory.create("CRUDPane.ControlRow", create, _edit, _delete);
         _container = SplitPaneFactory.create(ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "CRUDPane.Container", buttons);
         add(_container);
@@ -308,39 +334,63 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
     }
 
     /**
+     * Invoked when the delete button is pressed.
+     */
+    protected void onDelete() {
+        if (_browser != null) {
+            IMObject object = _browser.getObject();
+            if (object instanceof Entity) {
+                Entity entity = (Entity) object;
+                if (!entity.getEntityRelationships().isEmpty()) {
+                    if (object.isActive()) {
+                        confirmDeactivate(object);
+                    } else {
+                        ErrorDialog.show("Delete",
+                                "Cannot delete deactivated instance");
+                    }
+                } else {
+                    confirmDelete(object);
+                }
+            } else {
+                confirmDelete(object);
+            }
+        }
+    }
+
+    /**
      * Invoked when the editor is closed.
      *
      * @param editor the editor
      */
     protected void onEditCompleted(IMObjectEditor editor) {
         if (editor.isDeleted()) {
-            onDelete(editor);
+            onDeleted(editor.getObject());
         } else if (editor.isModified()) {
-            onSave(editor);
+            onSaved(editor.getObject());
         }
     }
 
     /**
-     * Invoked when the object is saved.
+     * Invoked when the object has been saved.
      *
-     * @param editor the editor
+     * @param object the object
      */
-    protected void onSave(IMObjectEditor editor) {
-        setObject(editor.getObject());
+    protected void onSaved(IMObject object) {
+        setObject(object);
         if (_listener != null) {
-            _listener.saved(editor.getObject());
+            _listener.saved(object);
         }
     }
 
     /**
-     * Invoked when the delete button is pressed.
+     * Invoked when the object has been deleted.
      *
-     * @param editor the editor
+     * @param object the object
      */
-    protected void onDelete(IMObjectEditor editor) {
+    protected void onDeleted(IMObject object) {
         clearObject();
         if (_listener != null) {
-            _listener.deleted(editor.getObject());
+            _listener.deleted(object);
         }
     }
 
@@ -350,10 +400,13 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * @param object the object
      */
     protected void setObject(IMObject object) {
-        String key = _id + ".summary";
-        String summary = Messages.get(key, object.getName(),
+        final String summaryKey = _id + ".summary";
+        String summary = Messages.get(summaryKey, object.getName(),
                 object.getDescription());
         _summary.setText(summary);
+        if (!object.isActive()) {
+            _deactivated.setText(Messages.get("imobject.deactivated"));
+        }
 
         if (_browser != null) {
             _container.remove(_browser.getComponent());
@@ -361,6 +414,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
         _browser = new IMObjectBrowser(object);
         _container.add(_browser.getComponent());
         _edit.setEnabled(true);
+        _delete.setEnabled(true);
     }
 
     /**
@@ -372,7 +426,60 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
             _browser = null;
         }
         _summary.setText(null);
+        _deactivated.setText(null);
         _edit.setEnabled(false);
+        _delete.setEnabled(false);
     }
+
+
+    /**
+     * Pops up a dialog prompting if deactivation of an object should proceed,
+     * deleting it if OK is selected.
+     *
+     * @param object the object to delete
+     */
+    private void confirmDeactivate(final IMObject object) {
+        String title = Messages.get("imobject.deactivate.title", object.getName());
+        String message = Messages.get("imobject.deactivate.message", object.getName());
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                IArchetypeService service = ServiceHelper.getArchetypeService();
+                try {
+                    object.setActive(false);
+                    service.save(object);
+                    onSaved(object);
+                } catch (ArchetypeServiceException exception) {
+                    ErrorDialog.show(exception);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Pops up a dialog prompting if deletion of an object should proceed,
+     * deleting it if OK is selected.
+     *
+     * @param object the object to delete
+     */
+    private void confirmDelete(final IMObject object) {
+        String title = Messages.get("imobject.delete.title", object.getName());
+        String message = Messages.get("imobject.delete.title", object.getName());
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                IArchetypeService service = ServiceHelper.getArchetypeService();
+                try {
+                    service.remove(object);
+                    onDeleted(object);
+                } catch (ArchetypeServiceException exception) {
+                    ErrorDialog.show(exception);
+                }
+            }
+        });
+        dialog.show();
+    }
+
 
 }
