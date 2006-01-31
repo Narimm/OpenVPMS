@@ -49,6 +49,7 @@
 			<node name="dateOfBirth" path="/details/attributes/dateOfBirth"
 				type="java.util.Date" minCardinality="1" />
 		</node>
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="identities" path="/identities"
 			type="java.util.HashSet" baseName="Identity" minCardinality="0"
 			maxCardinality="*">
