@@ -30,6 +30,7 @@ import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.edit.DefaultIMObjectEditor;
 import org.openvpms.web.component.edit.EditDialog;
 import org.openvpms.web.component.edit.IMObjectEditor;
+import org.openvpms.web.component.model.ArchetypeShortNameListModel;
 import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.query.BrowserDialog;
 import org.openvpms.web.component.query.IMObjectBrowser;
@@ -71,6 +72,11 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * The fully qualified localisation identifier: &lt;subsystemId&gt;.&lt;workspaceId&gt;
      */
     private final String _id;
+
+    /**
+     * Localised type display name (e.g, Customer, Product).
+     */
+    private final String _type;
 
     /**
      * The listener.
@@ -126,6 +132,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
+        _type = Messages.get(_id + ".type");
 
         doLayout();
     }
@@ -188,7 +195,8 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
             }
         });
         _delete.setEnabled(false);
-        Row buttons = RowFactory.create("CRUDPane.ControlRow", create, _edit, _delete);
+        Row buttons = RowFactory.create("CRUDPane.ControlRow", create, _edit,
+                _delete);
         _container = SplitPaneFactory.create(ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "CRUDPane.Container", buttons);
         add(_container);
@@ -246,13 +254,17 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * @param shortNames the archetype shortnames
      */
     protected void create(List<String> shortNames) {
-        final SelectionDialog dialog = new SelectionDialog("Select Archetype",
-                "Select the type of object to create", shortNames);
+        final ArchetypeShortNameListModel model
+                = new ArchetypeShortNameListModel(shortNames, false);
+        String title = Messages.get("imobject.new.title", _type);
+        String message = Messages.get("imobject.new.message", _type);
+        final SelectionDialog dialog
+                = new SelectionDialog(title, message, model);
         dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String selected = (String) dialog.getSelected();
-                if (selected != null) {
-                    create(selected);
+                int selected = dialog.getSelectedIndex();
+                if (selected != -1) {
+                    create(model.getShortName(selected));
                 }
             }
         });
@@ -284,7 +296,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
     protected void onSelect() {
         final Browser browser = new Browser(_refModelName, _entityName,
                 _conceptName);
-        String title = Messages.get("label." + _id + ".select");
+        String title = Messages.get("imobject.select.title", _type);
         final BrowserDialog popup = new BrowserDialog(title, browser, true);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
@@ -400,7 +412,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * @param object the object
      */
     protected void setObject(IMObject object) {
-        final String summaryKey = _id + ".summary";
+        final String summaryKey = "imobject.summary";
         String summary = Messages.get(summaryKey, object.getName(),
                 object.getDescription());
         _summary.setText(summary);
@@ -439,7 +451,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * @param object the object to delete
      */
     private void confirmDeactivate(final IMObject object) {
-        String title = Messages.get("imobject.deactivate.title", object.getName());
+        String title = Messages.get("imobject.deactivate.title", _type);
         String message = Messages.get("imobject.deactivate.message", object.getName());
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
@@ -464,7 +476,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * @param object the object to delete
      */
     private void confirmDelete(final IMObject object) {
-        String title = Messages.get("imobject.delete.title", object.getName());
+        String title = Messages.get("imobject.delete.title", _type);
         String message = Messages.get("imobject.delete.title", object.getName());
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {

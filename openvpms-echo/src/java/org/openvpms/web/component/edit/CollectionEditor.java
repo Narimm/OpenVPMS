@@ -99,8 +99,9 @@ public class CollectionEditor extends Column {
         } else if (range.length > 1) {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(range);
-            final SelectField archetypeNames = SelectFieldFactory.create(range);
-            _shortname = (String) archetypeNames.getSelectedItem();
+            final SelectField archetypeNames = SelectFieldFactory.create(model);
+            int index = archetypeNames.getSelectedIndex();
+            _shortname = model.getShortName(index);
 
             archetypeNames.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
