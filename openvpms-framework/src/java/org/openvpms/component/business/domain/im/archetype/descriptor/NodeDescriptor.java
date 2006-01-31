@@ -41,6 +41,7 @@ import org.apache.oro.text.perl.Perl5Util;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
@@ -852,7 +853,7 @@ public class NodeDescriptor extends Descriptor {
      * @return boolean
      */
     public boolean isObjectReference() {
-        if (IMObject.class.isAssignableFrom(getClazz())) {
+        if (IMObjectReference.class.isAssignableFrom(getClazz())) {
             return true;
         }
 
