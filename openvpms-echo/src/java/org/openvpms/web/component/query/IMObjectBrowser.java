@@ -1,10 +1,13 @@
 package org.openvpms.web.component.query;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
 import org.openvpms.web.component.im.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.IMObjectViewer;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -36,6 +39,18 @@ public class IMObjectBrowser extends IMObjectViewer {
     }
 
     /**
+     * Returns a title for the browser.
+     *
+     * @return a title for the browser
+     */
+    public String getTitle() {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
+                getObject().getArchetypeId());
+        return descriptor.getDisplayName();
+    }
+
+    /**
      * Returns the factory for creating components for displaying the object.
      *
      * @return the component factory
@@ -43,4 +58,5 @@ public class IMObjectBrowser extends IMObjectViewer {
     protected IMObjectComponentFactory getComponentFactory() {
         return new NodeBrowserFactory();
     }
+
 }

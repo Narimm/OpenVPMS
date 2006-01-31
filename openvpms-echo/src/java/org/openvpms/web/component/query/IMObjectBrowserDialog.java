@@ -12,12 +12,18 @@ import org.openvpms.web.component.dialog.PopupDialog;
 public class IMObjectBrowserDialog extends PopupDialog {
 
     /**
+     * Dialog style name.
+     */
+    private static final String STYLE = "IMObjectBrowserDialog";
+
+
+    /**
      * Construct a new <code>IMObjectBrowserDialog</code>.
      *
      * @param browser the browser to display
      */
     public IMObjectBrowserDialog(IMObjectBrowser browser) {
-        super(browser.getObject().getName(), Buttons.OK);
+        super(browser.getTitle(), STYLE, Buttons.OK);
         setModal(true);
         getLayout().add(browser.getComponent());
         show();

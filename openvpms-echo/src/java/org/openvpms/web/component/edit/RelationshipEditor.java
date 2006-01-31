@@ -19,6 +19,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.app.Context;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.RowFactory;
@@ -73,18 +74,46 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         NodeDescriptor sourceDesc = archetype.getNodeDescriptor("source");
         NodeDescriptor targetDesc = archetype.getNodeDescriptor("target");
 
-        _source = new Entity(_relationship.getSource(), sourceDesc);
-        _source.getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelect(_source);
+        IMObject source = null;
+        IMObject target = null;
+
+        if (relationship.getSource() == null) {
+            String[] range = sourceDesc.getArchetypeRange();
+            source = Context.getInstance().getObject(range);
+            if (source != null) {
+                relationship.setSource(new IMObjectReference(source));
             }
-        });
-        _target = new Entity(_relationship.getTarget(), targetDesc);
-        _target.getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelect(_target);
+        } else {
+            source = Context.getInstance().getObject(relationship.getSource());
+        }
+        boolean srcModifiable = (source == null);
+        _source = new Entity(source, _relationship.getSource(), sourceDesc,
+                srcModifiable);
+        if (srcModifiable) {
+            _source.getSelect().addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onSelect(_source);
+                }
+            });
+        }
+
+        if (relationship.getTarget() == null) {
+            String[] range = targetDesc.getArchetypeRange();
+            target = Context.getInstance().getObject(range);
+            if (target != null) {
+                relationship.setTarget(new IMObjectReference(target));
             }
-        });
+        }
+        boolean targetModifiable = (target == null || !srcModifiable);
+        _target = new Entity(target, _relationship.getTarget(), targetDesc,
+                targetModifiable);
+        if (targetModifiable) {
+            _target.getSelect().addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onSelect(_target);
+                }
+            });
+        }
     }
 
     /**
@@ -179,12 +208,17 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         private NodeDescriptor _descriptor;
         private TextComponent _label;
         private Button _select;
-        private Component _component;
+        private Row _component;
 
-        public Entity(IMObjectReference reference, NodeDescriptor descriptor) {
+        public Entity(IMObject object, IMObjectReference reference,
+                      NodeDescriptor descriptor, boolean modifiable) {
             _descriptor = descriptor;
-            doLayout();
-            setObject(reference);
+            doLayout(modifiable);
+            if (object != null) {
+                setObject(object);
+            } else {
+                setObject(reference);
+            }
         }
 
         public NodeDescriptor getDescriptor() {
@@ -220,13 +254,16 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
             }
         }
 
-        protected void doLayout() {
+        protected void doLayout(boolean modifiable) {
             final int columns = 32; // @todo
-            _select = ButtonFactory.create("select");
             _label = TextComponentFactory.create();
             _label.setWidth(new Extent(columns, Extent.EX));
             _label.setEnabled(false);
-            _component = RowFactory.create("RelationshipEditor.EntityRow", _label, _select);
+            _component = RowFactory.create("RelationshipEditor.EntityRow", _label);
+            if (modifiable) {
+                _select = ButtonFactory.create("select");
+                _component.add(_select);
+            }
         }
 
     }

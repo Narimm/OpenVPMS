@@ -137,6 +137,7 @@
             <property name="lineWrap" value="false"/>
             <property name="insets" value="8px 0px"/>
             <property name="foreground" value="#000000"/>
+            <property name="disabledForeground" value="#7f7f7f"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
         </properties>
@@ -162,6 +163,9 @@
             <property name="height" value="600px"/>
         </properties>
     </style>
+
+    <style name="IMObjectBrowserDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane"/>
 
     <style name="Browser" type="nextapp.echo2.app.SplitPane">
         <properties>

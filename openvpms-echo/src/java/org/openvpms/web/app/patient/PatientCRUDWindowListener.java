@@ -56,16 +56,8 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
                 relationship.setSource(new IMObjectReference(customer));
                 relationship.setTarget(new IMObjectReference(patient));
 
-                EntityRelationship copy;
-                try {
-                    copy = (EntityRelationship) relationship.clone();
-                } catch (CloneNotSupportedException exception) {
-                    throw new IllegalArgumentException(exception);
-                }
                 customer.addEntityRelationship(relationship);
-                patient.addEntityRelationship(copy);
                 service.save(customer);
-                service.save(patient);
             }
         }
     }
