@@ -13,7 +13,7 @@ public interface CRUDWindowListener {
     /**
      * Invoked when a new object is selected.
      *
-     * @param object the selcted object
+     * @param object the selected object
      */
     void selected(IMObject object);
 

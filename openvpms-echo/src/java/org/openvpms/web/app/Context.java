@@ -18,6 +18,11 @@ public class Context {
     private Party _customer;
 
     /**
+     * The current supplier.
+     */
+    private Party _supplier;
+
+    /**
      * The current product.
      */
     private Product _product;
@@ -45,6 +50,24 @@ public class Context {
      */
     public Party getCustomer() {
         return _customer;
+    }
+
+    /**
+     * Sets the current supplier.
+     *
+     * @param supplier the current supplier
+     */
+    public void setSupplier(Party supplier) {
+        _supplier = supplier;
+    }
+
+    /**
+     * Returns the current suppller.
+     *
+     * @return the current supplier
+     */
+    public Party getSupplier() {
+        return _supplier;
     }
 
     /**
