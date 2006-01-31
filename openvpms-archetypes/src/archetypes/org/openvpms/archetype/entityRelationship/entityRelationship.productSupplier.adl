@@ -1,11 +1,11 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.patientLocation.1.0"
+	<archetype name="openvpms-common-entityRelationship.productSupplier.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Patient Location Relationship" >
+		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Supplier" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Patient Location', '')" />
+			derivedValue="concat('ProductSupplier', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat(/activeStartTime, ' - ',/activeEndTime)" />
@@ -18,11 +18,11 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="party.customerperson" />
+							value="product.medication" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="party.customerorganisation" />
+							value="product.merchandise" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
@@ -34,7 +34,11 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="party.animalpet" />
+							value="party.supplierorganisation" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="party.supplierperson" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
