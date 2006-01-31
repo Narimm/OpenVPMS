@@ -54,11 +54,6 @@ public class EntityRelationship extends IMObject {
     private DynamicAttributeMap details;
 
     /**
-     * A reference to the owning {@link Entity}
-     */
-    private Entity entity;
-
-    /**
      * A relationship may also have an associated entity identity
      */
     private EntityIdentity identity;
@@ -159,13 +154,6 @@ public class EntityRelationship extends IMObject {
     }
 
     /**
-     * @return Returns the entity.
-     */
-    public Entity getEntity() {
-        return entity;
-    }
-
-    /**
      * @return Returns the entityIdentity.
      */
     public EntityIdentity getIdentity() {
@@ -222,14 +210,6 @@ public class EntityRelationship extends IMObject {
      */
     public void setDetails(DynamicAttributeMap details) {
         this.details = details;
-    }
-
-    /**
-     * @param entity
-     *            The entity to set.
-     */
-    public void setEntity(Entity entity) {
-        this.entity = entity;
     }
 
     /**

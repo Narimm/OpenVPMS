@@ -264,7 +264,7 @@ public class ArchetypeId implements Serializable, Cloneable {
         }
         ArchetypeId rhs = (ArchetypeId) obj;
         return new EqualsBuilder()
-            .append(qualifiedName, rhs.qualifiedName)
+            .append(getQualifiedName(), rhs.getQualifiedName())
             .isEquals();
     }
 

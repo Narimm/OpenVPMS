@@ -56,20 +56,19 @@
         <property name="qualifiedName" access="property" type="string"
           column="source_archetype_id" />
       </component>
-      <property name="uid" access="field" type="long" column="source_uid" />
+      <property name="uid" access="field" type="long" column="source_uid"/>
     </component>
     <component name="target">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"
           column="target_archetype_id" />
       </component>
-      <property name="uid" access="field" type="long" column="target_uid" />
+      <property name="uid" access="field" type="long" column="target_uid"/>
     </component>
     <many-to-one name="identity" access="property" column="identity_id"
       cascade="none" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-    <many-to-one name="entity" column="entity_id" />
   </class>
 
   <query name="entityRelationship.getRowCount">

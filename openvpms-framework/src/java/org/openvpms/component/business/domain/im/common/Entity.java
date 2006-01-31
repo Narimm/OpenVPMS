@@ -85,10 +85,17 @@ public class Entity extends IMObject {
         new HashSet<Participation>();
     
     /**
-     * Return a set of {@link EntityRelationships} that this entity participates
-     * in.
+     * Return a set of source {@link EntityRelationships} that this entity 
+     * participates in.
      */
-    private Set<EntityRelationship> entityRelationships = 
+    private Set<EntityRelationship> sourceEntityRelationships = 
+        new HashSet<EntityRelationship>();
+    
+    /**
+     * Return a set of target {@link EntityRelationships} that this entity 
+     * participates in.
+     */
+    private Set<EntityRelationship> targetEntityRelationships = 
         new HashSet<EntityRelationship>();
     
     /**
@@ -144,20 +151,6 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @return Returns the entityRelationships.
-     */
-    public Set<EntityRelationship> getEntityRelationships() {
-        return entityRelationships;
-    }
-
-    /**
-     * @param targetRelationships The entityRelationships to set.
-     */
-    public void setEntityRelationships(Set<EntityRelationship> entityRelationships) {
-        this.entityRelationships = entityRelationships;
-    }
-    
-    /**
      * Add a new {@link EntityIdentity}
      * 
      * @param identity
@@ -190,27 +183,141 @@ public class Entity extends IMObject {
     }
 
     /**
-     * Add an {@link EntityRelationship} to this entity
+     * @return Returns the sourceEntityRelationships.
+     */
+    @SuppressWarnings("unused")
+    private Set<EntityRelationship> getSourceEntityRelationships() {
+        return sourceEntityRelationships;
+    }
+
+    /**
+     * @param targetRelationships The sourceEntityRelationships to set.
+     */
+    @SuppressWarnings("unused")
+    private void setSourceEntityRelationships(Set<EntityRelationship> entityRelationships) {
+        this.sourceEntityRelationships = entityRelationships;
+    }
+    
+    /**
+     * Add a source {@link EntityRelationship} to this entity
      * 
      * @param entityRel 
      *            the entity relationship to add
      */
-    public void addEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setEntity(this);
-        this.entityRelationships.add(entityRel);
+    private void addSourceEntityRelationship(EntityRelationship entityRel) {
+        this.sourceEntityRelationships.add(entityRel);
     }
     
     /**
-     * Remove the {@link EntityRelationship} from this entity
+     * Remove the source {@link EntityRelationship} from this entity
+     * 
+     * @param entityRel
+     *            the entity relationship to remove
+     */
+    private void removeSourceEntityRelationship(EntityRelationship entityRel) {
+        this.sourceEntityRelationships.remove(entityRel);
+    }
+    
+
+    /**
+     * @return Returns the targetEntityRelationships.
+     */
+    @SuppressWarnings("unused")
+    private Set<EntityRelationship> getTargetEntityRelationships() {
+        return targetEntityRelationships;
+    }
+    
+    /**
+     * @param targetRelationships The targetEntityRelationships to set.
+     */
+    @SuppressWarnings("unused")
+    private void setTargetEntityRelationships(Set<EntityRelationship> entityRelationships) {
+        this.targetEntityRelationships = entityRelationships;
+    }
+    
+    /**
+     * Add a tarrget {@link EntityRelationship} to this entity
+     * 
+     * @param entityRel 
+     *            the entity relationship to add
+     */
+    private void addTargetEntityRelationship(EntityRelationship entityRel) {
+        this.targetEntityRelationships.add(entityRel);
+    }
+    
+    /**
+     * Remove the tarrget {@link EntityRelationship} from this entity
+     * 
+     * @param entityRel
+     *            the entity relationship to remove
+     */
+    private void removeTargetEntityRelationship(EntityRelationship entityRel) {
+        this.targetEntityRelationships.remove(entityRel);
+    }
+    
+    
+    
+    /**
+     * Add a relationship to this entity. It will determine whether it is a 
+     * source or target relationship before adding it.
+     * 
+     * @param entityRel
+     *            the entity relationship to add
+     * @throws EntityException
+     *            if this relationship cannot be added to this entity            
+     */
+    public void addEntityRelationship(EntityRelationship entityRel) {
+        if ((entityRel.getSource().getUid() == this.getUid()) &&
+            (entityRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+            addSourceEntityRelationship(entityRel);
+        } else if ((entityRel.getTarget().getUid() == this.getUid()) &&
+            (entityRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+            addTargetEntityRelationship(entityRel);
+        } else {
+            throw new EntityException(
+                    EntityException.ErrorCode.FailedToAddEntityRelationship,
+                    new Object[] { entityRel.getSource().getUid(), 
+                            entityRel.getTarget().getUid()});
+        }
+    }
+
+    /**
+     * Remove a relationship to this entity. It will determine whether it is a 
+     * source or target relationship before removing it.
      * 
      * @param entityRel
      *            the entity relationship to remove
      */
     public void removeEntityRelationship(EntityRelationship entityRel) {
-        entityRel.setEntity(null);
-        this.entityRelationships.remove(entityRel);
+        if ((entityRel.getSource().getUid() == this.getUid()) &&
+            (entityRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+            removeSourceEntityRelationship(entityRel);
+        } else if ((entityRel.getTarget().getUid() == this.getUid()) &&
+            (entityRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+            removeTargetEntityRelationship(entityRel);
+        } else {
+            throw new EntityException(
+                    EntityException.ErrorCode.FailedToRemoveEntityRelationship,
+                    new Object[] { entityRel.getSource().getUid(), 
+                            entityRel.getTarget().getUid()});
+        }
     }
     
+    /**
+     * Return all the entity relationships. Do not use the returned set to 
+     * add and remove entity relationships. Instead use {@link #addEntityRelationship(EntityRelationship)}
+     * and {@link #removeEntityRelationship(EntityRelationship)} repsectively.
+     * 
+     * @return Set<EntityRelationship>
+     */
+    public Set<EntityRelationship> getEntityRelationships() {
+        Set<EntityRelationship> relationships = 
+            new HashSet<EntityRelationship>(sourceEntityRelationships);
+        relationships.addAll(targetEntityRelationships);
+        
+        return relationships;
+    }
+
     /**
      * Add an {@link Classification} to this entity
      * 
@@ -315,7 +422,8 @@ public class Entity extends IMObject {
                 null : this.details.clone());
         copy.identities = new HashSet<EntityIdentity>(this.identities);
         copy.participations = new HashSet<Participation>(this.participations);
-        copy.entityRelationships = new HashSet<EntityRelationship>(this.entityRelationships);
+        copy.sourceEntityRelationships = new HashSet<EntityRelationship>(this.sourceEntityRelationships);
+        copy.targetEntityRelationships = new HashSet<EntityRelationship>(this.targetEntityRelationships);
 
         return copy;
     }

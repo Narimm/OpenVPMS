@@ -85,17 +85,44 @@ public class EntityRelationshipTestCase extends
             EntityRelationship rel = createEntityRelationship(person, pet);
             service.validateObject(rel);
             person.addEntityRelationship(rel);
-            pet.addEntityRelationship((EntityRelationship)rel.clone());
             service.save(person);
-            service.save(pet);
             
             // now retrieve them and ensure that the correct entity relationship
             // exists
-            person = (Person)service.getById(person.getArchetypeId(), person.getUid());
-            assertTrue(person.getEntityRelationships().size() == 1);
             pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
             assertTrue(pet.getEntityRelationships().size() == 1);
             service.validateObject(person.getEntityRelationships().iterator().next());
+        } catch (ValidationException exception) {
+            for (ValidationError error : exception.getErrors()) {
+                logger.error("Node:" + error.getNodeName() + " Error:" + error.getErrorMessage());
+            }
+        }
+    }
+    
+    /**
+     * Test the creation of entities and entity relationships
+     */
+    public void testEntityAndEntityRelationship() 
+    throws Exception {
+        try {
+            Person person = createPerson("Mr", "Jim", "Alateras");
+            service.save(person);
+            Animal pet = createAnimal("buddy");
+            service.save(pet);
+            EntityRelationship rel = createEntityRelationship(person, pet);
+            person.addEntityRelationship(rel);
+            service.save(person);
+            
+            // retrieve the person again
+            person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+            assertTrue(person != null);
+            assertTrue(person.getEntityRelationships().size() == 1);
+            
+            // retrieve the pet again
+            pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
+            assertTrue(pet != null);
+            assertTrue(pet.getEntityRelationships().size() == 1);
+            
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
                 logger.error("Node:" + error.getNodeName() + " Error:" + error.getErrorMessage());
@@ -116,9 +143,7 @@ public class EntityRelationshipTestCase extends
         // we can ony create entity relationship with persistent objects
         EntityRelationship rel = createEntityRelationship(person, pet);
         person.addEntityRelationship(rel);
-        pet.addEntityRelationship((EntityRelationship)rel.clone());
         service.save(person);
-        service.save(pet);
         
         // now retrieve them and ensure that the correct entity relationship
         // exists
@@ -137,7 +162,7 @@ public class EntityRelationshipTestCase extends
         person = (Person)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person.getEntityRelationships().size() == 0);
         pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
-        assertTrue(pet.getEntityRelationships().size() == 1);
+        assertTrue(pet.getEntityRelationships().size() == 0);
     }
     
     /**

@@ -57,14 +57,20 @@
     <set name="identities" access="property" lazy="false" inverse="true"
       cascade="all,delete-orphan">
       <key column="entity_id" not-null="true" />
-      <one-to-many
+      <one-to-many 
         class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
     </set>
-    <set name="entityRelationships" access="property" lazy="false"
-      inverse="true" cascade="all,delete-orphan">
-      <key column="entity_id" not-null="true" />
+    <set name="sourceEntityRelationships" access="property" lazy="false"
+      cascade="all,delete-orphan" inverse="true">
+      <key column="source_uid" not-null="true"/>
       <one-to-many
-        class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
+        class="org.openvpms.component.business.domain.im.common.EntityRelationship"/>
+    </set>
+    <set name="targetEntityRelationships" access="property" lazy="false"
+      cascade="all,delete-orphan" inverse="true">
+      <key column="target_uid" not-null="true"/>
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityRelationship"/>
     </set>
     <set name="participations" access="property" lazy="false" inverse="true"
       cascade="all,delete-orphan">
