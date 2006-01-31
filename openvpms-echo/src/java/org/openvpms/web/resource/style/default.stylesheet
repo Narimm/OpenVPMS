@@ -209,6 +209,12 @@
         </properties>
     </style>
 
+    <style name="CRUDPane.Deactivated" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="foreground" value="#ff0000"/>
+        </properties>
+    </style>
+
     <style name="ConfirmationDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
     </style>

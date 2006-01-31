@@ -2,7 +2,6 @@ package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -13,7 +12,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import nextapp.echo2.app.layout.RowLayoutData;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -169,10 +167,8 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
             }
         });
         _summary = LabelFactory.create();
-        _deactivated = LabelFactory.create();
-        RowLayoutData right = new RowLayoutData();
-        right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
-        _deactivated.setLayoutData(right);
+        _deactivated = LabelFactory.create(null, "CRUDPane.Deactivated");
+
         Row control = RowFactory.create("CRUDPane.ControlRow", select, _summary,
                 _deactivated);
 
@@ -418,6 +414,8 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
         _summary.setText(summary);
         if (!object.isActive()) {
             _deactivated.setText(Messages.get("imobject.deactivated"));
+        } else {
+            _deactivated.setText(null);
         }
 
         if (_browser != null) {
