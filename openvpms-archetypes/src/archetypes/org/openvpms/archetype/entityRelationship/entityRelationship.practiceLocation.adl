@@ -8,7 +8,7 @@
 			derivedValue="concat('Practice Location', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/activeStartTime, ' - ',/activeEndTime)" />
+			derivedValue="concat('Practice Location','(',/activeStartTime, ' - ',/activeEndTime,')')" />
 		<node name="activeStartTime" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
 			hidden="true" defaultValue="java.util.Date.new()" />
