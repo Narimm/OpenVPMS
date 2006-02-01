@@ -166,6 +166,84 @@ public class EntityRelationshipTestCase extends
     }
     
     /**
+     * Test that we can add relationships to the target entity and that it
+     * will appear on the source entity.
+     */
+    public void testAddAndRemoveEntityRelationshipToTargetEntity()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        Animal pet = createAnimal("buddy");
+        service.save(person);
+        service.save(pet);
+        
+        // we can ony create entity relationship with persistent objects
+        EntityRelationship rel = createEntityRelationship(person, pet);
+        pet.addEntityRelationship(rel);
+        service.save(pet);
+        
+        // now retrieve them and ensure that the correct entity relationship
+        // exists
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 1);
+        pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
+        assertTrue(pet.getEntityRelationships().size() == 1);
+        
+        // now remove the relationship and make sure it all works
+        // correctly
+        pet.removeEntityRelationship(
+                pet.getEntityRelationships().iterator().next());
+        service.save(pet);
+        
+        // check the relationsahips again
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 0);
+        pet = (Animal)service.getById(pet.getArchetypeId(), pet.getUid());
+        assertTrue(pet.getEntityRelationships().size() == 0);
+        
+    }
+    
+    /**
+     * Test the manipulation of multiple entity relationships
+     */
+    public void testManipulationMultipleEntityRelationships()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        Animal pet1 = createAnimal("buddy");
+        Animal pet2 = createAnimal("boxer");
+        Animal pet3 = createAnimal("dude");
+        service.save(person);
+        service.save(pet1);
+        service.save(pet2);
+        service.save(pet3);
+        
+        // create a number of entity relationships
+        person.addEntityRelationship(createEntityRelationship(person, pet1));
+        person.addEntityRelationship(createEntityRelationship(person, pet2));
+        person.addEntityRelationship(createEntityRelationship(person, pet3));
+        service.save(person);
+        
+        // now retrieve them and ensure that the correct entity relationship
+        // exists
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 3);
+        pet1 = (Animal)service.getById(pet1.getArchetypeId(), pet1.getUid());
+        assertTrue(pet1.getEntityRelationships().size() == 1);
+
+        // remove one of the relationships from the target side and check
+        // them again
+        pet1.removeEntityRelationship(pet1.getEntityRelationships().iterator().next());
+        service.save(pet1);
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 2);
+        pet1 = (Animal)service.getById(pet1.getArchetypeId(),pet1.getUid());
+        assertTrue(pet1.getEntityRelationships().size() == 0);
+        pet2 = (Animal)service.getById(pet2.getArchetypeId(),pet2.getUid());
+        assertTrue(pet2.getEntityRelationships().size() == 1);
+        pet3 = (Animal)service.getById(pet3.getArchetypeId(),pet3.getUid());
+        assertTrue(pet3.getEntityRelationships().size() == 1);
+    }
+    
+    /**
      * Test the we can clone and entity relationship object
      */
     public void testEntityRelationshipClone()
