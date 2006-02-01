@@ -21,8 +21,9 @@ public interface CRUDWindowListener {
      * Invoked when an object is saved.
      *
      * @param object the saved object
+     * @param isNew  determines if the object is a new instance
      */
-    void saved(IMObject object);
+    void saved(IMObject object, boolean isNew);
 
     /**
      * Invoked when an object is deleted

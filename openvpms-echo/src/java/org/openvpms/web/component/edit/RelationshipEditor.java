@@ -74,46 +74,27 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         NodeDescriptor sourceDesc = archetype.getNodeDescriptor("source");
         NodeDescriptor targetDesc = archetype.getNodeDescriptor("target");
 
-        IMObject source = null;
-        IMObject target = null;
+        IMObject source = getObject(_relationship.getSource(), sourceDesc);
+        IMObject target = getObject(_relationship.getTarget(), targetDesc);
 
-        if (relationship.getSource() == null) {
-            String[] range = sourceDesc.getArchetypeRange();
-            source = Context.getInstance().getObject(range);
-            if (source != null) {
-                relationship.setSource(new IMObjectReference(source));
-            }
-        } else {
-            source = Context.getInstance().getObject(relationship.getSource());
+        IMObject edited = Context.getInstance().getEdited();
+        boolean srcReadOnly = true;
+        if (source == null || !source.equals(edited)) {
+            srcReadOnly = false;
         }
-        boolean srcModifiable = (source == null);
-        _source = new Entity(source, _relationship.getSource(), sourceDesc,
-                srcModifiable);
-        if (srcModifiable) {
-            _source.getSelect().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onSelect(_source);
-                }
-            });
+        if (source != null && _relationship.getSource() == null) {
+            _relationship.setSource(new IMObjectReference(source));
         }
+        _source = create(source, sourceDesc, srcReadOnly);
 
-        if (relationship.getTarget() == null) {
-            String[] range = targetDesc.getArchetypeRange();
-            target = Context.getInstance().getObject(range);
-            if (target != null) {
-                relationship.setTarget(new IMObjectReference(target));
-            }
+        boolean targetReadOnly = true;
+        if (target == null || !target.equals(edited)) {
+            targetReadOnly = false;
         }
-        boolean targetModifiable = (target == null || !srcModifiable);
-        _target = new Entity(target, _relationship.getTarget(), targetDesc,
-                targetModifiable);
-        if (targetModifiable) {
-            _target.getSelect().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onSelect(_target);
-                }
-            });
+        if (target != null && _relationship.getTarget() == null) {
+            _relationship.setTarget(new IMObjectReference(target));
         }
+        _target = create(target, targetDesc, targetReadOnly);
     }
 
     /**
@@ -148,7 +129,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     }
 
     protected void onSelected(Entity entity, IMObject object) {
-        entity.setObject(object);
+        entity.setEntity(object);
         IMObjectReference reference = new IMObjectReference(object);
         if (entity == _source) {
             _relationship.setSource(reference);
@@ -157,6 +138,84 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         }
     }
 
+    /**
+     * Returns an object given its reference and descriptor. If the reference is
+     * null, determines if the descriptor matches that of the current object
+     * being edited and returns that instead.
+     *
+     * @param reference  the object reference. May be <code>null</code>
+     * @param descriptor the node descriptor
+     * @return the object matching <code>reference</code>, or
+     *         <code>descriptor</code>, or <code>null</code> if there is no
+     *         match
+     */
+    private IMObject getObject(IMObjectReference reference,
+                               NodeDescriptor descriptor) {
+        IMObject result = null;
+        if (reference == null) {
+            result = match(descriptor);
+        } else {
+            result = Context.getInstance().getObject(reference);
+            if (result == null) {
+                IArchetypeService service = ServiceHelper.getArchetypeService();
+                result = service.getById(reference.getArchetypeId(),
+                        reference.getUid());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new entity representing one side of the relationship.
+     *
+     * @param object     the object. May be <code>null</code>
+     * @param descriptor the entity's descriptor
+     * @param readOnly   if <code>true</code>, the enity cannot be changed
+     * @return a new <code>Entity</code>
+     */
+    private Entity create(IMObject object, NodeDescriptor descriptor,
+                          boolean readOnly) {
+        final Entity result;
+        result = new Entity(object, descriptor, readOnly);
+        if (!readOnly) {
+            result.getSelect().addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onSelect(result);
+                }
+            });
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the current object being edited matches archetype range of
+     * the specified descriptor.
+     *
+     * @param descriptor the node descriptor
+     * @return the current object being edited, or <code>null</code> if its type
+     *         doesn't match the specified descriptor's archetype range
+     */
+    private IMObject match(NodeDescriptor descriptor) {
+        IMObject result = null;
+        String[] range = descriptor.getArchetypeRange();
+        IMObject object = Context.getInstance().getEdited();
+        if (object != null) {
+            String shortName = object.getArchetypeId().getShortName();
+            for (int i = 0; i < range.length; ++i) {
+                if (range[i].equals(shortName)) {
+                    result = object;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * EntityRelationship layout strategy. Displays the source and target nodes
+     * before any others.
+     */
     private class LayoutStrategy extends ExpandableLayoutStrategy {
 
         /**
@@ -202,65 +261,102 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
 
     }
 
-
+    /**
+     * Wrapper for a source/target entity in a relationship.
+     */
     private class Entity {
 
+        /**
+         * The entity's descriptor.
+         */
         private NodeDescriptor _descriptor;
+
+        /**
+         * Displays a summary of the entity.
+         */
         private TextComponent _label;
+
+        /**
+         * Button to change the entity/
+         */
         private Button _select;
+
+        /**
+         * The rendered component.
+         */
         private Row _component;
 
-        public Entity(IMObject object, IMObjectReference reference,
-                      NodeDescriptor descriptor, boolean modifiable) {
+
+        /**
+         * Construct a new <code>Entity</code>.
+         *
+         * @param entity     the entity. May be <code>null</code>
+         * @param descriptor the entity descriptor
+         * @param readOnly   if <code>true<code> don't render the select button
+         */
+        public Entity(IMObject entity, NodeDescriptor descriptor,
+                      boolean readOnly) {
             _descriptor = descriptor;
-            doLayout(modifiable);
-            if (object != null) {
-                setObject(object);
-            } else {
-                setObject(reference);
-            }
+            doLayout(readOnly);
+            setEntity(entity);
         }
 
+        /**
+         * Returns the entity's descriptor.
+         *
+         * @return the entity's descriptor
+         */
         public NodeDescriptor getDescriptor() {
             return _descriptor;
         }
 
+        /**
+         * Returns the select button.
+         *
+         * @return the select button, or <code>null</code> if the entity is read
+         *         only
+         */
         public Button getSelect() {
             return _select;
         }
 
+        /**
+         * Returns the rendered component.
+         *
+         * @return the rendered component
+         */
         public Component getComponent() {
             return _component;
         }
 
-        public void setObject(IMObjectReference reference) {
-            IMObject object = null;
-            if (reference != null) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                object = service.getById(reference.getArchetypeId(),
-                        reference.getUid());
-            }
-            setObject(object);
-        }
-
-        public void setObject(IMObject object) {
-            if (object != null) {
+        /**
+         * Sets the entity
+         *
+         * @param entity the entity
+         */
+        public void setEntity(IMObject entity) {
+            if (entity != null) {
                 String key = "relationship.entity.summary";
-                String summary = Messages.get(key, object.getName(),
-                        object.getDescription());
+                String summary = Messages.get(key, entity.getName(),
+                        entity.getDescription());
                 _label.setText(summary);
             } else {
                 _label.setText(Messages.get("relationship.select"));
             }
         }
 
-        protected void doLayout(boolean modifiable) {
+        /**
+         * Lays out the component.
+         *
+         * @param readOnly if <code>true<code> don't render the select button
+         */
+        protected void doLayout(boolean readOnly) {
             final int columns = 32; // @todo
             _label = TextComponentFactory.create();
             _label.setWidth(new Extent(columns, Extent.EX));
             _label.setEnabled(false);
             _component = RowFactory.create("RelationshipEditor.EntityRow", _label);
-            if (modifiable) {
+            if (!readOnly) {
                 _select = ButtonFactory.create("select");
                 _component.add(_select);
             }

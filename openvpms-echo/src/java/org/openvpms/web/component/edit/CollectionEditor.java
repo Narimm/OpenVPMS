@@ -22,6 +22,7 @@ import org.openvpms.web.component.IMObjectTable;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.SelectFieldFactory;
 import org.openvpms.web.component.TableNavigator;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.model.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -168,7 +169,12 @@ public class CollectionEditor extends Column {
         if (_shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             IMObject object = service.create(_shortname);
-            edit(object);
+            if (object != null) {
+                edit(object);
+            } else {
+                ErrorDialog.show("Failed to create object of type "
+                        + _shortname);
+            }
         }
     }
 

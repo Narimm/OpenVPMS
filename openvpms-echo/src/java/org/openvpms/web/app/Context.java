@@ -16,6 +16,11 @@ import org.openvpms.component.business.domain.im.product.Product;
 public class Context {
 
     /**
+     * The object being edited.
+     */
+    private IMObject _edited;
+
+    /**
      * The current customer.
      */
     private Party _customer;
@@ -38,9 +43,28 @@ public class Context {
     }
 
     /**
+     * Sets the current object being edited.
+     *
+     * @param object the object being edited. May be <code>null</code>
+     */
+    public void setEdited(IMObject object) {
+        _edited = object;
+    }
+
+    /**
+     * Returns the object being edited.
+     *
+     * @return the object being edited, or <code>null</code> if there is no
+     *         object being edited
+     */
+    public IMObject getEdited() {
+        return _edited;
+    }
+
+    /**
      * Sets the current customer.
      *
-     * @param customer the current customer
+     * @param customer the current customer. May be <code>null</code>
      */
     public void setCustomer(Party customer) {
         _customer = customer;
@@ -49,7 +73,8 @@ public class Context {
     /**
      * Returns the current customer.
      *
-     * @return the current customer
+     * @return the current customer, or <code>null</code> if there is no current
+     *         customer
      */
     public Party getCustomer() {
         return _customer;
@@ -58,7 +83,7 @@ public class Context {
     /**
      * Sets the current supplier.
      *
-     * @param supplier the current supplier
+     * @param supplier the current supplier. May be <code>null</code>
      */
     public void setSupplier(Party supplier) {
         _supplier = supplier;
@@ -67,7 +92,8 @@ public class Context {
     /**
      * Returns the current suppller.
      *
-     * @return the current supplier
+     * @return the current supplier, or <code>null</code> if there is no current
+     *         supplier
      */
     public Party getSupplier() {
         return _supplier;
@@ -85,37 +111,11 @@ public class Context {
     /**
      * Returns the current product.
      *
-     * @return the current product
+     * @return the current product, or <code>null</code> if there is no current
+     *         product
      */
     public Product getProduct() {
         return _product;
-    }
-
-    /**
-     * Returns a context object that matches the specified archetype range.
-     *
-     * @param range the archetype range
-     * @return the first context object with an archetype id in
-     *         <code>range</code>, or <code>null</code> if there is no match
-     */
-    public IMObject getObject(String[] range) {
-        IMObject result = null;
-        IMObject[] objects = new IMObject[]{_customer, _supplier, _product};
-        for (String shortName : range) {
-            for (IMObject object : objects) {
-                if (object != null) {
-                    ArchetypeId id = object.getArchetypeId();
-                    if (id.getShortName().equals(shortName)) {
-                        result = object;
-                        break;
-                    }
-                }
-            }
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
     }
 
     /**
@@ -127,7 +127,8 @@ public class Context {
      */
     public IMObject getObject(IMObjectReference reference) {
         IMObject result = null;
-        IMObject[] objects = new IMObject[]{_customer, _supplier, _product};
+        IMObject[] objects = new IMObject[]{_edited, _customer, _supplier,
+                _product};
         for (IMObject object : objects) {
             if (object != null) {
                 ArchetypeId id = object.getArchetypeId();

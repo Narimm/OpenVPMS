@@ -27,8 +27,9 @@ class SupplierCRUDWindowListener implements CRUDWindowListener {
      * Invoked when an object is saved.
      *
      * @param object the saved object
+     * @param isNew  determines if the object is a new instance
      */
-    public void saved(IMObject object) {
+    public void saved(IMObject object, boolean isNew) {
         Context.getInstance().setSupplier((Party) object);
     }
 

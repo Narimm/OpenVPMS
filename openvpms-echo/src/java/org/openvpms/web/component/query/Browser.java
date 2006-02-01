@@ -308,8 +308,10 @@ public class Browser extends SplitPane {
             result = get(type, name, activeOnly, service);
         }
 
-        _table.setObjects(result);
-        if (result.size() <= _table.getRowsPerPage()) {
+        if (result != null) {
+            _table.setObjects(result);
+        }
+        if (result != null && result.size() <= _table.getRowsPerPage()) {
             _layout.setSeparatorPosition(new Extent(0, Extent.PX));
         } else {
             _layout.setSeparatorPosition(new Extent(32, Extent.PX));

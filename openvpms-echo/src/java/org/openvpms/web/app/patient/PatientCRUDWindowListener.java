@@ -41,12 +41,13 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
      * Invoked when an object is saved.
      *
      * @param object the saved object
+     * @param isNew  determines if the object is a new instance
      */
-    public void saved(IMObject object) {
+    public void saved(IMObject object, boolean isNew) {
         Entity patient = (Entity) object;
         Context context = Context.getInstance();
         Entity customer = context.getCustomer();
-        if (customer != null) {
+        if (customer != null && isNew) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
                 EntityRelationship relationship
@@ -56,8 +57,8 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
                 relationship.setSource(new IMObjectReference(customer));
                 relationship.setTarget(new IMObjectReference(patient));
 
-                customer.addEntityRelationship(relationship);
-                service.save(customer);
+                patient.addEntityRelationship(relationship);
+                service.save(patient);
             }
         }
     }

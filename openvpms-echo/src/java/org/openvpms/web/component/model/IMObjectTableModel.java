@@ -117,8 +117,7 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
      * @see TableModel#getColumnName
      */
     public String getColumnName(int column) {
-        int index = (_showDelete) ? column : column + 1;
-        String key = "table.imobject." + COLUMNS[index];
+        String key = "table.imobject." + COLUMNS[getIndex(column)];
         return Messages.get(key);
     }
 

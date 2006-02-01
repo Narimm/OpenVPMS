@@ -2,6 +2,7 @@ package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
+import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -17,6 +18,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.app.Context;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.ColumnFactory;
 import org.openvpms.web.component.LabelFactory;
@@ -102,6 +104,16 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
     private SplitPane _container;
 
     /**
+     * The selected object container.
+     */
+    private Component _objectContainer;
+
+    /**
+     * The edit button row.
+     */
+    private Row _buttons;
+
+    /**
      * The edit button.
      */
     private Button _edit;
@@ -179,7 +191,6 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
                 onEdit();
             }
         });
-        _edit.setEnabled(false);
         Button create = ButtonFactory.create("new", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
@@ -190,11 +201,9 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
                 onDelete();
             }
         });
-        _delete.setEnabled(false);
-        Row buttons = RowFactory.create("CRUDPane.ControlRow", create, _edit,
-                _delete);
+        _buttons = RowFactory.create("CRUDPane.ControlRow", create);
         _container = SplitPaneFactory.create(ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "CRUDPane.Container", buttons);
+                "CRUDPane.Container", _buttons);
         add(_container);
 
     }
@@ -275,13 +284,16 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      *                otherwise show required fields.
      */
     protected void edit(IMObject object, boolean showAll) {
+        final boolean isNew = object.isNew();
         final DefaultIMObjectEditor editor = new DefaultIMObjectEditor(object, showAll);
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
-                onEditCompleted(editor);
+                onEditCompleted(editor, isNew);
             }
         });
+
+        Context.getInstance().setEdited(object);
         dialog.show();
     }
 
@@ -369,12 +381,14 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * Invoked when the editor is closed.
      *
      * @param editor the editor
+     * @param isNew  determines if the object is a new instance
      */
-    protected void onEditCompleted(IMObjectEditor editor) {
+    protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
+        Context.getInstance().setEdited(null);
         if (editor.isDeleted()) {
             onDeleted(editor.getObject());
         } else if (editor.isModified()) {
-            onSaved(editor.getObject());
+            onSaved(editor.getObject(), isNew);
         }
     }
 
@@ -382,11 +396,12 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * Invoked when the object has been saved.
      *
      * @param object the object
+     * @param isNew  determines if the object is a new instance
      */
-    protected void onSaved(IMObject object) {
+    protected void onSaved(IMObject object, boolean isNew) {
         setObject(object);
         if (_listener != null) {
-            _listener.saved(object);
+            _listener.saved(object, isNew);
         }
     }
 
@@ -418,13 +433,20 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
             _deactivated.setText(null);
         }
 
-        if (_browser != null) {
-            _container.remove(_browser.getComponent());
+        if (_objectContainer != null) {
+            _objectContainer.remove(_browser.getComponent());
+        } else {
+            _objectContainer = new GroupBox();
+            _container.add(_objectContainer);
         }
         _browser = new IMObjectBrowser(object);
-        _container.add(_browser.getComponent());
-        _edit.setEnabled(true);
-        _delete.setEnabled(true);
+        _objectContainer.add(_browser.getComponent());
+        if (_buttons.indexOf(_edit) == -1) {
+            _buttons.add(_edit);
+        }
+        if (_buttons.indexOf(_delete) == -1) {
+            _buttons.add(_delete);
+        }
     }
 
     /**
@@ -432,13 +454,14 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      */
     protected void clearObject() {
         if (_browser != null) {
-            _container.remove(_browser.getComponent());
+            _container.remove(_objectContainer);
+            _objectContainer = null;
             _browser = null;
         }
         _summary.setText(null);
         _deactivated.setText(null);
-        _edit.setEnabled(false);
-        _delete.setEnabled(false);
+        _buttons.remove(_edit);
+        _buttons.remove(_delete);
     }
 
 
@@ -458,7 +481,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
                 try {
                     object.setActive(false);
                     service.save(object);
-                    onSaved(object);
+                    onSaved(object, false);
                 } catch (ArchetypeServiceException exception) {
                     ErrorDialog.show(exception);
                 }
