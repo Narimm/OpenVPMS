@@ -285,7 +285,8 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      */
     protected void edit(IMObject object, boolean showAll) {
         final boolean isNew = object.isNew();
-        final DefaultIMObjectEditor editor = new DefaultIMObjectEditor(object, showAll);
+        final DefaultIMObjectEditor editor
+                = new DefaultIMObjectEditor(object, showAll);
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -349,7 +350,21 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      */
     protected void onEdit() {
         if (_browser != null) {
-            edit(_browser.getObject(), true);
+            IMObject object = _browser.getObject();
+            if (object.isNew()) {
+                edit(object, true);
+            } else {
+                // make sure the latest instance is being used.
+                IArchetypeService service
+                        = ServiceHelper.getArchetypeService();
+                object = service.getById(object.getArchetypeId(),
+                        object.getUid());
+                if (object == null) {
+                    ErrorDialog.show(_type + " has been deleted");
+                } else {
+                    edit(object, true);
+                }
+            }
         }
     }
 

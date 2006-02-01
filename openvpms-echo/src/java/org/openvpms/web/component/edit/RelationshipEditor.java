@@ -155,7 +155,13 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         if (reference == null) {
             result = match(descriptor);
         } else {
-            result = Context.getInstance().getObject(reference);
+            IMObject edit = Context.getInstance().getEdited();
+            if (edit != null) {
+                if (edit.getArchetypeId().equals(reference.getArchetypeId())
+                        && edit.getUid() == reference.getUid()) {
+                    result = edit;
+                }
+            }
             if (result == null) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 result = service.getById(reference.getArchetypeId(),
