@@ -3,8 +3,6 @@ package org.openvpms.web.component.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import echopointng.table.DefaultPageableSortableTableModel;
-import echopointng.table.SortableTableColumn;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -13,9 +11,16 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.app.Context;
 import org.openvpms.web.component.IMObjectTable;
+import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.util.Messages;
+
+import echopointng.table.DefaultPageableSortableTableModel;
+import echopointng.table.SortableTableColumn;
 
 
 /**
@@ -196,7 +201,16 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
                 result = new Long(object.getUid());
                 break;
             case NAME_INDEX:
-                result = object.getName();
+                if (object instanceof EntityRelationship){
+                    IArchetypeService service = ServiceHelper.getArchetypeService();
+                    IMObject targetEntity = service.getById(((EntityRelationship)object).getTarget().getArchetypeId(),
+                            ((EntityRelationship)object).getTarget().getUid());                        
+                    IMObject sourceEntity = service.getById(((EntityRelationship)object).getSource().getArchetypeId(),
+                            ((EntityRelationship)object).getSource().getUid());
+                    result = sourceEntity.getName() + " --> " + targetEntity.getName();
+                }
+                else
+                    result = object.getName();
                 break;
             case DESCRIPTION_INDEX:
                 result = object.getDescription();
