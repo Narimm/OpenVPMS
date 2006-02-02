@@ -216,7 +216,6 @@ public class ArchetypeService implements IArchetypeService {
                     + " and version " + object.getVersion());
         }
 
-
         List<ValidationError> errors = new ArrayList<ValidationError>();
 
         // check that we can retrieve a valid archetype for this object
@@ -345,6 +344,12 @@ public class ArchetypeService implements IArchetypeService {
      *      long)
      */
     public IMObject getById(ArchetypeId archId, long id) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.getById: Retrieving object of type " 
+                    + archId.getShortName() 
+                    + " and with uid " + id);
+        }
+
         // check that we have an archetype id defined
         if (archId == null) {
             return null;
