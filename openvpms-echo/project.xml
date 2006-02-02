@@ -2226,6 +2226,12 @@
                     <include>hibernate.properties</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>${basedir}/src/conf/log4j</directory>
+                <includes>
+                    <include>log4j.properties</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 
