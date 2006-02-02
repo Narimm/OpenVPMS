@@ -171,6 +171,11 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public IMObject create(ArchetypeId id) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.create: Creating object of type " 
+                    + id.getShortName());
+        }
+        
         ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(id);
         if (desc != null) {
             return create(desc);
@@ -185,6 +190,11 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(java.lang.String)
      */
     public IMObject create(String name) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.create: Creating object of type " 
+                    + name);
+        }
+
         ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(name);
         if (desc != null) {
             return create(desc);
@@ -199,6 +209,13 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void validateObject(IMObject object) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.validateObject: Validating object of type " 
+                    + object.getArchetypeId().getShortName() 
+                    + " with uid " + object.getUid()
+                    + " and version " + object.getVersion());
+        }
+
 
         List<ValidationError> errors = new ArrayList<ValidationError>();
 
@@ -383,6 +400,13 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#remove(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void remove(IMObject entity) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.remove: Removing object of type "  
+                    + entity.getArchetypeId().getShortName()
+                    + " with uid " + entity.getUid()
+                    + " and version " + entity.getVersion());
+        }
+
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,
@@ -405,6 +429,13 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void save(IMObject entity) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.save: Saving object of type "  
+                    + entity.getArchetypeId().getShortName()
+                    + " with uid " + entity.getUid()
+                    + " and version " + entity.getVersion());
+        }
+
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,

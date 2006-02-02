@@ -258,6 +258,33 @@ public class EntityRelationshipTestCase extends
     }
     
     /**
+     * Test bug 133
+     */
+    public void testOVPMS133()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        Animal pet = createAnimal("buddy");
+        service.save(person);
+        service.save(pet);
+        
+        // we can ony create entity relationship with persistent objects
+        EntityRelationship rel = createEntityRelationship(person, pet);
+        person.addEntityRelationship(rel);
+        service.save(person);
+        
+        // now retrieve them and ensure that the correct entity relationship
+        // exists
+        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        assertTrue(person.getEntityRelationships().size() == 1);
+        rel = person.getEntityRelationships().iterator().next();
+        assertTrue(rel != null);
+        Person samePerson = (Person)service.getById(rel.getSource().getArchetypeId(),
+                rel.getSource().getUid());
+        assertTrue(person.getUid() == samePerson.getUid());
+        assertTrue(person.getVersion() == samePerson.getVersion());
+    }
+    
+    /**
      * Create a person
      * 
      * @param title

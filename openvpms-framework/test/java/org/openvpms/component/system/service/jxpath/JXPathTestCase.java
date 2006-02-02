@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 
 // commons-beanutils
 import org.apache.commons.beanutils.MethodUtils;
@@ -135,7 +136,7 @@ public class JXPathTestCase extends BaseTestCase {
         Person person = (Person) service.create("person.person");
         person.setFirstName("jim");
         person.setLastName("alateras");
-
+        
         TestPage page = new TestPage(person, adesc);
         assertTrue(page != null);
 
@@ -153,6 +154,30 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(getValue(page,
                 "pathToObject(model,  node/nodeDescriptors/firstName/path)")
                 .equals("Bernie"));
+    }
+    
+    /**
+     * Test the path to collection bug ovpms-131
+     */
+    public void testOVPMS131()
+    throws Exception {
+        Person person = new Person();
+        person.setFirstName("Jim");
+        person.setLastName("Alateras");
+        EntityIdentity id1 = new EntityIdentity();
+        id1.setName("jimbo");
+        EntityIdentity id2 = new EntityIdentity();
+        id2.setName("jimmya");
+        person.addIdentity(id1);
+        person.addIdentity(id2);
+        assertTrue(person.getIdentities().size() == 2);
+        assertTrue(person.getIdentities() != null);
+        
+        Set ids = (Set)person.pathToCollection("/identities").getValue();
+        assertTrue(ids.size() == 2);
+        ids.clear();
+        ids = (Set)person.pathToCollection("/identities").getValue();
+        assertTrue(ids.size() == 0);
     }
 
     /**
