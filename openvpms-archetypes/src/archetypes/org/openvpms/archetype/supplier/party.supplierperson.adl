@@ -1,0 +1,94 @@
+<archetypes>
+	<archetype name="openvpms-party-party.supplierperson.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Party" displayName="Supplier(Person)" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat(/details/attributes/lastName, ',', /details/attributes/firstName)" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(/details/attributes/title, ' ', /details/attributes/firstName, ' ', /details/attributes/initials,' ',/details/attributes/lastName)" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="title" path="/details/attributes/title" type="java.lang.String"
+				minCardinality="1">
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="Mr" value="Mr" />
+						<property name="Ms" value="Ms" />
+						<property name="Mrs" value="Mrs" />
+						<property name="Dr" value="Dr" />
+					</propertyList>
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
+			<node name="firstName" path="/details/attributes/firstName" type="java.lang.String"
+				minCardinality="1" maxLength="30" />
+			<node name="initials" path="/details/attributes/initials" type="java.lang.String" />
+			<node name="lastName" path="/details/attributes/lastName" type="java.lang.String"
+				minCardinality="1" maxLength="30" />
+		</node>
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="contacts" path="/contacts"
+			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="contact.location" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="contact.phoneNumber" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="contact.email" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="classifications" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.personType" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.accountType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="identities" path="/identities"
+			type="java.util.HashSet" baseName="Identity" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityIdentity.Alias" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="relationships" path="/entityRelationships"
+			type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.productSupplier" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
