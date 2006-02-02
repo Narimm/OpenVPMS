@@ -187,6 +187,44 @@ public class PersistentProductTestCase extends HibernateInfoModelTestCase {
     }
     
     /**
+     * Test name and description fields are being stored and retrieved
+     */
+    public void testOVPMS134()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // get initial number of rows
+            int ppcount = HibernateProductUtil.getTableRowCount(session, "productPrice");
+
+            // execute the test
+            tx = session.beginTransaction();
+            ProductPrice pprice = createProductPrice(1000, true);
+            pprice.setName("gum");
+            pprice.setDescription("this is really nice gum");
+            session.save(pprice);
+            tx.commit();
+
+            // ensure that the appropriate rows have been added to the database
+            int ppcount1 = HibernateProductUtil.getTableRowCount(session, "productPrice");
+            assertTrue(ppcount1 == ppcount + 1);
+            
+            pprice = (ProductPrice)session.load(ProductPrice.class, pprice.getUid());
+            assertTrue(pprice != null);
+            assertTrue(pprice.getName().equals("gum"));
+            assertTrue(pprice.getDescription().equals("this is really nice gum"));
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
      * Test the create of product with product prices
      */
     public void testProductCreationWithProductPrices()
