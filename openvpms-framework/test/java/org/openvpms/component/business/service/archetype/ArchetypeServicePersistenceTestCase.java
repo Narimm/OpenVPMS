@@ -539,6 +539,27 @@ public class ArchetypeServicePersistenceTestCase extends
     }
     
     /**
+     * Test OVPMS-135 bug
+     */
+    public void testOVPMS135()
+    throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("classification.staff");
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("alias");
+        assertTrue(ndesc != null);
+        
+        IMObject object = service.create("classification.staff");
+        object.setName("jima");
+        object.setDescription("head chef");
+        assertTrue(object.pathToObject(ndesc.getPath()) != null);
+        service.save(object);
+        
+        object = service.getById(object.getArchetypeId(), object.getUid());
+        assertTrue(object != null);
+        assertTrue(object.pathToObject(ndesc.getPath()) != null);
+    }
+    
+    /**
      * Create a pet with the specified name
      * 
      * @param name

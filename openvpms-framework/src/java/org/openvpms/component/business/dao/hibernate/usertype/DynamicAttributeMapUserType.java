@@ -125,8 +125,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      */
     public void nullSafeSet(PreparedStatement st, Object value, int index)
             throws HibernateException, SQLException {
-        if ((value == null) ||
-            (((DynamicAttributeMap)value).getAttributes().size() == 0)) {
+        if (value == null) {
             st.setNull(index, Types.VARCHAR);
         } else {
             st.setString(index, new XStream().toXML(value));

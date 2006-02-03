@@ -45,6 +45,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Person;
@@ -178,6 +179,22 @@ public class JXPathTestCase extends BaseTestCase {
         ids.clear();
         ids = (Set)person.pathToCollection("/identities").getValue();
         assertTrue(ids.size() == 0);
+    }
+    
+    /**
+     * Test that the bug to ovpms-135 is resolved
+     */
+    public void testNonMandatoryNodes()
+    throws Exception {
+        IMObject object = service.create("classification.staff");
+        assertTrue(object != null);
+        
+        // now attempt to retrieve the value of alias 
+        NodeDescriptor ndesc = service.getArchetypeDescriptor(
+                object.getArchetypeId()).getNodeDescriptor("alias");
+        assertTrue(ndesc != null);
+        assertTrue(ndesc.getValue(object) == null);
+        assertTrue(object.pathToObject(ndesc.getPath()) != null);
     }
 
     /**
