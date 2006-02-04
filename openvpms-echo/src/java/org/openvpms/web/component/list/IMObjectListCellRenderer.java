@@ -26,7 +26,7 @@ public class IMObjectListCellRenderer implements ListCellRenderer {
                                                int index) {
         String result = null;
         if (value instanceof IMObject) {
-            result = ((IMObject) value).getDescription();
+            result = ((IMObject) value).getName();
         }
         if (result == null) {
             result = "";
