@@ -135,11 +135,15 @@
            type="nextapp.echo2.app.button.AbstractButton">
         <properties>
             <property name="lineWrap" value="false"/>
-            <property name="insets" value="8px 0px"/>
-            <property name="foreground" value="#000000"/>
+            <property name="insets" value="20px 3px"/>
             <property name="disabledForeground" value="#7f7f7f"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
+            <property name="background" value="#6a5acd"/>
+            <property name="foreground" value="#fdf5e6"/>
+            <property name="border">
+                <border size="1px" style="outset" color="#7b68ee"/>
+            </property>
         </properties>
     </style>
 
@@ -149,8 +153,8 @@
         <properties>
             <property name="modal" value="true"/>
             <property name="closable" value="false"/>
-            <property name="width" value="640px"/>
-            <property name="height" value="480px"/>
+            <property name="width" value="800px"/>
+            <property name="height" value="640px"/>
         </properties>
     </style>
 
@@ -471,6 +475,8 @@
                 <border size="1px" style="inset" color="#00000"/>
                 <!-- black -->
             </property>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="rolloverForeground" value="#6f0f0f"/>
             <property name="insets" value="20px 3px"/>
         </properties>
     </style>

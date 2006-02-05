@@ -52,7 +52,7 @@ public class TitlePane extends ContentPane {
         Label logo = LabelFactory.create(new ResourceImageReference(PATH));
 
         Label label = LabelFactory.create();
-        label.setText(Messages.get("label.welcome", "<foo>"));
+        label.setText(Messages.get("label.welcome", " Guest "));
         Button logout = ButtonFactory.create("logout", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 OpenVPMSApp.getInstance().logout();
