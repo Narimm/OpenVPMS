@@ -7,7 +7,7 @@
 			minCardinality="1" derivedValue="concat('Minimum Price','')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/name, ' ')" />
+			derivedValue="concat('$ ',/price, ' minimum')" />
 		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="true()" />
 		<node name="price" path="/price" type="java.math.BigDecimal" minCardinality="1" />			
 	</archetype>

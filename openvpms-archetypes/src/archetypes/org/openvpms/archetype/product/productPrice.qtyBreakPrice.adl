@@ -7,7 +7,7 @@
 			minCardinality="1" derivedValue="concat('Quantity Break','')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/name, ' - ', /price)" />
+			derivedValue="concat(/price, ' up to ', /details/attributes/quantity, ' units')" />
 		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="false()" />
 		<node name="price" path="/price" type="java.math.BigDecimal" minCardinality="1"/>			
 		<node name="details" path="/details" hidden="true"

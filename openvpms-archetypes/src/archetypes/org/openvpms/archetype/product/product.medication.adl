@@ -73,6 +73,18 @@
 						<property name="shortName"
 							value="productPrice.qtyBreakPrice" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.unitPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.margin" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.dispensingFee" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
