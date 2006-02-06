@@ -8,6 +8,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
@@ -46,7 +47,7 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
     public void saved(IMObject object, boolean isNew) {
         Entity patient = (Entity) object;
         Context context = Context.getInstance();
-        Entity customer = context.getCustomer();
+        Party customer = context.getCustomer();
         if (customer != null && isNew) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
@@ -59,6 +60,11 @@ public class PatientCRUDWindowListener implements CRUDWindowListener {
 
                 patient.addEntityRelationship(relationship);
                 service.save(patient);
+
+                // refresh the customer
+                customer = (Party) service.getById(customer.getArchetypeId(),
+                        customer.getUid());
+                context.setCustomer(customer);
             }
         }
     }

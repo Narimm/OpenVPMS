@@ -34,7 +34,7 @@ public class InformationWorkspace extends CRUDWorkspace {
                                           String conceptName) {
         CRUDWindow window = super.createCRUDWindow(subsystemId, workspaceId,
                 refModelName, entityName, conceptName);
-        window.setCRUDPaneListener(new SupplierCRUDWindowListener());
+        window.setCRUDWindowListener(new SupplierCRUDWindowListener());
         return window;
     }
 

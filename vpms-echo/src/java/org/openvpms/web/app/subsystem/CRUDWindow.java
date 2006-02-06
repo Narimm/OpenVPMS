@@ -16,7 +16,7 @@ public interface CRUDWindow {
      *
      * @param listener the listener
      */
-    void setCRUDPaneListener(CRUDWindowListener listener);
+    void setCRUDWindowListener(CRUDWindowListener listener);
 
     /**
      * Returns the CRUD component.

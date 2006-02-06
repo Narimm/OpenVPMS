@@ -152,7 +152,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      *
      * @param listener the listener
      */
-    public void setCRUDPaneListener(CRUDWindowListener listener) {
+    public void setCRUDWindowListener(CRUDWindowListener listener) {
         _listener = listener;
     }
 
@@ -303,8 +303,7 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
      * Browser} to select an object.
      */
     protected void onSelect() {
-        final Browser browser = new Browser(_refModelName, _entityName,
-                _conceptName);
+        final Browser browser = createBrowser(_refModelName, _entityName, _conceptName);
         String title = Messages.get("imobject.select.title", _type);
         final BrowserDialog popup = new BrowserDialog(title, browser, true);
 
@@ -322,6 +321,19 @@ public abstract class AbstractCRUDPane extends SplitPane implements CRUDWindow {
         });
 
         popup.show();
+    }
+
+    /**
+     * Create a new browser.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a new browser
+     */
+    protected Browser createBrowser(String refModelName, String entityName,
+                                    String conceptName) {
+        return new Browser(refModelName, entityName, conceptName);
     }
 
     /**

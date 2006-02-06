@@ -32,9 +32,9 @@ public class InformationWorkspace extends CRUDWorkspace {
     protected CRUDWindow createCRUDWindow(String subsystemId, String workspaceId,
                                           String refModelName, String entityName,
                                           String conceptName) {
-        CRUDWindow window = super.createCRUDWindow(subsystemId, workspaceId,
+        CRUDWindow window = new PatientCRUDPane(subsystemId, workspaceId,
                 refModelName, entityName, conceptName);
-        window.setCRUDPaneListener(new PatientCRUDWindowListener());
+        window.setCRUDWindowListener(new PatientCRUDWindowListener());
         return window;
     }
 }
