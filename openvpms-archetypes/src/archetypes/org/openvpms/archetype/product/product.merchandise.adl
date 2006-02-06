@@ -1,0 +1,99 @@
+<archetypes>
+	<archetype name="openvpms-product-product.merchandise.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.product.Product" displayName="Product(Merchandise)">
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" readOnly="true"/>
+		<node name="name" path="/name" type="java.lang.String"
+			minCardinality="1" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="/name" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="printedName" path="/details/attributes/printedName" type="java.lang.String"
+				minCardinality="0" />
+			<node name="species" path="/details/attributes/species" type="java.lang.String"
+				minCardinality="0">
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="concept" value="species" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
+		</node>
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="prices" path="/productPrices" parentChild="true"
+			type="java.util.HashSet" baseName="ProductPrice" minCardinality="1" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.fixedPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.minimumPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.maximumPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.defaultPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.variablePrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.avgCostPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.qtyBreakPrice" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="classifications" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.productType" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.productGroup" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.insuranceGroup" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="relationships" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.productSupplier" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.productEquivalent" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>

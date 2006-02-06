@@ -1,0 +1,20 @@
+<project default="jar:jar"
+  xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
+  xmlns:j="jelly:core">
+
+  <goal name="archetype:load"
+        description="Load the Archetypes from a directory">
+    <ant:java
+          classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
+          failonerror="true"
+          fork="true">
+            <ant:classpath>
+               <ant:path refid="maven.dependency.classpath"/>
+               <ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+          <arg line="${openvpms.archetype.loader.cmdline}"/>
+      </ant:java>  
+    </goal>
+
+</project>

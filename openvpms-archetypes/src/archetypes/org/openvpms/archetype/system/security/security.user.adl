@@ -1,0 +1,25 @@
+<archetypes>
+	<archetype name="openvpms-system-security.user.1.0"
+		latest="true" primary="true"
+		type="org.openvpms.component.business.domain.im.security.User">
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" />
+		<node name="name" path="/name" type="java.lang.String" displayName="User Name"
+			minCardinality="1" />
+		<node name="description" path="/description" type="java.lang.String" displayName="Description"/>
+		<node name="password" path="/password" type="java.lang.String" displayName="Password"
+			minCardinality="1" />
+		<node name="roles" path="/roles" type="java.util.HashSet" displayName="Roles"
+			minCardinality="0" maxCardinality="*" parentChild="false" baseName="Role">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="security.role" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>Can only add security.role objects</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>

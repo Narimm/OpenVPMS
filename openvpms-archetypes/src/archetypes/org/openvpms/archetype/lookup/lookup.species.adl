@@ -1,0 +1,13 @@
+<archetypes>
+	<archetype name="openvpms-lookup-lookup.species.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.lookup.Lookup"  displayName="Species" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
+		<node name="species" path="/value" type="java.lang.String" minCardinality="1" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="/value" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="/value" />
+	</archetype>
+</archetypes>
