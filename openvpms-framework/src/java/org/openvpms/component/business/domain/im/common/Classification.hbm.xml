@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+	#  Version: 1.0
+	#
+	#  The contents of this file are subject to the OpenVPMS License Version
+	#  1.0 (the 'License'); you may not use this file except in compliance with
+	#  the License. You may obtain a copy of the License at
+	#  http://www.openvpms.org/license/
+	#
+	#  Software distributed under the License is distributed on an 'AS IS' basis,
+	#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+	#  for the specific language governing rights and limitations under the
+	#  License.
+	#
+	#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+	#
+	#  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class
+		name="org.openvpms.component.business.domain.im.common.Classification"
+		table="classifications">
+		<id name="uid" type="long" unsaved-value="-1">
+			<column name="classification_id"
+				index="classification_id_idx" />
+			<generator class="increment" />
+		</id>
+		<version name="version" access="property" type="long" />
+		<property name="linkId" access="property" type="string" />
+		<component name="archetypeId">
+			<property name="namespace" access="property"
+				column="arch_namespace" type="string" />
+			<property name="rmName" access="property"
+				column="arch_rm_name" type="string" />
+			<property name="concept" access="property"
+				column="arch_concept_name" type="string" />
+			<property name="entityName" access="property"
+				column="archetype_entity_name" type="string" />
+			<property name="version" access="property"
+				column="arch_version" type="string" />
+		</component>
+		<property name="name" access="property" column="name"
+			type="string" />
+		<property name="description" access="property"
+			column="description" type="string" />
+		<property name="active" access="property"
+			column="active" type="boolean" />
+		<property name="details" column="details" length="5000"
+			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+		<many-to-one name="parent" column="parent_id" />
+		<set name="children" access="property" lazy="false"
+			inverse="true" cascade="all,delete-orphan">
+			<key>
+				<column name="parent_id" index="parent_id_idx" />
+			</key>
+			<one-to-many
+				class="org.openvpms.component.business.domain.im.common.Classification" />
+		</set>
+	</class>
+
+	<query name="classification.getRowCount">
+		<![CDATA[
+			select count(classification) from org.openvpms.component.business.domain.im.common.Classification as 
+			classification
+		]]>
+	</query>
+</hibernate-mapping>

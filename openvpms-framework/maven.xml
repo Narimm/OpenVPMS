@@ -1,0 +1,64 @@
+<project default="jar:jar"
+  xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
+  xmlns:j="jelly:core"
+  xmlns:castor="castor">
+
+	<preGoal name="java:compile">
+    	<attainGoal name="castor:prepare-filesystem"/>
+    	<castor:generate 
+    		schema="src/java/org/openvpms/tools/security/loader/security-loader.xsd"
+            package="org.openvpms.tools.security.loader"
+            types="j2"/>
+  	</preGoal>
+
+	<preGoal name="hibernate:schema-export">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+	</preGoal>
+	
+	<goal name="lookup:load" description="Load the Lookup Data from File">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.lookup.loader.LookupLoader"
+	        failonerror="true"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.lookup.loader.cmdline}"/>
+    	</ant:java>	
+    </goal>
+	
+	<goal name="archetype:load" description="Load the Archetypes from a directory">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
+	        failonerror="true"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.archetype.loader.cmdline}"/>
+    	</ant:java>	
+    </goal>
+	
+	<goal name="security:load" description="Load the Security Data into the database">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.security.loader.SecurityLoader"
+	        failonerror="true"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.security.loader.cmdline}"/>
+    	</ant:java>	
+    </goal>
+</project>

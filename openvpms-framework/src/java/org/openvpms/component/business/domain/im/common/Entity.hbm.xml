@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+<!--
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
+-->
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class name="org.openvpms.component.business.domain.im.common.Entity"
+    table="entities">
+    <id name="uid" type="long" unsaved-value="-1">
+      <column name="entity_id" index="entity_id_idx" />
+      <generator class="increment" />
+    </id>
+    <version name="version" access="property" type="long" />
+    <property name="linkId" access="property" type="string" />
+    <component name="archetypeId">
+      <property name="namespace" access="property" column="arch_namespace"
+        type="string" />
+      <property name="rmName" access="property" column="arch_rm_name"
+        type="string" />
+      <property name="concept" access="property" column="arch_concept_name"
+        type="string" />
+      <property name="entityName" access="property" column="arch_entity_name"
+        type="string" />
+      <property name="version" access="property" column="arch_version"
+        type="string" />
+    </component>
+    <property name="name" access="property" column="name" type="string" />
+    <property name="description" access="property" column="description"
+      type="string" />
+    <property name="active" access="property" column="active" type="boolean" />
+    <property name="code" access="property" column="code" type="string" />
+    <property name="details" column="details" access="property" length="5000"
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <set name="classifications" access="property" lazy="false" inverse="false"
+      table="entity_classifications" cascade="none">
+      <key column="entity_id" />
+      <many-to-many
+        class="org.openvpms.component.business.domain.im.common.Classification"
+        column="classification_id" outer-join="auto" />
+    </set>
+    <set name="identities" access="property" lazy="false" inverse="true"
+      cascade="all,delete-orphan">
+      <key column="entity_id" not-null="true" />
+      <one-to-many 
+        class="org.openvpms.component.business.domain.im.common.EntityIdentity" />
+    </set>
+    <set name="sourceEntityRelationships" access="property" lazy="false"
+      cascade="all,delete-orphan" inverse="true">
+      <key column="source_uid" not-null="true"/>
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityRelationship"/>
+    </set>
+    <set name="targetEntityRelationships" access="property" lazy="false"
+      cascade="all,delete-orphan" inverse="true">
+      <key column="target_uid" not-null="true"/>
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.EntityRelationship"/>
+    </set>
+    <set name="participations" access="property" lazy="false" inverse="true"
+      cascade="all,delete-orphan">
+      <key column="entity_id" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.Participation" />
+    </set>
+
+    <!-- Mapping for the User class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.security.User"
+      table="users">
+      <key column="user_id" />
+      <property name="password" access="property" column="password"
+        type="string" />
+      <set name="roles" access="property" lazy="false" table="user_roles"
+        cascade="save-update" inverse="false">
+        <key column="user_id" />
+        <many-to-many
+          class="org.openvpms.component.business.domain.im.security.SecurityRole"
+          column="security_role_id" outer-join="auto" />
+      </set>
+    </joined-subclass>
+
+    <!--  Mapping for the abstract Party class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.party.Party"
+      table="parties">
+      <key column="party_id" />
+      <set name="contacts" access="property" inverse="true" lazy="false"
+        cascade="all,delete-orphan">
+        <key column="party_id" />
+        <one-to-many
+          class="org.openvpms.component.business.domain.im.party.Contact" />
+      </set>
+
+      <!-- Mapping for the Role class -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Role"
+        table="roles">
+        <key column="role_id" />
+        <many-to-one name="actor" column="actor_id" />
+        <property name="activeStartTime" access="property"
+          column="active_start_time" type="date" />
+        <property name="activeEndTime" access="property"
+          column="active_end_time" type="date" />
+      </joined-subclass>
+
+      <!--  Mapping for the abstract Actor class -->
+      <joined-subclass
+        name="org.openvpms.component.business.domain.im.party.Actor"
+        table="actors">
+        <key column="actor_id" />
+        <set name="roles" access="property" lazy="false" inverse="true"
+          cascade="all,delete-orphan">
+          <key column="actor_id" not-null="true" />
+          <one-to-many
+            class="org.openvpms.component.business.domain.im.party.Role" />
+        </set>
+
+        <!-- Mapping for person -->
+        <joined-subclass
+          name="org.openvpms.component.business.domain.im.party.Person"
+          table="persons">
+          <key column="person_id" />
+          <property name="title" access="property" column="title" type="string" />
+          <property name="firstName" access="property" column="first_name"
+            type="string" />
+          <property name="lastName" access="property" column="last_name"
+            type="string" />
+          <property name="initials" access="property" column="initials"
+            type="string" />
+        </joined-subclass>
+
+        <!-- Mapping for animal -->
+        <joined-subclass
+          name="org.openvpms.component.business.domain.im.party.Animal"
+          table="animals">
+          <key column="animal_id" />
+          <property name="species" access="property" column="species"
+            type="string" />
+          <property name="breed" access="property" column="breed" type="string" />
+          <property name="colour" access="property" column="colour"
+            type="string" />
+          <property name="sex" access="property" column="sex" type="string" />
+          <property name="desexed" access="property" column="desexed"
+            type="boolean" />
+          <property name="dateOfBirth" column="date_of_birth" type="date"
+            access="property" />
+        </joined-subclass>
+      </joined-subclass>
+    </joined-subclass>
+
+    <!--  Mapping for the Product class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.product.Product"
+      table="products">
+      <key column="product_id" />
+      <set name="productPrices" access="property" lazy="false"
+        cascade="all,delete-orphan">
+        <key column="product_id" />
+        <one-to-many
+          class="org.openvpms.component.business.domain.im.product.ProductPrice" />
+      </set>
+    </joined-subclass>
+  </class>
+
+  <query name="actor.getRowCount">
+    <![CDATA[
+			select count(actor) from org.openvpms.component.business.domain.im.party.Actor as 
+			actor
+		]]>
+  </query>
+
+  <query name="user.getRowCount">
+    <![CDATA[
+      select count(user) from org.openvpms.component.business.domain.im.security.User as 
+      user
+    ]]>
+  </query>
+
+  <query name="user.getByName">
+    <![CDATA[
+      from org.openvpms.component.business.domain.im.security.User as 
+      user where user.name = :name
+    ]]>
+  </query>
+
+  <query name="role.getRowCount">
+    <![CDATA[
+      select count(role) from org.openvpms.component.business.domain.im.party.Role as 
+      role
+    ]]>
+  </query>
+
+  <query name="product.getRowCount">
+    <![CDATA[
+			select count(product) from org.openvpms.component.business.domain.im.product.Product as 
+			product
+		]]>
+  </query>
+
+  <query name="entity.getEntityById">
+    <![CDATA[
+			from org.openvpms.component.business.domain.im.common.Entity as 
+			entity where entity.uid = :uid
+		]]>
+  </query>
+
+</hibernate-mapping>

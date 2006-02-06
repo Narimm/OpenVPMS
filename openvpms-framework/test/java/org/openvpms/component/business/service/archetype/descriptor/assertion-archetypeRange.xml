@@ -1,0 +1,82 @@
+<archetypes>
+	<archetype name="openvpms-system-assertion.archetypeRange.1.0"
+		latest="true" primary="true"
+		type="org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor">
+		<node name="name" path="/name" displayName="Name"
+			type="java.lang.String" minCardinality="1" />
+		<node name="errorMessage" path="/errorMessage"
+			display="Error Message" type="java.lang.String" minCardinality="1" />
+		<node name="propertyMap" path="/propertyMap"
+			type="org.openvpms.component.business.domain.im.datatypes.property.PropertyMap"
+			hidden="true">
+			<node name="properties" path="/propertyMap/properties"
+				type="java.util.HashMap" parentChild="true" hidden="true">
+				<node name="archetypes"
+					path="/propertyMap/properties/archetypes" display="Archetypes"
+					parentChild="true" baseName="property"
+					type="org.openvpms.component.business.domain.im.datatypes.property.PropertyList">
+					<assertion name="archetypeRange">
+						<errorMessage>
+							Invalid archetype specified for collection
+						</errorMessage>
+						<propertyList name="archetypes">
+							<propertyMap name="archetype">
+								<property name="shortName"
+									value="assertion.archetypeShortNameProperty" />
+								<property name="minCardinality"
+									value="0" />
+								<property name="maxCardinality"
+									value="UNBOUNDED" />
+							</propertyMap>
+						</propertyList>
+					</assertion>
+				</node>
+			</node>
+		</node>
+	</archetype>
+
+	<archetype name="openvpms-system-assertion.archetypeProperty.1.0"
+		latest="true" primary="false"
+		type="org.openvpms.component.business.domain.im.datatypes.property.PropertyMap">
+		<node name="name" path="/name" type="java.lang.String"
+			defaultValue="'archetype'" hidden="true" />
+		<node name="shortName" path="/properties/shortName"
+			type="org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty"
+			hidden="true">
+			<node name="shortNameName" path="/properties/shortName/name"
+				type="java.lang.String" defaultValue="'shortName'" hidden="true" />
+			<node name="shortNameType" path="/properties/shortName/type"
+				type="java.lang.String" defaultValue="'java.lang.String'"
+				hidden="true" />
+			<node name="shortNameValue"
+				path="/properties/shortName/value" type="java.lang.String"
+				minCardinality="1" />
+		</node>
+		<node name="minCardinality" path="/properties/minCardinality"
+			type="org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty"
+			hidden="true">
+			<node name="minCardinalityName"
+				path="/properties/minCardinality/name" type="java.lang.String"
+				defaultValue="'minCardinality'" hidden="true" />
+			<node name="minCardinalityType"
+				path="/properties/minCardinality/type" type="java.lang.String"
+				defaultValue="'java.lang.Integer'" hidden="true" />
+			<node name="minCardinalityValue"
+				path="/properties/minCardinality/value" type="java.lang.String"
+				minCardinality="1" />
+		</node>
+		<node name="maxCardinality" path="/properties/maxCardinality"
+			type="org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty"
+			hidden="true">
+			<node name="maxCardinalityName"
+				path="/properties/maxCardinality/name" type="java.lang.String"
+				defaultValue="'maxCardinality'" hidden="true" />
+			<node name="maxCardinalityType"
+				path="/properties/maxCardinality/type" type="java.lang.String"
+				defaultValue="'java.lang.Integer'" hidden="true" />
+			<node name="maxCardinalityValue"
+				path="/properties/maxCardinality/value" type="java.lang.String"
+				minCardinality="1" />
+		</node>
+	</archetype>
+</archetypes>
