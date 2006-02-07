@@ -194,9 +194,7 @@ class PatientQuery extends AbstractQuery {
             ArchetypeId id = relationship.getArchetypeId();
             if (id.getShortName().equals("entityRelationship.patientOwner")) {
                 if (source.equals(relationship.getSource())) {
-                    IMObjectReference target = relationship.getTarget();
-                    IMObject object = service.getById(target.getArchetypeId(),
-                            target.getUid());
+                    IMObject object = service.get(relationship.getTarget());
                     result.add(object);
                 }
             }

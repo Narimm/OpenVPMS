@@ -14,7 +14,6 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.app.Context;
 import org.openvpms.web.component.IMObjectTable;
 import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.util.Messages;
@@ -203,10 +202,8 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
             case NAME_INDEX:
                 if (object instanceof EntityRelationship){
                     IArchetypeService service = ServiceHelper.getArchetypeService();
-                    IMObject targetEntity = service.getById(((EntityRelationship)object).getTarget().getArchetypeId(),
-                            ((EntityRelationship)object).getTarget().getUid());                        
-                    IMObject sourceEntity = service.getById(((EntityRelationship)object).getSource().getArchetypeId(),
-                            ((EntityRelationship)object).getSource().getUid());
+                    IMObject targetEntity = service.get(((EntityRelationship)object).getTarget());
+                    IMObject sourceEntity = service.get(((EntityRelationship)object).getSource());
                     result = sourceEntity.getName() + " --> " + targetEntity.getName();
                 }
                 else

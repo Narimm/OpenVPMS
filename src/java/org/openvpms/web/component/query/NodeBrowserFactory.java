@@ -74,7 +74,7 @@ public class NodeBrowserFactory extends AbstractIMObjectComponentFactory {
             value = Context.getInstance().getObject(ref);
             if (value == null) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
-                value = service.getById(ref.getArchetypeId(), ref.getUid());
+                value = service.get(ref);
             }
         }
         Label label = LabelFactory.create();

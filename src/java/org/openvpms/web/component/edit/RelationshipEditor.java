@@ -109,6 +109,11 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         return new LayoutStrategy(showAll);
     }
 
+    /**
+     * Pops up a dialog to select an entity.
+     *
+     * @param entity the entity wrapper
+     */
     protected void onSelect(final Entity entity) {
         NodeDescriptor descriptor = entity.getDescriptor();
         final Browser browser = new Browser(descriptor.getArchetypeRange());
@@ -128,6 +133,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         popup.show();
     }
 
+    /**
+     * Invoked when an entity object is selected.
+     *
+     * @param entity the entity wrapper
+     * @param object the entity object
+     */
     protected void onSelected(Entity entity, IMObject object) {
         entity.setEntity(object);
         IMObjectReference reference = new IMObjectReference(object);
@@ -164,8 +175,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
             }
             if (result == null) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
-                result = service.getById(reference.getArchetypeId(),
-                        reference.getUid());
+                result = service.get(reference);
             }
         }
         return result;
