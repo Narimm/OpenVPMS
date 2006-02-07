@@ -5,7 +5,6 @@ import java.util.List;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -46,8 +45,7 @@ public class SinglePageLayoutStrategy extends AbstractLayoutStrategy {
                                    IMObjectComponentFactory factory) {
         for (NodeDescriptor node : descriptors) {
             GroupBox box = new GroupBox(node.getDisplayName());
-            Pointer pointer = object.pathToCollection(node.getPath());
-            Collection values = (Collection) pointer.getValue();
+            Collection values = (Collection) node.getValue(object);
             for (Object value : values) {
                 doLayout((IMObject) value, box, factory);
             }

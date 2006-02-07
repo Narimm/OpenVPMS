@@ -136,7 +136,7 @@ public class CollectionEditor extends Column {
      * Populates the table.
      */
     protected void populate() {
-        Collection values = getValues();
+        Collection values = (Collection) _descriptor.getValue(_object);
         int size = values.size();
         if (size != 0) {
             List<IMObject> objects = new ArrayList<IMObject>();
@@ -231,13 +231,4 @@ public class CollectionEditor extends Column {
         }
     }
 
-    /**
-     * Helper to return a read-only view of the underlying collection.
-     *
-     * @return the underlying collection
-     */
-    private Collection getValues() {
-        Pointer pointer = _object.pathToCollection(_descriptor.getPath());
-        return (Collection) pointer.getValue();
-    }
 }
