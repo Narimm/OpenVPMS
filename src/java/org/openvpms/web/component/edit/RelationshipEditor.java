@@ -88,7 +88,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         _source = create(source, sourceDesc, srcReadOnly);
 
         boolean targetReadOnly = true;
-        if (target == null || !target.equals(edited)) {
+        if (target == null || !target.equals(edited) || target.equals(source)) {
             targetReadOnly = false;
         }
         if (target != null && _relationship.getTarget() == null) {
