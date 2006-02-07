@@ -41,6 +41,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
@@ -375,6 +376,44 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[], java.lang.String, boolean, boolean)
+     */
+    public List<IMObject> get(String[] shortNames, String instanceName, 
+            boolean primaryOnly, boolean activeOnly) {
+        List<IMObject> results =  new ArrayList<IMObject>();
+        if ((shortNames != null) &&
+            (shortNames.length > 0)) {
+            for (String archetypeShortName : dCache.getArchetypeShortNames()) {
+                for (String shortName : shortNames) {
+                    // iterate to see whether the short name matches any of the 
+                    // specified shortName. A specified short name may contain 
+                    // wild card characters. 
+                    if (archetypeShortName.matches(shortName)) {
+                        ArchetypeDescriptor adesc = getArchetypeDescriptor(archetypeShortName);
+                        ArchetypeId id = adesc.getType();
+
+                        // if the primaryFlag has been specified check that 
+                        // the archetype meets that constaint.
+                        if ((primaryOnly) &&
+                            (!adesc.isPrimary())) { 
+                            break;
+                        }
+
+                        // if we get here then call the dao
+                        List<IMObject> objects = dao.get(id.getRmName(), 
+                                id.getEntityName(), id.getConcept(), 
+                                instanceName, adesc.getClassName(), activeOnly);
+                        results.addAll(objects);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return results;
+    }
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getByNamedQuery(java.lang.String, java.util.Map)
      */
     public List<IMObject> getByNamedQuery(String name, Map<String, Object> params) {
@@ -397,6 +436,13 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.FailedInGetByNamedQuery,
                     new Object[] {name}, exception);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.business.domain.im.common.IMObjectReference)
+     */
+    public IMObject get(IMObjectReference reference) {
+        return getById(reference.getArchetypeId(), reference.getUid());
     }
 
     /*
@@ -769,4 +815,8 @@ public class ArchetypeService implements IArchetypeService {
 
         return results;
     }
+    
+    /**
+     * Return the 
+     */
 }

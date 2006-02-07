@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -300,4 +301,32 @@ public interface IArchetypeService {
      */
     public List<String> getArchetypeShortNames(String rmName, String entityName,
             String conceptName, boolean primaryOnly);
+    
+    /**
+     * Retrieve the {@link IMObject} given an {@link IMObjectReference}
+     * 
+     * @param reference
+     *            a valid reference
+     * @return IMObject
+     *            the object or null if it cannot be resolved.
+     * @throws ArchetypeServiceException            
+     */
+    public IMObject get(IMObjectReference reference);
+    
+    /**
+     * Retrieve all the {@link IMObject} that satisfiy the following search
+     * criteria. 
+     * 
+     * @param shortNames
+     *            an array of archetype short names
+     * @param instanceName
+     *            the instance name, which may contain wildcard 
+     * @param primaryOnly
+     *            constrain the search to primary archetypes
+     * @param activeOnly
+     *            constrain the search to active only.
+     * @throws ArchetypeServiceException                                                                     
+     */
+    public List<IMObject> get(String[] shortNames, String instanceName,
+            boolean primaryOnly, boolean activeOnly);
 }

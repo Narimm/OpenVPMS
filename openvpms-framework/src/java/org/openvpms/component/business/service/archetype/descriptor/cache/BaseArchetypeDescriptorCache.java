@@ -187,6 +187,16 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     }
 
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames()
+     */
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#getArchetypeShortNames()
+     */
+    public List<String> getArchetypeShortNames() {
+        return new ArrayList<String>(archetypesByShortName.keySet());
+    }
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache#addArchetypeDescriptor(org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor, boolean)
      */
     public void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean replace) {
