@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -342,6 +343,30 @@ public class ArchetypeServicePersistenceTestCase extends
     }
     
     /**
+     * Test for OVPMS-147, where I pass in a set of archetypes short names and 
+     * return a list of objects
+     */
+    public void testOVPMS147()
+    throws Exception {
+        // setup a list of archetype short names
+        String[] shortNames = {"animal.p*", "person.person"};
+        
+        // get the initial count
+        List<IMObject> before = service.get(shortNames, null, false, false);
+        
+        // create a new person and check the count 
+        service.save(createPerson("Ms", "Bernadette", "Feeney"));
+        service.save(createPerson("Ms", "Rose", "Feeney Alateras"));
+        List<IMObject> after = service.get(shortNames, null, false, false);
+        assertTrue(after.size() == before.size() + 2);
+        
+        // create a new lookup
+        service.save(createCountryLookup("Algeria"));
+        after = service.get(shortNames, null, false, false);
+        assertTrue(after.size() == before.size() + 2);
+    }
+    
+    /**
      * Test that that we can retrieve short names using a combination
      * of rmName, entityName and conceptName
      */
@@ -560,6 +585,26 @@ public class ArchetypeServicePersistenceTestCase extends
     }
     
     /**
+     * Test that we can suppor OVPMS-146
+     */
+    public void testOVPMS146() 
+    throws Exception {
+        Entity entity = (Entity)service.create("person.person");
+        assertTrue(entity instanceof Person);
+        
+        Person person = (Person)entity;
+        person.setLastName("Alateras");
+        person.setFirstName("Jim");
+        person.setTitle("Mr");
+        service.save(person);
+        
+        IMObjectReference ref = new IMObjectReference(person);
+        person = (Person)service.get(ref);
+        assertTrue(person.getUid() == ref.getUid());
+        assertTrue(person.getLastName().equals("Alateras"));
+    }
+    
+    /**
      * Create a pet with the specified name
      * 
      * @param name
@@ -585,6 +630,23 @@ public class ArchetypeServicePersistenceTestCase extends
         return pet;
     }
     
+    /**
+     * Create a person with the specified title, firstName and LastName
+     * 
+     * @param title
+     * @param firstName
+     * @param lastName
+     * 
+     * @return Person
+     */
+    public Person createPerson(String title, String firstName, String lastName) {
+        Person person = (Person)service.create("person.person");
+        person.setLastName(lastName);
+        person.setFirstName(firstName);
+        person.setTitle(title);
+        
+        return person;
+    }
     
     /**
      * Create a country lookup
@@ -599,6 +661,7 @@ public class ArchetypeServicePersistenceTestCase extends
         
         lookup.setCode(name);
         lookup.setValue(name);
+        
         return lookup;
     }
     
