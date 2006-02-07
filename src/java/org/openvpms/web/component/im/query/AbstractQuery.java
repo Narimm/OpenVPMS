@@ -11,8 +11,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.LabelFactory;
@@ -129,21 +127,13 @@ public abstract class AbstractQuery implements Query {
         boolean activeOnly = !includeInactive();
 
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<IMObject> result = null;
+        String[] shortNames;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            for (String shortName : _shortNames) {
-                List<IMObject> matches
-                        = get(shortName, name, activeOnly, service);
-                if (result == null) {
-                    result = matches;
-                } else {
-                    result.addAll(matches);
-                }
-            }
+            shortNames = _shortNames;
         } else {
-            result = get(type, name, activeOnly, service);
+            shortNames = new String[]{type};
         }
-        return result;
+        return service.get(shortNames, name, true, activeOnly);
     }
 
     /**
@@ -267,22 +257,6 @@ public abstract class AbstractQuery implements Query {
         Label deactivedLabel = LabelFactory.create(DEACTIVATED_ID);
         container.add(deactivedLabel);
         container.add(_inactive);
-    }
-
-    /**
-     * Returns all matching objects for the specified criteria
-     *
-     * @param shortName    the archetype shortname to match on
-     * @param instanceName the object instance name
-     * @param activeOnly   if <code>true</code>, only include active objects
-     */
-    private List<IMObject> get(String shortName, String instanceName,
-                               boolean activeOnly, IArchetypeService service) {
-        ArchetypeDescriptor descriptor
-                = service.getArchetypeDescriptor(shortName);
-        ArchetypeId type = descriptor.getType();
-        return service.get(type.getRmName(), type.getEntityName(),
-                type.getConcept(), instanceName, true, activeOnly);
     }
 
     /**
