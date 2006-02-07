@@ -184,6 +184,11 @@ public abstract class IMObject implements Serializable, Cloneable {
      */
     @Override
     public boolean equals(Object obj) {
+        if ((obj == null) ||
+            !(obj instanceof IMObject)) {
+            return false;
+        }
+        
         IMObject rhs = (IMObject)obj;
         return new EqualsBuilder()
             .append(linkId, rhs.linkId)
