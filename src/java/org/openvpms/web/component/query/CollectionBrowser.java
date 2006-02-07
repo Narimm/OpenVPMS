@@ -7,7 +7,6 @@ import java.util.List;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -69,7 +68,7 @@ public class CollectionBrowser extends Column {
      * Populates the table.
      */
     protected void populate() {
-        Collection values = getValues();
+        Collection values = (Collection) _descriptor.getValue(_object);
         int size = values.size();
         if (size != 0) {
             List<IMObject> objects = new ArrayList<IMObject>();
@@ -103,13 +102,4 @@ public class CollectionBrowser extends Column {
         }
     }
 
-    /**
-     * Helper to return the underlying collection.
-     *
-     * @return the underlying collection
-     */
-    private Collection getValues() {
-        Pointer pointer = _object.pathToCollection(_descriptor.getPath());
-        return (Collection) pointer.getValue();
-    }
 }
