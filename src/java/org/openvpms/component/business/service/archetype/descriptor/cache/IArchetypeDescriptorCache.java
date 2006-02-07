@@ -146,4 +146,11 @@ public interface IArchetypeDescriptorCache {
      * 
      */
     public void addArchetypeDescriptor(ArchetypeDescriptor adesc, boolean b);
+    
+    /**
+     * Return all the archetype short names
+     * 
+     * @return List<String>
+     */
+    public List<String> getArchetypeShortNames();
 }
