@@ -179,13 +179,14 @@ public class CollectionEditor extends Column {
     }
 
     /**
-     * Deletes the selected object.
+     * Deletes the selected objects.
      */
     protected void onDelete() {
         List<IMObject> marked = _table.getMarked();
         if (!marked.isEmpty()) {
-            Collection values = getValues();
-            values.removeAll(marked);
+            for (IMObject child : marked) {
+                _descriptor.removeChildFromCollection(_object, child);
+            }
             populate();
         }
     }
@@ -231,7 +232,7 @@ public class CollectionEditor extends Column {
     }
 
     /**
-     * Helper to return the underlying collection.
+     * Helper to return a read-only view of the underlying collection.
      *
      * @return the underlying collection
      */
