@@ -1,7 +1,20 @@
 package org.openvpms.web.app.patient;
 
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import java.util.Date;
+import java.util.Set;
+
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.query.Browser;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -13,28 +26,100 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class InformationWorkspace extends CRUDWorkspace {
 
     /**
+     * Patient/owner relationship short name.
+     */
+    private static final String PATIENT_OWNER
+            = "entityRelationship.patientOwner";
+
+    /**
      * Construct a new <code>InformationWorkspace</code>.
      */
     public InformationWorkspace() {
         super("patient", "info", "party", "party", "animal*");
     }
 
+
     /**
-     * Create a new CRUD component.
+     * Create a new browser.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
+     * @return a new browser
      */
     @Override
-    protected CRUDWindow createCRUDWindow(String subsystemId, String workspaceId,
-                                          String refModelName, String entityName,
-                                          String conceptName) {
-        CRUDWindow window = new PatientCRUDPane(subsystemId, workspaceId,
-                refModelName, entityName, conceptName);
-        window.setCRUDWindowListener(new PatientCRUDWindowListener());
-        return window;
+    protected Browser createBrowser(String refModelName, String entityName,
+                                    String conceptName) {
+        Party customer = Context.getInstance().getCustomer();
+        Query query = new PatientQuery(refModelName, entityName, conceptName,
+                customer);
+        Browser result = new Browser(query);
+        if (customer != null) {
+            result.query();
+        }
+        return result;
     }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(IMObject object, boolean isNew) {
+        Entity patient = (Entity) object;
+        Context context = Context.getInstance();
+        Party customer = context.getCustomer();
+        if (customer != null && isNew) {
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
+                EntityRelationship relationship
+                        = (EntityRelationship) service.create(PATIENT_OWNER);
+                relationship.setActiveStartTime(new Date());
+                relationship.setSequence(1);
+                relationship.setSource(new IMObjectReference(customer));
+                relationship.setTarget(new IMObjectReference(patient));
+
+                patient.addEntityRelationship(relationship);
+                service.save(patient);
+
+                // refresh the customer
+                customer = (Party) service.getById(customer.getArchetypeId(),
+                        customer.getUid());
+                context.setCustomer(customer);
+            }
+        }
+    }
+
+    /**
+     * Determines if a relationship of the specified type exists.
+     *
+     * @param shortName the relationship short name
+     * @param patient   the patient
+     * @param customer  the customer
+     * @return <code>true</code> if a relationship exists; otherwsie
+     *         <code>false</code>
+     */
+    private boolean hasRelationship(String shortName, Entity patient,
+                                    Entity customer) {
+        boolean result = false;
+        Set<EntityRelationship> relationships
+                = patient.getEntityRelationships();
+        IMObjectReference source = new IMObjectReference(customer);
+        IMObjectReference target = new IMObjectReference(patient);
+
+        for (EntityRelationship relationship : relationships) {
+            ArchetypeId id = relationship.getArchetypeId();
+            if (id.getShortName().equals(shortName)) {
+                if (source.equals(relationship.getSource())
+                        && target.equals(relationship.getTarget())) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
 }

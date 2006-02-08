@@ -1,6 +1,8 @@
 package org.openvpms.web.app.customer;
 
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
@@ -20,23 +22,36 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Create a new CRUD component.
+     * Invoked when an object is selected.
      *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param object the selected object
      */
     @Override
-    protected CRUDWindow createCRUDWindow(String subsystemId,
-                                          String workspaceId,
-                                          String refModelName,
-                                          String entityName,
-                                          String conceptName) {
-        CRUDWindow window = super.createCRUDWindow(subsystemId, workspaceId,
-                refModelName, entityName, conceptName);
-        window.setCRUDWindowListener(new CustomerCRUDWindowListener());
-        return window;
+    protected void onSelected(IMObject object) {
+        super.onSelected(object);
+        Context.getInstance().setCustomer((Party) object);
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(IMObject object, boolean isNew) {
+        super.onSaved(object, isNew);
+        Context.getInstance().setCustomer((Party) object);
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(IMObject object) {
+        super.onDeleted(object);
+        Context.getInstance().setCustomer(null);
     }
 }
