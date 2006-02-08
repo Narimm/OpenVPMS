@@ -10,10 +10,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.query.Browser;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -71,11 +73,36 @@ public class InformationWorkspace extends CRUDWorkspace {
         Entity patient = (Entity) object;
         Context context = Context.getInstance();
         Party customer = context.getCustomer();
+        IArchetypeService service = ServiceHelper.getArchetypeService();
         if (customer != null && isNew) {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
             if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
-                EntityRelationship relationship
-                        = (EntityRelationship) service.create(PATIENT_OWNER);
+                addRelationship(PATIENT_OWNER, patient, customer, service);
+                // refresh the customer
+                try {
+                    customer = (Party) service.getById(
+                            customer.getArchetypeId(),
+                            customer.getUid());
+                    context.setCustomer(customer);
+                } catch (ArchetypeServiceException exception) {
+                    ErrorDialog.show(exception);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a new relationship.
+     *
+     * @param shortName the relationship short name
+     * @param patient   the patient
+     * @param customer  the customer
+     */
+    private void addRelationship(String shortName, Entity patient,
+                                 Party customer, IArchetypeService service) {
+        try {
+            EntityRelationship relationship;
+            relationship = (EntityRelationship) service.create(shortName);
+            if (relationship != null) {
                 relationship.setActiveStartTime(new Date());
                 relationship.setSequence(1);
                 relationship.setSource(new IMObjectReference(customer));
@@ -83,12 +110,12 @@ public class InformationWorkspace extends CRUDWorkspace {
 
                 patient.addEntityRelationship(relationship);
                 service.save(patient);
-
-                // refresh the customer
-                customer = (Party) service.getById(customer.getArchetypeId(),
-                        customer.getUid());
-                context.setCustomer(customer);
+            } else {
+                ErrorDialog.show("Failed to create relationship of type="
+                        + shortName);
             }
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
         }
     }
 

@@ -16,6 +16,7 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.IMObjectTable;
 import org.openvpms.web.component.RowFactory;
@@ -167,12 +168,16 @@ public class CollectionEditor extends Column {
     protected void onNew() {
         if (_shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            IMObject object = service.create(_shortname);
-            if (object != null) {
-                edit(object);
-            } else {
-                ErrorDialog.show("Failed to create object of type "
-                        + _shortname);
+            try {
+                IMObject object = service.create(_shortname);
+                if (object != null) {
+                    edit(object);
+                } else {
+                    ErrorDialog.show("Failed to create object of type "
+                            + _shortname);
+                }
+            } catch (ArchetypeServiceException exception) {
+                ErrorDialog.show(exception);
             }
         }
     }

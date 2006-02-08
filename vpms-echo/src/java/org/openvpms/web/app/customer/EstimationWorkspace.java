@@ -3,7 +3,6 @@ package org.openvpms.web.app.customer;
 import java.util.Set;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -12,6 +11,7 @@ import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.util.Messages;
 
 
 /**
@@ -28,22 +28,6 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
     private CRUDWindow _window;
 
     /**
-     * The component representing this.
-     */
-    private SplitPane _component;
-
-    /**
-     * Button row style.
-     */
-    private static final String ROW_STYLE = "ControlRow";
-
-    /**
-     * Workspace layout style.
-     */
-    private static final String LAYOUT_STYLE = "CRUDWorkspace.Layout";
-
-
-    /**
      * Construct a new <code>EstimationWorkspace</code>.
      */
     public EstimationWorkspace() {
@@ -56,7 +40,9 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        _window = new EstimationCRUDWindow("Estimations", "common", "act", "estimation*");
+        String type = Messages.get("customer.estimation.createtype");
+        _window = new EstimationCRUDWindow(type, "common", "act",
+                "estimation*");
         Party customer = Context.getInstance().getCustomer();
         setObject(customer);
         container.add(_window.getComponent());

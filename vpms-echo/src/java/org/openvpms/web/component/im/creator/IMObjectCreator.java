@@ -7,6 +7,7 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.model.ArchetypeShortNameListModel;
@@ -32,11 +33,17 @@ public final class IMObjectCreator {
      * Create a new object of the specified archetype.
      *
      * @param shortName the archetype shortname
-     * @return a new object
+     * @return a new object, or <code>null</code> if the short name is not known
      */
     public static IMObject create(String shortName) {
+        IMObject result = null;
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        return service.create(shortName);
+        try {
+            result = service.create(shortName);
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
+        return result;
     }
 
     /**
@@ -64,7 +71,9 @@ public final class IMObjectCreator {
             create(type, shortNames, listener);
         } else {
             IMObject object = create(shortNames.get(0));
-            listener.created(object);
+            if (object != null) {
+                listener.created(object);
+            }
         }
     }
 
@@ -88,7 +97,9 @@ public final class IMObjectCreator {
                 int selected = dialog.getSelectedIndex();
                 if (selected != -1) {
                     IMObject object = create(model.getShortName(selected));
-                    listener.created(object);
+                    if (object != null) {
+                        listener.created(object);
+                    }
                 }
             }
         });
