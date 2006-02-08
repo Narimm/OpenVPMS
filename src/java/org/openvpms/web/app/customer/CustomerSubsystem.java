@@ -8,7 +8,7 @@ import org.openvpms.web.component.subsystem.AbstractSubsystem;
  * Customer subsystem.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class CustomerSubsystem extends AbstractSubsystem {
 
@@ -18,10 +18,10 @@ public class CustomerSubsystem extends AbstractSubsystem {
     public CustomerSubsystem() {
         super("customer");
         addWorkspace(new InformationWorkspace());
-        addWorkspace(new DummyWorkspace("customer.document"));
-        addWorkspace(new DummyWorkspace("customer.estimation"));
-        addWorkspace(new DummyWorkspace("customer.charge"));
-        addWorkspace(new DummyWorkspace("customer.payment"));
-        addWorkspace(new DummyWorkspace("customer.account"));
+        addWorkspace(new DummyWorkspace("customer", "document"));
+        addWorkspace(new EstimationWorkspace());
+        addWorkspace(new DummyWorkspace("customer","charge"));
+        addWorkspace(new DummyWorkspace("customer", "payment"));
+        addWorkspace(new DummyWorkspace("customer", "account"));
     }
 }

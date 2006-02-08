@@ -25,6 +25,8 @@ import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.TextComponentFactory;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -116,7 +118,8 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      */
     protected void onSelect(final Entity entity) {
         NodeDescriptor descriptor = entity.getDescriptor();
-        final Browser browser = new Browser(descriptor.getArchetypeRange());
+        Query query = new DefaultQuery(descriptor.getArchetypeRange());
+        final Browser browser = new Browser(query);
         String title = Messages.get("relationship.select",
                 descriptor.getDisplayName());
         final BrowserDialog popup = new BrowserDialog(title, browser);

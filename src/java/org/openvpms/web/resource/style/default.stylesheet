@@ -191,7 +191,7 @@
         </properties>
     </style>
 
-    <style name="CRUDPane.Title" type="nextapp.echo2.app.Row">
+    <style name="Workspace.Heading" type="nextapp.echo2.app.Row">
         <properties>
             <property name="font">
                 <font size="14pt" bold="true"/>
@@ -200,22 +200,22 @@
         </properties>
     </style>
 
-    <style name="CRUDPane.ControlRow" base-name="ControlRow"
+    <style name="Selector.ControlRow" base-name="ControlRow"
            type="nextapp.echo2.app.Row">
         <properties>
             <property name="background" value="#e1e1e1"/>
         </properties>
     </style>
 
-    <style name="CRUDPane.Container" type="nextapp.echo2.app.SplitPane">
+    <style name="Selector.Deactivated" type="nextapp.echo2.app.Label">
         <properties>
-            <property name="separatorPosition" value="32px"/>
+            <property name="foreground" value="#ff0000"/>
         </properties>
     </style>
 
-    <style name="CRUDPane.Deactivated" type="nextapp.echo2.app.Label">
+    <style name="CRUDWindow" type="nextapp.echo2.app.SplitPane">
         <properties>
-            <property name="foreground" value="#ff0000"/>
+            <property name="separatorPosition" value="32px"/>
         </properties>
     </style>
 

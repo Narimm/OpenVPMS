@@ -13,7 +13,7 @@ import nextapp.echo2.app.event.EventListenerList;
  * A row of buttons.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public class ButtonRow extends Row {
 
@@ -34,7 +34,7 @@ public class ButtonRow extends Row {
 
 
     /**
-     * Construct a new <code>ButtonRow</code>
+     * Construct a new <code>ButtonRow</code>.
      */
     public ButtonRow() {
         setStyleName(STYLE);
@@ -62,10 +62,12 @@ public class ButtonRow extends Row {
      *
      * @param id       the button identifier
      * @param listener the listener to add
+     * @return the button
      */
-    public void addButton(String id, ActionListener listener) {
+    public Button addButton(String id, ActionListener listener) {
         Button button = add(id);
         button.addActionListener(listener);
+        return button;
     }
 
     /**

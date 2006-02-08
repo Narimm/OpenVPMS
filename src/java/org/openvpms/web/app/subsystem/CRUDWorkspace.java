@@ -1,12 +1,13 @@
 package org.openvpms.web.app.subsystem;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 
-import org.openvpms.web.component.subsystem.Action;
-import org.openvpms.web.component.subsystem.Workspace;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.query.Browser;
+import org.openvpms.web.component.query.BrowserDialog;
+import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.util.Messages;
 
 
@@ -16,40 +17,12 @@ import org.openvpms.web.util.Messages;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class CRUDWorkspace implements Workspace {
-
-    /**
-     * The archetype reference model name, used to query objects.
-     */
-    private final String _refModelName;
-
-    /**
-     * The archetype entity name, used to query objects. May be
-     * <code>null</code>.
-     */
-    private final String _entityName;
-
-    /**
-     * The archetype concept name, used to query objects. May be
-     * <code>null</code>.
-     */
-    private final String _conceptName;
-
-    /**
-     * The subsystem localistion id.
-     */
-    private final String _subsystemId;
-
-    /**
-     * The workspace localisation id.
-     */
-    private final String _workspaceId;
+public class CRUDWorkspace extends AbstractViewWorkspace {
 
     /**
      * The CRUD window.
      */
     private CRUDWindow _window;
-
 
     /**
      * Construct a new <code>CRUDWorkspace</code>.
@@ -63,76 +36,85 @@ public class CRUDWorkspace implements Workspace {
     public CRUDWorkspace(String subsystemId, String workspaceId,
                          String refModelName, String entityName,
                          String conceptName) {
-        _subsystemId = subsystemId;
-        _workspaceId = workspaceId;
-        _refModelName = refModelName;
-        _entityName = entityName;
-        _conceptName = conceptName;
-    }
-
-    /**
-     * Returns the localised title of this workspace.
-     *
-     * @return the localised title if this workspace
-     */
-    public String getTitle() {
-        return Messages.get("workspace." + _subsystemId + "." + _workspaceId);
-    }
-
-    /**
-     * Returns the actions which may be performed in this workspace.
-     *
-     * @return the actions which may be performed in this workspace
-     */
-    public List<Action> getActions() {
-        return new ArrayList<Action>();
-    }
-
-    /**
-     * Returns the the default action.
-     *
-     * @return the default action
-     */
-    public Action getDefaultAction() {
-        return null;
-    }
-
-    /**
-     * Sets the current action.
-     *
-     * @param id the current action
-     */
-    public void setAction(String id) {
-    }
-
-    /**
-     * Returns the component representing the current action.
-     *
-     * @return the component for the current action
-     */
-    public Component getComponent() {
-        if (_window == null) {
-            _window = createCRUDWindow(_subsystemId, _workspaceId,
-                    _refModelName, _entityName, _conceptName);
-        }
-        return _window.getComponent();
-    }
-
-    /**
-     * Create a new CRUD component.
-     *
-     * @param subsystemId  the subsystem localisation identifier
-     * @param workspaceId  the workspace localisation identfifier
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    protected CRUDWindow createCRUDWindow(String subsystemId,
-                                          String workspaceId,
-                                          String refModelName,
-                                          String entityName,
-                                          String conceptName) {
-        return new DefaultCRUDPane(subsystemId, workspaceId, refModelName, entityName,
+        super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+        _window = new CRUDWindow(getType(), refModelName, entityName,
                 conceptName);
     }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
+        container.add(_window.getComponent());
+        _window.setListener(new CRUDWindowListener() {
+            public void saved(IMObject object, boolean isNew) {
+                onSaved(object, isNew);
+            }
+
+            public void deleted(IMObject object) {
+                onDeleted(object);
+            }
+        });
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object
+     */
+    protected void setObject(IMObject object) {
+        super.setObject(object);
+        _window.setObject(object);
+    }
+
+    /**
+     * Invoked when the 'select' button is pressed. This pops up an {@link
+     * Browser} to select an object.
+     */
+    @Override
+    protected void onSelect() {
+        final Browser browser = createBrowser(getRefModelName(),
+                getEntityName(), getConceptName());
+
+        String title = Messages.get("imobject.select.title", getType());
+        final BrowserDialog popup = new BrowserDialog(title, browser, true);
+
+        popup.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                if (popup.createNew()) {
+                    _window.onCreate();
+                } else {
+                    IMObject object = popup.getSelected();
+                    if (object != null) {
+                        onSelected(object);
+                    }
+                }
+            }
+
+        });
+
+        popup.show();
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    protected void onSaved(IMObject object, boolean isNew) {
+        setObject(object);
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    protected void onDeleted(IMObject object) {
+        setObject(null);
+    }
+
 }

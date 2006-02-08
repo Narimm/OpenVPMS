@@ -4,20 +4,19 @@ import java.util.EventListener;
 import java.util.List;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.IMObjectTable;
+import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.TableNavigator;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
 
 
@@ -68,31 +67,8 @@ public class Browser extends SplitPane {
 
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified short names.
-     *
-     * @param shortNames the short names
-     */
-    public Browser(String[] shortNames) {
-        this(new DefaultQuery(shortNames));
-    }
-
-    /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public Browser(String refModelName, String entityName,
-                   String conceptName) {
-        this(new DefaultQuery(refModelName, entityName, conceptName));
-    }
-
-    /**
-     * Construct a new <code>Browser</code> that queries IMObjects using
-     * the specified query.
+     * Construct a new <code>Browser</code> that queries IMObjects using the
+     * specified query.
      *
      * @param query the query
      */
