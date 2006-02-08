@@ -193,6 +193,7 @@ public class CRUDWindow {
     protected void doLayout() {
         _buttons = RowFactory.create(ROW_STYLE);
         layoutButtons(_buttons);
+        enableButtons(false);
         _component = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 STYLE, _buttons);
