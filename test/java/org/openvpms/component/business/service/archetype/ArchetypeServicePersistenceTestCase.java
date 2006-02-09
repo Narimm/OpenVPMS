@@ -576,12 +576,14 @@ public class ArchetypeServicePersistenceTestCase extends
         IMObject object = service.create("classification.staff");
         object.setName("jima");
         object.setDescription("head chef");
-        assertTrue(object.pathToObject(ndesc.getPath()) != null);
+        ndesc.setValue(object, "jimmya");
+        assertTrue(ndesc.getValue(object) != null);
         service.save(object);
         
         object = service.getById(object.getArchetypeId(), object.getUid());
         assertTrue(object != null);
-        assertTrue(object.pathToObject(ndesc.getPath()) != null);
+        assertTrue(ndesc.getValue(object) != null);
+        assertTrue(ndesc.getValue(object).equals("jimmya"));
     }
     
     /**

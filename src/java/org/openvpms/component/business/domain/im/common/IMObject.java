@@ -300,6 +300,7 @@ public abstract class IMObject implements Serializable, Cloneable {
      * @return Pointer   
      *            a pointer to the location         
      */
+    @Deprecated
     public Pointer pathToCollection(String path) {
         Pointer ptr = pathToObject(path);
         if (ptr != null) {
@@ -323,6 +324,7 @@ public abstract class IMObject implements Serializable, Cloneable {
      * @return Pointer
      *            a pointer ot the object or null.
      */
+    @Deprecated
     public Pointer pathToObject(String path) {
         Pointer ptr = null;
         

@@ -28,7 +28,6 @@
     </id>
     <version name="version" access="property" type="long" />
     <property name="linkId" access="property" type="string" />
-    <many-to-one name="contact" column="contact_id" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"
         type="string" />
@@ -45,8 +44,6 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="fromDate" access="property" column="from_date" type="date" />
-    <property name="thruDate" access="property" column="thru_date" type="date" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
   </class>

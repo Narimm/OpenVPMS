@@ -10,24 +10,21 @@
 		<node name="propertyMap" path="/propertyMap"
 			type="org.openvpms.component.business.domain.im.datatypes.property.PropertyMap"
 			hidden="true">
-			<node name="properties" path="/propertyMap/properties"
-				type="java.util.HashMap" parentChild="true" hidden="true">
-				<node name="archetypes"
-					path="/propertyMap/properties/archetypes" display="Archetypes"
-					parentChild="true" baseName="property"
-					type="org.openvpms.component.business.domain.im.datatypes.property.PropertyList">
-					<assertion name="archetypeRange">
-						<errorMessage>
-							Invalid archetype specified for collection
-						</errorMessage>
-						<propertyList name="archetypes">
-							<propertyMap name="archetype">
-								<property name="shortName"
-									value="assertion.archetypeRangeProperties" />
-							</propertyMap>
-						</propertyList>
-					</assertion>
-				</node>
+			<node name="archetypes"
+				path="/propertyMap/properties/archetypes" display="Archetypes"
+				parentChild="true" baseName="property"
+				type="org.openvpms.component.business.domain.im.datatypes.property.PropertyList">
+				<assertion name="archetypeRange">
+					<errorMessage>
+						Invalid archetype specified for collection
+					</errorMessage>
+					<propertyList name="archetypes">
+						<propertyMap name="archetype">
+							<property name="shortName"
+								value="assertion.archetypeRangeProperties" />
+						</propertyMap>
+					</propertyList>
+				</assertion>
 			</node>
 		</node>
 	</archetype>

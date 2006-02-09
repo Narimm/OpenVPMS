@@ -52,7 +52,7 @@ public class Contact extends IMObject {
     private Date activeEndTime;
     
     /**
-     * A history og contact puprpose
+     * A history oF contact puprpose
      */
     private Set<ContactPurpose> contactPurposes = new HashSet<ContactPurpose>();
     

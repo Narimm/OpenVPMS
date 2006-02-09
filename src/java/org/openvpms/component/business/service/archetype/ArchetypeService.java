@@ -614,17 +614,8 @@ public class ArchetypeService implements IArchetypeService {
                                 new Object[]{assertion.getName()});
                     }
 
-                    // TODO
-                    // no validation required where the type is not specified.
-                    // This is currently a work around since we need to deal
-                    // with assertions and some other type of declaration...
-                    // which I don't have a name for.
-                    if (assertionType.getActionType("assert") == null) {
-                        continue;
-                    }
-
                     try {
-                        if (!assertionType.assertTrue(value, node, assertion)) {
+                        if (!assertionType.validate(value, node, assertion)) {
                             errors.add(new ValidationError(node.getName(),
                                     assertion.getErrorMessage()));
                             if (logger.isDebugEnabled()) {
@@ -764,6 +755,31 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
 
+            // determine whether any of the node's associated assertions
+            // want to hook in to the creation phase
+            if (node.getAssertionDescriptorsAsArray().length > 0) {
+                // only check the assertions for non-null values
+                for (AssertionDescriptor assertion : node
+                        .getAssertionDescriptorsAsArray()) {
+                    AssertionTypeDescriptor assertionType = 
+                        dCache.getAssertionTypeDescriptor(assertion.getName());
+                    if (assertionType == null) {
+                        throw  new ArchetypeServiceException(
+                                ArchetypeServiceException.ErrorCode.AssertionTypeNotSpecified,
+                                new Object[]{assertion.getName()});
+                    }
+
+                    try {
+                        assertionType.create(context.getContextBean(), node, assertion);
+                    } catch (Exception exception) {
+                        throw new ArchetypeServiceException(
+                                ArchetypeServiceException.ErrorCode.FailedToExecuteCreateFunction,
+                                new Object[]  {assertion.getName()},
+                                exception);
+                    }
+                }
+            }
+            
             // if this node has children then process them
             // recursively
             if (node.getNodeDescriptors().size() > 0) {

@@ -73,7 +73,13 @@ public class IMObjectReference implements Serializable, Cloneable {
      *            if an object reference cannot be constructed.                                 
      */
     public IMObjectReference(IMObject object) {
-        this(object.getArchetypeId(), object.getUid());
+        if (object == null) {
+            throw new IMObjectException(
+                    IMObjectException.ErrorCode.FailedToCreateObjectReference);
+        }
+
+        this.archetypeId = object.getArchetypeId();
+        this.uid = object.getUid();
     }
     
     /**

@@ -363,7 +363,6 @@ public class Entity extends IMObject {
      *            the participation to add  
      */
     public void addParticipation(Participation participation) {
-        participation.setEntity(this);
         participations.add(participation);
     }
     
@@ -374,7 +373,6 @@ public class Entity extends IMObject {
      *            the entity classification to remove
      */
     public boolean removeParticipation(Participation participation) {
-        participation.setEntity(null);
         return participations.remove(participation);
     }
     

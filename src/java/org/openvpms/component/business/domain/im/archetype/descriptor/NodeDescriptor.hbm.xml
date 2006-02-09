@@ -42,6 +42,8 @@
       type="string" />
     <property name="defaultValue" access="property" column="default_name"
       type="string" />
+    <property name="filter" access="property" column="filter"
+      type="string" />
     <property name="derivedValue" access="property" column="derived_value"
       type="string" />
     <property name="readOnly" access="property" column="is_readonly" type="boolean" />

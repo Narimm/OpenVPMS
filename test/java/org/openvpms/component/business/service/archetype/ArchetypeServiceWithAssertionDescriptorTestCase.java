@@ -101,7 +101,8 @@ public class ArchetypeServiceWithAssertionDescriptorTestCase extends BaseTestCas
         ndesc.addChildToCollection(adesc, pdesc);
         assertTrue(adesc.getProperty("archetypes") != null);
         assertTrue(adesc.getProperty("archetypes") instanceof PropertyList);
-        
+
+
         PropertyList archetypes = (PropertyList)adesc.getProperty("archetypes");
         assertTrue(archetypes.getProperties().size() == 1);
         for (NamedProperty archetype : archetypes.getProperties()) {

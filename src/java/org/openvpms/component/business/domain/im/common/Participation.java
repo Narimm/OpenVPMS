@@ -51,11 +51,6 @@ public class Participation extends IMObject {
     private int sequence;
     
     /**
-     * Indicates that a particular participation did not occur
-     */
-    private boolean negationInd;
-    
-    /**
      * Indicates the mode that the {@link Entity} is participating in the
      * {@link Act}
      * 
@@ -81,12 +76,12 @@ public class Participation extends IMObject {
     /**
      * Reference to the associated entity
      */
-    private Entity entity;
+    private IMObjectReference entity;
     
     /**
      * Reference to the associated act
      */
-    private Act act;
+    private IMObjectReference act;
     
     /**
      * Holds details about the participation
@@ -97,7 +92,7 @@ public class Participation extends IMObject {
     /**
      * Default constructor
      */
-    protected Participation() {
+    public Participation() {
         // do nothing
     }
 
@@ -113,8 +108,8 @@ public class Participation extends IMObject {
      * @param details
      *            holds dynamic details about the participation.
      */
-    public Participation(ArchetypeId archetypeId, Entity entity,
-        Act act, DynamicAttributeMap details) {
+    public Participation(ArchetypeId archetypeId, IMObjectReference entity,
+            IMObjectReference act, DynamicAttributeMap details) {
         super(archetypeId);
         this.act = act;
         this.entity = entity;
@@ -147,20 +142,6 @@ public class Participation extends IMObject {
      */
     public void setMode(String mode) {
         this.mode = mode;
-    }
-
-    /**
-     * @return Returns the negationInd.
-     */
-    public boolean getNegationInd() {
-        return negationInd;
-    }
-
-    /**
-     * @param negationInd The negationInd to set.
-     */
-    public void setNegationInd(boolean negationInd) {
-        this.negationInd = negationInd;
     }
 
     /**
@@ -208,14 +189,14 @@ public class Participation extends IMObject {
     /**
      * @return Returns the act.
      */
-    public Act getAct() {
+    public IMObjectReference getAct() {
         return act;
     }
 
     /**
      * @return Returns the entity.
      */
-    public Entity getEntity() {
+    public IMObjectReference getEntity() {
         return entity;
     }
 
@@ -236,14 +217,14 @@ public class Participation extends IMObject {
     /**
      * @param act The act to set.
      */
-    public void setAct(Act act) {
+    public void setAct(IMObjectReference act) {
         this.act = act;
     }
 
     /**
      * @param entity The entity to set.
      */
-    public void setEntity(Entity entity) {
+    public void setEntity(IMObjectReference entity) {
         this.entity = entity;
     }
 
@@ -262,7 +243,6 @@ public class Participation extends IMObject {
                 null : this.details.clone());
         copy.entity = this.entity;
         copy.mode = this.mode;
-        copy.negationInd = this.negationInd;
         copy.percentage = this.percentage;
         copy.sequence = this.sequence;
 

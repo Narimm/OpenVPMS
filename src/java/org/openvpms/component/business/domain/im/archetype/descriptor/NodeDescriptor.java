@@ -58,7 +58,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * The default display length if one is not defined in the node definition
      */
-    public static final int DEFAULT_DISPLAY_LENGTH = 50;
+    public static final int DEFAULT_DISPLAY_LENGTH = 50; 
 
     /**
      * The default maximum Length if one is not defined in the node definition
@@ -186,6 +186,16 @@ public class NodeDescriptor extends Descriptor {
      * The fully qualified class name that defines the node type
      */
     private String type;
+    
+    /**
+     * The filter is only valid for collections and defines the subset of 
+     * the collection that this node refers too.  The filter is an archetype
+     * shortName, which can also be in the form of a regular expression
+     * 
+     * The modeFilter is a regex compliant filter
+     */
+    private String filter;
+    private String modFilter;
 
     /**
      * Default constructor
@@ -226,16 +236,19 @@ public class NodeDescriptor extends Descriptor {
                     DescriptorException.ErrorCode.FailedToAddChildElement,
                     new Object[] { getName() });
         }
-
+        
+        // retrieve the value at that node
+        Object obj = JXPathContext.newContext(context).getValue(getPath());
+        
         try {
             if (StringUtils.isEmpty(baseName)) {
                 // no base name specified look at the type to determine
                 // what method to call
                 Class tClass = getClazz();
                 if (Collection.class.isAssignableFrom(tClass)) {
-                    MethodUtils.invokeMethod(getValue(context), "add", child);
+                    MethodUtils.invokeMethod(obj, "add", child);
                 } else if (Map.class.isAssignableFrom(tClass)) {
-                    MethodUtils.invokeMethod(getValue(context), "put",
+                    MethodUtils.invokeMethod(obj, "put",
                             new Object[] { child, child });
                 } else {
                     throw new DescriptorException(
@@ -249,13 +262,11 @@ public class NodeDescriptor extends Descriptor {
 
                 // TODO This is a tempoaray fix until we resolve the discrepency
                 // with collections.
-                if (getValue(context) instanceof IMObject) {
-                    MethodUtils.invokeMethod(getValue(context), methodName,
-                            child);
+                if (obj instanceof IMObject) {
+                    MethodUtils.invokeMethod(obj, methodName, child);
                 } else {
                     MethodUtils.invokeMethod(context, methodName, child);
                 }
-
             }
         } catch (Exception exception) {
             throw new DescriptorException(
@@ -441,9 +452,8 @@ public class NodeDescriptor extends Descriptor {
         AssertionDescriptor descriptor = assertionDescriptors
                 .get("candidateChildren");
 
-        if ((descriptor == null)
-                || (descriptor.getPropertyMap().getProperties().containsKey(
-                        "path") == false)) {
+        if ((descriptor == null) || 
+            (descriptor.getPropertyMap().getProperties().containsKey("path") == false)) {
             return result;
         }
 
@@ -466,6 +476,76 @@ public class NodeDescriptor extends Descriptor {
         }
 
         return result;
+    }
+
+    /**
+     * Return the children {@link IMObject} instances that are part of 
+     * a collection. If the NodeDescriptor does not denote a collection then
+     * a null list is returned.
+     * <p>
+     * Furthermore if this is a collection and the filter attribute has been
+     * specified then return a subset of the children; those matching the 
+     * filter.
+     * 
+     * @param target
+     *            the target object.
+     * @return List<IMObject>
+     *            the list of children, an empty list or  null            
+     */
+    @SuppressWarnings("unchecked")
+    public List<IMObject> getChildren(IMObject target) {
+        List<IMObject> children = null;
+        if (isCollection()) {
+            try {
+                Object obj = JXPathContext.newContext(target).getValue(getPath());
+                if (obj == null) {
+                    children = new ArrayList<IMObject>();
+                } else if (obj instanceof Collection) {
+                    children = new ArrayList<IMObject>((Collection)obj);
+                } else if (obj instanceof PropertyCollection) {
+                    children = new ArrayList<IMObject>(((PropertyCollection)obj).values());
+                }
+                
+                // filter the children
+                children = filterChildren(children);
+            } catch (Exception exception) {
+                throw new DescriptorException(
+                        DescriptorException.ErrorCode.FailedToGetChildren,
+                        new Object[] {target.getName(), getName(), getPath()},
+                        exception);
+            }
+
+            return children;
+            
+        }
+        
+        return children;
+    }
+    
+    /**
+     * Filter the children in the list and return only those that comply with
+     * the filter term
+     * 
+     * @param children
+     *            the initial list of children
+     * @return List<IMObject>
+     *            the filtered set
+     */
+    private List<IMObject> filterChildren(List<IMObject> children) {
+        // if no filter was specified return the complete list
+        if (StringUtils.isEmpty(filter)) {
+            return children;
+        }
+        
+        // otherwise filter on 
+        List<IMObject> filteredSet = new ArrayList<IMObject>();
+        for (IMObject obj : children) {
+            if (obj.getArchetypeId().getShortName().matches(modFilter)) {
+                filteredSet.add(obj);
+            }
+        }
+        
+        return filteredSet;
     }
 
     /**
@@ -524,6 +604,13 @@ public class NodeDescriptor extends Descriptor {
     public String getDisplayName() {
         return StringUtils.isEmpty(displayName) ? unCamelCase(getName())
                 : displayName;
+    }
+
+    /**
+     * @return Returns the filter.
+     */
+    public String getFilter() {
+        return filter;
     }
 
     /**
@@ -703,12 +790,18 @@ public class NodeDescriptor extends Descriptor {
      * @return Object the returned object
      */
     public Object getValue(IMObject context) {
+        Object value = null;
         if (isDerived()) {
-            return JXPathContext.newContext(context)
-                    .getValue(getDerivedValue());
+            value = JXPathContext.newContext(context).getValue(getDerivedValue());
         } else {
-            return JXPathContext.newContext(context).getValue(getPath());
+            if (isCollection()) {
+                value = getChildren(context);
+            } else {
+                value = JXPathContext.newContext(context).getValue(getPath());
+            }
         }
+        
+        return value;
     }
 
     /**
@@ -903,6 +996,30 @@ public class NodeDescriptor extends Descriptor {
 
         return false;
     }
+    
+    /**
+     * A helper method that checks to see if the specified {@link IMObject}
+     * matches the specified filter. This is only  relevant for collection
+     * nodes
+     * 
+     * @param imobj
+     *            the object to check
+     * @return boolean
+     *            true if it matches the filter            
+     */
+    public boolean matchesFilter(IMObject imobj) {
+        boolean matches = false;
+        
+        if (isCollection()) {
+            if (StringUtils.isEmpty(filter)) {
+                matches = true;
+            } else {
+                matches = imobj.getArchetypeId().getShortName().matches(modFilter);
+            }
+        }
+        
+        return matches;
+    }
 
     /**
      * Delete the specified assertion descriptor
@@ -1047,6 +1164,16 @@ public class NodeDescriptor extends Descriptor {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    /**
+     * @param filter The filter to set.
+     */
+    public void setFilter(String filter) {
+        this.filter = filter;
+        if (!StringUtils.isEmpty(filter)) {
+            this.modFilter = filter.replace("*", ".*");
+        }
     }
 
     /**

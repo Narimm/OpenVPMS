@@ -50,7 +50,9 @@ public class DescriptorException extends RuntimeException implements
         FailedToRemoveChildElement,
         NullContextForSetValue,
         FailedToSetValue,
-        CannotSetValueForReadOnlyNode
+        CannotSetValueForReadOnlyNode,
+        CannotAddNodeDescriptor,
+        FailedToGetChildren
     }
 
     /**

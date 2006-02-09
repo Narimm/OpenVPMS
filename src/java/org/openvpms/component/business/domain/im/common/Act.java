@@ -61,16 +61,6 @@ public class Act extends IMObject {
     private String title;
     
     /**
-     * The effective start date of this act.
-     */
-    private Date effectiveStartTime;
-    
-    /**
-     * The effective end time of this act.
-     */
-    private Date effectiveEndTime;
-    
-    /**
      * The start time of this act
      */
     private Date activityStartTime;
@@ -81,22 +71,10 @@ public class Act extends IMObject {
     private Date activityEndTime;
     
     /**
-     * The urgency under which the Act happened, can happen, is intended to 
-     * happen.
-     */
-    private String priority;
-    
-    /**
      * Text representing the reason for the Act. Often this is beter 
      * represented by a realtionship to another Act of type "has reason".
      */
     private String reason;
-    
-    /**
-     * An indicator specifiying that the Act statement is a negation of the 
-     * Act as described by it's properties.  i.e Animal has NO hind limp.
-     */
-    private boolean negationInd;
     
     /**
      * An interval of integers stating the minimal and maximum nymber of Act 
@@ -197,34 +175,6 @@ public class Act extends IMObject {
     }
 
     /**
-     * @return Returns the effectiveEndTime.
-     */
-    public Date getEffectiveEndTime() {
-        return effectiveEndTime;
-    }
-
-    /**
-     * @param effectiveEndTime The effectiveEndTime to set.
-     */
-    public void setEffectiveEndTime(Date effectiveEndTime) {
-        this.effectiveEndTime = effectiveEndTime;
-    }
-
-    /**
-     * @return Returns the effectiveStartTime.
-     */
-    public Date getEffectiveStartTime() {
-        return effectiveStartTime;
-    }
-
-    /**
-     * @param effectiveStartTime The effectiveStartTime to set.
-     */
-    public void setEffectiveStartTime(Date effectiveStartTime) {
-        this.effectiveStartTime = effectiveStartTime;
-    }
-
-    /**
      * @return Returns the mood.
      */
     public String getMood() {
@@ -236,34 +186,6 @@ public class Act extends IMObject {
      */
     public void setMood(String mood) {
         this.mood = mood;
-    }
-
-    /**
-     * @return Returns the negationInd.
-     */
-    public boolean getNegationInd() {
-        return negationInd;
-    }
-
-    /**
-     * @param negationInd The negationInd to set.
-     */
-    public void setNegationInd(boolean negationInd) {
-        this.negationInd = negationInd;
-    }
-
-    /**
-     * @return Returns the priority.
-     */
-    public String getPriority() {
-        return priority;
-    }
-
-    /**
-     * @param priority The priority to set.
-     */
-    public void setPriority(String priority) {
-        this.priority = priority;
     }
 
     /**
@@ -392,6 +314,68 @@ public class Act extends IMObject {
     }
 
     /**
+     * Add a relationship to this act. It will determine whether it is a 
+     * source or target relationship before adding it.
+     * 
+     * @param actRel
+     *            the act relationship to add
+     * @throws EntityException
+     *            if this relationship cannot be added to this act            
+     */
+    public void addActRelationship(ActRelationship actRel) {
+        if ((actRel.getSource().getUid() == this.getUid()) &&
+            (actRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+            addSourceActRelationship(actRel);
+        } else if ((actRel.getTarget().getUid() == this.getUid()) &&
+            (actRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+            addTargetActRelationship(actRel);
+        } else {
+            throw new EntityException(
+                    EntityException.ErrorCode.FailedToAddActRelationship,
+                    new Object[] { actRel.getSource().getUid(), 
+                            actRel.getTarget().getUid()});
+        }
+    }
+
+    /**
+     * Remove a relationship to this act. It will determine whether it is a 
+     * source or target relationship before removing it.
+     * 
+     * @param actRel
+     *            the act relationship to remove
+     * @throws EntityException
+     *            if this relationship cannot be removed from this act            
+     */
+    public void removeActRelationship(ActRelationship actRel) {
+        if ((actRel.getSource().getUid() == this.getUid()) &&
+            (actRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+            removeSourceActRelationship(actRel);
+        } else if ((actRel.getTarget().getUid() == this.getUid()) &&
+            (actRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+            removeTargetActRelationship(actRel);
+        } else {
+            throw new EntityException(
+                    EntityException.ErrorCode.FailedToRemoveActRelationship,
+                    new Object[] { actRel.getSource().getUid(), 
+                            actRel.getTarget().getUid()});
+        }
+    }
+    
+    /**
+     * Return all the act relationships. Do not use the returned set to 
+     * add and remove act relationships. Instead use {@link #addActRelationship(ActRelationship)}
+     * and {@link #removeActRelationship(ActRelationship)} repsectively.
+     * 
+     * @return Set<ActRelationship>
+     */
+    public Set<ActRelationship> getActRelationships() {
+        Set<ActRelationship> relationships = 
+            new HashSet<ActRelationship>(sourceActRelationships);
+        relationships.addAll(targetActRelationships);
+        
+        return relationships;
+    }
+    /**
      * Return the associated {@link Participantion} instances.
      * 
      * @return Participation
@@ -438,14 +422,8 @@ public class Act extends IMObject {
                 null : this.activityStartTime.clone());
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
-        copy.effectiveEndTime = (Date)(this.effectiveEndTime == null ?
-                null : this.effectiveEndTime.clone());
-        copy.effectiveStartTime = (Date)(this.effectiveStartTime == null ?
-                null : this.effectiveStartTime.clone());
         copy.mood = this.mood;
-        copy.negationInd = this.negationInd;
         copy.participations = new HashSet<Participation>(this.participations);
-        copy.priority = this.priority;
         copy.reason = this.reason;
         copy.repeatNumber = this.repeatNumber;
         copy.sourceActRelationships = new HashSet<ActRelationship>(this.sourceActRelationships);
@@ -455,5 +433,4 @@ public class Act extends IMObject {
         
         return copy;
     }
-
 }

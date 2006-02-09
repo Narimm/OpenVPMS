@@ -24,7 +24,7 @@
             transient="false" get-method="getPropertyArchetype" set-method="setPropertyArchetype">
             <bind-xml name="propertyArchetype" node="attribute" reference="false"/>
         </field>
-        <field name="actionType"
+        <field name="actionTypes"
             type="org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor"
             required="false" direct="false" transient="false"
             get-method="getActionTypesAsArray" set-method="setActionTypesAsArray" collection="array">

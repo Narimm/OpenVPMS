@@ -143,4 +143,13 @@
       <ref local="entityInterceptor" />
     </property>
   </bean>
+  
+  <!--  Instantiate the assertion beans and inject their dependencies -->
+  <bean id="archetypeAssertion"
+    class="org.openvpms.component.business.service.archetype.assertion.ArchetypeRangeAssertion">
+    <constructor-arg index="0">
+      <ref local="archetypeService" />
+    </constructor-arg>
+  </bean>
+  
 </beans>

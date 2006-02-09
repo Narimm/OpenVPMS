@@ -1,0 +1,71 @@
+<archetypes>
+	<archetype name="openvpms-party-person.bernief.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Person">
+		<node name="uid" path="/uid" displayName="id"
+			type="java.lang.Long" />
+		<node name="title" path="/title" type="java.lang.String"
+			minCardinality="1" defaultValue="'Mr'">
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="Mr" value="Mr" />
+					<property name="Ms" value="Ms" />
+					<property name="Mrs" value="Mrs" />
+					<property name="Dr" value="Dr" />
+				</propertyList>
+				<errorMessage>
+					Title must be one of Mr,Ms,Mrs or Dr
+				</errorMessage>
+			</assertion>
+		</node>
+		<node name="firstName" path="/firstName" type="java.lang.String"
+			minCardinality="1" maxLength="30" />
+		<node name="initials" path="/initials" type="java.lang.String" />
+		<node name="lastName" path="/lastName" type="java.lang.String"
+			minCardinality="1" maxLength="30" />
+		<node name="classifications" path="/classifications"
+			parentChild="false" type="java.util.HashSet"
+			baseName="classification" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.staff" />
+						<!--property name="defaultValue"
+							value="staffMember1" /-->
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.patient" />
+						<property name="maxCardinality"
+							value="1" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>
+					Invalid classifications specified
+				</errorMessage>
+			</assertion>
+		</node>
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat(/firstName, ' ', /lastName)" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" minCardinality="1" derived="true"
+			derivedValue="/archetypeId/concept" />
+		<node name="identities" type="java.util.HashSet"
+			baseName="identity" path="/identities" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityIdentity.personAlias" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>
+					Idnetities must be of type
+					entityIdentity.personAlias
+				</errorMessage>
+			</assertion>
+		</node>
+
+	</archetype>
+</archetypes>
