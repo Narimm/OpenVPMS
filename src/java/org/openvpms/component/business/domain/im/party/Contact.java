@@ -26,6 +26,7 @@ import java.util.Set;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
@@ -52,11 +53,11 @@ public class Contact extends IMObject {
     private Date activeEndTime;
     
     /**
-     * A history oF contact puprpose
+     * The classification for the contact
      */
-    private Set<ContactPurpose> contactPurposes = new HashSet<ContactPurpose>();
+    private Set<Classification> classifications = new HashSet<Classification>();
     
-    /**
+    /*
      * Specific details for the contact purpose.
      */
     private DynamicAttributeMap details;
@@ -131,59 +132,48 @@ public class Contact extends IMObject {
     }
 
     /**
-     * Convenience method that return all the {@link ContactPurpose} as an array.
+     * Convenience method that return all the {@link Classification} as an array.
      * 
-     * @return ContactPurpose[]
+     * @return Classification[]
      */
-    public ContactPurpose[] getContactPurposesAsArray() {
-        return (ContactPurpose[])contactPurposes.toArray(
-                new ContactPurpose[contactPurposes.size()]);
+    public Classification[] getClassificationsAsArray() {
+        return (Classification[])classifications.toArray(
+                new Classification[classifications.size()]);
     }
     
-    /**
-     * Convenience method that returns the number of {@link ContactPurpose}
-     * elements
-     * 
-     * @return int
-     */
-    public int getNumOfAddresses() {
-        return contactPurposes.size();
-    }
-
     /**
      * Return all the associated {@link ContactPurpose}
      * 
-     * @return Set<ContactPurpose>
+     * @return Set<Classification>
      */
-    public Set<ContactPurpose> getContactPurposes() {
-        return this.contactPurposes;
+    public Set<Classification> getClassifications() {
+        return this.classifications;
     }
     
     /**
-     * @param contactPurposes The contactPurposes to set.
+     * @param classifications The classifications to set.
      */
-    public void setContactPurposes(Set<ContactPurpose> contactPurposes) {
-        this.contactPurposes = contactPurposes;
+    public void setClassifications(Set<Classification> classifications) {
+        this.classifications = classifications;
     }
     
     /**
-     * Add a {@link ContactPurpose}
+     * Add a {@link Classification}
      * 
-     * @param contactPurpose 
-     *            the contact purpose to add
+     * @param classification 
+     *            the classification to add
      */
-    public void addContactPurpose(ContactPurpose contactPurpose) {
-        contactPurpose.setContact(this);
-        contactPurposes.add(contactPurpose);
+    public void addClassification(Classification classification) {
+        classifications.add(classification);
     }
 
     /**
-     * Remove the specified {@link ContactPurpose}.
+     * Remove the specified {@link Classification}.
      * 
-     * @param contactPurpose
+     * @param classification
      */
-    public void removeContactPurpose(ContactPurpose contactPurpose) {
-        contactPurposes.remove(contactPurpose);
+    public void removeClassification(Classification classification) {
+        classifications.remove(classification);
     }
     
     /* (non-Javadoc)
@@ -196,7 +186,7 @@ public class Contact extends IMObject {
                 null : this.activeEndTime.clone());
         copy.activeStartTime = (Date)(this.activeStartTime == null ?
                 null : this.activeStartTime.clone());
-        copy.contactPurposes = new HashSet<ContactPurpose>(this.contactPurposes);
+        copy.classifications = new HashSet<Classification>(this.classifications);
         copy.party = this.party;
 
         return copy;
