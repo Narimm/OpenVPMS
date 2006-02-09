@@ -26,8 +26,8 @@ import org.hibernate.Transaction;
 // openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.ContactPurpose;
 import org.openvpms.component.business.domain.im.party.Person;
 
 /**
@@ -75,12 +75,12 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             int ccount = HibernatePartyUtil.getTableRowCount(session, "contact");
             // execute the test
             tx = session.beginTransaction();
-            ContactPurpose purpose = createContactPurpose("purpose");
+            Classification purpose = createClassification("purpose");
             session.save(purpose);
             Contact contact = createContact();
             Person person = createPerson();
             person.addContact(contact);
-            contact.addContactPurpose(purpose);
+            contact.addClassification(purpose);
             session.save(person);
             tx.commit();
             
@@ -108,7 +108,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         try {
             // get initial contact count
             int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "classification");
             // execute the test
             tx = session.beginTransaction();
             
@@ -122,38 +122,38 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             person = (Person)session.get(Person.class, person.getUid());
 
             tx = session.beginTransaction();
-            ContactPurpose purpose = createContactPurpose("now");
+            Classification purpose = createClassification("now");
             session.save(purpose);
             contact = person.getContacts().iterator().next();
-            contact.addContactPurpose(purpose);
+            contact.addClassification(purpose);
             session.save(person);
             tx.commit();
             
             // Retrieve the contact check that  there is one contact purpose
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getContactPurposes().size() == 1);
+            assertTrue(contact.getClassifications().size() == 1);
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 1);
             
             // add another contract purpose
             tx = session.beginTransaction();
-            ContactPurpose purpose1 = createContactPurpose("now1");
+            Classification purpose1 = createClassification("now1");
             session.save(purpose1);
-            contact.addContactPurpose(purpose1);
+            contact.addClassification(purpose1);
             session.save(contact);
             tx.commit();
             
             // check that there is only one contact added to the database 
             acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 2);
             
             // retrieve the contact and make sure there are 2 purposes
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getContactPurposes().size() == 2);
+            assertTrue(contact.getClassifications().size() == 2);
             
             // retrieve the person and ensure that there is only one address
             person = (Person)session.get(Person.class, person.getUid());
@@ -181,22 +181,22 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         try {
             // get initial contact count
             int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "classification");
             
             tx = session.beginTransaction();
             
-            ContactPurpose purpose = createContactPurpose("now");
+            Classification purpose = createClassification("now");
             session.save(purpose);
             Person person = createPerson();
             Contact contact = createContact();
-            contact.addContactPurpose(purpose );
+            contact.addClassification(purpose );
             person.addContact(contact);
             session.save(person);
             tx.commit();
             
             // check the row counts
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 1);
             
@@ -205,19 +205,19 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             person = (Person)session.get(Person.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 1);
-            assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 1);
+            assertTrue(person.getContacts().iterator().next().getClassifications().size() == 1);
             
             contact = person.getContacts().iterator().next();
-            contact.getContactPurposes().clear();
+            contact.getClassifications().clear();
             session.save(person);
             
             // retrieve the contact and check the contact purposes
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getContactPurposes().size() == 0);
+            assertTrue(contact.getClassifications().size() == 0);
             
             // check the row counts
             acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 1);
             
@@ -244,22 +244,22 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         try {
             // get initial contact count
             int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "classification");
             
             tx = session.beginTransaction();
             
-            ContactPurpose purpose = createContactPurpose("now");
+            Classification purpose = createClassification("now");
             session.save(purpose);
             Person person = createPerson();
             Contact contact = createContact();
-            contact.addContactPurpose(purpose);
+            contact.addClassification(purpose);
             person.addContact(contact);
             session.save(person);
             tx.commit();
             
             // check row counts
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 1);
             
@@ -268,20 +268,20 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             person = (Person)session.get(Person.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 1);
-            assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 1);
+            assertTrue(person.getContacts().iterator().next().getClassifications().size() == 1);
             
             contact = person.getContacts().iterator().next();
-            contact.getContactPurposes().iterator().next().setName("later");
+            contact.getClassifications().iterator().next().setName("later");
             session.save(person);
             
             // retrieve the contact and check the contact purposes
             contact = (Contact)session.get(Contact.class, contact.getUid());
-            assertTrue(contact.getContactPurposes().size() == 1);
-            assertTrue(contact.getContactPurposes().iterator().next().getName().equals("later"));
+            assertTrue(contact.getClassifications().size() == 1);
+            assertTrue(contact.getClassifications().iterator().next().getName().equals("later"));
             
             // check row counts
             acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 1);
             
@@ -306,25 +306,25 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         try {
             // get initial contact count
             int acount = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount = HibernatePartyUtil.getTableRowCount(session, "classification");
             
             tx = session.beginTransaction();
             
-            ContactPurpose purpose = createContactPurpose("now");
+            Classification purpose = createClassification("now");
             session.save(purpose);
-            ContactPurpose purpose1 = createContactPurpose("later");
+            Classification purpose1 = createClassification("later");
             session.save(purpose1);
             Person person = createPerson();
             Contact contact = createContact();
-            contact.addContactPurpose(purpose);
-            contact.addContactPurpose(purpose1);
+            contact.addClassification(purpose);
+            contact.addClassification(purpose1);
             person.addContact(contact);
             session.saveOrUpdate(person);
             tx.commit();
             
             // check row counts
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            int bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount + 1);
             assertTrue(bcount1 == bcount + 2);
             
@@ -333,7 +333,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             person = (Person)session.get(Person.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 1);
-            assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 2);
+            assertTrue(person.getContacts().iterator().next().getClassifications().size() == 2);
             
             person.getContacts().clear();
             session.saveOrUpdate(person);
@@ -345,7 +345,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
 
             // check row counts
             acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
-            bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
+            bcount1 = HibernatePartyUtil.getTableRowCount(session, "classification");
             assertTrue(acount1 == acount);
             assertTrue(bcount1 == bcount + 2);
         } catch (Exception exception) { 
@@ -390,18 +390,18 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     }
     
     /**
-     * Create a simple contact purpose with the specified name
+     * Create a simple classification with the specified name
      * 
-     * @param purpose
-     *            the name of the purpose
-     * @return ContactPurpose
+     * @param name
+     *            the name of the classification
+     * @return Classification
      */
-    private ContactPurpose createContactPurpose(String purpose) throws Exception {
-        ContactPurpose cpur = new ContactPurpose();
-        cpur.setArchetypeIdAsString("penvpms-party-contactPurpose.current.1.0");
-        cpur.setName(purpose);
+    private Classification createClassification(String name) throws Exception {
+        Classification clas = new Classification();
+        clas.setArchetypeIdAsString("openvpms-party-classification.current.1.0");
+        clas.setName(name);
         
-        return cpur;
+        return clas;
     }
     
     /**
