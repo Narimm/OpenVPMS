@@ -1,86 +1,82 @@
 <?xml version="1.0"?>
 <!--
-	#  Version: 1.0
-	#
-	#  The contents of this file are subject to the OpenVPMS License Version
-	#  1.0 (the 'License'); you may not use this file except in compliance with
-	#  the License. You may obtain a copy of the License at
-	#  http://www.openvpms.org/license/
-	#
-	#  Software distributed under the License is distributed on an 'AS IS' basis,
-	#  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-	#  for the specific language governing rights and limitations under the
-	#  License.
-	#
-	#  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
-	#
-	#  $Id$
+  #  Version: 1.0
+  #
+  #  The contents of this file are subject to the OpenVPMS License Version
+  #  1.0 (the 'License'); you may not use this file except in compliance with
+  #  the License. You may obtain a copy of the License at
+  #  http://www.openvpms.org/license/
+  #
+  #  Software distributed under the License is distributed on an 'AS IS' basis,
+  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  #  for the specific language governing rights and limitations under the
+  #  License.
+  #
+  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+  #
+  #  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-	<class name="org.openvpms.component.business.domain.im.common.Act"
-		table="acts">
-		<id name="uid" type="long" unsaved-value="-1">
-			<column name="act_id" index="act_id_idx" />
-			<generator class="increment" />
-		</id>
-		<version name="version" access="property" type="long" />
-		<property name="linkId" access="property" type="string" />
-		<component name="archetypeId">
-			<property name="namespace" access="property"
-				column="arch_namespace" type="string" />
-			<property name="rmName" access="property"
-				column="arch_rm_name" type="string" />
-			<property name="concept" access="property"
-				column="arch_concept_name" type="string" />
-			<property name="entityName" access="property"
-				column="arch_entity_name" type="string" />
-			<property name="version" access="property"
-				column="arch_version" type="string" />
-		</component>
-		<property name="name" access="property" column="name"
-			type="string" />
-		<property name="description" access="property"
-			column="description" type="string" />
-		<property name="active" access="property" column="active"
-			type="boolean" />
-		<property name="mood" column="mood" type="string" />
-		<property name="title" column="title" type="string" />
-		<property name="effectiveStartTime"
-			column="effective_start_time" type="date" />
-		<property name="effectiveEndTime" column="effective_end_time"
-			type="date" />
-		<property name="activityStartTime" column="activity_start_time"
-			type="date" />
-		<property name="activityEndTime" column="activity_end_time"
-			type="date" />
-		<property name="priority" column="priority" type="string" />
-		<property name="reason" column="reason" type="string" />
-		<property name="negationInd" column="negation_ind"
-			type="boolean" />
-		<property name="repeatNumber" column="repeat_number" type="int" />
-		<property name="status" column="status" type="string" />
-		<property name="details" column="details" length="5000"
-			type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-		<set name="participations" access="property" inverse="true"
-			lazy="false" cascade="all,delete-orphan">
-			<key column="act_id" />
-			<one-to-many
-				class="org.openvpms.component.business.domain.im.common.Participation" />
-		</set>
-		<set name="sourceActRelationships" access="property"
-			inverse="true" lazy="false" cascade="all,delete-orphan">
-			<key column="source_act_id" />
-			<one-to-many
-				class="org.openvpms.component.business.domain.im.common.ActRelationship" />
-		</set>
-		<set name="targetActRelationships" access="property"
-			inverse="true" lazy="false" cascade="all,delete-orphan">
-			<key column="target_act_id" />
-			<one-to-many
-				class="org.openvpms.component.business.domain.im.common.ActRelationship" />
-		</set>
-	</class>
+  <class name="org.openvpms.component.business.domain.im.common.Act"
+    table="acts">
+    <id name="uid" type="long" unsaved-value="-1">
+      <column name="act_id" index="act_id_idx" />
+      <generator class="increment" />
+    </id>
+    <version name="version" access="property" type="long" />
+    <property name="linkId" access="property" type="string" />
+    <component name="archetypeId">
+      <property name="namespace" access="property" column="arch_namespace"
+        type="string" />
+      <property name="rmName" access="property" column="arch_rm_name"
+        type="string" />
+      <property name="concept" access="property" column="arch_concept_name"
+        type="string" />
+      <property name="entityName" access="property" column="arch_entity_name"
+        type="string" />
+      <property name="version" access="property" column="arch_version"
+        type="string" />
+    </component>
+    <property name="name" access="property" column="name" type="string" />
+    <property name="description" access="property" column="description"
+      type="string" />
+    <property name="active" access="property" column="active" type="boolean" />
+    <property name="mood" column="mood" type="string" />
+    <property name="title" column="title" type="string" />
+    <property name="activityStartTime" column="activity_start_time" type="date" />
+    <property name="activityEndTime" column="activity_end_time" type="date" />
+    <property name="reason" column="reason" type="string" />
+    <property name="repeatNumber" column="repeat_number" type="int" />
+    <property name="status" column="status" type="string" />
+    <property name="details" column="details" length="5000"
+      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
+    <set name="sourceActRelationships" access="property" lazy="false"
+      cascade="all,delete-orphan" inverse="true">
+      <key column="source_uid" not-null="true" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.ActRelationship" />
+    </set>
+    <set name="targetActRelationships" access="property" lazy="false"
+      cascade="all,delete-orphan" inverse="true">
+      <key column="target_uid" not-null="true" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.ActRelationship" />
+    </set>
+    <set name="participations" access="property" lazy="false" inverse="true"
+      cascade="all,delete-orphan">
+      <key column="act_uid" not-null="true" />
+      <one-to-many
+        class="org.openvpms.component.business.domain.im.common.Participation" />
+    </set>
+  </class>
+
+  <query name="act.getRowCount">
+    <![CDATA[
+      select count(act) from org.openvpms.component.business.domain.im.common.Act as 
+      act
+    ]]>
+  </query>
 </hibernate-mapping>

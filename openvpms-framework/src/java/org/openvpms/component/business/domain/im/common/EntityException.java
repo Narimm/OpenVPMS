@@ -45,8 +45,9 @@ public class EntityException extends RuntimeException implements
         NullClassificationSpecified,
         NullChildClassificationSpecified,
         FailedToAddEntityRelationship,
-        FailedToRemoveEntityRelationship
-        
+        FailedToRemoveEntityRelationship,
+        FailedToAddActRelationship,
+        FailedToRemoveActRelationship
     }
 
     /**

@@ -5,8 +5,8 @@
 		<node name="name" path="/name" displayName="Action Name"
 			type="java.lang.String" minCardinality="1" />
 		<node name="actionTypes" path="/actionTypes"
-			displayName="Action Types" type="java.util.ArrayList"
-			baseName="actionType" parentChild="true">
+			displayName="Action Types" type="java.util.HashSet"
+			baseName="actionType" parentChild="true" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

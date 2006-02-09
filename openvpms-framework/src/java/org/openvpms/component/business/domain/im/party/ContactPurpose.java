@@ -18,9 +18,6 @@
 
 package org.openvpms.component.business.domain.im.party;
 
-// java core
-import java.util.Date;
-
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
@@ -33,22 +30,12 @@ import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttribut
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ContactPurpose extends IMObject {
+public class ContactPurpose extends IMObject { 
 
     /**
      * Generated SUID
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The date that this purpose become active
-     */
-    private Date fromDate;
-    
-    /**
-     * The contact purpose is inactive after this date.
-     */
-    private Date thruDate;
 
     /**
      * Specific details for the contact purpose.
@@ -96,34 +83,6 @@ public class ContactPurpose extends IMObject {
         this.contact = contact;
     }
 
-    /**
-     * @return Returns the fromDate.
-     */
-    public Date getFromDate() {
-        return fromDate;
-    }
-
-    /**
-     * @param fromDate The fromDate to set.
-     */
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    /**
-     * @return Returns the thruDate.
-     */
-    public Date getThruDate() {
-        return thruDate;
-    }
-
-    /**
-     * @param thruDate The thruDate to set.
-     */
-    public void setThruDate(Date thruDate) {
-        this.thruDate = thruDate;
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#clone()
      */
@@ -133,10 +92,6 @@ public class ContactPurpose extends IMObject {
         copy.contact = this.contact;
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
-        copy.fromDate = (Date)(this.fromDate == null ?
-                null : this.fromDate.clone());
-        copy.thruDate = (Date)(this.thruDate == null ?
-                null : this.thruDate.clone());
         
         return copy;
     }

@@ -301,7 +301,7 @@
     <dependency>
       <groupId>castor</groupId>
       <artifactId>castor-xml</artifactId>
-      <version>0.9.7</version>
+      <version>1.0M2</version>
       <properties>
         <classpath>true</classpath>
       </properties>

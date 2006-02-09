@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Set;
 
 // commons-beanutils
 import org.apache.commons.beanutils.MethodUtils;
@@ -173,12 +172,7 @@ public class JXPathTestCase extends BaseTestCase {
         person.addIdentity(id2);
         assertTrue(person.getIdentities().size() == 2);
         assertTrue(person.getIdentities() != null);
-        
-        Set ids = (Set)person.pathToCollection("/identities").getValue();
-        assertTrue(ids.size() == 2);
-        ids.clear();
-        ids = (Set)person.pathToCollection("/identities").getValue();
-        assertTrue(ids.size() == 0);
+         
     }
     
     /**
@@ -194,7 +188,6 @@ public class JXPathTestCase extends BaseTestCase {
                 object.getArchetypeId()).getNodeDescriptor("alias");
         assertTrue(ndesc != null);
         assertTrue(ndesc.getValue(object) == null);
-        assertTrue(object.pathToObject(ndesc.getPath()) != null);
     }
 
     /**

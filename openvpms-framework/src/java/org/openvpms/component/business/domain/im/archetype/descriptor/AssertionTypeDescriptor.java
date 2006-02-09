@@ -16,48 +16,63 @@
  *  $Id$
  */
 
-
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 /**
  * This is used to define the assertion type. It is used to map an assertion to
  * its type information
  * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class AssertionTypeDescriptor extends Descriptor {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(ArchetypeService.class);
+
+    /**
+     * A list of well known actions which may be supported by assertions
+     */
+    public enum Actions {
+        create, validate
+    }
 
     /**
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * This is the fully qualified archetypeof the object used to collect 
+     * This is the fully qualified archetypeof the object used to collect
      * property information for this assertion type
      */
     private String propertyArchetype;
-    
+
     /**
      * A list of actions associated with this assertion type
      */
-    private Set<ActionTypeDescriptor> actionTypes =
-        new TreeSet<ActionTypeDescriptor>();
-    
+    private Set<ActionTypeDescriptor> actionTypes = new HashSet<ActionTypeDescriptor>();
+
     /**
      * Default constructor
      */
     public AssertionTypeDescriptor() {
-        setArchetypeId(new ArchetypeId("openvpms-system-descriptor.assertionType.1.0"));
+        setArchetypeId(new ArchetypeId(
+                "openvpms-system-descriptor.assertionType.1.0"));
     }
 
     /**
@@ -68,7 +83,8 @@ public class AssertionTypeDescriptor extends Descriptor {
     }
 
     /**
-     * @param actionTypes The actionTypes to set.
+     * @param actionTypes
+     *            The actionTypes to set.
      */
     public void setActionTypes(Set<ActionTypeDescriptor> actionTypes) {
         this.actionTypes = actionTypes;
@@ -80,10 +96,10 @@ public class AssertionTypeDescriptor extends Descriptor {
      * @return ActionTypeDescriptor[]
      */
     public ActionTypeDescriptor[] getActionTypesAsArray() {
-        return (ActionTypeDescriptor[])actionTypes.toArray(
-                new ActionTypeDescriptor[actionTypes.size()]);
+        return (ActionTypeDescriptor[]) actionTypes
+                .toArray(new ActionTypeDescriptor[actionTypes.size()]);
     }
-    
+
     /**
      * Set the following array of action types
      * 
@@ -94,7 +110,7 @@ public class AssertionTypeDescriptor extends Descriptor {
             addActionType(action);
         }
     }
-    
+
     /**
      * Add an action type
      * 
@@ -104,14 +120,14 @@ public class AssertionTypeDescriptor extends Descriptor {
     public void addActionType(ActionTypeDescriptor actionType) {
         this.actionTypes.add(actionType);
     }
-    
+
     /**
-     * Retrieve the {@link ActionType} with the specified name or null if 
-     * one doesn't exist
+     * Retrieve the {@link ActionType} with the specified name or null if one
+     * doesn't exist
      * 
      * @param name
      *            the action name
-     * @return ActionTypeDescriptor            
+     * @return ActionTypeDescriptor
      */
     public ActionTypeDescriptor getActionType(String name) {
         for (ActionTypeDescriptor actionType : actionTypes) {
@@ -119,10 +135,10 @@ public class AssertionTypeDescriptor extends Descriptor {
                 return actionType;
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Remove the specified action type
      * 
@@ -132,8 +148,7 @@ public class AssertionTypeDescriptor extends Descriptor {
     public void removeActionType(ActionTypeDescriptor actionType) {
         this.actionTypes.remove(actionType);
     }
-    
-    
+
     /**
      * @return Returns the propertyArchetype.
      */
@@ -142,121 +157,147 @@ public class AssertionTypeDescriptor extends Descriptor {
     }
 
     /**
-     * @param propertyArchetypeQName The propertyArchetypeQName to set.
+     * @param propertyArchetypeQName
+     *            The propertyArchetypeQName to set.
      */
     public void setPropertyArchetype(String propertyArchetype) {
         this.propertyArchetype = propertyArchetype;
     }
 
     /**
-     * This method will execute the specified action against the nominated
-     * node and assertion descriptor and will return the a result to the 
-     * caller.
+     * This method will execute the specified action against the nominated node
+     * and assertion descriptor and will return the a result to the caller.
      * <p>
      * The caller is responsible for casting the result to the appropriate type.
+     * <p>
+     * This method expects to fins the appropriate action defined on the
+     * specified assertion
      * 
      * @param action
-     *            the name of the action.      
+     *            the name of the action.
      * @param target
      *            this is the object that is the subject of the assetion
      * @param node
-     *            the node descriptor            
+     *            the node descriptor
      * @param assertion
-     *            this is the assertion obect holds the parameters to the 
-     *            method call
-     * @return Object
-     *            the result form the action or null if a result is not 
-     *            applicable
+     *            this is the assertion obect holds the parameters to the method
+     *            call
+     * @return Object the result form the action or null if a result is not
+     *         applicable
      * @throws AssertionException
-     *            a runtime exception that is raised if the assertion cannot
-     *            be evaluated.
+     *             a runtime exception that is raised if the assertion cannot be
+     *             evaluated.
      */
-    public Object evaluateAction(String action, Object target, 
+    public Object evaluateAction(String action, Object target,
             NodeDescriptor node, AssertionDescriptor assertion) {
         ActionTypeDescriptor descriptor = getActionTypeDescriptorByName(action);
         if (descriptor == null) {
             throw new AssertionException(
                     AssertionException.ErrorCode.ActionNoSupportedByAssertion,
-                    new Object[] {action, this.getName()});
+                    new Object[] { action, this.getName() });
         }
-        
+
         try {
-            Class clazz = Thread.currentThread()
-                .getContextClassLoader().loadClass(descriptor.getClassName());
-            Method method = clazz.getMethod(descriptor.getMethodName(), 
-                    new Class[]{Object.class, NodeDescriptor.class, 
-                                AssertionDescriptor.class});
-            
-            return method.invoke(null, new Object[]{target, node, assertion});
+            Class clazz = Thread.currentThread().getContextClassLoader()
+                    .loadClass(descriptor.getClassName());
+            Method method = clazz.getMethod(descriptor.getMethodName(),
+                    new Class[] { Object.class, NodeDescriptor.class,
+                            AssertionDescriptor.class });
+
+            return method
+                    .invoke(null, new Object[] { target, node, assertion });
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,
-                    new Object[] {action, this.getName()},
-                    exception);
-            
+                    new Object[] { action, this.getName() }, exception);
+
         }
     }
-    
+
+    /**
+     * This is a convenience method that provides a way for assertions to hook
+     * in to and extend the creation phase of an archetype
+     * 
+     * @param target
+     *            this is the object that is the subject of the assetion
+     * @param node
+     *            the node descriptor
+     * @param assertion
+     *            this is the assertion obect holds the parameters to the method
+     *            call
+     * @return boolean
+     * @throws AssertionException
+     *             a runtime exception that is raised if the assertion cannot be
+     *             evaluated.
+     */
+    public void create(Object target, NodeDescriptor node,
+            AssertionDescriptor assertion) {
+        try {
+            ActionTypeDescriptor actionType = getActionType(Actions.create
+                    .toString());
+            if (actionType == null) {
+                return;
+            }
+
+            evaluateAction(Actions.create.toString(), target, node, assertion);
+        } catch (Exception exception) {
+            throw new AssertionException(
+                    AssertionException.ErrorCode.FailedToApplyAssertion,
+                    new Object[] { "assert", getName() }, exception);
+        }
+    }
+
     /**
      * This method will evaluate the assetion against the target object and
      * return true if the assertion holds and false otherwise.
      * <p>
      * The declared assertion is transformed into a method call, which takes the
-     * target object as one parameter and a map of properties as the other 
-     * parameter. 
+     * target object as one parameter and a map of properties as the other
+     * parameter.
      * 
      * @param target
      *            this is the object that is the subject of the assetion
      * @param node
-     *            the node descriptor            
+     *            the node descriptor
      * @param assertion
-     *            this is the assertion obect holds the parameters to the 
-     *            method call
+     *            this is the assertion obect holds the parameters to the method
+     *            call
      * @return boolean
      * @throws AssertionException
-     *            a runtime exception that is raised if the assertion cannot
-     *            be evaluated.
+     *             a runtime exception that is raised if the assertion cannot be
+     *             evaluated.
      */
-    public boolean assertTrue(Object target, NodeDescriptor node, 
-        AssertionDescriptor assertion) {
+    public boolean validate(Object target, NodeDescriptor node,
+            AssertionDescriptor assertion) {
         try {
-            ActionTypeDescriptor actionType = getActionType("assert");
+            ActionTypeDescriptor actionType = getActionType(Actions.validate
+                    .toString());
             if (actionType == null) {
-                throw new AssertionException(
-                        AssertionException.ErrorCode.NoActionTypeSpecified,
-                        new Object[]{ "assert", getName()});
+                return true;
             }
-            
-            Class clazz = Thread.currentThread()
-                .getContextClassLoader().loadClass(actionType.getClassName());
-            Method method = clazz.getMethod(actionType.getMethodName(), 
-                    new Class[]{Object.class, NodeDescriptor.class, 
-                                AssertionDescriptor.class});
-            
-            return ((Boolean)method.invoke(null, 
-                    new Object[]{target, node, assertion})).booleanValue();
+
+            return ((Boolean) evaluateAction(Actions.validate.toString(),
+                    target, node, assertion)).booleanValue();
         } catch (Exception exception) {
             throw new AssertionException(
                     AssertionException.ErrorCode.FailedToApplyAssertion,
-                    new Object[] {"assert", getName()},
-                    exception);
-            
+                    new Object[] { "assert", getName() }, exception);
         }
     }
-    
+
     /**
-     * Return the {@link ActionTypeDescriptor} with the specified name or
-     * null if one does not exist.
+     * Return the {@link ActionTypeDescriptor} with the specified name or null
+     * if one does not exist.
      * 
      * @param action
      *            the name of the action
-     * @return ActionTypeDescriptor            
+     * @return ActionTypeDescriptor
      */
     private ActionTypeDescriptor getActionTypeDescriptorByName(String action) {
         if (StringUtils.isEmpty(action)) {
             return null;
         }
-        
+
         ActionTypeDescriptor descriptor = null;
         for (ActionTypeDescriptor atype : actionTypes) {
             if (atype.getName().equals(action)) {
@@ -264,19 +305,21 @@ public class AssertionTypeDescriptor extends Descriptor {
                 break;
             }
         }
-        
+
         return descriptor;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        AssertionTypeDescriptor copy = (AssertionTypeDescriptor)super.clone();
+        AssertionTypeDescriptor copy = (AssertionTypeDescriptor) super.clone();
         copy.actionTypes = new TreeSet<ActionTypeDescriptor>(this.actionTypes);
         copy.propertyArchetype = this.propertyArchetype;
-        
+
         return copy;
     }
 }

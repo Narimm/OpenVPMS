@@ -43,12 +43,6 @@ public class ActRelationship extends IMObject {
     private int sequence;
     
     /**
-     * Indicates that the target {@link Act} is NOT related to the source 
-     * {@link Act}.
-     */
-    private boolean negationInd;
-    
-    /**
      * Indicates whether the relationship is one of parent-child. This means
      * that the parent is the owner of the relationship and is responsible for
      * managing its lifecycle. When the parent is deleted then it will also
@@ -62,20 +56,20 @@ public class ActRelationship extends IMObject {
     private DynamicAttributeMap details;
     
     /**
-     * Reference to the source {@link Act}
+     * Reference to the source {@link Act} reference
      */
-    private Act sourceAct;
+    private IMObjectReference source;
     
     /**
-     * Reference to the target {@link Act}
+     * Reference to the target {@link Act} reference
      */
-    private Act targetAct;
+    private IMObjectReference target;
     
     
     /**
      * Default constructor
      */
-    protected ActRelationship() {
+    public ActRelationship() {
         // do nothing
     }
     
@@ -93,12 +87,12 @@ public class ActRelationship extends IMObject {
      * @param details
      *            dynamic details of the act relationship
      */
-    public ActRelationship(ArchetypeId archetypeId, Act sourceAct, 
-        Act targetAct, int sequence, DynamicAttributeMap details) {
+    public ActRelationship(ArchetypeId archetypeId, IMObjectReference sourceAct, 
+            IMObjectReference targetAct, int sequence, DynamicAttributeMap details) {
         super(archetypeId);
         this.sequence = sequence;
-        this.sourceAct = sourceAct;
-        this.targetAct = targetAct;
+        this.source = sourceAct;
+        this.target = targetAct;
         this.details = details;
         this.parentChildRelationship = false;
     }
@@ -118,20 +112,6 @@ public class ActRelationship extends IMObject {
     }
 
     /**
-     * @return Returns the negationInd.
-     */
-    public boolean getNegationInd() {
-        return negationInd;
-    }
-
-    /**
-     * @param negationInd The negationInd to set.
-     */
-    public void setNegationInd(boolean negationInd) {
-        this.negationInd = negationInd;
-    }
-
-    /**
      * @return Returns the sequence.
      */
     public int getSequence() {
@@ -148,29 +128,29 @@ public class ActRelationship extends IMObject {
     /**
      * @return Returns the sourceAct.
      */
-    public Act getSourceAct() {
-        return sourceAct;
+    public IMObjectReference getSource() {
+        return source;
     }
 
     /**
      * @param sourceAct The sourceAct to set.
      */
-    public void setSourceAct(Act sourceAct) {
-        this.sourceAct = sourceAct;
+    public void setSource(IMObjectReference sourceAct) {
+        this.source = sourceAct;
     }
 
     /**
      * @return Returns the targetAct.
      */
-    public Act getTargetAct() {
-        return targetAct;
+    public IMObjectReference getTarget() {
+        return target;
     }
 
     /**
      * @param targetAct The targetAct to set.
      */
-    public void setTargetAct(Act targetAct) {
-        this.targetAct = targetAct;
+    public void setTarget(IMObjectReference targetAct) {
+        this.target = targetAct;
     }
 
     /**
@@ -195,13 +175,12 @@ public class ActRelationship extends IMObject {
         ActRelationship copy = (ActRelationship)super.clone();
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
-        copy.negationInd = this.negationInd;
         copy.parentChildRelationship = this.parentChildRelationship;
         copy.sequence = this.sequence;
         
         // no need to clone the source and target act
-        copy.sourceAct = this.sourceAct;
-        copy.targetAct = this.targetAct;
+        copy.source = this.source;
+        copy.target = this.target;
         
         return copy;
     }

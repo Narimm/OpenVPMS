@@ -18,8 +18,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.party;
 
-// java core
-import java.util.Date;
 
 // hibernate
 import org.hibernate.Session;
@@ -62,7 +60,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        HibernatePartyUtil.deleteAllContacts(currentSession());
     }
 
     /**
@@ -74,16 +71,16 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
         Transaction tx = null;
         
         try {
-            HibernatePartyUtil.deleteAllContacts(session);
-            
             // get initial numbr of entries in address tabel
             int ccount = HibernatePartyUtil.getTableRowCount(session, "contact");
             // execute the test
             tx = session.beginTransaction();
-            Person person = createPerson();
+            ContactPurpose purpose = createContactPurpose("purpose");
+            session.save(purpose);
             Contact contact = createContact();
+            Person person = createPerson();
             person.addContact(contact);
-            contact.addContactPurpose(createContactPurpose("purpose"));
+            contact.addContactPurpose(purpose);
             session.save(person);
             tx.commit();
             
@@ -126,6 +123,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
 
             tx = session.beginTransaction();
             ContactPurpose purpose = createContactPurpose("now");
+            session.save(purpose);
             contact = person.getContacts().iterator().next();
             contact.addContactPurpose(purpose);
             session.save(person);
@@ -141,7 +139,9 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             // add another contract purpose
             tx = session.beginTransaction();
-            contact.addContactPurpose(createContactPurpose("now1"));
+            ContactPurpose purpose1 = createContactPurpose("now1");
+            session.save(purpose1);
+            contact.addContactPurpose(purpose1);
             session.save(contact);
             tx.commit();
             
@@ -185,9 +185,11 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             tx = session.beginTransaction();
             
+            ContactPurpose purpose = createContactPurpose("now");
+            session.save(purpose);
             Person person = createPerson();
             Contact contact = createContact();
-            contact.addContactPurpose(createContactPurpose("now"));
+            contact.addContactPurpose(purpose );
             person.addContact(contact);
             session.save(person);
             tx.commit();
@@ -217,7 +219,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
             bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
             assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount);
+            assertTrue(bcount1 == bcount + 1);
             
         } catch (Exception exception) { 
             if (tx != null) {
@@ -246,9 +248,11 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             tx = session.beginTransaction();
             
+            ContactPurpose purpose = createContactPurpose("now");
+            session.save(purpose);
             Person person = createPerson();
             Contact contact = createContact();
-            contact.addContactPurpose(createContactPurpose("now"));
+            contact.addContactPurpose(purpose);
             person.addContact(contact);
             session.save(person);
             tx.commit();
@@ -306,12 +310,16 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             tx = session.beginTransaction();
             
+            ContactPurpose purpose = createContactPurpose("now");
+            session.save(purpose);
+            ContactPurpose purpose1 = createContactPurpose("later");
+            session.save(purpose1);
             Person person = createPerson();
             Contact contact = createContact();
-            contact.addContactPurpose(createContactPurpose("now"));
-            contact.addContactPurpose(createContactPurpose("later"));
+            contact.addContactPurpose(purpose);
+            contact.addContactPurpose(purpose1);
             person.addContact(contact);
-            session.save(person);
+            session.saveOrUpdate(person);
             tx.commit();
             
             // check row counts
@@ -328,7 +336,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             assertTrue(person.getContacts().iterator().next().getContactPurposes().size() == 2);
             
             person.getContacts().clear();
-            session.save(person);
+            session.saveOrUpdate(person);
             
             // retrieve and check the contacts
             person = (Person)session.get(Person.class, person.getUid());
@@ -339,7 +347,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             acount1 = HibernatePartyUtil.getTableRowCount(session, "contact");
             bcount1 = HibernatePartyUtil.getTableRowCount(session, "contactPurpose");
             assertTrue(acount1 == acount);
-            assertTrue(bcount1 == bcount);
+            assertTrue(bcount1 == bcount + 2);
         } catch (Exception exception) { 
             if (tx != null) {
                 tx.rollback();
@@ -391,8 +399,6 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
     private ContactPurpose createContactPurpose(String purpose) throws Exception {
         ContactPurpose cpur = new ContactPurpose();
         cpur.setArchetypeIdAsString("penvpms-party-contactPurpose.current.1.0");
-        cpur.setFromDate(new Date());
-        cpur.setThruDate(new Date());
         cpur.setName(purpose);
         
         return cpur;

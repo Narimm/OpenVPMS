@@ -27,7 +27,9 @@ import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.party.HibernatePartyUtil;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Role;
 
@@ -54,9 +56,9 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
     }
 
     /**
-     * Test the creation of a simple participation
+     * Test the creation of a simple participation from the entity end
      */
-    public void testSimpleParticiaptionCreation()
+    public void testCreateParticiaptionFromEntityEnd()
     throws Exception {
         Session session = currentSession();
         Transaction tx = null;
@@ -67,8 +69,11 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
 
             // execute the test
             tx = session.beginTransaction();
-            Entity entity = createEntity();
-            Participation participation = createParticipation(null);
+            Entity entity = createEntity("jima-entity");
+            session.saveOrUpdate(entity);
+            Act act = createAct("jima-act");
+            session.saveOrUpdate(act);
+            Participation participation = createParticipation(entity ,act);
             entity.addParticipation(participation);
             session.saveOrUpdate(entity);
             tx.commit();
@@ -76,6 +81,19 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             // ensure that there is still one more address
             int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
             assertTrue(acount1 == acount + 1);
+            
+            // retrieve the entity and check the participations. Need tp 
+            // clear the session otherwise it does not go back to the database
+            // and retrieve the right act.
+            session.clear();
+            entity = (Entity)session.load(Entity.class, entity.getUid());
+            assertTrue(entity != null);
+            assertTrue(entity.getParticipations().size() == 1);
+            
+            // retrieve the act and check the participations
+            act = (Act)session.load(Act.class, act.getUid());
+            assertTrue(act != null);
+            assertTrue(act.getParticipations().size() == 1);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -86,6 +104,171 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
         }
     }
     
+    /**
+     * Test the creation of a simple participation from the act end
+     */
+    public void testCreateParticiaptionFromActEnd()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // get initial numbr of entries in address tabel
+            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+
+            // execute the test
+            tx = session.beginTransaction();
+            Entity entity = createEntity("jima-entity");
+            session.saveOrUpdate(entity);
+            Act act = createAct("jima-act");
+            session.saveOrUpdate(act);
+            Participation participation = createParticipation(entity ,act);
+            act.addParticipation(participation);
+            session.saveOrUpdate(act);
+            tx.commit();
+
+            // ensure that there is still one more address
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            assertTrue(acount1 == acount + 1);
+            
+            // retrieve the entity and check the participations. Need tp 
+            // clear the session otherwise it does not go back to the database
+            // and retrieve the right act.
+            session.clear();
+            entity = (Entity)session.load(Entity.class, entity.getUid());
+            assertTrue(entity != null);
+            assertTrue(entity.getParticipations().size() == 1);
+            
+            // retrieve the act and check the participations
+            act = (Act)session.load(Act.class, act.getUid());
+            assertTrue(act != null);
+            assertTrue(act.getParticipations().size() == 1);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
+     * Create an entity, act and particpation and ensure that the participation
+     * can be removed from the entity end.
+     */
+    public void testDeleteParticipantFromEntityEnd()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // get initial numbr of entries in address tabel
+            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+
+            // execute the test
+            tx = session.beginTransaction();
+            Entity entity = createEntity("jima-entity");
+            session.saveOrUpdate(entity);
+            Act act = createAct("jima-act");
+            session.saveOrUpdate(act);
+            Participation participation = createParticipation(entity ,act);
+            entity.addParticipation(participation);
+            session.saveOrUpdate(entity);
+            tx.commit();
+
+            // ensure that there is still one more add participation
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            assertTrue(acount1 == acount + 1);
+
+            tx = session.beginTransaction();
+            entity = (Entity)session.load(Entity.class, entity.getUid());
+            assertTrue(entity != null);
+            assertTrue(entity.getParticipations().size() == 1);
+            
+            entity.removeParticipation(entity.getParticipations().iterator().next());
+            session.saveOrUpdate(entity);
+            tx.commit();
+            
+            // ensure that the participation has been removed
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            assertTrue(acount1 == acount);
+
+            session.clear();
+            entity = (Entity)session.load(Entity.class, entity.getUid());
+            assertTrue(entity != null);
+            assertTrue(entity.getParticipations().size() == 0);
+            act = (Act)session.load(Act.class, act.getUid());
+            assertTrue(act != null);
+            assertTrue(act.getParticipations().size() == 0);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+
+    /**
+     * Create an entity, act and particpation and ensure that the participation
+     * can be removed from the act end.
+     */
+    public void testDeleteParticipantFromActEnd()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // get initial numbr of entries in address tabel
+            int acount = HibernatePartyUtil.getTableRowCount(session, "participation");
+
+            // execute the test
+            tx = session.beginTransaction();
+            Entity entity = createEntity("jima-entity");
+            session.saveOrUpdate(entity);
+            Act act = createAct("jima-act");
+            session.saveOrUpdate(act);
+            Participation participation = createParticipation(entity ,act);
+            entity.addParticipation(participation);
+            session.saveOrUpdate(entity);
+            tx.commit();
+
+            // ensure that there is still one more add participation
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            assertTrue(acount1 == acount + 1);
+
+            session.clear();
+            tx = session.beginTransaction();
+            act = (Act)session.load(Act.class, act.getUid());
+            assertTrue(act != null);
+            assertTrue(act.getParticipations().size() == 1);
+            
+            act.removeParticipation(act.getParticipations().iterator().next());
+            session.saveOrUpdate(act);
+            tx.commit();
+            
+            // ensure that the participation has been removed
+            acount1 = HibernatePartyUtil.getTableRowCount(session, "participation");
+            assertTrue(acount1 == acount);
+
+            entity = (Entity)session.load(Entity.class, entity.getUid());
+            assertTrue(entity != null);
+            assertTrue(entity.getParticipations().size() == 0);
+            act = (Act)session.load(Act.class, act.getUid());
+            assertTrue(act != null);
+            assertTrue(act.getParticipations().size() == 0);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+
     /**
      * Test the creation of a multiple participation to a single entity
      */
@@ -105,14 +288,16 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             
             // execute the test
             tx = session.beginTransaction();
-            Entity entity = createEntity();
-            session.save(entity);
+            Entity entity = createEntity("jima1-entity");
+            session.saveOrUpdate(entity);
             
             for (int index = 0; index < pcount; index++) {
-                Participation participation = createParticipation(null);
+                Act act = createAct("act-" + index);
+                session.saveOrUpdate(act);
+                Participation participation = createParticipation(entity, act);
                 entity.addParticipation(participation);
-                session.save(participation);
             }
+            session.saveOrUpdate(entity);
             tx.commit();
 
             // ensure that there is still one more address
@@ -121,6 +306,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             
             // retrieve the entity and ensure that it as the correct number
             // of participations
+            session.clear();
             entity = (Entity)session.load(Entity.class, entity.getUid());
             assertTrue(entity.getParticipations().size() == pcount);
         } catch (Exception exception) {
@@ -152,9 +338,12 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             
             // execute the test
             tx = session.beginTransaction();
-            Entity entity = createEntity();
+            Entity entity = createEntity("jima2-entity");
+            session.saveOrUpdate(entity);
             for (int index = 0; index < pcount; index++) {
-                Participation participation = createParticipation(null);
+                Act act = createAct("act2-" + index);
+                session.saveOrUpdate(act);
+                Participation participation = createParticipation(entity, act);
                 entity.addParticipation(participation);
             }
             session.saveOrUpdate(entity);
@@ -171,8 +360,7 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             assertTrue(entity.getParticipations().size() == pcount);
             
             // remove the first participation
-            Participation participation = entity.getParticipations().iterator().next();
-            assertTrue(entity.removeParticipation(participation));
+            entity.removeParticipation(entity.getParticipations().iterator().next());
             session.saveOrUpdate(entity);
             tx.commit();
             
@@ -183,12 +371,6 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
             // retrieve the entity object again
             entity = (Entity)session.load(Entity.class, entity.getUid());
             assertTrue(entity.getParticipations().size() == pcount - 1);
-            
-            // retrieve the first participation object and then use it to 
-            // navigate to the Entity object
-            participation = (Participation)session.load(Participation.class, 
-                    entity.getParticipations().iterator().next().getUid());
-            assertTrue(participation.getEntity().getUid() == entity.getUid());
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -200,30 +382,50 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
     }
     
     /**
-     * Create a simple participation
+     * Create a simple participation netween the entity and the act
      * 
      * @param entity
-     *            the entity to add to the participation
+     *            the entity
+     * @param act            
+     *            the act  
      * @return Participation
      */
-    private Participation createParticipation(Entity entity) {
+    private Participation createParticipation(Entity entity, Act act) {
         return new Participation( 
                 new ArchetypeId("openvpms-common-participation.participation.1.0"),
-                entity, null, null);
+                new IMObjectReference(entity), new IMObjectReference(act), null);
     }
     
     /**
      * Create a simple entity
      * 
+     * @param nmame
+     *            the name of the entity to create  
+     *          
      * @return Entity
      */
-    private Entity createEntity() {
+    private Entity createEntity(String name) {
         return new Role(
-                new ArchetypeId("openvpms-party-role.role.1.0"), "administrator",
+                new ArchetypeId("openvpms-party-role.role.1.0"), name,
                 null, null, null);
 
     }
     
+    /**
+     * Create a simple act
+     *
+     * @param name
+     *          the name of the act
+     * @return Act
+     */
+    private Act createAct(String name) {
+        Act act = new Act();
+        act.setArchetypeId(new ArchetypeId("openvpms-party-act.simple.1.0"));
+        act.setName(name);
+        
+        return act;
+    }
+
     /*
      * @see HibernateInfoModelTestCase#setUp()
      */
