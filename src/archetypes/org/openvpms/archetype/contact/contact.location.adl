@@ -50,6 +50,18 @@
 		<node name="startDate" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
 		<node name="endDate" path="/activeEndTime"
-			type="java.util.Date" hidden="true" minCardinality="0" />		
+			type="java.util.Date" hidden="true" minCardinality="0" />
+		<node name="purposes" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.contactPurpose" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>		
 	</archetype>
 </archetypes>

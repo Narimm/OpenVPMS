@@ -1,39 +1,27 @@
 <archetypes>
-	<archetype name="openvpms-common-entityRelationship.productSupplier.1.0"
+	<archetype name="openvpms-common-entityRelationship.productStockLocation.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Supplier" >
+		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Product Stock Location" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('ProductSupplier', '')" />
+			derivedValue="concat('Product Stock Location', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Product Supplier','(',/activeStartTime, ' - ',/activeEndTime,')')" />
+			derivedValue="concat('Product Stock Location','(',/activeStartTime, ' - ',/activeEndTime,')')" />
 		<node name="activeStartTime" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
 			hidden="true" defaultValue="java.util.Date.new()" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="minimumQty" displayName="Minimum Order Qty" path="/details/attributes/minimumOrderQty" type="java.lang.Integer" minCardinality="0" />
-			<node name="orderQtyInc" displayName="Order Qty Increments" path="/details/attributes/orderQtyInc" type="java.lang.Integer" minCardinality="0" />
+			<node name="minimumQty" displayName="Minimum Qty" path="/details/attributes/minimumQty" type="java.lang.Integer" minCardinality="0" />
+			<node name="reorderQty" displayName="Reorder Qty" path="/details/attributes/reorderQty" type="java.lang.Integer" minCardinality="0" />
 			<node name="qtyUom" displayName="Units of Measure" path="/details/attributes/qtyUom" type="java.lang.String" minCardinality="0" >
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
 					<property name="concept" value="uom" />
 					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
-			<node name="leadTime" displayName="Lead Time" path="/details/attributes/leadTime" type="java.lang.Integer" minCardinality="0" />			
-			<node name="leadUom" displayName="Lead Time Units" path="/details/attributes/leadUom" type="java.lang.String" minCardinality="0" defaultValue="'Days'" >
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="hours" value="hours" />
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
 		</node>		
@@ -59,11 +47,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="party.supplierorganisation" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="party.supplierperson" />
+							value="party.organisationStockLocation" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

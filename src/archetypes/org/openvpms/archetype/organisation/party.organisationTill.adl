@@ -1,0 +1,39 @@
+<archetypes>
+	<archetype name="openvpms-party-party.organisationTill.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Party"  displayName="Till" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
+		<node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1" />
+		<node name="description" type="java.lang.String" path="/description" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
+			<node name="tillFloat" path="/details/attributes/tillFloat" type="java.math.BigDecimal" />
+			<node name="lastCleared" path="/details/attributes/lastCleared" type="java.util.Date" readOnly="true" />
+			<node name="lastBalance" path="/details/attributes/lastBalance" type="java.math.BigDecimal" readOnly="true" />
+		</node>
+		<node name="locations" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
+			filter="entityRelationship.locationTill" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.locationTill" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="paymentTypes" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.paymentType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
