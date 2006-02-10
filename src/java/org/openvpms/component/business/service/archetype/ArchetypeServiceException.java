@@ -67,7 +67,12 @@ public class ArchetypeServiceException extends RuntimeException implements
         FailedInGetByNamedQuery,
         InvalidDomainClass,
         AssertionTypeNotSpecified,
-        FailedToExecuteCreateFunction
+        FailedToExecuteCreateFunction,
+        FailedToGetActs,
+        FailedToGetActForEntity,
+        FailedToGetParticipations,
+        EntityUidNotSpecified,
+        EntityConceptNotSpecified
     }
 
     /**

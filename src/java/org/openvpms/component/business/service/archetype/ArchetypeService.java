@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype;
 // java core
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -40,8 +41,10 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
@@ -525,6 +528,63 @@ public class ArchetypeService implements IArchetypeService {
                 primaryOnly);
     }
     
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.entity.IEntityService#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
+     */
+    public List<Act> getActs(long entityUid, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+        if (entityUid <= 0) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
+        }
+        
+        try {
+            return dao.getActs(entityUid, pConceptName, entityName, aConceptName, startTimeFrom, 
+                    startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
+        } catch (IMObjectDAOException exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToGetActForEntity,
+                    new Object[] { entityUid }, exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.entity.IEntityService#getActs(java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
+     */
+    public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+        if ((StringUtils.isEmpty(entityName)) ||
+            (StringUtils.isEmpty(conceptName))) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.EntityConceptNotSpecified);
+        }
+        try {
+            return dao.getActs(entityName, conceptName, startTimeFrom, 
+                    startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
+        } catch (IMObjectDAOException exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToGetActs,
+                    new Object[] { entityName, conceptName }, exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.entity.IEntityService#getParticipations(long, java.lang.String, java.util.Date, java.util.Date, boolean)
+     */
+    public List<Participation> getParticipations(long entityUid, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
+        if (entityUid <= 0) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
+        }
+        
+        try {
+            return dao.getParticipations(entityUid, conceptName, startTimeFrom, 
+                    startTimeThru, endTimeFrom, endTimeThru, activeOnly);
+        } catch (IMObjectDAOException exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToGetParticipations,
+                    new Object[] { entityUid }, exception);
+        }
+    }
+
     /**
      * Iterate through all the nodes and ensure that the object meets all the
      * specified assertions. The assertions are defined in the node and can be

@@ -21,6 +21,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 
 // java core
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,9 @@ import org.hibernate.Session;
 //openvpms-framework
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 
 
 /**
@@ -183,7 +186,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 if (andRequired) {
                     queryString.append(" and ");
                 }
-                queryString.append(" entity.active = true");
+                queryString.append(" entity.active = 1");
             }
             
             // now execute te query
@@ -284,4 +287,441 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         return results;
     }
     
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IEntityDAO#getActs(long, java.lang.String, java.util.Date, java.util.Date, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Participation> getParticipations(long entityUid, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
+        try {
+            StringBuffer queryString = new StringBuffer();
+            List<String> names = new ArrayList<String>();
+            List<Object> params = new ArrayList<Object>();
+            boolean andRequired = false;
+            
+            queryString.append("from ");
+            queryString.append(Participation.class.getName());
+            queryString.append(" as participation ");
+            
+            // check to see if one or more of the values have been specified
+            if ((!StringUtils.isEmpty(conceptName)) ||
+                (entityUid > 0) ||
+                (startTimeFrom != null) ||
+                (startTimeThru != null) ||
+                (endTimeFrom != null) ||
+                (endTimeThru != null)) {
+                queryString.append(" where ");
+            }
+            
+            
+            // process the entityUid
+            if (entityUid > 0) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("uid");
+                andRequired = true;
+                queryString.append(" participation.entity.uid = :uid");
+                params.add(entityUid);
+            }
+            
+            // process the concept name
+            if (StringUtils.isEmpty(conceptName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("conceptName");
+                andRequired = true;
+                if ((conceptName.endsWith("*")) || (conceptName.startsWith("*"))) {
+                    queryString.append(" participation.archetypeId.concept like :conceptName");
+                    params.add(conceptName.replace("*", "%"));
+                } else {
+                    queryString.append(" participation.archetypeId.concept = :conceptName");
+                    params.add(conceptName);
+                }
+            }
+            
+            // process the startTimeFrom
+            if (startTimeFrom != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("startTimeFrom");
+                andRequired = true;
+                queryString.append(" participation.activeStartTime >= :startTimeFrom");
+                params.add(startTimeFrom);
+            }
+            
+            // process the startTimeThru
+            if (startTimeThru != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("startTimeThru");
+                andRequired = true;
+                queryString.append(" participation.activeStartTime <= :startTimeThru");
+                params.add(startTimeThru);
+            }
+            
+            // process the endTimeFrom
+            if (endTimeFrom != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("endTimeFrom");
+                andRequired = true;
+                queryString.append(" participation.activeEndTime >= :endTimeFrom");
+                params.add(endTimeFrom);
+            }
+            
+            // process the endTimeThru
+            if (endTimeThru != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("endTimeThru");
+                andRequired = true;
+                queryString.append(" participation.activeEndTime >= :endTimeThru");
+                params.add(endTimeThru);
+            }
+            
+            // determine if we are only interested in active objects
+            if (activeOnly) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                queryString.append(" participation.active = true");
+            }
+            
+            // now execute te query
+           return getHibernateTemplate().findByNamedParam(
+                   queryString.toString(),
+                   (String[])names.toArray(new String[names.size()]),
+                   params.toArray());
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindParticipations,
+                    new Object[]{entityUid, conceptName, startTimeFrom, endTimeFrom},
+                    exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Date, java.lang.String, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Act> getActs(long entityUid, String entityName, String pConceptName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+        try {
+            StringBuffer queryString = new StringBuffer();
+            List<String> names = new ArrayList<String>();
+            List<Object> params = new ArrayList<Object>();
+            boolean andRequired = false;
+            
+            queryString.append("select act from ");
+            queryString.append(Act.class.getName());
+            queryString.append(" as act ");
+            queryString.append(" left outer join act.participations as participation ");
+            
+            // check to see if one or more of the values have been specified
+            if ((!StringUtils.isEmpty(entityName)) ||
+                (!StringUtils.isEmpty(pConceptName)) ||
+                (!StringUtils.isEmpty(aConceptName)) ||
+                (!StringUtils.isEmpty(status)) ||
+                (entityUid > 0) ||
+                (startTimeFrom != null) ||
+                (startTimeThru != null) ||
+                (endTimeFrom != null) ||
+                (endTimeThru != null)) {
+                queryString.append(" where ");
+            }
+            
+            // process the entityUid
+            if (entityUid > 0) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("uid");
+                andRequired = true;
+                queryString.append(" participation.entity.uid = :uid");
+                params.add(entityUid);
+            }
+            
+            // process the participant concept name
+            if (StringUtils.isEmpty(pConceptName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("pConceptName");
+                andRequired = true;
+                if ((pConceptName.endsWith("*")) || (pConceptName.startsWith("*"))) {
+                    queryString.append(" participation.archetypeId.concept like :pConceptName");
+                    params.add(pConceptName.replace("*", "%"));
+                } else {
+                    queryString.append(" participation.archetypeId.concept = :pConceptName");
+                    params.add(pConceptName);
+                }
+            }
+            
+            // process the act entity name
+            if (StringUtils.isEmpty(entityName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("entityName");
+                andRequired = true;
+                if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
+                    queryString.append(" act.archetypeId.entityName like :entityName");
+                    params.add(entityName.replace("*", "%"));
+                } else {
+                    queryString.append(" act.archetypeId.entityName = :entityName");
+                    params.add(entityName);
+                }
+            }
+            
+            // process the activity concept name
+            if (StringUtils.isEmpty(aConceptName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("aConceptName");
+                andRequired = true;
+                if ((aConceptName.endsWith("*")) || (aConceptName.startsWith("*"))) {
+                    queryString.append(" act.archetypeId.concept like :aConceptName");
+                    params.add(aConceptName.replace("*", "%"));
+                } else {
+                    queryString.append(" act.archetypeId.concept = :aConceptName");
+                    params.add(aConceptName);
+                }
+            }
+            
+            // process the startTimeFrom
+            if (startTimeFrom != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("startTimeFrom");
+                andRequired = true;
+                queryString.append(" act.activityStartTime >= :startTimeFrom");
+                params.add(startTimeFrom);
+            }
+            
+            // process the startTimeThru
+            if (startTimeThru != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("startTimeThru");
+                andRequired = true;
+                queryString.append(" act.activityStartTime <= :startTimeThru");
+                params.add(startTimeThru);
+            }
+            
+            // process the endTimeFrom
+            if (endTimeFrom != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("endTimeFrom");
+                andRequired = true;
+                queryString.append(" act.activityEndTime >= :endTimeFrom");
+                params.add(endTimeFrom);
+            }
+            
+            // process the endTimeThru
+            if (endTimeThru != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("endTimeThru");
+                andRequired = true;
+                queryString.append(" act.activityEndTime <= :endTimeThru");
+                params.add(endTimeThru);
+            }
+            
+            // process the status
+            if (!StringUtils.isEmpty(status)) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("status");
+                andRequired = true;
+                queryString.append(" act.status = :status");
+                params.add(status);
+            }
+            
+            // determine if we are only interested in active objects
+            if (activeOnly) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                queryString.append(" act.active = true");
+            }
+            
+            // now execute te query
+           return getHibernateTemplate().findByNamedParam(
+                   queryString.toString(),
+                   (String[])names.toArray(new String[names.size()]),
+                   params.toArray());
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindActs,
+                    new Object[]{entityName, aConceptName, startTimeFrom, endTimeFrom, status},
+                    exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getActs(java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Date, java.lang.String, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+        try {
+            StringBuffer queryString = new StringBuffer();
+            List<String> names = new ArrayList<String>();
+            List<Object> params = new ArrayList<Object>();
+            boolean andRequired = false;
+            
+            queryString.append("from ");
+            queryString.append(Act.class.getName());
+            queryString.append(" as act ");
+            
+            // check to see if one or more of the values have been specified
+            if ((!StringUtils.isEmpty(entityName)) ||
+                (!StringUtils.isEmpty(conceptName)) ||
+                (!StringUtils.isEmpty(status)) ||
+                (startTimeFrom != null) ||
+                (startTimeThru != null) ||
+                (endTimeFrom != null) ||
+                (endTimeThru != null)) {
+                queryString.append(" where ");
+            }
+            
+            // process the entity name
+            if (StringUtils.isEmpty(entityName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("entityName");
+                andRequired = true;
+                if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
+                    queryString.append(" act.archetypeId.entityName like :entityName");
+                    params.add(entityName.replace("*", "%"));
+                } else {
+                    queryString.append(" act.archetypeId.entityName = :entityName");
+                    params.add(entityName);
+                }
+            }
+            
+            // process the concept name
+            if (StringUtils.isEmpty(conceptName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("conceptName");
+                andRequired = true;
+                if ((conceptName.endsWith("*")) || (conceptName.startsWith("*"))) {
+                    queryString.append(" act.archetypeId.concept like :conceptName");
+                    params.add(conceptName.replace("*", "%"));
+                } else {
+                    queryString.append(" act.archetypeId.concept = :conceptName");
+                    params.add(conceptName);
+                }
+            }
+            
+            // process the startTimeFrom
+            if (startTimeFrom != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("startTimeFrom");
+                andRequired = true;
+                queryString.append(" act.activityStartTime >= :startTimeFrom");
+                params.add(startTimeFrom);
+            }
+            
+            // process the startTimeThru
+            if (startTimeThru != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("startTimeThru");
+                andRequired = true;
+                queryString.append(" act.activityStartTime <= :startTimeThru");
+                params.add(startTimeThru);
+            }
+            
+            // process the endTimeFrom
+            if (endTimeFrom != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("endTimeFrom");
+                andRequired = true;
+                queryString.append(" act.activityEndTime >= :endTimeFrom");
+                params.add(endTimeFrom);
+            }
+            
+            // process the endTimeThru
+            if (endTimeThru != null) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("endTimeThru");
+                andRequired = true;
+                queryString.append(" act.activityEndTime <= :endTimeThru");
+                params.add(endTimeThru);
+            }
+            
+            // process the status
+            if (!StringUtils.isEmpty(status)) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("status");
+                andRequired = true;
+                queryString.append(" act.status = :status");
+                params.add(status);
+            }
+            
+            // determine if we are only interested in active objects
+            if (activeOnly) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                queryString.append(" act.active = true");
+            }
+            
+            // now execute te query
+           return getHibernateTemplate().findByNamedParam(
+                   queryString.toString(),
+                   (String[])names.toArray(new String[names.size()]),
+                   params.toArray());
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindActs,
+                    new Object[]{entityName, conceptName, startTimeFrom, endTimeFrom, status},
+                    exception);
+        }
+    }
 }
