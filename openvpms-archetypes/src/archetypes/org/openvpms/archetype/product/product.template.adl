@@ -23,7 +23,7 @@
 			</node>
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
-		<node name="relationships" path="/entityRelationships"
+		<node name="includes" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
@@ -54,10 +54,6 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="productPrice.defaultPrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="productPrice.variablePrice" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

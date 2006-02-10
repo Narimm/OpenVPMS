@@ -439,7 +439,7 @@
     <dependency>
       <groupId>openvpms</groupId>
       <artifactId>openvpms-framework</artifactId>
-      <version>0.4</version>
+      <version>0.5</version>
       <url>http://www.openvpms.org</url>
     </dependency>
   </dependencies>

@@ -26,8 +26,9 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="relationships" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*">
+		<node name="locations" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
+			filter="entityRelationship.practiceLocation" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

@@ -1,0 +1,49 @@
+<archetypes>
+	<archetype name="openvpms-party-party.organisationSchedule.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.party.Party"  displayName="Schedule" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
+		<node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1" />
+		<node name="description" type="java.lang.String" path="/description" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="slotSize" path="/details/attributes/slotSize" type="java.lang.Integer" defaultValue="'15'" minCardinality="1" />
+			<node name="slotUnits" path="/details/attributes/slotUnit" type="java.lang.String" defaultVminCardinality="1" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="minutes" value="minutes" />
+						<property name="hours" value="hours" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
+			<node name="maxSlots" path="/details/attributes/maximumSlots" type="java.lang.Integer" defaultValue="'100'" minCardinality="1" />
+			<node name="allowDoubleBooking" path="/details/attributes/allowDoubleBooking" type="java.lang.Boolean" defaultValue="false()" />
+		</node>
+		<node name="locations" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
+			filter="entityRelationship.locationSchedule" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.locationSchedule" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="appointmentTypes" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.appointmentType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
