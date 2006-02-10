@@ -87,7 +87,7 @@ public class NodeValidator implements Validator {
                                 Object value, AssertionDescriptor assertion,
                                 List<String> errors) {
         try {
-            if (!type.assertTrue(value, _node, assertion)) {
+            if (!type.validate(value, _node, assertion)) {
                 errors.add(assertion.getErrorMessage());
             }
         } catch (Exception exception) {
