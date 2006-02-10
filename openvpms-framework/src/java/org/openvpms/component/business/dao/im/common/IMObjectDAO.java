@@ -19,11 +19,14 @@
 package org.openvpms.component.business.dao.im.common;
 
 // java
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 
 /**
  * This interface provides data access object (DAO) support for objects of 
@@ -120,4 +123,88 @@ public interface IMObjectDAO {
      *            if there is an error processing the request                                   
      */
     public List<IMObject> getByNamedQuery(String name, Map<String, Object> params);
+
+    /**
+     * Retrieve a list of acts satisfying the following criteria
+     * 
+     * @param entityUid
+     *            the id of the entity to search for {mandatory}
+     * @param pConceptName
+     *            the participaton concept name (optional)            
+     * @param entityName
+     *            the act entityName, which can be wildcarded (optional}
+     * @param aConceptName
+     *            the act concept name, which can be wildcarded  (optional)
+     * @param startTimeFrom
+     *            the activity from  start time for the act(optional)
+     * @param startTimeThru
+     *            the activity thru from  start time for the act(optional)
+     * @param endTimeFrom
+     *            the activity from end time for the act (optional)
+     * @param endTimeThru
+     *            the activity thru end time for the act (optional)
+     * @param status
+     *            a particular act status
+     * @param activeOnly 
+     *            only areturn acts that are active
+     * @param List<Act>            
+     * @param EntityDAOException
+     *            if there is a problem executing the dao request                                                                                  
+     */
+    public List<Act> getActs(long entityUid, String pConceptName, String entityName, 
+            String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
+            Date endTimeThru, String status, boolean activeOnly);
+
+    /**
+     * Retrieve a list of acts satisfying the following criteria
+     * 
+     * @param entityName
+     *            the act entityName, which can be wildcarded (optional}
+     * @param conceptName
+     *            the act concept name, which can be wildcarded  (optional)
+     * @param startTimeFrom
+     *            the activity from  start time for the act(optional)
+     * @param startTimeThru
+     *            the activity thru from  start time for the act(optional)
+     * @param endTimeFrom
+     *            the activity from end time for the act (optional)
+     * @param endTimeThru
+     *            the activity thru end time for the act (optional)
+     * @param status
+     *            a particular act status
+     * @param activeOnly 
+     *            only areturn acts that are active
+     * @param List<Act>            
+     * @param EntityDAOException
+     *            if there is a problem executing the dao request                                                                                  
+     */
+    public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, 
+            Date startTimeThru, Date endTimeFrom, Date endTimeThru, 
+            String status, boolean activeOnly);
+
+    /**
+     * Return a list of participations satisfying the following criteria
+     * 
+     * @param entityUid
+     *            the id of the entity to search for {mandatory}
+     * @param conceptName
+     *            the participation concept name, which can be wildcarded  (optional)
+     * @param startTimeFrom 
+     *            the participation from start time for the act(optional)
+     * @param startTimeThru 
+     *            the participation thru start time for the act(optional)
+     * @param endTimeFrom
+     *            the participation from end time for the act (optional)
+     * @param endTimeThru
+     *            the participation thru end time for the act (optional)
+     * @param activeOnly 
+     *            only return participations that are active
+     * @param List<Participation>            
+     * @param EntityDAOException
+     *            if there is a problem executing the dao request                                                                                  
+     */
+    public List<Participation> getParticipations(long entityUid, String conceptName, 
+            Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
+            Date endTimeThru, boolean activeOnly);
 }
+
