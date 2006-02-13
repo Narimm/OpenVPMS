@@ -20,6 +20,8 @@
 package org.openvpms.component.business.service.archetype;
 
 // commons-jxpath
+import java.math.BigDecimal;
+
 import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
@@ -85,6 +87,8 @@ public class JXPathGenericObjectCreationFactory extends AbstractFactory {
                 ptr.setValue(new Short((short)0));
             } else if (clazz == Byte.class) {
                 ptr.setValue(new Byte((byte)0));
+            } else if (clazz == BigDecimal.class) {
+                ptr.setValue(BigDecimal.valueOf(0.0));
             } else {
                 ptr.setValue(clazz.newInstance());
             }
