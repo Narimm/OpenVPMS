@@ -551,7 +551,7 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
     public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
-        if ((StringUtils.isEmpty(entityName)) ||
+        if ((StringUtils.isEmpty(entityName)) &&
             (StringUtils.isEmpty(conceptName))) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityConceptNotSpecified);

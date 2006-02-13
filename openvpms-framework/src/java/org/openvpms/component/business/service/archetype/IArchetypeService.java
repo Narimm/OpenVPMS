@@ -169,7 +169,9 @@ public interface IArchetypeService {
      * @param entity
      *            the entity to insert or update
      * @throws ArchetypeServiceException
-     *             a runtime exception
+     *            if the service cannot save the specified entity
+     * @throws ValidationException
+     *            if the specified entity cannot be validated                        
      */
     public void save(IMObject entity);
     
