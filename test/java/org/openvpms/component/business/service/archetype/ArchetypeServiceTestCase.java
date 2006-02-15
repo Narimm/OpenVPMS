@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
@@ -126,6 +127,14 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Person person = (Person) service.create("person.person");
         assertTrue(person != null);
         assertTrue(person.getTitle().equals("Mr"));
+    }
+    
+    /**
+     * Test the creation of an archetype which defines a BigDecimal node
+     */
+    public void testOVPMS174() throws Exception {
+        IMObject obj = service.create("contact.bank");
+        assertTrue(obj != null);
     }
     
     /* (non-Javadoc)
