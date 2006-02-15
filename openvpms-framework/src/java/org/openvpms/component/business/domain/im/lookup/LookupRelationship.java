@@ -59,7 +59,7 @@ public class LookupRelationship extends IMObject {
     /**
      * Default constructor
      */
-    protected LookupRelationship() {
+    public LookupRelationship() {
     }
     
     /**
@@ -112,6 +112,27 @@ public class LookupRelationship extends IMObject {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * @param source The source to set.
+     */
+    public void setSource(Lookup source) {
+        this.source = source;
+    }
+
+    /**
+     * @param target The target to set.
+     */
+    public void setTarget(Lookup target) {
+        this.target = target;
+    }
+
+    /**
+     * @param type The type to set.
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 
     /* (non-Javadoc)

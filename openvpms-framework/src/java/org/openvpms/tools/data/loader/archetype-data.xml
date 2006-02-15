@@ -1,0 +1,24 @@
+<archetype>
+	<data id="1" archetype="lookup.country" country="Australia" />
+	<data id="2" archetype="lookup.country" country="New Zealand" />
+	<data id="3" archetype="lookup.country" country="Greece" />
+	<data id="4" archetype="lookup.country" country="Spain" />
+	<data id="5" archetype="lookup.state" state="Victoria" />
+	<data id="6" archetype="lookup.state" state="New South Wales" />
+	<data id="7" archetype="lookup.state" state="Western Australia" />
+	<data id="8" archetype="lookup.state" state="South Australia" />
+	<data id="9" archetype="lookup.state" state="Northern Territory" />
+	<data id="10" archetype="lookup.state" state="Tasmania" />
+	<data id="11" archetype="lookup.state" state="Australian Capital Territory" />
+	<data id="12" archetype="lookup.state" state="Queensland" />
+    <data id="13" archetype="lookup.suburb" suburb="Belgrave" postCode="3160" />
+    <data id="14" archetype="lookup.suburb" suburb="Croydon" postCode="3136" />
+    <data id="15" archetype="lookup.suburb" suburb="Croydon Hills" postCode="3136" />
+    <data id="16" archetype="lookup.suburb" suburb="Croydon North" postCode="3136" />
+    <data id="17" archetype="lookup.suburb" suburb="Tecoma" postCode="3160" />
+	<data id="18" archetype="lookup.postcode" postCode="3160" />
+	<data archetype="lookup.relationship" source="id:1" target="id:5" type="country.state" />
+	<data archetype="classification.accountType" name="Savings" />
+	<data archetype="classification.accountType" name="Cheque" />
+	<data archetype="classification.accountType" name="Credit" />
+</archetype>

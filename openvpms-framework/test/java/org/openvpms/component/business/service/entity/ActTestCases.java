@@ -120,9 +120,66 @@ public class ActTestCases extends
         
         List<Participation> participations = archetypeService.getParticipations(
                 person.getUid(), null, null, null, null, null, true);
-        logger.error(participations.size());
         assertTrue(participations.size() == 3);
     }
+    
+    /**
+     * Create 2 participations for the same entity and then use the archetype
+     * service to retrieve the acts for the specified entity
+     */
+    public void testGetActsByEntityIdQuery()
+    throws Exception {
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        archetypeService.save(person);
+        
+        Act act1 = createAct("wake up");
+        archetypeService.save(act1);
+        Act act2 = createAct("lunch");
+        archetypeService.save(act2);
+        
+        Participation participation1 = createParticipation("part1", act1, person);
+        Participation participation2 = createParticipation("part2", act2, person);
+        act1.addParticipation(participation1);
+        archetypeService.save(act1);
+        act2.addParticipation(participation2);
+        archetypeService.save(act2);
+
+        List<Act> acts = archetypeService.getActs(
+                person.getUid(), null, null, null, null, null, null, null, 
+                null, true);
+        assertTrue(acts.size() == 2);
+    }
+    
+    /**
+     * Exercise the getActs query 
+     */
+    public void testGetActsQuery()
+    throws Exception {
+        // get the initial act count
+        int actCount = archetypeService.getActs("act", null, null, null, null, 
+                null, null, false).size();
+
+        // create an act and check the count again
+        Act act1 = createAct("wake up");
+        archetypeService.save(act1);
+        int actCount1 = archetypeService.getActs("act", null, null, null, null, 
+                null, null, false).size();
+        assertTrue(actCount1 == (actCount + 1));
+
+        // create multiple acts and check the count again
+        act1 = createAct("i want to wake up");
+        archetypeService.save(act1);
+        act1 = createAct("wake up now");
+        archetypeService.save(act1);
+        actCount1 = archetypeService.getActs("act", null, null, null, null, 
+                null, null, false).size();
+        assertTrue(actCount1 == (actCount + 3));
+        
+        // check that it retrieves null result set correctly
+        assertTrue(archetypeService.getActs("jimmya-act", null, null, null, 
+                null, null, null, false).size() == 0);
+    }
+    
     
     /**
      * Create a person
