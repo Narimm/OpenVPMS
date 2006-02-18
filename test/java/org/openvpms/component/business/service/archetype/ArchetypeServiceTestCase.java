@@ -133,7 +133,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * Test the creation of an archetype which defines a BigDecimal node
      */
     public void testOVPMS174() throws Exception {
-        IMObject obj = service.create("contact.bank");
+        IMObject obj = service.create("productPrice.margin");
         assertTrue(obj != null);
     }
     

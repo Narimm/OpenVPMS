@@ -108,9 +108,9 @@ public class LookupServiceTestCase extends
      * loaded with stuff
      */
     public void testLookupRetrievalByString() {
-        List<Lookup> results = lookupService.getTargetLookups("country.state", "Australia");
+        List<Lookup> results = lookupService.getTargetLookups("state.suburb", "Victoria");
         assertTrue(results.size() > 0);
-        results = lookupService.getSourceLookups("country.state", "Victoria");
+        results = lookupService.getSourceLookups("state.suburb", "Belgrave");
         assertTrue(results.size() > 0);
     }
     
