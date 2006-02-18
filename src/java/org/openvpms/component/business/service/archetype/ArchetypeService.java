@@ -386,8 +386,18 @@ public class ArchetypeService implements IArchetypeService {
         List<IMObject> results =  new ArrayList<IMObject>();
         if ((shortNames != null) &&
             (shortNames.length > 0)) {
+            
+            // first go through the list of short names and translate '*' to
+            // '.*' to perform the regular expression matches
+            String[] modShortNames = new String[shortNames.length];
+            for (int index = 0; index < shortNames.length; index++) {
+                modShortNames[index] = shortNames[index].replace("*", ".*");
+            }
+            
+            // TODO if may be best to do this in the DAO since with many 
+            // arhetypes this will be very inefficient
             for (String archetypeShortName : dCache.getArchetypeShortNames()) {
-                for (String shortName : shortNames) {
+                for (String shortName : modShortNames) {
                     // iterate to see whether the short name matches any of the 
                     // specified shortName. A specified short name may contain 
                     // wild card characters. 
@@ -893,6 +903,6 @@ public class ArchetypeService implements IArchetypeService {
     }
     
     /**
-     * Return the 
+     * Return the set of matching archetypes 
      */
 }

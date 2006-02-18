@@ -47,7 +47,8 @@ public class RuleEngineException extends RuntimeException implements
         InvalidDir,
         InvalidFile,
         FailedToRegister,
-        NoDirSpecified
+        NoDirSpecified,
+        FailedToExecuteRule
     }
 
     /**
