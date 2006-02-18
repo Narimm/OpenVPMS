@@ -285,6 +285,30 @@ public class EntityRelationshipTestCase extends
     }
     
     /**
+     * Test bug 176
+     */
+    public void testOVPMS176()
+    throws Exception {
+        String[] shortNames = {"entityRelationship.animal*"};
+        int aCount = service.get(shortNames, null, false, false).size();
+
+        // create a new entity relationsip and save it
+        Person person = createPerson("Mr", "Jim", "Alateras");
+        Animal pet = createAnimal("buddy");
+        service.save(person);
+        service.save(pet);
+        EntityRelationship rel = createEntityRelationship(person, pet, "entityRelationship.animalOwner");
+        person.addEntityRelationship(rel);
+        rel = createEntityRelationship(person, pet, "entityRelationship.animalCarer");
+        person.addEntityRelationship(rel);
+        service.save(person);
+
+        // now check that the get actually works
+        int aCount1 = service.get(shortNames, null, false, false).size();
+        assertTrue(aCount1 == aCount + 2);
+    }
+    
+    /**
      * Create a person
      * 
      * @param title
@@ -329,18 +353,20 @@ public class EntityRelationshipTestCase extends
     }
 
     /**
-     * Create an {@link EntityRelationship} between the source and target
-     * entities
+     * Create an entity relationship of the specified type between the 
+     * source and target entities
      * 
      * @param source
-     *            the souce entity
-     * @param target
+     *            the source entity
+     * @param target 
      *            the target entity
-     * @return EntityRelationship                        
+     * @param shortName
+     *            the short name of the relationship to create
+     * @return EntityRelationship                                    
      */
-    private EntityRelationship createEntityRelationship(Entity source, Entity target) {
-        EntityRelationship rel = (EntityRelationship)service
-            .create("entityRelationship.animalCarer");
+    private EntityRelationship createEntityRelationship(Entity source, 
+            Entity target, String shortName) {
+        EntityRelationship rel = (EntityRelationship)service.create(shortName);
         
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);
@@ -349,6 +375,20 @@ public class EntityRelationshipTestCase extends
 
         return rel;
         
+    }
+
+    /**
+     * Create an {@link EntityRelationship} between the source and target
+     * entities of type entityRelationship.animalCarer
+     * 
+     * @param source
+     *            the souce entity
+     * @param target
+     *            the target entity
+     * @return EntityRelationship                        
+     */
+    private EntityRelationship createEntityRelationship(Entity source, Entity target) {
+        return createEntityRelationship(source, target, "entityRelationship.animalCarer");
     }
     
     /**

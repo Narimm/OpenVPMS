@@ -36,11 +36,11 @@ import org.springmodules.jsr94.core.Jsr94RuleSupport;
  * The Drools rule engine is integrated through the JSR-94 runtime api and the
  * springframework interceptors. This provides a separation of concerns between
  * the service objects, which contains the static business logic and the rules
- * engine that provides dynamic business logic capabilities.
+ * engine that provides dynamic business capabilities.
  * <p>
- * The class extends {@link Jsr94RuleSupport}, which eases the integration and
- * provides convenience methods for creating session with the rule engine and 
- * exeucting rules. 
+ * The class extends {@link Jsr94RuleSupport}, which eases the integration with
+ * other JSR-94 compliant rules engines and provides convenience methods for 
+ * creating session with the rule engine and exeucting rules. 
  * <p>
  * This class also implements the AOPAlliance {@link MethodInterceptor} interface
  * so that it can execute business rules before and or after the method 
@@ -84,9 +84,18 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Object rval = null;
         
-        beforeMethodInvocation(invocation);
-        rval = invocation.proceed();
-        afterMethodInvocation(invocation);
+        // all exceptions and errors will be caught and wrapped in a 
+        // {@link RuleEngineException| before rethrowing it to the client 
+        try {
+            beforeMethodInvocation(invocation);
+            rval = invocation.proceed();
+            afterMethodInvocation(invocation);
+        } catch (Exception exception) {
+            throw new RuleEngineException(
+                    RuleEngineException.ErrorCode.FailedToExecuteRule,
+                    new Object[] {invocation.getMethod().getName()},
+                    exception);
+        }
 
         return rval;
     }
