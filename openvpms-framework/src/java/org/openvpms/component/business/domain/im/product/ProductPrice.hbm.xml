@@ -47,6 +47,7 @@
     <property name="thruDate" access="property" column="end_time" type="date" />
     <property name="fixed" access="property" column="is_fixed" type="boolean" />
     <property name="price" access="property" column="price" type="big_decimal" />
+    <property name="active" access="property" column="active" type="boolean" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <many-to-one name="product" column="product_id" />

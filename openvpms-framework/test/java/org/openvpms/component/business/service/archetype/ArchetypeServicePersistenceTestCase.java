@@ -38,6 +38,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 
 /**
@@ -607,6 +608,22 @@ public class ArchetypeServicePersistenceTestCase extends
     }
     
     /**
+     * Test that we can sup[port OVPMS-177
+     */
+    public void testOVPMS177()
+    throws Exception {
+        int acount = service.get(new String[]{"product.*"}, null, true, true).size();
+
+        // create some products
+        for (int index = 0; index < 5; index++) {
+            service.save(createProduct("product-type-" + index));
+        }
+        
+        int acount1 = service.get(new String[]{"product.*"}, null, true, true).size();
+        assertTrue(acount1 == acount + 5);
+    }
+
+    /**
      * Create a pet with the specified name
      * 
      * @param name
@@ -665,6 +682,20 @@ public class ArchetypeServicePersistenceTestCase extends
         lookup.setValue(name);
         
         return lookup;
+    }
+    
+    /**
+     * Create a product
+     * 
+     * @param name
+     *            the product name
+     * @return Product            
+     */
+    private Product createProduct(String name) {
+        Product product = (Product)service.create("product.product");
+        product.setName(name);
+        
+        return product;
     }
     
     /* (non-Javadoc)
