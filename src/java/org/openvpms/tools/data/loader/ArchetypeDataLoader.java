@@ -130,9 +130,9 @@ public class ArchetypeDataLoader {
             boolean firstParse = (iteration == 0 ? true : false);
             
             if (firstParse) {
-                logger.error("Executing first parse...");
+                logger.debug("Executing first parse...");
             } else {
-                logger.error("Executing second parse...");
+                logger.debug("Executing second parse...");
             }
             
             reset();
@@ -293,7 +293,7 @@ public class ArchetypeDataLoader {
                         idCache.put(id, new IMObjectReference(object));
                     }
                     
-                    logger.error("Creating data with archetype: " 
+                    logger.debug("Creating data with archetype: " 
                             + object.getArchetypeId().getShortName()
                             + " and name " 
                             + object.getName());
