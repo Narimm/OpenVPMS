@@ -34,14 +34,18 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
+// spring framework
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.ValidationError;
 
 /**
  * This tool will reads the specified XML document and process all of the 
@@ -116,11 +120,7 @@ public class ArchetypeDataLoader {
     }
 
     /**
-     * Process the data elements. The archetype attribute determines the 
-     * archetype we need to us to create from the element. Iterate through
-     * all the element attributes and attempt to set the specified value
-     * using the archetype's node descriptors. The attribute name must 
-     * correspond to a valid node descriptor
+     * Process the data elements. 
      * 
      * @throws Exception
      *            propagate all exceptions to client
@@ -138,118 +138,182 @@ public class ArchetypeDataLoader {
             reset();
             Element root = getData().getRootElement();
             for (Object obj1 : root.getChildren())  {
-                Element elem = (Element)obj1;
-                if (elem.getName().equals("data")) {
-                    // if its the first parse then don't process data that
-                    // contains attribute value references.
-                    if ((firstParse) && 
-                        (attributesContainReferences(elem.getAttributes()))) {
-                        continue;
-                    }
-                    
-                    if (!(firstParse) &&
-                        !(attributesContainReferences(elem.getAttributes()))) {
-                        continue;
-                    }
-                    
-                    // extract the optional id element
-                    String id = elem.getAttributeValue("id");
-                    
-                    // ensure that the archetype attribute is defined. If not
-                    // display an error.
-                    String shortName = elem.getAttributeValue("archetype");
-                    if (StringUtils.isEmpty(shortName)) {
-                        logger.error("Failed to process " 
-                                + elem.toString()
-                                + " because it does not define an -arhetype- attribute");
-                        continue;
-                    }
+                processElement(null, (Element)obj1, firstParse);
+            }
+        }
+    }
 
-                    ArchetypeDescriptor adesc = archetypeService
-                        .getArchetypeDescriptor(shortName);
-                    if (adesc == null) {
-                        logger.error("Failed to process <lookupItem> element because "
-                                + "there is no archetype defined for " + shortName);
-                        continue;
-                    }
-    
-                    // create the default object and then iterate through the 
-                    // attributed and set the appropriate node value
-                    IMObject object = archetypeService.create(adesc.getType());
-                    boolean valid = true;
-                    for (Object obj2 : elem.getAttributes()) {
-                        Attribute attr = (Attribute)obj2;
-                        if ((StringUtils.equals(attr.getName(), "archetype")) ||
-                            (StringUtils.equals(attr.getName(), "id"))) {
-                            // no need to process the archetype or id element
-                            continue;
-                        }
-                        
-                        NodeDescriptor ndesc = adesc.getNodeDescriptor(attr.getName());
-                        if (ndesc == null) {
-                            logger.error("Failed to process " + elem.toString()
-                                    + " because the attribute " + attr.getName() 
-                                    + " is invalid");
-                            valid = false;
-                            break;
-                        }
-      
-                        try {
-                            if (isAttributeIdRef(attr)) {
-                                String ref = attr.getValue().substring("id:".length());
-                                IMObjectReference imref = idCache.get(ref);
-                                Object imobj = null;
-                                if (ndesc.isObjectReference()) {
-                                    imobj = imref;
-                                } else {
-                                    imobj = archetypeService.get(imref);
-                                }
+    /**
+     * Process the specified element and all nested elements. If the parent
+     * object is specified then then the specified element is in a parent
+     * child relationship.
+     * <p>
+     * The archetype attribute determines the archetype we need to us to 
+     * create from the element. Iterate through all the element attributes 
+     * and attempt to set the specified value using the archetype's node 
+     * descriptors. The attribute name must correspond to a valid node 
+     * descriptor
+     * <p>     
+     * @param parent
+     *            the parent of this element if it exists
+     * @param elem
+     *            the element to process
+     * @param firstParse
+     *            indicates whether it is a first parse  
+     * @return IMObject
+     *            the associated IMObject                                  
+     */
+    private IMObject processElement(IMObject parent, Element elem, boolean firstParse) 
+    throws Exception {
+        IMObject object = null;
 
-                                if (ndesc.isCollection()) {
-                                    ndesc.addChildToCollection(object, imobj);
-                                } else {
-                                    ndesc.setValue(object, imobj);
-                                }
-                            } else {
-                                ndesc.setValue(object, attr.getValue());
-                            }
-                        } catch (Exception exception) {
-                            logger.error("Failed to process " + elem.toString() 
-                                    + ". Error trying to set the attribute " 
-                                    + attr.getName() + " with value " + attr.getValue()
-                                    + ". [Exception] " + exception.toString());
-                            valid = false;
-                            break;
-                        }
-                    }
+        if (elem.getName().equals("data")) {
+            // if its the first parse then don't process data that
+            // contains attribute value references.
+            if ((firstParse) && 
+                (attributesContainReferences(elem.getAttributes()))) {
+                return object;
+            }
+            
+            if (!(firstParse) &&
+                !(attributesContainReferences(elem.getAttributes()))) {
+                return object;
+            }
+            
+            // extract the optional id element
+            String id = elem.getAttributeValue("id");
+            
+            // ensure that the archetype attribute is defined. If not
+            // display an error.
+            String shortName = elem.getAttributeValue("archetype");
+            if (StringUtils.isEmpty(shortName)) {
+                logger.error("Failed to process " 
+                        + elem.toString()
+                        + " because it does not define an -arhetype- attribute");
+                return object;
+            }
+
+            ArchetypeDescriptor adesc = archetypeService
+                .getArchetypeDescriptor(shortName);
+            if (adesc == null) {
+                logger.error("Failed to process element because "
+                        + "there is no archetype defined for " + shortName);
+                return object;
+            }
+
+            // create the default object and then iterate through the 
+            // attributed and set the appropriate node value
+            object = archetypeService.create(adesc.getType());
+            boolean valid = true;
+            for (Object obj2 : elem.getAttributes()) {
+                Attribute attr = (Attribute)obj2;
+                if ((StringUtils.equals(attr.getName(), "archetype")) ||
+                    (StringUtils.equals(attr.getName(), "id")) ||
+                    (StringUtils.equals(attr.getName(), "collection"))) {
+                    // no need to process the archetype, id or collection element
+                    continue;
+                }
                 
-                    // check that we should continue processing this element.
-                    if (!valid) {
+                NodeDescriptor ndesc = adesc.getNodeDescriptor(attr.getName());
+                if (ndesc == null) {
+                    logger.error("Failed to process " + elem.toString()
+                            + " because the attribute " + attr.getName() 
+                            + " is invalid");
+                        valid = false;
+                        break;
+                    }
+  
+                    try {
+                        if (isAttributeIdRef(attr)) {
+                            String ref = attr.getValue().substring("id:".length());
+                        IMObjectReference imref = idCache.get(ref);
+                        Object imobj = null;
+                        if (ndesc.isObjectReference()) {
+                            imobj = imref;
+                        } else {
+                            imobj = archetypeService.get(imref);
+                        }
+
+                        if (ndesc.isCollection()) {
+                            ndesc.addChildToCollection(object, imobj);
+                        } else {
+                            ndesc.setValue(object, imobj);
+                        }
+                    } else {
+                        ndesc.setValue(object, attr.getValue());
+                    }
+                } catch (Exception exception) {
+                    logger.error("Failed to process " + elem.toString() 
+                            + ". Error trying to set the attribute " 
+                            + attr.getName() + " with value " + attr.getValue(),
+                            exception);
+                    valid = false;
+                    break;
+                }
+            }
+        
+            // check that we should continue processing this element.
+            if (!valid) {
+                return object;
+            }
+
+            // check if it has nested elements and process them before saving 
+            // the object
+            if (elem.getChildren().size() > 0) {
+                for (Object obj1 : elem.getChildren())  {
+                    Element childElem = (Element)obj1;
+                    String collectionNode = childElem.getAttributeValue("collection");
+                    if (StringUtils.isEmpty(collectionNode)) {
+                        logger.error("Failed to process " 
+                                + childElem.toString()
+                                + " a child element must have a collection attribute");
                         continue;
                     }
-                    
-                    // now if there are no errors the proceed to save the element
-                    try {
-                        archetypeService.save(object);
-                        if (!StringUtils.isEmpty(id)) {
-                            idCache.put(id, new IMObjectReference(object));
-                        }
-                        
-                        logger.error("Creating data with archetype: " 
-                                + object.getArchetypeId().getShortName()
-                                + " and name " 
-                                + object.getName());
-                    } catch (Exception exception) {
-                        logger.error("Failed to process " + elem.toString()
-                                + ". Error trying to save the lookup" 
-                                + ". [Exception] " + exception.toString());
+                    IMObject child = processElement(object, childElem, firstParse);
+                    NodeDescriptor ndesc = adesc.getNodeDescriptor(collectionNode);
+                    if ((ndesc.isCollection()) && 
+                        (ndesc.isParentChild())){
+                        ndesc.addChildToCollection(object, child);
+                    } else {
+                        logger.error("Failed to process " 
+                                + childElem.toString()
+                                + ". The collection node name must be a "
+                                + "parent-child collection");
+                        continue;
                     }
                 }
             }
+                
+            // now if there are no errors the proceed to save the element. Note
+            // that we only save the object if the parent is null. 
+            try {
+                if (parent == null) {
+                    archetypeService.save(object);
+                    if (!StringUtils.isEmpty(id)) {
+                        idCache.put(id, new IMObjectReference(object));
+                    }
+                    
+                    logger.error("Creating data with archetype: " 
+                            + object.getArchetypeId().getShortName()
+                            + " and name " 
+                            + object.getName());
+                }
+            } catch(ValidationException validation) {
+                logger.error("Failed to process " + elem.toString()
+                        + ". Got the following validation errors:"); 
+                for (ValidationError error : validation.getErrors()) {
+                    logger.error(error.toString());
+                }
+            } catch (Exception exception) {
+                logger.error("Failed to process " + elem.toString()
+                        + ". Error trying to save the object" 
+                        + ". [Exception] " + exception.toString());
+            }
         }
-
+        
+        return object;
     }
-
+    
     /**
      * @param attributes
      * @return
@@ -285,7 +349,7 @@ public class ArchetypeDataLoader {
      */
     private void init() throws Exception {
         context =  new ClassPathXmlApplicationContext(
-                "org/openvpms/tools/lookup/loader/archetype-data-loader-appcontext.xml");
+                "org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml");
         archetypeService = (IArchetypeService)context.getBean("archetypeService");
     }
     

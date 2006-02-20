@@ -7,12 +7,16 @@
 			type="java.lang.String" minCardinality="1" />
 		<node name="productPrices" path="/productPrices"
 			parentChild="true" type="java.util.HashSet"
-			baseName="productPrice">
+			baseName="productPrice" maxCardinality="*" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="product.productPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.margin" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>
