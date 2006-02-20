@@ -391,7 +391,9 @@ public class ArchetypeService implements IArchetypeService {
             // '.*' to perform the regular expression matches
             String[] modShortNames = new String[shortNames.length];
             for (int index = 0; index < shortNames.length; index++) {
-                modShortNames[index] = shortNames[index].replace("*", ".*");
+                modShortNames[index] = shortNames[index]
+                              .replace(".", "\\.")
+                              .replace("*", ".*");
             }
             
             // TODO if may be best to do this in the DAO since with many 
@@ -888,7 +890,7 @@ public class ArchetypeService implements IArchetypeService {
                 continue;
             }
 
-            String modRmName = rmName.replace("*", ".*");
+            String modRmName = rmName.replace(".", "\\.").replace("*", ".*");
             if (archId.getRmName().matches(modRmName)) {
                 String modEntityName = (entityName == null) ? null : 
                     entityName.replace("*", ".*");

@@ -19,9 +19,11 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -39,6 +41,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 
 /**
@@ -607,6 +610,29 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(person.getLastName().equals("Alateras"));
     }
     
+    
+    /**
+     * Test that we can sup[port OVPMS-176
+     */
+    public void testOVPMS176()
+    throws Exception {
+        List<IMObject> objs = service.get(new String[]{"product.*"}, null, true, true);
+        for (IMObject obj : objs) {
+            String shortName = obj.getArchetypeId().getShortName();
+            String entity = new StringTokenizer(shortName, ".").nextToken();
+            if (!entity.equals("product")) {
+                fail("Failed in testOVPMS176: Retrieved unexpected archetyped "
+                        + shortName + " when criteria was product.*");
+            }
+        }
+        
+        // add a productPrice and ensure that it behaves correctly
+        int acount = objs.size();
+        service.save(createPriceMargin(new BigDecimal("1.0")));
+        int acount1 = service.get(new String[]{"product.*"}, null, true, true).size();
+        assertTrue(acount == acount1);
+    }
+
     /**
      * Test that we can sup[port OVPMS-177
      */
@@ -696,6 +722,20 @@ public class ArchetypeServicePersistenceTestCase extends
         product.setName(name);
         
         return product;
+    }
+    
+    /**
+     * Create a product price margin with the specified value
+     * 
+     * @param margin
+     *            the product price margin
+     * @return ProductPrice            
+     */
+    private ProductPrice createPriceMargin(BigDecimal margin) {
+        ProductPrice price = (ProductPrice)service.create("productPrice.margin");
+        price.setPrice(margin);
+        
+        return price;
     }
     
     /* (non-Javadoc)
