@@ -1,7 +1,6 @@
 package org.openvpms.web.component.im.filter;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.component.im.NodeFilter;
 
 
 /**

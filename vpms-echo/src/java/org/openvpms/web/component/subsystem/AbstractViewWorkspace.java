@@ -13,6 +13,7 @@ import org.openvpms.web.component.ColumnFactory;
 import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.query.BrowserDialog;
 import org.openvpms.web.util.Messages;

@@ -5,6 +5,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 
 
 /**

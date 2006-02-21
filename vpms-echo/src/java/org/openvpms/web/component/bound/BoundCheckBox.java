@@ -29,7 +29,9 @@ public class BoundCheckBox extends CheckBox {
         _pointer = pointer;
 
         Boolean value = (Boolean) _pointer.getValue();
-        setSelected(value);
+        if (value != null) {
+            setSelected(value);
+        }
 
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

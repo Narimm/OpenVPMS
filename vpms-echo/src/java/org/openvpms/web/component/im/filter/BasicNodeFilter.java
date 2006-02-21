@@ -1,7 +1,6 @@
 package org.openvpms.web.component.im.filter;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.component.im.NodeFilter;
 
 
 /**
@@ -23,6 +22,16 @@ public class BasicNodeFilter implements NodeFilter {
      */
     private final boolean _showHidden;
 
+
+    /**
+     * Construct a new <code>BasicNodeFilter</code>.
+     *
+     * @param showOptional if <code>true</code> show optional fields as well as
+     *                     mandatory ones.
+     */
+    public BasicNodeFilter(boolean showOptional) {
+        this(showOptional, false);
+    }
 
     /**
      * Construct a new <code>BasicNodeFilter</code>.

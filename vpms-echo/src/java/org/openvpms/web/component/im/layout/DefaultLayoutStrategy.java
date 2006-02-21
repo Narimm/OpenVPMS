@@ -1,6 +1,5 @@
 package org.openvpms.web.component.im.layout;
 
-import org.openvpms.web.component.im.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 
 

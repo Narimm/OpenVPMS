@@ -21,9 +21,9 @@ import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.edit.DefaultIMObjectEditor;
 import org.openvpms.web.component.edit.EditDialog;
 import org.openvpms.web.component.edit.IMObjectEditor;
+import org.openvpms.web.component.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.creator.IMObjectCreator;
 import org.openvpms.web.component.im.creator.IMObjectCreatorListener;
 import org.openvpms.web.component.query.IMObjectBrowser;
@@ -334,7 +334,7 @@ public class CRUDWindow {
         Context.getInstance().setEdited(null);
         if (editor.isDeleted()) {
             onDeleted(editor.getObject());
-        } else if (editor.isModified()) {
+        } else if (editor.isSaved()) {
             onSaved(editor.getObject(), isNew);
         }
     }
@@ -373,8 +373,7 @@ public class CRUDWindow {
      */
     private void edit(IMObject object, boolean showAll) {
         final boolean isNew = object.isNew();
-        final DefaultIMObjectEditor editor
-                = new DefaultIMObjectEditor(object, showAll);
+        final IMObjectEditor editor = IMObjectEditorFactory.create(object, showAll);
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

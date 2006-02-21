@@ -1,15 +1,21 @@
 package org.openvpms.web.app.customer;
 
-import java.util.Set;
-
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 
+import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.table.ActTableModel;
+import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.util.Messages;
 
@@ -23,9 +29,25 @@ import org.openvpms.web.util.Messages;
 public class EstimationWorkspace extends AbstractViewWorkspace {
 
     /**
+     * The layout.
+     */
+    private SplitPane _layout;
+
+    /**
+     * The query.
+     */
+    private ActQuery _query;
+
+    /**
+     * The act browser.
+     */
+    private Browser _acts;
+
+    /**
      * The CRUD window.
      */
     private CRUDWindow _window;
+
 
     /**
      * Construct a new <code>EstimationWorkspace</code>.
@@ -41,11 +63,23 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
      */
     protected void doLayout(Component container) {
         String type = Messages.get("customer.estimation.createtype");
-        _window = new EstimationCRUDWindow(type, "common", "act",
-                "estimation*");
         Party customer = Context.getInstance().getCustomer();
         setObject(customer);
-        container.add(_window.getComponent());
+
+        _query = new ActQuery(customer);
+        IMObjectTable table = new IMObjectTable(ActTableModel.create(false));
+        _acts = new Browser(_query, table);
+        _acts.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                Act act = (Act) _acts.getSelected();
+                actSelected(act);
+            }
+        });
+
+        _window = new EstimationCRUDWindow(type, "common", "act", "estimation");
+        _layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                "EstimationWorkspace.Layout", _acts, _window.getComponent());
+        container.add(_layout);
 
         _window.setListener(new CRUDWindowListener() {
             public void saved(IMObject object, boolean isNew) {
@@ -67,10 +101,8 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
     protected void onSelected(IMObject customer) {
         super.onSelected(customer);
         Context.getInstance().setCustomer((Party) customer);
-        Set<Participation> participations
-                = ((Party) customer).getParticipations();
-        if (participations != null) {
-        }
+        _query.setEntity((Party) customer);
+        _acts.query();
     }
 
     /**
@@ -88,7 +120,16 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
      * @param object the object
      */
     protected void onDeleted(IMObject object) {
+        _acts.query();
+        _window.setObject(null);
     }
 
-
+    /**
+     * Invoked when an act is selected.
+     *
+     * @param act the act
+     */
+    protected void actSelected(Act act) {
+        _window.setObject(act);
+    }
 }

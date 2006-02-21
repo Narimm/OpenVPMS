@@ -69,11 +69,21 @@ public abstract class AbstractIMObjectComponentFactory
     protected TextComponent getTextComponent(IMObject object,
                                              NodeDescriptor descriptor) {
         final int maxColumns = 32;
+        return getTextComponent(object, descriptor, maxColumns);
+    }
+
+    /**
+     * Returns a text component to display a node.
+     *
+     * @param object     the parent object
+     * @param descriptor the node descriptor
+     * @param columns    the maximum no, of columns to display
+     * @return a text field to display the node, or a text area if it is large
+     */
+    protected TextComponent getTextComponent(IMObject object,
+                                             NodeDescriptor descriptor,
+                                             int columns) {
         TextComponent result;
-        int columns = descriptor.getMaxLength();
-        if (columns > maxColumns) {
-            columns = maxColumns;
-        }
         Pointer pointer = getPointer(object, descriptor);
         if (descriptor.isLarge()) {
             result = TextComponentFactory.createTextArea(pointer);

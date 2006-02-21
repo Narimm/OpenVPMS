@@ -15,11 +15,22 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public interface IMObjectComponentFactory {
 
     /**
-     * Create a component to display the supplied object.
+     * Create a component to display an object.
      *
-     * @param object     the object to display
+     * @param context    the context object
      * @param descriptor the object's descriptor
      * @return a component to display <code>object</code>
      */
-    Component create(IMObject object, NodeDescriptor descriptor);
+    Component create(IMObject context, NodeDescriptor descriptor);
+
+    /**
+     * Create a component to display an object.
+     *
+     * @param object     the object to display
+     * @param context    the object's parent. May be <code>null</code>
+     * @param descriptor the parent object's descriptor. May be
+     *                   <code>null</code>
+     */
+    Component create(IMObject object, IMObject context,
+                     NodeDescriptor descriptor);
 }

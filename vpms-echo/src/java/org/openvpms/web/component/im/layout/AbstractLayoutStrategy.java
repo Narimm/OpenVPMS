@@ -1,6 +1,5 @@
 package org.openvpms.web.component.im.layout;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import echopointng.TabbedPane;
@@ -16,8 +15,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.LabelFactory;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
-import org.openvpms.web.component.im.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.NodeFilter;
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.util.DescriptorHelper;
 
 
@@ -74,11 +73,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                             IMObjectComponentFactory factory) {
         ArchetypeDescriptor descriptor
                 = DescriptorHelper.getArchetypeDescriptor(object);
-        List<NodeDescriptor> simple
-                = filter(descriptor.getSimpleNodeDescriptors());
+        List<NodeDescriptor> simple;
+        List<NodeDescriptor> complex;
+
+        simple = FilterHelper.filter(_filter,
+                descriptor.getSimpleNodeDescriptors());
+        complex = FilterHelper.filter(_filter,
+                descriptor.getComplexNodeDescriptors());
+
         doSimpleLayout(object, simple, container, factory);
-        List<NodeDescriptor> complex
-                = filter(descriptor.getComplexNodeDescriptors());
         doComplexLayout(object, complex, container, factory);
     }
 
@@ -123,24 +126,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             pane.setSelectedIndex(0);
             container.add(pane);
         }
-    }
-
-    /**
-     * Filters a list of descriptors returning only those that must be
-     * displayed.
-     *
-     * @param descriptors the descriptors to filter
-     * @return a list of descriptors returning only those that must be
-     *         displayed
-     */
-    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        for (NodeDescriptor descriptor : descriptors) {
-            if (_filter != null && _filter.include(descriptor)) {
-                result.add(descriptor);
-            }
-        }
-        return result;
     }
 
     /**

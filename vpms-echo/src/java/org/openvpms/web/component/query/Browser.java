@@ -13,17 +13,15 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.IMObjectTable;
 import org.openvpms.web.component.RowFactory;
 import org.openvpms.web.component.SplitPaneFactory;
 import org.openvpms.web.component.TableNavigator;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.table.IMObjectTable;
 
 
 /**
- * Browser of IMObject instances. In the left pane, a table displays IMObjects
- * matching the specified criteria. When an object is selected from the table, a
- * summary of it is displayed in the right pane.
+ * Browser of IMObject instances.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -73,8 +71,20 @@ public class Browser extends SplitPane {
      * @param query the query
      */
     public Browser(Query query) {
+        this(query, new IMObjectTable());
+    }
+
+    /**
+     * Construct a new <code>Browser</code> that queries IMObjects using the
+     * specified query, displaying them in the table.
+     *
+     * @param query the query
+     * @param table the table
+     */
+    public Browser(Query query, IMObjectTable table) {
         super(ORIENTATION_VERTICAL);
         _query = query;
+        _table = table;
         doLayout();
     }
 
@@ -128,7 +138,6 @@ public class Browser extends SplitPane {
             }
         });
 
-        _table = new IMObjectTable();
         _table.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onSelect();

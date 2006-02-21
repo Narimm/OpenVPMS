@@ -1,4 +1,4 @@
-package org.openvpms.web.component.subsystem;
+package org.openvpms.web.component.im.select;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -20,6 +20,11 @@ import org.openvpms.web.util.Messages;
 public class Selector {
 
     /**
+     * Determines the layout of the 'select' button.
+     */
+    public enum ButtonStyle {LEFT, RIGHT, HIDE};
+
+    /**
      * The 'select' button.
      */
     private Button _select;
@@ -35,15 +40,32 @@ public class Selector {
     private Label _deactivated;
 
     /**
+     * Determines the layout of the 'select' button.
+     */
+    private ButtonStyle _buttonStyle;
+
+    /**
      * The component.
      */
     private Component _component;
+
 
     /**
      * Construct a new <code>Selector</code>.
      */
     public Selector() {
+        this(ButtonStyle.LEFT);
     }
+
+    /**
+     * Construct a new <code>Selector</code>.
+     *
+     * @param style determines the layout of the 'select' button
+     */
+    public Selector(ButtonStyle style) {
+        _buttonStyle = style;
+    }
+
 
     /**
      * Returns the selector component.
@@ -63,6 +85,7 @@ public class Selector {
      * @return the 'select' button
      */
     public Button getSelect() {
+        getComponent();
         return _select;
     }
 
@@ -92,12 +115,59 @@ public class Selector {
      * Create the component.
      */
     protected void doLayout() {
-        _select = ButtonFactory.create("select");
-        _summary = LabelFactory.create();
-        _deactivated = LabelFactory.create(null, "Selector.Deactivated");
+        _component = RowFactory.create("Selector.ControlRow");
+        doLayout(_component);
+    }
 
-        _component = RowFactory.create("Selector.ControlRow", _select, _summary,
-                _deactivated);
+    /**
+     * Lay out the component.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
+        container.add(getSummary());
+        container.add(getDeactivated());
+        if (_buttonStyle == ButtonStyle.LEFT) {
+            container.add(getButton(), 0);
+        } else if (_buttonStyle == ButtonStyle.RIGHT) {
+            container.add(getButton());
+        }
+    }
+
+    /**
+     * Returns the 'select' button, creating it if needed.
+     *
+     * @return the select button
+     */
+    protected Button getButton() {
+        if (_select == null) {
+            _select = ButtonFactory.create("select");
+        }
+        return _select;
+    }
+
+    /**
+     * Returns the summary label, creating it if needed.
+     *
+     * @return the summary label
+     */
+    protected Label getSummary() {
+        if (_summary == null) {
+            _summary = LabelFactory.create();
+        }
+        return _summary;
+    }
+
+    /**
+     * Returns the 'deactivated' label, creating it if needed.
+     *
+     * @return the deactivated label
+     */
+    protected Label getDeactivated() {
+        if (_deactivated == null) {
+            _deactivated = LabelFactory.create(null, "Selector.Deactivated");
+        }
+        return _deactivated;
     }
 
 }

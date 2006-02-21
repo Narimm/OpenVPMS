@@ -10,7 +10,6 @@ import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.LabelFactory;
@@ -36,31 +35,47 @@ import org.openvpms.web.spring.ServiceHelper;
 public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
 
     /**
+     * The modification tracker;
+     */
+    private ModifiableSet _modifiable;
+
+    /**
      * The lookup service.
      */
     private ILookupService _lookup;
 
     /**
-     * Create a component to display the supplied object.
+     * Construct a new <code>NodeEditorFactory</code>.
      *
-     * @param object     the object to display
+     * @param modifiable the modification tracker
+     */
+    public NodeEditorFactory(ModifiableSet modifiable) {
+        _modifiable = modifiable;
+    }
+
+    /**
+     * Create a component to display an object.
+     *
+     * @param context    the context object
      * @param descriptor the object's descriptor
      * @return a component to display <code>object</code>
      */
-    public Component create(IMObject object, NodeDescriptor descriptor) {
+    public Component create(IMObject context, NodeDescriptor descriptor) {
         Component result;
         if (descriptor.isLookup()) {
-            result = getSelectEditor(object, descriptor);
+            result = getSelectEditor(context, descriptor);
         } else if (descriptor.isBoolean()) {
-            result = getCheckBox(object, descriptor);
+            result = getCheckBox(context, descriptor);
         } else if (descriptor.isString()) {
-            result = getTextComponent(object, descriptor);
+            result = getTextComponent(context, descriptor);
         } else if (descriptor.isNumeric()) {
-            result = getTextComponent(object, descriptor);
+            result = getNumericComponent(context, descriptor);
         } else if (descriptor.isDate()) {
-            result = getDateEditor(object, descriptor);
+            result = getDateEditor(context, descriptor);
         } else if (descriptor.isCollection()) {
-            result = getCollectionEditor(object, descriptor);
+            result = getCollectionEditor(context, descriptor);
+        } else if (descriptor.isObjectReference()) {
+            result = getObjectReferenceEditor(context, descriptor);
         } else {
             Label label = LabelFactory.create();
             label.setText("No editor for type " + descriptor.getType());
@@ -70,6 +85,27 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             result.setEnabled(false);
         }
         return result;
+    }
+
+    private Component getNumericComponent(IMObject context, NodeDescriptor descriptor) {
+        int maxColumns = 10;
+        return getTextComponent(context, descriptor, maxColumns);
+    }
+
+    /**
+     * Create a component to display an object.
+     *
+     * @param object     the object to display
+     * @param context    the object's parent. May be <code>null</code>
+     * @param descriptor the parent object's descriptor. May be
+     *                   <code>null</code>
+     */
+    public Component create(IMObject object, IMObject context,
+                            NodeDescriptor descriptor) {
+        IMObjectEditor editor = IMObjectEditorFactory.create(object, context,
+                descriptor, true);
+        _modifiable.add(object, editor);
+        return editor.getComponent();
     }
 
     /**
@@ -112,10 +148,12 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
         Component result;
         if (descriptor.isParentChild()) {
-            result = new CollectionEditor(object, descriptor);
+            CollectionEditor editor = new CollectionEditor(object, descriptor);
+            _modifiable.add(object, editor);
+            result = editor.getComponent();
         } else {
             List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(
-                    (ArchetypeService) ServiceHelper.getArchetypeService(),  //@todo OVPMS-108
+                    ServiceHelper.getArchetypeService(),
                     descriptor, object);
             Pointer pointer = getPointer(object, descriptor);
             Palette palette = new BoundPalette(identifiers, pointer);
@@ -123,6 +161,21 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             result = palette;
         }
         return result;
+    }
+
+    /**
+     * Returns a component to edit an object reference.
+     *
+     * @param object     the parent object
+     * @param descriptor the node descriptor
+     * @return a component to edit the node
+     */
+    protected Component getObjectReferenceEditor(IMObject object,
+                                                 NodeDescriptor descriptor) {
+        Pointer pointer = getPointer(object, descriptor);
+        ObjectReferenceEditor editor
+                = new ObjectReferenceEditor(pointer, descriptor);
+        return editor.getComponent();
     }
 
     /**
@@ -137,7 +190,9 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected Pointer getPointer(IMObject object, NodeDescriptor descriptor) {
         Pointer pointer = super.getPointer(object, descriptor);
         NodeValidator validator = new NodeValidator(descriptor);
-        return new ValidatingPointer(pointer, validator);
+        ValidatingPointer result = new ValidatingPointer(pointer, validator);
+        _modifiable.add(object, result);
+        return result;
     }
 
     /**

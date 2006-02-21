@@ -5,8 +5,20 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.ButtonFactory;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.ValidationHelper;
+import org.openvpms.web.spring.ServiceHelper;
 
 /**
  * Enter description here.
@@ -137,6 +149,65 @@ public class EstimationCRUDWindow extends CRUDWindow {
             buttons.add(_copy);
         } else {
             buttons.add(_create);
+        }
+    }
+
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(IMObject object, boolean isNew) {
+        super.onSaved(object, isNew);
+        if (isNew) {
+            Act act = (Act) object;
+            Party customer = Context.getInstance().getCustomer();
+            if (customer != null) {
+                try {
+//                    act.setStatus("Completed");
+                    IArchetypeService service = ServiceHelper.getArchetypeService();
+//
+//                    Act item = (Act) service.create("act.estimationItem");
+//                    item.setStatus("Completed");
+/*
+                participation = (Participation) service.create("participation.product");
+                participation.setEntity(new IMObjectReference(Context.getInstance().getProduct()));
+                participation.setAct(new IMObjectReference(item));
+*/
+/*
+                    item.setDetails(new DynamicAttributeMap());
+//                item.addParticipation(participation);
+                    if (ValidationHelper.isValid(item)) {
+                        service.save(item);
+                    }
+                    if (ValidationHelper.isValid(act)) {
+                        service.save(act);
+                    }
+
+*/
+/*
+                    ActRelationship relationship = (ActRelationship) service.create("actRelationship.estimationItem");
+                    relationship.setSource(new IMObjectReference(act));
+                    relationship.setTarget(new IMObjectReference(item));
+                    act.addSourceActRelationship(relationship);
+*/
+
+                    Participation participation = (Participation) service.create("participation.customer");
+                    participation.setEntity(new IMObjectReference(customer));
+                    participation.setAct(new IMObjectReference(act));
+                    act.addParticipation(participation);
+
+                    if (ValidationHelper.isValid(act)) {
+                        service.save(act);
+                    }
+                } catch (ArchetypeServiceException exception) {
+                    ErrorDialog.show(exception);
+                } catch (ValidationException exception) {
+                    ErrorDialog.show(exception);
+                }
+            }
         }
     }
 
