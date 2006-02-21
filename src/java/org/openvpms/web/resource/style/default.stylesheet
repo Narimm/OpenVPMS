@@ -75,14 +75,14 @@
     <style name="MainPane.Left" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="32px"/>
+            <property name="separatorPosition" value="35px"/>
         </properties>
     </style>
 
     <style name="MainPane.Right" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="32px"/>
+            <property name="separatorPosition" value="35px"/>
         </properties>
     </style>
 
@@ -175,14 +175,14 @@
         </properties>
     </style>
 
-    <style name="IMObjectBrowserDialog" base-name="default"
-           type="nextapp.echo2.app.WindowPane"/>
-
     <style name="Browser" type="nextapp.echo2.app.SplitPane">
         <properties>
-            <property name="separatorPosition" value="32px"/>
+            <property name="separatorPosition" value="35px"/>
         </properties>
     </style>
+
+    <style name="IMObjectViewerDialog" base-name="default"
+           type="nextapp.echo2.app.WindowPane"/>
 
     <style name="ControlRow" type="nextapp.echo2.app.Row">
         <properties>
@@ -222,7 +222,7 @@
 
     <style name="CRUDWindow" type="nextapp.echo2.app.SplitPane">
         <properties>
-            <property name="separatorPosition" value="32px"/>
+            <property name="separatorPosition" value="35px"/>
         </properties>
     </style>
 

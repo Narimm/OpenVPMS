@@ -2,7 +2,7 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Label;
 
-import org.openvpms.web.component.LabelFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**

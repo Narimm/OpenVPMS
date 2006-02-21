@@ -3,7 +3,7 @@ package org.openvpms.web.component.subsystem;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

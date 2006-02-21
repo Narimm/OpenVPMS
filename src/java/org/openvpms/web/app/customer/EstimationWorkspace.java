@@ -11,13 +11,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.ActTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
-import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

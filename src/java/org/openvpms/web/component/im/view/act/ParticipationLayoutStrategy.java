@@ -5,9 +5,9 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 
 /**
  * Participation layout strategy. This displays the entity node.

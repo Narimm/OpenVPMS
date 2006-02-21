@@ -18,11 +18,11 @@ import org.openvpms.web.app.patient.PatientSubsystem;
 import org.openvpms.web.app.product.ProductSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
-import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.ColumnFactory;
-import org.openvpms.web.component.ContentPaneFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.ContentPaneFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.subsystem.Subsystem;
 import org.openvpms.web.component.subsystem.Workspace;
 

@@ -3,9 +3,9 @@ package org.openvpms.web.component.subsystem;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 
-import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

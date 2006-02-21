@@ -11,10 +11,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 
-import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

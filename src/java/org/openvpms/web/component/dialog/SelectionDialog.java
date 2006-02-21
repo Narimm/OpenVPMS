@@ -8,8 +8,8 @@ import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
 
-import org.openvpms.web.component.ColumnFactory;
-import org.openvpms.web.component.LabelFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**

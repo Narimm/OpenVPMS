@@ -5,7 +5,7 @@ import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
 
 import org.openvpms.web.app.login.LoginPane;
-import org.openvpms.web.component.Styles;
+import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.spring.SpringApplicationInstance;
 
 

@@ -14,10 +14,11 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+
 
 /**
  * Layout strategy that renders objects in a table.

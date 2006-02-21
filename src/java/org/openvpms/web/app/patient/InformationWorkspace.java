@@ -14,7 +14,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.query.Browser;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 

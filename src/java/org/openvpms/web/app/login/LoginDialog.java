@@ -12,11 +12,11 @@ import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.web.app.ApplicationContentPane;
 import org.openvpms.web.app.OpenVPMSApp;
-import org.openvpms.web.component.GridFactory;
-import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.component.TextComponentFactory;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.resource.util.Messages;
 
 /**
  * Enter description here.

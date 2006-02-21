@@ -2,11 +2,14 @@ package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Label;
 
-import org.openvpms.web.component.LabelFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
  * A generic modal dialog that displays a message.
+ *
+ * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
+ * @version $LastChangedDate$
  */
 public abstract class MessageDialog extends PopupDialog {
 

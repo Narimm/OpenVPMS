@@ -18,7 +18,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

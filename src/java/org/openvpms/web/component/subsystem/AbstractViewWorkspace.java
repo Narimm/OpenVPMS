@@ -9,14 +9,14 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.ColumnFactory;
-import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.select.Selector;
-import org.openvpms.web.component.query.Browser;
-import org.openvpms.web.component.query.BrowserDialog;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

@@ -1,0 +1,132 @@
+package org.openvpms.web.component.im.list;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import nextapp.echo2.app.list.AbstractListModel;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.lookup.ILookupService;
+
+
+/**
+ * List model for {@link Lookup}s.
+ *
+ * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
+ * @version $LastChangedDate$
+ */
+public class LookupListModel extends AbstractListModel {
+
+    /**
+     * The lookups.
+     */
+    private List<Lookup> _lookups;
+
+    /**
+     * Determines if a value is required.
+     */
+    private boolean _allowNone;
+
+    /**
+     * The source object. May be <code>null</code>.
+     */
+    private IMObject _object;
+
+    /**
+     * The lookup node descriptor. May be <code>null</code>.
+     */
+    private NodeDescriptor _descriptor;
+
+    /**
+     * The lookup service. May be <code>null</code>.
+     */
+    private ILookupService _service;
+
+
+    /**
+     * Construct a new <code>LookupListModel</code>.
+     *
+     * @param lookups   the lookups to populate the list with.
+     * @param allowNone determines if a value is required
+     */
+    public LookupListModel(List<Lookup> lookups, boolean allowNone) {
+        _allowNone = allowNone;
+        _lookups = getLookups(lookups);
+    }
+
+    /**
+     * Construct a new <code>LookupListModel</code>. This may be refreshed.
+     *
+     * @param object     the source object
+     * @param descriptor the lookup node descriptor
+     * @param service    the lookup service
+     */
+    public LookupListModel(IMObject object, NodeDescriptor descriptor, ILookupService service) {
+        _object = object;
+        _descriptor = descriptor;
+        _service = service;
+        _allowNone = !descriptor.isRequired();
+        _lookups = getLookups();
+    }
+
+    /**
+     * Returns the value at the specified index in the list.
+     *
+     * @param index the index
+     * @return the value
+     */
+    public Object get(int index) {
+        Lookup lookup = _lookups.get(index);
+        return (lookup != null) ? lookup.getValue() : null;
+    }
+
+    /**
+     * Returns the size of the list.
+     *
+     * @return the size
+     */
+    public int size() {
+        return _lookups.size();
+    }
+
+    /**
+     * Refreshes the model, if needed.
+     */
+    public void refresh() {
+        if (_object != null) {
+            List<Lookup> lookups = getLookups();
+            if (!_lookups.equals(lookups)) {
+                _lookups = lookups;
+                int last = _lookups.isEmpty() ? 0 : _lookups.size() - 1;
+                fireContentsChanged(0, last);
+            }
+        }
+    }
+
+    /**
+     * Retrieves the lookups from the lookup service.
+     *
+     * @return a list of lookups
+     */
+    protected List<Lookup> getLookups() {
+        return getLookups(_service.get(_descriptor, _object));
+    }
+
+    /**
+     * Helper to prepend the lookups with null if no value is required.
+     *
+     * @param lookups the lookups
+     * @return a copy of <code>lookups</code> preprended with null if no value
+     *         is required; otherwise returns <code>lookups</code> unchanged
+     */
+    protected List<Lookup> getLookups(List<Lookup> lookups) {
+        if (_allowNone) {
+            lookups = new ArrayList<Lookup>(lookups);
+            lookups.add(0, null);
+        }
+        return lookups;
+    }
+
+}
