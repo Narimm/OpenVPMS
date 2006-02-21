@@ -1,8 +1,11 @@
 package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.act.ActEditor;
+import org.openvpms.web.component.edit.act.ActItemEditor;
+import org.openvpms.web.component.edit.act.ParticipationEditor;
+
 
 /**
  * A factory for {@link IMObjectEditor} instances.
@@ -12,23 +15,44 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  */
 public class IMObjectEditorFactory {
 
+
+    /**
+     * Create a new editor.
+     *
+     * @param object  the object to edit
+     * @param showAll if <code>true</code> show optional and required fields;
+     *                otherwise show required fields.
+     */
+    public static IMObjectEditor create(IMObject object, boolean showAll) {
+        return create(object, null, null, showAll);
+    }
+
     /**
      * Create a new editor.
      *
      * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
+     * @param context    the parent object. May be <code>null</code>
      * @param descriptor the parent object's descriptor. May be
      *                   <code>null</code>
+     * @param showAll    if <code>true</code> show optional and required fields;
+     *                   otherwise show required fields.
      * @return a new editor to edit <code>object</code>
      */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor) {
+    public static IMObjectEditor create(IMObject object, IMObject context,
+                                        NodeDescriptor descriptor, boolean showAll) {
         IMObjectEditor result;
-        if (object instanceof EntityRelationship) {
-            result = new RelationshipEditor((EntityRelationship) object, parent,
-                    descriptor);
-        } else {
-            result = new DefaultIMObjectEditor(object, parent, descriptor);
+        result = RelationshipEditor.create(object, context, descriptor, showAll);
+        if (result == null) {
+            result = ActEditor.create(object, context, descriptor, showAll);
+        }
+        if (result == null) {
+            result = ActItemEditor.create(object, context, descriptor, showAll);
+        }
+        if (result == null) {
+            result = ParticipationEditor.create(object, context, descriptor, showAll);
+        }
+        if (result == null) {
+            result = new DefaultIMObjectEditor(object, context, descriptor, showAll);
         }
         return result;
     }

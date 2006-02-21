@@ -1,4 +1,4 @@
-package org.openvpms.web.component;
+package org.openvpms.web.component.im.table;
 
 import java.util.List;
 
@@ -7,10 +7,8 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.TableCellRenderer;
-import nextapp.echo2.app.table.TableColumnModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.model.IMObjectTableModel;
 
 
 /**
@@ -20,17 +18,6 @@ import org.openvpms.web.component.model.IMObjectTableModel;
  * @version $LastChangedDate$
  */
 public class IMObjectTable extends PageableSortableTable {
-
-    /**
-     * The no. of rows per page.
-     */
-    int _rowsPerPage = 15;
-
-    /**
-     * Determines if object may be deleted.
-     */
-    private final boolean _deletable;
-
 
     /**
      * Construct a new <code>IMObjectTable</code>.
@@ -46,15 +33,19 @@ public class IMObjectTable extends PageableSortableTable {
      *                  deletion
      */
     public IMObjectTable(boolean deletable) {
-        _deletable = deletable;
-        setStyleName("default");
-        TableColumnModel columns
-                = IMObjectTableModel.createColumnModel(_deletable);
+        this(IMObjectTableModel.create(deletable));
+    }
 
-        IMObjectTableModel model = new IMObjectTableModel(columns);
-        model.setRowsPerPage(_rowsPerPage);
+    /**
+     * Construct a new <code>IMObjectTable</code>.
+     *
+     * @param model the table model
+     */
+    public IMObjectTable(IMObjectTableModel model) {
+        setStyleName("default");
         setModel(model);
-        setColumnModel(columns);
+        setColumnModel(model.getColumnModel());
+        setSelectionEnabled(true);
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
     }
 
@@ -64,11 +55,16 @@ public class IMObjectTable extends PageableSortableTable {
      * @param objects the objects to display
      */
     public void setObjects(List<IMObject> objects) {
-        TableColumnModel columns = IMObjectTableModel.createColumnModel(_deletable);
-        IMObjectTableModel model = new IMObjectTableModel(objects, columns);
-        model.setRowsPerPage(_rowsPerPage);
-        setModel(model);
-        setSelectionEnabled(true);
+        ((IMObjectTableModel) getModel()).setObjects(objects);
+    }
+
+    /**
+     * Returns the objects displayed in the table.
+     *
+     * @return the object being displayed.
+     */
+    public List<IMObject> getObjects() {
+        return ((IMObjectTableModel) getModel()).getObjects();
     }
 
     /**
@@ -95,6 +91,24 @@ public class IMObjectTable extends PageableSortableTable {
      */
     public List<IMObject> getMarked() {
         return ((IMObjectTableModel) getModel()).getMarked();
+    }
+
+    /**
+     * Adds an object to the table.
+     *
+     * @param object the object to add
+     */
+    public void add(IMObject object) {
+        ((IMObjectTableModel) getModel()).add(object);
+    }
+
+    /**
+     * Removes an object from the table.
+     *
+     * @param object the object to remove
+     */
+    public void remove(IMObject object) {
+        ((IMObjectTableModel) getModel()).remove(object);
     }
 
     /**

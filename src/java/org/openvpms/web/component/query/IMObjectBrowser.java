@@ -4,9 +4,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
-import org.openvpms.web.component.im.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.IMObjectViewer;
-import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -25,7 +25,7 @@ public class IMObjectBrowser extends IMObjectViewer {
      * @param object the object to browse.
      */
     public IMObjectBrowser(IMObject object) {
-        this(object, new DefaultLayoutStrategy());
+        this(object, new DefaultLayoutStrategyFactory().create(object, true));
     }
 
     /**

@@ -24,31 +24,31 @@ import org.openvpms.web.util.Messages;
 public class NodeBrowserFactory extends AbstractIMObjectComponentFactory {
 
     /**
-     * Create a component to display the supplied object.
+     * Create a component to display the an object.
      *
-     * @param object     the object to display
+     * @param context    the context object
      * @param descriptor the object's descriptor
      * @return a component to display <code>object</code>
      */
-    public Component create(IMObject object, NodeDescriptor descriptor) {
+    public Component create(IMObject context, NodeDescriptor descriptor) {
         Component result;
         boolean enable = false;
         if (descriptor.isLookup()) {
-            result = getLabel(object, descriptor);
+            result = getLabel(context, descriptor);
         } else if (descriptor.isBoolean()) {
-            result = getCheckBox(object, descriptor);
+            result = getCheckBox(context, descriptor);
         } else if (descriptor.isString()) {
-            result = getTextComponent(object, descriptor);
+            result = getTextComponent(context, descriptor);
         } else if (descriptor.isNumeric()) {
-            result = getLabel(object, descriptor);
+            result = getLabel(context, descriptor);
         } else if (descriptor.isDate()) {
-            result = getLabel(object, descriptor);
+            result = getLabel(context, descriptor);
         } else if (descriptor.isCollection()) {
-            result = getCollectionBrowser(object, descriptor);
+            result = getCollectionBrowser(context, descriptor);
             // need to enable this otherwise table selection is disabled
             enable = true;
         } else if (descriptor.isObjectReference()) {
-            result = getObjectBrowser(object, descriptor);
+            result = getObjectBrowser(context, descriptor);
         } else {
             Label label = LabelFactory.create();
             label.setText("No browser for type " + descriptor.getType());
@@ -56,6 +56,19 @@ public class NodeBrowserFactory extends AbstractIMObjectComponentFactory {
         }
         result.setEnabled(enable);
         return result;
+    }
+
+    /**
+     * Create a component to display an object.
+     *
+     * @param object     the object to display
+     * @param context    the object's parent. May be <code>null</code>
+     * @param descriptor the parent object's descriptor. May be
+     *                   <code>null</code>
+     */
+    public Component create(IMObject object, IMObject context, NodeDescriptor descriptor) {
+        IMObjectBrowser browser = new IMObjectBrowser(object);
+        return browser.getComponent();
     }
 
     /**
@@ -82,6 +95,8 @@ public class NodeBrowserFactory extends AbstractIMObjectComponentFactory {
             String text = Messages.get("imobject.summary",
                     value.getName(), value.getDescription());
             label.setText(text);
+        } else {
+            label.setText(Messages.get("imobject.none"));
         }
         return label;
     }

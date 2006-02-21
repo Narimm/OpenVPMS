@@ -13,7 +13,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectEditor {
+public interface IMObjectEditor extends Saveable {
 
     /**
      * Property name for event indicating that the component has changed.
@@ -28,18 +28,18 @@ public interface IMObjectEditor {
     String getTitle();
 
     /**
+     * Returns a display name for the object being edited.
+     *
+     * @return a display name for the object
+     */
+    String getDisplayName();
+
+    /**
      * Returns the object being edited.
      *
      * @return the object being edited
      */
     IMObject getObject();
-
-    /**
-     * Save any edits.
-     *
-     * @return <code>true</code> if the save was successful
-     */
-    boolean save();
 
     /**
      * Delete the current object.
@@ -52,13 +52,6 @@ public interface IMObjectEditor {
      * Cancel any edits.
      */
     void cancel();
-
-    /**
-     * Determines if the object has been changed.
-     *
-     * @return <code>true</code> if the object has been changed
-     */
-    boolean isModified();
 
     /**
      * Determines if the object has been deleted.
@@ -83,5 +76,14 @@ public interface IMObjectEditor {
      */
     void addPropertyChangeListener(String name,
                                    PropertyChangeListener listener);
+
+    /**
+     * Remove a property change listener.
+     *
+     * @param name     the property name to remove the listener for
+     * @param listener the listener to remove
+     */
+    void removePropertyChangeListener(String name,
+                                      PropertyChangeListener listener);
 
 }

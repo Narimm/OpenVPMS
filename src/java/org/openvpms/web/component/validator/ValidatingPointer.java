@@ -6,14 +6,16 @@ import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.web.component.Validator;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.Modifiable;
+
 
 /**
- * Enter description here.
+ * A <code>Pointer</code> that validates inputs using an {@link Validator}.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
  */
-public class ValidatingPointer implements Pointer {
+public class ValidatingPointer implements Pointer, Modifiable {
 
     /**
      * The pointer to delegate to.
@@ -24,6 +26,11 @@ public class ValidatingPointer implements Pointer {
      * The validator.
      */
     private final Validator _validator;
+
+    /**
+     * Determines if the underlying object is dirty.
+     */
+    private boolean _dirty;
 
 
     /**
@@ -61,6 +68,7 @@ public class ValidatingPointer implements Pointer {
         List<String> errors = _validator.validate(value);
         if (errors.isEmpty()) {
             _pointer.setValue(value);
+            _dirty = true;
         } else {
             ErrorDialog.show(errors.get(0));
         }
@@ -87,6 +95,23 @@ public class ValidatingPointer implements Pointer {
      */
     public Object clone() {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Determines if the underlying object has been modified.
+     *
+     * @return <code>true</code> if this has been modified; otherwise
+     *         <code>false</code>
+     */
+    public boolean isModified() {
+        return _dirty;
+    }
+
+    /**
+     * Clears the modified status of the object.
+     */
+    public void clearModified() {
+        _dirty = false;
     }
 
     /**

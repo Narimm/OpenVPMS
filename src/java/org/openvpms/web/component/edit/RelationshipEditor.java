@@ -2,16 +2,13 @@ package org.openvpms.web.component.edit;
 
 import java.util.List;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -20,17 +17,17 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.Context;
-import org.openvpms.web.component.ButtonFactory;
 import org.openvpms.web.component.GridFactory;
 import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.TextComponentFactory;
 import org.openvpms.web.component.im.IMObjectComponentFactory;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.DefaultQuery;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.im.query.DefaultQuery;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.query.Browser;
 import org.openvpms.web.component.query.BrowserDialog;
 import org.openvpms.web.spring.ServiceHelper;
@@ -67,10 +64,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param relationship the relationship
      * @param parent       the parent object
      * @param descriptor   the parent descriptor
+     * @param showAll      if <code>true</code> show optional and required
+     *                     fields; otherwise show required fields.
      */
-    public RelationshipEditor(EntityRelationship relationship, IMObject parent,
-                              NodeDescriptor descriptor) {
-        super(relationship, parent, descriptor, true);
+    protected RelationshipEditor(EntityRelationship relationship, IMObject parent,
+                                 NodeDescriptor descriptor, boolean showAll) {
+        super(relationship, parent, descriptor, showAll);
         _relationship = relationship;
         ArchetypeDescriptor archetype = getArchetypeDescriptor();
         NodeDescriptor sourceDesc = archetype.getNodeDescriptor("source");
@@ -100,6 +99,27 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Create a new editor for an object, if it can be edited by this class.
+     *
+     * @param object     the object to edit
+     * @param parent     the parent object. May be <code>null</code>
+     * @param descriptor the parent descriptor. May be <code>null</cocde>
+     * @param showAll    if <code>true</code> show optional and required fields;
+     *                   otherwise show required fields.
+     * @return a new editor for <code>object</code>, or <code>null</code> if it
+     *         cannot be edited by this
+     */
+    public static IMObjectEditor create(IMObject object, IMObject parent,
+                                        NodeDescriptor descriptor, boolean showAll) {
+        IMObjectEditor result = null;
+        if (object instanceof EntityRelationship) {
+            result = new RelationshipEditor((EntityRelationship) object, parent,
+                    descriptor, showAll);
+        }
+        return result;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @param showAll if <code>true</code> show required and optional fields;
@@ -107,7 +127,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @return a new layout strategy
      */
     @Override
-    protected ExpandableLayoutStrategy createLayoutStrategy(boolean showAll) {
+    protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
         return new LayoutStrategy(showAll);
     }
 
@@ -120,7 +140,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         NodeDescriptor descriptor = entity.getDescriptor();
         Query query = new DefaultQuery(descriptor.getArchetypeRange());
         final Browser browser = new Browser(query);
-        String title = Messages.get("relationship.select",
+        String title = Messages.get("imobject.select.title",
                 descriptor.getDisplayName());
         final BrowserDialog popup = new BrowserDialog(title, browser);
 
@@ -143,7 +163,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param object the entity object
      */
     protected void onSelected(Entity entity, IMObject object) {
-        entity.setEntity(object);
+        entity.setObject(object);
         IMObjectReference reference = new IMObjectReference(object);
         if (entity == _source) {
             _relationship.setSource(reference);
@@ -246,7 +266,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         public LayoutStrategy(boolean showOptional) {
             super(showOptional);
             ChainedNodeFilter filter = new ChainedNodeFilter();
-            filter.add(new BasicNodeFilter(showOptional, false));
+            filter.add(new BasicNodeFilter(showOptional));
             filter.add(new NamedNodeFilter("source", "target"));
             setNodeFilter(filter);
         }
@@ -283,27 +303,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     /**
      * Wrapper for a source/target entity in a relationship.
      */
-    private class Entity {
+    private class Entity extends Selector {
 
         /**
          * The entity's descriptor.
          */
         private NodeDescriptor _descriptor;
-
-        /**
-         * Displays a summary of the entity.
-         */
-        private TextComponent _label;
-
-        /**
-         * Button to change the entity/
-         */
-        private Button _select;
-
-        /**
-         * The rendered component.
-         */
-        private Row _component;
 
 
         /**
@@ -315,9 +320,10 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
          */
         public Entity(IMObject entity, NodeDescriptor descriptor,
                       boolean readOnly) {
+            super(readOnly ? ButtonStyle.HIDE: ButtonStyle.RIGHT);
             _descriptor = descriptor;
-            doLayout(readOnly);
-            setEntity(entity);
+            getComponent();
+            setObject(entity);
         }
 
         /**
@@ -329,59 +335,6 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
             return _descriptor;
         }
 
-        /**
-         * Returns the select button.
-         *
-         * @return the select button, or <code>null</code> if the entity is read
-         *         only
-         */
-        public Button getSelect() {
-            return _select;
-        }
-
-        /**
-         * Returns the rendered component.
-         *
-         * @return the rendered component
-         */
-        public Component getComponent() {
-            return _component;
-        }
-
-        /**
-         * Sets the entity
-         *
-         * @param entity the entity
-         */
-        public void setEntity(IMObject entity) {
-            if (entity != null) {
-                String key = "relationship.entity.summary";
-                String summary = Messages.get(key, entity.getName(),
-                        entity.getDescription());
-                _label.setText(summary);
-            } else {
-                _label.setText(Messages.get("relationship.select"));
-            }
-        }
-
-        /**
-         * Lays out the component.
-         *
-         * @param readOnly if <code>true<code> don't render the select button
-         */
-        protected void doLayout(boolean readOnly) {
-            final int columns = 32; // @todo
-            _label = TextComponentFactory.create();
-            _label.setWidth(new Extent(columns, Extent.EX));
-            _label.setEnabled(false);
-            _component = RowFactory.create("RelationshipEditor.EntityRow", _label);
-            if (!readOnly) {
-                _select = ButtonFactory.create("select");
-                _component.add(_select);
-            }
-        }
-
     }
-
 
 }
