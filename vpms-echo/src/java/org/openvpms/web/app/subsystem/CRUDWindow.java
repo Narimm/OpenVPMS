@@ -15,20 +15,20 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.Context;
-import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.edit.EditDialog;
-import org.openvpms.web.component.edit.IMObjectEditor;
-import org.openvpms.web.component.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.creator.IMObjectCreator;
-import org.openvpms.web.component.im.creator.IMObjectCreatorListener;
-import org.openvpms.web.component.query.IMObjectBrowser;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.create.IMObjectCreatorListener;
+import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.resource.util.Messages;
 
 /**
  * Generic CRUD window.
@@ -72,9 +72,9 @@ public class CRUDWindow {
     private Component _component;
 
     /**
-     * The object browser.
+     * The object viewer.
      */
-    private IMObjectBrowser _browser;
+    private IMObjectViewer _viewer;
 
     /**
      * The selected object container.
@@ -169,19 +169,19 @@ public class CRUDWindow {
     public void setObject(IMObject object) {
         if (object != null) {
             if (_objectContainer != null) {
-                _objectContainer.remove(_browser.getComponent());
+                _objectContainer.remove(_viewer.getComponent());
             } else {
                 _objectContainer = new GroupBox();
                 _component.add(_objectContainer);
             }
-            _browser = new IMObjectBrowser(object);
-            _objectContainer.add(_browser.getComponent());
+            _viewer = new IMObjectViewer(object);
+            _objectContainer.add(_viewer.getComponent());
             enableButtons(true);
         } else {
-            if (_browser != null) {
+            if (_viewer != null) {
                 _component.remove(_objectContainer);
                 _objectContainer = null;
-                _browser = null;
+                _viewer = null;
             }
             enableButtons(false);
         }
@@ -281,8 +281,8 @@ public class CRUDWindow {
      * EditDialog}.
      */
     protected void onEdit() {
-        if (_browser != null) {
-            IMObject object = _browser.getObject();
+        if (_viewer != null) {
+            IMObject object = _viewer.getObject();
             if (object.isNew()) {
                 edit(object, true);
             } else {
@@ -304,8 +304,8 @@ public class CRUDWindow {
      * Invoked when the delete button is pressed.
      */
     protected void onDelete() {
-        if (_browser != null) {
-            IMObject object = _browser.getObject();
+        if (_viewer != null) {
+            IMObject object = _viewer.getObject();
             if (object instanceof Entity) {
                 Entity entity = (Entity) object;
                 if (!entity.getEntityRelationships().isEmpty()) {

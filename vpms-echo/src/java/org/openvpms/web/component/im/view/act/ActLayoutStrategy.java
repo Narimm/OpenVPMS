@@ -9,15 +9,15 @@ import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.GridFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 
 import echopointng.GroupBox;
 

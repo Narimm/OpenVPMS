@@ -7,8 +7,8 @@ import nextapp.echo2.app.table.TableColumnModel;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.util.DescriptorHelper;
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

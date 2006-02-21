@@ -16,10 +16,11 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.ColumnFactory;
-import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.component.TableNavigator;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
@@ -29,9 +30,8 @@ import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.query.NodeBrowserFactory;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.util.DescriptorHelper;
 
 
 /**
@@ -111,7 +111,7 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
          * Construct a <code>DescriptorTableModel</code>.
          */
         protected ActRelationshipTableModel(TableColumnModel model) {
-            super(model, new NodeBrowserFactory());
+            super(model, new ReadOnlyComponentFactory());
         }
 
         /**

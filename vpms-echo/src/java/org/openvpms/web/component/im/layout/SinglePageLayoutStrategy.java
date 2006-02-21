@@ -8,7 +8,7 @@ import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 
 
@@ -22,7 +22,7 @@ import org.openvpms.web.component.im.filter.BasicNodeFilter;
 public class SinglePageLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * Construct a new <code>IMObjectBrowser</code>.
+     * Construct a new <code>IMObjectViewer</code>.
      *
      * @param summary if <code>true</code>, only display a summary
      */

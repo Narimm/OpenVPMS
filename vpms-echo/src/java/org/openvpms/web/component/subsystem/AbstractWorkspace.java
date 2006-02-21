@@ -4,7 +4,7 @@ import java.util.List;
 
 import nextapp.echo2.app.Component;
 
-import org.openvpms.web.util.Messages;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**

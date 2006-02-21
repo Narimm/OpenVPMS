@@ -13,11 +13,11 @@ import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.LabelFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.SelectFieldFactory;
-import org.openvpms.web.component.TextComponentFactory;
-import org.openvpms.web.component.model.ArchetypeShortNameListModel;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
 

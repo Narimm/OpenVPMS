@@ -16,7 +16,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.RowFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 

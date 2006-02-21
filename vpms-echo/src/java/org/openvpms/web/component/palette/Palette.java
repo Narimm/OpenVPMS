@@ -14,9 +14,9 @@ import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.list.ListSelectionModel;
 import org.apache.commons.collections.ListUtils;
 
-import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.ColumnFactory;
-import org.openvpms.web.component.LabelFactory;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**

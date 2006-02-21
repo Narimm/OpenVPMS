@@ -3,8 +3,8 @@ package org.openvpms.web.app;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.SplitPane;
 
-import org.openvpms.web.component.ComponentFactory;
-import org.openvpms.web.component.SplitPaneFactory;
+import org.openvpms.web.component.util.ComponentFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 
 /**
  * Enter description here.

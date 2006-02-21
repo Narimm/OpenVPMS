@@ -12,9 +12,9 @@ import nextapp.echo2.app.layout.RowLayoutData;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.ButtonFactory;
-import org.openvpms.web.component.RowFactory;
-import org.openvpms.web.component.im.IMObjectComponentFactory;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 
 
