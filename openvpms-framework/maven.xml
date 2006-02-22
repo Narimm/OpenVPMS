@@ -38,6 +38,7 @@
 		<ant:java
         	classname="org.openvpms.tools.data.loader.ArchetypeDataLoader"
 	        failonerror="true"
+	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
            		<ant:path refid="maven.dependency.classpath"/>
