@@ -26,6 +26,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
@@ -165,6 +166,16 @@ public class LookupServiceTestCase extends
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), contact).size() > 0);
         contact.getDetails().setAttribute("country", "Tasmania");
         assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), contact).size() == 0);
+    }
+    
+    /**
+     * Test for OVPMS-195
+     */
+    public void testOVPMS195()
+    throws Exception {
+        List<IMObject> objects = archetypeService.get(
+                new String[]{"lookup.relationship"}, null, true, true);
+        assertTrue(objects != null);
     }
     
     /**

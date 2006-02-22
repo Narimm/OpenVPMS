@@ -41,7 +41,7 @@
 			defaultValue="false()" />
 		<node name="dateOfBirth" path="/dateOfBirth"
 			type="java.util.Date" minCardinality="1" />
-		<node name="identities" path="/identities"
+		<node name="identities" path="/identities" maxCardinality="*"
 			type="org.openvpms.component.business.domain.im.common.EntityIdentity">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">

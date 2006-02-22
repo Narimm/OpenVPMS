@@ -108,6 +108,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         Person person = (Person) service.create("person.person");
         EntityIdentity eid = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
+        eid.setIdentity("jimmy");
 
         person.setTitle("Mr");
         person.setFirstName("Jim");
@@ -178,8 +179,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
      */
     public void testArchetypeRangeValidation() throws Exception {
         Person person = (Person) service.create("person.person");
-        EntityIdentity eid = (EntityIdentity) service
-                .create("entityIdentity.animalAlias");
+        EntityIdentity eid = createEntityIdentity(
+                "entityIdentity.animalAlias", "jimmy");
 
         try {
             person.setTitle("Mr");
@@ -203,19 +204,16 @@ public class ValidationErrorTestCase extends BaseTestCase {
      */
     public void testArchetypeRangeValidation2() throws Exception {
         Person person = (Person) service.create("person.person");
-
         try {
             person.setTitle("Mr");
             person.setFirstName("Jim");
             person.setLastName("Alateras");
-            person.addIdentity((EntityIdentity) service
-                    .create("entityIdentity.animalAlias"));
-            person.addIdentity((EntityIdentity) service
-                    .create("entityIdentity.animalAlias"));
-            person.addIdentity((EntityIdentity) service
-                    .create("entityIdentity.personAlias"));
-            person.addIdentity((EntityIdentity) service
-                    .create("entityIdentity.animalAlias"));
+            person.addIdentity(createEntityIdentity("entityIdentity.animalAlias",
+                    "animal1"));
+            person.addIdentity(createEntityIdentity("entityIdentity.animalAlias",
+                    "animal2"));
+            person.addIdentity(createEntityIdentity("entityIdentity.animalAlias",
+                    "animal3"));
             service.validateObject(person);
             fail("This object should not have passed validation");
         } catch (Exception exception) {
@@ -375,20 +373,20 @@ public class ValidationErrorTestCase extends BaseTestCase {
         }
 
         // this should now validate
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // so should this
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus1"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus2"));
         service.validateObject(pet);
 
         // but not this
         try {
-            pet.getIdentities().add(new EntityIdentity());
+            pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus3"));
             service.validateObject(pet);
             fail("Validation should have failed since max cardinality was violated");
         } catch (Exception exception) {
@@ -418,20 +416,20 @@ public class ValidationErrorTestCase extends BaseTestCase {
         service.validateObject(pet);
 
         // this should validate
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus1"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus2"));
         service.validateObject(pet);
 
         // but not this
         try {
-            pet.getIdentities().add(new EntityIdentity());
+            pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus3"));
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
         } catch (Exception exception) {
@@ -453,7 +451,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                         .get("assertionFile"));
         ArchetypeService service = new ArchetypeService(cache);
 
-        assertTrue(service.getArchetypeDescriptor("animal.pet2") != null);
+        assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
         Animal pet = (Animal) service.create("animal.pet2");
         pet.setName("bill");
         pet.setSex("male");
@@ -467,7 +465,9 @@ public class ValidationErrorTestCase extends BaseTestCase {
         }
 
         // this should not validate
-        pet.getIdentities().add(new EntityIdentity());
+        EntityIdentity eid = (EntityIdentity)service.create("entityIdentity.animalAlias");
+        eid.setIdentity("animal1");
+        pet.getIdentities().add(eid);
         try {
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
@@ -477,7 +477,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         }
 
         // this should not validate
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         try {
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
@@ -487,16 +487,16 @@ public class ValidationErrorTestCase extends BaseTestCase {
         }
 
         // but this should
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and so should this
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
     }
 
@@ -521,22 +521,22 @@ public class ValidationErrorTestCase extends BaseTestCase {
         service.validateObject(pet);
 
         // this should also validate
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
 
         // and this
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
-        pet.getIdentities().add(new EntityIdentity());
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
+        pet.getIdentities().add(createEntityIdentity("entityIdentity.animalAlias", "brutus"));
         service.validateObject(pet);
     }
 
@@ -570,5 +570,24 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         return classification;
     }
+    
+    /**
+     * This will create an entity identtiy with the specified identity
+     * 
+     * @param shortName
+     *            the archetype
+     * @param identity
+     *            the identity to set
+     * @return EntityIdentity
+     * @throws Exception                       
+     */
+    private EntityIdentity createEntityIdentity(String shortName, String identity)
+    throws Exception {
+        EntityIdentity eid = (EntityIdentity) service.create(shortName);
+        eid.setIdentity(identity);
+        
+        return eid;
+    }
+    
 
 }
