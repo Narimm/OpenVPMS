@@ -630,7 +630,6 @@ public class ArchetypeService implements IArchetypeService {
                 try {
                     value = context.getValue(node.getDerivedValue());
                     context.getPointer(node.getPath()).setValue(value);
-logger.error("DV: obj: " + context.getContextBean().getClass().getName() + " path: " + node.getPath() + " derived path: " + node.getDerivedValue() + " value: " + value);                    
                 } catch (Exception exception) {
                     value = null;
                     errors.add(new ValidationError(node.getName(),
