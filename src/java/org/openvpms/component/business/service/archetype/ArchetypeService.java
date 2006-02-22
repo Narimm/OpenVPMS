@@ -630,6 +630,7 @@ public class ArchetypeService implements IArchetypeService {
                 try {
                     value = context.getValue(node.getDerivedValue());
                     context.getPointer(node.getPath()).setValue(value);
+logger.error("DV: obj: " + context.getContextBean().getClass().getName() + " path: " + node.getPath() + " derived path: " + node.getDerivedValue() + " value: " + value);                    
                 } catch (Exception exception) {
                     value = null;
                     errors.add(new ValidationError(node.getName(),
@@ -653,28 +654,61 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
 
-            // if the node is a collection and there are cardinality
-            // constraints then check them
+            // do collection related processing
             if (node.isCollection()) {
-                if ((minCardinality > 0)
-                        && (getCollectionSize(node, value) < minCardinality)) {
+                Collection collection = (Collection)value;
+                // check the min cardinality if specified
+                if ((minCardinality > 0) && 
+                    (collection == null || collection.size() < minCardinality)) {
                     errors.add(new ValidationError(node.getName(),
                             " must supply at least " + minCardinality + " "
                                     + node.getBaseName()));
 
                 }
 
-                if ((maxCardinality > 0)
-                        && (maxCardinality != NodeDescriptor.UNBOUNDED)
-                        && (getCollectionSize(node, value) > maxCardinality)) {
+                // check the max cardinality if specified
+                if ((maxCardinality > 0) && 
+                    (maxCardinality != NodeDescriptor.UNBOUNDED) && 
+                    (collection != null && collection.size() > maxCardinality)) {
                     errors.add(new ValidationError(node.getName(),
                             " cannot supply more than " + maxCardinality + " "
                                     + node.getBaseName()));
                 }
+                
+                // if it's a parent-child relationship then validate the
+                // children. This is the recursive validation
+                for (Object obj : collection) {
+                    if ((obj == null) ||
+                        (!(obj instanceof IMObject))) {
+                        continue;
+                    }
+                    
+                    IMObject imobj = (IMObject)obj;
+                    
+                    // check that we can retrieve a valid archetype for this object
+                    ArchetypeDescriptor adesc = getArchetypeDescriptor(
+                            imobj.getArchetypeId());
+                    if (adesc == null) {
+                        errors.add(new ValidationError(null, new StringBuffer(
+                                "No archetype definition for ").append(
+                                        imobj.getArchetypeId()).toString()));
+                        logger.error(new ArchetypeServiceException(
+                                ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
+                                new Object[] { imobj.getArchetypeId().toString() }));
+                    }
+
+                    // if there are nodes attached to the archetype then validate the
+                    // associated assertions
+                    if (adesc.getNodeDescriptors().size() > 0) {
+                        JXPathContext childContext = JXPathContext.newContext(imobj);
+                        childContext.setLenient(true);
+                        validateObject(childContext, adesc.getNodeDescriptors(), errors);
+                    }
+                }
             }
 
-            if ((value != null)
-                    && (node.getAssertionDescriptorsAsArray().length > 0)) {
+            if ((value != null)&& 
+                (node.getAssertionDescriptorsAsArray().length > 0)) {
                 // only check the assertions for non-null values
                 for (AssertionDescriptor assertion : node
                         .getAssertionDescriptorsAsArray()) {
@@ -710,31 +744,6 @@ public class ArchetypeService implements IArchetypeService {
             if (node.getNodeDescriptors().size() > 0) {
                 validateObject(context, node.getNodeDescriptors(), errors);
             }
-        }
-    }
-
-    /**
-     * Determine the number of entries in the collection. If the collection is
-     * null then return null. The node descriptor defines the type of the
-     * collection
-     * 
-     * @param node
-     *            the node descriptor for the collection item
-     * @param collection
-     *            the collection item
-     * @return int
-     */
-    private int getCollectionSize(NodeDescriptor node, Object collection) {
-        if (collection == null) {
-            return 0;
-        }
-
-        // all collections must implement this interface
-        if (collection instanceof Collection) {
-            return ((Collection) collection).size();
-        } else {
-            // TODO should we actually throw an exception here.
-            return 0;
         }
     }
 
