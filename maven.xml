@@ -68,7 +68,7 @@
 	    <attainGoal name="java:jar-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.security.loader.SecurityLoader"
-	        failonerror="true" 
+	        failonerror="true"
     	    fork="true">
             <ant:classpath>
            		<ant:path refid="maven.dependency.classpath"/>
