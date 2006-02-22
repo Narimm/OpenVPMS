@@ -20,7 +20,8 @@
 package org.openvpms.component.business.service.ruleengine;
 
 // java core
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 // aop alliance
 import org.aopalliance.intercept.MethodInterceptor;
@@ -30,6 +31,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
 
 // spring modules
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springmodules.jsr94.core.Jsr94RuleSupport;
 
 /**
@@ -66,16 +68,25 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
      */
     private DirectoryRuleSource ruleSource;
     
+    /**
+     * Cache a reference to the archetype service
+     */
+    private IArchetypeService archetypeService;
+    
     
     /**
      * Create an instance of the interceptor by specifying the directory
      * rule source
      * 
-     *  @param ruleSource
-     *                the directory rule source
+     * @param ruleSource
+ *                the directory rule source
+     * @param archetypeService
+     *            the archetype service                
      */
-    public DroolsRuleEngineInterceptor(DirectoryRuleSource ruleSource) {
+    public DroolsRuleEngineInterceptor(DirectoryRuleSource ruleSource, 
+            IArchetypeService archetypeService) {
         this.ruleSource = ruleSource;
+        this.archetypeService = archetypeService;
     }
     
     /* (non-Javadoc)
@@ -123,7 +134,7 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
         // only invoke the rule engine if there is an corresponding rule set
         // for the uri.
         if (ruleSource.hasRuleExecutionSet(uri)) {
-            executeStateless(uri, Arrays.asList(invocation.getArguments()));
+            executeStateless(uri, getFacts(invocation));
         }
     }
 
@@ -143,7 +154,27 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
         // only invoke the rule engine if there is an corresponding rule set
         // for the uri.
         if (ruleSource.hasRuleExecutionSet(uri)) {
-            executeStateless(uri, Arrays.asList(invocation.getArguments()));
+            executeStateless(uri, getFacts(invocation));
         }
+    }
+    
+    /**
+     * Return the list of facts that should be injected into the working
+     * memory
+     *  
+     * @param invocation
+     *            meta data about the method that is being invoked
+     * @return List<Object>
+     */
+    private List<Object> getFacts(MethodInvocation invocation) {
+        List<Object> facts = new ArrayList<Object>();
+        for (Object fact : invocation.getArguments()) {
+            facts.add(fact);
+        }
+        
+        // now add the other facts
+        facts.add(archetypeService);
+        
+        return facts;
     }
 }

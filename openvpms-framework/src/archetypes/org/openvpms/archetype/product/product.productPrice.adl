@@ -5,6 +5,8 @@
 			type="java.lang.Long" />
 		<node name="name" path="/name" displayName="Product Name" 
 			type="java.lang.String" minCardinality="1" />
+		<node name="description" path="/description" displayName="Description" 
+			type="java.lang.String" derived="true" derivedValue="/name" />
 		<node name="fromDate" path="/fromDate"
 			type="java.util.Date" minCardinality="1"  displayName="From Date" />
 		<node name="thruDate" path="/thruDate"

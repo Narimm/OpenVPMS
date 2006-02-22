@@ -19,6 +19,7 @@
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -1318,7 +1319,7 @@ public class NodeDescriptor extends Descriptor {
         }
 
         try {
-            JXPathContext.newContext(context).setValue(getPath(), value);
+            JXPathContext.newContext(context).setValue(getPath(), transform(value));
         } catch (Exception exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToSetValue,
@@ -1348,6 +1349,39 @@ public class NodeDescriptor extends Descriptor {
                         nodeDescriptors).toString();
     }
 
+    /**
+     * This is a helper method that will attempt to convert a string to the 
+     * type specified by this node descriptor. If the node descriptor is of 
+     * type string then it will simply return the same string otherwise it
+     * will search for a constructor of that type that takes a string and 
+     * return the transformed object.
+     * 
+     * @param value
+     *            the string value
+     * @return Object
+     *            the transformed object                            
+     */
+    private Object transform(Object value) 
+    throws Exception {
+        if ((value == null) ||
+            (this.isCollection()) ||
+            (value.getClass() == getClazz())) {
+            return value;
+        }
+
+        // attempt a conversion by searching for a constructor that takes a
+        // value of the incoming type. If none is found then just return the
+        // original value
+        
+        Class theClass = getClazz();
+        Constructor constructor = theClass.getConstructor(new Class[]{value.getClass()});
+        if (constructor != null) {
+            return constructor.newInstance(new Object[] {value});
+        } else {
+            return value;
+        }
+    }
+    
     /**
      * This method will uncamel case the speified string and return it to the
      * caller

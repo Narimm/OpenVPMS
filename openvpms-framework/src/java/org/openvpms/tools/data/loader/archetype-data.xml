@@ -22,8 +22,10 @@
 	<data archetype="classification.staff" name="Manager" description="Manager" />
 	<data archetype="classification.staff" name="Worker" description="Worker" />
     <data archetype="product.product" name="Soap">
-      <data collection="productPrices" archetype="productPrice.margin" margin="100" />
-      <data collection="productPrices" archetype="productPrice.margin" margin="120" />
+      <data collection="productPrices" archetype="productPrice.margin" name="price1" margin="100" />
+      <data collection="productPrices" archetype="productPrice.margin" name="price2" margin="120" />
+      <data collection="productPrices" archetype="productPrice.margin" name="price3" margin="0.1" />
     </data>
-    <data archetype="product.product" name="Shampoo" />
+    <data archetype="product.product" name="Shampoo" active="true" />
+    <data archetype="animal.pet" name="Lucky" species="Canine" breed="Collie" desexed="True" dateOfBirth="12/12/2006" />
 </archetype>
