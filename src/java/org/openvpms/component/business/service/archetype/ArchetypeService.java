@@ -655,7 +655,7 @@ public class ArchetypeService implements IArchetypeService {
 
             // do collection related processing
             if (node.isCollection()) {
-                Collection collection = (Collection)value;
+                Collection collection = node.toCollection(value);
                 // check the min cardinality if specified
                 if ((minCardinality > 0) && 
                     (collection == null || collection.size() < minCardinality)) {
@@ -676,32 +676,46 @@ public class ArchetypeService implements IArchetypeService {
                 
                 // if it's a parent-child relationship then validate the
                 // children. This is the recursive validation
-                for (Object obj : collection) {
-                    if ((obj == null) ||
-                        (!(obj instanceof IMObject))) {
-                        continue;
-                    }
-                    
-                    IMObject imobj = (IMObject)obj;
-                    
-                    // check that we can retrieve a valid archetype for this object
-                    ArchetypeDescriptor adesc = getArchetypeDescriptor(
-                            imobj.getArchetypeId());
-                    if (adesc == null) {
-                        errors.add(new ValidationError(null, new StringBuffer(
-                                "No archetype definition for ").append(
-                                        imobj.getArchetypeId()).toString()));
-                        logger.error(new ArchetypeServiceException(
-                                ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                                new Object[] { imobj.getArchetypeId().toString() }));
-                    }
-
-                    // if there are nodes attached to the archetype then validate the
-                    // associated assertions
-                    if (adesc.getNodeDescriptors().size() > 0) {
-                        JXPathContext childContext = JXPathContext.newContext(imobj);
-                        childContext.setLenient(true);
-                        validateObject(childContext, adesc.getNodeDescriptors(), errors);
+                if (node.isParentChild()) {
+                    for (Object obj : collection) {
+                        if ((obj == null) ||
+                            (!(obj instanceof IMObject))) {
+                            continue;
+                        }
+                        
+                        // cast to an imobject and ensure that we can retrieve
+                        // the archetypeId. If we can them attempt to retrieve
+                        // the associated descriptor. The the IMObject does not
+                        // contain and archetypeId then it was incorrectly 
+                        // created.
+                        IMObject imobj = (IMObject)obj;
+                        if (imobj.getArchetypeId() == null) {
+                            errors.add(new ValidationError(null, new StringBuffer(
+                                "No archetype Id was set for object of type ")
+                                .append(imobj.getClass().getName()).toString()));
+                            continue;
+                        }
+                        
+                        ArchetypeDescriptor adesc = getArchetypeDescriptor(
+                                imobj.getArchetypeId());
+                        if (adesc == null) {
+                            errors.add(new ValidationError(null, new StringBuffer(
+                                    "No archetype definition for ").append(
+                                            imobj.getArchetypeId()).toString()));
+                            logger.error(new ArchetypeServiceException(
+                                    ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
+                                    new Object[] { imobj.getArchetypeId().toString() }));
+                            continue;
+                        }
+    
+                        // if there are nodes attached to the archetype then validate the
+                        // associated assertions
+                        if ((adesc.getNodeDescriptors() != null) &&
+                            (adesc.getNodeDescriptors().size() > 0)) {
+                            JXPathContext childContext = JXPathContext.newContext(imobj);
+                            childContext.setLenient(true);
+                            validateObject(childContext, adesc.getNodeDescriptors(), errors);
+                        }
                     }
                 }
             }

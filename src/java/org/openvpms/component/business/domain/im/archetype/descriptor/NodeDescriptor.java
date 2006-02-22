@@ -505,6 +505,8 @@ public class NodeDescriptor extends Descriptor {
                     children = new ArrayList<IMObject>((Collection)obj);
                 } else if (obj instanceof PropertyCollection) {
                     children = new ArrayList<IMObject>(((PropertyCollection)obj).values());
+                } else if (obj instanceof Map) {
+                    children = new ArrayList<IMObject>(((Map)obj).values());
                 }
                 
                 // filter the children
@@ -629,7 +631,7 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * The getterthat returns the max cardinality as a string
+     * The getter that returns the max cardinality as a string
      * 
      * @return String
      */
@@ -835,6 +837,35 @@ public class NodeDescriptor extends Descriptor {
         } catch (Exception ignore) {
             return false;
         }
+    }
+    
+    /**
+     * Cast the input value as a collection. If this can't be done then
+     * throw and exception
+     * 
+     * @param object
+     *            the object to cast
+     * @return Collection
+     *            the returned collection object
+     * @throws ArchetypeDescriptorException
+     *            if the cast cannot be made                       
+     */
+    public Collection toCollection(Object object) {
+        Collection collection = null;
+        
+        if (object == null) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.CannotCastToCollection,
+                    new Object[] {object.getClass().getName()});
+        } else if (object instanceof Collection) {
+            collection = (Collection)object;
+        } else if (object instanceof PropertyCollection) {
+            collection = ((PropertyCollection)object).values();
+        } else if (object instanceof Map) {
+            collection = ((Map)object).values();
+        }
+            
+        return collection;
     }
 
     /**

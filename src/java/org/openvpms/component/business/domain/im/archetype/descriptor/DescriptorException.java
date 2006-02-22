@@ -52,7 +52,8 @@ public class DescriptorException extends RuntimeException implements
         FailedToSetValue,
         CannotSetValueForReadOnlyNode,
         CannotAddNodeDescriptor,
-        FailedToGetChildren
+        FailedToGetChildren,
+        CannotCastToCollection
     }
 
     /**

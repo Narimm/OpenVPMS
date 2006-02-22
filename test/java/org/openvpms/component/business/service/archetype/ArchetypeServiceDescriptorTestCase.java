@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -244,6 +245,20 @@ public class ArchetypeServiceDescriptorTestCase extends
                 throw ex;
             } 
         }
+    }
+    /**
+     * Test fix for OVPMS-194
+     */
+    public void testOVPMS194()
+    throws Exception {
+        ArchetypeDescriptor adesc = (ArchetypeDescriptor)service.getArchetypeDescriptor("descriptor.archetype");
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("nodeDescriptors");
+        if (ndesc.isCollection()) {
+              Collection values = (Collection)ndesc.getValue(adesc);
+              assertTrue(values != null);
+       } else {
+           fail("This should have been a collection");
+       }
     }
     
     /* (non-Javadoc)

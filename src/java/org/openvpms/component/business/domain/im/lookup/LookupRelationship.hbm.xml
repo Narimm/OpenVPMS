@@ -29,6 +29,18 @@
     </id>
     <version name="version" access="field" type="long" />
     <property name="linkId" access="property" type="string" />
+    <component name="archetypeId">
+      <property name="namespace" access="property" column="arch_namespace"
+        type="string" />
+      <property name="rmName" access="property" column="arch_rm_name"
+        type="string" />
+      <property name="concept" access="property" column="arch_concept_name"
+        type="string" />
+      <property name="entityName" access="property" column="arch_entity_name"
+        type="string" />
+      <property name="version" access="property" column="arch_version"
+        type="string" />
+    </component>
     <property name="active" access="property" column="active" type="boolean" />
     <property name="type" access="field" column="type" type="string" />
     <many-to-one name="source" column="source" access="field" not-null="true" />
