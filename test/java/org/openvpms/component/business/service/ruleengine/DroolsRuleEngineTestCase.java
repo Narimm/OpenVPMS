@@ -116,6 +116,7 @@ public class DroolsRuleEngineTestCase extends
      */
     private Person createPerson(String title, String firstName, String lastName) {
         Person person = (Person)archetype.create("person.person");
+        person.setName("jimmy");
         person.setTitle(title);
         person.setFirstName(firstName);
         person.setLastName(lastName);

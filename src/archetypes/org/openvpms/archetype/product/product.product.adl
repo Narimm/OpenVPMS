@@ -5,6 +5,8 @@
 			type="java.lang.Long" />
 		<node name="name" path="/name" displayName="Product Name"
 			type="java.lang.String" minCardinality="1" />
+		<node name="active" path="/active" displayName="Active"
+			type="java.lang.Boolean" minCardinality="1" default="flase()"/>
 		<node name="productPrices" path="/productPrices"
 			parentChild="true" type="java.util.HashSet"
 			baseName="productPrice" maxCardinality="*" >
