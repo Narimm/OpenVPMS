@@ -162,6 +162,20 @@
       <url>http://www.jdom.org/</url>
     </dependency>
     <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+      <version>1.0</version>
+      <type>jar</type>
+      <url>http://stax.codehaus.org/</url>
+    </dependency>
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax</artifactId>
+      <version>1.1.2-dev</version>
+      <type>jar</type>
+      <url>http://stax.codehaus.org/</url>
+    </dependency>
+    <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
       <version>1.1-beta-6</version>
