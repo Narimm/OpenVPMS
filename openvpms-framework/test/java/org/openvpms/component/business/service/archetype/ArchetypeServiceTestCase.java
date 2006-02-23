@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -93,10 +94,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * {@link NodeDescriptor}
      */
     public void testGetValueFromNodeDescriptor() throws Exception {
-        Person person = (Person) service.create("person.person");
-        person.setTitle("Mr");
-        person.setFirstName("Jim");
-        person.setLastName("Alateras");
+        Person person = createPerson(null, "Mr", "Jim", "Alateras");
 
         NodeDescriptor ndesc = service.getArchetypeDescriptor(
                 person.getArchetypeId()).getNodeDescriptor("description");
@@ -137,6 +135,17 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(obj != null);
     }
     
+    /**
+     * Test the validation of an archetype which defines a wildcard expression
+     * for the short name of an archetype range assertion
+     */
+    public void testOVPMS197()
+    throws Exception {
+        Person person = createPerson("person.bernief", "Ms", "Bernadette", "Feeney");
+        person.addIdentity(createEntityIdentity("entityIdentity.personAlias", "special"));
+        service.validateObject(person);
+    }
+    
     /* (non-Javadoc)
      * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
      */
@@ -152,5 +161,50 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] { extension }, assertionFile);
         service = new ArchetypeService(cache);
+    }
+
+    /**
+     * This will create an entity identtiy with the specified identity
+     * 
+     * @param shortName
+     *            the archetype
+     * @param identity
+     *            the identity to set
+     * @return EntityIdentity
+     * @throws Exception                       
+     */
+    private EntityIdentity createEntityIdentity(String shortName, String identity)
+    throws Exception {
+        EntityIdentity eid = (EntityIdentity) service.create(shortName);
+        eid.setIdentity(identity);
+        
+        return eid;
+    }
+
+    /**
+     * Create a person with the specified title, first name and last name
+     * 
+     * @param title
+     *            the title of the person
+     * @param firstName
+     *            the firstname
+     * @param lastName
+     *            the last name            
+     * @return Person
+     * @throws Exception                       
+     */
+    private Person createPerson(String shortName, String title, String firstName, String lastName)
+    throws Exception {
+        Person person = null;
+        if (shortName == null) {
+            person = (Person) service.create("person.person");
+        } else {
+            person = (Person) service.create(shortName);
+        }
+        person.setTitle(title);
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+        
+        return person;
     }
 }

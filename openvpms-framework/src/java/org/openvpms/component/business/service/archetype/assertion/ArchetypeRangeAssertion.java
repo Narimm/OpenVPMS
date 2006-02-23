@@ -41,6 +41,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyColl
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.util.StringUtilities;
 
 /**
  * These assertions are applied to archetype and parts of archetypes. These are
@@ -201,7 +202,8 @@ public class ArchetypeRangeAssertion {
                         }
                         
                         for (ArchetypeRangeInfo type : atypes) {
-                            if (imobj.getArchetypeId().getShortName().matches(type.shortName)) {
+                            if (imobj.getArchetypeId().getShortName().matches(
+                                    StringUtilities.toRegEx(type.shortName))) {
                                 type.count++;
                                 match = true;
                                 break;
@@ -230,7 +232,8 @@ public class ArchetypeRangeAssertion {
             // the target is an IMObjectReference so check the reference.
             IMObjectReference imref = (IMObjectReference) target;
             for (ArchetypeRangeInfo type : atypes) {
-                if (imref.getArchetypeId().getShortName().matches(type.shortName)) {
+                if (imref.getArchetypeId().getShortName().matches(
+                        StringUtilities.toRegEx(type.shortName))) {
                     return true; 
                 }
             }
@@ -292,7 +295,6 @@ public class ArchetypeRangeAssertion {
 
         return infos;
     }
-    
     
     /**
      * Static inner class to hold a data structure
