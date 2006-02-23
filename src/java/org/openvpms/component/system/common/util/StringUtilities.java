@@ -54,4 +54,18 @@ public class StringUtilities {
 
         return StringUtils.join(words.iterator(), " ");
     }
+    
+    /**
+     * Convert the incoming string to a regular expression. This means
+     * escaping the '.' and converting all the '*' to '.*'
+     * 
+     * @param input
+     *            the input string
+     * @return String
+     *            the converted string            
+     */
+    public static String toRegEx(String input) {
+        return input.replace(".", "\\.").replace("*", ".*");
+
+    }
 }

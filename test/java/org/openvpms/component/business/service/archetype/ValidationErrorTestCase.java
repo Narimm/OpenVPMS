@@ -588,6 +588,4 @@ public class ValidationErrorTestCase extends BaseTestCase {
         
         return eid;
     }
-    
-
 }
