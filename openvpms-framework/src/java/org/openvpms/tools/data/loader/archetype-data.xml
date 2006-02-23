@@ -25,8 +25,8 @@
       <data collection="productPrices" archetype="productPrice.margin" name="price1" margin="100" />
       <data collection="productPrices" archetype="productPrice.margin" name="price2" margin="120" />
       <data collection="productPrices" archetype="productPrice.margin" name="price3" margin="1.63" />
-      <data collection="productPrices" archetype="product.productPrice" fromDate="1/1/2006" thruDate="1/12/2006" name="price4" fixed="true" price="2000" />
+      <data collection="productPrices" archetype="product.productPrice" fromDate="1/1/2006" thruDate="1/12/2006" name="price4" fixed="true" />
     </data>
     <data archetype="product.product" name="Shampoo" active="true" />
-    <data archetype="animal.pet" name="Lucky" species="Canine" breed="Collie" desexed="True" dateOfBirth="12/12/2006" />
+    <data archetype="animal.pet" name="Lucky" species="Canine" breed="Collie" desexed="True" dateOfBirth="20/12/1963" />
 </archetype>
