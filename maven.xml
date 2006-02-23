@@ -32,11 +32,27 @@
     	</ant:java>	
     </goal>
 	
-	<goal name="data:load" description="Load the Lookup Data from File">
+	<goal name="data:load" description="Load the Archetyped Data">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.data.loader.ArchetypeDataLoader"
+	        failonerror="true"
+	        maxmemory="512m"
+    	    fork="true">
+            <ant:classpath>
+           		<ant:path refid="maven.dependency.classpath"/>
+           		<ant:pathelement path="${maven.build.dest}"/>
+            </ant:classpath>
+        	<arg line="${openvpms.data.loader.cmdline}"/>
+    	</ant:java>	
+    </goal>
+	
+	<goal name="stax:data:load" description="Load the Archetyped Data Using STAX">
+    	<attainGoal name="java:compile"/>
+	    <attainGoal name="java:jar-resources"/>
+		<ant:java
+        	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
 	        failonerror="true"
 	        maxmemory="512m"
     	    fork="true">

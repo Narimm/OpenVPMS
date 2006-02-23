@@ -76,7 +76,7 @@ openvpms.lookup.loader.cmdline=src/java/org/openvpms/tools/lookup/loader/lookup-
 # ------------------------------------------------- #
 # Properties for Archetyped Data Loader
 # ------------------------------------------------- #
-openvpms.data.loader.cmdline=src/java/org/openvpms/tools/data/loader/archetype-data.xml
+openvpms.data.loader.cmdline= -f src/java/org/openvpms/tools/data/loader/archetype-data.xml
 
 # ------------------------------------------------- #
 # Properties for Security Data Loader
