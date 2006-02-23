@@ -288,6 +288,11 @@ public class ArchetypeDataLoader {
                     continue;
                 }
                 
+                // if the attribute value is empty then just continue;
+                if (StringUtils.isEmpty(attr.getValue())) {
+                    continue;
+                }
+                
                 NodeDescriptor ndesc = adesc.getNodeDescriptor(attr.getName());
                 if (ndesc == null) {
                     logger.error("\n[ERR: Invalid Attribute " + attr.getName() 
