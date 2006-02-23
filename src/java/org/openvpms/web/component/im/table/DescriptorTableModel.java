@@ -2,16 +2,20 @@ package org.openvpms.web.component.im.table;
 
 import java.util.List;
 
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
 /**
@@ -28,6 +32,9 @@ public class DescriptorTableModel extends IMObjectTableModel {
 
     /**
      * Construct a <code>DescriptorTableModel</code>.
+     *
+     * @param model   the table columne model
+     * @param factory the component factory
      */
     protected DescriptorTableModel(TableColumnModel model,
                                    IMObjectComponentFactory factory) {
@@ -71,14 +78,41 @@ public class DescriptorTableModel extends IMObjectTableModel {
      */
     public static TableColumnModel create(List<NodeDescriptor> descriptors) {
         TableColumnModel columns = new DefaultTableColumnModel();
+        create(descriptors, columns);
+        return columns;
+    }
 
-        int i = 0;
+    /**
+     * Create columns, adding to an existing column model.
+     *
+     * @param descriptors the column descriptors
+     * @param columns     the columns to add to
+     */
+    public static void create(List<NodeDescriptor> descriptors,
+                              TableColumnModel columns) {
+        int i = columns.getColumnCount();
         for (NodeDescriptor descriptor : descriptors) {
             TableColumn column = new DescriptorTableColumn(i, descriptor);
             columns.addColumn(column);
             ++i;
         }
-        return columns;
+    }
+
+    /**
+     * @see TableModel#getColumnName
+     */
+    @Override
+    public String getColumnName(int column) {
+        String result;
+        TableColumn col = getColumn(column);
+        if (col instanceof DescriptorTableColumn) {
+            NodeDescriptor descriptor
+                    = ((DescriptorTableColumn) col).getDescriptor();
+            result = descriptor.getDisplayName();
+        } else {
+            result = super.getColumnName(column);
+        }
+        return result;
     }
 
     /**
@@ -104,7 +138,16 @@ public class DescriptorTableModel extends IMObjectTableModel {
         Object result = null;
         if (column instanceof DescriptorTableColumn) {
             DescriptorTableColumn col = (DescriptorTableColumn) column;
-            result = _factory.create(object, col.getDescriptor());
+            NodeDescriptor descriptor = col.getDescriptor();
+            Component component = _factory.create(object, descriptor);
+            if (descriptor.isNumeric()) {
+                TableLayoutData layout = new TableLayoutData();
+                Alignment right = new Alignment(Alignment.RIGHT,
+                        Alignment.DEFAULT);
+                layout.setAlignment(right);
+                component.setLayoutData(layout);
+            }
+            result = component;
         }
         return result;
     }

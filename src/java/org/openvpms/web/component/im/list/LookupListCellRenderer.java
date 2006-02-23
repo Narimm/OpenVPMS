@@ -1,8 +1,10 @@
 package org.openvpms.web.component.im.list;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.list.AbstractListComponent;
 import nextapp.echo2.app.list.ListCellRenderer;
 
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -13,6 +15,11 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate$
  */
 public class LookupListCellRenderer implements ListCellRenderer {
+
+    /**
+     * Localised display name for "all".
+     */
+    private final String ALL = Messages.get("list.all");
 
     /**
      * Localised display name for "none".
@@ -30,11 +37,21 @@ public class LookupListCellRenderer implements ListCellRenderer {
      */
     public Object getListCellRendererComponent(Component list, Object value,
                                                int index) {
-        String result;
-        if (value instanceof String) {
-            result = (String) value;
-        } else {
-            result = NONE;
+        Object result = value;
+        if (value == null) {
+            // dummy lookup being rendered.
+            AbstractListComponent box = (AbstractListComponent) list;
+            LookupListModel model = (LookupListModel) box.getModel();
+            Lookup lookup = model.getLookup(index);
+            if (lookup.getArchetypeId() == null && lookup.getValue() == null) {
+                // dummy lookup
+                String code = lookup.getCode();
+                if (LookupListModel.ALL.equals(code)) {
+                    result = ALL;
+                } else if (LookupListModel.NONE.equals(code)) {
+                    result = NONE;
+                }
+            }
         }
         return result;
     }

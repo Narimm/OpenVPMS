@@ -25,9 +25,24 @@ public class LookupListModel extends AbstractListModel {
     private List<Lookup> _lookups;
 
     /**
-     * Determines if a value is required.
+     * Dummy short name indicating that all values apply.
      */
-    private boolean _allowNone;
+    public static final String ALL = "all";
+
+    /**
+     * Dummy short name indicating that no value is required.
+     */
+    public static final String NONE = "none";
+
+    /**
+     * Determines if "all" should be included.
+     */
+    private boolean _all;
+
+    /**
+     * Determines if "none" should be included.
+     */
+    private boolean _none;
 
     /**
      * The source object. May be <code>null</code>.
@@ -48,11 +63,11 @@ public class LookupListModel extends AbstractListModel {
     /**
      * Construct a new <code>LookupListModel</code>.
      *
-     * @param lookups   the lookups to populate the list with.
-     * @param allowNone determines if a value is required
+     * @param lookups the lookups to populate the list with.
+     * @param all     if <code>true</code>, add a localised "All"
      */
-    public LookupListModel(List<Lookup> lookups, boolean allowNone) {
-        _allowNone = allowNone;
+    public LookupListModel(List<Lookup> lookups, boolean all) {
+        _all = all;
         _lookups = getLookups(lookups);
     }
 
@@ -63,11 +78,12 @@ public class LookupListModel extends AbstractListModel {
      * @param descriptor the lookup node descriptor
      * @param service    the lookup service
      */
-    public LookupListModel(IMObject object, NodeDescriptor descriptor, ILookupService service) {
+    public LookupListModel(IMObject object, NodeDescriptor descriptor,
+                           ILookupService service) {
         _object = object;
         _descriptor = descriptor;
         _service = service;
-        _allowNone = !descriptor.isRequired();
+        _none = !descriptor.isRequired();
         _lookups = getLookups();
     }
 
@@ -78,8 +94,7 @@ public class LookupListModel extends AbstractListModel {
      * @return the value
      */
     public Object get(int index) {
-        Lookup lookup = _lookups.get(index);
-        return (lookup != null) ? lookup.getValue() : null;
+        return _lookups.get(index).getValue();
     }
 
     /**
@@ -89,6 +104,16 @@ public class LookupListModel extends AbstractListModel {
      */
     public int size() {
         return _lookups.size();
+    }
+
+    /**
+     * Returns the lookup at the specified index.
+     *
+     * @param index gthe index
+     * @return the lookup
+     */
+    public Lookup getLookup(int index) {
+        return _lookups.get(index);
     }
 
     /**
@@ -115,16 +140,21 @@ public class LookupListModel extends AbstractListModel {
     }
 
     /**
-     * Helper to prepend the lookups with null if no value is required.
+     * Helper to prepend the lookups "all" or "none" when required.
      *
      * @param lookups the lookups
-     * @return a copy of <code>lookups</code> preprended with null if no value
-     *         is required; otherwise returns <code>lookups</code> unchanged
+     * @return a copy of <code>lookups</code> preprended with "all" and/or
+     *         "none" added when required
      */
     protected List<Lookup> getLookups(List<Lookup> lookups) {
-        if (_allowNone) {
+        if (_all || _none) {
             lookups = new ArrayList<Lookup>(lookups);
-            lookups.add(0, null);
+            if (_all) {
+                lookups.add(0, new Lookup(null, null, ALL));
+            }
+            if (_none) {
+                lookups.add(0, new Lookup(null, null, NONE));
+            }
         }
         return lookups;
     }

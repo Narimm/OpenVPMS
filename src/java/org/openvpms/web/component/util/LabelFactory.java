@@ -3,8 +3,6 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.ImageReference;
 import nextapp.echo2.app.Label;
 
-import org.openvpms.web.component.util.ComponentFactory;
-
 
 /**
  * Factory for {@link Label}s.

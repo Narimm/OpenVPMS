@@ -9,14 +9,34 @@ import java.util.Date;
 import java.util.List;
 
 import echopointng.DateField;
+import echopointng.GroupBox;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.list.LookupListCellRenderer;
+import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -34,19 +54,86 @@ public class ActQuery implements Query {
     private long _entityId;
 
     /**
+     * The archetype entity name.
+     */
+    private final String _entityName;
+
+    /**
+     * The archetype conceptName.
+     */
+    private final String _conceptName;
+
+    /**
      * The component representing the query.
      */
     private Component _component;
 
-    private DateField _startFromField;
-    private DateField _startToField;
-    private DateField _endFromField;
-    private DateField _endToField;
+    /**
+     * The status dropdown.
+     */
+    private SelectField _statusSelector;
 
-    private Date _startFrom;
-    private Date _startTo;
-    private Date _endFrom;
-    private Date _endTo;
+    /**
+     * The selected status.
+     */
+    private String _status;
+
+    /**
+     * Indicates if all start dates should be queried. If so, the startFrom and
+     * startTo dates are ignored.
+     */
+    private CheckBox _startAll;
+
+    /**
+     * The start-from label.
+     */
+    private Label _startFromLabel;
+
+    /**
+     * The start-from date.
+     */
+    private DateField _startFrom;
+
+    /**
+     * The start-to label.
+     */
+    private Label _startToLabel;
+
+    /**
+     * The start-to date.
+     */
+    private DateField _startTo;
+
+    /**
+     * Indicates if all end dates should be queried. If so, the endFrom and
+     * endTo dates are ignored.
+     */
+    private CheckBox _endAll;
+
+    /**
+     * The end-from label.
+     */
+    private Label _endFromLabel;
+
+    /**
+     * The end-from date.
+     */
+    private DateField _endFrom;
+
+    /**
+     * The end-to label.
+     */
+    private Label _endToLabel;
+
+    /**
+     * The end-from date.
+     */
+    private DateField _endTo;
+
+    /**
+     * Cell spacing row style.
+     */
+    private static final String CELLSPACING_STYLE = "CellSpacingRow";
 
     /**
      * Row style name.
@@ -57,10 +144,14 @@ public class ActQuery implements Query {
     /**
      * Construct a new <code>ActQuery</code>.
      *
-     * @param entity the entity to search for
+     * @param entity      the entity to search for
+     * @param entityName  the act entity name
+     * @param conceptName the act concept name
      */
-    public ActQuery(Entity entity) {
+    public ActQuery(Entity entity, String entityName, String conceptName) {
         setEntity(entity);
+        _entityName = entityName;
+        _conceptName = conceptName;
     }
 
     /**
@@ -84,48 +175,91 @@ public class ActQuery implements Query {
         return _component;
     }
 
-    private void doLayout() {
-        Row row = RowFactory.create(ROW_STYLE);
-        _startFromField = new DateField();
-        _startFromField.getDateChooser().addPropertyChangeListener(
+    /**
+     * Lays out the component.
+     */
+    protected void doLayout() {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor("act.estimation");
+        NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
+        ILookupService lookup = ServiceHelper.getLookupService();
+        List<Lookup> lookups = lookup.get(descriptor);
+        LookupListModel model = new LookupListModel(lookups, true);
+        _statusSelector = SelectFieldFactory.create(model);
+        _statusSelector.setCellRenderer(new LookupListCellRenderer());
+        _statusSelector.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onStatusChanged();
+            }
+        });
+
+        _startAll = CheckBoxFactory.create("actquery.all", true);
+        _startAll.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onStartAllChanged();
+            }
+        });
+
+        _startFromLabel = LabelFactory.create("actquery.from");
+        _startFrom = new DateField();
+        _startFrom.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
-                        updateStartFrom();
+                        onStartFromChanged();
                     }
                 });
 
-        _startToField = new DateField();
-        _startToField.getDateChooser().addPropertyChangeListener(
+        _startToLabel = LabelFactory.create("actquery.to");
+        _startTo = new DateField();
+        _startTo.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
-                        updateStartTo();
+                        onStartToChanged();
                     }
                 });
-        _endFromField = new DateField();
-        _endFromField.getDateChooser().addPropertyChangeListener(
+        _endAll = CheckBoxFactory.create("actquery.all", true);
+        _endAll.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onEndAllChanged();
+            }
+        });
+        _endFromLabel = LabelFactory.create("actquery.from");
+        _endFrom = new DateField();
+        _endFrom.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
-                        updateEndFrom();
+                        onEndFromChanged();
                     }
                 });
-        _endToField = new DateField();
-        _endToField.getDateChooser().addPropertyChangeListener(
+        _endToLabel = LabelFactory.create("actquery.to");
+        _endTo = new DateField();
+        _endTo.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
-                        updateEndTo();
+                        onEndToChanged();
                     }
+
                 });
-/*
-        row.add(LabelFactory.create("actquery.start.from"));
-        row.add(_startFromField);
-        row.add(LabelFactory.create("actquery.start.to"));
-        row.add(_startToField);
-        row.add(LabelFactory.create("actquery.end.from"));
-        row.add(_endFromField);
-        row.add(LabelFactory.create("actquery.end.to"));
-        row.add(_endToField);
-*/
-        _component = row;
+
+        Row startRange = RowFactory.create(
+                CELLSPACING_STYLE,
+                _startFromLabel, _startFrom,
+                _startToLabel, _startTo);
+        Row startRow = RowFactory.create(ROW_STYLE, _startAll, startRange);
+        GroupBox startBox = GroupBoxFactory.create("actquery.start", startRow);
+
+        Row endRange = RowFactory.create(
+                CELLSPACING_STYLE, _endFromLabel,
+                _endFrom, _endToLabel, _endTo);
+        Row endRow = RowFactory.create(ROW_STYLE, _endAll, endRange);
+        GroupBox endBox = GroupBoxFactory.create("actquery.end", endRow);
+
+        onStartAllChanged();
+        onEndAllChanged();
+
+        _component = RowFactory.create(CELLSPACING_STYLE,
+                LabelFactory.create("actquery.status"), _statusSelector,
+                startBox, endBox);
     }
 
     /**
@@ -137,66 +271,221 @@ public class ActQuery implements Query {
         List<IMObject> result = Collections.emptyList();
 
         if (_entityId != -1) {
+            Date startFrom = getStartFrom();
+            Date startTo = getStartTo();
+            Date endFrom = getEndFrom();
+            Date endTo = getEndTo();
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            List<Act> acts = service.getActs(_entityId, null, null, null, _startFrom,
-                    _startTo, _endFrom, _endTo, null, true);
+            List<Act> acts = Collections.emptyList();
+            try {
+                service.getActs(_entityId, null, null, null,
+                        startFrom, startTo, endFrom,  // @todo see OVPMS-193
+                        endTo, _status, true);
+            } catch (ArchetypeServiceException exception) {
+                ErrorDialog.show(exception);
+            }
             result = new ArrayList<IMObject>(acts);
         }
         return result;
     }
 
-    private void updateStartFrom() {
-        _startFrom = getDate(_startFromField);
-        if (_startTo != null && _startFrom.compareTo(_startTo) > 0) {
-            setStartTo(_startFrom);
+    /**
+     * Invoked when a status is selected.
+     */
+    private void onStatusChanged() {
+        _status = (String) _statusSelector.getSelectedItem();
+    }
+
+    /**
+     * Invoked when the start-all check box changes.
+     */
+    private void onStartAllChanged() {
+        boolean enabled = !_startAll.isSelected();
+        enable(_startFromLabel, enabled);
+        enable(_startFrom, enabled);
+        enable(_startToLabel, enabled);
+        enable(_startTo, enabled);
+    }
+
+    /**
+     * Invoked when the end-all check box changes.
+     */
+    private void onEndAllChanged() {
+        boolean enabled = !_endAll.isSelected();
+        enable(_endFromLabel, enabled);
+        enable(_endFrom, enabled);
+        enable(_endTo, enabled);
+        enable(_endToLabel, enabled);
+    }
+
+    /**
+     * Enable/disable a component.
+     *
+     * @param component the component to update
+     * @param enabled   if <code>true</code> enable the component; otherwise
+     *                  disable it
+     */
+    private void enable(Component component, boolean enabled) {
+        component.setEnabled(enabled);
+        if (enabled) {
+            component.setForeground(Color.BLACK);
+        } else {
+            component.setForeground(Color.LIGHTGRAY);
         }
     }
 
-    private void updateStartTo() {
-        _startTo = getDate(_startToField);
-        if (_startFrom != null && _startFrom.compareTo(_startTo) > 0) {
-            setStartFrom(_startTo);
+    /**
+     * Enable/disable a date field.
+     *
+     * @param field   the field to update
+     * @param enabled if <code>true</code> enable the field; otherwise disable
+     *                it
+     */
+    private void enable(DateField field, boolean enabled) {
+        enable(field.getTextField(), enabled);
+        field.setEnabled(enabled);
+        if (!enabled) {
+            field.setExpanded(false);
         }
     }
 
-    private void updateEndFrom() {
-        _endFrom = getDate(_endFromField);
-        if (_endTo != null && _endFrom.compareTo(_endTo) > 0) {
-            setEndTo(_endFrom);
-        }
-    }
-
-    private void updateEndTo() {
-        _endTo = getDate(_endToField);
-        if (_endFrom != null && _endFrom.compareTo(_endTo) > 0) {
-            setEndFrom(_endTo);
-        }
-    }
-
+    /**
+     * Sets the start-from date.
+     *
+     * @param date the start-from date
+     */
     private void setStartFrom(Date date) {
-        _startFrom = date;
-        setDate(_startFromField, _startFrom);
+        setDate(_startFrom, date);
     }
 
+
+    /**
+     * Returns the start-from date.
+     *
+     * @return the start-from date
+     */
+    private Date getStartFrom() {
+        return _startAll.isSelected() ? null : getDate(_startFrom);
+    }
+
+    /**
+     * Sets the start-to date.
+     *
+     * @param date the start-to date
+     */
     private void setStartTo(Date date) {
-        _startTo = date;
-        setDate(_startToField, _startTo);
+        setDate(_startTo, date);
     }
 
+    /**
+     * Returns the start-to date.
+     *
+     * @return the start-to date
+     */
+    private Date getStartTo() {
+        return _startAll.isSelected() ? null : getDate(_startTo);
+    }
+
+    /**
+     * Sets the end-from date.
+     *
+     * @param date the end-from date
+     */
     private void setEndFrom(Date date) {
-        _endFrom = date;
-        setDate(_endFromField, _endFrom);
+        setDate(_endFrom, date);
     }
 
+    /**
+     * Returns the end-from date.
+     *
+     * @return the end-from date
+     */
+    private Date getEndFrom() {
+        return _endAll.isSelected() ? null : getDate(_endFrom);
+    }
+
+    /**
+     * Sets the end-to date.
+     *
+     * @param date the end-to date
+     */
     private void setEndTo(Date date) {
-        _endTo = date;
-        setDate(_endToField, _endTo);
+        setDate(_endTo, date);
     }
 
+    /**
+     * Returns the end-to date.
+     *
+     * @return the end-to date
+     */
+    private Date getEndTo() {
+        return _endAll.isSelected() ? null : getDate(_endTo);
+    }
+
+    /**
+     * Invoked when the start-from date changes. Sets the start-to date =
+     * start-from if start-from is greater.
+     */
+    private void onStartFromChanged() {
+        Date from = getStartFrom();
+        Date to = getStartTo();
+        if (from != null && from.compareTo(to) > 0) {
+            setStartTo(from);
+        }
+    }
+
+    /**
+     * Invoked when the start-to date changes. Sets the start-from date =
+     * start-to if start-from is greater.
+     */
+    private void onStartToChanged() {
+        Date from = getStartFrom();
+        Date to = getStartTo();
+        if (from != null && from.compareTo(to) > 0) {
+            setStartFrom(to);
+        }
+    }
+
+    /**
+     * Invoked when the end-from date changes. Sets the end-to date = end-from
+     * if end-from is greater.
+     */
+    private void onEndFromChanged() {
+        Date from = getEndFrom();
+        Date to = getEndTo();
+        if (from != null && from.compareTo(to) > 0) {
+            setEndTo(from);
+        }
+    }
+
+    /**
+     * Invoked when the end-to date changes. Sets the end-from date = end-toif
+     * end-from is greater.
+     */
+    private void onEndToChanged() {
+        Date from = getEndFrom();
+        Date to = getEndTo();
+        if (from != null && from.compareTo(to) > 0) {
+            setEndFrom(to);
+        }
+    }
+
+    /**
+     * Returns the date of the given field.
+     *
+     * @param field the date field
+     * @return the selected date from <code>field</code>
+     */
     private Date getDate(DateField field) {
         return field.getDateChooser().getSelectedDate().getTime();
     }
 
+    /**
+     * Sets the date of the given field.
+     *
+     * @param field the date field
+     * @param date  the date to set
+     */
     private void setDate(DateField field, Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

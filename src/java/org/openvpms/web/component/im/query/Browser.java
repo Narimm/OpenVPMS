@@ -5,18 +5,17 @@ import java.util.List;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.EventListenerList;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
 
 
 /**
@@ -25,7 +24,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class Browser extends SplitPane {
+public class Browser {
 
     /**
      * The selected action command.
@@ -38,9 +37,19 @@ public class Browser extends SplitPane {
     private final Query _query;
 
     /**
+     * The browser component.
+     */
+    private Component _component;
+
+    /**
      * The table to display results.
      */
     private IMObjectTable _table;
+
+    /**
+     * Table navigation control.
+     */
+    private TableNavigator _navigator;
 
     /**
      * The selected object.
@@ -48,14 +57,19 @@ public class Browser extends SplitPane {
     private IMObject _selected;
 
     /**
-     * Split pane for laying out the table and navigation control.
+     * The event listener list.
      */
-    private SplitPane _layout;
+    private EventListenerList _listeners;
 
     /**
      * Style name for this.
      */
     private static final String STYLE = "Browser";
+
+    /**
+     * Cell spacing row style.
+     */
+    private static final String CELLSPACING_STYLE = "CellSpacingRow";
 
     /**
      * Query button id.
@@ -81,12 +95,22 @@ public class Browser extends SplitPane {
      * @param table the table
      */
     public Browser(Query query, IMObjectTable table) {
-        super(ORIENTATION_VERTICAL);
         _query = query;
         _table = table;
-        doLayout();
     }
 
+
+    /**
+     * Returns the query component.
+     *
+     * @return the query component
+     */
+    public Component getComponent() {
+        if (_component == null) {
+            doLayout();
+        }
+        return _component;
+    }
 
     /**
      * Returns the selected object.
@@ -109,24 +133,33 @@ public class Browser extends SplitPane {
     }
 
     /**
+     * Remove anm
+     */
+
+    /**
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
+        getComponent();  // ensure the component is rendered.
+
         List<IMObject> result = _query.query();
         _table.setObjects(result);
-        if (result != null && result.size() <= _table.getRowsPerPage()) {
-            _layout.setSeparatorPosition(new Extent(0, Extent.PX));
+        if (result != null && result.size() > _table.getRowsPerPage()) {
+            // need to show the navigator in order to page through results.
+            // Place it before the table.
+            if (_component.indexOf(_navigator) == -1) {
+                int index = _component.indexOf(_table);
+                _component.add(_navigator, index);
+            }
         } else {
-            _layout.setSeparatorPosition(new Extent(32, Extent.PX));
+            _component.remove(_navigator);
         }
     }
 
     /**
-     * Layout this component.
+     * Lay out this component.
      */
     protected void doLayout() {
-        setStyleName(STYLE);
-
         // query component
         Component component = _query.getComponent();
 
@@ -143,14 +176,10 @@ public class Browser extends SplitPane {
             }
         });
 
-        Row row = RowFactory.create(component, query);
-        add(row);
+        _navigator = new TableNavigator(_table);
 
-        TableNavigator navigator = new TableNavigator(_table);
-        _layout = SplitPaneFactory.create(ORIENTATION_VERTICAL,
-                navigator, _table);
-        _layout.setSeparatorPosition(new Extent(0, Extent.PX));
-        add(_layout);
+        Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
+        _component = ColumnFactory.create(STYLE, row, _table);
     }
 
     /**
@@ -164,6 +193,18 @@ public class Browser extends SplitPane {
         for (int index = 0; index < listeners.length; ++index) {
             ((ActionListener) listeners[index]).actionPerformed(event);
         }
+    }
+
+    /**
+     * Returns the event listener list.
+     *
+     * @return the listener list
+     */
+    protected EventListenerList getEventListenerList() {
+        if (_listeners == null) {
+            _listeners = new EventListenerList();
+        }
+        return _listeners;
     }
 
     /**

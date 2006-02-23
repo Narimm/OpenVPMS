@@ -3,12 +3,10 @@ package org.openvpms.web.component.im.table;
 import java.util.List;
 
 import echopointng.table.PageableSortableTable;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Table;
-import nextapp.echo2.app.table.TableCellRenderer;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.table.EvenOddTableCellRenderer;
+import org.openvpms.web.component.table.StyleTableCellRenderer;
 
 
 /**
@@ -47,6 +45,7 @@ public class IMObjectTable extends PageableSortableTable {
         setColumnModel(model.getColumnModel());
         setSelectionEnabled(true);
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
+        setDefaultHeaderRenderer(new StyleTableCellRenderer("Table.Header"));
     }
 
     /**
@@ -118,49 +117,6 @@ public class IMObjectTable extends PageableSortableTable {
      */
     public int getRowsPerPage() {
         return ((IMObjectTableModel) getModel()).getRowsPerPage();
-    }
-
-    /**
-     * TableCellRender that assigns even and odd rows a different style.
-     */
-    private static class EvenOddTableCellRenderer implements TableCellRenderer {
-
-        /**
-         * Returns a component that will be displayed at the specified
-         * coordinate in the table.
-         *
-         * @param table  the <code>Table</code> for which the rendering is
-         *               occurring
-         * @param value  the value retrieved from the <code>TableModel</code>
-         *               for the specified coordinate
-         * @param column the column index to apply
-         * @param row    the row index to apply
-         * @return a component representation  of the value (This component must
-         *         be unique.  Returning a single instance of a component across
-         *         multiple calls to this method will result in undefined
-         *         behavior.)
-         */
-        public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
-            Component component;
-            if (value instanceof Component) {
-                component = (Component) value;
-            } else {
-                Label label;
-                if (value != null) {
-                    label = new Label(value.toString());
-                } else {
-                    label = new Label();
-                }
-                component = label;
-            }
-            if (row % 2 == 0) {
-                component.setStyleName("Table.EvenRow");
-            } else {
-                component.setStyleName("Table.OddRow");
-            }
-            return component;
-        }
-
     }
 
 }

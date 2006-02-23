@@ -48,6 +48,8 @@ public final class ColumnFactory extends ComponentFactory {
      * Create a new column with a specific style, and containing a set of
      * components.
      *
+     * @param style      the style name
+     * @param components the components to add
      * @return a new column
      */
     public static Column create(String style, Component ... components) {

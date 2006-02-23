@@ -19,6 +19,21 @@ public class DefaultLayoutStrategyFactory
         implements IMObjectLayoutStrategyFactory {
 
     /**
+     * Determines if expandable layouts can be changed.
+     */
+    private final boolean _toggleLayout;
+
+
+    /**
+     * Construct a new <code>DefaultLayoutStrategy</code>
+     *
+     * @param toggleLayout if <code>true</code> enable toggling of layouts
+     */
+    public DefaultLayoutStrategyFactory(boolean toggleLayout) {
+        _toggleLayout = toggleLayout;
+    }
+
+    /**
      * Creates a new layout strategy for an object.
      *
      * @param object  the object to create the layout strategy for
@@ -29,9 +44,9 @@ public class DefaultLayoutStrategyFactory
     public IMObjectLayoutStrategy create(IMObject object, boolean showAll) {
         IMObjectLayoutStrategy result = null;
         if (object instanceof Act) {
-            result = new ActLayoutStrategy(showAll);
+            result = new ActLayoutStrategy(showAll, _toggleLayout);
         } else {
-            result = new ExpandableLayoutStrategy(showAll);
+            result = new ExpandableLayoutStrategy(showAll, _toggleLayout);
 
         }
         return result;

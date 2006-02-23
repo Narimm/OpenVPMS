@@ -16,9 +16,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -74,6 +74,7 @@ class PatientQuery extends AbstractQuery {
      */
     @Override
     public List<IMObject> query() {
+        getComponent();  // ensure the component is rendered
         List<IMObject> result = null;
         if (_allPatients.isSelected()) {
             result = super.query();

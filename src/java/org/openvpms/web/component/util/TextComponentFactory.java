@@ -8,7 +8,6 @@ import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
-import org.openvpms.web.component.util.ComponentFactory;
 import org.openvpms.web.resource.util.Styles;
 
 

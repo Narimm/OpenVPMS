@@ -132,7 +132,7 @@ public abstract class AbstractIMObjectEditor
         _archetype = DescriptorHelper.getArchetypeDescriptor(object);
         _modifiable = new ModifiableSet();
         _factory = new ComponentFactory(_modifiable);
-        _layoutFactory = new DefaultLayoutStrategyFactory();
+        _layoutFactory = new DefaultLayoutStrategyFactory(true);
     }
 
     /**

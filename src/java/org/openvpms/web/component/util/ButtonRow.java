@@ -8,8 +8,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.EventListenerList;
 
-import org.openvpms.web.component.util.ButtonFactory;
-
 
 /**
  * A row of buttons.

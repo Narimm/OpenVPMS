@@ -12,10 +12,10 @@ import nextapp.echo2.app.layout.RowLayoutData;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.filter.BasicNodeFilter;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.filter.BasicNodeFilter;
 
 
 /**
@@ -32,6 +32,11 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     private final boolean _showRequiredOnly;
 
     /**
+     * Determines if the button should be included.
+     */
+    private final boolean _showButton;
+
+    /**
      * Button indicating to expand/collapse the layout.
      */
     private Button _button;
@@ -44,8 +49,19 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      *                     mandatory ones.
      */
     public ExpandableLayoutStrategy(boolean showOptional) {
+        this(showOptional, true);
+    }
+
+    /**
+     * Construct a new <code>ExpandableLayoutStrategy</code>.
+     *
+     * @param showOptional if <code>true</code> show optional fields as well as
+     *                     mandatory ones.
+     */
+    public ExpandableLayoutStrategy(boolean showOptional, boolean showButton) {
         super(new BasicNodeFilter(showOptional, false));
         _showRequiredOnly = !showOptional;
+        _showButton = showButton;
     }
 
     /**
@@ -69,7 +85,7 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     protected void doLayout(IMObject object, Component container,
                             IMObjectComponentFactory factory) {
         super.doLayout(object, container, factory);
-        if (_button == null) {
+        if (_button == null && _showButton) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
             right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
@@ -91,7 +107,7 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
                                   List<NodeDescriptor> descriptors,
                                   Component container,
                                   IMObjectComponentFactory factory) {
-        if (_button != null) {
+        if (_button != null || !_showButton) {
             super.doSimpleLayout(object, descriptors, container, factory);
         } else if (!descriptors.isEmpty()) {
             Row group = RowFactory.create();
@@ -114,16 +130,24 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
                                    List<NodeDescriptor> descriptors,
                                    Component container,
                                    IMObjectComponentFactory factory) {
-        if (_button != null) {
-            super.doComplexLayout(object, descriptors, container, factory);
-        } else if (!descriptors.isEmpty()) {
+        if (_button == null && _showButton && !descriptors.isEmpty()) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
             right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.TOP));
             row.setLayoutData(right);
             container.add(row);
-            super.doComplexLayout(object, descriptors, container, factory);
         }
+        super.doComplexLayout(object, descriptors, container, factory);
+    }
+
+    /**
+     * Determines if the layout button should be shown.
+     *
+     * @return <code>true</code> if the layout button should be included;
+     *         otherwise <code>false</code>
+     */
+    protected boolean showButton() {
+        return _showButton;
     }
 
     /**

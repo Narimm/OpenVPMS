@@ -17,23 +17,21 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.Context;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.select.Selector;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -322,7 +320,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
          */
         public Entity(IMObject entity, NodeDescriptor descriptor,
                       boolean readOnly) {
-            super(readOnly ? ButtonStyle.HIDE: ButtonStyle.RIGHT);
+            super(readOnly ? ButtonStyle.HIDE : ButtonStyle.RIGHT);
             _descriptor = descriptor;
             getComponent();
             setObject(entity);
