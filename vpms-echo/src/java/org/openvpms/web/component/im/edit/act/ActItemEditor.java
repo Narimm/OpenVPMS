@@ -11,18 +11,18 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -30,7 +30,7 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
  * <em>act.estimationItem</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ActItemEditor extends AbstractIMObjectEditor {
 
@@ -57,7 +57,8 @@ public class ActItemEditor extends AbstractIMObjectEditor {
 
         for (String shortName : participants.getArchetypeRange()) {
             if (!shortName.equals("participation.author")) {
-                IMObject participant = getParticipant(shortName, participants.getChildren(act));
+                IMObject participant = getParticipant(shortName,
+                        participants.getChildren(act));
                 if (participant == null) {
                     participant = IMObjectCreator.create(shortName);
                 }
@@ -80,7 +81,8 @@ public class ActItemEditor extends AbstractIMObjectEditor {
      *         cannot be edited by this
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor, boolean showAll) {
+                                        NodeDescriptor descriptor,
+                                        boolean showAll) {
         IMObjectEditor result = null;
         if (object instanceof Act) {
             ArchetypeDescriptor archetype
@@ -110,17 +112,6 @@ public class ActItemEditor extends AbstractIMObjectEditor {
         return saved;
     }
 
-    private IMObject getParticipant(String shortName, List<IMObject> objects) {
-        IMObject result = null;
-        for (IMObject object : objects) {
-            if (object.getArchetypeId().getShortName().equals(shortName)) {
-                result = object;
-                break;
-            }
-        }
-        return result;
-    }
-
     /**
      * Creates the layout strategy.
      *
@@ -132,6 +123,26 @@ public class ActItemEditor extends AbstractIMObjectEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
         return new LayoutStrategy(showAll);
     }
+
+    /**
+     * Returns the first object from list with matching short name.
+     *
+     * @param shortName the short name
+     * @param objects   the objects to search
+     * @return the first object from list with matching short name, or
+     *         <code>null</code> if none exists.
+     */
+    private IMObject getParticipant(String shortName, List<IMObject> objects) {
+        IMObject result = null;
+        for (IMObject object : objects) {
+            if (object.getArchetypeId().getShortName().equals(shortName)) {
+                result = object;
+                break;
+            }
+        }
+        return result;
+    }
+
 
     /**
      * Act item layout strategy.
@@ -153,7 +164,7 @@ public class ActItemEditor extends AbstractIMObjectEditor {
         }
 
         /**
-         * Lays out each child component in a group box.
+         * Lays out child components in a 2x2 grid.
          *
          * @param object      the parent object
          * @param descriptors the child descriptors
@@ -161,31 +172,30 @@ public class ActItemEditor extends AbstractIMObjectEditor {
          * @param factory     the component factory
          */
         @Override
-        protected void doComplexLayout(IMObject object,
-                                       List<NodeDescriptor> descriptors,
-                                       Component container,
-                                       IMObjectComponentFactory factory) {
-            Grid grid = GridFactory.create(2);
-            for (NodeDescriptor descriptor : descriptors) {
-                Component component = factory.create(object, descriptor);
-                add(grid, descriptor.getDisplayName(), component);
-            }
-
+        protected void doSimpleLayout(IMObject object,
+                                      List<NodeDescriptor> descriptors,
+                                      Component container,
+                                      IMObjectComponentFactory factory) {
             NodeDescriptor participants
                     = getArchetypeDescriptor().getNodeDescriptor("participants");
+            Grid grid = GridFactory.create(2);
             for (IMObject participant : _participants) {
                 String displayName = DescriptorHelper.getDisplayName(participant);
                 Component component = factory.create(participant, getObject(), participants);
                 add(grid, displayName, component);
             }
-
-            if (getButton() == null) {
+            for (NodeDescriptor descriptor : descriptors) {
+                Component child = factory.create(object, descriptor);
+                add(grid, descriptor.getDisplayName(), child);
+            }
+            if (showButton()) {
                 Row group = RowFactory.create(grid, getButtonRow());
                 container.add(group);
             } else {
                 container.add(grid);
             }
         }
+
     }
 
 }

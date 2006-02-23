@@ -3,8 +3,6 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.table.TableModel;
 
-import org.openvpms.web.component.util.ComponentFactory;
-
 
 /**
  * Factory for {@link Table}s.

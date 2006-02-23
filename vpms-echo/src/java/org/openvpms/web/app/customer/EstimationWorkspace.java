@@ -1,5 +1,6 @@
 package org.openvpms.web.app.customer;
 
+import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
@@ -11,12 +12,13 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.table.ActTableModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -29,9 +31,9 @@ import org.openvpms.web.resource.util.Messages;
 public class EstimationWorkspace extends AbstractViewWorkspace {
 
     /**
-     * The layout.
+     * The workspace.
      */
-    private SplitPane _layout;
+    private SplitPane _workspace;
 
     /**
      * The query.
@@ -62,34 +64,11 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        String type = Messages.get("customer.estimation.createtype");
         Party customer = Context.getInstance().getCustomer();
         setObject(customer);
-
-        _query = new ActQuery(customer);
-        IMObjectTable table = new IMObjectTable(ActTableModel.create(false));
-        _acts = new Browser(_query, table);
-        _acts.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                Act act = (Act) _acts.getSelected();
-                actSelected(act);
-            }
-        });
-
-        _window = new EstimationCRUDWindow(type, "common", "act", "estimation");
-        _layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                "EstimationWorkspace.Layout", _acts, _window.getComponent());
-        container.add(_layout);
-
-        _window.setListener(new CRUDWindowListener() {
-            public void saved(IMObject object, boolean isNew) {
-                onSaved(object, isNew);
-            }
-
-            public void deleted(IMObject object) {
-                onDeleted(object);
-            }
-        });
+        if (customer != null) {
+            layoutWorkspace(customer, container);
+        }
     }
 
     /**
@@ -100,8 +79,12 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
     @Override
     protected void onSelected(IMObject customer) {
         super.onSelected(customer);
-        Context.getInstance().setCustomer((Party) customer);
-        _query.setEntity((Party) customer);
+        Party party = (Party) customer;
+        Context.getInstance().setCustomer(party);
+        if (_workspace == null) {
+            layoutWorkspace(party, getComponent());
+        }
+        _query.setEntity(party);
         _acts.query();
     }
 
@@ -131,5 +114,36 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
      */
     protected void actSelected(Act act) {
         _window.setObject(act);
+    }
+
+    protected void layoutWorkspace(Party customer, Component container) {
+        String type = Messages.get("customer.estimation.createtype");
+
+        _query = new ActQuery(customer, "act", "estimation");
+        IMObjectTable table = new IMObjectTable(ActTableModel.create(false));
+        _acts = new Browser(_query, table);
+        _acts.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                Act act = (Act) _acts.getSelected();
+                actSelected(act);
+            }
+        });
+        GroupBox actsBox = GroupBoxFactory.create(_acts.getComponent());
+
+        _window = new EstimationCRUDWindow(type, "common", "act", "estimation");
+        _workspace = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                "EstimationWorkspace.Layout", actsBox, _window.getComponent());
+        container.add(_workspace);
+
+        _window.setListener(new CRUDWindowListener() {
+            public void saved(IMObject object, boolean isNew) {
+                onSaved(object, isNew);
+            }
+
+            public void deleted(IMObject object) {
+                onDeleted(object);
+            }
+        });
+
     }
 }

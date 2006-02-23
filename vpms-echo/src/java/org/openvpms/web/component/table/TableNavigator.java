@@ -1,8 +1,5 @@
 package org.openvpms.web.component.table;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import echopointng.table.PageableTableModel;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Extent;
@@ -12,11 +9,13 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.TableModelEvent;
+import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.list.DefaultListModel;
 
-import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -51,14 +50,10 @@ public class TableNavigator extends Row {
      */
     public TableNavigator(Table table) {
         _table = table;
-        _table.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getPropertyName().equals(
-                        Table.MODEL_CHANGED_PROPERTY)) {
-                    refresh();
-                }
+        _table.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent event) {
+                refresh();
             }
-
         });
         doLayout();
     }

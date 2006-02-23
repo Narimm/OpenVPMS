@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import echopointng.table.DefaultPageableSortableTableModel;
-import echopointng.table.SortableTableColumn;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -17,8 +16,8 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -255,7 +254,7 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
         TableColumnModel model = new DefaultTableColumnModel();
         int i = (deletable) ? 0 : 1;
         for (; i < COLUMNS.length; ++i) {
-            TableColumn column = new SortableTableColumn(i);
+            TableColumn column = new TableColumn(i);
             String key = "table.imobject." + COLUMNS[i];
             String label = Messages.get(key);
 

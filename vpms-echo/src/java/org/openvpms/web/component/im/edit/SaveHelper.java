@@ -6,7 +6,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 

@@ -16,7 +16,7 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
  * An editor for {@link Act}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ActEditor extends AbstractIMObjectEditor {
 
@@ -125,7 +125,7 @@ public class ActEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return new ActLayoutStrategy(_editor.getComponent(), showAll);
+        return new ActLayoutStrategy(_editor.getComponent(), showAll, true);
     }
 
 }

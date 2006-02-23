@@ -63,7 +63,7 @@ public class BrowserDialog extends PopupDialog {
         super(title, STYLE, Buttons.CANCEL);
         setModal(true);
         _browser = browser;
-        getLayout().add(browser);
+        getLayout().add(browser.getComponent());
 
         if (addNew) {
             addButton(NEW_ID, new ActionListener() {

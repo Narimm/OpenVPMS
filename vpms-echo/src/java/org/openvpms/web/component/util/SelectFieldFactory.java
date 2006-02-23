@@ -8,7 +8,6 @@ import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.web.component.bound.BoundSelectField;
-import org.openvpms.web.component.util.ComponentFactory;
 
 
 /**

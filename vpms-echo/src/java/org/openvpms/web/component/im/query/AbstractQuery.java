@@ -1,5 +1,6 @@
 package org.openvpms.web.component.im.query;
 
+import java.util.Collections;
 import java.util.List;
 
 import nextapp.echo2.app.CheckBox;
@@ -12,12 +13,14 @@ import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -122,6 +125,7 @@ public abstract class AbstractQuery implements Query {
      * @return the matching objects
      */
     public List<IMObject> query() {
+        List<IMObject> result = Collections.emptyList();
         String type = getShortName();
         String name = getInstanceName();
         boolean activeOnly = !includeInactive();
@@ -133,7 +137,12 @@ public abstract class AbstractQuery implements Query {
         } else {
             shortNames = new String[]{type};
         }
-        return service.get(shortNames, name, true, activeOnly);
+        try {
+            result = service.get(shortNames, name, true, activeOnly);
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
+        return result;
     }
 
     /**
@@ -271,8 +280,13 @@ public abstract class AbstractQuery implements Query {
                                           String entityName,
                                           String conceptName) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<String> names = service.getArchetypeShortNames(refModelName,
-                entityName, conceptName, true);
+        List<String> names = Collections.emptyList();
+        try {
+            names = service.getArchetypeShortNames(refModelName,
+                    entityName, conceptName, true);
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
         return names.toArray(new String[0]);
     }
 

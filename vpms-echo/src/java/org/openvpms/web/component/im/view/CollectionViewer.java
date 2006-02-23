@@ -69,7 +69,7 @@ public class CollectionViewer extends Column {
      */
     protected void populate() {
         Collection values = (Collection) _descriptor.getValue(_object);
-        int size = values.size();
+        int size = (values != null) ? values.size() : 0;
         if (size != 0) {
             List<IMObject> objects = new ArrayList<IMObject>();
             for (Object value : values) {
@@ -80,8 +80,8 @@ public class CollectionViewer extends Column {
             int rowsPerPage = _table.getRowsPerPage();
             if (size > rowsPerPage) {
                 // display the navigator before the table
-                TableNavigator _navigator = new TableNavigator(_table);
-                add(_navigator);
+                TableNavigator navigator = new TableNavigator(_table);
+                add(navigator);
             }
             add(_table);
         } else {
