@@ -11,7 +11,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.locationSchedule" />
+							value="entityRelationship.locationStockLocation" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

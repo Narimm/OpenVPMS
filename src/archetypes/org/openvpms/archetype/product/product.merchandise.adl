@@ -21,10 +21,17 @@
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
+			<node name="sellingUnits" displayName="Selling Units" path="/details/attributes/sellingUnits" type="java.lang.String" minCardinality="0" >
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="concept" value="uom" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>				
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"
-			type="java.util.HashSet" baseName="ProductPrice" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -54,6 +61,18 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="productPrice.qtyBreakPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.unitPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.markup" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.dispensingFee" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

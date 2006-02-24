@@ -1,14 +1,14 @@
 <archetypes>
-	<archetype name="openvpms-product-productPrice.dispensingFee.1.0"
+	<archetype name="openvpms-product-productPrice.markup.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Dispensing Fee" >
+		type="org.openvpms.component.business.domain.im.product.ProductPrice" displayName="Product Markup" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
 		<node name="name" path="/name" type="java.lang.String" derived="true" hidden="true"
-			minCardinality="1" derivedValue="concat('Dispensing Fee','')" />
+			minCardinality="1" derivedValue="concat('Markup','')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('$ ',/price, ' fixed ')" />
+			derivedValue="concat('% ',/price, ' markup')" />
 		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="true()" />
-		<node name="fee" path="/price" type="java.math.BigDecimal"  minCardinality="1"/>			
+		<node name="markup" path="/price" type="java.math.BigDecimal"  minCardinality="1" />			
 	</archetype>
 </archetypes>

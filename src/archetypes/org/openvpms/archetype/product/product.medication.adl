@@ -39,6 +39,13 @@
 			</node>
 			<node name="activeIngredients" path="/details/attributes/activeIngredients" type="java.lang.String"
 				minCardinality="0" />
+			<node name="sellingUnits" displayName="Selling Units" path="/details/attributes/sellingUnits" type="java.lang.String" minCardinality="0" >
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="concept" value="uom" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>				
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"
@@ -79,7 +86,7 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="productPrice.margin" />
+							value="productPrice.markup" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"

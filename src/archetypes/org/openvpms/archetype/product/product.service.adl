@@ -24,7 +24,7 @@
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"
-			type="java.util.HashSet" baseName="ProductPrice" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -42,6 +42,10 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="productPrice.defaultPrice" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="productPrice.unitPrice" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
