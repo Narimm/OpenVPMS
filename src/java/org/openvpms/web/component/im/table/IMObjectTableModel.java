@@ -18,6 +18,7 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -37,9 +38,9 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     public static final int DELETE_INDEX = 0;
 
     /**
-     * Id column index.
+     * Archetype column index.
      */
-    public static final int ID_INDEX = 1;
+    public static final int ARCHETYPE_INDEX = 1;
 
     /**
      * Name column index.
@@ -80,7 +81,7 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
      * Table column identifiers.
      */
     protected static final String[] COLUMNS = {
-            "delete", "id", "name", "description"};
+            "delete", "archetype", "name", "description"};
 
     /**
      * Construct an unpopulated  <code>IMObjectTableModel</code>.
@@ -302,8 +303,8 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
             case DELETE_INDEX:
                 result = _marks.get(row);
                 break;
-            case ID_INDEX:
-                result = new Long(object.getUid());
+            case ARCHETYPE_INDEX:
+                result = DescriptorHelper.getDisplayName(object);
                 break;
             case NAME_INDEX:
                 if (object instanceof EntityRelationship) {
