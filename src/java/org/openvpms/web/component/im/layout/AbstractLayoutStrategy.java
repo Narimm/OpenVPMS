@@ -14,6 +14,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -57,7 +58,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, IMObjectComponentFactory factory) {
-        Column column = new Column();
+        Column column = ColumnFactory.create("CellSpacingColumn");
         doLayout(object, column, factory);
         return column;
     }

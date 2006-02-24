@@ -2,7 +2,7 @@ package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.Context;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 

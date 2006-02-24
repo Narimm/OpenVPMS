@@ -11,7 +11,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.app.Context;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.Browser;
@@ -63,6 +63,17 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
+     * Invoked when an object is selected.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onSelected(IMObject object) {
+        super.onSelected(object);
+        Context.getInstance().setPatient((Party) object);
+    }
+
+    /**
      * Invoked when the object has been saved.
      *
      * @param object the object
@@ -70,7 +81,8 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
-        Entity patient = (Entity) object;
+        Party patient = (Party) object;
+        Context.getInstance().setPatient(patient);
         Context context = Context.getInstance();
         Party customer = context.getCustomer();
         IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -88,6 +100,17 @@ public class InformationWorkspace extends CRUDWorkspace {
                 }
             }
         }
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(IMObject object) {
+        super.onDeleted(object);
+        Context.getInstance().setPatient(null);
     }
 
     /**

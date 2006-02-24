@@ -114,7 +114,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected IMObjectTable createTable(boolean deletable) {
         IMObjectTableModel model = ActItemTableModel.create(
-                new ReadOnlyComponentFactory(), _showAll);
+                new ReadOnlyComponentFactory(), deletable, _showAll);
         return new IMObjectTable(model);
     }
 
@@ -136,6 +136,19 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         }
     }
 
+    /**
+     * Remove an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    @Override
+    protected void removeFromCollection(IMObject object) {
+        NodeDescriptor descriptor = getDescriptor();
+        IMObject parent = getObject();
+        Act act = (Act) object;
+        ActRelationship relationship = _acts.remove(act);
+        descriptor.removeChildFromCollection(parent, relationship);
+    }
     /**
      * Creates a new editor.
      *

@@ -1,14 +1,17 @@
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.act.ParticipationLayoutStrategy;
 
 
@@ -16,22 +19,32 @@ import org.openvpms.web.component.im.view.act.ParticipationLayoutStrategy;
  * An editor for {@link Participation} instances.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ParticipationEditor extends AbstractIMObjectEditor {
 
     /**
      * Construct a new <code>ParticipationEditor</code>.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object
-     * @param descriptor the parent descriptor
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param participation the object to edit
+     * @param parent        the parent object
+     * @param descriptor    the parent descriptor
+     * @param showAll       if <code>true</code> show optional and required
+     *                      fields; otherwise show required fields.
      */
-    public ParticipationEditor(Participation object, Act parent,
+    public ParticipationEditor(Participation participation, Act parent,
                                NodeDescriptor descriptor, boolean showAll) {
-        super(object, parent, descriptor, showAll);
+        super(participation, parent, descriptor, showAll);
+        if (participation.isNew() && participation.getEntity() == null) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(participation);
+            NodeDescriptor entityNode = archetype.getNodeDescriptor("entity");
+            IMObject entity = Context.getInstance().getObject(
+                    entityNode.getArchetypeRange());
+            if (entity != null) {
+                participation.setEntity(new IMObjectReference(entity));
+            }
+        }
     }
 
     /**
@@ -67,9 +80,9 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
                                         boolean showAll) {
         IMObjectEditor result = null;
         if (object instanceof Participation
-                && parent instanceof Act) {
+            && parent instanceof Act) {
             result = new ParticipationEditor((Participation) object,
-                    (Act) parent, descriptor, showAll);
+                                             (Act) parent, descriptor, showAll);
         }
         return result;
     }

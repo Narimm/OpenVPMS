@@ -1,4 +1,4 @@
-package org.openvpms.web.app;
+package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -26,6 +26,11 @@ public class Context {
     private Party _customer;
 
     /**
+     * The current patient.
+     */
+    private Party _patient;
+
+    /**
      * The current supplier.
      */
     private Party _supplier;
@@ -39,7 +44,7 @@ public class Context {
     /**
      * Restrict construction.
      */
-    Context() {
+    protected Context() {
     }
 
     /**
@@ -81,6 +86,25 @@ public class Context {
     }
 
     /**
+     * Sets the current patient.
+     *
+     * @param patient the current patient. May be <code>null</code>
+     */
+    public void setPatient(Party patient) {
+        _patient = patient;
+    }
+
+    /**
+     * Returns the current patient.
+     *
+     * @return the current patient, or <code>null</code> if there is no current
+     *         patient
+     */
+    public Party getPatient() {
+        return _patient;
+    }
+
+    /**
      * Sets the current supplier.
      *
      * @param supplier the current supplier. May be <code>null</code>
@@ -119,6 +143,33 @@ public class Context {
     }
 
     /**
+     * Returns a context object that matches the specified archetype range.
+     *
+     * @param range the archetype range
+     * @return a context object whose short name is in <code>range</code> or
+     *         <code>null</code> if none exists
+     */
+    public IMObject getObject(String[] range) {
+        IMObject result = null;
+        IMObject[] objects = new IMObject[]{_edited, _customer, _patient,
+                                            _supplier, _product};
+        for (IMObject object : objects) {
+            if (object != null) {
+                for (String name : range) {
+                    name = name.replace(".", "\\.").replace("*", ".*");
+                    ArchetypeId id = object.getArchetypeId();
+                    if (id.getShortName().matches(name)) {
+                        result = object;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    /**
      * Returns a context object that matches the specified reference.
      *
      * @param reference the object reference
@@ -127,13 +178,13 @@ public class Context {
      */
     public IMObject getObject(IMObjectReference reference) {
         IMObject result = null;
-        IMObject[] objects = new IMObject[]{_edited, _customer, _supplier,
-                _product};
+        IMObject[] objects = new IMObject[]{_edited, _customer, _patient,
+                                            _supplier, _product};
         for (IMObject object : objects) {
             if (object != null) {
                 ArchetypeId id = object.getArchetypeId();
                 if (id.equals(reference.getArchetypeId())
-                        && reference.getUid() == object.getUid()) {
+                    && reference.getUid() == object.getUid()) {
                     result = object;
                     break;
                 }
@@ -143,12 +194,13 @@ public class Context {
     }
 
     /**
-     * Returns the singleton instance.
+     * Returns the context associated with the current thread.
      *
-     * @return the singleton instance
+     * @return the context associated with the current thread, or
+     *         <code>null</code>
      */
     public static Context getInstance() {
-        return OpenVPMSApp.getInstance().getContext();
+        return ContextApplicationInstance.getInstance().getContext();
     }
 
 }
