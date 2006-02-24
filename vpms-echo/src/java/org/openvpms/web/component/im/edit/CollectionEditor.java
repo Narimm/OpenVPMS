@@ -19,15 +19,15 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.table.TableNavigator;
-import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.table.IMObjectTable;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -94,6 +94,16 @@ public class CollectionEditor implements Saveable {
      * Listener for component change events.
      */
     private final PropertyChangeListener _componentListener;
+
+    /**
+     * The button row style.
+     */
+    private static final String ROW_STYLE = "CellSpacingRow";
+
+    /**
+     * The column style.
+     */
+    private static final String COLUMN_STYLE = "CellSpacingColumn";
 
 
     /**
@@ -198,25 +208,27 @@ public class CollectionEditor implements Saveable {
      * Lays out the component.
      */
     protected void doLayout() {
-        _component = ColumnFactory.create();
+        _component = ColumnFactory.create(COLUMN_STYLE);
 
-        Button delete = ButtonFactory.create("minus", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onDelete();
-            }
-        });
-
-        Button create = ButtonFactory.create("plus", new ActionListener() {
+        Button create = ButtonFactory.create("add", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
             }
         });
 
-        boolean deletable = false;
-        if (_descriptor.isParentChild()) {
-            deletable = true;
-        }
-        _table = createTable(deletable);
+        Button cancel = ButtonFactory.create("cancel", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onCancel();
+            }
+        });
+
+        Button delete = ButtonFactory.create("delete", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onDelete();
+            }
+        });
+
+        _table = createTable(false);
         _table.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEdit();
@@ -224,7 +236,7 @@ public class CollectionEditor implements Saveable {
         });
         _component.add(_table);
 
-        Row row = RowFactory.create(delete, create);
+        Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
         String[] range = _descriptor.getArchetypeRange();
         if (range.length == 1) {
@@ -318,7 +330,7 @@ public class CollectionEditor implements Saveable {
                     edit(object);
                 } else {
                     ErrorDialog.show("Failed to create object of type "
-                            + _shortname);
+                                     + _shortname);
                 }
             } catch (ArchetypeServiceException exception) {
                 ErrorDialog.show(exception);
@@ -327,32 +339,56 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
-     * Deletes the selected objects.
+     * Deletes the selected object.
      */
     protected void onDelete() {
-        List<IMObject> marked = _table.getMarked();
-        if (!marked.isEmpty()) {
-            for (IMObject child : marked) {
-                onDelete(child);
-            }
+        IMObject object = _table.getSelected();
+        if (object != null) {
+            delete(object);
         }
     }
 
     /**
-     * Delete an object from the table.
+     * Cancels the current edit.
+     */
+    protected void onCancel() {
+        if (_editor != null) {
+            removeEditor();
+        }
+    }
+
+    /**
+     * Delete an object.
      *
      * @param object the object to delete
      */
-    protected void onDelete(IMObject object) {
-        _descriptor.removeChildFromCollection(_object, object);
+    protected void delete(IMObject object) {
+        removeFromCollection(object);
         _table.remove(object);
         _modified = true;
         if (_editor != null && _editor.getObject() == object) {
-            _editBox.remove(_editor.getComponent());
-            _component.remove(_editBox);
-            _editor = null;
-            _editBox = null;
+            removeEditor();
         }
+    }
+
+    /**
+     * Remove the editor.
+     */
+    private void removeEditor() {
+        _editBox.remove(_editor.getComponent());
+        _component.remove(_editBox);
+        _editor = null;
+        _editBox = null;
+
+    }
+
+    /**
+     * Remove an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    protected void removeFromCollection(IMObject object) {
+        _descriptor.removeChildFromCollection(_object, object);
     }
 
     /**
@@ -397,7 +433,7 @@ public class CollectionEditor implements Saveable {
     protected IMObjectEditor createEditor(IMObject object) {
         boolean showAll = !object.isNew();
         return IMObjectEditorFactory.create(object, _object, _descriptor,
-                showAll);
+                                            showAll);
     }
 
     /**
@@ -408,7 +444,7 @@ public class CollectionEditor implements Saveable {
      */
     private boolean saveCurrentEdits() {
         boolean result = false;
-        if (_editor != null) {
+        if (_editor != null && _editor.isModified()) {
             if (save(_editor)) {
                 result = true;
                 IMObject object = _editor.getObject();
@@ -429,13 +465,7 @@ public class CollectionEditor implements Saveable {
      * @return <code>true</code> if the save was successful
      */
     protected boolean save(IMObjectEditor editor) {
-        boolean saved;
-        if (_editor.isModified()) {
-            saved = _editor.save();
-        } else {
-            saved = true;
-        }
-        return saved;
+        return _editor.save();
     }
 
     /**

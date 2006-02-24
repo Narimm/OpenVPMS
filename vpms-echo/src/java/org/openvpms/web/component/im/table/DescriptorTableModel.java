@@ -1,6 +1,7 @@
 package org.openvpms.web.component.im.table;
 
 import java.util.List;
+import java.util.Iterator;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
@@ -90,11 +91,18 @@ public class DescriptorTableModel extends IMObjectTableModel {
      */
     public static void create(List<NodeDescriptor> descriptors,
                               TableColumnModel columns) {
-        int i = columns.getColumnCount();
+        int index = IMObjectTableModel.NEXT_INDEX;
+        Iterator iterator = columns.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col.getModelIndex() >  index) {
+                index = col.getModelIndex() + 1;
+            }
+        }
         for (NodeDescriptor descriptor : descriptors) {
-            TableColumn column = new DescriptorTableColumn(i, descriptor);
+            TableColumn column = new DescriptorTableColumn(index, descriptor);
             columns.addColumn(column);
-            ++i;
+            ++index;
         }
     }
 
@@ -125,16 +133,6 @@ public class DescriptorTableModel extends IMObjectTableModel {
     @Override
     protected Object getValue(IMObject object, int index, int row) {
         TableColumn column = getColumn(index);
-        return getValue(object, column);
-    }
-
-    /**
-     * Returns the value for the specified column.
-     *
-     * @param object the object
-     * @param column the column
-     */
-    protected Object getValue(IMObject object, TableColumn column) {
         Object result = null;
         if (column instanceof DescriptorTableColumn) {
             DescriptorTableColumn col = (DescriptorTableColumn) column;
@@ -148,6 +146,8 @@ public class DescriptorTableModel extends IMObjectTableModel {
                 component.setLayoutData(layout);
             }
             result = component;
+        } else {
+            result = super.getValue(object, index, row);
         }
         return result;
     }

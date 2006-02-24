@@ -5,9 +5,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import echopointng.table.DefaultPageableSortableTableModel;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -48,6 +50,11 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
      * Description column index.
      */
     public static final int DESCRIPTION_INDEX = 3;
+
+    /**
+     * Next unused model index.
+     */
+    public static final int NEXT_INDEX = 4;
 
     /**
      * Determines if the delete column is displayed.
@@ -140,6 +147,11 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
             };
             CheckBox box = new CheckBox();
             box.addActionListener(listener);
+            TableLayoutData layout = new TableLayoutData();
+            Alignment align = new Alignment(Alignment.CENTER,
+                                            Alignment.DEFAULT);
+            layout.setAlignment(align);
+            box.setLayoutData(layout);
             _marks.add(box);
         }
         // @todo this doesn't work when the table is sorted....

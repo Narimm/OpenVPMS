@@ -14,7 +14,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.app.Context;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;

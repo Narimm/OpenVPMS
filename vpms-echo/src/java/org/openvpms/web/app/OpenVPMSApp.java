@@ -5,8 +5,8 @@ import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
 
 import org.openvpms.web.app.login.LoginPane;
+import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.resource.util.Styles;
-import org.openvpms.web.spring.SpringApplicationInstance;
 
 
 /**
@@ -15,17 +15,12 @@ import org.openvpms.web.spring.SpringApplicationInstance;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class OpenVPMSApp extends SpringApplicationInstance {
+public class OpenVPMSApp extends ContextApplicationInstance {
 
     /**
      * The window.
      */
     private Window _window;
-
-    /**
-     * Application context.
-     */
-    private Context _context = new Context();
 
 
     /**
@@ -48,15 +43,6 @@ public class OpenVPMSApp extends SpringApplicationInstance {
      */
     public static OpenVPMSApp getInstance() {
         return (OpenVPMSApp) ApplicationInstance.getActive();
-    }
-
-    /**
-     * Returns the current context.
-     *
-     * @return the current context
-     */
-    public Context getContext() {
-        return _context;
     }
 
     /**
@@ -83,6 +69,6 @@ public class OpenVPMSApp extends SpringApplicationInstance {
     public void logout() {
         getDefaultWindow().removeAll();
         setContent(new LoginPane());
-        _context = new Context();
+        clearContext();
     }
 }

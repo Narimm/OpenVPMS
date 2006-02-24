@@ -13,7 +13,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.app.Context;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.ValidationHelper;

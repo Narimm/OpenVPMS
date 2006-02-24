@@ -198,10 +198,16 @@
         </properties>
     </style>
 
-    <style name="ControlColumn" type="nextapp.echo2.app.Column">
+    <style name="CellSpacingColumn" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="cellSpacing" value="10px"/>
+        </properties>
+    </style>
+
+    <style name="ControlColumn" base-name="CellSpacingColumn"
+           type="nextapp.echo2.app.Column">
         <properties>
             <property name="insets" value="10px 2px"/>
-            <property name="cellSpacing" value="10px"/>
         </properties>
     </style>
 

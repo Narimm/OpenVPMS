@@ -74,6 +74,7 @@ public class ModifiableSet implements Modifiable {
      *
      * @return a list of modified objects
      */
+/*
     public Set<IMObject> getModified() {
         HashSet<IMObject> result = new HashSet<IMObject>();
         for (Map.Entry<IMObject, HashSet<Modifiable>> entry :
@@ -92,6 +93,7 @@ public class ModifiableSet implements Modifiable {
         }
         return result;
     }
+*/
 
     /**
      * Returns all saveable objects that have been modified.
@@ -104,7 +106,7 @@ public class ModifiableSet implements Modifiable {
                 _objects.entrySet()) {
             for (Modifiable modifiable : entry.getValue()) {
                 if ((modifiable instanceof Saveable)
-                        && modifiable.isModified()) {
+                    && modifiable.isModified()) {
                     result.add((Saveable) modifiable);
                 }
             }
@@ -122,17 +124,19 @@ public class ModifiableSet implements Modifiable {
             for (Map.Entry<IMObject, HashSet<Modifiable>> entry :
                     _objects.entrySet()) {
                 IMObject object = entry.getKey();
+/*
                 if (object.isNew()) {
                     _modified = true;
                     return _modified;
                 } else {
-                    for (Modifiable modifiable : entry.getValue()) {
-                        if (modifiable.isModified()) {
-                            _modified = true;
-                            return _modified;
-                        }
+*/
+                for (Modifiable modifiable : entry.getValue()) {
+                    if (modifiable.isModified()) {
+                        _modified = true;
+                        return _modified;
                     }
                 }
+//                }
             }
         }
         return _modified;

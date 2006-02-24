@@ -7,8 +7,8 @@ import nextapp.echo2.app.table.TableColumnModel;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -20,11 +20,11 @@ import org.openvpms.web.resource.util.Messages;
  */
 public class ActTableModel extends IMObjectTableModel {
 
-    private static final int ACT_INDEX = DESCRIPTION_INDEX + 1;
-    public static final int START_INDEX = ACT_INDEX + 1;
-    public static final int END_INDEX = START_INDEX + 1;
-    public static final int TYPE_INDEX = END_INDEX + 1;
-    public static final int STATUS_INDEX = TYPE_INDEX + 1;
+    private static final int ACT_INDEX = NEXT_INDEX;
+    private static final int START_INDEX = ACT_INDEX + 1;
+    private static final int END_INDEX = START_INDEX + 1;
+    private static final int TYPE_INDEX = END_INDEX + 1;
+    private static final int STATUS_INDEX = TYPE_INDEX + 1;
 
     private static final String[] ACT_COLUMNS = {"delete", "start", "end", "type", "status", "description"};
 
