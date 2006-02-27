@@ -28,11 +28,6 @@
 				</assertion>
 			</node>
 			<node name="colour" path="/details/attributes/colour" type="java.lang.String">
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="concept" value="colour" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
 			</node>
 			<node name="sex" path="/details/attributes/sex" type="java.lang.String">
 				<assertion name="lookup.local">

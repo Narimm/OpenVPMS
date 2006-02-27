@@ -1,0 +1,601 @@
+<archetype><data archetype="lookup.breed" breed="Abyssinian" >
+</data>
+<data archetype="lookup.breed" breed="Affenpinscher" >
+</data>
+<data archetype="lookup.breed" breed="Afghan Hound" >
+</data>
+<data archetype="lookup.breed" breed="Airedale Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Akita" >
+</data>
+<data archetype="lookup.breed" breed="Alaskan Malamute" >
+</data>
+<data archetype="lookup.breed" breed="American Staffordshire Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Anatolian Shepherd Dog" >
+</data>
+<data archetype="lookup.breed" breed="Arab" >
+</data>
+<data archetype="lookup.breed" breed="Australian Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Balinese" >
+</data>
+<data archetype="lookup.breed" breed="Basenji" >
+</data>
+<data archetype="lookup.breed" breed="Basset Hound" >
+</data>
+<data archetype="lookup.breed" breed="Bearded Collie" >
+</data>
+<data archetype="lookup.breed" breed="Beagle" >
+</data>
+<data archetype="lookup.breed" breed="Bedlington Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Bernese Mountain Dog" >
+</data>
+<data archetype="lookup.breed" breed="Belgian Shepherd Dog (4 Types)" >
+</data>
+<data archetype="lookup.breed" breed="Bichon Frise" >
+</data>
+<data archetype="lookup.breed" breed="Birman" >
+</data>
+<data archetype="lookup.breed" breed="Bloodhound" >
+</data>
+<data archetype="lookup.breed" breed="Bouvier Des Flandes" >
+</data>
+<data archetype="lookup.breed" breed="Border Collie" >
+</data>
+<data archetype="lookup.breed" breed="Border Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Borzoi" >
+</data>
+<data archetype="lookup.breed" breed="Boston Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Boxer" >
+</data>
+<data archetype="lookup.breed" breed="Briard" >
+</data>
+<data archetype="lookup.breed" breed="British Bulldog" >
+</data>
+<data archetype="lookup.breed" breed="British Shorthair" >
+</data>
+<data archetype="lookup.breed" breed="Brittany" >
+</data>
+<data archetype="lookup.breed" breed="Bullmastiff" >
+</data>
+<data archetype="lookup.breed" breed="Bull Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Burmese" >
+</data>
+<data archetype="lookup.breed" breed="Cairn Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Australian Cattle Dog" >
+</data>
+<data archetype="lookup.breed" breed="Cattle Dog (stumpy Tail)" >
+</data>
+<data archetype="lookup.breed" breed="Chesapeake Bay Retriever" >
+</data>
+<data archetype="lookup.breed" breed="Chinese Crested Dog" >
+</data>
+<data archetype="lookup.breed" breed="Chihuahua (long)" >
+</data>
+<data archetype="lookup.breed" breed="Chinchilla (persian)" >
+</data>
+<data archetype="lookup.breed" breed="Chihuahua (smooth)" >
+</data>
+<data archetype="lookup.breed" breed="Chow Chow" >
+</data>
+<data archetype="lookup.breed" breed="Cavalier King Charles Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Clumber Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Cocker Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Collie (rough)" >
+</data>
+<data archetype="lookup.breed" breed="Colorpoint Shorthair (siamese)" >
+</data>
+<data archetype="lookup.breed" breed="Collie (smooth)" >
+</data>
+<data archetype="lookup.breed" breed="Welsh Corgi Cardigan/pembroke" >
+</data>
+<data archetype="lookup.breed" breed="Cornish Rex" >
+</data>
+<data archetype="lookup.breed" breed="Cocker Spaniel (american)" >
+</data>
+<data archetype="lookup.breed" breed="Curley Coated Retriever" >
+</data>
+<data archetype="lookup.breed" breed="Cymric" >
+</data>
+<data archetype="lookup.breed" breed="Dachshund (longhair)" >
+</data>
+<data archetype="lookup.breed" breed="Dachshund (smoothhair)" >
+</data>
+<data archetype="lookup.breed" breed="Dachshund (wirehair)" >
+</data>
+<data archetype="lookup.breed" breed="Dandie Dinmont Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Dalmation" >
+</data>
+<data archetype="lookup.breed" breed="Dachshund (minature Longhair)" >
+</data>
+<data archetype="lookup.breed" breed="Dachshund (mini Smoothhair)" >
+</data>
+<data archetype="lookup.breed" breed="Dachshund (miniture Wirehair)" >
+</data>
+<data archetype="lookup.breed" breed="Deerhound" >
+</data>
+<data archetype="lookup.breed" breed="Devon Rex" >
+</data>
+<data archetype="lookup.breed" breed="Dingo" >
+</data>
+<data archetype="lookup.breed" breed="Doberman" >
+</data>
+<data archetype="lookup.breed" breed="Domestic Longhair" >
+</data>
+<data archetype="lookup.breed" breed="Domestic Shorthair" >
+</data>
+<data archetype="lookup.breed" breed="Elkhound" >
+</data>
+<data archetype="lookup.breed" breed="English Setter" >
+</data>
+<data archetype="lookup.breed" breed="English Springer Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="English Toy Terrier (black)" >
+</data>
+<data archetype="lookup.breed" breed="English Toy Terrier (tan)" >
+</data>
+<data archetype="lookup.breed" breed="Field Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Finnish Spitz" >
+</data>
+<data archetype="lookup.breed" breed="Flat Coated Retriever" >
+</data>
+<data archetype="lookup.breed" breed="Foreign White" >
+</data>
+<data archetype="lookup.breed" breed="Fox Terrier (smoothhair)" >
+</data>
+<data archetype="lookup.breed" breed="Fox Terrier (wirehair)" >
+</data>
+<data archetype="lookup.breed" breed="Foxhound" >
+</data>
+<data archetype="lookup.breed" breed="French Bulldog" >
+</data>
+<data archetype="lookup.breed" breed="Friesian" >
+</data>
+<data archetype="lookup.breed" breed="German Pinscher" >
+</data>
+<data archetype="lookup.breed" breed="German Shepherd Dog" >
+</data>
+<data archetype="lookup.breed" breed="German Shorthaired Pointer" >
+</data>
+<data archetype="lookup.breed" breed="German Wirehaired Pointer" >
+</data>
+<data archetype="lookup.breed" breed="Glen Of Immaal Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Golden Retriever" >
+</data>
+<data archetype="lookup.breed" breed="Gordon Setter" >
+</data>
+<data archetype="lookup.breed" breed="Great Dane" >
+</data>
+<data archetype="lookup.breed" breed="Greyhound" >
+</data>
+<data archetype="lookup.breed" breed="Griffon Bruxellois" >
+</data>
+<data archetype="lookup.breed" breed="Hamiltonstovare" >
+</data>
+<data archetype="lookup.breed" breed="Harrier" >
+</data>
+<data archetype="lookup.breed" breed="Himalayan" >
+</data>
+<data archetype="lookup.breed" breed="Hungarian Puli" >
+</data>
+<data archetype="lookup.breed" breed="Hungarian Sheepdog" >
+</data>
+<data archetype="lookup.breed" breed="Hungarian Vizsla" >
+</data>
+<data archetype="lookup.breed" breed="Ibizan Hound" >
+</data>
+<data archetype="lookup.breed" breed="Irish Setter" >
+</data>
+<data archetype="lookup.breed" breed="Irish Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Irish Wolfhound" >
+</data>
+<data archetype="lookup.breed" breed="Irish Water Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Italian Greyhound" >
+</data>
+<data archetype="lookup.breed" breed="Japanese Chin" >
+</data>
+<data archetype="lookup.breed" breed="Japanese Spitz" >
+</data>
+<data archetype="lookup.breed" breed="Jack Russell Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Kerry Blue Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Keeshond" >
+</data>
+<data archetype="lookup.breed" breed="Australian Kelpy" >
+</data>
+<data archetype="lookup.breed" breed="King Charles Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Komondor" >
+</data>
+<data archetype="lookup.breed" breed="Korat" >
+</data>
+<data archetype="lookup.breed" breed="Labrador Retriever" >
+</data>
+<data archetype="lookup.breed" breed="Lahaso Apso" >
+</data>
+<data archetype="lookup.breed" breed="Lakeland Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Large Munsterlander" >
+</data>
+<data archetype="lookup.breed" breed="Lowchen" >
+</data>
+<data archetype="lookup.breed" breed="Maltese" >
+</data>
+<data archetype="lookup.breed" breed="Manchester Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Manx" >
+</data>
+<data archetype="lookup.breed" breed="Maremma Sheepdog" >
+</data>
+<data archetype="lookup.breed" breed="Mastiff" >
+</data>
+<data archetype="lookup.breed" breed="Minature Pinscher" >
+</data>
+<data archetype="lookup.breed" breed="No Breed" >
+</data>
+<data archetype="lookup.breed" breed="Newfoundland" >
+</data>
+<data archetype="lookup.breed" breed="Norwegian Buhund" >
+</data>
+<data archetype="lookup.breed" breed="Norfolk Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Norwich Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Old English Sheepdog" >
+</data>
+<data archetype="lookup.breed" breed="Oriental Shorthair" >
+</data>
+<data archetype="lookup.breed" breed="Otterhound" >
+</data>
+<data archetype="lookup.breed" breed="Papillon" >
+</data>
+<data archetype="lookup.breed" breed="Petit Basset Griffon Vendeen" >
+</data>
+<data archetype="lookup.breed" breed="Pekingese" >
+</data>
+<data archetype="lookup.breed" breed="Persian" >
+</data>
+<data archetype="lookup.breed" breed="Pharaoh Hound" >
+</data>
+<data archetype="lookup.breed" breed="Pointer" >
+</data>
+<data archetype="lookup.breed" breed="Pomeranian" >
+</data>
+<data archetype="lookup.breed" breed="Poodle (miniture)" >
+</data>
+<data archetype="lookup.breed" breed="Poodle (standard)" >
+</data>
+<data archetype="lookup.breed" breed="Poodle (toy)" >
+</data>
+<data archetype="lookup.breed" breed="Purebred Giant (   50kg)" >
+</data>
+<data archetype="lookup.breed" breed="Purebred Large (25-50kg)" >
+</data>
+<data archetype="lookup.breed" breed="Purebred Medium (10-25kg)" >
+</data>
+<data archetype="lookup.breed" breed="Purebred Toy (   5kg)" >
+</data>
+<data archetype="lookup.breed" breed="Purebred Feline Longhair" >
+</data>
+<data archetype="lookup.breed" breed="Purebred Feline Shorthair" >
+</data>
+<data archetype="lookup.breed" breed="Pug" >
+</data>
+<data archetype="lookup.breed" breed="Pug" >
+</data>
+<data archetype="lookup.breed" breed="Pyrenean Mountain Dog" >
+</data>
+<data archetype="lookup.breed" breed="Rhodesian Ridgeback" >
+</data>
+<data archetype="lookup.breed" breed="Rottweiler" >
+</data>
+<data archetype="lookup.breed" breed="Russian Black" >
+</data>
+<data archetype="lookup.breed" breed="Russian Blue" >
+</data>
+<data archetype="lookup.breed" breed="Russian White" >
+</data>
+<data archetype="lookup.breed" breed="Saint Bernard" >
+</data>
+<data archetype="lookup.breed" breed="Saluki" >
+</data>
+<data archetype="lookup.breed" breed="Samoyed" >
+</data>
+<data archetype="lookup.breed" breed="Schnauzer (giant)" >
+</data>
+<data archetype="lookup.breed" breed="Schipperke" >
+</data>
+<data archetype="lookup.breed" breed="Schnauzer (miniture)" >
+</data>
+<data archetype="lookup.breed" breed="Schnauzer (standard)" >
+</data>
+<data archetype="lookup.breed" breed="Scottish Fold" >
+</data>
+<data archetype="lookup.breed" breed="Scottish Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Soft Coated Wheaton Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Sealyham Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Shar Pei" >
+</data>
+<data archetype="lookup.breed" breed="Shetland Sheepdog" >
+</data>
+<data archetype="lookup.breed" breed="Shih Tzu" >
+</data>
+<data archetype="lookup.breed" breed="Siamese" >
+</data>
+<data archetype="lookup.breed" breed="Siberian Husky" >
+</data>
+<data archetype="lookup.breed" breed="Australian Silky Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Skye Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Sloughi" >
+</data>
+<data archetype="lookup.breed" breed="Somali" >
+</data>
+<data archetype="lookup.breed" breed="Staffordshire Bull Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Sussex Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Swedish Vallhund" >
+</data>
+<data archetype="lookup.breed" breed="Thoroughbred" >
+</data>
+<data archetype="lookup.breed" breed="Tibetan Mastiff" >
+</data>
+<data archetype="lookup.breed" breed="Tibetan Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Tibetan Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Turkish Van" >
+</data>
+<data archetype="lookup.breed" breed="Weimaraner" >
+</data>
+<data archetype="lookup.breed" breed="Welsh Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Welsh Springer Spaniel" >
+</data>
+<data archetype="lookup.breed" breed="Whippet" >
+</data>
+<data archetype="lookup.breed" breed="West Highland White Terrier" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Cattle Dog" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Giant (   50kg)" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred German Shepherd Dog" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Kelpie" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Large (25-50kg)" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Labrador" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Medium (10-25kg)" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Small (5-10kg)" >
+</data>
+<data archetype="lookup.breed" breed="Crossbred Toy (   5kg)" >
+</data>
+<data archetype="lookup.breed" breed="Yorkshire Terrier" >
+</data>
+<data id="C1" archetype="party.customerperson" title="Dr" firstName="Alan" initials="A" lastName="Lawther" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="12345678" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Jvhdfalk" suburb="" state="" postcode="" >
+</data>
+</data>
+<data id="A1" archetype="party.patientpet" name="Fredy" species="Canine" breed="German Shepherd Dog" colour="Black" sex="male" dateOfBirth="01/06/1993" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C1" target="id:A1" >
+</data>
+<data id="C2" archetype="party.customerperson" title="Sir" firstName="Jo" initials="J" lastName="Jo" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="654321" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Box2" suburb="Currie" state="TAS" postcode="7256" >
+</data>
+</data>
+<data id="A2" archetype="party.patientpet" name="Cows" species="Bovine" breed="Friesian" colour="" sex="female" dateOfBirth="01/01/1980" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C2" target="id:A2" >
+</data>
+<data id="A3" archetype="party.patientpet" name="Dog" species="Canine" breed="Australian Kelpy" colour="Black" sex="male" dateOfBirth="01/01/1992" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C2" target="id:A3" >
+</data>
+<data id="A4" archetype="party.patientpet" name="Heifer" species="Bovine" breed="Friesian" colour="" sex="female" dateOfBirth="01/01/1980" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C2" target="id:A4" >
+</data>
+<data id="C3" archetype="party.customerperson" title="Lady" firstName="Judith" initials="J" lastName="Bourke" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="07 378 0285" >
+</data>
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="018 781 150" >
+</data>
+<data collection="contacts" archetype="contact.location" address="65 Gilruth Road" suburb="Kenmore" state="QLD" postcode="4069" >
+</data>
+</data>
+<data id="A5" archetype="party.patientpet" name="Muffett (234-45 )" species="Canine" breed="Chihuahua (smooth)" colour="Black Tan White" sex="male" dateOfBirth="18/04/1985" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C3" target="id:A5" >
+</data>
+<data id="C4" archetype="party.customerorganisation" name="Cashsale" >
+<data collection="contacts" archetype="contact.location" address="" suburb="" state="" postcode="" >
+</data>
+</data>
+<data id="A6" archetype="party.patientpet" name="Cash" species="Unknown" breed="No Breed" colour="" sex="female" dateOfBirth="01/01/1980" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C4" target="id:A6" >
+</data>
+<data id="C5" archetype="party.customerperson" title="Ms" firstName="Susy" initials="S" lastName="Smith" >
+<data collection="contacts" archetype="contact.location" address="" suburb="" state="" postcode="" >
+</data>
+</data>
+<data id="A7" archetype="party.patientpet" name="Fido" species="Canine" breed="Pug" colour="White" sex="female" dateOfBirth="23/05/1987" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C5" target="id:A7" >
+</data>
+<data id="C6" archetype="party.customerperson" title="Mr" firstName="Fred" initials="F" lastName="Jones" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="1234567" >
+</data>
+<data collection="contacts" archetype="contact.location" address="" suburb="" state="" postcode="" >
+</data>
+</data>
+<data id="A8" archetype="party.patientpet" name="Bozo" species="Canine" breed="German Shepherd Dog" colour="Black" sex="female" dateOfBirth="01/01/1993" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C6" target="id:A8" >
+</data>
+<data id="C7" archetype="party.customerorganisation" name="Kiora Park Stud" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="717 6543" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Lot 36 Brocks Road" suburb="Doreen" state="VIC" postcode="3754" >
+</data>
+</data>
+<data id="A9" archetype="party.patientpet" name="False Start ( 890-56)" species="Equine" breed="Thoroughbred" colour="Brown" sex="female" dateOfBirth="01/01/1986" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A9" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C7" target="id:A9" >
+</data>
+<data id="C8" archetype="party.customerorganisation" name="Strathmore Gallopers Stud" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="876 5678" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Cherry Drive" suburb="Strathmore" state="VIC" postcode="3578" >
+</data>
+</data>
+<data id="A10" archetype="party.patientpet" name="Tuxedo" species="Equine" breed="Thoroughbred" colour="Chestnut" sex="male" dateOfBirth="01/01/1987" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A10" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C8" target="id:A10" >
+</data>
+<data id="A11" archetype="party.patientpet" name="Wishful Thinking" species="Equine" breed="Arab" colour="Chestnut" sex="male" dateOfBirth="01/01/1970" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A11" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C8" target="id:A11" >
+</data>
+<data id="C9" archetype="party.customerorganisation" name="Williams Way Stud" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="712 0965" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Pretty Lane" suburb="Kangaroo Ground" state="VIC" postcode="3089" >
+</data>
+</data>
+<data id="A12" archetype="party.patientpet" name="Ballantyne" species="Equine" breed="Thoroughbred" colour="Chestnut" sex="male" dateOfBirth="01/01/1990" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A12" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C9" target="id:A12" >
+</data>
+<data id="C10" archetype="party.customerperson" title="Mrs" firstName="Melanie" initials="M" lastName="Broke" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="724 5609" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Lot 1 Grants Road" suburb="Upwey" state="VIC" postcode="3890" >
+</data>
+</data>
+<data id="A13" archetype="party.patientpet" name="Peter" species="Other" breed="No Breed" colour="White" sex="male" dateOfBirth="29/02/1992" desexed="True" deceased="True" Active="False" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A13" >
+</data>
+<data id="A14" archetype="party.patientpet" name="Sam" species="Feline" breed="Domestic Shorthair" colour="Black And Tan" sex="male" dateOfBirth="01/01/1987" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C10" target="id:A14" >
+</data>
+<data id="C11" archetype="party.customerperson" title="Mr" firstName="Harry" initials="H" lastName="Dowling" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="730 8907" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Po Box 56" suburb="Pakenham" state="VIC" postcode="3098" >
+</data>
+</data>
+<data id="A15" archetype="party.patientpet" name="Libby" species="Canine" breed="German Shepherd Dog" colour="Sable" sex="female" dateOfBirth="01/01/1986" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C11" target="id:A15" >
+</data>
+<data id="C12" archetype="party.customerorganisation" name="Gainsway Stud" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="716 4329" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Lot 21 Plenty Road" suburb="Whittlesea" state="VIC" postcode="3078" >
+</data>
+</data>
+<data id="A16" archetype="party.patientpet" name="Firefly" species="Equine" breed="Thoroughbred" colour="Bay" sex="female" dateOfBirth="01/01/1989" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C11" target="id:A16" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C12" target="id:A16" >
+</data>
+<data id="A17" archetype="party.patientpet" name="Strapped For Cash" species="Equine" breed="Thoroughbred" colour="Bay" sex="male" dateOfBirth="01/01/1980" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C11" target="id:A17" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C12" target="id:A17" >
+</data>
+<data id="A18" archetype="party.patientpet" name="Winners Circle" species="Equine" breed="Thoroughbred" colour="Chestnut" sex="female" dateOfBirth="01/01/1990" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C11" target="id:A18" >
+</data>
+<data archetype="entityRelationship.patientLocation" source="id:C12" target="id:A18" >
+</data>
+<data id="C13" archetype="party.customerperson" title="Ms" firstName="Melyssa" initials="M" lastName="Casbolt" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="458 2013" >
+</data>
+<data collection="contacts" archetype="contact.location" address="34 Grantham Road" suburb="Viewbank" state="VIC" postcode="3084" >
+</data>
+</data>
+<data id="A19" archetype="party.patientpet" name="Bree" species="Canine" breed="Labrador Retriever" colour="Brindle" sex="female" dateOfBirth="01/04/1989" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C13" target="id:A19" >
+</data>
+<data id="A20" archetype="party.patientpet" name="Remington" species="Feline" breed="Domestic Shorthair" colour="Grey" sex="male" dateOfBirth="01/01/1986" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C13" target="id:A20" >
+</data>
+<data id="C14" archetype="party.customerperson" title="Dr" firstName="S" initials="S" lastName="Craddock" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="714 8242" >
+</data>
+<data collection="contacts" archetype="contact.location" address="Sunshine Valley" suburb="Doreen" state="VIC" postcode="3754" >
+</data>
+</data>
+<data id="A21" archetype="party.patientpet" name="Authentic" species="Other" breed="No Breed" colour="Brown" sex="male" dateOfBirth="01/01/1974" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C14" target="id:A21" >
+</data>
+<data id="A22" archetype="party.patientpet" name="Sadie" species="Canine" breed="Cavalier King Charles Spaniel" colour="Tan And White" sex="female" dateOfBirth="01/01/1988" desexed="False" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C14" target="id:A22" >
+</data>
+<data id="C15" archetype="party.customerperson" title="Miss" firstName="Sharyn" initials="S" lastName="Scott" >
+<data collection="contacts" archetype="contact.phoneNumber" areaCode="" telephoneNumber="435 5458" >
+</data>
+<data collection="contacts" archetype="contact.location" address="158 Nell Street" suburb="Greensborough" state="VIC" postcode="3088" >
+</data>
+</data>
+<data id="A23" archetype="party.patientpet" name="Eigty Five" species="Feline" breed="Domestic Shorthair" colour="Black" sex="male" dateOfBirth="01/01/1985" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C15" target="id:A23" >
+</data>
+<data id="A24" archetype="party.patientpet" name="Roger" species="Canine" breed="Labrador Retriever" colour="Cream" sex="male" dateOfBirth="01/01/1980" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C15" target="id:A24" >
+</data>
+<data id="A25" archetype="party.patientpet" name="Storm" species="Equine" breed="Thoroughbred" colour="Bay" sex="male" dateOfBirth="01/01/1974" desexed="True" deceased="False" Active="True" >
+</data>
+<data archetype="entityRelationship.patientOwner" source="id:C15" target="id:A25" >
+</data>
+</archetype>

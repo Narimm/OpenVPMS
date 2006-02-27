@@ -1,0 +1,46 @@
+<archetype>
+	<data id="OP1" archetype="party.organisationPractice" name="OpenVPMS Demonstration Practice" >
+		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
+		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
+	</data>	
+	<data id="OL1" archetype="party.organisationLocation" name="Main Clinic" >
+		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777" />
+		<data collection="contacts" archetype="contact.location" address="123 Boronia Road" suburb="Boronia" state="VIC" postcode="3088" />
+	</data>
+	<data id="OL2" archetype="party.organisationLocation" name="Branch Clinic" >
+		<data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97629865" />
+		<data collection="contacts" archetype="contact.location" address="4/18 Station Street" suburb="Bayswater" state="VIC" postcode="3082" />
+	</data>
+	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" />
+	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2" />
+	<data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"
+		bank="Bendigo" branch="Boronia" accountNumber="123-456-789" />
+	<data archetype="entityRelationship.locationDeposit" source="id:OL1" target="id:OD1" />
+	<data archetype="entityRelationship.locationDeposit" source="id:OL2" target="id:OD1" />
+	<data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00" />
+	<data id="OT2" archetype="party.organisationTill" name="Main Shop Till" tillFloat="200.00" />
+	<data id="OT3" archetype="party.organisationTill" name="Branch Reception Till" tillFloat="100.00" />
+	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1" />
+	<data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT2" />
+	<data archetype="entityRelationship.locationTill" source="id:OL2" target="id:OT3" />
+	<data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15" 
+		slotUnits="minutes" maxSlots="100" allowDoubleBooking="true" />
+	<data id="OS2" archetype="party.organisationSchedule" name="Branch Appointment Schedule" slotSize="15" 
+		slotUnits="minutes" maxSlots="30" allowDoubleBooking="true" />
+	<data id="OS3" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30" 
+		slotUnits="minutes" maxSlots="10" allowDoubleBooking="false" />
+	<data id="OS4" archetype="party.organisationSchedule" name="Branch Surgery Schedule" slotSize="30" 
+		slotUnits="minutes" maxSlots="5" allowDoubleBooking="false" />
+	<data archetype="entityRelationship.locationSchedule" source="id:OL1" target="id:OS1" />
+	<data archetype="entityRelationship.locationSchedule" source="id:OL1" target="id:OS2" />
+	<data archetype="entityRelationship.locationSchedule" source="id:OL2" target="id:OS3" />
+	<data archetype="entityRelationship.locationSchedule" source="id:OL2" target="id:OS4" />
+	<data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100" allowDoubleBooking="true" />
+	<data id="OW2" archetype="party.organisationWorkList" name="Main Hospital List" maxSlots="50" allowDoubleBooking="true" />
+	<data id="OW3" archetype="party.organisationWorkList" name="Branch Waiting List" maxSlots="100" allowDoubleBooking="true" />
+	<data id="OW4" archetype="party.organisationWorkList" name="Branch Hospital List" maxSlots="50" allowDoubleBooking="true" />
+	<data archetype="entityRelationship.locationWorkList" source="id:OL1" target="id:OW1" />
+	<data archetype="entityRelationship.locationWorkList" source="id:OL1" target="id:OW2" />
+	<data archetype="entityRelationship.locationWorkList" source="id:OL2" target="id:OW3" />
+	<data archetype="entityRelationship.locationWorkList" source="id:OL2" target="id:OW4" />		
+</archetype>

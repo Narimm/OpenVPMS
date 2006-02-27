@@ -50,7 +50,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.organisationType" />
+							value="classification.customerType" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
