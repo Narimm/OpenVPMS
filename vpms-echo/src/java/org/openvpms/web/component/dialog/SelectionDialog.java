@@ -5,6 +5,8 @@ import java.util.List;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
 
@@ -65,10 +67,15 @@ public class SelectionDialog extends PopupDialog {
      * @param list    the list of items to select from
      */
     public SelectionDialog(String title, String message, ListModel list) {
-        super(title, STYLE, Buttons.OK_CANCEL);
+        super(title, STYLE, Buttons.CANCEL);
         setModal(true);
 
         _list = new ListBox(list);
+        _list.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onSelected();
+            }
+        });
         Label prompt = LabelFactory.create(null, LABEL_STYLE);
         prompt.setText(message);
         Column column = ColumnFactory.create(prompt, _list);
@@ -97,10 +104,9 @@ public class SelectionDialog extends PopupDialog {
     /**
      * Get the selected object (if any), and close the window.
      */
-    @Override
-    protected void onOK() {
+    protected void onSelected() {
         _selected = _list.getSelectedValue();
         _index = _list.getSelectionModel().getMinSelectedIndex();
-        super.onOK();
+        close();
     }
 }
