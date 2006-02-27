@@ -25,6 +25,7 @@ import org.aopalliance.intercept.MethodInvocation;
 // commons-lang
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * This class holds utility methods for formulating rule set names. The rules 
@@ -55,7 +56,8 @@ public class RuleSetUriHelper {
      * 
      * 1. Get the short name of the service that is being invoked.
      * 2. Append the name of the method that is being invoked.
-     * 3. Determine if this is a before or after method invocation
+     * 3. If the first argument is an IMObject then extract the arch short name
+     * 4. Determine if this is a before or after method invocation
      * 
      * @param invocation
      *            the method invocation
@@ -69,6 +71,16 @@ public class RuleSetUriHelper {
                 invocation.getThis(), ""));
         buf.append(".");
         buf.append(invocation.getMethod().getName());
+        
+        // check that the first argume nt in the invocation is a {@link IMObject}
+        // if it is then extract the short name
+        Object obj = invocation.getArguments()[0];
+        if (obj instanceof IMObject) {
+            buf.append(".");
+            buf.append(((IMObject)obj).getArchetypeId().getShortName());
+        }
+        
+        // now append the before or after string
         buf.append(".");
         if (before) {
             buf.append(BEFORE_URI_FRAGMENT);

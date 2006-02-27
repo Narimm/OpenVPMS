@@ -31,7 +31,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
 
 // spring modules
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springmodules.jsr94.core.Jsr94RuleSupport;
 
 /**
@@ -68,11 +67,6 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
      */
     private DirectoryRuleSource ruleSource;
     
-    /**
-     * Cache a reference to the archetype service
-     */
-    private IArchetypeService archetypeService;
-    
     
     /**
      * Create an instance of the interceptor by specifying the directory
@@ -80,13 +74,9 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
      * 
      * @param ruleSource
  *                the directory rule source
-     * @param archetypeService
-     *            the archetype service                
      */
-    public DroolsRuleEngineInterceptor(DirectoryRuleSource ruleSource, 
-            IArchetypeService archetypeService) {
+    public DroolsRuleEngineInterceptor(DirectoryRuleSource ruleSource) {
         this.ruleSource = ruleSource;
-        this.archetypeService = archetypeService;
     }
     
     /* (non-Javadoc)
@@ -172,8 +162,8 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
             facts.add(fact);
         }
         
-        // now add the other facts
-        facts.add(archetypeService);
+        // now add the service that was intercepted
+        facts.add(invocation.getThis());
         
         return facts;
     }
