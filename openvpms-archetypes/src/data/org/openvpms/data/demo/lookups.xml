@@ -1,0 +1,59 @@
+<archetype>
+	<data id="1" archetype="lookup.country" country="Australia" isoCode="AU"/>
+	<data id="5" archetype="lookup.state" state="Victoria" />
+	<data id="6" archetype="lookup.state" state="New South Wales" />
+	<data id="7" archetype="lookup.state" state="Western Australia" />
+	<data id="8" archetype="lookup.state" state="South Australia" />
+	<data id="9" archetype="lookup.state" state="Northern Territory" />
+	<data id="10" archetype="lookup.state" state="Tasmania" />
+	<data id="11" archetype="lookup.state" state="Australian Capital Territory" />
+	<data id="12" archetype="lookup.state" state="Queensland" />
+	<data archetype="lookup.relationship" source="id:1" target="id:5" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:6" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:7" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:8" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:9" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:10" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:11" type="country.state" />
+	<data archetype="lookup.relationship" source="id:1" target="id:12" type="country.state" />
+	<data archetype="lookup.uom" uom="Unit" />
+	<data archetype="lookup.uom" uom="Bottle" />
+	<data archetype="lookup.uom" uom="Syringe" />
+	<data archetype="lookup.uom" uom="Tablet" />
+	<data archetype="lookup.uom" uom="Packet" />
+	<data archetype="lookup.uom" uom="Vial" />
+	<data archetype="lookup.uom" uom="Box" />
+	<data archetype="lookup.uom" uom="Grams" />
+	<data archetype="lookup.uom" uom="Litres" />
+	<data archetype="lookup.uom" uom="Ampoule" />
+	<data archetype="lookup.uom" uom="Mls" />
+	<data archetype="lookup.uom" uom="Tube" />
+	<data archetype="lookup.uom" uom="Packet" />
+	<data archetype="lookup.species" species="Canine" />
+	<data archetype="lookup.species" species="Feline" />
+	<data archetype="lookup.species" species="Equine" />
+	<data archetype="lookup.species" species="Bovine" />
+	<data archetype="lookup.species" species="Lapine" />
+	<data archetype="lookup.species" species="Murine" />
+	<data archetype="lookup.species" species="Caprine" />
+	<data archetype="lookup.species" species="Ovine" />
+	<data archetype="lookup.species" species="Cavies" />
+	<data archetype="lookup.species" species="Porcine" />
+	<data archetype="lookup.species" species="Piscine" />
+	<data archetype="lookup.species" species="Avian" />
+	<data archetype="lookup.species" species="Cervidae" />
+	<data archetype="lookup.species" species="Camilid" />
+	<data archetype="lookup.species" species="Other" />
+	<data archetype="lookup.bank" bank="National" />
+	<data archetype="lookup.bank" bank="Commonwealth" />
+	<data archetype="lookup.bank" bank="ANZ" />
+	<data archetype="lookup.bank" bank="WestPac" />
+	<data archetype="lookup.bank" bank="St George" />
+	<data archetype="lookup.bank" bank="Bank West" />
+	<data archetype="lookup.bank" bank="State SA" />
+	<data archetype="lookup.bank" bank="Bendigo" />
+	<data archetype="lookup.creditcard" creditcard="Visa" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" creditcard="Mastercard" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" creditcard="American Express" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" creditcard="Diners" floorLimit="500.00" />
+</archetype>

@@ -56,7 +56,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.personType" />
+							value="classification.supplierType" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"

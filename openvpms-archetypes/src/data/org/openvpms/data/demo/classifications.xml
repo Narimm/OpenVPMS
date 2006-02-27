@@ -1,0 +1,41 @@
+<archetype>
+	<data archetype="classification.accountType" name="Normal" />
+	<data archetype="classification.accountType" name="Valued" />
+	<data archetype="classification.accountType" name="Cash Only" />
+	<data archetype="classification.accountType" name="Bad Debtor" />
+	<data archetype="classification.accountType" name="Pensioner" />
+	<data archetype="classification.accountType" name="Monthly" />
+	<data archetype="classification.contactPurpose" name="Home" />
+	<data archetype="classification.contactPurpose" name="Work" />
+	<data archetype="classification.contactPurpose" name="Postal" />
+	<data archetype="classification.contactPurpose" name="Billing" />
+	<data archetype="classification.contactPurpose" name="Correspondence" />
+	<data archetype="classification.contactPurpose" name="Reminder" />
+	<data archetype="classification.customerType" name="Small Animal" />
+	<data archetype="classification.customerType" name="Large Animal" />
+	<data archetype="classification.customerType" name="Stud" />
+	<data archetype="classification.customerType" name="Farm" />
+	<data archetype="classification.paymentType" name="Cash" />
+	<data archetype="classification.paymentType" name="Cheque" />
+	<data archetype="classification.paymentType" name="Credit" />
+	<data archetype="classification.paymentType" name="EFT" />
+	<data archetype="classification.paymentType" name="Postal Note" />
+	<data archetype="classification.productGroup" name="Worming" />
+	<data archetype="classification.productGroup" name="Vaccination" />
+	<data archetype="classification.productGroup" name="Desexing" />
+	<data archetype="classification.productGroup" name="Drugs" />
+	<data archetype="classification.productGroup" name="Grooming" />
+	<data archetype="classification.productGroup" name="Surgery" />
+	<data archetype="classification.productGroup" name="Food" />
+	<data archetype="classification.productGroup" name="Fleas" />
+	<data archetype="classification.productGroup" name="Anaesthesia" />
+	<data archetype="classification.productGroup" name="Other" />
+	<data archetype="classification.productIncomeType" name="Professional" />
+	<data archetype="classification.productIncomeType" name="Medication" />
+	<data archetype="classification.productIncomeType" name="Merchandise" />
+	<data archetype="classification.productIncomeType" name="Other" />
+	<data archetype="classification.supplierType" name="Wholesaler" />
+	<data archetype="classification.supplierType" name="Manufacturer" />
+	<data archetype="classification.supplierType" name="Retail" />
+	<data archetype="classification.supplierType" name="Other" />
+</archetype>
