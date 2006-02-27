@@ -1,5 +1,8 @@
 package org.openvpms.web.component.im.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -66,6 +69,44 @@ public final class DescriptorHelper {
     }
 
     /**
+     * Determines if an archetype identifiers short name matches a (potentially
+     * wildcarded) short name.
+     *
+     * @param id        the archetype identifier
+     * @param shortName the short name to compare
+     * @return <code>true</code> if the short names matches; otherwise
+     *         <code>false</code>
+     */
+    public static boolean matches(ArchetypeId id, String shortName) {
+        return matches(id.getShortName(), shortName);
+    }
+
+    /**
+     * Determines if a shortName matches a wildcarded short name.
+     *
+     * @param shortName the short name
+     * @param wildcard  the wildcarded short name
+     * @return <code>true</code> if the short names matches; otherwise
+     *         <code>false</code>
+     */
+    public static boolean matches(String shortName, String wildcard) {
+        String regexp = wildcard.replace(".", "\\.").replace("*", ".*");
+        return shortName.matches(regexp);
+    }
+
+    /**
+     * Returns the archetype descriptors for an archetype range.
+     */
+    public static List<ArchetypeDescriptor> getArchetypeDescriptors(
+            String[] range) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<ArchetypeDescriptor> result = new ArrayList<ArchetypeDescriptor>();
+        for (String shortName : range) {
+            result.addAll(service.getArchetypeDescriptors(shortName));
+        }
+        return result;
+    }
+    /**
      * Returns the archetype descriptor for the specified object.
      *
      * @param object the object
@@ -94,9 +135,9 @@ public final class DescriptorHelper {
 
         if (_log.isDebugEnabled()) {
             _log.debug("Returning archetypeDescriptor="
-                    + (descriptor == null ? null : descriptor.getName())
-                    + " for archId=" + archId
-                    + " and object=" + object.getClass().getName());
+                       + (descriptor == null ? null : descriptor.getName())
+                       + " for archId=" + archId
+                       + " and object=" + object.getClass().getName());
         }
 
         return descriptor;
@@ -167,7 +208,7 @@ public final class DescriptorHelper {
      * archetype
      *
      * @param descriptor the node descriptor
-     * @param shortName  the archetype short name to match on
+     * @param shortName  the archetype short name to matches on
      * @return the properties for the specfied archetype, or <code>null</code>
      *         if none exists
      */

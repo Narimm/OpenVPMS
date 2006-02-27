@@ -31,28 +31,25 @@ import org.openvpms.web.component.util.LabelFactory;
 public class ActItemTableModel extends DescriptorTableModel {
 
     /**
-     * Construct a <code>DescriptorTableModel</code>.
+     * Construct a <code>ActItemTableModel</code>.
      *
      * @param factory the component factory
-     * @param model   the column model
+     * @param showAll if <code>true</code> show optional and required fields;
+     *                otherwise show required fields.
      */
-    protected ActItemTableModel(TableColumnModel model,
-                                IMObjectComponentFactory factory) {
-        super(model, factory);
+    public ActItemTableModel(IMObjectComponentFactory factory,
+                             boolean showAll) {
+        super(createColumnModel(showAll), factory);
     }
 
     /**
-     * Create a new <code>ActItemTableModel</code>.
+     * Helper to create a column model.
      *
-     * @param factory   the component factory
-     * @param deletable if <code>true</code>, add a column to enable deletions
-     * @param showAll   if <code>true</code> show optional and required fields;
-     *                  otherwise show required fields.
-     * @return a new model.
+     * @param showAll if <code>true</code> show optional and required fields;
+     *                otherwise show required fields.
+     * @return a new column model
      */
-    public static ActItemTableModel create(IMObjectComponentFactory factory,
-                                           boolean deletable,
-                                           boolean showAll) {
+    protected static TableColumnModel createColumnModel(boolean showAll) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.estimationItem");
 
@@ -63,19 +60,17 @@ public class ActItemTableModel extends DescriptorTableModel {
         List<NodeDescriptor> nodes = FilterHelper.filter(filter, archetype);
         TableColumnModel columns = new DefaultTableColumnModel();
 
-        if (deletable) {
-            columns.addColumn(new TableColumn(DELETE_INDEX));
-        }
         String[] range = participants.getArchetypeRange();
         for (int i = 0; i < range.length; ++i) {
             String shortName = range[i];
             if (!shortName.equals("participation.author")) {
-                columns.addColumn(new ParticipantTableColumn(shortName,
-                        participants, NEXT_INDEX + i));
+                TableColumn column = new ParticipantTableColumn(
+                        shortName, participants, NEXT_INDEX + i);
+                columns.addColumn(column);
             }
         }
         DescriptorTableModel.create(nodes, columns);
-        return new ActItemTableModel(columns, factory);
+        return columns;
     }
 
     /**
@@ -93,7 +88,7 @@ public class ActItemTableModel extends DescriptorTableModel {
             ParticipantTableColumn col = (ParticipantTableColumn) column;
             NodeDescriptor descriptor = col.getDescriptor();
             IMObject child = getByShortName(col.getShortName(),
-                    descriptor.getChildren(object));
+                                            descriptor.getChildren(object));
             if (child != null) {
                 ArchetypeDescriptor archetype
                         = DescriptorHelper.getArchetypeDescriptor(child);
@@ -113,7 +108,7 @@ public class ActItemTableModel extends DescriptorTableModel {
     /**
      * Returns the first object that has a matching short name.
      *
-     * @param shortName the short name to match on
+     * @param shortName the short name to matches on
      * @param objects   the objects to search
      * @return the first object with a short name the same as
      *         <code>shortName</code> or <code>null</code> if none exists

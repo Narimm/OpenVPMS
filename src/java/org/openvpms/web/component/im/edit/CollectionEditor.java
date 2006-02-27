@@ -23,6 +23,8 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -228,7 +230,7 @@ public class CollectionEditor implements Saveable {
             }
         });
 
-        _table = createTable(false);
+        _table = createTable();
         _table.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEdit();
@@ -310,11 +312,12 @@ public class CollectionEditor implements Saveable {
     /**
      * Create a new table.
      *
-     * @param deletable determines if entries should be deleteable.
      * @return a new table
      */
-    protected IMObjectTable createTable(boolean deletable) {
-        return new IMObjectTable(deletable);
+    protected IMObjectTable createTable() {
+        IMObjectTableModel model
+                = IMObjectTableModelFactory.create(_descriptor);
+        return new IMObjectTable(model);
     }
 
     /**

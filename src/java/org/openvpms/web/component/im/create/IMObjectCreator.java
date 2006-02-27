@@ -19,7 +19,7 @@ import org.openvpms.web.resource.util.Messages;
  * {@link IMObject} creator.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public final class IMObjectCreator {
 
@@ -47,7 +47,7 @@ public final class IMObjectCreator {
     }
 
     /**
-     * Create a new object, selecting from a list of short names that match the
+     * Create a new object, selecting from a list of short names that matches the
      * supplied criteria.
      *
      * @param type         display name for the type of the object
@@ -64,7 +64,7 @@ public final class IMObjectCreator {
                 refModelName, entityName, conceptName, true);
         if (shortNames.isEmpty()) {
             ErrorDialog.show("Cannot create object",
-                    "No archetypes match reference model="
+                    "No archetypes matches reference model="
                             + refModelName + ", entity=" + entityName
                             + ", concept=" + conceptName);
         } else if (shortNames.size() > 1) {

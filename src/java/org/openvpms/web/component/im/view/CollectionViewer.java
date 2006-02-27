@@ -11,6 +11,8 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.table.TableNavigator;
 
 
@@ -53,7 +55,9 @@ public class CollectionViewer extends Column {
      * Lays out the component.
      */
     protected void doLayout() {
-        _table = new IMObjectTable();
+        IMObjectTableModel model
+                = IMObjectTableModelFactory.create(_descriptor);
+        _table = new IMObjectTable(model);
         _table.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onBrowse();

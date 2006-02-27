@@ -41,8 +41,7 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, IMObjectComponentFactory factory) {
-        IMObjectTableModel model
-                = ActItemTableModel.create(factory, false, true);
+        IMObjectTableModel model  = new ActItemTableModel(factory, true);
         IMObjectTable table = new IMObjectTable(model);
 
         Act act = (Act) object;

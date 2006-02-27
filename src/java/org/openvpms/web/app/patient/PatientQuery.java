@@ -119,7 +119,7 @@ class PatientQuery extends AbstractQuery {
     /**
      * Filter patients associated with a customer.
      *
-     * @return a list of patients associated with the customer that match the
+     * @return a list of patients associated with the customer that matches the
      *         specified criteria
      */
     private List<IMObject> filterForCustomer() {
@@ -149,10 +149,10 @@ class PatientQuery extends AbstractQuery {
      * Filter a list of objects.
      *
      * @param objects    the objects to filter
-     * @param shortName  the archetype shortname to match on
-     * @param name       the object instance name to match on
+     * @param shortName  the archetype shortname to matches on
+     * @param name       the object instance name to matches on
      * @param activeOnly if <code>true</code>, only include active objects
-     * @return a list of objects that match the specified criteria
+     * @return a list of objects that matches the specified criteria
      */
     private List<IMObject> filter(List<IMObject> objects, String shortName,
                                   String name, boolean activeOnly) {

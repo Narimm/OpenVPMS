@@ -108,13 +108,12 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     /**
      * Create a new table.
      *
-     * @param deletable determines if entries should be deleteable.
      * @return a new table
      */
     @Override
-    protected IMObjectTable createTable(boolean deletable) {
-        IMObjectTableModel model = ActItemTableModel.create(
-                new ReadOnlyComponentFactory(), deletable, _showAll);
+    protected IMObjectTable createTable() {
+        IMObjectTableModel model = new ActItemTableModel(
+                new ReadOnlyComponentFactory(), _showAll);
         return new IMObjectTable(model);
     }
 

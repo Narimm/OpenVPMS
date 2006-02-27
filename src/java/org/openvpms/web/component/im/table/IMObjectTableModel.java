@@ -15,12 +15,9 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -83,8 +80,18 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     protected static final String[] COLUMNS = {
             "delete", "archetype", "name", "description"};
 
+
+    /**
+     * Construct an unpopulated <code>IMObjectTableModel</code>.
+     */
+    public IMObjectTableModel() {
+        this(createTableColumnModel());
+    }
+
     /**
      * Construct an unpopulated  <code>IMObjectTableModel</code>.
+     *
+     * @param model the table column model
      */
     public IMObjectTableModel(TableColumnModel model) {
         this(new ArrayList<IMObject>(), model);
@@ -278,6 +285,24 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
     }
 
     /**
+     * Helper to create a new column model.
+     *
+     * @return a new columns model.
+     */
+    public static TableColumnModel createTableColumnModel() {
+        TableColumnModel model = new DefaultTableColumnModel();
+        for (int i = 1; i < COLUMNS.length; ++i) {
+            TableColumn column = new TableColumn(i);
+            String key = "table.imobject." + COLUMNS[i];
+            String label = Messages.get(key);
+
+            column.setHeaderValue(label);
+            model.addColumn(column);
+        }
+        return model;
+    }
+
+    /**
      * Returns the value found at the given coordinate within the table. Column
      * and row values are 0-based.
      *
@@ -307,13 +332,7 @@ public class IMObjectTableModel extends DefaultPageableSortableTableModel {
                 result = DescriptorHelper.getDisplayName(object);
                 break;
             case NAME_INDEX:
-                if (object instanceof EntityRelationship) {
-                    IArchetypeService service = ServiceHelper.getArchetypeService();
-                    IMObject targetEntity = service.get(((EntityRelationship) object).getTarget());
-                    IMObject sourceEntity = service.get(((EntityRelationship) object).getSource());
-                    result = sourceEntity.getName() + " --> " + targetEntity.getName();
-                } else
-                    result = object.getName();
+                result = object.getName();
                 break;
             case DESCRIPTION_INDEX:
                 result = object.getDescription();
