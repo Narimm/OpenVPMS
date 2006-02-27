@@ -178,7 +178,7 @@ public class ActItemEditor extends AbstractIMObjectEditor {
                                       IMObjectComponentFactory factory) {
             NodeDescriptor participants
                     = getArchetypeDescriptor().getNodeDescriptor("participants");
-            Grid grid = GridFactory.create(2);
+            Grid grid = GridFactory.create(4);
             for (IMObject participant : _participants) {
                 String displayName = DescriptorHelper.getDisplayName(participant);
                 Component component = factory.create(participant, getObject(), participants);

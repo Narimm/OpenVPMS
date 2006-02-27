@@ -81,7 +81,7 @@ public class ActLayoutStrategy extends ExpandableLayoutStrategy {
                                    List<NodeDescriptor> descriptors,
                                    Component container,
                                    IMObjectComponentFactory factory) {
-        Grid grid = GridFactory.create(2);
+        Grid grid = GridFactory.create(4);
         for (NodeDescriptor descriptor : descriptors) {
             Component component = factory.create(object, descriptor);
             add(grid, descriptor.getDisplayName(), component);
