@@ -103,6 +103,17 @@ public interface IArchetypeService {
     public void validateObject(IMObject object);
     
     /**
+     * Go and generate the derived values for the specified {@link IMOjbect}, 
+     * based on the corresponding {@link ArchetypeDescriptor}
+     * 
+     * @param object
+     *            generate the derived values for this object
+     * @throws ArchetypeServiceException
+     *            if it cannot derive the values                        
+     */
+    public void deriveValues(IMObject object);
+
+    /**
      * Return all the {@link ArchetypeDescriptor} managed by this service
      * 
      * @return ArchetypeDescriptor[]

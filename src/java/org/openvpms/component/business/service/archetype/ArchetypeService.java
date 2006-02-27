@@ -254,6 +254,32 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#deriveValues(org.openvpms.component.business.domain.im.common.IMObject)
+     */
+    public void deriveValues(IMObject object) {
+        // check for a non-null object
+        if (object == null) {
+            return;
+        }
+        
+        // check that we can retrieve a valid archetype for this object
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(object.getArchetypeId());
+        if (descriptor == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
+                    new Object[] { object.getArchetypeId().toString() });
+        }
+
+        // if there are nodes attached to the archetype then validate the
+        // associated assertions
+        if (descriptor.getNodeDescriptors().size() > 0) {
+            JXPathContext context = JXPathContext.newContext(object);
+            context.setLenient(true);
+            deriveValues(context, descriptor.getNodeDescriptors());
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -760,6 +786,40 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
+
+    /**
+     * Iterate through the {@link NodeDescriptors} and set all derived values.
+     * Do it recursively.
+     * 
+     * @param context
+     *          the context object
+     * @param nodes
+     *          a list of node descriptors
+     * @throws ArchetypeServiceException          
+     */
+    private void deriveValues(JXPathContext context, Map<String, NodeDescriptor> nodes) {
+        Iterator iter = nodes.values().iterator();
+        while (iter.hasNext()) {
+            NodeDescriptor node = (NodeDescriptor) iter.next();
+            if (node.isDerived()) {
+                try {
+                    Object value = context.getValue(node.getDerivedValue());
+                    context.getPointer(node.getPath()).setValue(value);
+                } catch (Exception exception) {
+                    throw new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.FailedToDeriveValue,
+                            new Object[] {node.getName(), node.getPath()},
+                            exception);
+                }
+            }
+            
+            // if this node contains other nodes then make a recursive call
+            if (node.getNodeDescriptors().size() > 0) {
+                deriveValues(context, node.getNodeDescriptors());
+            }
+        }
+    }
+
     /**
      * This method will create a default object using the specified archetype
      * descriptor. Fundamentally, it will set the default value when specified
@@ -926,7 +986,4 @@ public class ArchetypeService implements IArchetypeService {
         return results;
     }
     
-    /**
-     * Return the set of matching archetypes 
-     */
 }
