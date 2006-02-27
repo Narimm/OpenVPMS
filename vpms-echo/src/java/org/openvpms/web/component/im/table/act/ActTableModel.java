@@ -26,28 +26,26 @@ public class ActTableModel extends IMObjectTableModel {
     private static final int TYPE_INDEX = END_INDEX + 1;
     private static final int STATUS_INDEX = TYPE_INDEX + 1;
 
-    private static final String[] ACT_COLUMNS = {"delete", "start", "end", "type", "status", "description"};
+    private static final String[] ACT_COLUMNS = {"start", "end", "type", "status", "description"};
 
-    private static final int INDEXES[] = {DELETE_INDEX, START_INDEX, END_INDEX, TYPE_INDEX, STATUS_INDEX, DESCRIPTION_INDEX};
+    private static final int INDEXES[] = {START_INDEX, END_INDEX, TYPE_INDEX, STATUS_INDEX, DESCRIPTION_INDEX};
 
 
     /**
      * Construct a new <code>ActTableModel</code>.
      */
-    public ActTableModel(TableColumnModel model) {
-        super(model);
+    public ActTableModel() {
+        super(createColumnModel());
     }
 
     /**
-     * Helper to create a model.
+     * Helper to create a column model.
      *
-     * @param deletable if <code>true</code>, add a column to enable deletions
      * @return a new column model
      */
-    public static IMObjectTableModel create(boolean deletable) {
+    protected static TableColumnModel createColumnModel() {
         TableColumnModel model = new DefaultTableColumnModel();
-        int i = (deletable) ? 0 : 1;
-        for (; i < ACT_COLUMNS.length; ++i) {
+        for (int i = 0; i < ACT_COLUMNS.length; ++i) {
             TableColumn column = new SortableTableColumn(INDEXES[i]);
             String key = "table.act." + ACT_COLUMNS[i];
             String label = Messages.get(key);
@@ -55,7 +53,7 @@ public class ActTableModel extends IMObjectTableModel {
             column.setHeaderValue(label);
             model.addColumn(column);
         }
-        return new ActTableModel(model);
+        return model;
     }
 
     /**

@@ -5,6 +5,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 
 
 /**
@@ -16,9 +17,9 @@ import org.openvpms.component.business.domain.im.product.Product;
 public class Context {
 
     /**
-     * The object being edited.
+     * The object being viewed/edited.
      */
-    private IMObject _edited;
+    private IMObject _current;
 
     /**
      * The current customer.
@@ -48,22 +49,23 @@ public class Context {
     }
 
     /**
-     * Sets the current object being edited.
+     * Sets the current object being viewed/edited.
      *
-     * @param object the object being edited. May be <code>null</code>
+     * @param object the current object being viewed/edited. May be
+     *               <code>null</code>
      */
-    public void setEdited(IMObject object) {
-        _edited = object;
+    public void setCurrent(IMObject object) {
+        _current = object;
     }
 
     /**
-     * Returns the object being edited.
+     * Returns the current object being viewed/edited.
      *
-     * @return the object being edited, or <code>null</code> if there is no
-     *         object being edited
+     * @return the object being viewed/edited, or <code>null</code> if there is
+     *         no current object
      */
-    public IMObject getEdited() {
-        return _edited;
+    public IMObject getCurrent() {
+        return _current;
     }
 
     /**
@@ -151,14 +153,11 @@ public class Context {
      */
     public IMObject getObject(String[] range) {
         IMObject result = null;
-        IMObject[] objects = new IMObject[]{_edited, _customer, _patient,
-                                            _supplier, _product};
-        for (IMObject object : objects) {
+        for (IMObject object : getObjects()) {
             if (object != null) {
-                for (String name : range) {
-                    name = name.replace(".", "\\.").replace("*", ".*");
+                for (String shortName : range) {
                     ArchetypeId id = object.getArchetypeId();
-                    if (id.getShortName().matches(name)) {
+                    if (DescriptorHelper.matches(id, shortName)) {
                         result = object;
                         break;
                     }
@@ -174,13 +173,11 @@ public class Context {
      *
      * @param reference the object reference
      * @return the context object whose reference matches <code>reference</code>,
-     *         or <code>null</code> if there is no match
+     *         or <code>null</code> if there is no matches
      */
     public IMObject getObject(IMObjectReference reference) {
         IMObject result = null;
-        IMObject[] objects = new IMObject[]{_edited, _customer, _patient,
-                                            _supplier, _product};
-        for (IMObject object : objects) {
+        for (IMObject object : getObjects()) {
             if (object != null) {
                 ArchetypeId id = object.getArchetypeId();
                 if (id.equals(reference.getArchetypeId())
@@ -201,6 +198,16 @@ public class Context {
      */
     public static Context getInstance() {
         return ContextApplicationInstance.getInstance().getContext();
+    }
+
+    /**
+     * Helper to return the context objects in an array.
+     *
+     * @return the a list of the context objects
+     */
+    protected IMObject[] getObjects() {
+        return new IMObject[]{_current, _customer, _patient, _supplier,
+                              _product};
     }
 
 }

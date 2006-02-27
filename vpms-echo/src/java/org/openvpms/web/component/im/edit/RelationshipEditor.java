@@ -78,7 +78,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         IMObject source = getObject(_relationship.getSource(), sourceDesc);
         IMObject target = getObject(_relationship.getTarget(), targetDesc);
 
-        IMObject edited = Context.getInstance().getEdited();
+        IMObject edited = Context.getInstance().getCurrent();
         boolean srcReadOnly = true;
         if (source == null || !source.equals(edited)) {
             srcReadOnly = false;
@@ -181,7 +181,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param descriptor the node descriptor
      * @return the object matching <code>reference</code>, or
      *         <code>descriptor</code>, or <code>null</code> if there is no
-     *         match
+     *         matches
      */
     private IMObject getObject(IMObjectReference reference,
                                NodeDescriptor descriptor) {
@@ -189,7 +189,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         if (reference == null) {
             result = match(descriptor);
         } else {
-            IMObject edit = Context.getInstance().getEdited();
+            IMObject edit = Context.getInstance().getCurrent();
             if (edit != null) {
                 if (edit.getArchetypeId().equals(reference.getArchetypeId())
                         && edit.getUid() == reference.getUid()) {
@@ -232,12 +232,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      *
      * @param descriptor the node descriptor
      * @return the current object being edited, or <code>null</code> if its type
-     *         doesn't match the specified descriptor's archetype range
+     *         doesn't matches the specified descriptor's archetype range
      */
     private IMObject match(NodeDescriptor descriptor) {
         IMObject result = null;
         String[] range = descriptor.getArchetypeRange();
-        IMObject object = Context.getInstance().getEdited();
+        IMObject object = Context.getInstance().getCurrent();
         if (object != null) {
             String shortName = object.getArchetypeId().getShortName();
             for (int i = 0; i < range.length; ++i) {

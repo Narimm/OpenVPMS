@@ -120,7 +120,7 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
         String type = Messages.get("customer.estimation.createtype");
 
         _query = new ActQuery(customer, "act", "estimation");
-        IMObjectTable table = new IMObjectTable(ActTableModel.create(false));
+        IMObjectTable table = new IMObjectTable(new ActTableModel());
         _acts = new Browser(_query, table);
         _acts.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {

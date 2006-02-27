@@ -35,7 +35,7 @@ import org.openvpms.web.spring.ServiceHelper;
 public abstract class AbstractQuery implements Query {
 
     /**
-     * Archetype short names to match on.
+     * Archetype short names to matches on.
      */
     protected final String[] _shortNames;
 

@@ -167,6 +167,7 @@ public class CRUDWindow {
      * @param object the object. May be <code>null</code>
      */
     public void setObject(IMObject object) {
+        Context.getInstance().setCurrent(object);
         if (object != null) {
             if (_objectContainer != null) {
                 _objectContainer.remove(_viewer.getComponent());
@@ -331,11 +332,12 @@ public class CRUDWindow {
      * @param isNew  determines if the object is a new instance
      */
     protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
-        Context.getInstance().setEdited(null);
         if (editor.isDeleted()) {
             onDeleted(editor.getObject());
         } else if (editor.isSaved()) {
             onSaved(editor.getObject(), isNew);
+        } else {
+            Context.getInstance().setCurrent(null);
         }
     }
 
@@ -381,7 +383,7 @@ public class CRUDWindow {
             }
         });
 
-        Context.getInstance().setEdited(object);
+        Context.getInstance().setCurrent(object);
         dialog.show();
     }
 
