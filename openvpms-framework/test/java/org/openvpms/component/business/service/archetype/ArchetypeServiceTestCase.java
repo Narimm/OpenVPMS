@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
@@ -144,6 +145,21 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         Person person = createPerson("person.bernief", "Ms", "Bernadette", "Feeney");
         person.addIdentity(createEntityIdentity("entityIdentity.personAlias", "special"));
         service.validateObject(person);
+    }
+    
+    /**
+     * Test that a service call to deriveValues works as expected
+     */
+    public void testDeriveValues()
+    throws Exception {
+        Lookup country = (Lookup)service.create("lookup.country");
+        country.setValue("Australia");
+        assertTrue(StringUtils.isEmpty(country.getName()));
+        assertTrue(StringUtils.isEmpty(country.getDescription()));
+        
+        service.deriveValues(country);
+        assertFalse(StringUtils.isEmpty(country.getName()));
+        assertFalse(StringUtils.isEmpty(country.getDescription()));
     }
     
     /* (non-Javadoc)

@@ -72,7 +72,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         FailedToGetActForEntity,
         FailedToGetParticipations,
         EntityUidNotSpecified,
-        EntityConceptNotSpecified
+        EntityConceptNotSpecified,
+        FailedToDeriveValue
     }
 
     /**
