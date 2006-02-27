@@ -5,18 +5,18 @@ import java.util.List;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.ValidatingPointer;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -26,12 +26,11 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.select.Selector;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -43,19 +42,14 @@ import org.openvpms.web.spring.ServiceHelper;
 public class RelationshipEditor extends AbstractIMObjectEditor {
 
     /**
-     * The relationship.
+     * Editor for the source of the relationship.
      */
-    private final EntityRelationship _relationship;
+    private ObjectReferenceEditor _source;
 
     /**
-     * The entity representing the source of the relationship.
+     * Editor for the target of the relationship.
      */
-    private Entity _source;
-
-    /**
-     * The entity representing the target of the relationship.
-     */
-    private Entity _target;
+    private ObjectReferenceEditor _target;
 
 
     /**
@@ -70,32 +64,36 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     protected RelationshipEditor(EntityRelationship relationship, IMObject parent,
                                  NodeDescriptor descriptor, boolean showAll) {
         super(relationship, parent, descriptor, showAll);
-        _relationship = relationship;
+        IMObject source;
+        IMObject target;
+
         ArchetypeDescriptor archetype = getArchetypeDescriptor();
         NodeDescriptor sourceDesc = archetype.getNodeDescriptor("source");
         NodeDescriptor targetDesc = archetype.getNodeDescriptor("target");
 
-        IMObject source = getObject(_relationship.getSource(), sourceDesc);
-        IMObject target = getObject(_relationship.getTarget(), targetDesc);
+        source = Entity.getObject(relationship.getSource(), sourceDesc);
+        target = Entity.getObject(relationship.getTarget(), targetDesc);
 
         IMObject edited = Context.getInstance().getCurrent();
         boolean srcReadOnly = true;
         if (source == null || !source.equals(edited)) {
             srcReadOnly = false;
         }
-        if (source != null && _relationship.getSource() == null) {
-            _relationship.setSource(new IMObjectReference(source));
+
+        _source = getEditor(relationship, sourceDesc, srcReadOnly);
+        if (source != null && relationship.getSource() == null) {
+            _source.setObject(source);
         }
-        _source = create(source, sourceDesc, srcReadOnly);
 
         boolean targetReadOnly = true;
         if (target == null || !target.equals(edited) || target.equals(source)) {
             targetReadOnly = false;
         }
-        if (target != null && _relationship.getTarget() == null) {
-            _relationship.setTarget(new IMObjectReference(target));
+
+        _target = getEditor(relationship, targetDesc, targetReadOnly);
+        if (target != null && relationship.getTarget() == null) {
+            _target.setObject(target);
         }
-        _target = create(target, targetDesc, targetReadOnly);
     }
 
     /**
@@ -114,7 +112,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         IMObjectEditor result = null;
         if (object instanceof EntityRelationship) {
             result = new RelationshipEditor((EntityRelationship) object, parent,
-                    descriptor, showAll);
+                                            descriptor, showAll);
         }
         return result;
     }
@@ -132,6 +130,23 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns an editor for one side of the relationship.
+     *
+     * @param relationship the relationship
+     * @param descriptor   the descriptor of the node to edit
+     * @param readOnly     determines if the node is read-only
+     */
+    protected ObjectReferenceEditor getEditor(EntityRelationship relationship,
+                                              NodeDescriptor descriptor,
+                                              boolean readOnly) {
+        Pointer pointer = DescriptorHelper.getPointer(relationship, descriptor);
+        NodeValidator validator = new NodeValidator(descriptor);
+        ValidatingPointer vpointer = new ValidatingPointer(pointer, validator);
+        getModifiableSet().add(relationship, vpointer);
+        return new Entity(vpointer, descriptor, readOnly);
+    }
+
+    /**
      * Pops up a dialog to select an entity.
      *
      * @param entity the entity wrapper
@@ -141,14 +156,18 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         Query query = new DefaultQuery(descriptor.getArchetypeRange());
         final Browser browser = new Browser(query);
         String title = Messages.get("imobject.select.title",
-                descriptor.getDisplayName());
-        final BrowserDialog popup = new BrowserDialog(title, browser);
+                                    descriptor.getDisplayName());
+        final BrowserDialog popup = new BrowserDialog(title, browser, true);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
-                IMObject object = popup.getSelected();
-                if (object != null) {
-                    onSelected(entity, object);
+                if (popup.createNew()) {
+                    onCreate(entity);
+                } else {
+                    IMObject object = popup.getSelected();
+                    if (object != null) {
+                        entity.setObject(object);
+                    }
                 }
             }
         });
@@ -157,99 +176,54 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Invoked when an entity object is selected.
+     * Invoked when the 'new' button is pressed.
      *
-     * @param entity the entity wrapper
-     * @param object the entity object
+     * @param entity describes the type of object to create
      */
-    protected void onSelected(Entity entity, IMObject object) {
-        entity.setObject(object);
-        IMObjectReference reference = new IMObjectReference(object);
-        if (entity == _source) {
-            _relationship.setSource(reference);
-        } else {
-            _relationship.setTarget(reference);
-        }
+    protected void onCreate(final Entity entity) {
+        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
+            public void created(IMObject object) {
+                onCreated(object, entity);
+            }
+        };
+
+        NodeDescriptor descriptor = entity.getDescriptor();
+        IMObjectCreator.create(descriptor.getDisplayName(),
+                               descriptor.getArchetypeRange(), listener);
+    }
+
+
+    /**
+     * Invoked when an object is created. Pops up an editor to edit it.
+     *
+     * @param object the object to edit
+     * @param entity the entity to associate the object with, on completion of
+     *               editing
+     */
+    private void onCreated(IMObject object, final Entity entity) {
+        final IMObjectEditor editor
+                = IMObjectEditorFactory.create(object, false);
+        final EditDialog dialog = new EditDialog(editor);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                onEditCompleted(editor, entity);
+            }
+        });
+
+        dialog.show();
     }
 
     /**
-     * Returns an object given its reference and descriptor. If the reference is
-     * null, determines if the descriptor matches that of the current object
-     * being edited and returns that instead.
+     * Invoked when the editor is closed.
      *
-     * @param reference  the object reference. May be <code>null</code>
-     * @param descriptor the node descriptor
-     * @return the object matching <code>reference</code>, or
-     *         <code>descriptor</code>, or <code>null</code> if there is no
-     *         matches
+     * @param editor the editor
+     * @param entity the entity to associate the object with
      */
-    private IMObject getObject(IMObjectReference reference,
-                               NodeDescriptor descriptor) {
-        IMObject result = null;
-        if (reference == null) {
-            result = match(descriptor);
-        } else {
-            IMObject edit = Context.getInstance().getCurrent();
-            if (edit != null) {
-                if (edit.getArchetypeId().equals(reference.getArchetypeId())
-                        && edit.getUid() == reference.getUid()) {
-                    result = edit;
-                }
-            }
-            if (result == null) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                result = service.get(reference);
-            }
+    protected void onEditCompleted(IMObjectEditor editor, Entity entity) {
+        if (!editor.isCancelled() && !editor.isDeleted()) {
+            entity.setObject(editor.getObject());
         }
-        return result;
     }
-
-    /**
-     * Creates a new entity representing one side of the relationship.
-     *
-     * @param object     the object. May be <code>null</code>
-     * @param descriptor the entity's descriptor
-     * @param readOnly   if <code>true</code>, the enity cannot be changed
-     * @return a new <code>Entity</code>
-     */
-    private Entity create(IMObject object, NodeDescriptor descriptor,
-                          boolean readOnly) {
-        final Entity result;
-        result = new Entity(object, descriptor, readOnly);
-        if (!readOnly) {
-            result.getSelect().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onSelect(result);
-                }
-            });
-        }
-        return result;
-    }
-
-    /**
-     * Determines if the current object being edited matches archetype range of
-     * the specified descriptor.
-     *
-     * @param descriptor the node descriptor
-     * @return the current object being edited, or <code>null</code> if its type
-     *         doesn't matches the specified descriptor's archetype range
-     */
-    private IMObject match(NodeDescriptor descriptor) {
-        IMObject result = null;
-        String[] range = descriptor.getArchetypeRange();
-        IMObject object = Context.getInstance().getCurrent();
-        if (object != null) {
-            String shortName = object.getArchetypeId().getShortName();
-            for (int i = 0; i < range.length; ++i) {
-                if (range[i].equals(shortName)) {
-                    result = object;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
 
     /**
      * EntityRelationship layout strategy. Displays the source and target nodes
@@ -285,10 +259,8 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
                                       Component container,
                                       IMObjectComponentFactory factory) {
             Grid grid = GridFactory.create(2);
-            add(grid, _source.getDescriptor().getDisplayName(),
-                    _source.getComponent());
-            add(grid, _target.getDescriptor().getDisplayName(),
-                    _target.getComponent());
+            add(grid, _source.getDisplayName(), _source.getComponent());
+            add(grid, _target.getDisplayName(), _target.getComponent());
             for (NodeDescriptor descriptor : descriptors) {
                 Component component = factory.create(object, descriptor);
                 add(grid, descriptor.getDisplayName(), component);
@@ -301,38 +273,29 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Wrapper for a source/target entity in a relationship.
+     * Editor for a source/target entity in a relationship.
      */
-    private class Entity extends Selector {
-
-        /**
-         * The entity's descriptor.
-         */
-        private NodeDescriptor _descriptor;
-
+    private class Entity extends ObjectReferenceEditor {
 
         /**
          * Construct a new <code>Entity</code>.
          *
-         * @param entity     the entity. May be <code>null</code>
+         * @param pointer    a pointer to the reference
          * @param descriptor the entity descriptor
          * @param readOnly   if <code>true<code> don't render the select button
          */
-        public Entity(IMObject entity, NodeDescriptor descriptor,
+        public Entity(Pointer pointer, NodeDescriptor descriptor,
                       boolean readOnly) {
-            super(readOnly ? ButtonStyle.HIDE : ButtonStyle.RIGHT);
-            _descriptor = descriptor;
-            getComponent();
-            setObject(entity);
+            super(pointer, descriptor, readOnly);
         }
 
         /**
-         * Returns the entity's descriptor.
-         *
-         * @return the entity's descriptor
+         * Pops up a dialog to select an object.
          */
-        public NodeDescriptor getDescriptor() {
-            return _descriptor;
+        @Override
+        protected void onSelect() {
+            // override default behaviour to enable creation of objects.
+            RelationshipEditor.this.onSelect(this);
         }
 
     }

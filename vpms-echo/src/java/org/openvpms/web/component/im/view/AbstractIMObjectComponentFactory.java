@@ -4,14 +4,13 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.jxpath.Pointer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.bound.BoundCheckBox;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.component.bound.BoundCheckBox;
 
 
 /**
@@ -22,12 +21,6 @@ import org.openvpms.web.component.bound.BoundCheckBox;
  */
 public abstract class AbstractIMObjectComponentFactory
         implements IMObjectComponentFactory {
-
-    /**
-     * The logger.
-     */
-    private static final Log _log
-            = LogFactory.getLog(AbstractIMObjectComponentFactory.class);
 
     /**
      * Returns a label to display a node.
@@ -101,15 +94,7 @@ public abstract class AbstractIMObjectComponentFactory
      * @return a pointer to the attribute identified by <code>descriptor</code>.
      */
     protected Pointer getPointer(IMObject object, NodeDescriptor descriptor) {
-        String path = descriptor.getPath();
-        Pointer pointer = object.pathToObject(path);
-        if (pointer == null) {
-            final String message = "No path to " + path
-                    + " for object of type  " + object.getClass().getName();
-            _log.error(message);
-            throw new IllegalArgumentException(message);
-        }
-        return pointer;
+        return DescriptorHelper.getPointer(object, descriptor);
     }
 
 }

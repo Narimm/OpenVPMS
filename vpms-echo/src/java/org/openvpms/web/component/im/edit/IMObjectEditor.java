@@ -50,16 +50,24 @@ public interface IMObjectEditor extends Saveable {
     boolean delete();
 
     /**
-     * Cancel any edits.
-     */
-    void cancel();
-
-    /**
      * Determines if the object has been deleted.
      *
      * @return <code>true</code> if the object has been deleted
      */
     boolean isDeleted();
+
+    /**
+     * Cancel any edits. Once complete, query methods may be invoked, but the
+     * behaviour of other methods is undefined..
+     */
+    void cancel();
+
+    /**
+     * Determines if editing was cancelled.
+     *
+     * @return <code>true</code> if editing was cancelled
+     */
+    boolean isCancelled();
 
     /**
      * Returns the rendered object.

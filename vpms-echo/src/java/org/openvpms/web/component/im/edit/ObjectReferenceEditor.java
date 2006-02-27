@@ -12,13 +12,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.select.Selector;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -44,6 +45,7 @@ public class ObjectReferenceEditor {
      */
     private Selector _selector;
 
+
     /**
      * Construct a new <code>ObjectReferenceEditor</code>.
      *
@@ -61,7 +63,8 @@ public class ObjectReferenceEditor {
      * @param descriptor the reference descriptor
      * @param readOnly   if <code>true</code> the reference cannot be edited
      */
-    public ObjectReferenceEditor(Pointer pointer, NodeDescriptor descriptor, boolean readOnly) {
+    public ObjectReferenceEditor(Pointer pointer, NodeDescriptor descriptor,
+                                 boolean readOnly) {
         _pointer = pointer;
         _descriptor = descriptor;
 
@@ -82,6 +85,26 @@ public class ObjectReferenceEditor {
     }
 
     /**
+     * Sets the value of the reference to the supplied object.
+     *
+     * @param object the object
+     */
+    public void setObject(IMObject object) {
+        IMObjectReference reference = new IMObjectReference(object);
+        _pointer.setValue(reference);
+        _selector.setObject(object);
+    }
+
+    /**
+     * Returns the display name.
+     *
+     * @return the display name
+     */
+    public String getDisplayName() {
+        return _descriptor.getDisplayName();
+    }
+
+    /**
      * Returns the component.
      *
      * @return the component
@@ -91,42 +114,18 @@ public class ObjectReferenceEditor {
     }
 
     /**
-     * Pops up a dialog to select an object.
-     */
-    protected void onSelect() {
-        Query query = new DefaultQuery(_descriptor.getArchetypeRange());
-        final Browser browser = new Browser(query);
-        String title = Messages.get("imobject.select.title",
-                _descriptor.getDisplayName());
-        final BrowserDialog popup = new BrowserDialog(title, browser);
-
-        popup.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                IMObject object = popup.getSelected();
-                if (object != null) {
-                    onSelected(object);
-                }
-            }
-        });
-
-        popup.show();
-    }
-
-    /**
-     * Invoked when an object is selected.
+     * Returns the object referemce's descriptor.
      *
-     * @param object the object
+     * @return the object referemce's descriptor
      */
-    protected void onSelected(IMObject object) {
-        IMObjectReference reference = new IMObjectReference(object);
-        _pointer.setValue(reference);
-        _selector.setObject(object);
+    public NodeDescriptor getDescriptor() {
+        return _descriptor;
     }
 
     /**
      * Returns an object given its reference and descriptor. If the reference is
      * null, determines if the descriptor matches that of the current object
-     * being edited and returns that instead.
+     * being viewed/edited and returns that instead.
      *
      * @param reference  the object reference. May be <code>null</code>
      * @param descriptor the node descriptor
@@ -134,8 +133,8 @@ public class ObjectReferenceEditor {
      *         <code>descriptor</code>, or <code>null</code> if there is no
      *         matches
      */
-    private IMObject getObject(IMObjectReference reference,
-                               NodeDescriptor descriptor) {
+    public static IMObject getObject(IMObjectReference reference,
+                                     NodeDescriptor descriptor) {
         IMObject result = null;
         if (reference == null) {
             result = match(descriptor);
@@ -143,7 +142,7 @@ public class ObjectReferenceEditor {
             IMObject edit = Context.getInstance().getCurrent();
             if (edit != null) {
                 if (edit.getArchetypeId().equals(reference.getArchetypeId())
-                        && edit.getUid() == reference.getUid()) {
+                    && edit.getUid() == reference.getUid()) {
                     result = edit;
                 }
             }
@@ -156,21 +155,42 @@ public class ObjectReferenceEditor {
     }
 
     /**
-     * Determines if the current object being edited matches the archetype
-     * range of the specified descriptor.
+     * Pops up a dialog to select an object.
+     */
+    protected void onSelect() {
+        Query query = new DefaultQuery(_descriptor.getArchetypeRange());
+        final Browser browser = new Browser(query);
+        String title = Messages.get("imobject.select.title",
+                                    _descriptor.getDisplayName());
+        final BrowserDialog popup = new BrowserDialog(title, browser);
+
+        popup.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                IMObject object = popup.getSelected();
+                if (object != null) {
+                    setObject(object);
+                }
+            }
+        });
+
+        popup.show();
+    }
+
+    /**
+     * Determines if the current object being edited matches archetype range of
+     * the specified descriptor.
      *
      * @param descriptor the node descriptor
      * @return the current object being edited, or <code>null</code> if its type
      *         doesn't matches the specified descriptor's archetype range
      */
-    private IMObject match(NodeDescriptor descriptor) {
+    private static IMObject match(NodeDescriptor descriptor) {
         IMObject result = null;
-        String[] range = descriptor.getArchetypeRange();
         IMObject object = Context.getInstance().getCurrent();
         if (object != null) {
-            String shortName = object.getArchetypeId().getShortName();
-            for (int i = 0; i < range.length; ++i) {
-                if (range[i].equals(shortName)) {
+            for (String shortName : descriptor.getArchetypeRange()) {
+                if (DescriptorHelper.matches(
+                        object.getArchetypeId(), shortName)) {
                     result = object;
                     break;
                 }

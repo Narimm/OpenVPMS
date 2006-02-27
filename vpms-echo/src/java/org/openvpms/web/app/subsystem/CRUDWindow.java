@@ -189,6 +189,20 @@ public class CRUDWindow {
     }
 
     /**
+     * Invoked when the 'new' button is pressed.
+     */
+    public void onCreate() {
+        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
+            public void created(IMObject object) {
+                onCreated(object);
+            }
+        };
+
+        IMObjectCreator.create(_type, _refModelName, _entityName, _conceptName,
+                listener);
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {
@@ -252,20 +266,6 @@ public class CRUDWindow {
             _buttons.remove(_edit);
             _buttons.remove(_delete);
         }
-    }
-
-    /**
-     * Invoked when the 'new' button is pressed.
-     */
-    public void onCreate() {
-        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
-            public void created(IMObject object) {
-                onCreated(object);
-            }
-        };
-
-        IMObjectCreator.create(_type, _refModelName, _entityName, _conceptName,
-                listener);
     }
 
     /**
