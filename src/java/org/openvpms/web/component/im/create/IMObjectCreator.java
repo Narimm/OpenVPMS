@@ -2,17 +2,17 @@ package org.openvpms.web.component.im.create;
 
 import java.util.List;
 
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -33,7 +33,8 @@ public final class IMObjectCreator {
      * Create a new object of the specified archetype.
      *
      * @param shortName the archetype shortname
-     * @return a new object, or <code>null</code> if the short name is not known
+     * @return a new object, or <code>null</code> if the short name is not
+     *         known
      */
     public static IMObject create(String shortName) {
         IMObject result = null;
@@ -64,9 +65,9 @@ public final class IMObjectCreator {
                 refModelName, entityName, conceptName, true);
         if (shortNames.isEmpty()) {
             ErrorDialog.show("Cannot create object",
-                    "No archetypes matches reference model="
-                            + refModelName + ", entity=" + entityName
-                            + ", concept=" + conceptName);
+                             "No archetypes matches reference model="
+                             + refModelName + ", entity=" + entityName
+                             + ", concept=" + conceptName);
         } else {
             create(type, shortNames, listener);
         }
@@ -103,9 +104,8 @@ public final class IMObjectCreator {
             String message = Messages.get("imobject.new.message", type);
             final SelectionDialog dialog
                     = new SelectionDialog(title, message, model);
-            dialog.addActionListener(
-                    SelectionDialog.OK_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
                     int selected = dialog.getSelectedIndex();
                     if (selected != -1) {
                         IMObject object = create(model.getShortName(selected));
