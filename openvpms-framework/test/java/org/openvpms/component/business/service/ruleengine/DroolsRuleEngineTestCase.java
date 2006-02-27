@@ -20,9 +20,15 @@ package org.openvpms.component.business.service.ruleengine;
 
 
 // log4j
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Person;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -104,6 +110,40 @@ public class DroolsRuleEngineTestCase extends
     }
     
     /**
+     * Test for OVPMS-127
+     */
+    public void testOVPMS127()
+    throws Exception {
+        Person personA = createPerson("Mr", "Jim", "Alateras");
+        archetype.save(personA);
+        Person personB = createPerson("Mr", "Oscar", "Alateras");
+        archetype.save(personB);
+        Animal pet = createAnimal("lucky");
+        archetype.save(pet);
+        
+        // create the entity relationships
+        EntityRelationship rel = createEntityRelationship(personA, pet, 
+                "entityRelationship.animalOwner");
+        pet.addEntityRelationship(rel);
+        archetype.save(pet);
+        assertTrue(rel.getActiveEndTime() == null);
+        
+        EntityRelationship rel1 = createEntityRelationship(personB, pet, 
+        "entityRelationship.animalOwner");
+        pet.addEntityRelationship(rel1);
+        archetype.save(pet);
+
+        assertTrue(rel.getActiveEndTime() != null);
+        assertTrue(rel1.getActiveEndTime() == null);
+        
+        pet = createAnimal("billy");
+        archetype.save(pet);
+        rel = createEntityRelationship(personB, pet, "entityRelationship.animalOwner");
+        personB.addEntityRelationship(rel);
+        archetype.save(personB);
+    }
+    
+    /**
      * Create a person
      * 
      * @param title
@@ -126,6 +166,28 @@ public class DroolsRuleEngineTestCase extends
     }
     
     /**
+     * Create an anima entity
+     * 
+     * @param name
+     *            the name of the pet
+     * @return Animal
+     */
+    private Animal createAnimal(String name) {
+        Animal animal = (Animal)archetype.create("animal.pet");
+        assertTrue(animal != null);
+
+        animal.setSpecies("dog");
+        animal.setBreed("collie");
+        animal.setColour("brown");
+        animal.setName(name);
+        animal.setSex("male");
+        animal.setDateOfBirth(new Date());
+
+        return animal;
+    }
+
+    
+    /**
      * Create a phone contact
      * 
      * @return Contact
@@ -137,5 +199,30 @@ public class DroolsRuleEngineTestCase extends
         contact.getDetails().setAttribute("preferred", new Boolean(true));
         
         return contact;
+    }
+    
+    /**
+     * Create an entity relationship of the specified type between the 
+     * source and target entities
+     * 
+     * @param source
+     *            the source entity
+     * @param target 
+     *            the target entity
+     * @param shortName
+     *            the short name of the relationship to create
+     * @return EntityRelationship                                    
+     */
+    private EntityRelationship createEntityRelationship(Entity source, 
+            Entity target, String shortName) {
+        EntityRelationship rel = (EntityRelationship)archetype.create(shortName);
+        
+        rel.setActiveStartTime(new Date());
+        rel.setSequence(1);
+        rel.setSource(new IMObjectReference(source));
+        rel.setTarget(new IMObjectReference(target));
+
+        return rel;
+        
     }
 }

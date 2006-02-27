@@ -23,43 +23,26 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
- * This is a set of business rules for the party.person archetype
+ * These are rules specific to the animal.pet archetype.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class PartyPersonRules {
+public class AnimalPetRules {
     /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
-            .getLogger(PartyPersonRules.class);
+            .getLogger(AnimalPetRules.class);
     
     /**
-     * Display the onSave message
-     * 
-     * @param person
-     *            the person entity
-     * @throws RuleEngineException            
-     */
-    public static void onSaveMessage(IArchetypeService service, Person person) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Executing PartyPersonRules.onSaveMessage");
-        }        
-        
-        System.out.println("We are about to do a save on " + person.getFirstName() 
-                + " " + person.getLastName()
-                + " using service " + service.getClass().getName());
-    }
-     
-    /**
-     * Set the active end date for all existing entity relationships of type
-     * entityRelationship.animalOwner.
+     * Set the active end date for all existing (i.e not new) entity
+     * relationships.
      * 
      * @param service
      *            the archetype service
@@ -67,14 +50,13 @@ public class PartyPersonRules {
      *            the pet entity
      * @throws RuleEngineException            
      */
-    public static void setActiveEndDates(IArchetypeService service, Person person) {
+    public static void setActiveEndDates(IArchetypeService service, Animal pet) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Executing PartyPersonRules.setActiveEndDates");
+            logger.debug("Executing AnimalPetRules.setActiveEndDates");
         }
         
-        for (EntityRelationship rel : person.getEntityRelationships()) {
-            if ((!rel.isNew()) &&
-                (rel.getArchetypeId().getShortName().equals("entityRelationship.animalOwner"))) {
+        for (EntityRelationship rel : pet.getEntityRelationships()) {
+            if (!rel.isNew()) {
                 rel.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));
             }
         }

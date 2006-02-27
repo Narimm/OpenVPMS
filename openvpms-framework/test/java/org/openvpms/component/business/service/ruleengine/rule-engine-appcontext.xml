@@ -196,9 +196,6 @@
     <constructor-arg index="0">
       <ref local="ruleSource" />
     </constructor-arg>
-    <constructor-arg index="1">
-      <ref local="archetypeService" />
-    </constructor-arg>
     <property name="template">
       <ref local="jsr94Template" />
     </property>
