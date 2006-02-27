@@ -97,7 +97,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void doSimpleLayout(IMObject object, List<NodeDescriptor> descriptors,
                                   Component container, IMObjectComponentFactory factory) {
         if (!descriptors.isEmpty()) {
-            Grid grid = GridFactory.create(2);
+            Grid grid = GridFactory.create(4);
             for (NodeDescriptor descriptor : descriptors) {
                 Component child = factory.create(object, descriptor);
                 add(grid, descriptor.getDisplayName(), child);
