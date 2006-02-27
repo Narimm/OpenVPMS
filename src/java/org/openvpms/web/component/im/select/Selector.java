@@ -95,6 +95,7 @@ public class Selector {
      * @param object the object. May be <code>null</code>
      */
     public void setObject(IMObject object) {
+        getComponent(); // layout component if required.
         if (object != null) {
             final String summaryKey = "imobject.summary";
             String summary = Messages.get(summaryKey, object.getName(),

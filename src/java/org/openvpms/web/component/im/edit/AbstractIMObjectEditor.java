@@ -18,19 +18,19 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.view.AbstractIMObjectView;
-import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
-import org.openvpms.web.component.im.view.IMObjectView;
+import org.openvpms.web.component.edit.ModifiableSet;
+import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.edit.ModifiableSet;
-import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.im.view.AbstractIMObjectView;
+import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -106,6 +106,11 @@ public abstract class AbstractIMObjectEditor
      * Indicates if the object was deleted.
      */
     private boolean _deleted = false;
+
+    /**
+     * Indicates if editing was cancelled.
+     */
+    private boolean _cancelled = false;
 
     /**
      * Property change listener notifier.
@@ -192,6 +197,9 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the save was successful
      */
     public boolean save() {
+        if (_cancelled) {
+            return false;
+        }
         boolean saved;
         if (!isModified()) {
             saved = true;
@@ -220,6 +228,9 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object was deleted successfully
      */
     public boolean delete() {
+        if (_cancelled) {
+            return false;
+        }
         boolean deleted = false;
         IMObject object = getObject();
         if (_parent != null) {
@@ -243,9 +254,12 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Cancel any edits.
+     * Determines if the object has been deleted.
+     *
+     * @return <code>true</code> if the object has been deleted
      */
-    public void cancel() {
+    public boolean isDeleted() {
+        return _deleted;
     }
 
     /**
@@ -265,12 +279,20 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Determines if the object has been deleted.
-     *
-     * @return <code>true</code> if the object has been deleted
+     * Cancel any edits. Once complete, query methods may be invoked, but the
+     * behaviour of other methods is undefined..
      */
-    public boolean isDeleted() {
-        return _deleted;
+    public void cancel() {
+        _cancelled = true;
+    }
+
+    /**
+     * Determines if editing was cancelled.
+     *
+     * @return <code>true</code> if editing was cancelled
+     */
+    public boolean isCancelled() {
+        return _cancelled;
     }
 
     /**
@@ -348,6 +370,15 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
+     * Returns the modifiable set.
+     *
+     * @return the modifiable set
+     */
+    protected ModifiableSet getModifiableSet() {
+        return _modifiable;
+    }
+
+    /**
      * Report a bound property update to any registered listeners. No event is
      * fired if old and new are equal and non-null.
      *
@@ -359,7 +390,7 @@ public abstract class AbstractIMObjectEditor
                                       Object newValue) {
         if (_propertyChangeNotifier != null) {
             _propertyChangeNotifier.firePropertyChange(name, oldValue,
-                    newValue);
+                                                       newValue);
         }
     }
 

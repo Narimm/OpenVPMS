@@ -47,8 +47,8 @@ public final class IMObjectCreator {
     }
 
     /**
-     * Create a new object, selecting from a list of short names that matches the
-     * supplied criteria.
+     * Create a new object, selecting from a list of short names that matches
+     * the supplied criteria.
      *
      * @param type         display name for the type of the object
      * @param refModelName the archetype reference model name
@@ -67,43 +67,62 @@ public final class IMObjectCreator {
                     "No archetypes matches reference model="
                             + refModelName + ", entity=" + entityName
                             + ", concept=" + conceptName);
-        } else if (shortNames.size() > 1) {
-            create(type, shortNames, listener);
         } else {
-            IMObject object = create(shortNames.get(0));
-            if (object != null) {
-                listener.created(object);
-            }
+            create(type, shortNames, listener);
         }
     }
 
     /**
      * Create a new object, selected from a list. This implementation pops up a
-     * selection dialog.
+     * selection dialog if needed.
      *
      * @param shortNames the archetype shortnames
      * @param listener   the listener to notify
      */
     public static void create(String type, List<String> shortNames,
                               final IMObjectCreatorListener listener) {
-        final ArchetypeShortNameListModel model
-                = new ArchetypeShortNameListModel(shortNames, false);
-        String title = Messages.get("imobject.new.title", type);
-        String message = Messages.get("imobject.new.message", type);
-        final SelectionDialog dialog
-                = new SelectionDialog(title, message, model);
-        dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int selected = dialog.getSelectedIndex();
-                if (selected != -1) {
-                    IMObject object = create(model.getShortName(selected));
-                    if (object != null) {
-                        listener.created(object);
+        create(type, shortNames.toArray(new String[0]), listener);
+    }
+
+    /**
+     * Create a new object, selected from a list. This implementation pops up a
+     * selection dialog if needed.
+     *
+     * @param shortNames the archetype shortnames
+     * @param listener   the listener to notify
+     */
+    public static void create(String type, String[] shortNames,
+                              final IMObjectCreatorListener listener) {
+        if (shortNames.length == 0) {
+            ErrorDialog.show("Cannot create object of type " + type
+                             + " Empty list of short-names supplied");
+        } else if (shortNames.length > 1) {
+            final ArchetypeShortNameListModel model
+                    = new ArchetypeShortNameListModel(shortNames, false);
+            String title = Messages.get("imobject.new.title", type);
+            String message = Messages.get("imobject.new.message", type);
+            final SelectionDialog dialog
+                    = new SelectionDialog(title, message, model);
+            dialog.addActionListener(
+                    SelectionDialog.OK_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    int selected = dialog.getSelectedIndex();
+                    if (selected != -1) {
+                        IMObject object = create(model.getShortName(selected));
+                        if (object != null) {
+                            listener.created(object);
+                        }
                     }
                 }
+
+            });
+            dialog.show();
+        } else {
+            IMObject object = create(shortNames[0]);
+            if (object != null) {
+                listener.created(object);
             }
-        });
-        dialog.show();
+        }
     }
 
 }

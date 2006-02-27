@@ -3,6 +3,7 @@ package org.openvpms.web.component.im.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -20,7 +21,8 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Helper class for working with {@link ArchetypeDescriptor}s.
+ * Helper class for working with {@link ArchetypeDescriptor} and {@link
+ * NodeDescriptor}s.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -106,6 +108,7 @@ public final class DescriptorHelper {
         }
         return result;
     }
+
     /**
      * Returns the archetype descriptor for the specified object.
      *
@@ -141,6 +144,27 @@ public final class DescriptorHelper {
         }
 
         return descriptor;
+    }
+
+    /**
+     * Helper to return a pointer to an attribute given its descriptor.
+     *
+     * @param object     the object that owne the attribute
+     * @param descriptor the attribute's descriptor
+     * @return a pointer to the attribute identified by <code>descriptor</code>.
+     */
+    public static Pointer getPointer(IMObject object,
+                                     NodeDescriptor descriptor) {
+        String path = descriptor.getPath();
+        Pointer pointer = object.pathToObject(path);
+        if (pointer == null) {
+            final String message
+                    = "No path to " + path + " for object of type  "
+                      + object.getClass().getName();
+            _log.error(message);
+            throw new IllegalArgumentException(message);
+        }
+        return pointer;
     }
 
     /**
