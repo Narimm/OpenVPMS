@@ -23,6 +23,7 @@ package org.openvpms.component.system.service.jxpath;
 import java.util.List;
 
 // openvpms-framework
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
@@ -53,5 +54,18 @@ public class TestFunctions {
        }
        
        return null;
+    }
+    
+    /**
+     * Test that the single {@link IMObject} argument has the name attribute
+     * set.
+     * 
+     * @param imobj
+     *            the object to test
+     * @return boolean
+     *            true if name attribute is set            
+     */
+    public static boolean testName(IMObject imobj) {
+        return !StringUtils.isEmpty(imobj.getName());
     }
 }
