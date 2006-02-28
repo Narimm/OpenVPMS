@@ -1,0 +1,61 @@
+<archetypes>
+	<archetype name="openvpms-common-act.invoice.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Invoice" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat(/title, '')" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(' Description of the Estimation Act', ' ')" />
+		<node name="invoiceDate" path="/activityStartTime"
+			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="total" path="/details/attributes/total" type="java.math.BigDecimal" 
+				derived="true" derivedValue="'0.0'"/>
+			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" />			
+		</node>
+		<node name="status" path="/status" type="java.lang.String"
+			minCardinality="1">
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="In Progress" value="In Progress" />
+					<property name="Completed" value="Completed" />
+					<property name="Cancelled" value="Cancelled" />
+					<property name="Posted" value="Posted" />
+				</propertyList>
+				<errorMessage>An error message</errorMessage>
+			</assertion>
+		</node>
+		<node name="items" path="/sourceActRelationships"
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="actRelationship.invoiceItem" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="participants" path="/participations" parentChild="true"
+			type="java.util.HashSet" baseName="Participation" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="participation.customer" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="participation.author" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
