@@ -203,6 +203,7 @@ public class StaxArchetypeDataLoader {
 
             XMLStreamReader reader = getReader(file);
             Stack<IMObject> stack = new Stack<IMObject>();
+            boolean hasReference = false;
             for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader
                     .next()) {
                 IMObject current = null;
@@ -211,21 +212,30 @@ public class StaxArchetypeDataLoader {
                     break;
 
                 case XMLStreamConstants.START_ELEMENT:
+                    if (verbose) {
+                        logger.info("\n[START PROCESSING element=" 
+                                + reader.getLocalName() 
+                                + " parent=" + (stack.size() == 0 
+                                ? "none" : stack.peek().getArchetypeIdAsString()) 
+                                + "]\n" + formatElement(reader));
+                    }
+                    
                     if (reader.getLocalName().equals("data")) {
                         try {
+                            hasReference = attributesContainReferences(reader);
                             if (stack.size() > 0) {
                                 current = processElement(stack.peek(), reader,
-                                        firstParse);
+                                        firstParse, hasReference);
                             } else {
                                 current = processElement(null, reader,
-                                        firstParse);
+                                        firstParse, hasReference);
                             }
                             
-                            if (current != null) {
-                                stack.push(current);
-                            }
+                            stack.push(current);
                         } catch (Exception exception) {
-                            logger.error(exception);
+                            logger.error("\n[ERR: Exception in started element]\n" 
+                                    + formatElement(reader) + "\n",
+                                    exception);
                         }
                     }
                     break;
@@ -234,20 +244,32 @@ public class StaxArchetypeDataLoader {
                     break;
 
                 case XMLStreamConstants.END_ELEMENT:
+                    if (verbose) {
+                        logger.info("\n[END PROCESSING element=" 
+                                + reader.getLocalName() + "]\n");
+                    }
+                    
                     if (stack.size() > 0) {
                         current = stack.pop();
                         try {
-                            if (stack.size() == 0) {
-                                archetypeService.save(current);
-                                String id = linkIdCache.remove(current.getLinkId());
-                                if (id != null) {
-                                    idCache.put(id, new IMObjectReference(current));
+                            if ((stack.size() == 0) && (current != null)) {
+                                if ((firstParse && hasReference) ||
+                                    (!firstParse && !hasReference)) {
+                                    // do nothing since this element needs
+                                    // to be processed on the second parse
+                                } else {
+                                    archetypeService.save(current);
+                                    String id = linkIdCache.remove(current.getLinkId());
+                                    if (id != null) {
+                                        idCache.put(id, new IMObjectReference(current));
+                                    }
+        
+                                    if (verbose) {
+                                        logger.info("\n[CREATED]\n"
+                                                + current.toString());
+                                    }
                                 }
-    
-                                if (verbose) {
-                                    logger.info("\n[CREATED]\n"
-                                            + current.toString());
-                                }
+                                hasReference = false;
                             }
                         } catch (ValidationException validation) {
                             logger.error("\n[ERR: Failed to process element. "
@@ -257,8 +279,8 @@ public class StaxArchetypeDataLoader {
                             }
                             logger.error(current.toString());
                         } catch (Exception exception) {
-                            logger.error("\n[ERR: Frror trying to save object" + "]\n"
-                                    + exception + "\n" + current.toString());
+                            logger.error("\n[ERR: Error trying to save object" + "]\n"
+                                    + exception);
                         }
                     }                    
                     break;
@@ -287,22 +309,15 @@ public class StaxArchetypeDataLoader {
      *            the xml stream element
      * @param firstParse
      *            indicates whether it is a first parse
+     * @param hasReference
+     *            indicates whether the element contains an attribute value 
+     *            with a reference            
      * @return IMObject the associated IMObject
      */
     private IMObject processElement(IMObject parent, XMLStreamReader reader,
-            boolean firstParse) throws Exception {
+            boolean firstParse, boolean hasReference) throws Exception {
         IMObject object = null;
         if (reader.getLocalName().equals("data")) {
-            // if its the first parse then don't process data that
-            // contains attribute value references.
-            if ((firstParse) && (attributesContainReferences(reader))) {
-                return object;
-            }
-
-            if (!(firstParse) && !(attributesContainReferences(reader))) {
-                return object;
-            }
-
             // extract the optional id element
             String id = reader.getAttributeValue(null, "id");
 
@@ -323,66 +338,64 @@ public class StaxArchetypeDataLoader {
                 return object;
             }
 
-            // create the default object and then iterate through the
-            // attributed and set the appropriate node value
-            object = archetypeService.create(adesc.getType());
+            // if a childId node is defined then we can skip the create object
+            // process since the object already exists
             boolean valid = true;
-            for (int index = 0; index < reader.getAttributeCount(); index++) {
-                String attName = reader.getAttributeLocalName(index);
-                String attValue = reader.getAttributeValue(index);
-
-                if ((StringUtils.equals(attName, "archetype"))
-                        || (StringUtils.equals(attName, "id"))
-                        || (StringUtils.equals(attName, "collection"))) {
-                    // no need to process the archetype, id or collection
-                    // element
-                    continue;
-                }
-
-                // if the attribute value is empty then just continue;
-                if (StringUtils.isEmpty(attValue)) {
-                    continue;
-                }
-
-                NodeDescriptor ndesc = adesc.getNodeDescriptor(attName);
-                if (ndesc == null) {
-                    logger.error("\n[ERR: Invalid Attribute " + attName + "]\n"
-                            + formatElement(reader));
-                    valid = false;
-                    break;
-                }
-
-                try {
-                    if (isAttributeIdRef(attValue)) {
-                        String ref = attValue.substring("id:".length());
-                        IMObjectReference imref = idCache.get(ref);
-                        Object imobj = null;
-                        if (ndesc.isObjectReference()) {
-                            imobj = imref;
-                        } else {
-                            imobj = archetypeService.get(imref);
-                        }
-
-                        if (ndesc.isCollection()) {
-                            ndesc.addChildToCollection(object, imobj);
-                        } else {
-                            ndesc.setValue(object, imobj);
-                        }
-                    } else {
-                        ndesc.setValue(object, attValue);
+            if (StringUtils.isEmpty(reader.getAttributeValue(null, "childId"))) {
+                object = archetypeService.create(adesc.getType());
+                for (int index = 0; index < reader.getAttributeCount(); index++) {
+                    String attName = reader.getAttributeLocalName(index);
+                    String attValue = reader.getAttributeValue(index);
+    
+                    if ((StringUtils.equals(attName, "archetype"))
+                            || (StringUtils.equals(attName, "id"))
+                            || (StringUtils.equals(attName, "collection"))) {
+                        // no need to process the archetype, id or collection
+                        // element
+                        continue;
                     }
-                } catch (Exception exception) {
-                    logger.error("\n[ERR: Trying to set attr " + attName
-                            + " with value " + attValue + "]\n"
-                            + exception + "\n" + formatElement(reader));
-                    valid = false;
-                    break;
+    
+                    // if the attribute value is empty then just continue;
+                    if (StringUtils.isEmpty(attValue)) {
+                        continue;
+                    }
+    
+                    NodeDescriptor ndesc = adesc.getNodeDescriptor(attName);
+                    if (ndesc == null) {
+                        logger.error("\n[ERR: Invalid Attribute " + attName + "]\n"
+                                + formatElement(reader));
+                        valid = false;
+                        break;
+                    }
+    
+                    try {
+                        if (isAttributeIdRef(attValue)) {
+                            processIdReference(object, attValue, ndesc);
+                        } else {
+                            ndesc.setValue(object, attValue);
+                        }
+                    } catch (Exception exception) {
+                        logger.error("\n[ERR: Trying to set attr " + attName
+                                + " with value " + attValue + "]\n"
+                                + exception + "\n" + formatElement(reader));
+                        valid = false;
+                        break;
+                    }
                 }
+            } else {
+                // childId is defined then we need to retrieve that object
+                object = getObjectForId(reader.getAttributeValue(null, "childId"));
             }
 
             // check whether there is a collection attribute specified. If it is
             // then we may need to set up a parent child relationship.
             String collectionNode = reader.getAttributeValue(null, "collection");
+            if ((parent != null) && (StringUtils.isEmpty(collectionNode))) {
+                logger.error("\n[ERR: No collection attribute for child node"
+                        + "]\n" + formatElement(reader));
+                valid = false;
+            }
+            
             if ((valid) && (!StringUtils.isEmpty(collectionNode))) {
                 if (parent == null) {
                     logger.error("\n[ERR: No parent for child element "
@@ -393,15 +406,17 @@ public class StaxArchetypeDataLoader {
                     if (padesc == null) {
                         logger.error("\n[ERR: No archetypeId for parent "
                                 + "]\n" + parent.toString());
+                        valid = false;
                     } else {
                         NodeDescriptor ndesc = padesc.getNodeDescriptor(collectionNode);
-                        if ((ndesc.isCollection()) && (ndesc.isParentChild())) {
+                        if (ndesc.isCollection()) {
                             ndesc.addChildToCollection(parent, object);
                         } else {
-                            logger.error("\n[ERR: Failed to process child element. "
-                                + "The collection node must a parent-child coll"
+                            logger.error("\n[ERR: Failed to process child element "
+                                + "since the parent is not a collection"
                                 + "]\n"
                                 + formatElement(reader));
+                            valid = false;
                         }
                     }
                 }
@@ -419,6 +434,52 @@ public class StaxArchetypeDataLoader {
         return object;
     }
 
+
+    /**
+     * Process the id reference attribute value and set it accordingly.
+     * 
+     * @param object
+     *            the context object
+     * @param attValue
+     *            the attribute vlaue that has an id reference
+     * @param ndesc
+     *            the corresponding node descriptor
+     * @throws Exception
+     *            propagate exception to caller            
+     */
+    private void processIdReference(IMObject object, String attValue, NodeDescriptor ndesc) {
+        String ref = attValue.substring("id:".length());
+        IMObjectReference imref = idCache.get(ref);
+        Object imobj = null;
+        if (ndesc.isObjectReference()) {
+            imobj = imref;
+        } else {
+            imobj = archetypeService.get(imref);
+        }
+
+        if (ndesc.isCollection()) {
+            ndesc.addChildToCollection(object, imobj);
+        } else {
+            ndesc.setValue(object, imobj);
+        }
+    }
+    
+    /**
+     * Retrieve thr object give nthe specified reference
+     * 
+     * @param id
+     *            the id in the link cache
+     * @return IMObject
+     *            the returned object
+     * @throws Exception                        
+     */
+    private IMObject getObjectForId(String id) {
+        String ref = id.substring("id:".length());
+        IMObjectReference imref = idCache.get(ref);
+
+        return archetypeService.get(imref);
+    }
+    
     /**
      * @param reader
      * @return
@@ -446,7 +507,7 @@ public class StaxArchetypeDataLoader {
      * @return boolean
      */
     private boolean attributesContainReferences(XMLStreamReader reader) {
-        for (int index = 0; index < reader.getAttributeCount(); index++) {
+         for (int index = 0; index < reader.getAttributeCount(); index++) {
             if (isAttributeIdRef(reader.getAttributeValue(index))) {
                 return true;
             }
