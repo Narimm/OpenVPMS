@@ -39,6 +39,7 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="lowQty" path="/details/attributes/lowQty" type="java.math.BigDecimal" defaultValue="1.0"/>
 			<node name="highQty" path="/details/attributes/highQty" type="java.math.BigDecimal" defaultValue="1.0"/>
+			<node name="fixedPrice" path="/details/attributes/fixedPrice" type="java.math.BigDecimal" defaultValue="0.0"/>
 			<node name="lowUnitPrice" path="/details/attributes/lowUnitPrice" type="java.math.BigDecimal" defaultValue="0.0"/>
 			<node name="highUnitPrice" path="/details/attributes/highUnitPrice" type="java.math.BigDecimal" defaultValue="0.0"/>
 		</node>
