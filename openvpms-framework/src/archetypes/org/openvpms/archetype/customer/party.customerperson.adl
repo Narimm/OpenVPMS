@@ -61,6 +61,10 @@
 						<property name="shortName"
 							value="classification.accountType" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.staff" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
