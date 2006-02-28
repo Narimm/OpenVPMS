@@ -46,6 +46,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
 /**
@@ -237,7 +238,7 @@ public class ArchetypeService implements IArchetypeService {
         // if there are nodes attached to the archetype then validate the
         // associated assertions
         if (descriptor.getNodeDescriptors().size() > 0) {
-            JXPathContext context = JXPathContext.newContext(object);
+            JXPathContext context = JXPathHelper.newContext(object);
             context.setLenient(true);
             validateObject(context, descriptor.getNodeDescriptors(), errors);
         }
@@ -274,7 +275,7 @@ public class ArchetypeService implements IArchetypeService {
         // if there are nodes attached to the archetype then validate the
         // associated assertions
         if (descriptor.getNodeDescriptors().size() > 0) {
-            JXPathContext context = JXPathContext.newContext(object);
+            JXPathContext context = JXPathHelper.newContext(object);
             context.setLenient(true);
             deriveValues(context, descriptor.getNodeDescriptors());
         }
@@ -738,7 +739,7 @@ public class ArchetypeService implements IArchetypeService {
                         // associated assertions
                         if ((adesc.getNodeDescriptors() != null) &&
                             (adesc.getNodeDescriptors().size() > 0)) {
-                            JXPathContext childContext = JXPathContext.newContext(imobj);
+                            JXPathContext childContext = JXPathHelper.newContext(imobj);
                             childContext.setLenient(true);
                             validateObject(childContext, adesc.getNodeDescriptors(), errors);
                         }
@@ -848,7 +849,7 @@ public class ArchetypeService implements IArchetypeService {
 
             // first create a JXPath context and use it to process the nodes
             // in the archetype
-            JXPathContext context = JXPathContext.newContext(imobj);
+            JXPathContext context = JXPathHelper.newContext(imobj);
             context.setFactory(new JXPathGenericObjectCreationFactory());
             create(context, descriptor.getNodeDescriptors());
         } catch (Exception exception) {

@@ -30,7 +30,6 @@ import java.util.Map;
 
 // commons-lang
 import org.apache.commons.beanutils.MethodUtils;
-import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
@@ -49,6 +48,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyColl
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 /**
  * 
@@ -239,7 +239,7 @@ public class NodeDescriptor extends Descriptor {
         }
         
         // retrieve the value at that node
-        Object obj = JXPathContext.newContext(context).getValue(getPath());
+        Object obj = JXPathHelper.newContext(context).getValue(getPath());
         
         try {
             if (StringUtils.isEmpty(baseName)) {
@@ -461,7 +461,7 @@ public class NodeDescriptor extends Descriptor {
         String path = (String) descriptor.getPropertyMap().getProperties().get(
                 "path").getValue();
         try {
-            Object obj = JXPathContext.newContext(context).getValue(path);
+            Object obj = JXPathHelper.newContext(context).getValue(path);
             if (obj == null) {
                 result = new ArrayList<IMObject>();
             } else if (obj instanceof Collection) {
@@ -498,7 +498,7 @@ public class NodeDescriptor extends Descriptor {
         List<IMObject> children = null;
         if (isCollection()) {
             try {
-                Object obj = JXPathContext.newContext(target).getValue(getPath());
+                Object obj = JXPathHelper.newContext(target).getValue(getPath());
                 if (obj == null) {
                     children = new ArrayList<IMObject>();
                 } else if (obj instanceof Collection) {
@@ -795,12 +795,12 @@ public class NodeDescriptor extends Descriptor {
     public Object getValue(IMObject context) {
         Object value = null;
         if (isDerived()) {
-            value = JXPathContext.newContext(context).getValue(getDerivedValue());
+            value = JXPathHelper.newContext(context).getValue(getDerivedValue());
         } else {
             if (isCollection()) {
                 value = getChildren(context);
             } else {
-                value = JXPathContext.newContext(context).getValue(getPath());
+                value = JXPathHelper.newContext(context).getValue(getPath());
             }
         }
         
@@ -1350,7 +1350,7 @@ public class NodeDescriptor extends Descriptor {
         }
 
         try {
-            JXPathContext.newContext(context).setValue(getPath(), transform(value));
+            JXPathHelper.newContext(context).setValue(getPath(), transform(value));
         } catch (Exception exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToSetValue,

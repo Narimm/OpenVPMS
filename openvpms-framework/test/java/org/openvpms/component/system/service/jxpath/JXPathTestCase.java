@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 
 // commons-beanutils
 import org.apache.commons.beanutils.MethodUtils;
@@ -52,6 +53,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
@@ -394,6 +396,28 @@ public class JXPathTestCase extends BaseTestCase {
         context.setValue("/properties/shortName/value", "descripor.archetypeRange");
         assertTrue(prop.getValue().equals("descripor.archetypeRange"));
     }
+    
+    /**
+     * Test that the extension functions are called through JXPathHelper
+     */
+    public void testJXPathHelperExtensionFunctions()
+    throws Exception {
+        // prepare the helper
+        Properties props = new Properties();
+        props.put("tf", TestFunctions.class.getName());
+        new JXPathHelper(props);
+        
+        Person person = new Person();
+        person.setName("Mr Jim Alateras");
+        
+        JXPathContext context = JXPathHelper.newContext(person);
+        Boolean bool = (Boolean)context.getValue("tf:testName(.)");
+        assertTrue(bool.booleanValue());
+        
+        person.setName(null);
+        bool = (Boolean)context.getValue("tf:testName(.)");
+        assertFalse(bool.booleanValue());
+   }
     
     /**
      * This performs a get using an object and a jxpath expression and returns

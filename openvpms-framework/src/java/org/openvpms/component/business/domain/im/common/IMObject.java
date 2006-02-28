@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.Map;
 
 // commons-jxpath
-import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 
 // commons-lang
@@ -40,6 +39,7 @@ import org.safehaus.uuid.UUIDGenerator;
 
 //openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 
@@ -306,9 +306,9 @@ public abstract class IMObject implements Serializable, Cloneable {
         if (ptr != null) {
             Object obj  = ptr.getValue();
             if (obj instanceof Map) {
-                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
+                ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
             } else if (obj instanceof PropertyCollection){
-                ptr = JXPathContext.newContext(obj).getPointer("values(.)");
+                ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
             }
         }
         
@@ -329,7 +329,7 @@ public abstract class IMObject implements Serializable, Cloneable {
         Pointer ptr = null;
         
         try {
-            ptr = JXPathContext.newContext(this).getPointer(path);
+            ptr = JXPathHelper.newContext(this).getPointer(path);
         } catch (Exception exception) {
             logger.warn("No path to: " + path + " for object of type: " 
                     + this.getClass().getName(), exception);
