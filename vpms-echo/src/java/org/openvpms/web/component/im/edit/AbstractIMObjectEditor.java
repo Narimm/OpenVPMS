@@ -18,6 +18,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
@@ -279,6 +282,24 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
+     * Add a listener to be notified when a this changes.
+     *
+     * @param listener the listener to add
+     */
+    public void addModifiableListener(ModifiableListener listener) {
+        _modifiable.addModifiableListener(listener);
+    }
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeModifiableListener(ModifiableListener listener) {
+        _modifiable.removeModifiableListener(listener);
+    }
+
+    /**
      * Cancel any edits. Once complete, query methods may be invoked, but the
      * behaviour of other methods is undefined..
      */
@@ -490,6 +511,47 @@ public abstract class AbstractIMObjectEditor
         }
         return _layoutChangeListener;
     }
+
+    /**
+     * Helper to return a node descriptor from the archetype, given its name.
+     *
+     * @param name the node descriptor's name
+     * @return the corresponding node descriptor, or <code>null</code> if it
+     *         doesn't exist
+     */
+    protected NodeDescriptor getDescriptor(String name) {
+        return getArchetypeDescriptor().getNodeDescriptor(name);
+    }
+
+    /**
+     * Helper to return a property, given its descriptor's name.
+     * If the property has been rendered, then that will be returned,
+     * otherwise an instance will be created.
+     *
+     * @param name the descriptor's name
+     * @return the property corresponding to <code>name</code> or
+     *         <code>null</code> if none exists
+     */
+    protected ModifiableProperty getProperty(String name) {
+        ModifiableProperty result = null;
+        for (Modifiable modifiable : _modifiable.getModifiable()) {
+            if (modifiable instanceof ModifiableProperty) {
+                ModifiableProperty property = (ModifiableProperty) modifiable;
+                if (property.getDescriptor().getName().equals(name)) {
+                    result = property;
+                    break;
+                }
+            }
+        }
+        if (result == null) {
+            NodeDescriptor descriptor = getDescriptor(name);
+            if (descriptor != null) {
+                result = new ModifiableProperty(getObject(), descriptor);
+            }
+        }
+        return result;
+    }
+
 
     private class ComponentFactory extends NodeEditorFactory {
 

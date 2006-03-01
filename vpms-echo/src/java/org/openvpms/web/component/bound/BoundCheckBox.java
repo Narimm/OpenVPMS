@@ -3,11 +3,12 @@ package org.openvpms.web.component.bound;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.apache.commons.jxpath.Pointer;
+
+import org.openvpms.web.component.edit.Property;
 
 
 /**
- * Binds a <code>Pointer</code> to a <code>CheckBox</code>.
+ * Binds a {@link Property} to a <code>CheckBox</code>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -15,29 +16,43 @@ import org.apache.commons.jxpath.Pointer;
 public class BoundCheckBox extends CheckBox {
 
     /**
-     * The bound field.
+     * The property binder.
      */
-    private final Pointer _pointer;
+    private final Binder _binder;
+
+    /**
+     * Checkbox listener.
+     */
+    private final ActionListener _listener;
 
 
     /**
      * Construct a new <code>BoundCheckBox</code>.
      *
-     * @param pointer the field to bind
+     * @param property the property to bind
      */
-    public BoundCheckBox(Pointer pointer) {
-        _pointer = pointer;
-
-        Boolean value = (Boolean) _pointer.getValue();
-        if (value != null) {
-            setSelected(value);
-        }
-
-        addActionListener(new ActionListener() {
+    public BoundCheckBox(Property property) {
+        _listener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                _pointer.setValue(isSelected());
+                _binder.setProperty();
             }
-        });
+        };
+
+        _binder = new Binder(property) {
+            protected Object getFieldValue() {
+                return isSelected();
+            }
+
+            protected void setFieldValue(Object value) {
+                if (value != null) {
+                    removeActionListener(_listener);
+                    setSelected((Boolean) value);
+                    addActionListener(_listener);
+                }
+            }
+        };
+        _binder.setField();
+
     }
 
 }

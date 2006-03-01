@@ -5,13 +5,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultQuery;
@@ -31,9 +31,9 @@ import org.openvpms.web.spring.ServiceHelper;
 public class ObjectReferenceEditor {
 
     /**
-     * Pointer to the reference.
+     * The reference property.
      */
-    private Pointer _pointer;
+    private Property _property;
 
     /**
      * The node descriptor.
@@ -49,23 +49,23 @@ public class ObjectReferenceEditor {
     /**
      * Construct a new <code>ObjectReferenceEditor</code>.
      *
-     * @param pointer    a pointer to the reference
+     * @param property   the reference property
      * @param descriptor the reference descriptor
      */
-    public ObjectReferenceEditor(Pointer pointer, NodeDescriptor descriptor) {
-        this(pointer, descriptor, false);
+    public ObjectReferenceEditor(Property property, NodeDescriptor descriptor) {
+        this(property, descriptor, false);
     }
 
     /**
      * Construct a new <code>ObjectReferenceEditor</code>.
      *
-     * @param pointer    a pointer to the reference
+     * @param property   the reference property
      * @param descriptor the reference descriptor
      * @param readOnly   if <code>true</code> the reference cannot be edited
      */
-    public ObjectReferenceEditor(Pointer pointer, NodeDescriptor descriptor,
+    public ObjectReferenceEditor(Property property, NodeDescriptor descriptor,
                                  boolean readOnly) {
-        _pointer = pointer;
+        _property = property;
         _descriptor = descriptor;
 
         if (readOnly) {
@@ -78,7 +78,7 @@ public class ObjectReferenceEditor {
                 }
             });
         }
-        IMObjectReference reference = (IMObjectReference) _pointer.getValue();
+        IMObjectReference reference = (IMObjectReference) _property.getValue();
         if (reference != null || (reference == null && !readOnly)) {
             _selector.setObject(getObject(reference, descriptor));
         }
@@ -91,7 +91,7 @@ public class ObjectReferenceEditor {
      */
     public void setObject(IMObject object) {
         IMObjectReference reference = new IMObjectReference(object);
-        _pointer.setValue(reference);
+        _property.setValue(reference);
         _selector.setObject(object);
     }
 
@@ -114,9 +114,9 @@ public class ObjectReferenceEditor {
     }
 
     /**
-     * Returns the object referemce's descriptor.
+     * Returns the object reference's descriptor.
      *
-     * @return the object referemce's descriptor
+     * @return the object reference's descriptor
      */
     public NodeDescriptor getDescriptor() {
         return _descriptor;

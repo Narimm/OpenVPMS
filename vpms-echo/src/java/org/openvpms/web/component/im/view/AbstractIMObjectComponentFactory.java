@@ -3,12 +3,11 @@ package org.openvpms.web.component.im.view;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.text.TextComponent;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundCheckBox;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
@@ -30,9 +29,9 @@ public abstract class AbstractIMObjectComponentFactory
      * @return a label to display the node
      */
     protected Label getLabel(IMObject object, NodeDescriptor descriptor) {
-        Pointer pointer = getPointer(object, descriptor);
+        Property property = getProperty(object, descriptor);
         Label label = LabelFactory.create();
-        Object value = pointer.getValue();
+        Object value = property.getValue();
         if (value != null) {
             label.setText(value.toString());
         }
@@ -48,8 +47,8 @@ public abstract class AbstractIMObjectComponentFactory
      */
     protected Component getCheckBox(IMObject object,
                                     NodeDescriptor descriptor) {
-        Pointer pointer = getPointer(object, descriptor);
-        return new BoundCheckBox(pointer);
+        Property property = getProperty(object, descriptor);
+        return new BoundCheckBox(property);
     }
 
     /**
@@ -77,24 +76,23 @@ public abstract class AbstractIMObjectComponentFactory
                                              NodeDescriptor descriptor,
                                              int columns) {
         TextComponent result;
-        Pointer pointer = getPointer(object, descriptor);
+        Property property = getProperty(object, descriptor);
         if (descriptor.isLarge()) {
-            result = TextComponentFactory.createTextArea(pointer);
+            result = TextComponentFactory.createTextArea(property);
         } else {
-            result = TextComponentFactory.create(pointer, columns);
+            result = TextComponentFactory.create(property, columns);
         }
         return result;
     }
 
     /**
-     * Helper to return a pointer to an attribute given its descriptor.
+     * Helper to return a property given its descriptor.
      *
-     * @param object     the object that owne the attribute
-     * @param descriptor the attribute's descriptor
-     * @return a pointer to the attribute identified by <code>descriptor</code>.
+     * @param object     the object that owns the property
+     * @param descriptor the property's descriptor
+     * @return the property corresponding to <code>descriptor</code>.
      */
-    protected Pointer getPointer(IMObject object, NodeDescriptor descriptor) {
-        return DescriptorHelper.getPointer(object, descriptor);
-    }
+    protected abstract Property getProperty(IMObject object,
+                                            NodeDescriptor descriptor);
 
 }

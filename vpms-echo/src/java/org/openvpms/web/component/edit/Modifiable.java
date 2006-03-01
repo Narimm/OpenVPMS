@@ -21,4 +21,18 @@ public interface Modifiable {
      */
     void clearModified();
 
+    /**
+     * Add a listener to be notified when a this changes.
+     *
+     * @param listener the listener to add
+     */
+    void addModifiableListener(ModifiableListener listener);
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    void removeModifiableListener(ModifiableListener listener);
+
 }
