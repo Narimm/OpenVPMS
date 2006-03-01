@@ -4,10 +4,10 @@ import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.resource.util.Styles;
 
 
@@ -33,12 +33,12 @@ public class TextComponentFactory extends ComponentFactory {
     /**
      * Create a new bound text field.
      *
-     * @param pointer a pointer to the field to update
-     * @param columns the no. of columns to display
+     * @param property the property to bind
+     * @param columns  the no. of columns to display
      * @return a new bound text field
      */
-    public static TextField create(Pointer pointer, int columns) {
-        TextField text = new BoundTextField(pointer, columns);
+    public static TextField create(Property property, int columns) {
+        TextField text = new BoundTextField(property, columns);
         text.setStyleName(Styles.DEFAULT);
         return text;
     }
@@ -57,11 +57,11 @@ public class TextComponentFactory extends ComponentFactory {
     /**
      * Create a new bound text area.
      *
-     * @param pointer a pointer to the field to update
+     * @param property the property to bind
      * @return a new bound text field
      */
-    public static TextArea createTextArea(Pointer pointer) {
-        TextArea text = new BoundTextArea(pointer);
+    public static TextArea createTextArea(Property property) {
+        TextArea text = new BoundTextArea(property);
         text.setStyleName(Styles.DEFAULT);
         return text;
     }

@@ -21,6 +21,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -96,6 +98,11 @@ public class CollectionEditor implements Saveable {
      * Listener for component change events.
      */
     private final PropertyChangeListener _componentListener;
+
+    /**
+     * The event listeners.
+     */
+    private final ModifiableListeners _listeners = new ModifiableListeners();
 
     /**
      * The button row style.
@@ -176,6 +183,24 @@ public class CollectionEditor implements Saveable {
         if (_editor != null) {
             _editor.clearModified();
         }
+    }
+
+    /**
+     * Add a listener to be notified when a this changes.
+     *
+     * @param listener the listener to add
+     */
+    public void addModifiableListener(ModifiableListener listener) {
+        _listeners.addListener(listener);
+    }
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeModifiableListener(ModifiableListener listener) {
+        _listeners.removeListener(listener);
     }
 
     /**
@@ -348,6 +373,7 @@ public class CollectionEditor implements Saveable {
         IMObject object = _table.getSelected();
         if (object != null) {
             delete(object);
+            _listeners.notifyListeners(this);
         }
     }
 
@@ -454,6 +480,7 @@ public class CollectionEditor implements Saveable {
                 if (!_table.getObjects().contains(object)) {
                     _table.add(object);
                 }
+                _listeners.notifyListeners(this);
             }
         } else {
             result = true;

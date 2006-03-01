@@ -2,17 +2,15 @@ package org.openvpms.web.component.im.table;
 
 import java.util.List;
 
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -22,13 +20,6 @@ import org.openvpms.web.spring.ServiceHelper;
  * @version $LastChangedDate$
  */
 public class EntityRelationshipTableModel extends IMObjectTableModel {
-
-    /**
-     * The logger.
-     */
-    private static final Log _log
-            = LogFactory.getLog(EntityRelationshipTableModel.class);
-
 
     /**
      * Construct a new <code>EntityRelationshipTableModel</code>.
@@ -111,18 +102,6 @@ public class EntityRelationshipTableModel extends IMObjectTableModel {
      *         <code>null</code> if none exists
      */
     protected IMObject getObject(IMObjectReference reference) {
-        IMObject result = null;
-        if (reference != null) {
-            result = Context.getInstance().getObject(reference);
-            if (result == null) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                try {
-                    result = service.get(reference);
-                } catch (ArchetypeServiceException error) {
-                    _log.error(error, error);
-                }
-            }
-        }
-        return result;
+        return IMObjectHelper.getObject(reference);
     }
 }

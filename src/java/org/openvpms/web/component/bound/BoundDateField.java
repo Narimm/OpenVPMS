@@ -6,11 +6,12 @@ import java.util.Calendar;
 import java.util.Date;
 
 import echopointng.DateField;
-import org.apache.commons.jxpath.Pointer;
+
+import org.openvpms.web.component.edit.Property;
 
 
 /**
- * Binds a <code>Pointer</code> to a <code>DateField</code>.
+ * Binds a {@link Property} to a <code>DateField</code>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -18,33 +19,45 @@ import org.apache.commons.jxpath.Pointer;
 public class BoundDateField extends DateField {
 
     /**
-     * The bound field.
+     * The bound property.
      */
-    private final Pointer _pointer;
+    private final Binder _binder;
+
+    /**
+     * Date change listener.
+     */
+    private final PropertyChangeListener _listener;
 
 
     /**
      * Construct a new <code>BoundDateField</code>.
      *
-     * @param pointer the field to bind
+     * @param property the property to bind
      */
-    public BoundDateField(Pointer pointer) {
-        _pointer = pointer;
-
-        Date value = (Date) pointer.getValue();
-        if (value != null) {
-            Calendar date = Calendar.getInstance();
-            date.setTime(value);
-            getDateChooser().setSelectedDate(date);
-        } else {
-            _pointer.setValue(getDateChooser().getSelectedDate().getTime());
-        }
-
-        getDateChooser().addPropertyChangeListener(new PropertyChangeListener() {
+    public BoundDateField(Property property) {
+        _listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
-                _pointer.setValue(getDateChooser().getSelectedDate().getTime());
+                _binder.setProperty();
             }
-        });
+        };
+
+        _binder = new Binder(property) {
+            protected Object getFieldValue() {
+                return getDateChooser().getSelectedDate().getTime();
+            }
+
+            protected void setFieldValue(Object value) {
+                getDateChooser().removePropertyChangeListener(_listener);
+                Date date = (Date) value;
+                if (date != null) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    getDateChooser().setSelectedDate(calendar);
+                }
+                getDateChooser().addPropertyChangeListener(_listener);
+            }
+        };
+        _binder.setField();
 
     }
 }

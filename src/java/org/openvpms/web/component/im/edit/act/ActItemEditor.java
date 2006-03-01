@@ -11,6 +11,13 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -20,6 +27,7 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -35,9 +43,9 @@ import org.openvpms.web.component.util.RowFactory;
 public class ActItemEditor extends AbstractIMObjectEditor {
 
     /**
-     * Participants.
+     * Participant editors.
      */
-    private List<IMObject> _participants = new ArrayList<IMObject>();
+    private List<IMObjectEditor> _participants = new ArrayList<IMObjectEditor>();
 
 
     /**
@@ -52,18 +60,32 @@ public class ActItemEditor extends AbstractIMObjectEditor {
     protected ActItemEditor(Act act, IMObject parent,
                             NodeDescriptor descriptor, boolean showAll) {
         super(act, parent, descriptor, showAll);
-        ArchetypeDescriptor archetype = getArchetypeDescriptor();
-        NodeDescriptor participants = archetype.getNodeDescriptor("participants");
+        NodeDescriptor participants = getDescriptor("participants");
 
         for (String shortName : participants.getArchetypeRange()) {
             if (!shortName.equals("participation.author")) {
-                IMObject participant = getParticipant(shortName,
-                        participants.getChildren(act));
+                Participation participant = IMObjectHelper.getObject(
+                        shortName, act.getParticipations());
                 if (participant == null) {
-                    participant = IMObjectCreator.create(shortName);
+                    participant = (Participation) IMObjectCreator.create(
+                            shortName);
                 }
                 if (participant != null) {
-                    _participants.add(participant);
+                    final IMObjectEditor editor = ParticipationEditor.create(
+                            participant, act, participants, showAll);
+                    getModifiableSet().add(participant, editor);
+                    if (shortName.equals("participation.product")) {
+                        if (participant.isNew()) {
+                            productModified(participant);
+                        }
+                        final Participation p = participant;
+                        editor.addModifiableListener(new ModifiableListener() {
+                            public void modified(Modifiable modifiable) {
+                                productModified(p);
+                            }
+                        });
+                    }
+                    _participants.add(editor);
                 }
             }
         }
@@ -88,7 +110,7 @@ public class ActItemEditor extends AbstractIMObjectEditor {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(object);
             if (archetype != null
-                    && archetype.getShortName().equals("act.estimationItem")) {
+                && archetype.getShortName().equals("act.estimationItem")) {
                 NodeDescriptor participants = archetype.getNodeDescriptor("participants");
                 if (participants != null) {
                     result = new ActItemEditor((Act) object, parent, descriptor, showAll);
@@ -124,25 +146,31 @@ public class ActItemEditor extends AbstractIMObjectEditor {
         return new LayoutStrategy(showAll);
     }
 
-    /**
-     * Returns the first object from list with matching short name.
-     *
-     * @param shortName the short name
-     * @param objects   the objects to search
-     * @return the first object from list with matching short name, or
-     *         <code>null</code> if none exists.
-     */
-    private IMObject getParticipant(String shortName, List<IMObject> objects) {
-        IMObject result = null;
-        for (IMObject object : objects) {
-            if (object.getArchetypeId().getShortName().equals(shortName)) {
-                result = object;
-                break;
+
+    private void productModified(Participation participation) {
+        IMObjectReference entity = participation.getEntity();
+        IMObject object = IMObjectHelper.getObject(entity);
+        if (object != null && object instanceof Product) {
+            Property fixedPrice = getProperty("fixedPrice");
+            Property lowUnitPrice = getProperty("lowUnitPrice");
+            Property highUnitPrice = getProperty("highUnitPrice");
+            Product product = (Product) object;
+            ProductPrice fixed = getPrice("productPrice.fixedPrice", product);
+            ProductPrice unit = getPrice("productPrice.unitPrice", product);
+            if (fixed != null) {
+                fixedPrice.setValue(fixed.getPrice());
+            }
+            if (unit != null) {
+                lowUnitPrice.setValue(unit.getPrice());
+                highUnitPrice.setValue(unit.getPrice());
             }
         }
-        return result;
     }
 
+
+    private ProductPrice getPrice(String shortName, Product product) {
+        return IMObjectHelper.getObject(shortName, product.getProductPrices());
+    }
 
     /**
      * Act item layout strategy.
@@ -176,13 +204,9 @@ public class ActItemEditor extends AbstractIMObjectEditor {
                                       List<NodeDescriptor> descriptors,
                                       Component container,
                                       IMObjectComponentFactory factory) {
-            NodeDescriptor participants
-                    = getArchetypeDescriptor().getNodeDescriptor("participants");
             Grid grid = GridFactory.create(4);
-            for (IMObject participant : _participants) {
-                String displayName = DescriptorHelper.getDisplayName(participant);
-                Component component = factory.create(participant, getObject(), participants);
-                add(grid, displayName, component);
+            for (IMObjectEditor editor : _participants) {
+                add(grid, editor.getDisplayName(), editor.getComponent());
             }
             for (NodeDescriptor descriptor : descriptors) {
                 Component child = factory.create(object, descriptor);

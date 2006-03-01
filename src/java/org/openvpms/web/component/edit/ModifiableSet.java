@@ -23,6 +23,11 @@ public class ModifiableSet implements Modifiable {
      */
     private boolean _modified;
 
+    /**
+     * The event listeners.
+     */
+    private ModifiableListeners _listeners = new ModifiableListeners();
+
 
     /**
      * Map of objects to their corresponding modifiable fields.
@@ -44,6 +49,11 @@ public class ModifiableSet implements Modifiable {
             _objects.put(object, set);
         }
         set.add(modifiable);
+        modifiable.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                notifyListeners(modifiable);
+            }
+        });
     }
 
     /**
@@ -70,30 +80,20 @@ public class ModifiableSet implements Modifiable {
     }
 
     /**
-     * Returns all modified objects.
+     * Returns all modifiable objects.
      *
-     * @return a list of modified objects
+     * @return a set of all modifiable objects
      */
-/*
-    public Set<IMObject> getModified() {
-        HashSet<IMObject> result = new HashSet<IMObject>();
+    public Set<Modifiable> getModifiable() {
+        Set<Modifiable> result = new HashSet<Modifiable>();
         for (Map.Entry<IMObject, HashSet<Modifiable>> entry :
                 _objects.entrySet()) {
-            IMObject object = entry.getKey();
-            if (object.isNew()) {
-                result.add(object);
-            } else {
-                for (Modifiable modifiable : entry.getValue()) {
-                    if (modifiable.isModified()) {
-                        result.add(entry.getKey());
-                        break;
-                    }
-                }
+            for (Modifiable modifiable : entry.getValue()) {
+                result.add(modifiable);
             }
         }
         return result;
     }
-*/
 
     /**
      * Returns all saveable objects that have been modified.
@@ -123,20 +123,12 @@ public class ModifiableSet implements Modifiable {
         if (!_modified) {
             for (Map.Entry<IMObject, HashSet<Modifiable>> entry :
                     _objects.entrySet()) {
-                IMObject object = entry.getKey();
-/*
-                if (object.isNew()) {
-                    _modified = true;
-                    return _modified;
-                } else {
-*/
                 for (Modifiable modifiable : entry.getValue()) {
                     if (modifiable.isModified()) {
                         _modified = true;
                         return _modified;
                     }
                 }
-//                }
             }
         }
         return _modified;
@@ -155,14 +147,31 @@ public class ModifiableSet implements Modifiable {
     }
 
     /**
-     * Clears the modified status of an object.
+     * Add a listener to be notified when a this changes.
      *
-     * @param object the object
+     * @param listener the listener to add
      */
-    public void clearModified(IMObject object) {
-        Set<Modifiable> set = _objects.get(object);
-        for (Modifiable modifiable : set) {
-            modifiable.clearModified();
-        }
+    public void addModifiableListener(ModifiableListener listener) {
+        _listeners.addListener(listener);
     }
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeModifiableListener(ModifiableListener listener) {
+        _listeners.removeListener(listener);
+    }
+
+    /**
+     * Invoked when a {@link Modifiable} changes. Forwards the event to any
+     * registered listener.
+     *
+     * @param modified the changed instance
+     */
+    protected void notifyListeners(Modifiable modified) {
+        _listeners.notifyListeners(modified);
+    }
+
 }

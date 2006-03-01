@@ -2,16 +2,15 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.ReadOnlyProperty;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -71,6 +70,17 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
     }
 
     /**
+     * Helper to return a property given its descriptor.
+     *
+     * @param object     the object that owns the property
+     * @param descriptor the property's descriptor
+     * @return the property corresponding to <code>descriptor</code>.
+     */
+    protected Property getProperty(IMObject object, NodeDescriptor descriptor) {
+        return new ReadOnlyProperty(object, descriptor);
+    }
+
+    /**
      * Returns a viewer for an object.
      *
      * @param parent     the parent object
@@ -79,20 +89,14 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
      */
     private Component getObjectViewer(IMObject parent,
                                       NodeDescriptor descriptor) {
-        Pointer pointer = getPointer(parent, descriptor);
-        IMObjectReference ref = (IMObjectReference) pointer.getValue();
-        IMObject value = null;
-        if (ref != null) {
-            value = Context.getInstance().getObject(ref);
-            if (value == null) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                value = service.get(ref);
-            }
-        }
+        Property property = getProperty(parent, descriptor);
+        IMObjectReference ref = (IMObjectReference) property.getValue();
+        IMObject value = IMObjectHelper.getObject(ref);
         Label label = LabelFactory.create();
+
         if (value != null) {
             String text = Messages.get("imobject.summary",
-                    value.getName(), value.getDescription());
+                                       value.getName(), value.getDescription());
             label.setText(text);
         } else {
             label.setText(Messages.get("imobject.none"));

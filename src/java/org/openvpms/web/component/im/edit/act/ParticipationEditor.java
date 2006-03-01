@@ -1,18 +1,21 @@
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.ModifiableProperty;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.view.act.ParticipationLayoutStrategy;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
 /**
@@ -22,6 +25,11 @@ import org.openvpms.web.component.im.view.act.ParticipationLayoutStrategy;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ParticipationEditor extends AbstractIMObjectEditor {
+
+    /**
+     * The entity editor.
+     */
+    private ObjectReferenceEditor _editor;
 
     /**
      * Construct a new <code>ParticipationEditor</code>.
@@ -35,14 +43,15 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
     public ParticipationEditor(Participation participation, Act parent,
                                NodeDescriptor descriptor, boolean showAll) {
         super(participation, parent, descriptor, showAll);
+        NodeDescriptor entityNode = getDescriptor("entity");
+        Property property = new ModifiableProperty(participation, entityNode);
+        _editor = new ObjectReferenceEditor(property, entityNode);
+        getModifiableSet().add(participation, property);
         if (participation.isNew() && participation.getEntity() == null) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(participation);
-            NodeDescriptor entityNode = archetype.getNodeDescriptor("entity");
             IMObject entity = Context.getInstance().getObject(
                     entityNode.getArchetypeRange());
             if (entity != null) {
-                participation.setEntity(new IMObjectReference(entity));
+                _editor.setObject(entity);
             }
         }
     }
@@ -96,7 +105,12 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return new ParticipationLayoutStrategy();
+        return new IMObjectLayoutStrategy() {
+            public Component apply(IMObject object,
+                                   IMObjectComponentFactory factory) {
+                return _editor.getComponent();
+            }
+        };
     }
 
 }

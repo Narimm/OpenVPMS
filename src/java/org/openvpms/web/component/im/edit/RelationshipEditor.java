@@ -7,14 +7,14 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.ValidatingPointer;
+import org.openvpms.web.component.edit.ModifiableProperty;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
@@ -26,7 +26,6 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -139,11 +138,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     protected ObjectReferenceEditor getEditor(EntityRelationship relationship,
                                               NodeDescriptor descriptor,
                                               boolean readOnly) {
-        Pointer pointer = DescriptorHelper.getPointer(relationship, descriptor);
-        NodeValidator validator = new NodeValidator(descriptor);
-        ValidatingPointer vpointer = new ValidatingPointer(pointer, validator);
-        getModifiableSet().add(relationship, vpointer);
-        return new Entity(vpointer, descriptor, readOnly);
+
+        ModifiableProperty property
+                = new ModifiableProperty(relationship, descriptor);
+
+        getModifiableSet().add(relationship, property);
+        return new Entity(property, descriptor, readOnly);
     }
 
     /**
@@ -280,13 +280,13 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         /**
          * Construct a new <code>Entity</code>.
          *
-         * @param pointer    a pointer to the reference
+         * @param property   the reference property
          * @param descriptor the entity descriptor
          * @param readOnly   if <code>true<code> don't render the select button
          */
-        public Entity(Pointer pointer, NodeDescriptor descriptor,
+        public Entity(Property property, NodeDescriptor descriptor,
                       boolean readOnly) {
-            super(pointer, descriptor, readOnly);
+            super(property, descriptor, readOnly);
         }
 
         /**

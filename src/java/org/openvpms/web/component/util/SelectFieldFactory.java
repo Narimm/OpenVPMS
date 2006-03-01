@@ -5,9 +5,9 @@ import java.util.List;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.web.component.bound.BoundSelectField;
+import org.openvpms.web.component.edit.Property;
 
 
 /**
@@ -36,11 +36,11 @@ public final class SelectFieldFactory extends ComponentFactory {
     /**
      * Creates a new bound select field.
      *
-     * @param pointer a pointer to the field to update
-     * @param model   the model
+     * @param property the property to bind
+     * @param model    the model
      */
-    public static SelectField create(Pointer pointer, ListModel model) {
-        SelectField select = new BoundSelectField(pointer, model);
+    public static SelectField create(Property property, ListModel model) {
+        SelectField select = new BoundSelectField(property, model);
         setDefaults(select);
         return select;
     }

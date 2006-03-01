@@ -6,7 +6,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
-import org.apache.commons.jxpath.Pointer;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -14,8 +13,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.bound.BoundPalette;
+import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
-import org.openvpms.web.component.edit.ValidatingPointer;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -103,7 +103,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     public Component create(IMObject object, IMObject context,
                             NodeDescriptor descriptor) {
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context,
-                descriptor, true);
+                                                             descriptor, true);
         _modifiable.add(object, editor);
         return editor.getComponent();
     }
@@ -117,8 +117,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     protected Component getDateEditor(IMObject object,
                                       NodeDescriptor descriptor) {
-        Pointer pointer = getPointer(object, descriptor);
-        return new BoundDateField(pointer);
+        Property property = getProperty(object, descriptor);
+        return new BoundDateField(property);
     }
 
     /**
@@ -130,10 +130,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     protected Component getSelectEditor(IMObject object,
                                         NodeDescriptor descriptor) {
-        Pointer pointer = getPointer(object, descriptor);
+        Property property = getProperty(object, descriptor);
         ListModel model = new LookupListModel(object, descriptor,
-                getLookupService());
-        SelectField field = SelectFieldFactory.create(pointer, model);
+                                              getLookupService());
+        SelectField field = SelectFieldFactory.create(property, model);
         field.setCellRenderer(new LookupListCellRenderer());
         return field;
     }
@@ -155,8 +155,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(
                     ServiceHelper.getArchetypeService(),
                     descriptor, object);
-            Pointer pointer = getPointer(object, descriptor);
-            Palette palette = new BoundPalette(identifiers, pointer);
+            Property property = getProperty(object, descriptor);
+            Palette palette = new BoundPalette(identifiers, property);
             palette.setCellRenderer(new IMObjectListCellRenderer());
             result = palette;
         }
@@ -172,27 +172,25 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     protected Component getObjectReferenceEditor(IMObject object,
                                                  NodeDescriptor descriptor) {
-        Pointer pointer = getPointer(object, descriptor);
+        Property property = getProperty(object, descriptor);
         ObjectReferenceEditor editor
-                = new ObjectReferenceEditor(pointer, descriptor);
+                = new ObjectReferenceEditor(property, descriptor);
         return editor.getComponent();
     }
 
     /**
-     * Helper to return a pointer to an attribute given its descriptor. This
-     * implementation returns a {@link ValidatingPointer}.
+     * Helper to return a property given its descriptor. This implementation
+     * returns a {@link ModifiableProperty}.
      *
-     * @param object     the object that owne the attribute
-     * @param descriptor the attribute's descriptor
-     * @return a pointer to the attribute identified by <code>descriptor</code>.
+     * @param object     the object that owns the property
+     * @param descriptor the property's descriptor
+     * @return the property corresponding to <code>descriptor</code>.
      */
-    @Override
-    protected Pointer getPointer(IMObject object, NodeDescriptor descriptor) {
-        Pointer pointer = super.getPointer(object, descriptor);
-        NodeValidator validator = new NodeValidator(descriptor);
-        ValidatingPointer result = new ValidatingPointer(pointer, validator);
-        _modifiable.add(object, result);
-        return result;
+    protected Property getProperty(IMObject object, NodeDescriptor descriptor) {
+        ModifiableProperty property
+                = new ModifiableProperty(object, descriptor);
+        _modifiable.add(object, property);
+        return property;
     }
 
     /**

@@ -38,8 +38,7 @@ public class ActEditor extends AbstractIMObjectEditor {
     protected ActEditor(Act act, IMObject parent,
                         NodeDescriptor descriptor, boolean showAll) {
         super(act, parent, descriptor, showAll);
-        ArchetypeDescriptor archetype = getArchetypeDescriptor();
-        NodeDescriptor items = archetype.getNodeDescriptor("items");
+        NodeDescriptor items = getDescriptor("items");
         _editor = new ActRelationshipCollectionEditor(act, items, showAll);
     }
 

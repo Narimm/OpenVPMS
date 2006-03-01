@@ -4,12 +4,13 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.ListModel;
-import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.lang.ObjectUtils;
+
+import org.openvpms.web.component.edit.Property;
 
 
 /**
- * Binds a <code>Pointer</code> to a <code>SelectField</code>.
+ * Binds a {@link Property} to a <code>SelectField</code>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -17,22 +18,22 @@ import org.apache.commons.lang.ObjectUtils;
 public class BoundSelectField extends SelectField {
 
     /**
-     * The bound field.
+     * The bound property.
      */
-    private final Pointer _pointer;
+    private final Property _property;
 
 
     /**
      * Construct a new <code>BoundSelectField</code>.
      *
-     * @param pointer the pointer to bind
-     * @param model   the list model
+     * @param property the property to bind
+     * @param model    the list model
      */
-    public BoundSelectField(Pointer pointer, ListModel model) {
+    public BoundSelectField(Property property, ListModel model) {
         super(model);
-        _pointer = pointer;
+        _property = property;
 
-        Object value = pointer.getValue();
+        Object value = property.getValue();
         int index = setSelected(value);
         if (index == -1 && model.size() != 0) {
             // current value not in the list, so default it to the first
@@ -52,7 +53,7 @@ public class BoundSelectField extends SelectField {
      * Updates the bound object from the list.
      */
     private void update() {
-        _pointer.setValue(getSelectedItem());
+        _property.setValue(getSelectedItem());
     }
 
     /**
