@@ -25,6 +25,11 @@ public class Selector {
     public enum ButtonStyle {LEFT, RIGHT, HIDE};
 
     /**
+     * Determines how the object is displayed.
+     */
+    public enum Format {NAME, DESCRIPTION, SUMMARY};
+
+    /**
      * The 'select' button.
      */
     private Button _select;
@@ -43,6 +48,11 @@ public class Selector {
      * Determines the layout of the 'select' button.
      */
     private ButtonStyle _buttonStyle;
+
+    /**
+     * The presentation format.
+     */
+    private Format _format = Format.SUMMARY;
 
     /**
      * The component.
@@ -97,10 +107,18 @@ public class Selector {
     public void setObject(IMObject object) {
         getComponent(); // layout component if required.
         if (object != null) {
-            final String summaryKey = "imobject.summary";
-            String summary = Messages.get(summaryKey, object.getName(),
-                    object.getDescription());
-            _summary.setText(summary);
+            String value = null;
+            if (_format == Format.NAME) {
+                value = Messages.get("imobject.name", object.getName());
+            } else if (_format == Format.DESCRIPTION) {
+                value = Messages.get("imobject.description",
+                                     object.getDescription());
+            } else if (_format == Format.SUMMARY) {
+                value = Messages.get("imobject.summary", object.getName(),
+                                     object.getDescription());
+            }
+
+            _summary.setText(value);
             if (!object.isActive()) {
                 _deactivated.setText(Messages.get("imobject.deactivated"));
             } else {
@@ -110,6 +128,15 @@ public class Selector {
             _summary.setText(null);
             _deactivated.setText(null);
         }
+    }
+
+    /**
+     * Sets the presentation format.
+     *
+     * @param format the presentation format
+     */
+    public void setFormat(Format format) {
+        _format = format;
     }
 
     /**

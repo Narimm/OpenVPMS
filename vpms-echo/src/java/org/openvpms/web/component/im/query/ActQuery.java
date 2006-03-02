@@ -105,32 +105,6 @@ public class ActQuery implements Query {
     private DateField _startTo;
 
     /**
-     * Indicates if all end dates should be queried. If so, the endFrom and
-     * endTo dates are ignored.
-     */
-    private CheckBox _endAll;
-
-    /**
-     * The end-from label.
-     */
-    private Label _endFromLabel;
-
-    /**
-     * The end-from date.
-     */
-    private DateField _endFrom;
-
-    /**
-     * The end-to label.
-     */
-    private Label _endToLabel;
-
-    /**
-     * The end-from date.
-     */
-    private DateField _endTo;
-
-    /**
      * Cell spacing row style.
      */
     private static final String CELLSPACING_STYLE = "CellSpacingRow";
@@ -217,30 +191,6 @@ public class ActQuery implements Query {
                         onStartToChanged();
                     }
                 });
-        _endAll = CheckBoxFactory.create("actquery.all", true);
-        _endAll.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onEndAllChanged();
-            }
-        });
-        _endFromLabel = LabelFactory.create("actquery.from");
-        _endFrom = new DateField();
-        _endFrom.getDateChooser().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                        onEndFromChanged();
-                    }
-                });
-        _endToLabel = LabelFactory.create("actquery.to");
-        _endTo = new DateField();
-        _endTo.getDateChooser().addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                        onEndToChanged();
-                    }
-
-                });
-
         Row startRange = RowFactory.create(
                 CELLSPACING_STYLE,
                 _startFromLabel, _startFrom,
@@ -248,18 +198,11 @@ public class ActQuery implements Query {
         Row startRow = RowFactory.create(ROW_STYLE, _startAll, startRange);
         GroupBox startBox = GroupBoxFactory.create("actquery.start", startRow);
 
-        Row endRange = RowFactory.create(
-                CELLSPACING_STYLE, _endFromLabel,
-                _endFrom, _endToLabel, _endTo);
-        Row endRow = RowFactory.create(ROW_STYLE, _endAll, endRange);
-        GroupBox endBox = GroupBoxFactory.create("actquery.end", endRow);
-
         onStartAllChanged();
-        onEndAllChanged();
 
         _component = RowFactory.create(CELLSPACING_STYLE,
-                LabelFactory.create("actquery.status"), _statusSelector,
-                startBox, endBox);
+                                       LabelFactory.create("actquery.status"), _statusSelector,
+                                       startBox);
     }
 
     /**
@@ -273,14 +216,12 @@ public class ActQuery implements Query {
         if (_entityId != -1) {
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
-            Date endFrom = getEndFrom();
-            Date endTo = getEndTo();
             IArchetypeService service = ServiceHelper.getArchetypeService();
             List<Act> acts = Collections.emptyList();
             try {
-                acts = service.getActs(_entityId, null, null, null,
-                        startFrom, startTo, endFrom,  // @todo see OVPMS-193
-                        endTo, _status, true);
+                acts = service.getActs(_entityId, null, null, null, // @todo see OVPMS-193
+                                       startFrom, startTo, null, null,
+                                       _status, true);
             } catch (ArchetypeServiceException exception) {
                 ErrorDialog.show(exception);
             }
@@ -305,17 +246,6 @@ public class ActQuery implements Query {
         enable(_startFrom, enabled);
         enable(_startToLabel, enabled);
         enable(_startTo, enabled);
-    }
-
-    /**
-     * Invoked when the end-all check box changes.
-     */
-    private void onEndAllChanged() {
-        boolean enabled = !_endAll.isSelected();
-        enable(_endFromLabel, enabled);
-        enable(_endFrom, enabled);
-        enable(_endTo, enabled);
-        enable(_endToLabel, enabled);
     }
 
     /**
@@ -387,42 +317,6 @@ public class ActQuery implements Query {
     }
 
     /**
-     * Sets the end-from date.
-     *
-     * @param date the end-from date
-     */
-    private void setEndFrom(Date date) {
-        setDate(_endFrom, date);
-    }
-
-    /**
-     * Returns the end-from date.
-     *
-     * @return the end-from date
-     */
-    private Date getEndFrom() {
-        return _endAll.isSelected() ? null : getDate(_endFrom);
-    }
-
-    /**
-     * Sets the end-to date.
-     *
-     * @param date the end-to date
-     */
-    private void setEndTo(Date date) {
-        setDate(_endTo, date);
-    }
-
-    /**
-     * Returns the end-to date.
-     *
-     * @return the end-to date
-     */
-    private Date getEndTo() {
-        return _endAll.isSelected() ? null : getDate(_endTo);
-    }
-
-    /**
      * Invoked when the start-from date changes. Sets the start-to date =
      * start-from if start-from is greater.
      */
@@ -443,30 +337,6 @@ public class ActQuery implements Query {
         Date to = getStartTo();
         if (from != null && from.compareTo(to) > 0) {
             setStartFrom(to);
-        }
-    }
-
-    /**
-     * Invoked when the end-from date changes. Sets the end-to date = end-from
-     * if end-from is greater.
-     */
-    private void onEndFromChanged() {
-        Date from = getEndFrom();
-        Date to = getEndTo();
-        if (from != null && from.compareTo(to) > 0) {
-            setEndTo(from);
-        }
-    }
-
-    /**
-     * Invoked when the end-to date changes. Sets the end-from date = end-toif
-     * end-from is greater.
-     */
-    private void onEndToChanged() {
-        Date from = getEndFrom();
-        Date to = getEndTo();
-        if (from != null && from.compareTo(to) > 0) {
-            setEndFrom(to);
         }
     }
 

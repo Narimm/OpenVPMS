@@ -86,6 +86,22 @@ public class IMObjectTable extends PageableSortableTable {
     }
 
     /**
+     * Sets the selected object.
+     *
+     * @param object the object to select
+     */
+    public void setSelected(IMObject object) {
+        IMObjectTableModel model = (IMObjectTableModel) getModel();
+        int index = getObjects().indexOf(object);
+        int minRow = model.getCurrentPage() * model.getRowsPerPage();
+        int maxRow = minRow + model.getRowsPerPage();
+        if (index >= minRow && index < maxRow) {
+            int offset = index - minRow;
+            getSelectionModel().setSelectedIndex(offset, true);
+        }
+    }
+
+    /**
      * Returns the objects marked for deletion.
      *
      * @return the objects marked for deletion

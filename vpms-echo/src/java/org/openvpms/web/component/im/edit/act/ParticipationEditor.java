@@ -16,6 +16,7 @@ import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.select.Selector;
 
 
 /**
@@ -30,6 +31,7 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
      * The entity editor.
      */
     private ObjectReferenceEditor _editor;
+
 
     /**
      * Construct a new <code>ParticipationEditor</code>.

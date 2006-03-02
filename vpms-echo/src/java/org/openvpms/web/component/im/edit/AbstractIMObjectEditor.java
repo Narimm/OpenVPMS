@@ -147,7 +147,7 @@ public abstract class AbstractIMObjectEditor
         _archetype = DescriptorHelper.getArchetypeDescriptor(object);
         _modifiable = new ModifiableSet();
         _factory = new ComponentFactory(_modifiable);
-        _layoutFactory = new DefaultLayoutStrategyFactory(true);
+        _layoutFactory = new DefaultLayoutStrategyFactory();
         _derivedFieldRefresher = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateDerivedFields(modifiable);
@@ -508,7 +508,7 @@ public abstract class AbstractIMObjectEditor
 
             Set<ModifiableProperty> properties = getProperties();
             for (ModifiableProperty property : properties) {
-                if (property.getDescriptor().isDerived()) {
+                if (modified != property && property.getDescriptor().isDerived()) {
                     property.refresh();
                 }
             }

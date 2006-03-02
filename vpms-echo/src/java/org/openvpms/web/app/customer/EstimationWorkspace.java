@@ -1,5 +1,7 @@
 package org.openvpms.web.app.customer;
 
+import java.util.List;
+
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
@@ -68,6 +70,7 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
         setObject(customer);
         if (customer != null) {
             layoutWorkspace(customer, container);
+            initQuery(customer);
         }
     }
 
@@ -84,8 +87,7 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
         if (_workspace == null) {
             layoutWorkspace(party, getComponent());
         }
-        _query.setEntity(party);
-        _acts.query();
+        initQuery(party);
     }
 
     /**
@@ -95,6 +97,8 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
+        _acts.query();
+        _window.setObject(object);
     }
 
     /**
@@ -146,4 +150,21 @@ public class EstimationWorkspace extends AbstractViewWorkspace {
         });
 
     }
+
+    /**
+     * Perform an initial query, selecting the first available act.
+     *
+     * @param customer the customer
+     */
+    protected void initQuery(Party customer) {
+        _query.setEntity(customer);
+        _acts.query();
+        List<IMObject> objects = _acts.getObjects();
+        if (!objects.isEmpty()) {
+            IMObject current = objects.get(0);
+            _acts.setSelected(current);
+            _window.setObject(current);
+        }
+    }
+
 }

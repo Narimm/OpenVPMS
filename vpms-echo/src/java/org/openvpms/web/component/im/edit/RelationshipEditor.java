@@ -4,7 +4,6 @@ import java.util.List;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
@@ -20,7 +19,7 @@ import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -28,7 +27,6 @@ import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -229,7 +227,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * EntityRelationship layout strategy. Displays the source and target nodes
      * before any others.
      */
-    private class LayoutStrategy extends ExpandableLayoutStrategy {
+    private class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
          * Construct a new <code>LayoutStrategy</code>.
@@ -238,7 +236,6 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
          *                     as mandatory ones.
          */
         public LayoutStrategy(boolean showOptional) {
-            super(showOptional);
             ChainedNodeFilter filter = new ChainedNodeFilter();
             filter.add(new BasicNodeFilter(showOptional));
             filter.add(new NamedNodeFilter("source", "target"));
@@ -266,8 +263,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
                 add(grid, descriptor.getDisplayName(), component);
             }
 
-            Row group = RowFactory.create(grid, getButtonRow());
-            container.add(group);
+            container.add(grid);
         }
 
     }
