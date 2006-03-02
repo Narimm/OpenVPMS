@@ -1,7 +1,7 @@
 package org.openvpms.web.component.bound;
 
-import nextapp.echo2.app.event.DocumentEvent;
-import nextapp.echo2.app.event.DocumentListener;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.web.component.edit.Property;
@@ -20,27 +20,23 @@ class TextComponentBinder extends Binder {
      */
     private final TextComponent _component;
 
-    /**
-     * Document update listener.
-     */
-    private final DocumentListener _listener;
-
 
     /**
      * Construct a new <code>TextComponentBinder</code>.
      *
      * @param component the component to bind
-     * @param property the property to bind
+     * @param property  the property to bind
      */
     public TextComponentBinder(TextComponent component, Property property) {
         super(property);
         _component = component;
-        _listener = new DocumentListener() {
-            public void documentUpdate(DocumentEvent event) {
+        setField();
+
+        _component.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 setProperty();
             }
-        };
-        setField();
+        });
     }
 
     /**
@@ -58,9 +54,7 @@ class TextComponentBinder extends Binder {
      * @param value the value to set
      */
     protected void setFieldValue(Object value) {
-        _component.getDocument().removeDocumentListener(_listener);
         String text = (value != null) ? value.toString() : null;
         _component.setText(text);
-        _component.getDocument().addDocumentListener(_listener);
     }
 }

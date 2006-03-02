@@ -3,7 +3,9 @@ package org.openvpms.web.component.im.edit;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -120,6 +122,11 @@ public abstract class AbstractIMObjectEditor
      */
     private PropertyChangeSupport _propertyChangeNotifier;
 
+    /**
+     * Listener to update derived fields.
+     */
+    private ModifiableListener _derivedFieldRefresher;
+
 
     /**
      * Construct a new <code>DefaultIMObjectEditor</code> for an object that
@@ -141,6 +148,12 @@ public abstract class AbstractIMObjectEditor
         _modifiable = new ModifiableSet();
         _factory = new ComponentFactory(_modifiable);
         _layoutFactory = new DefaultLayoutStrategyFactory(true);
+        _derivedFieldRefresher = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateDerivedFields(modifiable);
+            }
+        };
+        _modifiable.addModifiableListener(_derivedFieldRefresher);
     }
 
     /**
@@ -487,6 +500,22 @@ public abstract class AbstractIMObjectEditor
         firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);
     }
 
+    protected void updateDerivedFields(Modifiable modified) {
+        if (modified instanceof ModifiableProperty) {
+            _modifiable.removeModifiableListener(_derivedFieldRefresher);
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            service.deriveValues(getObject());
+
+            Set<ModifiableProperty> properties = getProperties();
+            for (ModifiableProperty property : properties) {
+                if (property.getDescriptor().isDerived()) {
+                    property.refresh();
+                }
+            }
+            _modifiable.addModifiableListener(_derivedFieldRefresher);
+        }
+    }
+
     protected void refreshLookups(SelectField source) {
         for (SelectField lookup : _lookups) {
             if (source != lookup) {
@@ -524,9 +553,9 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Helper to return a property, given its descriptor's name.
-     * If the property has been rendered, then that will be returned,
-     * otherwise an instance will be created.
+     * Helper to return a property, given its descriptor's name. If the property
+     * has been rendered, then that will be returned, otherwise an instance will
+     * be created.
      *
      * @param name the descriptor's name
      * @return the property corresponding to <code>name</code> or
@@ -547,6 +576,21 @@ public abstract class AbstractIMObjectEditor
             NodeDescriptor descriptor = getDescriptor(name);
             if (descriptor != null) {
                 result = new ModifiableProperty(getObject(), descriptor);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all of the properties associatged with this editor.
+     *
+     * @return the properties associated with the editor.
+     */
+    protected Set<ModifiableProperty> getProperties() {
+        Set<ModifiableProperty> result = new HashSet<ModifiableProperty>();
+        for (Modifiable modifiable : _modifiable.getModifiable()) {
+            if (modifiable instanceof ModifiableProperty) {
+                result.add((ModifiableProperty) modifiable);
             }
         }
         return result;
