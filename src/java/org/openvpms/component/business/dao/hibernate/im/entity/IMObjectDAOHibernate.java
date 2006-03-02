@@ -26,12 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 //spring-framework
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 // commons-lang
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 //openvpms-framework
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
@@ -57,6 +59,20 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     public IMObjectDAOHibernate() {
         super();
     }
+    
+    
+    /* (non-Javadoc)
+     * @see org.springframework.orm.hibernate3.support.HibernateDaoSupport#createHibernateTemplate(org.hibernate.SessionFactory)
+     */
+    @Override
+    protected HibernateTemplate createHibernateTemplate(SessionFactory sessionFactory) {
+        HibernateTemplate template = super.createHibernateTemplate(sessionFactory);
+        template.setAllowCreate(true);
+        
+        return template;
+    }
+
+
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(org.openvpms.component.business.domain.im.common.IMObject)
@@ -189,11 +205,24 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 queryString.append(" entity.active = 1");
             }
             
-            // now execute te query
-           return getHibernateTemplate().findByNamedParam(
-                   queryString.toString(),
-                   (String[])names.toArray(new String[names.size()]),
-                   params.toArray());
+            // now execute the query
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.createQuery(queryString.toString());
+                for (int index = 0; index < names.size(); index++) {
+                    query.setParameter(names.get(index), params.get(index));
+                }
+                return (List<IMObject>)query.list();
+            } finally {
+              session.close();  
+            }
+            
+            /**
+            return getHibernateTemplate().findByNamedParam(
+                    queryString.toString(),
+                    (String[])names.toArray(new String[names.size()]),
+                    params.toArray());
+            **/
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
@@ -272,12 +301,17 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     public List<IMObject> getByNamedQuery(String name, Map<String, Object> params) {
         List<IMObject> results = null;
         try {
-            String[] paramNames = (String[])params.keySet().toArray(
-                    new String[params.size()]);
-            Object[] paramValues = params.values().toArray();
-            
-            results = getHibernateTemplate().findByNamedQueryAndNamedParam(
-                    name, paramNames, paramValues);
+            // execute the query
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.getNamedQuery(name);
+                for (String key : params.keySet()) {
+                    query.setParameter(key, params.get(key));
+                }
+                results =  (List<IMObject>)query.list();
+            } finally {
+              session.close();  
+            }
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery,
@@ -399,10 +433,22 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
             
             // now execute te query
-           return getHibernateTemplate().findByNamedParam(
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.createQuery(queryString.toString());
+                for (int index = 0; index < names.size(); index++) {
+                    query.setParameter(names.get(index), params.get(index));
+                }
+                return (List<Participation>)query.list();
+            } finally {
+              session.close();  
+            }
+            /**
+            return getHibernateTemplate().findByNamedParam(
                    queryString.toString(),
                    (String[])names.toArray(new String[names.size()]),
                    params.toArray());
+           **/
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindParticipations,
@@ -572,10 +618,23 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
             
             // now execute te query
-           return getHibernateTemplate().findByNamedParam(
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.createQuery(queryString.toString());
+                for (int index = 0; index < names.size(); index++) {
+                    query.setParameter(names.get(index), params.get(index));
+                }
+                return (List<Act>)query.list();
+            } finally {
+              session.close();  
+            }
+            
+            /**
+            return getHibernateTemplate().findByNamedParam(
                    queryString.toString(),
                    (String[])names.toArray(new String[names.size()]),
                    params.toArray());
+            **/
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindActs,
@@ -713,10 +772,23 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
             
             // now execute te query
-           return getHibernateTemplate().findByNamedParam(
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.createQuery(queryString.toString());
+                for (int index = 0; index < names.size(); index++) {
+                    query.setParameter(names.get(index), params.get(index));
+                }
+                return (List<Act>)query.list();
+            } finally {
+              session.close();  
+            }
+            
+            /**
+            return getHibernateTemplate().findByNamedParam(
                    queryString.toString(),
                    (String[])names.toArray(new String[names.size()]),
                    params.toArray());
+            **/
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindActs,

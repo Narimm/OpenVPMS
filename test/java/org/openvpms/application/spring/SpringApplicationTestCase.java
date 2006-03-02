@@ -18,22 +18,25 @@
 
 package org.openvpms.application.spring;
 
-//log4j
+// log4j
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 // spring-test
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-
 /**
- * This test cases is used to bring up a complete system configured in a 
- * spring application context.
+ * This test cases is used to bring up a complete system configured in a spring
+ * application context.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 public class SpringApplicationTestCase extends
-    AbstractDependencyInjectionSpringContextTests {
+        AbstractDependencyInjectionSpringContextTests {
     /**
      * Define a logger for this class
      */
@@ -41,9 +44,11 @@ public class SpringApplicationTestCase extends
     private static final Logger logger = Logger
             .getLogger(SpringApplicationTestCase.class);
 
-    
-    
-    
+    /**
+     * Holds a reference to the archetype service
+     */
+    private IArchetypeService service;
+
     public static void main(String[] args) {
         junit.textui.TestRunner.run(SpringApplicationTestCase.class);
     }
@@ -72,14 +77,22 @@ public class SpringApplicationTestCase extends
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
+
+        this.service = (IArchetypeService) applicationContext
+                .getBean("archetypeService");
+        assertTrue(service != null);
     }
-    
+
     /**
      * This will just bring up the container as configured by the application
      * context.
      * 
      */
     public void testApplication() throws Exception {
-        // no -op
+        //long start = System.currentTimeMillis();
+        //List<IMObject> objects = service.get("party", null, null, null, false);
+        //assertTrue(objects != null);
+        //logger.error("Time to complete " + (System.currentTimeMillis() - start)
+        //        + "ms");
     }
 }
