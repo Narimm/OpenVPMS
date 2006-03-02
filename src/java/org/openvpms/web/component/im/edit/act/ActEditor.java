@@ -1,15 +1,20 @@
 package org.openvpms.web.component.im.edit.act;
 
+import java.math.BigDecimal;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 
 
 /**
@@ -40,6 +45,11 @@ public class ActEditor extends AbstractIMObjectEditor {
         super(act, parent, descriptor, showAll);
         NodeDescriptor items = getDescriptor("items");
         _editor = new ActRelationshipCollectionEditor(act, items, showAll);
+        _editor.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateTotals();
+            }
+        });
     }
 
     /**
@@ -64,8 +74,7 @@ public class ActEditor extends AbstractIMObjectEditor {
                 if (items != null) {
                     String[] range = items.getArchetypeRange();
                     if (range.length == 1
-                            && range[0].equals("actRelationship.estimationItem"))
-                    {
+                        && range[0].equals("actRelationship.estimationItem")) {
                         result = new ActEditor((Act) object, parent, descriptor, showAll);
                     }
                 }
@@ -124,7 +133,38 @@ public class ActEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return new ActLayoutStrategy(_editor.getComponent(), showAll, true);
+        return new ActLayoutStrategy(_editor.getComponent(), showAll);
+    }
+
+    /**
+     * Update totals when an act item changes.
+     */
+    protected void updateTotals() {
+        Property highTotal = getProperty("highTotal");
+        Property lowTotal = getProperty("lowTotal");
+
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.estimationItem");
+        NodeDescriptor highDesc = archetype.getNodeDescriptor("highTotal");
+        NodeDescriptor lowDesc = archetype.getNodeDescriptor("lowTotal");
+        BigDecimal low = new BigDecimal(0);
+        BigDecimal high = new BigDecimal(0);
+        for (Act act : _editor.getActs()) {
+            low = sum(low, act, lowDesc);
+            high = sum(high, act, highDesc);
+        }
+        lowTotal.setValue(low);
+        highTotal.setValue(high);
+    }
+
+    private BigDecimal sum(BigDecimal value, IMObject object, NodeDescriptor descriptor) {
+        // @todo OVPMS-210
+        Number tmp = (Number) descriptor.getValue(object);
+        if (tmp instanceof BigDecimal) {
+            value = value.add((BigDecimal) tmp);
+        } else {
+            value = value.add(new BigDecimal(tmp.doubleValue()));
+        }
+        return value;
     }
 
 }

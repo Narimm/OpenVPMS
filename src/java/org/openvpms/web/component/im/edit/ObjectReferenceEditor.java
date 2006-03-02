@@ -78,6 +78,7 @@ public class ObjectReferenceEditor {
                 }
             });
         }
+        _selector.setFormat(Selector.Format.NAME);
         IMObjectReference reference = (IMObjectReference) _property.getValue();
         if (reference != null || (reference == null && !readOnly)) {
             _selector.setObject(getObject(reference, descriptor));

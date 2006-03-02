@@ -158,10 +158,10 @@
     <style name="EditDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="modal" value="true"/>
             <property name="closable" value="false"/>
-            <property name="width" value="800px"/>
-            <property name="height" value="640px"/>
+            <property name="width" value="1024px"/>
+            <property name="height" value="768px"/>
+            <property name="resizable" value="true"/>
         </properties>
     </style>
 
@@ -169,7 +169,6 @@
     <style name="BrowserDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="modal" value="true"/>
             <property name="width" value="800px"/>
             <property name="height" value="600px"/>
         </properties>
@@ -469,7 +468,6 @@
     <style name="default" type="nextapp.echo2.app.Grid">
         <properties>
             <property name="insets" value="5px"/>
-            <property name="size" value="2"/>
         </properties>
     </style>
 

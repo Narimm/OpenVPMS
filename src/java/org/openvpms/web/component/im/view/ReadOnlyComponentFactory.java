@@ -95,8 +95,7 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
         Label label = LabelFactory.create();
 
         if (value != null) {
-            String text = Messages.get("imobject.summary",
-                                       value.getName(), value.getDescription());
+            String text = Messages.get("imobject.name", value.getName());
             label.setText(text);
         } else {
             label.setText(Messages.get("imobject.none"));

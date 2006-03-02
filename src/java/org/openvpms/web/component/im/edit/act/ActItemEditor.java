@@ -5,7 +5,6 @@ import java.util.List;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Row;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -24,13 +23,12 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -175,7 +173,7 @@ public class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Act item layout strategy.
      */
-    private class LayoutStrategy extends ExpandableLayoutStrategy {
+    private class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
          * Construct a new <code>LayoutStrategy</code>.
@@ -184,7 +182,6 @@ public class ActItemEditor extends AbstractIMObjectEditor {
          *                     as mandatory ones.
          */
         public LayoutStrategy(boolean showOptional) {
-            super(showOptional);
             ChainedNodeFilter filter = new ChainedNodeFilter();
             filter.add(new BasicNodeFilter(showOptional, false));
             filter.add(new NamedNodeFilter("participants"));
@@ -212,12 +209,7 @@ public class ActItemEditor extends AbstractIMObjectEditor {
                 Component child = factory.create(object, descriptor);
                 add(grid, descriptor.getDisplayName(), child);
             }
-            if (showButton()) {
-                Row group = RowFactory.create(grid, getButtonRow());
-                container.add(group);
-            } else {
-                container.add(grid);
-            }
+            container.add(grid);
         }
 
     }

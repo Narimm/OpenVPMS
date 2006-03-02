@@ -23,6 +23,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
+import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -186,7 +187,7 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
-     * Add a listener to be notified when a this changes.
+     * Add a listener to be notified when this changes.
      *
      * @param listener the listener to add
      */
@@ -255,14 +256,6 @@ public class CollectionEditor implements Saveable {
             }
         });
 
-        _table = createTable();
-        _table.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onEdit();
-            }
-        });
-        _component.add(_table);
-
         Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
         String[] range = _descriptor.getArchetypeRange();
@@ -287,6 +280,14 @@ public class CollectionEditor implements Saveable {
         }
 
         _component.add(row);
+
+        _table = createTable();
+        _table.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onEdit();
+            }
+        });
+        _component.add(_table);
 
         populate();
     }
@@ -451,6 +452,11 @@ public class CollectionEditor implements Saveable {
         _editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 _componentListener);
+        _editor.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                _listeners.notifyListeners(CollectionEditor.this);
+            }
+        });
     }
 
     /**

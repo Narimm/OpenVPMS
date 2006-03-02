@@ -22,7 +22,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @param object the object to view.
      */
     public IMObjectViewer(IMObject object) {
-        this(object, new DefaultLayoutStrategyFactory(false).create(
+        this(object, new DefaultLayoutStrategyFactory().create(
                 object, true));
     }
 

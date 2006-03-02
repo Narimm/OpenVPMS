@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
@@ -85,6 +86,15 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
             }
         }
         return saved;
+    }
+
+    /**
+     * Returns the set of acts being edited.
+     *
+     * @return the set of acts being edited.
+     */
+    protected Set<Act> getActs() {
+        return _acts.keySet();
     }
 
     /**

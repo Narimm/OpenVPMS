@@ -123,6 +123,24 @@ public class Browser {
     }
 
     /**
+     * Select an object.
+     *
+     * @param object the object to select
+     */
+    public void setSelected(IMObject object) {
+        _table.setSelected(object);
+    }
+
+    /**
+     * Returns the objects matching the query.
+     *
+     * @return the objects matcing the query.
+     */
+    public List<IMObject> getObjects() {
+        return _table.getObjects();
+    }
+
+    /**
      * Adds an <code>ActionListener</code> to receive notification of selection
      * actions.
      *
@@ -131,10 +149,6 @@ public class Browser {
     public void addActionListener(ActionListener listener) {
         getEventListenerList().addListener(ActionListener.class, listener);
     }
-
-    /**
-     * Remove anm
-     */
 
     /**
      * Query using the specified criteria, and populate the table with matches.

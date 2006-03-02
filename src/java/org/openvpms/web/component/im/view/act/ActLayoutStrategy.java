@@ -5,7 +5,6 @@ import java.util.List;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Row;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -13,12 +12,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -27,7 +25,7 @@ import org.openvpms.web.component.util.RowFactory;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class ActLayoutStrategy extends ExpandableLayoutStrategy {
+public class ActLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * The act items.
@@ -40,11 +38,9 @@ public class ActLayoutStrategy extends ExpandableLayoutStrategy {
      *
      * @param showOptional if <code>true</code> show optional fields as well as
      *                     mandatory ones.
-     * @param toggleLayout if <code>true</code> include a button to enable the
-     *                     layout to be switched
      */
-    public ActLayoutStrategy(boolean showOptional, boolean toggleLayout) {
-        this(null, showOptional, toggleLayout);
+    public ActLayoutStrategy(boolean showOptional) {
+        this(null, showOptional);
     }
 
     /**
@@ -54,12 +50,8 @@ public class ActLayoutStrategy extends ExpandableLayoutStrategy {
      *                     <code>null</code>.
      * @param showOptional if <code>true</code> show optional fields as well as
      *                     mandatory ones.
-     * @param toggleLayout if <code>true</code> include a button to enable the
-     *                     layout to be switched
      */
-    public ActLayoutStrategy(Component items, boolean showOptional,
-                             boolean toggleLayout) {
-        super(showOptional, toggleLayout);
+    public ActLayoutStrategy(Component items, boolean showOptional) {
         ChainedNodeFilter filter = new ChainedNodeFilter();
         filter.add(new BasicNodeFilter(showOptional, false));
         filter.add(new NamedNodeFilter("items", "participants"));
@@ -87,12 +79,7 @@ public class ActLayoutStrategy extends ExpandableLayoutStrategy {
             add(grid, descriptor.getDisplayName(), component);
         }
 
-        if (getButton() == null && showButton()) {
-            Row group = RowFactory.create(grid, getButtonRow());
-            container.add(group);
-        } else {
-            container.add(grid);
-        }
+        container.add(grid);
 
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(object);
         NodeDescriptor items = archetype.getNodeDescriptor("items");
@@ -106,12 +93,6 @@ public class ActLayoutStrategy extends ExpandableLayoutStrategy {
             Component child = strategy.apply(object, factory);
             box.add(child);
         }
-
-        if (getButton() == null && showButton()) {
-            Row group = RowFactory.create(box, getButtonRow());
-            container.add(group);
-        } else {
-            container.add(box);
-        }
+        container.add(box);
     }
 }
