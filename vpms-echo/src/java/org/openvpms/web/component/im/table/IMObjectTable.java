@@ -78,7 +78,9 @@ public class IMObjectTable extends PageableSortableTable {
         if (index != -1) {
             IMObjectTableModel model = (IMObjectTableModel) getModel();
             int row = model.getAbsRow(index);
-            result = model.getObject(row);
+            if (row < model.getObjects().size()) {
+                result = model.getObject(row);
+            }
         }
         return result;
     }

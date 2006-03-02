@@ -1,7 +1,9 @@
 package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.dialog.ErrorDialog;
 
 
 /**
@@ -40,7 +42,11 @@ public abstract class IMObjectProperty implements Property {
      * @param value the property value
      */
     public void setValue(Object value) {
-        _descriptor.setValue(_object, value);
+        try {
+            _descriptor.setValue(_object, value);
+        } catch (DescriptorException exception) {
+            ErrorDialog.show(exception);
+        }
     }
 
     /**

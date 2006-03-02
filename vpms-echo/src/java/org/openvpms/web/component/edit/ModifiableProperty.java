@@ -79,6 +79,13 @@ public class ModifiableProperty extends IMObjectProperty {
     }
 
     /**
+     * Notify any listeners that they need to refresh.
+     */
+    public void refresh() {
+        _listeners.notifyListeners(this);
+    }
+
+    /**
      * Add a listener to be notified when a this changes.
      *
      * @param listener the listener to add

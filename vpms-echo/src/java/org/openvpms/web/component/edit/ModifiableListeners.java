@@ -48,7 +48,9 @@ public class ModifiableListeners {
      */
     public void notifyListeners(Modifiable modifiable) {
         if (_listeners != null) {
-            for (ModifiableListener listener : _listeners) {
+            ModifiableListener[] listeners =
+                    _listeners.toArray(new ModifiableListener[0]);
+            for (ModifiableListener listener : listeners) {
                 listener.modified(modifiable);
             }
         }
