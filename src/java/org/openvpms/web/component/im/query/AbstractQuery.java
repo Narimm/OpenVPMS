@@ -164,12 +164,8 @@ public abstract class AbstractQuery implements Query {
         final String wildcard = "*";
         String name = _instanceName.getText();
         if (!StringUtils.isEmpty(name)) {
-            boolean start = name.startsWith(wildcard);
-            boolean end = name.endsWith(wildcard);
-            if (!start) {
-                name = wildcard + name;
-            }
-            if (!end) {
+            /* if entered name contains a wildcard then leave alone else add one to end */
+            if (!name.contains(wildcard)) {
                 name = name + wildcard;
             }
         }
