@@ -501,7 +501,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
     @SuppressWarnings("unchecked")
-    public List<Act> getActs(long entityUid, String entityName, String pConceptName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+    public List<Act> getActs(long entityUid, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
         try {
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
