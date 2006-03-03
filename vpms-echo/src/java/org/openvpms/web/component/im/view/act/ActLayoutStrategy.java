@@ -61,6 +61,32 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
+     * Lays out child components in a 2x2 grid.
+     *
+     * @param object      the parent object
+     * @param descriptors the child descriptors
+     * @param container   the container to use
+     * @param factory     the component factory
+     */
+    @Override
+    protected void doSimpleLayout(IMObject object,
+                                  List<NodeDescriptor> descriptors,
+                                  Component container,
+                                  IMObjectComponentFactory factory) {
+        Grid grid = GridFactory.create(4);
+        for (NodeDescriptor descriptor : descriptors) {
+            Component child = factory.create(object, descriptor);
+            String name = descriptor.getName();
+            if (name.equals("lowTotal") || name.equals("highTotal")) {
+                // @todo - workaround for OVPMS-211
+                child.setEnabled(false);
+            }
+            add(grid, descriptor.getDisplayName(), child);
+        }
+        container.add(grid);
+    }
+
+    /**
      * Lays out each child component in a group box.
      *
      * @param object      the parent object
