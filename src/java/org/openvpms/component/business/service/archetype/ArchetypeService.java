@@ -590,7 +590,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
-    public List<Act> getActs(long entityUid, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+    public List<Act> getActs(long entityUid, String entityName, String pConceptName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
         if (entityUid <= 0) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
