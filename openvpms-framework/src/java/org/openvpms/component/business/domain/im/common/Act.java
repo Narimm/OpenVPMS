@@ -323,17 +323,16 @@ public class Act extends IMObject {
      *            if this relationship cannot be added to this act            
      */
     public void addActRelationship(ActRelationship actRel) {
-        if ((actRel.getSource().getUid() == this.getUid()) &&
+        if ((actRel.getSource().getLinkId().equals(this.getLinkId())) &&
             (actRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
             addSourceActRelationship(actRel);
-        } else if ((actRel.getTarget().getUid() == this.getUid()) &&
+        } else if ((actRel.getTarget().getLinkId().equals(this.getLinkId())) &&
             (actRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
             addTargetActRelationship(actRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToAddActRelationship,
-                    new Object[] { actRel.getSource().getUid(), 
-                            actRel.getTarget().getUid()});
+                    new Object[] { actRel.getSource(), actRel.getTarget()});
         }
     }
 
@@ -347,17 +346,16 @@ public class Act extends IMObject {
      *            if this relationship cannot be removed from this act            
      */
     public void removeActRelationship(ActRelationship actRel) {
-        if ((actRel.getSource().getUid() == this.getUid()) &&
+        if ((actRel.getSource().getLinkId().equals(this.getLinkId())) &&
             (actRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
             removeSourceActRelationship(actRel);
-        } else if ((actRel.getTarget().getUid() == this.getUid()) &&
+        } else if ((actRel.getTarget().getLinkId().equals(this.getLinkId())) &&
             (actRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
             removeTargetActRelationship(actRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToRemoveActRelationship,
-                    new Object[] { actRel.getSource().getUid(), 
-                            actRel.getTarget().getUid()});
+                    new Object[] { actRel.getSource(), actRel.getTarget()});
         }
     }
     

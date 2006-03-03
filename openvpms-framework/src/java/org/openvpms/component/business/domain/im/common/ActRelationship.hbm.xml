@@ -52,14 +52,16 @@
         <property name="qualifiedName" access="property" type="string"
           column="source_archetype_id" />
       </component>
-      <property name="uid" access="field" type="long" column="source_uid"/>
+      <property name="linkId" access="field" type="string"
+        column="source_linkId" />
     </component>
     <component name="target">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"
           column="target_archetype_id" />
       </component>
-      <property name="uid" access="field" type="long" column="target_uid"/>
+      <property name="linkId" access="field" type="string"
+        column="target_linkId" />
     </component>
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

@@ -110,6 +110,20 @@ public interface IMObjectDAO {
     public IMObject getById(String clazz, long id);
 
     /**
+     * Return an object with the specified linkID for the nominated clazz and 
+     * null if the associated object does not exist
+     * 
+     * @param clazz
+     *            the clazz of objects to search for
+     * @param linkId
+     *            the uid object linkId
+     * @return IMObject           
+     * @throws IMObjectDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public IMObject getByLinkId(String clazz, String linkId);
+
+    /**
      * Execute the specified named query using the specified parameter
      * list.
      * 

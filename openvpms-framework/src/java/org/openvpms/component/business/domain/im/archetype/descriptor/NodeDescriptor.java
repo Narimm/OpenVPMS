@@ -23,7 +23,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +91,8 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
-    private Map<String, AssertionDescriptor> assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
+    private Map<String, AssertionDescriptor> assertionDescriptors = 
+        new LinkedHashMap<String, AssertionDescriptor>();
 
     /**
      * This is an option property, which is required for nodes that represent
@@ -315,7 +315,7 @@ public class NodeDescriptor extends Descriptor {
     @Override
     public Object clone() throws CloneNotSupportedException {
         NodeDescriptor copy = (NodeDescriptor) super.clone();
-        copy.assertionDescriptors = new HashMap<String, AssertionDescriptor>(
+        copy.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>(
                 this.assertionDescriptors);
         copy.baseName = this.baseName;
         copy.clazz = this.clazz;
