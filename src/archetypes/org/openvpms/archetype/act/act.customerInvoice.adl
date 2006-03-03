@@ -1,13 +1,13 @@
 <archetypes>
-	<archetype name="openvpms-common-act.invoice.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Invoice" >
+	<archetype name="openvpms-common-act.customerInvoice.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Customer Invoice" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat(/title, '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Description of the Estimation Act', ' ')" />
+			derivedValue="concat(' Description of the Customer Invoice Act', ' ')" />
 		<node name="invoiceDate" path="/activityStartTime"
 			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="details" path="/details" hidden="true"
