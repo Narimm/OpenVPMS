@@ -355,8 +355,8 @@ public interface IArchetypeService {
      * For some parameters you can specifiy the '*' wildcard character, which 
      * can appear at the start or end of the parameter value
      * 
-     * @param entityUid
-     *            the id of the entity to search for {mandatory}
+     * @param ref
+     *            the reference of the entity to search for {mandatory}
      * @param pConceptName
      *            the participaton concept name (optional)            
      * @param entityName
@@ -379,7 +379,7 @@ public interface IArchetypeService {
      * @param EntityServiceException
      *            if there is a problem executing the service request                                                                                  
      */
-    public List<Act> getActs(long entityUid, String pConceptName, String entityName, 
+    public List<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
             String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, String status, boolean activeOnly);
     
@@ -391,8 +391,8 @@ public interface IArchetypeService {
      * For some parameters you can specifiy the '*' wildcard character, which 
      * can appear at the start or end of the parameter value
      * 
-     * @param entityUid
-     *            the id of the entity to search for {mandatory}
+     * @param ref
+     *            the ref of the entity to search for {mandatory}
      * @param conceptName
      *            the participation concept name, which can be wildcarded  (optional)
      * @param startTimeFrom 
@@ -409,7 +409,7 @@ public interface IArchetypeService {
      * @param EntityServiceException
      *            if there is a problem executing the service request                                                                                  
      */
-    public List<Participation> getParticipations(long entityUid, String conceptName, 
+    public List<Participation> getParticipations(IMObjectReference ref, String conceptName, 
             Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, boolean activeOnly);
     

@@ -119,7 +119,7 @@ public class ActTestCases extends
         assertTrue(person.getParticipations().size() == 3);
         
         List<Participation> participations = archetypeService.getParticipations(
-                person.getUid(), null, null, null, null, null, true);
+                new IMObjectReference(person), null, null, null, null, null, true);
         assertTrue(participations.size() == 3);
     }
     
@@ -145,7 +145,7 @@ public class ActTestCases extends
         archetypeService.save(act2);
 
         List<Act> acts = archetypeService.getActs(
-                person.getUid(), null, null, null, null, null, null, null, 
+                new IMObjectReference(person), null, null, null, null, null, null, null, 
                 null, true);
         assertTrue(acts.size() == 2);
     }

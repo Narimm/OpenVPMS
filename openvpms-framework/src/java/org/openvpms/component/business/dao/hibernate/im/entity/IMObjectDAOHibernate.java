@@ -40,6 +40,7 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 
 
@@ -365,7 +366,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.common.IEntityDAO#getActs(long, java.lang.String, java.util.Date, java.util.Date, boolean)
      */
     @SuppressWarnings("unchecked")
-    public List<Participation> getParticipations(long entityUid, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
+    public List<Participation> getParticipations(IMObjectReference ref, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
         try {
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
@@ -378,7 +379,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             
             // check to see if one or more of the values have been specified
             if ((!StringUtils.isEmpty(conceptName)) ||
-                (entityUid > 0) ||
+                (ref != null) ||
                 (startTimeFrom != null) ||
                 (startTimeThru != null) ||
                 (endTimeFrom != null) ||
@@ -388,15 +389,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             
             
             // process the entityUid
-            if (entityUid > 0) {
+            if (ref != null) {
                 if (andRequired) {
                     queryString.append(" and ");
                 }
                 
-                names.add("uid");
+                names.add("linkId");
                 andRequired = true;
-                queryString.append(" participation.entity.uid = :uid");
-                params.add(entityUid);
+                queryString.append(" participation.entity.linkId = :linkId");
+                params.add(ref.getLinkId());
             }
             
             // process the concept name
@@ -492,7 +493,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToFindParticipations,
-                    new Object[]{entityUid, conceptName, startTimeFrom, endTimeFrom},
+                    new Object[]{ref, conceptName, startTimeFrom, endTimeFrom},
                     exception);
         }
     }
@@ -501,7 +502,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
     @SuppressWarnings("unchecked")
-    public List<Act> getActs(long entityUid, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+    public List<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
         try {
             StringBuffer queryString = new StringBuffer();
             List<String> names = new ArrayList<String>();
@@ -518,7 +519,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 (!StringUtils.isEmpty(pConceptName)) ||
                 (!StringUtils.isEmpty(aConceptName)) ||
                 (!StringUtils.isEmpty(status)) ||
-                (entityUid > 0) ||
+                (ref != null) ||
                 (startTimeFrom != null) ||
                 (startTimeThru != null) ||
                 (endTimeFrom != null) ||
@@ -527,15 +528,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
             
             // process the entityUid
-            if (entityUid > 0) {
+            if (ref != null) {
                 if (andRequired) {
                     queryString.append(" and ");
                 }
                 
-                names.add("uid");
+                names.add("linkId");
                 andRequired = true;
-                queryString.append(" participation.entity.uid = :uid");
-                params.add(entityUid);
+                queryString.append(" participation.entity.linkId = :linkId");
+                params.add(ref.getLinkId());
             }
             
             // process the participant concept name

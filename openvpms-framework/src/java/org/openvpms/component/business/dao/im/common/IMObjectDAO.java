@@ -26,6 +26,7 @@ import java.util.Map;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 
 /**
@@ -141,8 +142,8 @@ public interface IMObjectDAO {
     /**
      * Retrieve a list of acts satisfying the following criteria
      * 
-     * @param entityUid
-     *            the id of the entity to search for {mandatory}
+     * @param ref
+     *            the reference of the entity to search for {mandatory}
      * @param pConceptName
      *            the participaton concept name (optional)            
      * @param entityName
@@ -165,7 +166,7 @@ public interface IMObjectDAO {
      * @param EntityDAOException
      *            if there is a problem executing the dao request                                                                                  
      */
-    public List<Act> getActs(long entityUid, String pConceptName, String entityName, 
+    public List<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
             String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, String status, boolean activeOnly);
 
@@ -199,8 +200,8 @@ public interface IMObjectDAO {
     /**
      * Return a list of participations satisfying the following criteria
      * 
-     * @param entityUid
-     *            the id of the entity to search for {mandatory}
+     * @param ref
+     *            the reference of the entity to search for {mandatory}
      * @param conceptName
      *            the participation concept name, which can be wildcarded  (optional)
      * @param startTimeFrom 
@@ -217,7 +218,7 @@ public interface IMObjectDAO {
      * @param EntityDAOException
      *            if there is a problem executing the dao request                                                                                  
      */
-    public List<Participation> getParticipations(long entityUid, String conceptName, 
+    public List<Participation> getParticipations(IMObjectReference ref, String conceptName, 
             Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, boolean activeOnly);
 }
