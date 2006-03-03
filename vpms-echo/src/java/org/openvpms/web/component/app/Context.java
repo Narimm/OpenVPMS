@@ -1,5 +1,7 @@
 package org.openvpms.web.component.app;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -181,7 +183,7 @@ public class Context {
             if (object != null) {
                 ArchetypeId id = object.getArchetypeId();
                 if (id.equals(reference.getArchetypeId())
-                    && reference.getUid() == object.getUid()) {
+                    && StringUtils.equals(reference.getLinkId(), object.getLinkId())) {
                     result = object;
                     break;
                 }

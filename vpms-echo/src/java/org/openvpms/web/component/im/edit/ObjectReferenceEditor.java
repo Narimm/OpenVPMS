@@ -21,6 +21,8 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
+import org.apache.commons.lang.StringUtils;
+
 
 /**
  * Editor for {@link IMObjectReference}s.
@@ -143,7 +145,7 @@ public class ObjectReferenceEditor {
             IMObject edit = Context.getInstance().getCurrent();
             if (edit != null) {
                 if (edit.getArchetypeId().equals(reference.getArchetypeId())
-                    && edit.getUid() == reference.getUid()) {
+                    && StringUtils.equals(edit.getLinkId(), reference.getLinkId())) {
                     result = edit;
                 }
             }
