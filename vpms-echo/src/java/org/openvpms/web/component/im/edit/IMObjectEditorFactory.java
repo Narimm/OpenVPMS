@@ -2,11 +2,11 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.ActEditor;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
-import org.openvpms.web.component.im.edit.DefaultIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
+import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
+import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
+import org.openvpms.web.component.im.edit.invoice.InvoiceItemEditor;
 
 
 /**
@@ -45,10 +45,16 @@ public class IMObjectEditorFactory {
         IMObjectEditor result;
         result = RelationshipEditor.create(object, context, descriptor, showAll);
         if (result == null) {
-            result = ActEditor.create(object, context, descriptor, showAll);
+            result = EstimationEditor.create(object, context, descriptor, showAll);
         }
         if (result == null) {
-            result = ActItemEditor.create(object, context, descriptor, showAll);
+            result = EstimationItemEditor.create(object, context, descriptor, showAll);
+        }
+        if (result == null) {
+            result = InvoiceEditor.create(object, context, descriptor, showAll);
+        }
+        if (result == null) {
+            result = InvoiceItemEditor.create(object, context, descriptor, showAll);
         }
         if (result == null) {
             result = ParticipationEditor.create(object, context, descriptor, showAll);

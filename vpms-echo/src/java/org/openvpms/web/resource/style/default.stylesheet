@@ -113,6 +113,13 @@
         </properties>
     </style>
 
+    <style name="InvoiceWorkspace.Layout" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="300px"/>
+        </properties>
+    </style>
+
     <style name="ButtonRow" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="10px 2px"/>

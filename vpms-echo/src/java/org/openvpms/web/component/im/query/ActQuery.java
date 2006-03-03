@@ -219,7 +219,8 @@ public class ActQuery implements Query {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             List<Act> acts = Collections.emptyList();
             try {
-                acts = service.getActs(_entityId, null, null, null, // @todo see OVPMS-193
+                acts = service.getActs(_entityId, null,
+                                       _entityName, _conceptName,
                                        startFrom, startTo, null, null,
                                        _status, true);
             } catch (ArchetypeServiceException exception) {

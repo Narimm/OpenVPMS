@@ -33,27 +33,30 @@ public class ActItemTableModel extends DescriptorTableModel {
     /**
      * Construct a <code>ActItemTableModel</code>.
      *
-     * @param factory the component factory
-     * @param showAll if <code>true</code> show optional and required fields;
-     *                otherwise show required fields.
+     * @param factory   the component factory
+     * @param archetype the act archetype descriptor
+     * @param showAll   if <code>true</code> show optional and required fields;
+     *                  otherwise show required fields.
      */
     public ActItemTableModel(IMObjectComponentFactory factory,
+                             ArchetypeDescriptor archetype,
                              boolean showAll) {
-        super(createColumnModel(showAll), factory);
+        super(createColumnModel(archetype, showAll), factory);
     }
 
     /**
      * Helper to create a column model.
      *
-     * @param showAll if <code>true</code> show optional and required fields;
-     *                otherwise show required fields.
+     * @param archetype the act archetype descriptor
+     * @param showAll   if <code>true</code> show optional and required fields;
+     *                  otherwise show required fields.
      * @return a new column model
      */
-    protected static TableColumnModel createColumnModel(boolean showAll) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.estimationItem");
+    protected static TableColumnModel createColumnModel(
+            ArchetypeDescriptor archetype, boolean showAll) {
 
-        NodeDescriptor participants = archetype.getNodeDescriptor("participants");
+        NodeDescriptor participants
+                = archetype.getNodeDescriptor("participants");
         ChainedNodeFilter filter = new ChainedNodeFilter();
         filter.add(new BasicNodeFilter(showAll));
         filter.add(new NamedNodeFilter("participants"));

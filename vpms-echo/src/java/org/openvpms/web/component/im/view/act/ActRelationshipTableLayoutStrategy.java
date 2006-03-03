@@ -7,6 +7,8 @@ import java.util.Set;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -15,6 +17,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -31,6 +34,25 @@ import org.openvpms.web.spring.ServiceHelper;
 public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
+     * The act item archetype.
+     */
+    private final ArchetypeDescriptor _actDescriptor;
+
+    /**
+     * Construct a new <code>ActRelationshipTableLayoutStrategy</code>.
+     *
+     * @param descriptor the act relationship collection descriptor
+     */
+    public ActRelationshipTableLayoutStrategy(NodeDescriptor descriptor) {
+        String relationshipType = descriptor.getArchetypeRange()[0];
+        ArchetypeDescriptor relationship
+                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
+        NodeDescriptor target = relationship.getNodeDescriptor("target");
+        String itemType = target.getArchetypeRange()[0];
+        _actDescriptor = DescriptorHelper.getArchetypeDescriptor(itemType);
+    }
+
+    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a <code>Component</code>, using a factory to
@@ -41,7 +63,8 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, IMObjectComponentFactory factory) {
-        IMObjectTableModel model  = new ActItemTableModel(factory, true);
+        IMObjectTableModel model
+                = new ActItemTableModel(factory, _actDescriptor, true);
         IMObjectTable table = new IMObjectTable(model);
 
         Act act = (Act) object;
