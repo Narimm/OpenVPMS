@@ -590,19 +590,19 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
-    public List<Act> getActs(long entityUid, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
-        if (entityUid <= 0) {
+    public List<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+        if (ref == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
         }
         
         try {
-            return dao.getActs(entityUid, pConceptName, entityName, aConceptName, startTimeFrom, 
+            return dao.getActs(ref, pConceptName, entityName, aConceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetActForEntity,
-                    new Object[] { entityUid }, exception);
+                    new Object[] { ref }, exception);
         }
     }
 
@@ -628,19 +628,19 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getParticipations(long, java.lang.String, java.util.Date, java.util.Date, boolean)
      */
-    public List<Participation> getParticipations(long entityUid, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
-        if (entityUid <= 0) {
+    public List<Participation> getParticipations(IMObjectReference ref, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
+        if (ref == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
         }
         
         try {
-            return dao.getParticipations(entityUid, conceptName, startTimeFrom, 
+            return dao.getParticipations(ref, conceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, activeOnly);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetParticipations,
-                    new Object[] { entityUid }, exception);
+                    new Object[] { ref }, exception);
         }
     }
 

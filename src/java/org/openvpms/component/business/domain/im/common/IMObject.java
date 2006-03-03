@@ -214,6 +214,15 @@ public abstract class IMObject implements Serializable, Cloneable {
     }
     
     /**
+     * Create and return an {@link IMObjectReference} for this object
+     * 
+     * @return IMObjectReference
+     */
+    public IMObjectReference getObjectReference() {
+        return new IMObjectReference(this);
+    }
+    
+    /**
      * @return Returns the description.
      */
     public String getDescription() {
