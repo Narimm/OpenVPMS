@@ -359,10 +359,10 @@ public interface IArchetypeService {
      *            the id of the entity to search for {mandatory}
      * @param pConceptName
      *            the participaton concept name (optional)            
-     * @param aConceptName
-     *            the act concept name, which can be wildcarded  (optional)
      * @param entityName
      *            the act entityName, which can be wildcarded (optional}
+     * @param aConceptName
+     *            the act concept name, which can be wildcarded  (optional)
      * @param startTimeFrom
      *            the activity from  start time for the act(optional)
      * @param startTimeThru
@@ -379,7 +379,7 @@ public interface IArchetypeService {
      * @param EntityServiceException
      *            if there is a problem executing the service request                                                                                  
      */
-    public List<Act> getActs(long entityUid, String entityName, String pConceptName, 
+    public List<Act> getActs(long entityUid, String pConceptName, String entityName, 
             String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, String status, boolean activeOnly);
     
