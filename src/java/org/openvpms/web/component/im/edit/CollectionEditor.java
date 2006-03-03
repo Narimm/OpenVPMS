@@ -466,7 +466,7 @@ public class CollectionEditor implements Saveable {
      * @return an editor to edit <code>object</code>
      */
     protected IMObjectEditor createEditor(IMObject object) {
-        boolean showAll = !object.isNew();
+        boolean showAll = true; // !object.isNew();
         return IMObjectEditorFactory.create(object, _object, _descriptor,
                                             showAll);
     }
