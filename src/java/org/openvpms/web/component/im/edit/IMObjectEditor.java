@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 
 import nextapp.echo2.app.Component;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Saveable;
 
@@ -41,6 +42,13 @@ public interface IMObjectEditor extends Saveable {
      * @return the object being edited
      */
     IMObject getObject();
+
+    /**
+     * Returns the archetype descriptor of the object.
+     *
+     * @return the object's archetype descriptor
+     */
+    ArchetypeDescriptor getArchetypeDescriptor();
 
     /**
      * Delete the current object.

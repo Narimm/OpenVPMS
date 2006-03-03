@@ -138,6 +138,8 @@ public class ActEditor extends AbstractIMObjectEditor {
 
     /**
      * Update totals when an act item changes.
+     *
+     * @todo - workaround for OVPMS-211
      */
     protected void updateTotals() {
         Property highTotal = getProperty("highTotal");
