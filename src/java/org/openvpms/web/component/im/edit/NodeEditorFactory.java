@@ -81,7 +81,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             label.setText("No editor for type " + descriptor.getType());
             result = label;
         }
-        if (descriptor.isReadOnly()) {
+        if (descriptor.isReadOnly() || descriptor.isDerived()) {
             result.setEnabled(false);
         }
         return result;

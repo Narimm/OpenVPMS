@@ -77,7 +77,8 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         for (NodeDescriptor descriptor : descriptors) {
             Component child = factory.create(object, descriptor);
             String name = descriptor.getName();
-            if (name.equals("lowTotal") || name.equals("highTotal")) {
+            if (name.equals("lowTotal") || name.equals("highTotal")
+                    || name.equals("total")) {
                 // @todo - workaround for OVPMS-211
                 child.setEnabled(false);
             }
