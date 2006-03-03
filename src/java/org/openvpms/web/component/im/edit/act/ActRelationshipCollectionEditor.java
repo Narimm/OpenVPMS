@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
@@ -20,6 +21,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -44,6 +46,11 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
      */
     private Map<Act, ActRelationship> _acts;
 
+    /**
+     * The act item archetype.
+     */
+    private final ArchetypeDescriptor _actItemDescriptor;
+
 
     /**
      * Construct a new <code>CollectionEditor</code>.
@@ -57,6 +64,22 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
                                            boolean showAll) {
         super(act, descriptor);
         _showAll = showAll;
+
+        String relationshipType = descriptor.getArchetypeRange()[0];
+        ArchetypeDescriptor relationship
+                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
+        NodeDescriptor target = relationship.getNodeDescriptor("target");
+        String itemType = target.getArchetypeRange()[0];
+        _actItemDescriptor = DescriptorHelper.getArchetypeDescriptor(itemType);
+    }
+
+    /**
+     * Returns the set of acts being edited.
+     *
+     * @return the set of acts being edited.
+     */
+    public Set<Act> getActs() {
+        return _acts.keySet();
     }
 
     /**
@@ -89,15 +112,6 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     }
 
     /**
-     * Returns the set of acts being edited.
-     *
-     * @return the set of acts being edited.
-     */
-    protected Set<Act> getActs() {
-        return _acts.keySet();
-    }
-
-    /**
      * Returns the list of objects to display in the table.
      *
      * @return the list objects to display.
@@ -123,7 +137,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected IMObjectTable createTable() {
         IMObjectTableModel model = new ActItemTableModel(
-                new ReadOnlyComponentFactory(), _showAll);
+                new ReadOnlyComponentFactory(), _actItemDescriptor, _showAll);
         return new IMObjectTable(model);
     }
 
@@ -136,8 +150,9 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     protected void edit(final IMObject object) {
         if (object.isNew()) {
             ActRelationship relationship = (ActRelationship) object;
+
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            Act act = (Act) service.create("act.estimationItem");
+            Act act = (Act) service.create(_actItemDescriptor.getShortName());
             _acts.put(act, relationship);
             super.edit(act);
         } else {
@@ -158,6 +173,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         ActRelationship relationship = _acts.remove(act);
         descriptor.removeChildFromCollection(parent, relationship);
     }
+
     /**
      * Creates a new editor.
      *

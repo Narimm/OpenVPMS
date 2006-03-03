@@ -115,7 +115,8 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         if (_items != null) {
             box.add(_items);
         } else {
-            IMObjectLayoutStrategy strategy = new ActRelationshipTableLayoutStrategy();
+            IMObjectLayoutStrategy strategy
+                    = new ActRelationshipTableLayoutStrategy(items);
             Component child = strategy.apply(object, factory);
             box.add(child);
         }

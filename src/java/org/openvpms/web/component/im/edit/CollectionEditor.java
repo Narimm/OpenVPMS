@@ -20,10 +20,10 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
-import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -119,7 +119,8 @@ public class CollectionEditor implements Saveable {
     /**
      * Construct a new <code>CollectionEditor</code>.
      *
-     * @param descriptor the node descriptor
+     * @param object     the object being edited
+     * @param descriptor the collection node descriptor
      */
     public CollectionEditor(IMObject object, NodeDescriptor descriptor) {
         _object = object;
