@@ -167,7 +167,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected IMObjectEditor createEditor(IMObject object) {
         Act act = (Act) object;
-        boolean showAll = !object.isNew();
+        boolean showAll = true; // !object.isNew();
         return IMObjectEditorFactory.create(act, showAll);
     }
 

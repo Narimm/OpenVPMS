@@ -200,7 +200,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      */
     private void onCreated(IMObject object, final Entity entity) {
         final IMObjectEditor editor
-                = IMObjectEditorFactory.create(object, false);
+                = IMObjectEditorFactory.create(object, true);
         final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

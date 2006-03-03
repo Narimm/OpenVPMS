@@ -274,7 +274,7 @@ public class CRUDWindow {
      * @param object the new object
      */
     protected void onCreated(IMObject object) {
-        edit(object, false);
+        edit(object, true);
     }
 
     /**
