@@ -29,6 +29,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 // log4j
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.im.lookup.ILookupDAO;
@@ -95,16 +97,17 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
      */
     @SuppressWarnings("unchecked")
     public List<Lookup> getLookupsByConcept(String concept) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            return getHibernateTemplate()
-                    .findByNamedQueryAndNamedParam("lookup.getByConcept",
-                            new String[] { "concept" },
-                            new Object[] { concept });
-
+            Query query = session.getNamedQuery("lookup.getByConcept");
+            query.setParameter("concept", concept);
+            return  (List<Lookup>)query.list();
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetLookupsByConcept,
                     new Object[] { concept }, exception);
+        } finally {
+            session.close();  
         }
     }
 
@@ -196,10 +199,22 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
             }
             
             // now execute te query
-           return getHibernateTemplate().findByNamedParam(
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.createQuery(queryString.toString());
+                for (int index = 0; index < names.size(); index++) {
+                    query.setParameter(names.get(index), params.get(index));
+                }
+                return query.list();
+            } finally {
+              session.close();  
+            }
+            /**
+            return getHibernateTemplate().findByNamedParam(
                    queryString.toString(),
                    (String[])names.toArray(new String[names.size()]),
                    params.toArray());
+           **/
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToFindLookups,
@@ -216,16 +231,18 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
      */
     @SuppressWarnings("unchecked")
     public List<Lookup> getSourceLookups(String type, Lookup target) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            return getHibernateTemplate()
-                    .findByNamedQueryAndNamedParam("lookupRelationship.getSourceLookups",
-                            new String[] { "type", "uid" },
-                            new Object[] { type, target.getUid() });
-
+            Query query = session.getNamedQuery("lookupRelationship.getSourceLookups");
+            query.setParameter("type", type);
+            query.setParameter("uid", target.getUid());
+            return  (List<Lookup>)query.list();
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetSourceLookups,
                     new Object[] { type, target }, exception);
+        } finally {
+            session.close();  
         }
     }
 
@@ -247,13 +264,19 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
             
             @SuppressWarnings("unused") String sourceConcept = tokens.nextToken();
             String targetConcept = tokens.nextToken();
-            List results = getHibernateTemplate()
-                .findByNamedQueryAndNamedParam("lookup.getLookupForConceptAndValue",
-                        new String[] { "concept", "value" },
-                        new Object[] {targetConcept, target });
+            List results = null;
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.getNamedQuery("lookup.getLookupForConceptAndValue");
+                query.setParameter("concept", targetConcept);
+                query.setParameter("value", target);
+                results = query.list();
+            } finally {
+                session.close();  
+            }
             
             // if we couldn't find the target lookup then throw an exception
-            if (results.size() == 0) {
+            if ((results == null) || (results.size() == 0)) {
                 lookups = new ArrayList<Lookup>();
             } else {
                 
@@ -283,16 +306,18 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
      */
     @SuppressWarnings("unchecked")
     public List<Lookup> getTargetLookups(String type, Lookup source) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            return getHibernateTemplate()
-                    .findByNamedQueryAndNamedParam("lookupRelationship.getTargetLookups",
-                            new String[] { "type", "uid" },
-                            new Object[] { type, source.getUid() });
-
+            Query query = session.getNamedQuery("lookupRelationship.getTargetLookups");
+            query.setParameter("type", type);
+            query.setParameter("uid", source.getUid());
+            return (List<Lookup>)query.list();
         } catch (Exception exception) {
             throw new LookupDAOException(
                     LookupDAOException.ErrorCode.FailedToGetTargetLookups,
                     new Object[] { type, source }, exception);
+        } finally {
+            session.close();  
         }
     }
 
@@ -314,13 +339,19 @@ public class LookupDAOHibernate extends HibernateDaoSupport implements
             }
             
             String sourceConcept = tokens.nextToken();
-            List results = getHibernateTemplate()
-                .findByNamedQueryAndNamedParam("lookup.getLookupForConceptAndValue",
-                        new String[] { "concept", "value" },
-                        new Object[] {sourceConcept, source });
+            List results = null;
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.getNamedQuery("lookup.getLookupForConceptAndValue");
+                query.setParameter("concept", sourceConcept);
+                query.setParameter("value", source);
+                results = query.list();
+            } finally {
+                session.close();  
+            }
             
             // if we couldn't find the target lookup then return an empty
-            if (results.size() == 0) {
+            if ((results == null) || (results.size() == 0)) {
                 lookups = new ArrayList<Lookup>();
             } else {
                 // if there are more then just take the first one and issue a 

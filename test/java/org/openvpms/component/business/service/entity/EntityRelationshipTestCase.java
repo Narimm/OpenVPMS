@@ -278,8 +278,7 @@ public class EntityRelationshipTestCase extends
         assertTrue(person.getEntityRelationships().size() == 1);
         rel = person.getEntityRelationships().iterator().next();
         assertTrue(rel != null);
-        Person samePerson = (Person)service.getById(rel.getSource().getArchetypeId(),
-                rel.getSource().getUid());
+        Person samePerson = (Person)service.get(rel.getSource());
         assertTrue(person.getUid() == samePerson.getUid());
         assertTrue(person.getVersion() == samePerson.getVersion());
     }

@@ -33,7 +33,10 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.xml.sax.InputSource;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 
@@ -83,9 +86,60 @@ public class AssertionDescriptorTestCase extends BaseTestCase {
         
         // load the archetypes
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 2);
+        assertTrue(descriptors.getArchetypeDescriptors().size() == 3);
         
         assertTrue(descriptors.getArchetypeDescriptors().get("assertion.archetypeRange") != null);
+    }
+    
+    /**
+     * Test that the assertion descriptors are returned in the order they were 
+     * entered
+     */
+    public void testAssertionDescriptorOrdering()
+    throws Exception {
+        Hashtable gparams = getTestData().getGlobalParams();
+        String mfile = (String)gparams.get("mappingFile");
+        String afile = (String)gparams.get("archetypeFile");
+        
+        // load the archetypes
+        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
+        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors().get("person.person");
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
+        assertTrue(ndesc != null);
+        assertTrue(ndesc.getAssertionDescriptors().size() == 5);
+        int currIndex = 0;
+        String assertName = "dummyAssertion";
+        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsAsArray()) {
+            String name = desc.getName();
+            if (name.startsWith(assertName)) {
+                int index = Integer.parseInt(name.substring(assertName.length()));
+                if (index > currIndex) {
+                    currIndex = index;
+                } else {
+                    fail("Assertions are not returned in the correct order currIndex: " 
+                            + currIndex + " index: " + index);
+                }
+            }
+        }
+        
+        // clone and test it again
+        NodeDescriptor clone = (NodeDescriptor)ndesc.clone();
+        assertTrue(clone != null);
+        assertTrue(clone.getAssertionDescriptors().size() == 5);
+        currIndex = 0;
+        for (AssertionDescriptor desc : clone.getAssertionDescriptorsAsArray()) {
+            String name = desc.getName();
+            if (name.startsWith(assertName)) {
+                int index = Integer.parseInt(name.substring(assertName.length()));
+                if (index > currIndex) {
+                    currIndex = index;
+                } else {
+                    fail("Assertions are not returned in the correct order currIndex: " 
+                            + currIndex + " index: " + index);
+                }
+            }
+        }
     }
 
     /**

@@ -56,14 +56,14 @@
         <property name="qualifiedName" access="property" type="string"
           column="entity_archetype_id" />
       </component>
-      <property name="uid" access="field" type="long" column="entity_uid" />
+      <property name="linkId" access="field" type="string" column="entity_linkId" />
     </component>
     <component name="act">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"
           column="act_archetype_id" />
       </component>
-      <property name="uid" access="field" type="long" column="act_uid" />
+      <property name="linkId" access="field" type="string" column="act_linkId" />
     </component>
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

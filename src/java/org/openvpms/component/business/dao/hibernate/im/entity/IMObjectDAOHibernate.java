@@ -295,6 +295,46 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     }
     
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getByLinkId(java.lang.String, java.lang.String)
+     */
+    public IMObject getByLinkId(String clazz, String linkId) {
+        try {
+            // check that rm has been specified
+            if (StringUtils.isEmpty(clazz)) {
+                throw new IMObjectDAOException(
+                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
+                        new Object[]{});
+            }
+            
+            StringBuffer queryString = new StringBuffer();
+            
+            queryString.append("select entity from ");
+            queryString.append(clazz);
+            queryString.append(" as entity where entity.linkId = :linkId");
+            
+            // let's use the session directly
+            Session session = getHibernateTemplate().getSessionFactory().openSession();
+            try {
+                Query query = session.createQuery(queryString.toString());
+                query.setParameter("linkId", linkId);
+                List result = query.list();
+                if (result.size() == 0){
+                    return null;
+                } else {
+                    return (IMObject)result.get(0);
+                }
+            } finally {
+              session.close();  
+            }
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindIMObjectReference,
+                    new Object[]{clazz, linkId},
+                    exception);
+        }
+    }
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#getByNamedQuery(java.lang.String, java.util.Map)
      */
     @SuppressWarnings("unchecked")

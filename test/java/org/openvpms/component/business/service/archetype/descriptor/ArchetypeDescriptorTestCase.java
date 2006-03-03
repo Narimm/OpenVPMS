@@ -70,7 +70,7 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
      * @see BaseTestCase#tearDown()
      */
     protected void tearDown() throws Exception {
-        super.tearDown();
+        super.tearDown(); 
     }
 
     /**
@@ -100,7 +100,7 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
         // load the mapping file
         // load the assertion types
         AssertionTypeDescriptors descriptors = getAssertionTypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getAssertionTypeDescriptors().size() == 5);
+        assertTrue(descriptors.getAssertionTypeDescriptors().size() == 9);
     }
     
     /**

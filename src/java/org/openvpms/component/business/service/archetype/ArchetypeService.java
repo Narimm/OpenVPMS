@@ -484,7 +484,27 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.business.domain.im.common.IMObjectReference)
      */
     public IMObject get(IMObjectReference reference) {
-        return getById(reference.getArchetypeId(), reference.getUid());
+        if (reference == null) {
+            return null;
+        }
+
+        // check that we have a dao defined
+        if (dao == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.NoDaoConfigured,
+                    new Object[] {});
+        }
+
+        try {
+            // retrieve the descriptor and call the dao
+            ArchetypeDescriptor desc = getArchetypeDescriptor(reference.getArchetypeId());
+            
+            return dao.getByLinkId(desc.getClassName(), reference.getLinkId());
+        } catch (IMObjectDAOException exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedInGetByObjectReference,
+                    new Object[] {reference}, exception);
+        }
     }
 
     /*

@@ -289,6 +289,44 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
     }
     
     /**
+     * Test that we can set the actrelationships without first saving the 
+     * acts
+     */
+    public void testActRelationshipsToActsBeforeSave()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // get initial numbr of entries in tables
+            int acount = HibernateLookupUtil.getTableRowCount(session, "act");
+            int arcount = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+
+            // execute the test
+            tx = session.beginTransaction();
+            Act src = createAct("act11");
+            Act tar = createAct("act22");
+            src.addActRelationship(createActRelationship("dummy", src, tar));
+            session.save(src);
+            session.save(tar);
+            tx.commit();
+            
+            // test the counts
+            int acount1 = HibernateLookupUtil.getTableRowCount(session, "act");
+            int arcount1 = HibernateLookupUtil.getTableRowCount(session, "actRelationship");
+            assertTrue(acount1 == acount + 2);
+            assertTrue(arcount1 == arcount + 1);
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
      * Test adding an act relationship to an act
      */
     public void testMod2ActRelationshipToAct()

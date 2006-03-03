@@ -267,17 +267,16 @@ public class Entity extends IMObject {
      *            if this relationship cannot be added to this entity            
      */
     public void addEntityRelationship(EntityRelationship entityRel) {
-        if ((entityRel.getSource().getUid() == this.getUid()) &&
+        if ((entityRel.getSource().getLinkId().equals(this.getLinkId())) &&
             (entityRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
             addSourceEntityRelationship(entityRel);
-        } else if ((entityRel.getTarget().getUid() == this.getUid()) &&
+        } else if ((entityRel.getTarget().getLinkId().equals(this.getLinkId())) &&
             (entityRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
             addTargetEntityRelationship(entityRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToAddEntityRelationship,
-                    new Object[] { entityRel.getSource().getUid(), 
-                            entityRel.getTarget().getUid()});
+                    new Object[] { entityRel.getSource(), entityRel.getTarget()});
         }
     }
 
@@ -289,17 +288,16 @@ public class Entity extends IMObject {
      *            the entity relationship to remove
      */
     public void removeEntityRelationship(EntityRelationship entityRel) {
-        if ((entityRel.getSource().getUid() == this.getUid()) &&
+        if ((entityRel.getSource().getLinkId().equals(this.getLinkId())) &&
             (entityRel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
             removeSourceEntityRelationship(entityRel);
-        } else if ((entityRel.getTarget().getUid() == this.getUid()) &&
+        } else if ((entityRel.getTarget().getLinkId().equals(this.getLinkId())) &&
             (entityRel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
             removeTargetEntityRelationship(entityRel);
         } else {
             throw new EntityException(
                     EntityException.ErrorCode.FailedToRemoveEntityRelationship,
-                    new Object[] { entityRel.getSource().getUid(), 
-                            entityRel.getTarget().getUid()});
+                    new Object[] { entityRel.getSource(), entityRel.getTarget()});
         }
     }
     

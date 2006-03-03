@@ -606,7 +606,7 @@ public class ArchetypeServicePersistenceTestCase extends
         
         IMObjectReference ref = new IMObjectReference(person);
         person = (Person)service.get(ref);
-        assertTrue(person.getUid() == ref.getUid());
+        assertTrue(person.getLinkId().equals(ref.getLinkId()));
         assertTrue(person.getLastName().equals("Alateras"));
     }
     
