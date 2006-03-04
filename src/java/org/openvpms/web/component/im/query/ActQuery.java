@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -51,7 +52,7 @@ public class ActQuery implements Query {
     /**
      * The id of the entity to search for.
      */
-    private long _entityId;
+    private IMObjectReference _entityId;
 
     /**
      * The archetype entity name.
@@ -134,7 +135,7 @@ public class ActQuery implements Query {
      * @param entity the entity to search for. May be <code>null</code>
      */
     public void setEntity(Entity entity) {
-        _entityId = (entity != null) ? entity.getUid() : -1;
+        _entityId = (entity != null) ? entity.getObjectReference() : null;
     }
 
     /**
@@ -213,7 +214,7 @@ public class ActQuery implements Query {
     public List<IMObject> query() {
         List<IMObject> result = Collections.emptyList();
 
-        if (_entityId != -1) {
+        if (_entityId != null) {
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
             IArchetypeService service = ServiceHelper.getArchetypeService();
