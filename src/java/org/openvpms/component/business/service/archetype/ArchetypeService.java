@@ -264,6 +264,13 @@ public class ArchetypeService implements IArchetypeService {
             return;
         }
         
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.deriveValues: Deriving values for type" 
+                    + object.getArchetypeId().getShortName() 
+                    + " with uid " + object.getUid()
+                    + " and version " + object.getVersion());
+        }
+        
         // check that we can retrieve a valid archetype for this object
         ArchetypeDescriptor descriptor = getArchetypeDescriptor(object.getArchetypeId());
         if (descriptor == null) {
@@ -329,6 +336,13 @@ public class ArchetypeService implements IArchetypeService {
     public List<IMObject> get(String rmName, String entityName,
             String conceptName, String instanceName, boolean primaryOnly,
             boolean activeOnly) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.get: rmName " + rmName
+                    + " entityName " + entityName
+                    + " conceptName " + conceptName
+                    + " instanceName " + instanceName);
+        }
+        
         List<IMObject> results = new ArrayList<IMObject>();
         Set<String> types = getDistinctTypes(rmName, entityName, primaryOnly);
         
@@ -352,6 +366,10 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[])
      */
     public List<IMObject> get(String[] shortNames, boolean activeOnly) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.get: shortNames " + shortNames);
+        }
+        
         List<IMObject> results = new ArrayList<IMObject>();
         for (String shortName : shortNames) {
             
@@ -410,6 +428,11 @@ public class ArchetypeService implements IArchetypeService {
      */
     public List<IMObject> get(String[] shortNames, String instanceName, 
             boolean primaryOnly, boolean activeOnly) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.get: shortNames " + shortNames
+                    + " instanceName " + instanceName);
+        }
+        
         List<IMObject> results =  new ArrayList<IMObject>();
         if ((shortNames != null) &&
             (shortNames.length > 0)) {
@@ -459,6 +482,10 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getByNamedQuery(java.lang.String, java.util.Map)
      */
     public List<IMObject> getByNamedQuery(String name, Map<String, Object> params) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.getByNamedQuery: query " + name);
+        }
+        
         // check that we have a non0null query name
         if (StringUtils.isEmpty(name)) {
             return null;
@@ -488,6 +515,11 @@ public class ArchetypeService implements IArchetypeService {
             return null;
         }
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.get: reference " 
+                    + reference.getArchetypeId().getShortName());
+        }
+        
         // check that we have a dao defined
         if (dao == null) {
             throw new ArchetypeServiceException(
@@ -596,6 +628,13 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
         }
         
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.getActs: ref " + ref  
+                    + " pConceptName " + pConceptName
+                    + " entityName " + entityName
+                    + " aConceptName " + aConceptName);
+        }
+
         try {
             return dao.getActs(ref, pConceptName, entityName, aConceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
@@ -610,11 +649,18 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
     public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.getActs: "  
+                    + " entityName " + entityName
+                    + " conceptName " + conceptName);
+        }
+
         if ((StringUtils.isEmpty(entityName)) &&
             (StringUtils.isEmpty(conceptName))) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityConceptNotSpecified);
         }
+        
         try {
             return dao.getActs(entityName, conceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
@@ -634,6 +680,11 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
         }
         
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.getParticipations: ref " + ref  
+                    + " conceptName " + conceptName);
+        }
+
         try {
             return dao.getParticipations(ref, conceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, activeOnly);
