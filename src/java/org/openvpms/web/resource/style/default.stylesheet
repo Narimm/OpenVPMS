@@ -51,15 +51,15 @@
            type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="50px"/>
-            <property name="background" value="#6B6D84"/>
+            <property name="separatorPosition" value="75px"/>
+            <property name="background" value="#339933"/>
         </properties>
     </style>
 
     <style name="TitlePane" type="nextapp.echo2.app.ContentPane">
         <properties>
-            <property name="background" value="#6B6D84"/>
-            <property name="foreground" value="#fdf5e6"/>
+            <property name="foreground" value="#6B6D84"/>
+            <property name="background" value="#fdf5e6"/>
             <!-- oldlace -->
         </properties>
     </style>
@@ -67,22 +67,23 @@
     <style name="MainPane" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="200px"/>
-            <property name="background" value="#6B6D84"/>
+            <property name="separatorPosition" value="150px"/>
+            <property name="background" value="#339933"/>
         </properties>
     </style>
 
     <style name="MainPane.Left" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="35px"/>
+            <property name="separatorPosition" value="25px"/>
+            <property name="background" value="#339933"/>
         </properties>
     </style>
 
     <style name="MainPane.Right" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="35px"/>
+            <property name="separatorPosition" value="25px"/>
         </properties>
     </style>
 
@@ -91,12 +92,14 @@
         <properties>
             <property name="insets" value="8px 0px"/>
             <property name="foreground" value="#fdf5e6"/>
+            <property name="background" value="#339933"/>
             <!-- oldlace -->
             <property name="pressedEnabled" value="true"/>
             <property name="pressedForeground" value="#000000"/>
             <!-- black -->
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#000000"/>
+            <property name="rolloverBackground" value="#99cc66"/>
         </properties>
     </style>
 
@@ -153,7 +156,7 @@
             <property name="disabledForeground" value="#7f7f7f"/>
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#6f0f0f"/>
-            <property name="background" value="#6a5acd"/>
+            <property name="background" value="#99cc66"/>
             <property name="foreground" value="#fdf5e6"/>
             <property name="border">
                 <border size="1px" style="outset" color="#7b68ee"/>
@@ -365,15 +368,15 @@
                       name="nextapp.echo2.webcontainer.syncpeer.WindowPanePeer.ieAlphaRenderBorder"
                       value="true"/>
             <property name="titleInsets" value="10px 5px"/>
-            <property name="titleBackground" value="#2f2f4f"/>
-            <property name="titleBackgroundImage">
+            <property name="titleBackground" value="#99cc66"/>
+            <!--property name="titleBackgroundImage">
                 <fill-image vertical="100%" repeat="horizontal">
                     <image type="nextapp.echo2.app.ResourceImageReference">
                         <resource-image-reference
                                 resource="/org/openvpms/web/resource/image/windowpanetitlebackground.png"/>
                     </image>
                 </fill-image>
-            </property>
+            </property-->
             <property name="titleForeground" value="#ffffff"/>
             <property name="border">
                 <fill-image-border content-insets="8px 8px 14px 14px"
@@ -496,9 +499,9 @@
 
     <style name="default" type="nextapp.echo2.app.button.AbstractButton">
         <properties>
-            <property name="background" value="#6a5acd"/>
+            <property name="background" value="#99cc66"/>
             <!-- slateblue -->
-            <property name="foreground" value="#fdf5e6"/>
+            <property name="foreground" value="#000000"/>
             <!-- oldlace -->
             <property name="border">
                 <border size="1px" style="outset" color="#7b68ee"/>
@@ -514,7 +517,7 @@
                 <!-- black -->
             </property>
             <property name="rolloverEnabled" value="true"/>
-            <property name="rolloverForeground" value="#6f0f0f"/>
+            <property name="rolloverForeground" value="#ffb6c1"/>
             <property name="insets" value="20px 3px"/>
         </properties>
     </style>
