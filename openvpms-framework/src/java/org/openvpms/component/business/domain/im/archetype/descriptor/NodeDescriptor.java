@@ -1405,7 +1405,12 @@ public class NodeDescriptor extends Descriptor {
         // original value
         
         Class theClass = getClazz();
-        Constructor constructor = theClass.getConstructor(new Class[]{value.getClass()});
+        Constructor constructor = null;
+        try {
+            constructor = theClass.getConstructor(new Class[]{value.getClass()});
+        } catch (NoSuchMethodError ignore) {
+        }
+        
         if (constructor != null) {
             return constructor.newInstance(new Object[] {value});
         } else {

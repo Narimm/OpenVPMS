@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
+import org.apache.log4j.Logger;
 
 /**
  * This helper class is used to instantiate new {@link JXPathContext} objects
@@ -35,6 +36,12 @@ import org.apache.commons.jxpath.JXPathContext;
  * @version $LastChangedDate$
  */
 public class JXPathHelper {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(JXPathHelper.class);
+    
     /**
      * A list of extension functions. These are cached in a class attribute
      */
