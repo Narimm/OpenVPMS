@@ -80,6 +80,7 @@ public class LoginDialog extends PopupDialog {
         setClosable(false);
 
         _username = TextComponentFactory.create();
+        _username.setText("guest");
         _password = TextComponentFactory.createPassword();
 
         _username.addActionListener(new ActionListener() {
@@ -133,6 +134,12 @@ public class LoginDialog extends PopupDialog {
      *         <code>false</code>
      */
     protected boolean authenticate(String username, String password) {
+/*
+        if (username.compareToIgnoreCase("guest") != 0)
+            return false;
+        if (password.compareToIgnoreCase("stakeholder") != 0)
+            return false;        
+*/            
         return true;
     }
 

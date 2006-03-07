@@ -28,7 +28,7 @@ public class TitlePane extends ContentPane {
     /**
      * The project logo.
      */
-    private final String PATH = "/org/openvpms/web/resource/image/openvpms.png";
+    private final String PATH = "/org/openvpms/web/resource/image/openvpms.gif";
 
     /**
      * The style name.
