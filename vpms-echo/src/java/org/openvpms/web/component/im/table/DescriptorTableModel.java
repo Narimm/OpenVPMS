@@ -91,14 +91,16 @@ public class DescriptorTableModel extends IMObjectTableModel {
      */
     public static void create(List<NodeDescriptor> descriptors,
                               TableColumnModel columns) {
+        // determine a unique starting index for the columns
         int index = IMObjectTableModel.NEXT_INDEX;
         Iterator iterator = columns.getColumns();
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
-            if (col.getModelIndex() >  index) {
+            if (col.getModelIndex() >= index) {
                 index = col.getModelIndex() + 1;
             }
         }
+
         for (NodeDescriptor descriptor : descriptors) {
             TableColumn column = new DescriptorTableColumn(index, descriptor);
             columns.addColumn(column);
