@@ -10,25 +10,27 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.create.IMObjectCreatorListener;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 /**
  * Generic CRUD window.
@@ -150,6 +152,15 @@ public class CRUDWindow {
     }
 
     /**
+     * Returns the event listener.
+     *
+     * @return the event listener
+     */
+    public CRUDWindowListener getListener() {
+        return _listener;
+    }
+
+    /**
      * Returns the component representing this.
      *
      * @return the component
@@ -189,6 +200,30 @@ public class CRUDWindow {
     }
 
     /**
+     * Returns the object.
+     *
+     * @return the object, or <code>null</code> if there is none set
+     */
+    public IMObject getObject() {
+        return (_viewer != null) ? _viewer.getObject() : null;
+    }
+
+    /**
+     * Returns the object's archetype descriptor.
+     *
+     * @return the object's archetype descriptor or <code>null</code> if there
+     *         is no object set
+     */
+    public ArchetypeDescriptor getArchetypeDescriptor() {
+        IMObject object = getObject();
+        ArchetypeDescriptor archetype = null;
+        if (object != null) {
+            archetype = DescriptorHelper.getArchetypeDescriptor(object);
+        }
+        return archetype;
+    }
+
+    /**
      * Invoked when the 'new' button is pressed.
      */
     public void onCreate() {
@@ -199,7 +234,7 @@ public class CRUDWindow {
         };
 
         IMObjectCreator.create(_type, _refModelName, _entityName, _conceptName,
-                listener);
+                               listener);
     }
 
     /**
@@ -291,7 +326,7 @@ public class CRUDWindow {
                 IArchetypeService service
                         = ServiceHelper.getArchetypeService();
                 object = service.getById(object.getArchetypeId(),
-                        object.getUid());
+                                         object.getUid());
                 if (object == null) {
                     ErrorDialog.show(_type + " has been deleted");
                 } else {
@@ -305,23 +340,21 @@ public class CRUDWindow {
      * Invoked when the delete button is pressed.
      */
     protected void onDelete() {
-        if (_viewer != null) {
-            IMObject object = _viewer.getObject();
-            if (object instanceof Entity) {
-                Entity entity = (Entity) object;
-                if (!entity.getEntityRelationships().isEmpty()) {
-                    if (object.isActive()) {
-                        confirmDeactivate(object);
-                    } else {
-                        ErrorDialog.show("Delete",
-                                "Cannot delete deactivated instance");
-                    }
+        IMObject object = getObject();
+        if (object instanceof Entity) {
+            Entity entity = (Entity) object;
+            if (!entity.getEntityRelationships().isEmpty()) {
+                if (object.isActive()) {
+                    confirmDeactivate(object);
                 } else {
-                    confirmDelete(object);
+                    ErrorDialog.show("Delete",
+                                     "Cannot delete deactivated instance");
                 }
             } else {
                 confirmDelete(object);
             }
+        } else {
+            confirmDelete(object);
         }
     }
 

@@ -21,11 +21,6 @@ public class BrowserDialog extends PopupDialog {
     public static final String NEW_ID = "new";
 
     /**
-     * The browser.
-     */
-    private Browser _browser;
-
-    /**
      * The selected object.
      */
     private IMObject _selected;
@@ -62,7 +57,6 @@ public class BrowserDialog extends PopupDialog {
     public BrowserDialog(String title, Browser browser, boolean addNew) {
         super(title, STYLE, Buttons.CANCEL);
         setModal(true);
-        _browser = browser;
         getLayout().add(browser.getComponent());
 
         if (addNew) {
@@ -72,9 +66,12 @@ public class BrowserDialog extends PopupDialog {
                 }
             });
         }
-        _browser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSelected();
+        browser.addQueryListener(new QueryListener() {
+            public void query() {
+            }
+
+            public void selected(IMObject object) {
+                onSelected(object);
             }
         });
     }
@@ -100,12 +97,12 @@ public class BrowserDialog extends PopupDialog {
 
     /**
      * Select the current object, and close the browser.
+     *
+     * @param object the selected object
      */
-    protected void onSelected() {
-        _selected = _browser.getSelected();
-        if (_selected != null) {
-            close();
-        }
+    protected void onSelected(IMObject object) {
+        _selected = object;
+        close();
     }
 
     /**

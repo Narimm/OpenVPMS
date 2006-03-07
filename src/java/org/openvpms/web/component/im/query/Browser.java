@@ -1,6 +1,6 @@
 package org.openvpms.web.component.im.query;
 
-import java.util.EventListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import nextapp.echo2.app.Button;
@@ -8,7 +8,6 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.EventListenerList;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.IMObjectTable;
@@ -59,7 +58,7 @@ public class Browser {
     /**
      * The event listener list.
      */
-    private EventListenerList _listeners;
+    private List<QueryListener> _listeners = new ArrayList<QueryListener>();
 
     /**
      * Style name for this.
@@ -142,12 +141,12 @@ public class Browser {
 
     /**
      * Adds an <code>ActionListener</code> to receive notification of selection
-     * actions.
+     * and query actions.
      *
      * @param listener the listener to add
      */
-    public void addActionListener(ActionListener listener) {
-        getEventListenerList().addListener(ActionListener.class, listener);
+    public void addQueryListener(QueryListener listener) {
+        _listeners.add(listener);
     }
 
     /**
@@ -180,7 +179,7 @@ public class Browser {
         // query button
         Button query = ButtonFactory.create(QUERY_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                query();
+                onQuery();
             }
         });
 
@@ -197,28 +196,15 @@ public class Browser {
     }
 
     /**
-     * Notifies all listeners that have registered for this event type.
-     *
-     * @param event the <code>ActionEvent</code> to send
+     * Invoked when the query button is pressed. Performs the query and
+     * notifies any listeners.
      */
-    protected void fireActionPerformed(ActionEvent event) {
-        EventListener[] listeners = getEventListenerList().getListeners(
-                ActionListener.class);
-        for (int index = 0; index < listeners.length; ++index) {
-            ((ActionListener) listeners[index]).actionPerformed(event);
+    private void onQuery() {
+        query();
+        QueryListener[] listeners = _listeners.toArray(new QueryListener[0]);
+        for (QueryListener listener : listeners) {
+            listener.query();
         }
-    }
-
-    /**
-     * Returns the event listener list.
-     *
-     * @return the listener list
-     */
-    protected EventListenerList getEventListenerList() {
-        if (_listeners == null) {
-            _listeners = new EventListenerList();
-        }
-        return _listeners;
     }
 
     /**
@@ -227,7 +213,13 @@ public class Browser {
      */
     private void onSelect() {
         _selected = _table.getSelected();
-        fireActionPerformed(new ActionEvent(this, SELECTED));
+        if (_selected != null) {
+            QueryListener[] listeners
+                    = _listeners.toArray(new QueryListener[0]);
+            for (QueryListener listener : listeners) {
+                listener.selected(_selected);
+            }
+        }
     }
 
 }
