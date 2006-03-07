@@ -26,7 +26,6 @@
       <column name="act_relationship_id" index="act_relationship_id_idx" />
       <generator class="increment" />
     </id>
-    <version name="version" access="property" type="long" />
     <property name="linkId" access="property" type="string" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"

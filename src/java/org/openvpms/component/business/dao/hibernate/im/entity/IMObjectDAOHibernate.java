@@ -58,7 +58,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *  Default constructor
      */
     public IMObjectDAOHibernate() {
-        super();
+        super(); 
     }
     
     
@@ -68,6 +68,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     @Override
     protected HibernateTemplate createHibernateTemplate(SessionFactory sessionFactory) {
         HibernateTemplate template = super.createHibernateTemplate(sessionFactory);
+        template.setCacheQueries(true);
         template.setAllowCreate(true);
         
         return template;

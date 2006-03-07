@@ -24,8 +24,10 @@ import java.util.List;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -150,6 +152,26 @@ public class ActTestCases extends
         assertTrue(acts.size() == 2);
     }
     
+    
+    /**
+     * Test bug OVPMS-219
+     */
+    public void testOVPMS219()
+    throws Exception {
+        Act act1 = createAct("act1");
+        archetypeService.save(act1);
+        Act act2 = createAct("act2");
+        archetypeService.save(act2);
+        act1.addSourceActRelationship(createActRelationship(act1, act2));
+        archetypeService.save(act1);
+        act1 = (Act)archetypeService.getById(act1.getArchetypeId(), act1.getUid());
+        for (ActRelationship theRel : act1.getSourceActRelationships()) {
+            act2 = (Act)archetypeService.get(theRel.getTarget());
+        }
+        archetypeService.save(act2);
+       archetypeService.save(act1);
+    }
+    
     /**
      * Exercise the getActs query 
      */
@@ -178,6 +200,29 @@ public class ActTestCases extends
         // check that it retrieves null result set correctly
         assertTrue(archetypeService.getActs("jimmya-act", null, null, null, 
                 null, null, null, false).size() == 0);
+    }
+    
+    /**
+     * Test that we can use the archetype service function resolve in an 
+     * xpath expression
+     */
+    public void testResolveInDerivedValue()
+    throws Exception {
+        Act act1 = createAct("my act");
+        archetypeService.save(act1);
+        Act act2 = createAct("your act");
+        archetypeService.save(act2);
+        ActRelationship rel = createActRelationship(act1, act2);
+        archetypeService.deriveValues(rel);
+        assertFalse(StringUtils.isEmpty(rel.getName()));
+        assertFalse(StringUtils.isEmpty(rel.getDescription()));
+        act1.addActRelationship(rel);
+        archetypeService.save(act1);
+        
+        Act tmp = (Act)archetypeService.get(act1.getObjectReference());
+        assertTrue(tmp != null);
+        assertFalse(StringUtils.isEmpty(rel.getName()));
+        assertFalse(StringUtils.isEmpty(rel.getDescription()));
     }
     
     
@@ -234,8 +279,26 @@ public class ActTestCases extends
     private Act createAct(String name) {
         Act act = (Act)archetypeService.create("act.simple");
         act.setName(name);
+        act.setDescription(name);
         
         return act;
+    }
+
+    /**
+     * Create a simple act relationship
+     *
+     * @param source
+     *          the source act
+     * @param target
+     *          the target act         
+     * @return ActRelationship
+     */
+    private ActRelationship createActRelationship(Act source, Act target) {
+        ActRelationship rel = (ActRelationship)archetypeService.create("actRelationship.simple");
+        rel.setSource(new IMObjectReference(source));
+        rel.setTarget(new IMObjectReference(target));
+        
+        return rel;
     }
 
     /* (non-Javadoc)

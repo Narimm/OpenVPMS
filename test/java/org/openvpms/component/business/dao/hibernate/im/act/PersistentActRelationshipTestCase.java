@@ -327,6 +327,52 @@ public class PersistentActRelationshipTestCase extends HibernateInfoModelTestCas
     }
     
     /**
+     * Test that OVPMS-219 bug
+     */
+    public void testOVPMS219()
+    throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            // step 1
+            tx = session.beginTransaction();
+            Act src = createAct("act11");
+            session.save(src);
+            tx.commit();
+            
+            // step 2
+            tx = session.beginTransaction();
+            Act tar = createAct("act22");
+            session.save(tar);
+            tx.commit();
+            
+            // step 3, 4 and 5
+            tx = session.beginTransaction();
+            src.addActRelationship(createActRelationship("dummy", src, tar));
+            session.save(src);
+            tx.commit();
+            
+            // step 6
+            tx = session.beginTransaction();
+            session.save(tar);
+            tx.commit();
+            
+            // step 7
+            tx = session.beginTransaction();
+            session.save(src);
+            tx.commit();
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+    
+    /**
      * Test adding an act relationship to an act
      */
     public void testMod2ActRelationshipToAct()

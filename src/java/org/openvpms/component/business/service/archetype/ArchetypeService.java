@@ -515,11 +515,6 @@ public class ArchetypeService implements IArchetypeService {
             return null;
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.get: reference " 
-                    + reference.getArchetypeId().getShortName());
-        }
-        
         // check that we have a dao defined
         if (dao == null) {
             throw new ArchetypeServiceException(
@@ -530,8 +525,15 @@ public class ArchetypeService implements IArchetypeService {
         try {
             // retrieve the descriptor and call the dao
             ArchetypeDescriptor desc = getArchetypeDescriptor(reference.getArchetypeId());
+            IMObject imobj  = dao.getByLinkId(desc.getClassName(), reference.getLinkId());
+            if (logger.isDebugEnabled()) {
+                logger.debug("ArchetypeService.get: reference " 
+                        + reference.getArchetypeId().getShortName()
+                        + " uid " + imobj.getUid()
+                        + " version " + imobj.getVersion());
+            }
             
-            return dao.getByLinkId(desc.getClassName(), reference.getLinkId());
+            return imobj;
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedInGetByObjectReference,

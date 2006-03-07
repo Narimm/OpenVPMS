@@ -19,11 +19,14 @@
 package org.openvpms.component.system.service.jxpath;
 
 // java
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 // commons-beanutils
@@ -365,6 +368,8 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 3)") != null);
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 4)") == null);
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 0)") == null);
+        assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 1)/name") != null);
+        
     }
     
     /**
@@ -397,6 +402,54 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(prop.getValue().equals("descripor.archetypeRange"));
     }
     
+    /**
+     * Test that we can sum correctly over a list of objects
+     */
+    public void testSumOverBigDecimal()
+    throws Exception {
+        FunctionLibrary lib = new FunctionLibrary();
+        lib.addFunctions(new ClassFunctions(TestFunctions.class, "ns"));
+        
+        List<BigDecimalValues> values = new ArrayList<BigDecimalValues>();
+        values.add(new BigDecimalValues(new BigDecimal(12), new BigDecimal(12)));
+        values.add(new BigDecimalValues(new BigDecimal(13), new BigDecimal(13)));
+        values.add(new BigDecimalValues(new BigDecimal(15), new BigDecimal(15)));
+        
+        JXPathContext ctx = JXPathContext.newContext(values);
+        ctx.setFunctions(lib);
+        
+        Object sum = ctx.getValue("ns:sum(child::high)");
+        assertTrue(sum.getClass() == BigDecimal.class);
+        sum = ctx.getValue("ns:sum(child::low)");
+        assertTrue(sum.getClass() == BigDecimal.class);
+    }
+    
+    /**
+     * Test that we can still sum using a conversion function in the 
+     * expression
+     */
+    public void testSumOverDouble()
+    throws Exception {
+        FunctionLibrary lib = new FunctionLibrary();
+        lib.addFunctions(new ClassFunctions(TestFunctions.class, "ns"));
+        
+        List<DoubleValues> values = new ArrayList<DoubleValues>();
+        values.add(new DoubleValues(12, 12));
+        values.add(new DoubleValues(13, 13));
+        values.add(new DoubleValues(15, 15));
+        
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("values", values);
+        JXPathContext ctx = JXPathContext.newContext(map);
+        ctx.setFunctions(lib);
+        
+        //Object sum = ctx.getValue("sum(values/child::high[self::high < 0])");
+        Object sum = ctx.getValue("ns:sum(ns:toBigDecimalValues(values)/child::high)");
+        assertTrue(sum.getClass() == BigDecimal.class);
+        //sum = ctx.getValue("ns:sum(ns:toBigDecimal(child::low))");
+        //assertTrue(sum.getClass() == BigDecimal.class);
+    }
+     
     /**
      * Test that the extension functions are called through JXPathHelper
      */

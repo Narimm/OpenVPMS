@@ -20,6 +20,8 @@
 package org.openvpms.component.system.service.jxpath;
 
 // java core
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 // openvpms-framework
@@ -67,5 +69,40 @@ public class TestFunctions {
      */
     public static boolean testName(IMObject imobj) {
         return !StringUtils.isEmpty(imobj.getName());
+    }
+    
+    /**
+     * Sum all the nodes, which will be BigDecimal nodes and and return
+     * a BigDecimal
+     * 
+     * @param context
+     *            the expression context
+     * @return BigDecimal            
+     */
+    public static BigDecimal sum(List<BigDecimal> list) {
+        BigDecimal total = new BigDecimal(0);
+        for (BigDecimal item : list) {
+            total = total.add(item);
+        }
+        
+        return total;
+    }
+    
+    /**
+     * Return a {@link BigDecimal} given a double
+     * 
+     * @param input
+     *            the double
+     * @return BigDecimal            
+     */
+    public static List<BigDecimalValues> toBigDecimalValues(List<DoubleValues> doubles) {
+        List<BigDecimalValues> dec = new ArrayList<BigDecimalValues>(doubles.size());
+        
+        for (DoubleValues obj : doubles) {
+            dec.add(new BigDecimalValues(new BigDecimal(obj.getHigh()),
+                    new BigDecimal(obj.getLow())));
+        }
+        
+        return dec;
     }
 }

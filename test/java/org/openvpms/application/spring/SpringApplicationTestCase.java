@@ -89,10 +89,10 @@ public class SpringApplicationTestCase extends
      * 
      */
     public void testApplication() throws Exception {
-        //long start = System.currentTimeMillis();
-        //List<IMObject> objects = service.get("party", null, null, null, false);
-        //assertTrue(objects != null);
-        //logger.error("Time to complete " + (System.currentTimeMillis() - start)
-        //        + "ms");
+        long start = System.currentTimeMillis();
+        List<IMObject> objects = service.get("entity", "act", null, null, false);
+        assertTrue(objects != null);
+        logger.debug("Time to complete " + (System.currentTimeMillis() - start)
+                + "ms");
     }
 }
