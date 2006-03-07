@@ -115,9 +115,21 @@ public final class DescriptorHelper {
      * @return the archetype descriptor corresponding to <code>object</code>
      */
     public static ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
+        return getArchetypeDescriptor(object,
+                                      ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the archetype descriptor for the specified object.
+     *
+     * @param object  the object
+     * @param service the archetype service
+     * @return the archetype descriptor corresponding to <code>object</code>
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(
+            IMObject object, IArchetypeService service) {
         ArchetypeDescriptor descriptor;
         ArchetypeId archId = object.getArchetypeId();
-        IArchetypeService service = ServiceHelper.getArchetypeService();
 
         //TODO This is a work around until we resolve the current
         // problem with archetyping and archetype. We need to

@@ -20,15 +20,32 @@ import org.openvpms.web.resource.util.Messages;
  */
 public class ActTableModel extends IMObjectTableModel {
 
-    private static final int ACT_INDEX = NEXT_INDEX;
-    private static final int START_INDEX = ACT_INDEX + 1;
-    private static final int END_INDEX = START_INDEX + 1;
-    private static final int TYPE_INDEX = END_INDEX + 1;
+    /**
+     * Start column index.
+     */
+    private static final int START_INDEX = NEXT_INDEX;
+
+    /**
+     * Type column index.
+     */
+    private static final int TYPE_INDEX = START_INDEX + 1;
+
+    /**
+     * Status column index.
+     */
     private static final int STATUS_INDEX = TYPE_INDEX + 1;
 
-    private static final String[] ACT_COLUMNS = {"start", "end", "type", "status", "description"};
+    /**
+     * Act column identifiers.
+     */
+    private static final String[] ACT_COLUMNS = {"start", "type", "status",
+                                                 "description"};
 
-    private static final int INDEXES[] = {START_INDEX, END_INDEX, TYPE_INDEX, STATUS_INDEX, DESCRIPTION_INDEX};
+    /**
+     * Column indexes.
+     */
+    private static final int INDEXES[] = {START_INDEX, TYPE_INDEX, STATUS_INDEX,
+                                          DESCRIPTION_INDEX};
 
 
     /**
@@ -70,9 +87,6 @@ public class ActTableModel extends IMObjectTableModel {
         switch (index) {
             case START_INDEX:
                 result = act.getActivityStartTime();
-                break;
-            case END_INDEX:
-                result = act.getActivityEndTime();
                 break;
             case TYPE_INDEX:
                 result = DescriptorHelper.getArchetypeDescriptor(act).getDisplayName();

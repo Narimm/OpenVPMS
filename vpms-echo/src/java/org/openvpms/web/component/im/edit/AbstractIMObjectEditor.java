@@ -29,11 +29,11 @@ import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -53,11 +53,6 @@ public abstract class AbstractIMObjectEditor
     private final IMObject _object;
 
     /**
-     * The object's descriptor.
-     */
-    private final ArchetypeDescriptor _archetype;
-
-    /**
      * The parent object. May be <code>null</code>.
      */
     private final IMObject _parent;
@@ -66,6 +61,11 @@ public abstract class AbstractIMObjectEditor
      * The parent descriptor. May be <code>null</code>.
      */
     private final NodeDescriptor _descriptor;
+
+    /**
+     * The object's descriptor.
+     */
+    private final ArchetypeDescriptor _archetype;
 
     /**
      * The object viewer.
@@ -177,7 +177,7 @@ public abstract class AbstractIMObjectEditor
      * @return a display name for the object
      */
     public String getDisplayName() {
-        return _archetype.getDisplayName();
+        return getArchetypeDescriptor().getDisplayName();
     }
 
     /**
@@ -459,8 +459,8 @@ public abstract class AbstractIMObjectEditor
                 return _factory;
             }
         };
-        view.getComponent(); // make sure the component is rendered.
         if (layout instanceof ExpandableLayoutStrategy) {
+            view.getComponent(); // make sure the component is rendered.
             ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
             Button button = exp.getButton();
             if (button != null) {
@@ -508,7 +508,8 @@ public abstract class AbstractIMObjectEditor
 
             Set<ModifiableProperty> properties = getProperties();
             for (ModifiableProperty property : properties) {
-                if (modified != property && property.getDescriptor().isDerived()) {
+                if (modified != property && property.getDescriptor().isDerived())
+                {
                     property.refresh();
                 }
             }

@@ -5,6 +5,8 @@ import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -44,6 +46,47 @@ public class IMObjectHelper {
                     result = service.get(reference);
                 } catch (ArchetypeServiceException error) {
                     _log.error(error, error);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Performs a deep copy of an object.
+     *
+     * @param object the object to copy
+     * @return a copy of <code>object</code>
+     */
+    public static IMObject copy(IMObject object) {
+        return copy(object, ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Performs a deep copy of an object.
+     *
+     * @param object  the object to copy
+     * @param service the archetype service
+     * @return a copy of <code>object</code>
+     */
+    public static IMObject copy(IMObject object, IArchetypeService service) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object, service);
+        IMObject result = service.create(object.getArchetypeId());
+        for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
+            if (!descriptor.isReadOnly() && !descriptor.isHidden()) {
+                if (!descriptor.isCollection()) {
+                    descriptor.setValue(result, descriptor.getValue(object));
+                } else {
+                    for (IMObject child : descriptor.getChildren(object)) {
+                        IMObject value;
+                        if (descriptor.isParentChild()) {
+                            value = copy(child, service);
+                        } else {
+                            value = child;
+                        }
+                        descriptor.addChildToCollection(result, value);
+                    }
                 }
             }
         }

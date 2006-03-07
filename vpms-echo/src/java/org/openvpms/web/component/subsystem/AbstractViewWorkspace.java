@@ -56,7 +56,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
 
 
     /**
-     * Construct a new <code>AbstractWorkspace</code>.
+     * Construct a new <code>AbstractViewWorkspace</code>.
      *
      * @param subsystemId  the subsystem localisation identifier
      * @param workspaceId  the workspace localisation identfifier

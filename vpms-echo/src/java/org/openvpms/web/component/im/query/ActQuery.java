@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 
 import echopointng.DateField;
-import echopointng.GroupBox;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Component;
@@ -34,7 +33,6 @@ import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
@@ -197,13 +195,12 @@ public class ActQuery implements Query {
                 _startFromLabel, _startFrom,
                 _startToLabel, _startTo);
         Row startRow = RowFactory.create(ROW_STYLE, _startAll, startRange);
-        GroupBox startBox = GroupBoxFactory.create("actquery.start", startRow);
 
         onStartAllChanged();
 
         _component = RowFactory.create(CELLSPACING_STYLE,
-                                       LabelFactory.create("actquery.status"), _statusSelector,
-                                       startBox);
+                                       LabelFactory.create("actquery.status"),
+                                       _statusSelector, startRow);
     }
 
     /**
