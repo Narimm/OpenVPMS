@@ -104,6 +104,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void onSaved(IMObject object, boolean isNew) {
         _acts.query();
+        _acts.setSelected(object);
     }
 
     /**
