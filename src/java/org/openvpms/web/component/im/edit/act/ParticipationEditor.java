@@ -7,7 +7,6 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -16,7 +15,6 @@ import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.select.Selector;
 
 
 /**
@@ -49,13 +47,6 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
         Property property = new ModifiableProperty(participation, entityNode);
         _editor = new ObjectReferenceEditor(property, entityNode);
         getModifiableSet().add(participation, property);
-        if (participation.isNew() && participation.getEntity() == null) {
-            IMObject entity = Context.getInstance().getObject(
-                    entityNode.getArchetypeRange());
-            if (entity != null) {
-                _editor.setObject(entity);
-            }
-        }
     }
 
     /**

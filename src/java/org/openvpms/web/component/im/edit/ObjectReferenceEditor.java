@@ -5,6 +5,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -14,14 +15,12 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -82,7 +81,7 @@ public class ObjectReferenceEditor {
         }
         _selector.setFormat(Selector.Format.NAME);
         IMObjectReference reference = (IMObjectReference) _property.getValue();
-        if (reference != null || (reference == null && !readOnly)) {
+        if (reference != null) {
             _selector.setObject(getObject(reference, descriptor));
         }
     }
@@ -145,7 +144,8 @@ public class ObjectReferenceEditor {
             IMObject edit = Context.getInstance().getCurrent();
             if (edit != null) {
                 if (edit.getArchetypeId().equals(reference.getArchetypeId())
-                    && StringUtils.equals(edit.getLinkId(), reference.getLinkId())) {
+                    && StringUtils.equals(edit.getLinkId(), reference.getLinkId()))
+                {
                     result = edit;
                 }
             }
@@ -161,8 +161,10 @@ public class ObjectReferenceEditor {
      * Pops up a dialog to select an object.
      */
     protected void onSelect() {
-        Query query = new DefaultQuery(_descriptor.getArchetypeRange());
+        String[] shortNames = _descriptor.getArchetypeRange();
+        Query query = QueryFactory.create(shortNames);
         final Browser browser = new Browser(query);
+
         String title = Messages.get("imobject.select.title",
                                     _descriptor.getDisplayName());
         final BrowserDialog popup = new BrowserDialog(title, browser);

@@ -193,6 +193,10 @@ public class Browser {
 
         Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
         _component = ColumnFactory.create(STYLE, row, _table);
+
+        if (_query.isAuto()) {
+            query();
+        }
     }
 
     /**

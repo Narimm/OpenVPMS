@@ -146,6 +146,16 @@ public abstract class AbstractQuery implements Query {
     }
 
     /**
+     * Determines if the query should be run automatically.
+     *
+     * @return <code>true</code> if the query should be run automaticaly;
+     *         otherwie <code>false</code>
+     */
+    public boolean isAuto() {
+        return false;
+    }
+
+    /**
      * Sets the archetype instance name to query.
      *
      * @param name the archetype instance name. If <code>null</code> indicates
@@ -272,14 +282,14 @@ public abstract class AbstractQuery implements Query {
      * @param conceptName  the archetype concept name
      * @return a list of short names matching the criteria
      */
-    private static String[] getShortNames(String refModelName,
-                                          String entityName,
-                                          String conceptName) {
+    protected static String[] getShortNames(String refModelName,
+                                            String entityName,
+                                            String conceptName) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         List<String> names = Collections.emptyList();
         try {
             names = service.getArchetypeShortNames(refModelName,
-                    entityName, conceptName, true);
+                                                   entityName, conceptName, true);
         } catch (ArchetypeServiceException exception) {
             ErrorDialog.show(exception);
         }

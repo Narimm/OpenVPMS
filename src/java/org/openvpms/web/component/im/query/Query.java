@@ -29,4 +29,12 @@ public interface Query {
      */
     List<IMObject> query();
 
+    /**
+     * Determines if the query should be run automatically.
+     *
+     * @return <code>true</code> if the query should be run automaticaly;
+     * otherwie <code>false</code>
+     */
+    boolean isAuto();
+
 }

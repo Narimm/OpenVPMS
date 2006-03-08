@@ -9,12 +9,10 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -38,28 +36,6 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     public InformationWorkspace() {
         super("patient", "info", "party", "party", "patient*");
-    }
-
-
-    /**
-     * Create a new browser.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @return a new browser
-     */
-    @Override
-    protected Browser createBrowser(String refModelName, String entityName,
-                                    String conceptName) {
-        Party customer = Context.getInstance().getCustomer();
-        Query query = new PatientQuery(refModelName, entityName, conceptName,
-                customer);
-        Browser result = new Browser(query);
-        if (customer != null) {
-            result.query();
-        }
-        return result;
     }
 
     /**
@@ -135,7 +111,7 @@ public class InformationWorkspace extends CRUDWorkspace {
                 service.save(patient);
             } else {
                 ErrorDialog.show("Failed to create relationship of type="
-                        + shortName);
+                                 + shortName);
             }
         } catch (ArchetypeServiceException exception) {
             ErrorDialog.show(exception);
@@ -163,7 +139,7 @@ public class InformationWorkspace extends CRUDWorkspace {
             ArchetypeId id = relationship.getArchetypeId();
             if (id.getShortName().equals(shortName)) {
                 if (source.equals(relationship.getSource())
-                        && target.equals(relationship.getTarget())) {
+                    && target.equals(relationship.getTarget())) {
                     result = true;
                     break;
                 }
