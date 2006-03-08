@@ -179,25 +179,24 @@ public class CRUDWindow {
      */
     public void setObject(IMObject object) {
         Context.getInstance().setCurrent(object);
-        if (_component != null) {
-            if (object != null) {
-                if (_objectContainer != null) {
-                    _objectContainer.remove(_viewer.getComponent());
-                } else {
-                    _objectContainer = new GroupBox();
-                    _component.add(_objectContainer);
-                }
-                _viewer = new IMObjectViewer(object);
-                _objectContainer.add(_viewer.getComponent());
-                enableButtons(true);
+        getComponent();
+        if (object != null) {
+            if (_objectContainer != null) {
+                _objectContainer.remove(_viewer.getComponent());
             } else {
-                if (_viewer != null) {
-                    _component.remove(_objectContainer);
-                    _objectContainer = null;
-                    _viewer = null;
-                }
-                enableButtons(false);
+                _objectContainer = new GroupBox();
+                _component.add(_objectContainer);
             }
+            _viewer = new IMObjectViewer(object);
+            _objectContainer.add(_viewer.getComponent());
+            enableButtons(true);
+        } else {
+            if (_viewer != null) {
+                _component.remove(_objectContainer);
+                _objectContainer = null;
+                _viewer = null;
+            }
+            enableButtons(false);
         }
     }
 

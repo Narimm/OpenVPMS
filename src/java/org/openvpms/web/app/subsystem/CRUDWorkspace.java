@@ -68,9 +68,7 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
      */
     protected void setObject(IMObject object) {
         super.setObject(object);
-        if (_window != null) {
-            _window.setObject(object);
-        }
+       _window.setObject(object);
     }
 
     /**

@@ -486,7 +486,12 @@ public class CollectionEditor implements Saveable {
                 IMObject object = _editor.getObject();
                 if (!_table.getObjects().contains(object)) {
                     _table.add(object);
+                } else {
+                    // force a refresh of the object. Not very elegant...
+                    _table.remove(object);
+                    _table.add(object);
                 }
+                _table.setSelected(object);
                 _listeners.notifyListeners(this);
             }
         } else {

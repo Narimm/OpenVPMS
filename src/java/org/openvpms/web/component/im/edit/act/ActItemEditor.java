@@ -12,7 +12,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.create.IMObjectCreator;
@@ -148,15 +147,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @param descriptor the participants node descriptor
      */
     private void addPatientEditor(Act act, NodeDescriptor descriptor) {
-        Participation participant = getParticipation(PATIENT_SHORTNAME,
-                                                     act);
-        if (participant.isNew() && participant.getEntity() == null) {
-            IMObject patient = Context.getInstance().getPatient();
-            if (patient != null) {
-                participant.setEntity(patient.getObjectReference());
-            }
-        }
-        addEditor(participant, act, descriptor);
+        Participation participant = getParticipation(PATIENT_SHORTNAME, act);
+        final IMObjectEditor editor = PatientParticipationEditor.create(
+                participant, act, descriptor, true);
+        getModifiableSet().add(participant, editor);
+        _participants.add(editor);
     }
 
     /**
