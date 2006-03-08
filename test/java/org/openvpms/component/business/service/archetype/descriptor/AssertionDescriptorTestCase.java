@@ -140,8 +140,25 @@ public class AssertionDescriptorTestCase
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
         
+        int index = 0;
         for (String shortName : ndesc.getArchetypeRange()) {
-            logger.error(shortName);
+            switch (index++) {
+            case 0:
+                assertTrue(shortName.equals("entityIdentity.animalAlias"));
+                break;
+            case 1:
+                assertTrue(shortName.equals("entityIdentity.personAlias"));
+                break;
+            case 2:
+                assertTrue(shortName.equals("entityIdentity.customerAlias1"));
+                break;
+            case 3:
+                assertTrue(shortName.equals("entityIdentity.customerAlias"));
+                break;
+            default:
+                fail("The short name " + shortName + " should not be defined");
+                break;
+            }
         }
     }
 }
