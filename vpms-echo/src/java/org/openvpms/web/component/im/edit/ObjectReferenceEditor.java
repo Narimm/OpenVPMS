@@ -89,10 +89,11 @@ public class ObjectReferenceEditor {
     /**
      * Sets the value of the reference to the supplied object.
      *
-     * @param object the object
+     * @param object the object. May  be <code>null</code>
      */
     public void setObject(IMObject object) {
-        IMObjectReference reference = new IMObjectReference(object);
+        IMObjectReference reference
+                = (object != null) ? new IMObjectReference(object) : null;
         _property.setValue(reference);
         _selector.setObject(object);
     }
@@ -173,12 +174,21 @@ public class ObjectReferenceEditor {
             public void windowPaneClosing(WindowPaneEvent event) {
                 IMObject object = popup.getSelected();
                 if (object != null) {
-                    setObject(object);
+                    onSelected(object);
                 }
             }
         });
 
         popup.show();
+    }
+
+    /**
+     * Invoked when an object is selcted.
+     *
+     * @param object the selected object
+     */
+    protected void onSelected(IMObject object) {
+        setObject(object);
     }
 
     /**

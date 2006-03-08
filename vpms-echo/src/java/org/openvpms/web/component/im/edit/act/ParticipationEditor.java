@@ -45,7 +45,7 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
         super(participation, parent, descriptor, showAll);
         NodeDescriptor entityNode = getDescriptor("entity");
         Property property = new ModifiableProperty(participation, entityNode);
-        _editor = new ObjectReferenceEditor(property, entityNode);
+        _editor = createObjectReferenceEditor(property, entityNode);
         getModifiableSet().add(participation, property);
     }
 
@@ -87,6 +87,27 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
                                              (Act) parent, descriptor, showAll);
         }
         return result;
+    }
+
+    /**
+     * Creates a new object reference editor.
+     *
+     * @param property   the reference property
+     * @param descriptor the reference descriptor
+     * @return a new object reference editor
+     */
+    protected ObjectReferenceEditor createObjectReferenceEditor(
+            Property property, NodeDescriptor descriptor) {
+        return new ObjectReferenceEditor(property, descriptor);
+    }
+
+    /**
+     * Returns the object reference editor.
+     *
+     * @return the object reference editor
+     */
+    protected ObjectReferenceEditor getObjectReferenceEditor() {
+        return _editor;
     }
 
     /**
