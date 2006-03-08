@@ -1,4 +1,4 @@
-package org.openvpms.web.app.patient;
+package org.openvpms.web.component.im.query;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,8 +16,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.query.AbstractQuery;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -30,7 +31,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-class PatientQuery extends AbstractQuery {
+public class PatientQuery extends AbstractQuery {
 
     /**
      * The customer to limit the search to. If <code>null</code>, indicates to
@@ -51,21 +52,40 @@ class PatientQuery extends AbstractQuery {
 
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified criteria.
+     * Construct a new <code>PatientQuery</code> that queries IMObjects with the
+     * specified criteria, and using the current customer, if set.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
-     * @param customer     the customer to limit the search to. If
-     *                     <code>null</code>, indicates to query all patients
      */
     public PatientQuery(String refModelName, String entityName,
-                        String conceptName, Party customer) {
-        super(refModelName, entityName, conceptName);
-        _customer = customer;
+                        String conceptName) {
+        this(getShortNames(refModelName, entityName, conceptName),
+             Context.getInstance().getCustomer());
     }
 
+    /**
+     * Construct a new <code>PatientQuery</code> that queries IMObjects with the
+     * specified short names, and using the current customer, if set.
+     *
+     * @param shortNames the patient archetype short names
+     */
+    public PatientQuery(String[] shortNames) {
+        this(shortNames, Context.getInstance().getCustomer());
+    }
+
+    /**
+     * Construct a new <code>PatientQuery</code> that queries IMObjects with the
+     * specified short names, and customer.
+     *
+     * @param shortNames the patient archetype short names
+     * @param customer   the customer. May be <code>null</code>
+     */
+    public PatientQuery(String[] shortNames, Party customer) {
+        super(shortNames);
+        _customer = customer;
+    }
 
     /**
      * Performs the query, returning the matching objects.
@@ -87,6 +107,17 @@ class PatientQuery extends AbstractQuery {
             result = Collections.emptyList();
         }
         return result;
+    }
+
+    /**
+     * Determines if the query should be run automatically.
+     *
+     * @return <code>true</code> if the query should be run automaticaly;
+     *         otherwie <code>false</code>
+     */
+    @Override
+    public boolean isAuto() {
+        return (_customer != null);
     }
 
     /**
@@ -159,7 +190,8 @@ class PatientQuery extends AbstractQuery {
         final String wildcard = "*";
         List<IMObject> result = new ArrayList<IMObject>();
         for (IMObject object : objects) {
-            if (!object.getArchetypeId().getShortName().equals(shortName)) {
+            ArchetypeId id = object.getArchetypeId();
+            if (!DescriptorHelper.matches(id.getShortName(), shortName)) {
                 continue;
             }
             if (!StringUtils.isEmpty(name)) {

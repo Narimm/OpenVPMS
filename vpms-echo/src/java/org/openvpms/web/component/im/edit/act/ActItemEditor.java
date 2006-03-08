@@ -10,8 +10,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -23,8 +26,6 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Modifiable;
 
 
 /**
@@ -42,6 +43,26 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     private List<IMObjectEditor> _participants
             = new ArrayList<IMObjectEditor>();
 
+    /**
+     * Patient participation short name.
+     */
+    private static final String PATIENT_SHORTNAME = "participation.patient";
+
+    /**
+     * Product participation short name.
+     */
+    private static final String PRODUCT_SHORTNAME = "participation.product";
+
+    /**
+     * Author participation short name.
+     */
+    private static final String AUTHOR_SHORTNAME = "participation.author";
+
+    /**
+     * Participants node descriptor name.
+     */
+    private static final String PARTICIPANTS = "participants";
+
 
     /**
      * Construct a new <code>ActItemEditor</code>.
@@ -56,35 +77,21 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                          boolean showAll) {
         super(act, parent, descriptor, showAll);
 
-        NodeDescriptor participants = getDescriptor("participants");
+        NodeDescriptor participants = getDescriptor(PARTICIPANTS);
 
         for (String shortName : participants.getArchetypeRange()) {
-            if (!shortName.equals("participation.author")) {
+            if (shortName.equals(PATIENT_SHORTNAME)) {
+                addPatientEditor(act, participants);
+            } else if (shortName.equals(PRODUCT_SHORTNAME)) {
+                addProductEditor(act, participants);
+            } else if (!shortName.equals(AUTHOR_SHORTNAME)) {
                 Participation participant = IMObjectHelper.getObject(
                         shortName, act.getParticipations());
                 if (participant == null) {
                     participant = (Participation) IMObjectCreator.create(
                             shortName);
                 }
-                if (participant != null) {
-                    final IMObjectEditor editor = ParticipationEditor.create(
-                            participant, act, participants, showAll);
-                    getModifiableSet().add(participant, editor);
-                    _participants.add(editor);
-
-                    if (shortName.equals("participation.product")) {
-                        if (participant.isNew()) {
-                            productModified(participant);
-                        }
-                        final Participation p = participant;
-                        editor.addModifiableListener(new ModifiableListener() {
-                            public void modified(Modifiable modifiable) {
-                                productModified(p);
-                            }
-                        });
-                    }
-
-                }
+                addEditor(participant, act, participants);
             }
         }
     }
@@ -135,6 +142,80 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Add a patient editor.
+     *
+     * @param act        the act
+     * @param descriptor the participants node descriptor
+     */
+    private void addPatientEditor(Act act, NodeDescriptor descriptor) {
+        Participation participant = getParticipation(PATIENT_SHORTNAME,
+                                                     act);
+        if (participant.isNew() && participant.getEntity() == null) {
+            IMObject patient = Context.getInstance().getPatient();
+            if (patient != null) {
+                participant.setEntity(patient.getObjectReference());
+            }
+        }
+        addEditor(participant, act, descriptor);
+    }
+
+    /**
+     * Add a product editor.
+     *
+     * @param act        the act
+     * @param descriptor the participants node descriptor
+     */
+    private void addProductEditor(Act act, NodeDescriptor descriptor) {
+        final Participation participant
+                = getParticipation(PRODUCT_SHORTNAME, act);
+        if (participant.isNew()) {
+            productModified(participant);
+        }
+        IMObjectEditor editor = addEditor(participant, act, descriptor);
+        editor.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                productModified(participant);
+            }
+        });
+    }
+
+    /**
+     * Add an editor for a participant.
+     *
+     * @param participant the participant
+     * @param act         the parent act
+     * @param descriptor  the participants node descriptor
+     * @return the editor
+     */
+    private IMObjectEditor addEditor(Participation participant, Act act,
+                                     NodeDescriptor descriptor) {
+        final IMObjectEditor editor = ParticipationEditor.create(
+                participant, act, descriptor, true);
+        getModifiableSet().add(participant, editor);
+        _participants.add(editor);
+        return editor;
+    }
+
+    /**
+     * Returns a participation instance for the supplied shortname, creating one
+     * if needed.
+     *
+     * @param shortName the partcipant short name
+     * @param act       the act
+     * @return a participation from the act, or a new participation if none is
+     *         present
+     */
+    private Participation getParticipation(String shortName, Act act) {
+        Participation participant = IMObjectHelper.getObject(
+                shortName, act.getParticipations());
+        if (participant == null) {
+            participant = (Participation) IMObjectCreator.create(
+                    shortName);
+        }
+        return participant;
+    }
+
+    /**
      * Act item layout strategy.
      */
     private class LayoutStrategy extends AbstractLayoutStrategy {
@@ -148,7 +229,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         public LayoutStrategy(boolean showOptional) {
             ChainedNodeFilter filter = new ChainedNodeFilter();
             filter.add(new BasicNodeFilter(showOptional, false));
-            filter.add(new NamedNodeFilter("participants"));
+            filter.add(new NamedNodeFilter(PARTICIPANTS));
             setNodeFilter(filter);
         }
 

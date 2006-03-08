@@ -9,13 +9,13 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.component.im.query.DefaultQuery;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.select.Selector;
-import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -170,7 +170,8 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     protected Browser createBrowser(String refModelName, String entityName,
                                     String conceptName) {
-        Query query = new DefaultQuery(refModelName, entityName, conceptName);
+        Query query = QueryFactory.create(refModelName, entityName,
+                                          conceptName);
         return new Browser(query);
     }
 
@@ -180,7 +181,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     protected void onSelect() {
         final Browser browser = createBrowser(_refModelName, _entityName,
-                _conceptName);
+                                              _conceptName);
 
         String title = Messages.get("imobject.select.title", _type);
         final BrowserDialog popup = new BrowserDialog(title, browser);

@@ -149,6 +149,16 @@ public class ActQuery implements Query {
     }
 
     /**
+     * Determines if the query should be run automatically.
+     *
+     * @return <code>true</code> if the query should be run automaticaly;
+     *         otherwie <code>false</code>
+     */
+    public boolean isAuto() {
+        return false;
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {
