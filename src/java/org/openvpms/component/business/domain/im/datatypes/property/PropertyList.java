@@ -21,7 +21,7 @@ package org.openvpms.component.business.domain.im.datatypes.property;
 
 // java core
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 //commons-lang
@@ -54,7 +54,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
     /**
      * The property type is a a fully qualified archetype id.
      */
-    private Set<NamedProperty> properties = new HashSet<NamedProperty>();
+    private Set<NamedProperty> properties = new LinkedHashSet<NamedProperty>();
     
     /**
      * Default constructor 
@@ -109,7 +109,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
      * @param properties The properties to set.
      */
     public void setPropertiesAsArray(NamedProperty[] properties) {
-        this.properties = new HashSet<NamedProperty>();
+        this.properties = new LinkedHashSet<NamedProperty>();
         for (NamedProperty property : properties) {
             this.properties.add(property);
         }
@@ -153,7 +153,7 @@ public class PropertyList extends NamedProperty implements PropertyCollection {
     @Override
     public Object clone() throws CloneNotSupportedException {
         PropertyList copy = (PropertyList)super.clone();
-        copy.properties = new HashSet<NamedProperty>(this.properties);
+        copy.properties = new LinkedHashSet<NamedProperty>(this.properties);
         
         return copy;
     }

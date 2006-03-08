@@ -21,7 +21,7 @@ package org.openvpms.component.business.domain.im.datatypes.property;
 
 // java core
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 // commons-lang
@@ -56,7 +56,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      * A container of mapped properties.
      */
     private Map<String, NamedProperty> properties = 
-        new HashMap<String, NamedProperty>();
+        new LinkedHashMap<String, NamedProperty>();
     
     /**
      * Default constructor 
@@ -120,7 +120,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      * @param properties The properties to set.
      */
     public void setPropertiesAsArray(NamedProperty[] properties) {
-        this.properties = new HashMap<String, NamedProperty>();
+        this.properties = new LinkedHashMap<String, NamedProperty>();
         for (NamedProperty property : properties) {
             this.properties.put(property.getName(), property);
         }
@@ -164,7 +164,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
     @Override
     public Object clone() throws CloneNotSupportedException {
         PropertyMap copy = (PropertyMap)super.clone();
-        copy.properties = new HashMap<String, NamedProperty>(this.properties);
+        copy.properties = new LinkedHashMap<String, NamedProperty>(this.properties);
         
         return copy;
     }
