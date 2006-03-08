@@ -54,6 +54,11 @@ public class AssertionDescriptor extends Descriptor {
     private String errorMessage;
     
     /**
+     * The index of this assertion descriptor
+     */
+    private int index;
+    
+    /**
      * Holds the properties that are required to evaluate the assertion. All
      * properties are in the form of key value pairs but in some instances it
      * may only be necessary to specify the value.
@@ -157,6 +162,20 @@ public class AssertionDescriptor extends Descriptor {
         }
     }
 
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index The index to set.
+     */
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
@@ -173,6 +192,7 @@ public class AssertionDescriptor extends Descriptor {
     public Object clone() throws CloneNotSupportedException {
         AssertionDescriptor copy = (AssertionDescriptor)super.clone();
         copy.errorMessage = this.errorMessage;
+        copy.index = this.index;
         copy.propertyMap = (PropertyMap)(this.propertyMap == null ?
                 null : this.propertyMap.clone());
         

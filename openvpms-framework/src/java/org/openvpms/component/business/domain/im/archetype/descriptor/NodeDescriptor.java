@@ -22,6 +22,8 @@ package org.openvpms.component.business.domain.im.archetype.descriptor;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -421,6 +423,17 @@ public class NodeDescriptor extends Descriptor {
      */
     public Map<String, AssertionDescriptor> getAssertionDescriptors() {
         return assertionDescriptors;
+    }
+    
+    /**
+     * Return the assertion descriptors in index order
+     */
+    public List<AssertionDescriptor> getAssertionDescriptorsInIndexOrder() {
+        List<AssertionDescriptor> adescs =  
+            new ArrayList<AssertionDescriptor>(assertionDescriptors.values());
+        Collections.sort(adescs, new AssertionDescriptorIndexComparator());
+        
+        return adescs;
     }
 
     /**
@@ -1153,8 +1166,10 @@ public class NodeDescriptor extends Descriptor {
     public void setAssertionDescriptorsAsArray(
             AssertionDescriptor[] assertionDescriptors) {
         this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
+        int index = 0;
         for (AssertionDescriptor descriptor : assertionDescriptors) {
-            this.assertionDescriptors.put(descriptor.getName(), descriptor);
+            descriptor.setIndex(index++);
+            addAssertionDescriptor(descriptor);
         }
     }
 
@@ -1408,7 +1423,7 @@ public class NodeDescriptor extends Descriptor {
         Constructor constructor = null;
         try {
             constructor = theClass.getConstructor(new Class[]{value.getClass()});
-        } catch (NoSuchMethodError ignore) {
+        } catch (NoSuchMethodException ignore) {
         }
         
         if (constructor != null) {
@@ -1443,5 +1458,28 @@ public class NodeDescriptor extends Descriptor {
         words.add(StringUtils.capitalize(name));
 
         return StringUtils.join(words.iterator(), " ");
+    }
+}
+
+/**
+ * This comparator is used to compare the indices of AssertionDescriptors
+ */
+class AssertionDescriptorIndexComparator implements Comparator<AssertionDescriptor> {
+
+    /* (non-Javadoc)
+     * @see java.util.Comparator#compare(T, T)
+     */
+    public int compare(AssertionDescriptor no1, AssertionDescriptor no2) {
+        if (no1 == no2) {
+            return 0;
+        }
+        
+        if (no1.getIndex() == no2.getIndex()) {
+            return 0;
+        } else if (no1.getIndex() >  no2.getIndex()) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
 }

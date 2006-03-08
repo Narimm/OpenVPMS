@@ -44,4 +44,28 @@
       className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
       methodName="alwaysTrue" />
   </assertionType>
+  <assertionType name="dummyAssertion1"
+    propertyArchetype="openvpms-system-assertion.validateMethod.1.0">
+    <actionType name="validate"
+      className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+      methodName="alwaysTrue" />
+  </assertionType>
+  <assertionType name="dummyAssertion2"
+    propertyArchetype="openvpms-system-assertion.validateMethod.1.0">
+    <actionType name="validate"
+      className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+      methodName="alwaysTrue" />
+  </assertionType>
+  <assertionType name="dummyAssertion3"
+    propertyArchetype="openvpms-system-assertion.validateMethod.1.0">
+    <actionType name="validate"
+      className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+      methodName="alwaysTrue" />
+  </assertionType>
+  <assertionType name="dummyAssertion4"
+    propertyArchetype="openvpms-system-assertion.validateMethod.1.0">
+    <actionType name="validate"
+      className="org.openvpms.component.business.service.archetype.assertion.DescriptorAssertions"
+      methodName="alwaysTrue" />
+  </assertionType>
 </assertionTypes>

@@ -21,7 +21,6 @@ package org.openvpms.component.business.service.lookup;
 // openvpms-framework
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
@@ -297,11 +296,8 @@ public class LookupService implements ILookupService {
         List<Lookup> lookups = new ArrayList<Lookup>();
 
         if (descriptor.isLookup()) {
-            Map<String, AssertionDescriptor> assertions = 
-                descriptor.getAssertionDescriptors();
-            
-            if (assertions.containsKey("lookup")) {
-                AssertionDescriptor assertion = assertions.get("lookup");
+            if (descriptor.containsAssertionType("lookup")) {
+                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
                 
                 // This is a remote lookup
                 String type = (String) assertion.getPropertyMap().getProperties()
@@ -326,11 +322,11 @@ public class LookupService implements ILookupService {
                             LookupServiceException.ErrorCode.InvalidLookupType,
                             new Object[] { type });
                 }
-            } else if (assertions.containsKey("lookup.local")){
+            } else if (descriptor.containsAssertionType("lookup.local")){
                 // it is a local lookup
                 // TODO This is very inefficient..we should cache them in
                 // this service
-                AssertionDescriptor assertion = assertions.get("lookup.local");
+                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup.local");
                 PropertyList list = (PropertyList)assertion.getPropertyMap()
                     .getProperties().get("entries");
                 for (NamedProperty prop : list.getProperties()) {
@@ -361,12 +357,10 @@ public class LookupService implements ILookupService {
         // Need to define a better interface for the different assertion
         // types.
         if (descriptor.isLookup()) {
-            Map<String, AssertionDescriptor> assertions = 
-                descriptor.getAssertionDescriptors();
             
-            if (assertions.containsKey("lookup")) {
+            if (descriptor.containsAssertionType("lookup")) {
                 // This is a remote lookup
-                AssertionDescriptor assertion = assertions.get("lookup");
+                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
                 String type = (String) assertion.getPropertyMap().getProperties()
                     .get("type").getValue();
                 String concept = (String) assertion.getPropertyMap().getProperties()
@@ -411,11 +405,11 @@ public class LookupService implements ILookupService {
                             LookupServiceException.ErrorCode.InvalidLookupType,
                             new Object[] { type });
                 }
-            } else if (assertions.containsKey("lookup.local")){
+            } else if (descriptor.containsAssertionType("lookup.local")){
                 // it is a local lookup
                 // TODO This is very inefficient..we should cache them in
                 // this service
-                AssertionDescriptor assertion = assertions.get("lookup.local");
+                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup.local");
                 PropertyList list = (PropertyList)assertion.getPropertyMap()
                     .getProperties().get("entries");
                 for (NamedProperty prop : list.getProperties()) {
@@ -423,7 +417,7 @@ public class LookupService implements ILookupService {
                     lookups.add(new Lookup(ArchetypeId.LocalLookupId, 
                             aprop.getName(), aprop.getValue()));
                 }
-            } else if (assertions.containsKey("lookup.assertionType")){
+            } else if (descriptor.containsAssertionType("lookup.assertionType")){
                 // retrieve all the assertionTypes from the archetype service
                 // we need to 
                 List<AssertionTypeDescriptor> adescs = 

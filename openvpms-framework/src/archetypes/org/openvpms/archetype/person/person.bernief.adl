@@ -51,21 +51,39 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="/archetypeId/concept" />
-		<node name="identities" type="java.util.HashSet"
-			baseName="identity" path="/identities" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="entityIdentity.person*" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>
-					Idnetities must be of type
-					entityIdentity.personAlias
-				</errorMessage>
-			</assertion>
-		</node>
+    <node name="identities" type="java.util.HashSet" baseName="identity"
+      path="/identities" maxCardinality="*">
+      <assertion name="dummyAssertion1">
+        <errorMessage>
+          Error with assertion1
+        </errorMessage>
+      </assertion>
+      <assertion name="dummyAssertion2">
+        <errorMessage>
+          Error with assertion2
+        </errorMessage>
+      </assertion>
+      <assertion name="dummyAssertion3">
+        <errorMessage>
+          Error with assertion3
+        </errorMessage>
+      </assertion>
+      <assertion name="dummyAssertion4">
+        <errorMessage>
+          Error with assertion4
+        </errorMessage>
+      </assertion>
+      <assertion name="archetypeRange">
+        <propertyList name="archetypes">
+          <propertyMap name="archetype">
+            <property name="shortName" value="entityIdentity.person*" />
+          </propertyMap>
+        </propertyList>
+        <errorMessage>
+          Idnetities must be of type entityIdentity.personAlias
+        </errorMessage>
+      </assertion>
+    </node>
 
 	</archetype>
 </archetypes>
