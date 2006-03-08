@@ -321,7 +321,7 @@ public class ArchetypeDescriptor extends Descriptor {
         int index = 0;
         for (NodeDescriptor node : nodes) {
             node.setIndex(index++);
-            this.nodeDescriptors.put(node.getName(), node);
+            addNodeDescriptor(node);
         }
     }
 
@@ -587,20 +587,17 @@ public class ArchetypeDescriptor extends Descriptor {
 
 /**
  * This comparator is used to compare the indices of NodeDescriptors
- * 
  */
-class NodeDescriptorIndexComparator implements Comparator {
+class NodeDescriptorIndexComparator implements Comparator<NodeDescriptor> {
 
     /* (non-Javadoc)
      * @see java.util.Comparator#compare(T, T)
      */
-    public int compare(Object o1, Object o2) {
-        if (o1 == o2) {
+    public int compare(NodeDescriptor no1, NodeDescriptor no2) {
+        if (no1 == no2) {
             return 0;
         }
         
-        NodeDescriptor no1 = (NodeDescriptor)o1;
-        NodeDescriptor no2 = (NodeDescriptor)o2;
         if (no1.getIndex() == no2.getIndex()) {
             return 0;
         } else if (no1.getIndex() >  no2.getIndex()) {

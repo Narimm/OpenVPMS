@@ -19,25 +19,15 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-// java core
-import java.io.InputStreamReader;
-import java.util.Hashtable;
-
-// castor 
-import org.exolab.castor.mapping.Mapping;
-import org.exolab.castor.xml.Unmarshaller;
-
-// commons-lang
-
-// sax
-import org.xml.sax.InputSource;
+// spring framework
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.system.common.test.BaseTestCase;
+import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 
 /**
@@ -46,71 +36,68 @@ import org.openvpms.component.system.common.test.BaseTestCase;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class AssertionDescriptorTestCase extends BaseTestCase {
+public class AssertionDescriptorTestCase 
+    extends AbstractDependencyInjectionSpringContextTests {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(AssertionDescriptorTestCase.class);
+    
 
+    /**
+     * Holds a reference to the entity service
+     */
+    private ArchetypeService service;
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(AssertionDescriptorTestCase.class);
     }
 
     /**
      * Constructor for DescriptorTestCase.
-     * @param name
      */
-    public AssertionDescriptorTestCase(String name) {
-        super(name);
+    public AssertionDescriptorTestCase() {
     }
 
     /*
-     * @see BaseTestCase#setUp()
+     * (non-Javadoc)
+     * 
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
      */
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Override
+    protected String[] getConfigLocations() {
+        return new String[] { 
+                "org/openvpms/component/business/service/archetype/descriptor/descriptor-test-appcontext.xml" 
+                };
     }
 
-    /*
-     * @see BaseTestCase#tearDown()
+    /* (non-Javadoc)
+     * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @Override
+    protected void onSetUp() throws Exception {
+        super.onSetUp();
+        
+        this.service = (ArchetypeService)applicationContext.getBean(
+                "archetypeService");
     }
 
-    /**
-     * Test that the display name for the archetype and node default to the
-     * name of those elements
-     */
-    public void testDefaultDisplayName()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        
-        // load the archetypes
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 3);
-        
-        assertTrue(descriptors.getArchetypeDescriptors().get("assertion.archetypeRange") != null);
-    }
-    
     /**
      * Test that the assertion descriptors are returned in the order they were 
      * entered
      */
     public void testAssertionDescriptorOrdering()
     throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        
-        // load the archetypes
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptors().get("person.person");
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("person.bernief");
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
         assertTrue(ndesc.getAssertionDescriptors().size() == 5);
         int currIndex = 0;
         String assertName = "dummyAssertion";
-        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsAsArray()) {
+        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsInIndexOrder()) {
             String name = desc.getName();
             if (name.startsWith(assertName)) {
                 int index = Integer.parseInt(name.substring(assertName.length()));
@@ -128,7 +115,7 @@ public class AssertionDescriptorTestCase extends BaseTestCase {
         assertTrue(clone != null);
         assertTrue(clone.getAssertionDescriptors().size() == 5);
         currIndex = 0;
-        for (AssertionDescriptor desc : clone.getAssertionDescriptorsAsArray()) {
+        for (AssertionDescriptor desc : clone.getAssertionDescriptorsInIndexOrder()) {
             String name = desc.getName();
             if (name.startsWith(assertName)) {
                 int index = Integer.parseInt(name.substring(assertName.length()));
@@ -140,30 +127,5 @@ public class AssertionDescriptorTestCase extends BaseTestCase {
                 }
             }
         }
-    }
-
-    /**
-     * Get archetype descriptors
-     * 
-     * @param mfile
-     *            the mapping file
-     * @param afile
-     *            the archetype descriptor file            
-     * @return ArchetypeDescriptors
-     * @throws Exception
-     */
-    private ArchetypeDescriptors getArchetypeDescriptors(String mfile, String afile)
-    throws Exception {
-        Mapping mapping = new Mapping();
-        mapping.loadMapping(new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(mfile))));
-        
-        // set up the unmarshaller
-        Unmarshaller unmarshaller = new Unmarshaller(mapping);
-        return  (ArchetypeDescriptors)unmarshaller.unmarshal(
-                new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(afile))));
     }
 }
