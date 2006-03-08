@@ -198,6 +198,8 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
             IMObject current = objects.get(0);
             _acts.setSelected(current);
             _window.setObject(current);
+        } else {
+            _window.setObject(null);
         }
     }
 }
