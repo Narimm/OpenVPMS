@@ -75,7 +75,7 @@ public final class DescriptorHelper {
      *
      * @param id        the archetype identifier
      * @param shortName the short name to compare
-     * @return <code>true</code> if the short names matches; otherwise
+     * @return <code>true</code> if the short name matches; otherwise
      *         <code>false</code>
      */
     public static boolean matches(ArchetypeId id, String shortName) {
@@ -83,7 +83,25 @@ public final class DescriptorHelper {
     }
 
     /**
-     * Determines if a shortName matches a wildcarded short name.
+     * Determiens if a short name matches any of a list of (potentially
+     * wildcarded) short names.
+     *
+     * @param shortName  the short name
+     * @param shortNames the short names to check
+     * @return <code>true</code> if the short name matches; otherwise
+     *         <code>false</code>
+     */
+    public static boolean matches(String shortName, String[] shortNames) {
+        for (String other : shortNames) {
+            if (matches(shortName, other)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if a short name matches a wildcarded short name.
      *
      * @param shortName the short name
      * @param wildcard  the wildcarded short name
