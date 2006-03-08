@@ -76,7 +76,16 @@
       <assertion name="archetypeRange">
         <propertyList name="archetypes">
           <propertyMap name="archetype">
-            <property name="shortName" value="entityIdentity.person*" />
+            <property name="shortName" value="entityIdentity.animalAlias" />
+          </propertyMap>
+          <propertyMap name="archetype">
+            <property name="shortName" value="entityIdentity.personAlias" />
+          </propertyMap>
+          <propertyMap name="archetype">
+            <property name="shortName" value="entityIdentity.customerAlias1" />
+          </propertyMap>
+          <propertyMap name="archetype">
+            <property name="shortName" value="entityIdentity.customerAlias" />
           </propertyMap>
         </propertyList>
         <errorMessage>

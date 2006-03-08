@@ -128,4 +128,20 @@ public class AssertionDescriptorTestCase
             }
         }
     }
+    
+    /**
+     * Test that the properties within an assertion are returned in the 
+     * order that they are defined.
+     */
+    public void testAssertionPropertyOrder()
+    throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("person.bernief");
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
+        assertTrue(ndesc != null);
+        
+        for (String shortName : ndesc.getArchetypeRange()) {
+            logger.error(shortName);
+        }
+    }
 }
