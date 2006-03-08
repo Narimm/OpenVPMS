@@ -85,7 +85,7 @@ public abstract class AbstractWorkspace implements Workspace {
      * @return the component for the current action
      */
     public Component getComponent() {
-        if (_component == null) {
+        if (_component == null || refreshWorkspace()) {
             _component = doLayout();
         }
         return _component;
@@ -118,4 +118,13 @@ public abstract class AbstractWorkspace implements Workspace {
         return _workspaceId;
     }
 
+    /**
+     * Determines if the workspace should be refreshed.
+     *
+     * @return <code>true</code> if the workspace should be refreshed,
+     * otherwise <code>false</code>
+     */
+    protected boolean refreshWorkspace() {
+        return false;
+    }
 }

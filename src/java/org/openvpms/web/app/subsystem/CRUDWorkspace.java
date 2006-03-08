@@ -5,9 +5,11 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -66,7 +68,9 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
      */
     protected void setObject(IMObject object) {
         super.setObject(object);
-        _window.setObject(object);
+        if (_window != null) {
+            _window.setObject(object);
+        }
     }
 
     /**

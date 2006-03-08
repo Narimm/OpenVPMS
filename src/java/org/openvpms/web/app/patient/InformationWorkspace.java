@@ -3,6 +3,8 @@ package org.openvpms.web.app.patient;
 import java.util.Date;
 import java.util.Set;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -36,6 +38,30 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     public InformationWorkspace() {
         super("patient", "info", "party", "party", "patient*");
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        setObject(Context.getInstance().getPatient());
+        super.doLayout(container);
+    }
+
+    /**
+     * Determines if the workspace should be refreshed. This implementation
+     * returns true if the current customer has changed.
+     *
+     * @return <code>true</code> if the workspace should be refreshed, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        Party patient = Context.getInstance().getPatient();
+        return (patient != getObject());
     }
 
     /**
