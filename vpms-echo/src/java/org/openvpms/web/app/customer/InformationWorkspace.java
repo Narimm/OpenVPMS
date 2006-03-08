@@ -1,5 +1,7 @@
 package org.openvpms.web.app.customer;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -19,6 +21,30 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     public InformationWorkspace() {
         super("customer", "info", "party", "party", "customer*");
+    }
+
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        setObject(Context.getInstance().getCustomer());
+        super.doLayout(container);
+    }
+
+    /**
+     * Determines if the workspace should be refreshed. This implementation
+     * returns true if the current customer has changed.
+     *
+     * @return <code>true</code> if the workspace should be refreshed, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        Party customer = Context.getInstance().getCustomer();
+        return (customer != getObject());
     }
 
     /**

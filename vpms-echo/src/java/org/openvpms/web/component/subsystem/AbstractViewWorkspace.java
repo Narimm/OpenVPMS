@@ -45,6 +45,11 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
     private final String _conceptName;
 
     /**
+     * The current object. May be <code>null</code>.
+     */
+    private IMObject _object;
+
+    /**
      * The selector.
      */
     private Selector _selector;
@@ -75,6 +80,12 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
 
         String id = getSubsystemId() + "." + getWorkspaceId();
         _type = Messages.get(id + ".type");
+
+        _selector.getSelect().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                onSelect();
+            }
+        });
     }
 
     /**
@@ -88,12 +99,6 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
                 SplitPane.ORIENTATION_VERTICAL);
         Component heading = super.doLayout();
         Component selector = _selector.getComponent();
-
-        _selector.getSelect().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                onSelect();
-            }
-        });
 
         Column top = ColumnFactory.create(heading, selector);
         layout.add(top);
@@ -148,7 +153,17 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * @param object the object. May be <code>null</code>
      */
     protected void setObject(IMObject object) {
+        _object = object;
         _selector.setObject(object);
+    }
+
+    /**
+     * Returns the current object.
+     *
+     * @return the current object. May be <code>null</code>
+     */
+    protected IMObject getObject() {
+        return _object;
     }
 
     /**

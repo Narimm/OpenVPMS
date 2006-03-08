@@ -67,6 +67,19 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
     }
 
     /**
+     * Determines if the workspace should be refreshed. This implementation
+     * returns true if the current customer has changed.
+     *
+     * @return <code>true</code> if the workspace should be refreshed, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        Party customer = Context.getInstance().getCustomer();
+        return (customer != getObject());
+    }
+
+    /**
      * Lays out the component.
      *
      * @param container the container
