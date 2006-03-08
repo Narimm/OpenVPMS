@@ -198,7 +198,6 @@ public class EstimationCRUDWindow extends CRUDWindow {
      */
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
-        super.onSaved(object, isNew);
         if (isNew) {
             Act act = (Act) object;
             Party customer = Context.getInstance().getCustomer();
@@ -222,6 +221,7 @@ public class EstimationCRUDWindow extends CRUDWindow {
                 }
             }
         }
+        super.onSaved(object, isNew);
     }
 
     /**
