@@ -11,6 +11,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -25,7 +26,8 @@ import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.ValidationHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.IMObjectCopier;
+import org.openvpms.web.component.im.util.IMObjectCopyHandler;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
@@ -253,16 +255,17 @@ public class EstimationCRUDWindow extends CRUDWindow {
         dialog.show();
     }
 
-
     /**
      * Invoked when the 'copy' button is pressed.
      */
     protected void onCopy() {
         IMObject object = getObject();
         try {
-            Act act = (Act) IMObjectHelper.copy(object);
+            IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
+            Act act = (Act) copier.copy(object);
             act.setStatus("In Progress");
             act.setActivityStartTime(new Date());
+            setPrintStatus(act, false);
             SaveHelper.save(act);
             setObject(act);
             CRUDWindowListener listener = getListener();
@@ -284,17 +287,49 @@ public class EstimationCRUDWindow extends CRUDWindow {
         String status = act.getStatus();
         if (!POSTED_STATUS.equals(status)) {
             act.setStatus(POSTED_STATUS);
-            ArchetypeDescriptor archetype = getArchetypeDescriptor();
-            NodeDescriptor descriptor = archetype.getNodeDescriptor("printed");
-            if (descriptor != null) {
-                descriptor.setValue(act, Boolean.TRUE);
-            }
+            setPrintStatus(act, true);
             SaveHelper.save(act);
             setObject(act);
             CRUDWindowListener listener = getListener();
             if (listener != null) {
                 listener.saved(act, false);
             }
+        }
+    }
+
+    /**
+     * Sets the print status.
+     *
+     * @param act the act
+     * @param printed the print status
+     */
+    private void setPrintStatus(Act act, boolean printed) {
+        ArchetypeDescriptor archetype = getArchetypeDescriptor();
+        NodeDescriptor descriptor = archetype.getNodeDescriptor("printed");
+        if (descriptor != null) {
+            descriptor.setValue(act, printed);
+        }
+    }
+
+
+    private class ActCopyHandler implements IMObjectCopyHandler {
+
+        /**
+         * Determines if an object should be copied
+         *
+         * @param object the object to check
+         * @param parent the parent of <code>object</code>. May be
+         *               <code>null</code>
+         * @return <code>true</code> if the object should be copied; otherwise
+         *         <code>false</code>
+         */
+        public boolean copy(IMObject object, IMObject parent) {
+            boolean result = false;
+            if (object instanceof Act || object instanceof ActRelationship
+                || object instanceof Participation) {
+                result = true;
+            }
+            return result;
         }
     }
 
