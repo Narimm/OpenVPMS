@@ -563,7 +563,7 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-app</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1test3</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
                 <war.bundle>false</war.bundle>
@@ -572,7 +572,7 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-webcontainer</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1test3</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
                 <war.bundle>false</war.bundle>
@@ -581,7 +581,7 @@
         <dependency>
             <groupId>com.nextapp</groupId>
             <artifactId>echo-webrender</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1test3</version>
             <url>http://www.nextapp.com/platform/echo2/echo/</url>
             <properties>
                 <war.bundle>false</war.bundle>
@@ -590,7 +590,7 @@
         <dependency>
             <groupId>net.sf.echopoint</groupId>
             <artifactId>echopointng</artifactId>
-            <version>2.0a5</version>
+            <version>2.0.1rc1</version>
             <url>http://echopoint.sf.net</url>
             <properties>
                 <war.bundle>false</war.bundle>
