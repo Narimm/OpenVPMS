@@ -6,7 +6,7 @@
 			minCardinality="1" />
 		<node name="description" path="/description"
 			type="java.lang.String" />
-		<node name="properties" path="/properties"  maxCardinality="-1"
+		<node name="properties" path="/properties"  maxCardinality="*"
 			type="java.util.HashMap" baseName="property" displayName="Property Map">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
