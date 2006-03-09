@@ -30,24 +30,15 @@
 		<node name="parentChild" path="/parentChild"
 			type="java.lang.Boolean" defaultValue="true()" />
 		<node name="assertionDescriptors" path="/assertionDescriptors"
-			parentChild="true" type="java.util.HashMap"
-			baseName="assertionDescriptor">
+			parentChild="true" type="java.util.LinkedHashMap"
+			baseName="assertionDescriptor" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.archetypeRange" />
+						<property name="shortName" value="assertion.*" />
 					</propertyMap>
 					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.candidateChildren" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.localLookup" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.regularExpression" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.lookup" />
+						<property name="shortName" value="descriptor.assertion" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>
@@ -56,15 +47,13 @@
 			</assertion>
 		</node>
 		<node name="nodeDescriptors" path="/nodeDescriptors"
-			parentChild="true" type="java.util.HashMap"
-			baseName="nodeDescriptor">
+			parentChild="true" type="java.util.LinkedHashMap"
+			baseName="nodeDescriptor" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName" value="descriptor.node" />
 					</propertyMap>
-				</propertyList>
-				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName" value="descriptor.collectionNode" />
 					</propertyMap>
