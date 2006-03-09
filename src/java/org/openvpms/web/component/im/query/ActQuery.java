@@ -282,6 +282,7 @@ public class ActQuery implements Query {
      */
     private void enable(DateField field, boolean enabled) {
         enable(field.getTextField(), enabled);
+        field.getDateChooser().setEnabled(enabled);
         field.setEnabled(enabled);
         if (!enabled) {
             field.setExpanded(false);
