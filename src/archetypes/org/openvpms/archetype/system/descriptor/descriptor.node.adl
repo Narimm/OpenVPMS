@@ -26,24 +26,32 @@
 		<node name="derivedValue" path="/derivedValue"
 			type="java.lang.String" />
 		<node name="assertionDescriptors" path="/assertionDescriptors"
-			parentChild="true" type="java.util.Map"
-			baseName="assertionDescriptor">
+			parentChild="true" type="java.util.LinkedHashMap"
+			baseName="assertionDescriptor" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.archetypeRange" />
+						<property name="shortName" value="assertion.*" />
 					</propertyMap>
 					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.candidateChildren" />
+						<property name="shortName" value="descriptor.assertion" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>
+					Can only add assertion descriptors
+				</errorMessage>
+			</assertion>
+		</node>
+		<node name="node" path="/assertionDescriptors"
+			parentChild="true" type="java.util.LinkedHashMap"
+			baseName="assertionDescriptor" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName" value="assertion.*" />
 					</propertyMap>
 					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.localLookup" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.regularExpression" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName" value="assertion.lookup" />
+						<property name="shortName" value="descriptor.assertion" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>

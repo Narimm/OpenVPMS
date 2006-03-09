@@ -419,7 +419,7 @@ public class ArchetypeDescriptor extends Descriptor {
      */
     @Override
     public int hashCode() {
-        return type.hashCode();
+        return (type != null) ? type.hashCode() : super.hashCode();
     }
 
     /* (non-Javadoc)

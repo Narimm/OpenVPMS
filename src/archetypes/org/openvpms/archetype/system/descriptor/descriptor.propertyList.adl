@@ -7,7 +7,7 @@
 		<node name="description" path="/description"
 			type="java.lang.String"/>
 		<node name="properties" path="/properties"
-			type="java.util.ArrayList"  baseName="property" maxCardinality="-1"
+			type="java.util.ArrayList"  baseName="property" maxCardinality="*"
 			displayName="Property List">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
