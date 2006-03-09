@@ -36,6 +36,7 @@ import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -184,7 +185,7 @@ public class ActQuery implements Query {
         });
 
         _startFromLabel = LabelFactory.create("actquery.from");
-        _startFrom = new DateField();
+        _startFrom = DateFieldFactory.create();
         _startFrom.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
@@ -193,7 +194,7 @@ public class ActQuery implements Query {
                 });
 
         _startToLabel = LabelFactory.create("actquery.to");
-        _startTo = new DateField();
+        _startTo = DateFieldFactory.create();
         _startTo.getDateChooser().addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {

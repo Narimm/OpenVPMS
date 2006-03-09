@@ -443,6 +443,12 @@
         </properties>
     </style>
 
+    <style name="default" type="echopointng.DateChooser">
+        <properties>
+            <property name="yearSelectable" value="true"/>
+        </properties>
+    </style>
+
     <style name="default" type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
             <property name="background" value="#fffacd"/>

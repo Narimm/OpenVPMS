@@ -23,6 +23,7 @@ import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -118,7 +119,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected Component getDateEditor(IMObject object,
                                       NodeDescriptor descriptor) {
         Property property = getProperty(object, descriptor);
-        return new BoundDateField(property);
+        return DateFieldFactory.create(property);
     }
 
     /**
