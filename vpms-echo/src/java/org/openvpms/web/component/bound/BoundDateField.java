@@ -9,6 +9,9 @@ import echopointng.DateField;
 
 import org.openvpms.web.component.edit.Property;
 
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.ActionEvent;
+
 
 /**
  * Binds a {@link Property} to a <code>DateField</code>.
@@ -40,6 +43,14 @@ public class BoundDateField extends DateField {
                 _binder.setProperty();
             }
         };
+
+        // Register an action listener to ensure document update events
+        // are triggered in a timely fashion
+        getTextField().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                // no-op.
+            }
+        });
 
         _binder = new Binder(property) {
             protected Object getFieldValue() {
