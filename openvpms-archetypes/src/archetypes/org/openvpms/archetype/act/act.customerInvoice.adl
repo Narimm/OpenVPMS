@@ -24,7 +24,7 @@
 				<propertyList name="entries">
 					<property name="In Progress" value="In Progress" />
 					<property name="Completed" value="Completed" />
-					<property name="Cancelled" value="Cancelled" />
+					<property name="On Hold" value="Cancelled" />
 					<property name="Posted" value="Posted" />
 				</propertyList>
 				<errorMessage>An error message</errorMessage>
