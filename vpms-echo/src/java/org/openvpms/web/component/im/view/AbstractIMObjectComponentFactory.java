@@ -60,7 +60,9 @@ public abstract class AbstractIMObjectComponentFactory
      */
     protected TextComponent getTextComponent(IMObject object,
                                              NodeDescriptor descriptor) {
-        final int maxColumns = 32;
+        final int maxDisplayLength = 50;
+        int length = descriptor.getMaxLength();
+        int maxColumns = (length < maxDisplayLength) ? length : maxDisplayLength;
         return getTextComponent(object, descriptor, maxColumns);
     }
 
@@ -78,7 +80,7 @@ public abstract class AbstractIMObjectComponentFactory
         TextComponent result;
         Property property = getProperty(object, descriptor);
         if (descriptor.isLarge()) {
-            result = TextComponentFactory.createTextArea(property);
+            result = TextComponentFactory.createTextArea(property, columns);
         } else {
             result = TextComponentFactory.create(property, columns);
         }
