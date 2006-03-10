@@ -245,11 +245,8 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
             for (IMObjectEditor editor : _participants) {
                 add(grid, editor.getDisplayName(), editor.getComponent());
             }
-            for (NodeDescriptor descriptor : descriptors) {
-                Component child = factory.create(object, descriptor);
-                add(grid, descriptor.getDisplayName(), child);
-            }
-            container.add(grid);
+            doGridLayout(object, descriptors, grid, factory);
+             container.add(grid);
         }
 
     }

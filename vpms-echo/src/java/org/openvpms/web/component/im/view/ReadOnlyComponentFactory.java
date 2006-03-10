@@ -1,5 +1,12 @@
 package org.openvpms.web.component.im.view;
 
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 
@@ -38,9 +45,9 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
         } else if (descriptor.isString()) {
             result = getTextComponent(context, descriptor);
         } else if (descriptor.isNumeric()) {
-            result = getLabel(context, descriptor);
+            result = getNumericField(context, descriptor);
         } else if (descriptor.isDate()) {
-            result = getLabel(context, descriptor);
+            result = getDateField(context, descriptor);
         } else if (descriptor.isCollection()) {
             result = getCollectionViewer(context, descriptor);
             // need to enable this otherwise table selection is disabled
@@ -53,6 +60,7 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
             result = label;
         }
         result.setEnabled(enable);
+        result.setFocusTraversalParticipant(false);
         return result;
     }
 
@@ -64,7 +72,8 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
      * @param descriptor the parent object's descriptor. May be
      *                   <code>null</code>
      */
-    public Component create(IMObject object, IMObject context, NodeDescriptor descriptor) {
+    public Component create(IMObject object, IMObject context,
+                            NodeDescriptor descriptor) {
         IMObjectViewer viewer = new IMObjectViewer(object);
         return viewer.getComponent();
     }
@@ -78,6 +87,54 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
      */
     protected Property getProperty(IMObject object, NodeDescriptor descriptor) {
         return new ReadOnlyProperty(object, descriptor);
+    }
+
+    /**
+     * Returns a component to display a number.
+     *
+     * @param context    the context object
+     * @param descriptor the node descriptor
+     * @return a component to display the datge
+     */
+    private Component getNumericField(IMObject context, NodeDescriptor descriptor) {
+        Property property = getProperty(context, descriptor);
+        Label label = LabelFactory.create();
+        Number value = (Number) property.getValue();
+        if (value == null) {
+            value = new BigDecimal(0);
+        }
+
+        try {
+            // @todo - potential loss of precision here as NumberFormat converts
+            // BigDecimal to double before formatting
+            Locale locale = ApplicationInstance.getActive().getLocale();
+            NumberFormat format = NumberFormat.getInstance(locale);
+            label.setText(format.format(value));
+        } catch (IllegalArgumentException exception) {
+            label.setText(value.toString());
+        }
+        return label;
+    }
+
+    /**
+     * Returns a component to display a date.
+     *
+     * @param context    the context object
+     * @param descriptor the node descriptor
+     * @return a component to display the datge
+     */
+    private Component getDateField(IMObject context,
+                                   NodeDescriptor descriptor) {
+        Property property = getProperty(context, descriptor);
+        Label label = LabelFactory.create();
+        Date value = (Date) property.getValue();
+        if (value != null) {
+            Locale locale = ApplicationInstance.getActive().getLocale();
+            DateFormat format = DateFormat.getDateInstance(
+                    DateFormat.DEFAULT, locale);
+            label.setText(format.format(value));
+        }
+        return label;
     }
 
     /**
