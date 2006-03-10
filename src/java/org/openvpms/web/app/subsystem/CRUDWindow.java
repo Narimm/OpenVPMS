@@ -243,6 +243,15 @@ public class CRUDWindow {
     }
 
     /**
+     * Returns display name for the types of objects that this may create.
+     *
+     * @return the display name for the types of objects that this may create
+     */
+    protected String getTypeDisplayName() {
+        return _type;
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {

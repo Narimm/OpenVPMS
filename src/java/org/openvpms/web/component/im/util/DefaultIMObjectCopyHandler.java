@@ -5,15 +5,17 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
- * Handler to determine how {@link IMObjectCopier} should copy objects.
+ * Default implementation of the {@link IMObjectCopyHandler} interface.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectCopyHandler {
+public class DefaultIMObjectCopyHandler implements IMObjectCopyHandler {
 
     /**
-     * Determines how {@link IMObjectCopier} should treat an object.
+     * Determines how {@link IMObjectCopier} should treat an object. This
+     * implementation always returns a new instance, of the same archetype as
+     * <code>object</code>
      *
      * @param object  the source object
      * @param service the archetype service
@@ -22,6 +24,8 @@ public interface IMObjectCopyHandler {
      *         <code>null</code>, or a new instance if the object should be
      *         copied
      */
-    IMObject getObject(IMObject object, IArchetypeService service);
+    public IMObject getObject(IMObject object, IArchetypeService service) {
+        return service.create(object.getArchetypeId());
+    }
 
 }
