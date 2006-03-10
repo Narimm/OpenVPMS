@@ -94,25 +94,29 @@ public class CRUDWindow {
     private Button _edit;
 
     /**
+     * The create button.
+     */
+    private Button _create;
+
+    /**
      * The delete button.
      */
     private Button _delete;
 
-
     /**
      * Edit button identifier.
      */
-    protected static final String EDIT_ID = "edit";
+    private static final String EDIT_ID = "edit";
 
     /**
      * New button identifier.
      */
-    protected static final String NEW_ID = "new";
+    private static final String NEW_ID = "new";
 
     /**
      * Delete button identifier.
      */
-    protected static final String DELETE_ID = "delete";
+    private static final String DELETE_ID = "delete";
 
     /**
      * The style name.
@@ -256,24 +260,57 @@ public class CRUDWindow {
      * @param buttons the button row
      */
     protected void layoutButtons(Row buttons) {
-        _edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onEdit();
-            }
-        });
-        Button create = ButtonFactory.create(NEW_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onCreate();
-            }
-        });
-        _delete = ButtonFactory.create(DELETE_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onDelete();
-            }
-        });
-        buttons.add(_edit);
-        buttons.add(create);
-        buttons.add(_delete);
+        buttons.add(getEditButton());
+        buttons.add(getCreateButton());
+        buttons.add(getDeleteButton());
+    }
+
+    /**
+     * Returns the edit button.
+     *
+     * @return the edit button
+     */
+    protected Button getEditButton() {
+        if (_edit == null) {
+            _edit = ButtonFactory.create(EDIT_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onEdit();
+                }
+            });
+        }
+        return _edit;
+    }
+
+    /**
+     * Returns the create button.
+     *
+     * @return the create button
+     */
+    protected Button getCreateButton() {
+        if (_create == null) {
+            _create = ButtonFactory.create(NEW_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onCreate();
+                }
+            });
+        }
+        return _create;
+    }
+
+    /**
+     * Returns the create button.
+     *
+     * @return the create button
+     */
+    protected Button getDeleteButton() {
+        if (_delete == null) {
+            _delete = ButtonFactory.create(DELETE_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onDelete();
+                }
+            });
+        }
+        return _delete;
     }
 
     /**
