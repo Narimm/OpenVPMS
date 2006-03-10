@@ -13,11 +13,12 @@ import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.DefaultIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.IMObjectCopier;
-import org.openvpms.web.component.im.util.IMObjectCopyHandler;
 import org.openvpms.web.component.util.ButtonFactory;
 
 
@@ -118,22 +119,25 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
     }
 
 
-    private class ActCopyHandler implements IMObjectCopyHandler {
+    private class ActCopyHandler extends DefaultIMObjectCopyHandler {
 
         /**
-         * Determines if an object should be copied
+         * Determines how {@link IMObjectCopier} should treat an object.
          *
-         * @param object the object to check
-         * @param parent the parent of <code>object</code>. May be
-         *               <code>null</code>
-         * @return <code>true</code> if the object should be copied; otherwise
-         *         <code>false</code>
+         * @param object  the source object
+         * @param service the archetype service
+         * @return <code>object</code> if the object shouldn't be copied,
+         *         <code>null</code> if it should be replaced with
+         *         <code>null</code>, or a new instance if the object should be
+         *         copied
          */
-        public boolean copy(IMObject object, IMObject parent) {
-            boolean result = false;
+        public IMObject getObject(IMObject object, IArchetypeService service) {
+            IMObject result;
             if (object instanceof Act || object instanceof ActRelationship
                 || object instanceof Participation) {
-                result = true;
+                result = super.getObject(object, service);
+            } else {
+                result = object;
             }
             return result;
         }

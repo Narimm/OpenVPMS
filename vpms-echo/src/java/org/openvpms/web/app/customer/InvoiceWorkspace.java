@@ -28,7 +28,7 @@ public class InvoiceWorkspace extends ActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("customer.invoice.createtype");
-        return new InvoiceCRUDWindow(type, "common", "act", "customerInvoice");
+        return new InvoiceCRUDWindow(type, "common", "act", "customer*");
     }
 
     /**
@@ -38,7 +38,7 @@ public class InvoiceWorkspace extends ActWorkspace {
      * @return a new query
      */
     protected ActQuery createQuery(Party customer) {
-        return new ActQuery(customer, "act", "customerInvoice");
+        return new ActQuery(customer, "act", "customer*");
     }
 
 }

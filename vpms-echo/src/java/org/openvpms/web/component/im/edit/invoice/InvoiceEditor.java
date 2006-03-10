@@ -14,7 +14,7 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerInvoice</em>.
+ * <em>act.customerInvoice</em> and <em>act.customerCredit</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -57,7 +57,8 @@ public class InvoiceEditor extends ActEditor {
                 if (items != null) {
                     String[] range = items.getArchetypeRange();
                     if (range.length == 1
-                        && range[0].equals("actRelationship.customerInvoiceItem"))
+                        && (range[0].equals("actRelationship.customerInvoiceItem")
+                            || range[0].equals("actRelationship.customerCreditItem")))
                     {
                         result = new InvoiceEditor((Act) object, parent, descriptor, showAll);
                     }

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -49,78 +48,90 @@ public class IMObjectCopier {
     /**
      * Copy an object.
      *
-     * @param object  the object to copy.
+     * @param object the object to copy.
      * @return a copy of <code>object</code>
      */
     public IMObject copy(IMObject object) {
         _references = new HashMap<IMObjectReference, IMObjectReference>();
-        return apply(object, null);
+        return apply(object);
     }
 
     /**
      * Apply the copier to an object, copying it or returning it unchanged, as
      * determined by the {@link IMObjectCopyHandler}.
      *
-     * @param object the object
-     * @param parent the parent object. May be <code>null</code>
-     * @return a copy of <code>object</code> if the handler indicates it should
-     *         be copied; otherwise returns <code>object</code>
+     * @param source the source object
+     * @return a copy of <code>source</code> if the handler indicates it should
+     *         be copied; otherwise returns <code>source</code> unchanged
      */
-    protected IMObject apply(IMObject object, IMObject parent) {
-        IMObject result;
-        if (_handler.copy(object, parent)) {
-            result = doCopy(object, parent);
-        } else {
-            result = object;
+    protected IMObject apply(IMObject source) {
+        IMObject target = _handler.getObject(source, _service);
+        if (target != null) {
+            // cache the references to avoid copying the same object twice
+            _references.put(source.getObjectReference(),
+                            target.getObjectReference());
+
+            if (target != source) {
+                doCopy(source, target);
+            }
         }
-        return result;
+        return target;
     }
 
     /**
      * Performs a copy of an object.
      *
-     * @param object the object to copy
-     * @param parent the parent object. May be <code>null</code>
-     * @return a copy of <code>object</code>
+     * @param source the object to copy
+     * @param target the target to copy to
      */
-    protected IMObject doCopy(IMObject object,
-                              IMObject parent) {
-        IMObject result = _service.create(object.getArchetypeId());
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object, _service);
-
-        // cache the references to avoid copying the same object twice
-        _references.put(object.getObjectReference(),
-                        result.getObjectReference());
+    protected void doCopy(IMObject source, IMObject target) {
+        ArchetypeDescriptor sourceType
+                = DescriptorHelper.getArchetypeDescriptor(source, _service);
+        ArchetypeDescriptor targetType
+                = DescriptorHelper.getArchetypeDescriptor(target, _service);
 
         // copy the nodes
-        for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
-            if (!descriptor.isReadOnly() && !descriptor.isHidden()
-                && !descriptor.isDerived()) {
+        for (NodeDescriptor descriptor : sourceType.getAllNodeDescriptors()) {
+            if (copyNode(descriptor, targetType)) {
                 if (descriptor.isObjectReference()) {
                     IMObjectReference ref
-                            = (IMObjectReference) descriptor.getValue(object);
+                            = (IMObjectReference) descriptor.getValue(source);
                     if (ref != null) {
-                        ref = copyReference(ref, object);
-                        descriptor.setValue(result, ref);
+                        ref = copyReference(ref);
+                        descriptor.setValue(target, ref);
                     }
                 } else if (!descriptor.isCollection()) {
-                    try {
-                        descriptor.setValue(result, descriptor.getValue(object));
-                    } catch (DescriptorException ignore) {
-                    }
+                    descriptor.setValue(target, descriptor.getValue(source));
                 } else {
-                    for (IMObject child : descriptor.getChildren(object)) {
+                    for (IMObject child : descriptor.getChildren(source)) {
                         IMObject value;
                         if (descriptor.isParentChild()) {
-                            value = apply(child, object);
+                            value = apply(child);
                         } else {
                             value = child;
                         }
-                        descriptor.addChildToCollection(result, value);
+                        descriptor.addChildToCollection(target, value);
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Determines if a node should be copied.
+     *
+     * @param descriptor the node descriptor
+     * @param archetype  the target archetpy
+     * @return <code>true</code> if the node should be copied; otherwise
+     *         <code>false</code>
+     */
+    protected boolean copyNode(NodeDescriptor descriptor,
+                               ArchetypeDescriptor archetype) {
+        boolean result = false;
+        if (!descriptor.isReadOnly() && !descriptor.isHidden()
+            && !descriptor.isDerived()) {
+            String name = descriptor.getName();
+            result = (archetype.getNodeDescriptor(name) != null);
         }
         return result;
     }
@@ -133,13 +144,12 @@ public class IMObjectCopier {
      * @return a new reference, or one from <code>references</code> if the
      *         reference has already been copied
      */
-    private IMObjectReference copyReference(
-            IMObjectReference reference, IMObject parent) {
+    private IMObjectReference copyReference(IMObjectReference reference) {
         IMObjectReference result = _references.get(reference);
         if (result == null) {
             IMObject original = _service.get(reference);
-            IMObject object = apply(original, parent);
-            if (object != original) {
+            IMObject object = apply(original);
+            if (object != original && object != null) {
                 // copied, so save it
                 _service.save(object);
             }

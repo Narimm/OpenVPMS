@@ -17,7 +17,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerInvoice</em>.
+ * <em>act.customerInvoiceItem</em> and <em>act.customerCreditItem</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -56,10 +56,13 @@ public class InvoiceItemEditor extends ActItemEditor {
         if (object instanceof Act) {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(object);
-            if (archetype != null
-                && archetype.getShortName().equals("act.customerInvoiceItem")) {
-                result = new InvoiceItemEditor((Act) object, parent,
-                                               descriptor, showAll);
+            if (archetype != null) {
+                String shortName = archetype.getShortName();
+                if (shortName.equals("act.customerInvoiceItem")
+                    || shortName.equals("act.customerCreditItem")) {
+                    result = new InvoiceItemEditor((Act) object, parent,
+                                                   descriptor, showAll);
+                }
             }
         }
         return result;
@@ -70,7 +73,9 @@ public class InvoiceItemEditor extends ActItemEditor {
      *
      * @param participation the product participation instance
      */
-    protected void productModified(Participation participation) {
+    protected void productModified
+            (Participation
+                    participation) {
         IMObjectReference entity = participation.getEntity();
         IMObject object = IMObjectHelper.getObject(entity);
         if (object instanceof Product) {
