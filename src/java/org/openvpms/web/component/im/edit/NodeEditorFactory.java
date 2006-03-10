@@ -11,7 +11,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
@@ -21,9 +20,9 @@ import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.palette.Palette;
+import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -84,6 +83,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         }
         if (descriptor.isReadOnly() || descriptor.isDerived()) {
             result.setEnabled(false);
+            result.setFocusTraversalParticipant(false);
         }
         return result;
     }

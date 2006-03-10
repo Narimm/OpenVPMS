@@ -258,11 +258,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
             Grid grid = GridFactory.create(4);
             add(grid, _source.getDisplayName(), _source.getComponent());
             add(grid, _target.getDisplayName(), _target.getComponent());
-            for (NodeDescriptor descriptor : descriptors) {
-                Component component = factory.create(object, descriptor);
-                add(grid, descriptor.getDisplayName(), component);
-            }
-
+            doGridLayout(object, descriptors, grid, factory);
             container.add(grid);
         }
 

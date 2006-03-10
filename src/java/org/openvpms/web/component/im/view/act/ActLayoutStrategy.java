@@ -72,19 +72,25 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     protected void doSimpleLayout(IMObject object,
                                   List<NodeDescriptor> descriptors,
                                   Component container,
-                                  IMObjectComponentFactory factory) {
-        Grid grid = GridFactory.create(4);
-        for (NodeDescriptor descriptor : descriptors) {
-            Component child = factory.create(object, descriptor);
-            String name = descriptor.getName();
-            if (name.equals("lowTotal") || name.equals("highTotal")
+                                  final IMObjectComponentFactory factory) {
+        IMObjectComponentFactory workaround = new IMObjectComponentFactory() {
+            public Component create(IMObject context, NodeDescriptor descriptor) {
+                Component component = factory.create(context, descriptor);
+                String name = descriptor.getName();
+                if (name.equals("lowTotal") || name.equals("highTotal")
                     || name.equals("total")) {
-                // @todo - workaround for OVPMS-211
-                child.setEnabled(false);
+                    // @todo - workaround for OVPMS-211
+                    component.setEnabled(false);
+                }
+                return component;
             }
-            add(grid, descriptor.getDisplayName(), child);
-        }
-        container.add(grid);
+
+            public Component create(IMObject object, IMObject context,
+                                    NodeDescriptor descriptor) {
+                return factory.create(object, context, descriptor);
+            }
+        };
+        super.doSimpleLayout(object, descriptors, container, workaround);
     }
 
     /**
