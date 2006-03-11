@@ -471,7 +471,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 if (andRequired) {
                     queryString.append(" and ");
                 }
-                queryString.append(" participation.active = true");
+                queryString.append(" participation.active = 1");
             }
             
             // now execute te query
@@ -656,7 +656,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 if (andRequired) {
                     queryString.append(" and ");
                 }
-                queryString.append(" act.active = true");
+                queryString.append(" act.active = 1");
             }
             
             // now execute te query
@@ -810,7 +810,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 if (andRequired) {
                     queryString.append(" and ");
                 }
-                queryString.append(" act.active = true");
+                queryString.append(" act.active = 1");
             }
             
             // now execute te query
