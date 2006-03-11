@@ -2,12 +2,17 @@ package org.openvpms.web.component.im.layout;
 
 import java.util.List;
 
+import echopointng.DateField;
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -90,6 +95,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
         doSimpleLayout(object, simple, container, factory);
         doComplexLayout(object, complex, container, factory);
+        setFocus(container);
     }
 
     /**
@@ -128,11 +134,18 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             for (NodeDescriptor nodeDesc : descriptors) {
                 Component child = factory.create(object, nodeDesc);
                 setTabIndex(child);
-                model.addTab(nodeDesc.getDisplayName(), child);
+
+                DefaultTabModel.TabButton button
+                        = model.new TabButton(nodeDesc.getDisplayName(), null);
+                button.setFocusTraversalParticipant(false);
+                // button doesn't respond to keypress, so don't focus on it.
+
+                model.insertTab(model.size(), button, child);
             }
             TabbedPane pane = new TabbedPane();
             pane.setModel(model);
             pane.setSelectedIndex(0);
+            pane.setFocusTraversalParticipant(false);
             container.add(pane);
         }
     }
@@ -194,6 +207,48 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         setTabIndex(component);
         grid.add(label);
         grid.add(component);
+    }
+
+    /**
+     * Sets focus on the first focusable field.
+     *
+     * @param container the component container
+     */
+    protected void setFocus(Component container) {
+        Component editable = getFocusable(container);
+        if (editable != null) {
+            ApplicationInstance.getActive().setFocusedComponent(editable);
+        }
+    }
+
+    /**
+     * Returns the first child component that may have focus set.
+     *
+     * @param container the component container
+     * @return the first child component that may havefocus set, or
+     *         <code>null</code> if none may have focus set
+     */
+    protected Component getFocusable(Component container) {
+        Component result = null;
+        for (Component child : container.getComponents()) {
+            if (child instanceof TextComponent || child instanceof CheckBox
+                || child instanceof SelectField || child instanceof DateField) {
+                if (child.isEnabled() && child.isFocusTraversalParticipant()) {
+                    if (child instanceof DateField) {
+                        result = ((DateField) child).getTextField();
+                    } else {
+                        result = child;
+                    }
+                    break;
+                }
+            } else if (child.getComponentCount() != 0) {
+                result = getFocusable(child);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**

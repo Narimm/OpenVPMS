@@ -1,8 +1,10 @@
 package org.openvpms.web.component.im.query;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -62,6 +64,11 @@ public abstract class AbstractQuery implements Query {
      * The component representing the query.
      */
     private Component _component;
+
+    /**
+     * The event listener list.
+     */
+    private List<QueryListener> _listeners = new ArrayList<QueryListener>();
 
     /**
      * Type label id.
@@ -127,7 +134,7 @@ public abstract class AbstractQuery implements Query {
     public List<IMObject> query() {
         List<IMObject> result = Collections.emptyList();
         String type = getShortName();
-        String name = getInstanceName();
+        String name = getName();
         boolean activeOnly = !includeInactive();
 
         IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -156,12 +163,30 @@ public abstract class AbstractQuery implements Query {
     }
 
     /**
+     * Add a listener for query events.
+     *
+     * @param listener the listener to add
+     */
+    public void addQueryListener(QueryListener listener) {
+        _listeners.add(listener);
+    }
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeQueryListener(QueryListener listener) {
+        _listeners.remove(listener);
+    }
+
+    /**
      * Sets the archetype instance name to query.
      *
      * @param name the archetype instance name. If <code>null</code> indicates
      *             to query all instances
      */
-    protected void setInstanceName(String name) {
+    protected void setName(String name) {
         _instanceName.setText(name);
     }
 
@@ -170,11 +195,12 @@ public abstract class AbstractQuery implements Query {
      *
      * @return the archetype instance name. Nay be <code>null</code>
      */
-    protected String getInstanceName() {
+    protected String getName() {
         final String wildcard = "*";
         String name = _instanceName.getText();
         if (!StringUtils.isEmpty(name)) {
-            /* if entered name contains a wildcard then leave alone else add one to end */
+            // if entered name contains a wildcard then leave alone else
+            // add one to end
             if (!name.contains(wildcard)) {
                 name = name + wildcard;
             }
@@ -212,7 +238,8 @@ public abstract class AbstractQuery implements Query {
     }
 
     /**
-     * Lay out the component in a container.
+     * Lays out the component in a container, and sets focus on the instance
+     * name.
      *
      * @param container the container
      */
@@ -220,16 +247,16 @@ public abstract class AbstractQuery implements Query {
         addShortNameSelector(container);
         addInstanceName(container);
         addInactive(container);
+        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
     }
 
     /**
-     * Adds the short name selector to a container.
+     * Adds the short name selector to a container, if there is more than one
+     * matching short name
      *
      * @param container the container
      */
     protected void addShortNameSelector(Component container) {
-        // set up the short names select field, iff there is more than
-        // one matching short name.
         if (_shortNames.length > 1) {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(_shortNames, true);
@@ -249,16 +276,32 @@ public abstract class AbstractQuery implements Query {
     }
 
     /**
+     * Returns the instance name field.
+     *
+     * @return the instance name field
+     */
+    protected TextField getInstanceName() {
+        if (_instanceName == null) {
+            _instanceName = TextComponentFactory.create();
+            _instanceName.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onQuery();
+                }
+            });
+        }
+        return _instanceName;
+    }
+
+    /**
      * Adds the instance name field to a container.
      *
      * @param container the container
      */
     protected void addInstanceName(Component container) {
-        // instance name text field
-        _instanceName = TextComponentFactory.create();
         Label nameLabel = LabelFactory.create(NAME_ID);
         container.add(nameLabel);
-        container.add(_instanceName);
+        container.add(getInstanceName());
+
     }
 
     /**
@@ -272,6 +315,16 @@ public abstract class AbstractQuery implements Query {
         Label deactivedLabel = LabelFactory.create(DEACTIVATED_ID);
         container.add(deactivedLabel);
         container.add(_inactive);
+    }
+
+    /**
+     * Notify listnerss to perform a query.
+     */
+    protected void onQuery() {
+        QueryListener[] listeners = _listeners.toArray(new QueryListener[0]);
+        for (QueryListener listener : listeners) {
+            listener.query();
+        }
     }
 
     /**

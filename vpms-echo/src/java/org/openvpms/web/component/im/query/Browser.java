@@ -58,7 +58,8 @@ public class Browser {
     /**
      * The event listener list.
      */
-    private List<QueryListener> _listeners = new ArrayList<QueryListener>();
+    private List<QueryBrowserListener> _listeners
+            = new ArrayList<QueryBrowserListener>();
 
     /**
      * Style name for this.
@@ -95,6 +96,11 @@ public class Browser {
      */
     public Browser(Query query, IMObjectTable table) {
         _query = query;
+        _query.addQueryListener(new QueryListener() {
+            public void query() {
+                onQuery();
+            }
+        });
         _table = table;
     }
 
@@ -140,12 +146,11 @@ public class Browser {
     }
 
     /**
-     * Adds an <code>ActionListener</code> to receive notification of selection
-     * and query actions.
+     * Adds a listener to receive notification of selection and query actions.
      *
      * @param listener the listener to add
      */
-    public void addQueryListener(QueryListener listener) {
+    public void addQueryListener(QueryBrowserListener listener) {
         _listeners.add(listener);
     }
 
@@ -200,13 +205,13 @@ public class Browser {
     }
 
     /**
-     * Invoked when the query button is pressed. Performs the query and
-     * notifies any listeners.
+     * Invoked when the query button is pressed. Performs the query and notifies
+     * any listeners.
      */
     private void onQuery() {
         query();
-        QueryListener[] listeners = _listeners.toArray(new QueryListener[0]);
-        for (QueryListener listener : listeners) {
+        QueryBrowserListener[] listeners = _listeners.toArray(new QueryBrowserListener[0]);
+        for (QueryBrowserListener listener : listeners) {
             listener.query();
         }
     }
@@ -218,9 +223,9 @@ public class Browser {
     private void onSelect() {
         _selected = _table.getSelected();
         if (_selected != null) {
-            QueryListener[] listeners
-                    = _listeners.toArray(new QueryListener[0]);
-            for (QueryListener listener : listeners) {
+            QueryBrowserListener[] listeners
+                    = _listeners.toArray(new QueryBrowserListener[0]);
+            for (QueryBrowserListener listener : listeners) {
                 listener.selected(_selected);
             }
         }

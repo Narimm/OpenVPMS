@@ -81,6 +81,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
                     || name.equals("total")) {
                     // @todo - workaround for OVPMS-211
                     component.setEnabled(false);
+                    component.setFocusTraversalParticipant(false);
                 }
                 return component;
             }

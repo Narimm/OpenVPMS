@@ -8,6 +8,7 @@ import java.util.Set;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.ApplicationInstance;
 import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -121,7 +122,8 @@ public class PatientQuery extends AbstractQuery {
     }
 
     /**
-     * Lay out the component in a container.
+     * Lays out the component in a container, and sets focus on the instance
+     * name.
      *
      * @param container the container
      */
@@ -131,6 +133,7 @@ public class PatientQuery extends AbstractQuery {
         addInstanceName(container);
         addAllPatients(container);
         addInactive(container);
+        ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
     }
 
     /**
@@ -157,7 +160,7 @@ public class PatientQuery extends AbstractQuery {
         List<IMObject> result = null;
         List<IMObject> patients = getPatients(_customer);
         String type = getShortName();
-        String name = getInstanceName();
+        String name = getName();
         boolean activeOnly = !includeInactive();
 
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {

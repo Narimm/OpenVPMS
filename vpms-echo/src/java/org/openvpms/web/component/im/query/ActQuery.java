@@ -160,6 +160,24 @@ public class ActQuery implements Query {
     }
 
     /**
+     * Add a listener for query events.
+     *
+     * @param listener the listener to add
+     */
+    public void addQueryListener(QueryListener listener) {
+        // no-op
+    }
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeQueryListener(QueryListener listener) {
+        // no-op
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {
