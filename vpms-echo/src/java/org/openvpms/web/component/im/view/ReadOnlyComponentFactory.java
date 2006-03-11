@@ -9,6 +9,8 @@ import java.util.Locale;
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -27,6 +29,13 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate$
  */
 public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
+
+    /**
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(ReadOnlyComponentFactory.class);
+
 
     /**
      * Create a component to display the an object.
@@ -99,8 +108,24 @@ public class ReadOnlyComponentFactory extends AbstractIMObjectComponentFactory {
     private Component getNumericField(IMObject context, NodeDescriptor descriptor) {
         Property property = getProperty(context, descriptor);
         Label label = LabelFactory.create();
-        Number value = (Number) property.getValue();
-        if (value == null) {
+        Object object = property.getValue();
+        Number value;
+        if (object instanceof Number) {
+            value = (Number) object;
+        } else if (object instanceof String) {
+            // @todo workaround for OVPMS-228
+            try {
+                value = new BigDecimal((String) object);
+            } catch (NumberFormatException exception) {
+                _log.error("Invalid number for " + descriptor.getName() + ": "
+                           + object);
+                value = new BigDecimal(0);
+            }
+        } else {
+            if (object != null) {
+                _log.error("Invalid number for " + descriptor.getName() + ": "
+                           + object);
+            }
             value = new BigDecimal(0);
         }
 
