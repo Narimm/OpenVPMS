@@ -37,4 +37,18 @@ public interface Query {
      */
     boolean isAuto();
 
+    /**
+     * Add a listener for query events.
+     *
+     * @param listener the listener to add
+     */
+    void addQueryListener(QueryListener listener);
+
+    /**
+     * Remove a listener.
+     *
+     * @param listener the listener to remove
+     */
+    void removeQueryListener(QueryListener listener);
+
 }

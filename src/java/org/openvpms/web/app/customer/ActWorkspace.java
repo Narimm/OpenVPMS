@@ -14,7 +14,7 @@ import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.QueryListener;
+import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
@@ -148,7 +148,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
         _query = createQuery(customer);
         IMObjectTable table = new IMObjectTable(new ActTableModel());
         _acts = new Browser(_query, table);
-        _acts.addQueryListener(new QueryListener() {
+        _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
                 selectFirst();
             }

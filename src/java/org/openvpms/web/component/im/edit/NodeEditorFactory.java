@@ -84,6 +84,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         if (descriptor.isReadOnly() || descriptor.isDerived()) {
             result.setEnabled(false);
             result.setFocusTraversalParticipant(false);
+        } else {
+            result.setFocusTraversalParticipant(true);
         }
         return result;
     }
