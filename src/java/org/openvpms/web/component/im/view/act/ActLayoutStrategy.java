@@ -9,11 +9,12 @@ import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.BasicNodeFilter;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
+import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
@@ -28,70 +29,25 @@ import org.openvpms.web.component.util.GridFactory;
 public class ActLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
-     * The act items.
+     * The act item editor. May be <code>null</code>.
      */
-    private final Component _items;
+    private final CollectionEditor _editor;
 
 
     /**
      * Construct a new <code>ActLayoutStrategy</code>.
-     *
-     * @param showOptional if <code>true</code> show optional fields as well as
-     *                     mandatory ones.
      */
-    public ActLayoutStrategy(boolean showOptional) {
-        this(null, showOptional);
+    public ActLayoutStrategy() {
+        this(null);
     }
 
     /**
      * Construct a new <code>ActLayoutStrategy</code>.
      *
-     * @param items        the component representing the act items. May be
-     *                     <code>null</code>.
-     * @param showOptional if <code>true</code> show optional fields as well as
-     *                     mandatory ones.
+     * @param editor the act items editor. May be <code>null</code>.
      */
-    public ActLayoutStrategy(Component items, boolean showOptional) {
-        ChainedNodeFilter filter = new ChainedNodeFilter();
-        filter.add(new BasicNodeFilter(showOptional, false));
-        filter.add(new NamedNodeFilter("items", "participants"));
-        setNodeFilter(filter);
-
-        _items = items;
-    }
-
-    /**
-     * Lays out child components in a 2x2 grid.
-     *
-     * @param object      the parent object
-     * @param descriptors the child descriptors
-     * @param container   the container to use
-     * @param factory     the component factory
-     */
-    @Override
-    protected void doSimpleLayout(IMObject object,
-                                  List<NodeDescriptor> descriptors,
-                                  Component container,
-                                  final IMObjectComponentFactory factory) {
-        IMObjectComponentFactory workaround = new IMObjectComponentFactory() {
-            public Component create(IMObject context, NodeDescriptor descriptor) {
-                Component component = factory.create(context, descriptor);
-                String name = descriptor.getName();
-                if (name.equals("lowTotal") || name.equals("highTotal")
-                    || name.equals("total")) {
-                    // @todo - workaround for OVPMS-211
-                    component.setEnabled(false);
-                    component.setFocusTraversalParticipant(false);
-                }
-                return component;
-            }
-
-            public Component create(IMObject object, IMObject context,
-                                    NodeDescriptor descriptor) {
-                return factory.create(object, context, descriptor);
-            }
-        };
-        super.doSimpleLayout(object, descriptors, container, workaround);
+    public ActLayoutStrategy(CollectionEditor editor) {
+        _editor = editor;
     }
 
     /**
@@ -100,17 +56,18 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @param object      the parent object
      * @param descriptors the child descriptors
      * @param container   the container to use
-     * @param factory     the component factory
+     * @param context
      */
     @Override
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
                                    Component container,
-                                   IMObjectComponentFactory factory) {
+                                   LayoutContext context) {
         Grid grid = GridFactory.create(4);
+        IMObjectComponentFactory factory = context.getComponentFactory();
         for (NodeDescriptor descriptor : descriptors) {
             Component component = factory.create(object, descriptor);
-            add(grid, descriptor.getDisplayName(), component);
+            add(grid, descriptor.getDisplayName(), component, context);
         }
 
         container.add(grid);
@@ -120,14 +77,51 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         GroupBox box = new GroupBox();
         box.setTitle(items.getDisplayName());
 
-        if (_items != null) {
-            box.add(_items);
+        if (_editor != null) {
+            box.add(_editor.getComponent());
         } else {
             IMObjectLayoutStrategy strategy
                     = new ActRelationshipTableLayoutStrategy(items);
-            Component child = strategy.apply(object, factory);
+            Component child = strategy.apply(object, context);
             box.add(child);
         }
         container.add(box);
     }
+
+    /**
+     * Returns a node filter to filter nodes. This implementation filters the
+     * "items" and "participants" nodes.
+     *
+     * @param context the context
+     * @return a node filter to filter nodes
+     */
+    @Override
+    protected NodeFilter getNodeFilter(LayoutContext context) {
+        NodeFilter filter = new NamedNodeFilter("items", "participants");
+        return getNodeFilter(context, filter);
+    }
+
+    /**
+     * Helper to create a component for a node desciprotr.
+     *
+     * @param parent     the parent object
+     * @param descriptor the node descriptor
+     * @param context    the layout context
+     */
+    @Override
+    protected Component createComponent(IMObject parent,
+                                        NodeDescriptor descriptor,
+                                        LayoutContext context) {
+        Component component = super.createComponent(parent, descriptor,
+                                                    context);
+        String name = descriptor.getName();
+        if (name.equals("lowTotal") || name.equals("highTotal")
+            || name.equals("total")) {
+            // @todo - workaround for OVPMS-211
+            component.setEnabled(false);
+            component.setFocusTraversalParticipant(false);
+        }
+        return component;
+    }
+
 }

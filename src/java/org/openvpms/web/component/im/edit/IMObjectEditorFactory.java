@@ -7,6 +7,7 @@ import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
 import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
 import org.openvpms.web.component.im.edit.invoice.InvoiceItemEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -17,50 +18,66 @@ import org.openvpms.web.component.im.edit.invoice.InvoiceItemEditor;
  */
 public class IMObjectEditorFactory {
 
-
     /**
-     * Create a new editor.
-     *
-     * @param object  the object to edit
-     * @param showAll if <code>true</code> show optional and required fields;
-     *                otherwise show required fields.
+     * Prevent construction.
      */
-    public static IMObjectEditor create(IMObject object, boolean showAll) {
-        return create(object, null, null, showAll);
+    private IMObjectEditorFactory() {
     }
 
     /**
-     * Create a new editor.
+     * Creates a new editor.
+     *
+     * @param object the object to edit
+     * @return an editor for <code>object</code>
+     */
+    public static IMObjectEditor create(IMObject object) {
+        return create(object, null);
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context. May be <code>null</code>
+     * @return an editor for <code>object</code>
+     */
+    public static IMObjectEditor create(IMObject object,
+                                        LayoutContext context) {
+        return create(object, null, null, context);
+    }
+
+    /**
+     * Creates a new editor.
      *
      * @param object     the object to edit
      * @param context    the parent object. May be <code>null</code>
      * @param descriptor the parent object's descriptor. May be
      *                   <code>null</code>
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
-     * @return a new editor to edit <code>object</code>
+     * @param context    the layout context. May be <code>null</code>
+     * @return an editor for <code>object</code>
      */
-    public static IMObjectEditor create(IMObject object, IMObject context,
-                                        NodeDescriptor descriptor, boolean showAll) {
+    public static IMObjectEditor create(IMObject object, IMObject parent,
+                                        NodeDescriptor descriptor,
+                                        LayoutContext context) {
         IMObjectEditor result;
-        result = RelationshipEditor.create(object, context, descriptor, showAll);
+        result = RelationshipEditor.create(object, parent, descriptor, context);
         if (result == null) {
-            result = EstimationEditor.create(object, context, descriptor, showAll);
+            result = EstimationEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
-            result = EstimationItemEditor.create(object, context, descriptor, showAll);
+            result = EstimationItemEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
-            result = InvoiceEditor.create(object, context, descriptor, showAll);
+            result = InvoiceEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
-            result = InvoiceItemEditor.create(object, context, descriptor, showAll);
+            result = InvoiceItemEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
-            result = ParticipationEditor.create(object, context, descriptor, showAll);
+            result = ParticipationEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
-            result = new DefaultIMObjectEditor(object, context, descriptor, showAll);
+            result = new DefaultIMObjectEditor(object, parent, descriptor, context);
         }
         return result;
     }

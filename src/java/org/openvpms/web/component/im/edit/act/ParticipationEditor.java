@@ -14,7 +14,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -37,12 +37,12 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
      * @param participation the object to edit
      * @param parent        the parent object
      * @param descriptor    the parent descriptor
-     * @param showAll       if <code>true</code> show optional and required
-     *                      fields; otherwise show required fields.
+     * @param context       the layout context. May be <code>null</code>
      */
     public ParticipationEditor(Participation participation, Act parent,
-                               NodeDescriptor descriptor, boolean showAll) {
-        super(participation, parent, descriptor, showAll);
+                               NodeDescriptor descriptor,
+                               LayoutContext context) {
+        super(participation, parent, descriptor, context);
         NodeDescriptor entityNode = getDescriptor("entity");
         Property property = new ModifiableProperty(participation, entityNode);
         _editor = createObjectReferenceEditor(property, entityNode);
@@ -72,19 +72,19 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
      * @param object     the object to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param context    the layout context. Nay be <code>null</code>
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
                                         NodeDescriptor descriptor,
-                                        boolean showAll) {
+                                        LayoutContext context) {
         IMObjectEditor result = null;
         if (object instanceof Participation
             && parent instanceof Act) {
             result = new ParticipationEditor((Participation) object,
-                                             (Act) parent, descriptor, showAll);
+                                             (Act) parent, descriptor,
+                                             context);
         }
         return result;
     }
@@ -113,15 +113,13 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param showAll if <code>true</code> show required and optional fields;
-     *                otherwise show required fields.
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
             public Component apply(IMObject object,
-                                   IMObjectComponentFactory factory) {
+                                   LayoutContext context) {
                 return _editor.getComponent();
             }
         };

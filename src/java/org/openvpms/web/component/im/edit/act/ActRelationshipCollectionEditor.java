@@ -16,8 +16,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
@@ -36,12 +37,6 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         implements Saveable {
 
     /**
-     * If <code>true</code> show optional and required fields; otherwise show
-     * required fields.
-     */
-    private final boolean _showAll;
-
-    /**
      * The set of acts being edited, and their associated relationships.
      */
     private Map<Act, ActRelationship> _acts;
@@ -53,18 +48,15 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
 
 
     /**
-     * Construct a new <code>CollectionEditor</code>.
+     * Construct a new <code>ActRelationshipCollectionEditor</code>.
      *
      * @param act        the parent act
      * @param descriptor the node descriptor
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param context    the layout context
      */
     public ActRelationshipCollectionEditor(Act act, NodeDescriptor descriptor,
-                                           boolean showAll) {
-        super(act, descriptor);
-        _showAll = showAll;
-
+                                           LayoutContext context) {
+        super(act, descriptor, context);
         String relationshipType = descriptor.getArchetypeRange()[0];
         ArchetypeDescriptor relationship
                 = DescriptorHelper.getArchetypeDescriptor(relationshipType);
@@ -132,12 +124,15 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     /**
      * Create a new table.
      *
+     * @param context the layout context
      * @return a new table
      */
     @Override
-    protected IMObjectTable createTable() {
+    protected IMObjectTable createTable(LayoutContext context) {
+        DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
+        readOnly.setComponentFactory(new ReadOnlyComponentFactory());
         IMObjectTableModel model = new ActItemTableModel(
-                new ReadOnlyComponentFactory(), _actItemDescriptor, _showAll);
+                _actItemDescriptor, readOnly);
         return new IMObjectTable(model);
     }
 
@@ -172,19 +167,6 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         Act act = (Act) object;
         ActRelationship relationship = _acts.remove(act);
         descriptor.removeChildFromCollection(parent, relationship);
-    }
-
-    /**
-     * Creates a new editor.
-     *
-     * @param object the object to edit
-     * @return an editor to edit <code>object</code>
-     */
-    @Override
-    protected IMObjectEditor createEditor(IMObject object) {
-        Act act = (Act) object;
-        boolean showAll = true; // !object.isNew();
-        return IMObjectEditorFactory.create(act, showAll);
     }
 
 }

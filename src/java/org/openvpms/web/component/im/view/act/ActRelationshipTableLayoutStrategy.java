@@ -14,11 +14,11 @@ import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.spring.ServiceHelper;
@@ -59,12 +59,12 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
      * create the child components.
      *
      * @param object  the object to apply
-     * @param factory the component factory
+     * @param context the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, IMObjectComponentFactory factory) {
-        IMObjectTableModel model
-                = new ActItemTableModel(factory, _actDescriptor, true);
+    public Component apply(IMObject object, LayoutContext context) {
+        IMObjectTableModel model = new ActItemTableModel(_actDescriptor, 
+                                                         context);
         IMObjectTable table = new IMObjectTable(model);
 
         Act act = (Act) object;

@@ -21,17 +21,15 @@ public class DefaultLayoutStrategyFactory
     /**
      * Creates a new layout strategy for an object.
      *
-     * @param object  the object to create the layout strategy for
-     * @param showAll if <code>true</code>, show all non-hidden fields;
-     *                otherwise show required fields.
+     * @param object the object to create the layout strategy for
      * @return a new layout strategy
      */
-    public IMObjectLayoutStrategy create(IMObject object, boolean showAll) {
+    public IMObjectLayoutStrategy create(IMObject object) {
         IMObjectLayoutStrategy result = null;
         if (object instanceof Act) {
-            result = new ActLayoutStrategy(showAll);
+            result = new ActLayoutStrategy();
         } else {
-            result = new DefaultLayoutStrategy(showAll);
+            result = new DefaultLayoutStrategy();
         }
         return result;
     }

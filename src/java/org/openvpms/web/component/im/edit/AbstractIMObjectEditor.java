@@ -25,15 +25,17 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -78,11 +80,6 @@ public abstract class AbstractIMObjectEditor
     private ModifiableSet _modifiable;
 
     /**
-     * The component factory.
-     */
-    private NodeEditorFactory _factory;
-
-    /**
      * Lookup fields. These may beed to be refreshed.
      */
     private List<SelectField> _lookups = new ArrayList<SelectField>();
@@ -93,9 +90,9 @@ public abstract class AbstractIMObjectEditor
     private IMObjectLayoutStrategyFactory _layoutFactory;
 
     /**
-     * If <code>true</code> show required and optional fields.
+     * The layout context.
      */
-    private boolean _showAll;
+    private LayoutContext _context;
 
     /**
      * Action listener for layout changes.
@@ -135,18 +132,27 @@ public abstract class AbstractIMObjectEditor
      * @param object     the object to edit
      * @param parent     the parent object
      * @param descriptor the parent descriptor
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param context    the layout context. May be <code>null</code>.
      */
     public AbstractIMObjectEditor(IMObject object, IMObject parent,
-                                  NodeDescriptor descriptor, boolean showAll) {
+                                  NodeDescriptor descriptor,
+                                  LayoutContext context) {
         _object = object;
         _parent = parent;
         _descriptor = descriptor;
-        _showAll = showAll;
+
+        if (context == null) {
+            _context = new DefaultLayoutContext();
+        } else {
+            _context = new DefaultLayoutContext(context);
+        }
+
         _archetype = DescriptorHelper.getArchetypeDescriptor(object);
         _modifiable = new ModifiableSet();
-        _factory = new ComponentFactory(_modifiable);
+        IMObjectComponentFactory factory
+                = new ComponentFactory(_context, _modifiable);
+        _context.setComponentFactory(factory);
+
         _layoutFactory = new DefaultLayoutStrategyFactory();
         _derivedFieldRefresher = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -447,7 +453,7 @@ public abstract class AbstractIMObjectEditor
      * @return a new object view
      */
     protected IMObjectView createView(IMObject object) {
-        IMObjectLayoutStrategy layout = createLayoutStrategy(_showAll);
+        IMObjectLayoutStrategy layout = createLayoutStrategy();
         IMObjectView view = new AbstractIMObjectView(object, layout) {
             @Override
             protected Component createComponent() {
@@ -455,8 +461,8 @@ public abstract class AbstractIMObjectEditor
                 return super.createComponent();
             }
 
-            protected IMObjectComponentFactory getComponentFactory() {
-                return _factory;
+            protected LayoutContext getLayoutContext() {
+                return _context;
             }
         };
         if (layout instanceof ExpandableLayoutStrategy) {
@@ -471,23 +477,30 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getLayoutContext() {
+        return _context;
+
+    }
+
+    /**
      * Creates the layout strategy.
      *
-     * @param showAll if <code>true</code> show required and optional fields;
-     *                otherwise show required fields.
      * @return a new layout strategy
      */
-    protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return _layoutFactory.create(getObject(), showAll);
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return _layoutFactory.create(getObject());
     }
 
     /**
      * Change the layout.
      */
     protected void onLayout() {
-        _showAll = !_showAll;
         Component oldValue = getComponent();
-        IMObjectLayoutStrategy layout = createLayoutStrategy(_showAll);
+        IMObjectLayoutStrategy layout = createLayoutStrategy();
         getView().setLayout(layout);
         if (layout instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy exp = (ExpandableLayoutStrategy) layout;
@@ -603,10 +616,12 @@ public abstract class AbstractIMObjectEditor
         /**
          * Construct a new <code>ComponentFactory</code>.
          *
+         * @param context    the layout context
          * @param modifiable the modification tracker
          */
-        public ComponentFactory(ModifiableSet modifiable) {
-            super(modifiable);
+        public ComponentFactory(LayoutContext context,
+                                ModifiableSet modifiable) {
+            super(context, modifiable);
         }
 
         /**

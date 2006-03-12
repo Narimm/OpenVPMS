@@ -17,13 +17,12 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.filter.BasicNodeFilter;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
 
 
@@ -69,12 +68,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @param act        the act to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param context    the layout context. May be <code>null</code>
      */
     public ActItemEditor(Act act, IMObject parent, NodeDescriptor descriptor,
-                         boolean showAll) {
-        super(act, parent, descriptor, showAll);
+                         LayoutContext context) {
+        super(act, parent, descriptor, context);
 
         NodeDescriptor participants = getDescriptor(PARTICIPANTS);
 
@@ -131,13 +129,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param showAll if <code>true</code> show required and optional fields;
-     *                otherwise show required fields.
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return new LayoutStrategy(showAll);
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy();
     }
 
     /**
@@ -149,7 +145,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     private void addPatientEditor(Act act, NodeDescriptor descriptor) {
         Participation participant = getParticipation(PATIENT_SHORTNAME, act);
         final IMObjectEditor editor = PatientParticipationEditor.create(
-                participant, act, descriptor, true);
+                participant, act, descriptor, getLayoutContext());
         getModifiableSet().add(participant, editor);
         _participants.add(editor);
     }
@@ -185,7 +181,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     private IMObjectEditor addEditor(Participation participant, Act act,
                                      NodeDescriptor descriptor) {
         final IMObjectEditor editor = ParticipationEditor.create(
-                participant, act, descriptor, true);
+                participant, act, descriptor, getLayoutContext());
         getModifiableSet().add(participant, editor);
         _participants.add(editor);
         return editor;
@@ -216,37 +212,38 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     private class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Construct a new <code>LayoutStrategy</code>.
-         *
-         * @param showOptional if <code>true</code> show optional fields as well
-         *                     as mandatory ones.
-         */
-        public LayoutStrategy(boolean showOptional) {
-            ChainedNodeFilter filter = new ChainedNodeFilter();
-            filter.add(new BasicNodeFilter(showOptional, false));
-            filter.add(new NamedNodeFilter(PARTICIPANTS));
-            setNodeFilter(filter);
-        }
-
-        /**
          * Lays out child components in a 2x2 grid.
          *
          * @param object      the parent object
          * @param descriptors the child descriptors
          * @param container   the container to use
-         * @param factory     the component factory
+         * @param context
          */
         @Override
         protected void doSimpleLayout(IMObject object,
                                       List<NodeDescriptor> descriptors,
                                       Component container,
-                                      IMObjectComponentFactory factory) {
+                                      LayoutContext context) {
             Grid grid = GridFactory.create(4);
             for (IMObjectEditor editor : _participants) {
-                add(grid, editor.getDisplayName(), editor.getComponent());
+                add(grid, editor.getDisplayName(), editor.getComponent(),
+                    context);
             }
-            doGridLayout(object, descriptors, grid, factory);
-             container.add(grid);
+            doGridLayout(object, descriptors, grid, context);
+            container.add(grid);
+        }
+
+        /**
+         * Returns a node filter to filter nodes. This implementation filters
+         * the "participants" node.
+         *
+         * @param context the context
+         * @return a node filter to filter nodes
+         */
+        @Override
+        protected NodeFilter getNodeFilter(LayoutContext context) {
+            NodeFilter filter = new NamedNodeFilter(PARTICIPANTS);
+            return getNodeFilter(context, filter);
         }
 
     }

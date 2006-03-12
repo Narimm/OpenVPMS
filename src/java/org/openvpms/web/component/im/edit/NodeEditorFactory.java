@@ -19,6 +19,7 @@ import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -35,6 +36,11 @@ import org.openvpms.web.spring.ServiceHelper;
 public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
 
     /**
+     * The layout context.
+     */
+    private LayoutContext _context;
+
+    /**
      * The modification tracker;
      */
     private ModifiableSet _modifiable;
@@ -47,9 +53,12 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Construct a new <code>NodeEditorFactory</code>.
      *
+     * @param context the layout context
      * @param modifiable the modification tracker
      */
-    public NodeEditorFactory(ModifiableSet modifiable) {
+    public NodeEditorFactory(LayoutContext context,
+                             ModifiableSet modifiable) {
+        _context = context;
         _modifiable = modifiable;
     }
 
@@ -106,7 +115,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     public Component create(IMObject object, IMObject context,
                             NodeDescriptor descriptor) {
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context,
-                                                             descriptor, true);
+                                                             descriptor,
+                                                             _context);
         _modifiable.add(object, editor);
         return editor.getComponent();
     }
@@ -151,7 +161,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
         Component result;
         if (descriptor.isParentChild()) {
-            CollectionEditor editor = new CollectionEditor(object, descriptor);
+            CollectionEditor editor = new CollectionEditor(object, descriptor,
+                                                           _context);
             _modifiable.add(object, editor);
             result = editor.getComponent();
         } else {

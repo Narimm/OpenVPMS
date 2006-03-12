@@ -13,7 +13,7 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 
@@ -59,7 +59,6 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      *                     mandatory ones.
      */
     public ExpandableLayoutStrategy(boolean showOptional, boolean showButton) {
-        super(new BasicNodeFilter(showOptional, false));
         _showRequiredOnly = !showOptional;
         _showButton = showButton;
     }
@@ -79,12 +78,12 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object    the object to lay out
      * @param container the container to use
-     * @param factory   the component factory
+     * @param context
      */
     @Override
     protected void doLayout(IMObject object, Component container,
-                            IMObjectComponentFactory factory) {
-        super.doLayout(object, container, factory);
+                            LayoutContext context) {
+        super.doLayout(object, container, context);
         if (_button == null && _showButton) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
@@ -100,18 +99,18 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @param object      the parent object
      * @param descriptors the child descriptors
      * @param container   the container to use
-     * @param factory     the component factory
+     * @param context
      */
     @Override
     protected void doSimpleLayout(IMObject object,
                                   List<NodeDescriptor> descriptors,
                                   Component container,
-                                  IMObjectComponentFactory factory) {
+                                  LayoutContext context) {
         if (_button != null || !_showButton) {
-            super.doSimpleLayout(object, descriptors, container, factory);
+            super.doSimpleLayout(object, descriptors, container, context);
         } else if (!descriptors.isEmpty()) {
             Row group = RowFactory.create();
-            super.doSimpleLayout(object, descriptors, group, factory);
+            super.doSimpleLayout(object, descriptors, group, context);
             group.add(getButtonRow());
             container.add(group);
         }
@@ -123,13 +122,13 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * @param object      the parent object
      * @param descriptors the child descriptors
      * @param container   the container to use
-     * @param factory     the component factory
+     * @param context
      */
     @Override
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
                                    Component container,
-                                   IMObjectComponentFactory factory) {
+                                   LayoutContext context) {
         if (_button == null && _showButton && !descriptors.isEmpty()) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
@@ -137,7 +136,17 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
             row.setLayoutData(right);
             container.add(row);
         }
-        super.doComplexLayout(object, descriptors, container, factory);
+        super.doComplexLayout(object, descriptors, container, context);
+    }
+
+    /**
+     * Returns a node filter.
+     *
+     * @param context the context
+     * @return a node filter to filter nodes
+     */
+    protected NodeFilter getNodeFilter(LayoutContext context) {
+        return new BasicNodeFilter(!_showRequiredOnly, false);
     }
 
     /**

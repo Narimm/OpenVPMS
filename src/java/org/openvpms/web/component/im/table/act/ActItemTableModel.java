@@ -11,14 +11,13 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -33,32 +32,29 @@ public class ActItemTableModel extends DescriptorTableModel {
     /**
      * Construct a <code>ActItemTableModel</code>.
      *
-     * @param factory   the component factory
      * @param archetype the act archetype descriptor
-     * @param showAll   if <code>true</code> show optional and required fields;
-     *                  otherwise show required fields.
+     * @param context   the layout context
      */
-    public ActItemTableModel(IMObjectComponentFactory factory,
-                             ArchetypeDescriptor archetype,
-                             boolean showAll) {
-        super(createColumnModel(archetype, showAll), factory);
+    public ActItemTableModel(ArchetypeDescriptor archetype,
+                             LayoutContext context) {
+        super(createColumnModel(archetype, context),
+              context.getComponentFactory());
     }
 
     /**
      * Helper to create a column model.
      *
      * @param archetype the act archetype descriptor
-     * @param showAll   if <code>true</code> show optional and required fields;
-     *                  otherwise show required fields.
+     * @param context   the layout context
      * @return a new column model
      */
     protected static TableColumnModel createColumnModel(
-            ArchetypeDescriptor archetype, boolean showAll) {
+            ArchetypeDescriptor archetype, LayoutContext context) {
 
         NodeDescriptor participants
                 = archetype.getNodeDescriptor("participants");
         ChainedNodeFilter filter = new ChainedNodeFilter();
-        filter.add(new BasicNodeFilter(showAll));
+        filter.add(context.getDefaultNodeFilter());
         filter.add(new NamedNodeFilter("participants"));
         List<NodeDescriptor> nodes = FilterHelper.filter(filter, archetype);
         TableColumnModel columns = new DefaultTableColumnModel();

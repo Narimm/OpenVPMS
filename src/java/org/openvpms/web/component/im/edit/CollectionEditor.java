@@ -24,6 +24,7 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -49,6 +50,11 @@ public class CollectionEditor implements Saveable {
      * The object to edit.
      */
     private final IMObject _object;
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext _context;
 
     /**
      * Collection to edit.
@@ -121,10 +127,13 @@ public class CollectionEditor implements Saveable {
      *
      * @param object     the object being edited
      * @param descriptor the collection node descriptor
+     * @param context    the layout context
      */
-    public CollectionEditor(IMObject object, NodeDescriptor descriptor) {
+    public CollectionEditor(IMObject object, NodeDescriptor descriptor,
+                            LayoutContext context) {
         _object = object;
         _descriptor = descriptor;
+        _context = context;
 
         _componentListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
@@ -256,6 +265,9 @@ public class CollectionEditor implements Saveable {
                 onDelete();
             }
         });
+        _context.setTabIndex(create);
+        _context.setTabIndex(cancel);
+        _context.setTabIndex(delete);
 
         Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
@@ -278,11 +290,12 @@ public class CollectionEditor implements Saveable {
                 }
             });
             row.add(archetypeNames);
+            _context.setTabIndex(archetypeNames);
         }
 
         _component.add(row);
 
-        _table = createTable();
+        _table = createTable(_context);
         _table.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEdit();
@@ -339,9 +352,10 @@ public class CollectionEditor implements Saveable {
     /**
      * Create a new table.
      *
+     * @param context the layout context
      * @return a new table
      */
-    protected IMObjectTable createTable() {
+    protected IMObjectTable createTable(LayoutContext context) {
         IMObjectTableModel model
                 = IMObjectTableModelFactory.create(_descriptor);
         return new IMObjectTable(model);
@@ -447,7 +461,7 @@ public class CollectionEditor implements Saveable {
             _editBox = new GroupBox();
             _component.add(_editBox);
         }
-        _editor = createEditor(object);
+        _editor = createEditor(object, _context);
         _editBox.add(_editor.getComponent());
         _editBox.setTitle(_editor.getTitle());
         _editor.addPropertyChangeListener(
@@ -466,10 +480,10 @@ public class CollectionEditor implements Saveable {
      * @param object the object to edit
      * @return an editor to edit <code>object</code>
      */
-    protected IMObjectEditor createEditor(IMObject object) {
-        boolean showAll = true; // !object.isNew();
+    protected IMObjectEditor createEditor(IMObject object,
+                                          LayoutContext context) {
         return IMObjectEditorFactory.create(object, _object, _descriptor,
-                                            showAll);
+                                            context);
     }
 
     /**

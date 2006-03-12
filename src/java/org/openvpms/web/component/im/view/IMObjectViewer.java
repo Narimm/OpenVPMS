@@ -3,7 +3,9 @@ package org.openvpms.web.component.im.view;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -15,6 +17,11 @@ import org.openvpms.web.spring.ServiceHelper;
  */
 public class IMObjectViewer extends AbstractIMObjectView {
 
+    /**
+     * The layout context.
+     */
+    private final LayoutContext _context;
+
 
     /**
      * Construct a new <code>IMObjectViewer</code>.
@@ -22,18 +29,19 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @param object the object to view.
      */
     public IMObjectViewer(IMObject object) {
-        this(object, new DefaultLayoutStrategyFactory().create(
-                object, true));
+        this(object, new DefaultLayoutStrategyFactory().create(object));
     }
 
     /**
      * Construct a new <code>IMObjectViewer</code>.
      *
      * @param object the object to view.
-     * @param layout the layout strategy
+     * @param layout the layout strategy. May be <code>null</code>
      */
     public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout) {
         super(object, layout);
+        IMObjectComponentFactory factory = new ReadOnlyComponentFactory();
+        _context = new DefaultLayoutContext(factory);
     }
 
     /**
@@ -53,8 +61,8 @@ public class IMObjectViewer extends AbstractIMObjectView {
      *
      * @return the component factory
      */
-    protected IMObjectComponentFactory getComponentFactory() {
-        return new ReadOnlyComponentFactory();
+    protected LayoutContext getLayoutContext() {
+        return _context;
     }
 
 }
