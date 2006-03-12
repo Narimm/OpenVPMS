@@ -11,12 +11,13 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -35,42 +36,21 @@ import org.openvpms.web.component.util.LabelFactory;
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * The node filter. May be <code>null</code>.
-     */
-    private NodeFilter _filter;
-
-    /**
-     * The tab index.
-     */
-    private int _tabIndex;
-
-
-    /**
      * Construct a new <code>AbstractLayoutStrategy</code>.
      */
     public AbstractLayoutStrategy() {
-        this(null);
-    }
-
-    /**
-     * Construct a new <code>AbstractLayoutStrategy</code>.
-     *
-     * @param filter the node filter. May be <code>null</code>.
-     */
-    public AbstractLayoutStrategy(NodeFilter filter) {
-        _filter = filter;
     }
 
     /**
      * Apply the layout strategy.
      *
      * @param object  the object to apply
-     * @param factory the component factory
+     * @param context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, IMObjectComponentFactory factory) {
+    public Component apply(IMObject object, LayoutContext context) {
         Column column = ColumnFactory.create("CellSpacingColumn");
-        doLayout(object, column, factory);
+        doLayout(object, column, context);
         return column;
     }
 
@@ -79,22 +59,21 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object    the object to lay out
      * @param container the container to use
-     * @param factory   the component factory
+     * @param context
      */
     protected void doLayout(IMObject object, Component container,
-                            IMObjectComponentFactory factory) {
+                            LayoutContext context) {
         ArchetypeDescriptor descriptor
                 = DescriptorHelper.getArchetypeDescriptor(object);
         List<NodeDescriptor> simple;
         List<NodeDescriptor> complex;
 
-        simple = FilterHelper.filter(_filter,
-                                     descriptor.getSimpleNodeDescriptors());
-        complex = FilterHelper.filter(_filter,
-                                      descriptor.getComplexNodeDescriptors());
+        NodeFilter filter = getNodeFilter(context);
+        simple = filter(descriptor.getSimpleNodeDescriptors(), filter);
+        complex = filter(descriptor.getComplexNodeDescriptors(), filter);
 
-        doSimpleLayout(object, simple, container, factory);
-        doComplexLayout(object, complex, container, factory);
+        doSimpleLayout(object, simple, container, context);
+        doComplexLayout(object, complex, container, context);
         setFocus(container);
     }
 
@@ -104,15 +83,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param object      the parent object
      * @param descriptors the child descriptors
      * @param container   the container to use
-     * @param factory     the component factory
+     * @param context
      */
     protected void doSimpleLayout(IMObject object,
                                   List<NodeDescriptor> descriptors,
                                   Component container,
-                                  IMObjectComponentFactory factory) {
+                                  LayoutContext context) {
         if (!descriptors.isEmpty()) {
             Grid grid = GridFactory.create(4);
-            doGridLayout(object, descriptors, grid, factory);
+            doGridLayout(object, descriptors, grid, context);
             container.add(grid);
         }
     }
@@ -123,90 +102,146 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param object      the parent object
      * @param descriptors the child descriptors
      * @param container   the container to use
-     * @param factory     the component factory
+     * @param context
      */
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
                                    Component container,
-                                   IMObjectComponentFactory factory) {
+                                   LayoutContext context) {
         if (!descriptors.isEmpty()) {
             DefaultTabModel model = new DefaultTabModel();
             for (NodeDescriptor nodeDesc : descriptors) {
-                Component child = factory.create(object, nodeDesc);
-                setTabIndex(child);
+                Component child = createComponent(object, nodeDesc, context);
 
                 DefaultTabModel.TabButton button
                         = model.new TabButton(nodeDesc.getDisplayName(), null);
                 button.setFocusTraversalParticipant(false);
-                // button doesn't respond to keypress, so don't focus on it.
+                // @todo - button doesn't respond to keypress, so don't focus
+                // on it.
 
                 model.insertTab(model.size(), button, child);
             }
             TabbedPane pane = new TabbedPane();
             pane.setModel(model);
             pane.setSelectedIndex(0);
-            pane.setFocusTraversalParticipant(false);
             container.add(pane);
         }
     }
 
     /**
-     * Sets the node filter.
+     * Returns a node filter to filter nodes. This implementation return {@link
+     * LayoutContext#getDefaultNodeFilter()}.
      *
-     * @param filter the node filter
+     * @param context the context
+     * @return a node filter to filter nodes, or <code>null</code> if no
+     *         filterering is required
      */
-    protected void setNodeFilter(NodeFilter filter) {
-        _filter = filter;
+    protected NodeFilter getNodeFilter(LayoutContext context) {
+        return context.getDefaultNodeFilter();
     }
 
     /**
-     * Returns the node filter.
+     * Helper to create a chained node filter from the default node filter and a
+     * custom node filter.
      *
-     * @return the node filter
+     * @param context the context
+     * @param filter  the node filter
      */
-    protected NodeFilter getNodeFilter() {
-        return _filter;
+    protected ChainedNodeFilter getNodeFilter(LayoutContext context,
+                                              NodeFilter filter) {
+
+        ChainedNodeFilter result = new ChainedNodeFilter();
+        if (context.getDefaultNodeFilter() != null) {
+            result.add(context.getDefaultNodeFilter());
+        }
+        result.add(filter);
+        return result;
     }
 
     /**
-     * Lays out child components in a 2x2 grid.
+     * Filters a set of node descriptors, using the specfied node filter.
+     *
+     * @param descriptors the node descriptors to filter
+     * @param filter      the filter to use
+     * @return the filtered nodes
+     */
+    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors,
+                                          NodeFilter filter) {
+        return FilterHelper.filter(filter, descriptors);
+    }
+
+    /**
+     * Lays out child components in 2 columns.
      *
      * @param object      the parent object
      * @param descriptors the child descriptors
      * @param grid        the grid to use
-     * @param factory     the component factory
+     * @param context     the layout context
      */
     protected void doGridLayout(IMObject object,
                                 List<NodeDescriptor> descriptors, Grid grid,
-                                IMObjectComponentFactory factory) {
+                                LayoutContext context) {
         int size = descriptors.size();
-        int rows = (size / 2) + (size % 2);
-        for (int i = 0; i < rows; ++i) {
-            NodeDescriptor leftNode = descriptors.get(i);
-            Component left = factory.create(object, leftNode);
-            add(grid, leftNode.getDisplayName(), left);
+        Component[] components = new Component[size];
+        String[] labels = new String[components.length];
+        for (int i = 0; i < components.length; ++i) {
+            NodeDescriptor descriptor = descriptors.get(i);
+            labels[i] = descriptor.getDisplayName();
+            Component component = createComponent(object, descriptor, context);
+            setTabIndex(component, context);
+            components[i] = component;
+        }
 
-            if ((rows + i) < size) {
-                NodeDescriptor rightNode = descriptors.get(rows + i);
-                Component right = factory.create(object, rightNode);
-                add(grid, rightNode.getDisplayName(), right);
+        int rows = (size / 2) + (size % 2);
+        for (int i = 0, j = rows; i < rows; ++i, ++j) {
+            add(grid, labels[i], components[i]);
+            if (j < size) {
+                add(grid, labels[j], components[j]);
             }
         }
     }
 
     /**
-     * Helper to add a node to a grid, setting its tab index if required.
+     * Helper to add a node to a container.
      *
-     * @param grid      the grid
+     * @param container the container
      * @param name      the node display name
      * @param component the component representing the node
      */
-    protected void add(Grid grid, String name, Component component) {
+    protected void add(Component container, String name, Component component) {
         Label label = LabelFactory.create();
         label.setText(name);
-        setTabIndex(component);
-        grid.add(label);
-        grid.add(component);
+        container.add(label);
+        container.add(component);
+    }
+
+    /**
+     * Helper to add a node to a container, setting its tab index.
+     *
+     * @param container the container
+     * @param name      the node display name
+     * @param component the component representing the node
+     * @param context   the layout context
+     */
+    protected void add(Component container, String name, Component component,
+                       LayoutContext context) {
+        add(container, name, component);
+        setTabIndex(component, context);
+    }
+
+
+    /**
+     * Helper to create a component for a node descriptor.
+     *
+     * @param parent     the parent object
+     * @param descriptor the node descriptor
+     * @param context    the layout context
+     */
+    protected Component createComponent(IMObject parent,
+                                        NodeDescriptor descriptor,
+                                        LayoutContext context) {
+        IMObjectComponentFactory factory = context.getComponentFactory();
+        return factory.create(parent, descriptor);
     }
 
     /**
@@ -215,14 +250,18 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @param container the component container
      */
     protected void setFocus(Component container) {
-        Component editable = getFocusable(container);
-        if (editable != null) {
-            ApplicationInstance.getActive().setFocusedComponent(editable);
+        Component focusable = getFocusable(container);
+        if (focusable != null) {
+            if (focusable instanceof DateField) {
+                // @todo - workaround
+                focusable = ((DateField) focusable).getTextField();
+            }
+            ApplicationInstance.getActive().setFocusedComponent(focusable);
         }
     }
 
     /**
-     * Returns the first child component that may have focus set.
+     * Returns the child component that may have focus set.
      *
      * @param container the component container
      * @return the first child component that may havefocus set, or
@@ -231,36 +270,57 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected Component getFocusable(Component container) {
         Component result = null;
         for (Component child : container.getComponents()) {
+            Component focusable = null;
+            // @todo can't programatically set focus on a SelectField
             if (child instanceof TextComponent || child instanceof CheckBox
-                || child instanceof SelectField || child instanceof DateField) {
+                || child instanceof DateField
+                || child instanceof AbstractButton) {
                 if (child.isEnabled() && child.isFocusTraversalParticipant()) {
-                    if (child instanceof DateField) {
-                        result = ((DateField) child).getTextField();
-                    } else {
-                        result = child;
-                    }
-                    break;
+                    focusable = child;
                 }
             } else if (child.getComponentCount() != 0) {
-                result = getFocusable(child);
-                if (result != null) {
-                    break;
-                }
+                focusable = getFocusable(child);
+            }
+            if (result == null) {
+                result = focusable;
+            } else if (focusable != null) {
+                result = minIndex(result, focusable);
             }
         }
         return result;
     }
 
     /**
-     * Sets the tab index for a componen, if it is a focus traversal
+     * Returns the component with the mimumum traversal index. Note that ehe
+     * value 0 has special meaning: components with a value of 0 will be focused
+     * last.
+     *
+     * @param a the component
+     * @param b the other component
+     * @return <code>a</code> if it has a tab index &lt;= <code>b</code>
+     */
+    protected Component minIndex(Component a, Component b) {
+        Component result;
+        int aIndex = a.getFocusTraversalIndex();
+        int bIndex = b.getFocusTraversalIndex();
+        if (bIndex == 0 || (aIndex <= bIndex)) {
+            result = a;
+        } else {
+            result = b;
+        }
+        return result;
+    }
+
+    /**
+     * Sets the tab index of a component, if it is a focus traversal
      * participant.
      *
      * @param component the component
+     * @param context   the layout context
      */
-    protected void setTabIndex(Component component) {
+    protected void setTabIndex(Component component, LayoutContext context) {
         if (component.isFocusTraversalParticipant()) {
-            // @todo -- need to determine tab index for the entire screen...
-            // component.setFocusTraversalIndex(++_tabIndex);
+            context.setTabIndex(component);
         }
     }
 

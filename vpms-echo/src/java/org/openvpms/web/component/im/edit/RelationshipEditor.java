@@ -16,16 +16,15 @@ import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
-import org.openvpms.web.component.im.filter.BasicNodeFilter;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -55,12 +54,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param relationship the relationship
      * @param parent       the parent object
      * @param descriptor   the parent descriptor
-     * @param showAll      if <code>true</code> show optional and required
-     *                     fields; otherwise show required fields.
+     * @param context      the layout context
      */
-    protected RelationshipEditor(EntityRelationship relationship, IMObject parent,
-                                 NodeDescriptor descriptor, boolean showAll) {
-        super(relationship, parent, descriptor, showAll);
+    protected RelationshipEditor(EntityRelationship relationship,
+                                 IMObject parent, NodeDescriptor descriptor,
+                                 LayoutContext context) {
+        super(relationship, parent, descriptor, context);
         IMObject source;
         IMObject target;
 
@@ -99,17 +98,17 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param object     the object to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param context    the layout context
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor, boolean showAll) {
+                                        NodeDescriptor descriptor,
+                                        LayoutContext context) {
         IMObjectEditor result = null;
         if (object instanceof EntityRelationship) {
             result = new RelationshipEditor((EntityRelationship) object, parent,
-                                            descriptor, showAll);
+                                            descriptor, context);
         }
         return result;
     }
@@ -117,13 +116,11 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param showAll if <code>true</code> show required and optional fields;
-     *                otherwise show required fields.
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return new LayoutStrategy(showAll);
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy();
     }
 
     /**
@@ -200,7 +197,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      */
     private void onCreated(IMObject object, final Entity entity) {
         final IMObjectEditor editor
-                = IMObjectEditorFactory.create(object, true);
+                = IMObjectEditorFactory.create(object, getLayoutContext());
         final EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -230,16 +227,16 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     private class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Construct a new <code>LayoutStrategy</code>.
+         * Returns a node filter to filter nodes. This implementation filters
+         * the "source" and "target" nodes.
          *
-         * @param showOptional if <code>true</code> show optional fields as well
-         *                     as mandatory ones.
+         * @param context the context
+         * @return a node filter to filter nodes
          */
-        public LayoutStrategy(boolean showOptional) {
-            ChainedNodeFilter filter = new ChainedNodeFilter();
-            filter.add(new BasicNodeFilter(showOptional));
-            filter.add(new NamedNodeFilter("source", "target"));
-            setNodeFilter(filter);
+        @Override
+        protected NodeFilter getNodeFilter(LayoutContext context) {
+            NodeFilter filter = new NamedNodeFilter("source", "target");
+            return getNodeFilter(context, filter);
         }
 
         /**
@@ -248,17 +245,19 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
          * @param object      the parent object
          * @param descriptors the child descriptors
          * @param container   the container to use
-         * @param factory     the component factory
+         * @param context
          */
         @Override
         protected void doSimpleLayout(IMObject object,
                                       List<NodeDescriptor> descriptors,
                                       Component container,
-                                      IMObjectComponentFactory factory) {
+                                      LayoutContext context) {
             Grid grid = GridFactory.create(4);
-            add(grid, _source.getDisplayName(), _source.getComponent());
-            add(grid, _target.getDisplayName(), _target.getComponent());
-            doGridLayout(object, descriptors, grid, factory);
+            add(grid, _source.getDisplayName(), _source.getComponent(), 
+                context);
+            add(grid, _target.getDisplayName(), _target.getComponent(),
+                context);
+            doGridLayout(object, descriptors, grid, context);
             container.add(grid);
         }
 

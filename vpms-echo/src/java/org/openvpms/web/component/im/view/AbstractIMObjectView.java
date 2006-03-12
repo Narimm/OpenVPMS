@@ -6,6 +6,7 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -116,14 +117,14 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return a new component
      */
     protected Component createComponent() {
-        return _layout.apply(_object, getComponentFactory());
+        return _layout.apply(_object, getLayoutContext());
     }
 
     /**
-     * Returns the factory for creating components for displaying the object.
+     * Returns the layout context.
      *
-     * @return the component factory
+     * @return the layout context
      */
-    protected abstract IMObjectComponentFactory getComponentFactory();
+    protected abstract LayoutContext getLayoutContext();
 
 }

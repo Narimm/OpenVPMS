@@ -356,7 +356,7 @@ public class CRUDWindow {
      * @param object the new object
      */
     protected void onCreated(IMObject object) {
-        edit(object, true);
+        edit(object);
     }
 
     /**
@@ -367,7 +367,7 @@ public class CRUDWindow {
         if (_viewer != null) {
             IMObject object = _viewer.getObject();
             if (object.isNew()) {
-                edit(object, true);
+                edit(object);
             } else {
                 // make sure the latest instance is being used.
                 IArchetypeService service
@@ -377,7 +377,7 @@ public class CRUDWindow {
                 if (object == null) {
                     ErrorDialog.show(_type + " has been deleted");
                 } else {
-                    edit(object, true);
+                    edit(object);
                 }
             }
         }
@@ -449,13 +449,11 @@ public class CRUDWindow {
     /**
      * Edit an IMObject.
      *
-     * @param object  the object to edit
-     * @param showAll if <code>true</code> show optional and required fields;
-     *                otherwise show required fields.
+     * @param object the object to edit
      */
-    private void edit(IMObject object, boolean showAll) {
+    private void edit(IMObject object) {
         final boolean isNew = object.isNew();
-        final IMObjectEditor editor = IMObjectEditorFactory.create(object, showAll);
+        final IMObjectEditor editor = IMObjectEditorFactory.create(object);
         EditDialog dialog = new EditDialog(editor);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

@@ -7,7 +7,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * Listener for {@link IMObjectCreator} events.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public interface IMObjectCreatorListener {
 

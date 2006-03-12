@@ -10,6 +10,7 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 
 
@@ -33,14 +34,14 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
      * @param act        the act to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param showAll    if <code>true</code> show optional and required fields;
-     *                   otherwise show required fields.
+     * @param context    the layout context. May be <code>null</code>
      */
-    protected ActEditor(Act act, IMObject parent,
-                        NodeDescriptor descriptor, boolean showAll) {
-        super(act, parent, descriptor, showAll);
+    protected ActEditor(Act act, IMObject parent, NodeDescriptor descriptor,
+                        LayoutContext context) {
+        super(act, parent, descriptor, context);
         NodeDescriptor items = getDescriptor("items");
-        _editor = new ActRelationshipCollectionEditor(act, items, showAll);
+        _editor = new ActRelationshipCollectionEditor(act, items,
+                                                      getLayoutContext());
         getModifiableSet().add(act, _editor);
         _editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -79,13 +80,11 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param showAll if <code>true</code> show required and optional fields;
-     *                otherwise show required fields.
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(boolean showAll) {
-        return new ActLayoutStrategy(_editor.getComponent(), showAll);
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new ActLayoutStrategy(_editor);
     }
 
     /**

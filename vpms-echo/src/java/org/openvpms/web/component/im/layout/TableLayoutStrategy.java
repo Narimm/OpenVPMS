@@ -14,10 +14,9 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
 /**
@@ -36,18 +35,10 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Construct a new <code>TableLayoutStrategy</code>.
+     *
+     * @param descriptor the collection descriptor
      */
     public TableLayoutStrategy(NodeDescriptor descriptor) {
-        this(descriptor, null);
-    }
-
-    /**
-     * Construct a new <code>TableLayoutStrategy</code>.
-     *
-     * @param filter the node filter. May be <code>null</code>.
-     */
-    public TableLayoutStrategy(NodeDescriptor descriptor, NodeFilter filter) {
-        super(filter);
         _descriptor = descriptor;
     }
 
@@ -57,19 +48,24 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
      * This renders an object in a <code>Component</code>, using a factory to
      * create the child components.
      *
-     * @param context the context
-     * @param factory the component factory
+     * @param object  the object
+     * @param context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject context, IMObjectComponentFactory factory) {
+    public Component apply(IMObject object, LayoutContext context) {
         String[] range = _descriptor.getArchetypeRange();
         ArchetypeDescriptor descriptor
                 = DescriptorHelper.getArchetypeDescriptor(range[0]);
-        List<NodeDescriptor> simple
-                = FilterHelper.filter(getNodeFilter(), descriptor.getSimpleNodeDescriptors());
-        List<NodeDescriptor> complex
-                = FilterHelper.filter(getNodeFilter(), descriptor.getComplexNodeDescriptors());
-        List<NodeDescriptor> filtered = new ArrayList<NodeDescriptor>(simple);
+
+        List<NodeDescriptor> simple;
+        List<NodeDescriptor> complex;
+        List<NodeDescriptor> filtered;
+
+        NodeFilter filter = getNodeFilter(context);
+        simple = filter(descriptor.getSimpleNodeDescriptors(), filter);
+        complex = filter(descriptor.getComplexNodeDescriptors(), filter);
+
+        filtered = new ArrayList<NodeDescriptor>(simple);
         filtered.addAll(complex);
 
         TableColumnModel columns = new DefaultTableColumnModel();
@@ -81,16 +77,17 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
             NodeDescriptor node = filtered.get(i);
             model.setColumnName(i, node.getDisplayName());
         }
-        Collection values = (Collection) _descriptor.getValue(context);
+        Collection values = (Collection) _descriptor.getValue(object);
         PageableSortableTable table = new PageableSortableTable(model, columns);
-        populate(model, values, filtered, factory);
+        populate(model, values, filtered, context);
         return table;
     }
 
     protected void populate(DefaultPageableSortableTableModel table,
                             Collection values,
                             List<NodeDescriptor> descriptors,
-                            IMObjectComponentFactory factory) {
+                            LayoutContext context) {
+        IMObjectComponentFactory factory = context.getComponentFactory();
         int row = 0;
         for (Object value : values) {
             IMObject object = (IMObject) value;

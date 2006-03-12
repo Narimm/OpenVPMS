@@ -3,7 +3,6 @@ package org.openvpms.web.component.im.layout;
 import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
 /**
@@ -21,8 +20,8 @@ public interface IMObjectLayoutStrategy {
      * create the child components.
      *
      * @param object  the object to apply
-     * @param factory the component factory
+     * @param context the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    Component apply(IMObject object, IMObjectComponentFactory factory);
+    Component apply(IMObject object, LayoutContext context);
 }
