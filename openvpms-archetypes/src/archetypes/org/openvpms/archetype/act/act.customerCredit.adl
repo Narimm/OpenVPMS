@@ -36,7 +36,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="actRelationship.customerInvoiceItem" />
+							value="actRelationship.customerCreditItem" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
