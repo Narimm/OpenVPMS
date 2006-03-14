@@ -1,8 +1,6 @@
 package org.openvpms.web.component.im.layout;
 
-import echopointng.DateField;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
 
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -27,10 +25,11 @@ public class DefaultLayoutContext implements LayoutContext {
     private NodeFilter _filter;
 
     /**
-     * The tab index.
+     * The tab indexer.
      */
-    private int _tabIndex;
+    private TabIndexer _indexer;
 
+    
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
      */
@@ -46,6 +45,7 @@ public class DefaultLayoutContext implements LayoutContext {
     public DefaultLayoutContext(IMObjectComponentFactory factory) {
         _factory = factory;
         _filter = new BasicNodeFilter(true);
+        _indexer = new TabIndexer();
     }
 
     /**
@@ -57,7 +57,7 @@ public class DefaultLayoutContext implements LayoutContext {
     public DefaultLayoutContext(LayoutContext context) {
         _factory = context.getComponentFactory();
         _filter = context.getDefaultNodeFilter();
-        _tabIndex = context.getTabIndex();
+        _indexer = context.getTabIndexer();
     }
 
     /**
@@ -79,12 +79,12 @@ public class DefaultLayoutContext implements LayoutContext {
     }
 
     /**
-     * Returns the tab index.
+     * Returns the tab indexer.
      *
-     * @return the tab index
+     * @return the tab indexer
      */
-    public int getTabIndex() {
-        return _tabIndex;
+    public TabIndexer getTabIndexer() {
+        return _indexer;
     }
 
     /**
@@ -93,13 +93,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param component the component
      */
     public void setTabIndex(Component component) {
-        ++_tabIndex;
-        component.setFocusTraversalIndex(_tabIndex);
-        if (component instanceof DateField) {
-            // @todo workaround for dates.
-            TextField text = ((DateField) component).getTextField();
-            text.setFocusTraversalIndex(_tabIndex);
-        }
+        _indexer.setTabIndex(component);
     }
 
     /**
