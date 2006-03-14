@@ -49,4 +49,11 @@ public interface LayoutContext {
      */
     NodeFilter getDefaultNodeFilter();
 
+    /**
+     * Sets the default filter.
+     *
+     * @param filter the default filter. May be <code>null</code>
+     */
+    void setNodeFilter(NodeFilter filter);
+
 }

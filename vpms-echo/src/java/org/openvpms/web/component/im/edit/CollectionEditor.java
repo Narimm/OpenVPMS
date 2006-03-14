@@ -25,10 +25,14 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.table.TableNavigator;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -133,7 +137,13 @@ public class CollectionEditor implements Saveable {
                             LayoutContext context) {
         _object = object;
         _descriptor = descriptor;
-        _context = context;
+        _context = new DefaultLayoutContext(context);
+
+        // filter out the uid (aka "id") field
+        NodeFilter idFilter = new NamedNodeFilter("uid");
+        NodeFilter filter = FilterHelper.chain(
+                idFilter, _context.getDefaultNodeFilter());
+        _context.setNodeFilter(filter);
 
         _componentListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {

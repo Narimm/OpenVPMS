@@ -149,13 +149,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected ChainedNodeFilter getNodeFilter(LayoutContext context,
                                               NodeFilter filter) {
-
-        ChainedNodeFilter result = new ChainedNodeFilter();
-        if (context.getDefaultNodeFilter() != null) {
-            result.add(context.getDefaultNodeFilter());
-        }
-        result.add(filter);
-        return result;
+        return FilterHelper.chain(context.getDefaultNodeFilter(), filter);
     }
 
     /**

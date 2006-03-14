@@ -31,13 +31,14 @@ public final class FilterHelper {
      * @param descriptor the archetype descriptor
      * @return a list of descriptors
      */
-    public static List<NodeDescriptor> filter(NodeFilter filter, ArchetypeDescriptor descriptor) {
+    public static List<NodeDescriptor> filter(NodeFilter filter,
+                                              ArchetypeDescriptor descriptor) {
         List<NodeDescriptor> simple;
         List<NodeDescriptor> complex;
         simple = FilterHelper.filter(filter,
-                descriptor.getSimpleNodeDescriptors());
+                                     descriptor.getSimpleNodeDescriptors());
         complex = FilterHelper.filter(filter,
-                descriptor.getComplexNodeDescriptors());
+                                      descriptor.getComplexNodeDescriptors());
         List<NodeDescriptor> filtered = new ArrayList<NodeDescriptor>(simple);
         filtered.addAll(complex);
         return filtered;
@@ -62,6 +63,22 @@ public final class FilterHelper {
                 if (filter.include(descriptor)) {
                     result.add(descriptor);
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Chains a list of filters together.
+     *
+     * @param filters the filters to chain. May contain <code>null</code>s
+     * @return a filter containing <code>filters</code>
+     */
+    public static ChainedNodeFilter chain(NodeFilter ... filters) {
+        ChainedNodeFilter result = new ChainedNodeFilter();
+        for (NodeFilter filter : filters) {
+            if (filter != null) {
+                result.add(filter);
             }
         }
         return result;
