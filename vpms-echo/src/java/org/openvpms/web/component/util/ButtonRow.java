@@ -23,6 +23,11 @@ public class ButtonRow extends Row {
     private final ActionListener _listener;
 
     /**
+     * The tab indexer. May be <code>null</code>
+     */
+    private final TabIndexer _indexer;
+
+    /**
      * The row style.
      */
     private static final String STYLE = "ButtonRow";
@@ -37,8 +42,18 @@ public class ButtonRow extends Row {
      * Construct a new <code>ButtonRow</code>.
      */
     public ButtonRow() {
+        this(null);
+    }
+
+    /**
+     * Construct a new <code>ButtonRow</code>.
+     *
+     * @param indexer the tab indexer. May be <code>null</code>
+     */
+    public ButtonRow(TabIndexer indexer) {
         setStyleName(STYLE);
 
+        _indexer = indexer;
         _listener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doAction(event);
@@ -139,6 +154,9 @@ public class ButtonRow extends Row {
         Button button = ButtonFactory.create(id, BUTTON_STYLE, _listener);
         button.setId(id);
         button.setActionCommand(id);
+        if (_indexer != null) {
+            _indexer.setTabIndex(button);
+        }
         add(button);
         return button;
     }

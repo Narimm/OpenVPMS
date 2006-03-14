@@ -8,6 +8,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.web.component.dialog.PopupWindow;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -52,12 +53,22 @@ public class EditDialog extends PopupWindow {
     /**
      * Construct a new <code>EditDialog</code>.
      *
-     * @param editor the editor
+     * @param editor  the editor
+     * @param context the layout context
      */
-    public EditDialog(IMObjectEditor editor) {
-        super(editor.getTitle(), STYLE);
+    public EditDialog(IMObjectEditor editor, LayoutContext context) {
+        super(editor.getTitle(), STYLE, context.getTabIndexer());
         _editor = editor;
         setModal(true);
+
+        getLayout().add(_editor.getComponent());
+        _editor.addPropertyChangeListener(
+                IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                        onComponentChange(event);
+                    }
+                });
 
         addButton(APPLY_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -79,15 +90,6 @@ public class EditDialog extends PopupWindow {
                 onCancel();
             }
         });
-        getLayout().add(_editor.getComponent());
-        _editor.addPropertyChangeListener(
-                IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                        onComponentChange(event);
-                    }
-                });
-
     }
 
     /**

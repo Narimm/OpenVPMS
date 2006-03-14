@@ -4,6 +4,7 @@ import nextapp.echo2.app.Component;
 
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.util.TabIndexer;
 
 
 /**
