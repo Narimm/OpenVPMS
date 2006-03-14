@@ -196,9 +196,10 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      *               editing
      */
     private void onCreated(IMObject object, final Entity entity) {
+        LayoutContext context = getLayoutContext();
         final IMObjectEditor editor
-                = IMObjectEditorFactory.create(object, getLayoutContext());
-        final EditDialog dialog = new EditDialog(editor);
+                = IMObjectEditorFactory.create(object, context);
+        final EditDialog dialog = new EditDialog(editor, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor, entity);

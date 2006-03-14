@@ -1,6 +1,8 @@
 package org.openvpms.web.component.im.layout;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import echopointng.DateField;
 import echopointng.TabbedPane;
@@ -13,8 +15,10 @@ import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
+import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
@@ -36,6 +40,13 @@ import org.openvpms.web.component.util.LabelFactory;
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
+     * Map of node descriptors to their corresponding components, used to set
+     * focus.
+     */
+    private final Map<NodeDescriptor, Component> _components
+            = new LinkedHashMap<NodeDescriptor, Component>();
+
+    /**
      * Construct a new <code>AbstractLayoutStrategy</code>.
      */
     public AbstractLayoutStrategy() {
@@ -49,8 +60,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, LayoutContext context) {
+        _components.clear();
         Column column = ColumnFactory.create("CellSpacingColumn");
         doLayout(object, column, context);
+        setFocus(object, column);
         return column;
     }
 
@@ -74,7 +87,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
         doSimpleLayout(object, simple, container, context);
         doComplexLayout(object, complex, container, context);
-        setFocus(container);
     }
 
     /**
@@ -223,9 +235,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         setTabIndex(component, context);
     }
 
-
     /**
-     * Helper to create a component for a node descriptor.
+     * Creates a component for a node descriptor. This maintains a cache of
+     * created components, in order for the focus to be set on an appropriate
+     * component.
      *
      * @param parent     the parent object
      * @param descriptor the node descriptor
@@ -235,16 +248,46 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                         NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
-        return factory.create(parent, descriptor);
+        Component component = factory.create(parent, descriptor);
+        _components.put(descriptor, component);
+        return component;
     }
 
     /**
      * Sets focus on the first focusable field.
      *
+     * @param object    the object
      * @param container the component container
      */
-    protected void setFocus(Component container) {
-        Component focusable = getFocusable(container);
+    protected void setFocus(IMObject object, Component container) {
+        Component focusable = null;
+        for (Map.Entry<NodeDescriptor, Component> entry :
+                _components.entrySet()) {
+            Component child = entry.getValue();
+            if (child instanceof TextComponent || child instanceof CheckBox
+                || child instanceof DateField
+                || child instanceof AbstractButton) {
+                if (child.isEnabled() && child.isFocusTraversalParticipant()) {
+                    NodeDescriptor descriptor = entry.getKey();
+                    try {
+                        Object value = descriptor.getValue(object);
+                        if (value == null
+                            || (value instanceof String
+                                && StringUtils.isEmpty((String) value))) {
+                            // null field. Set focus on it in preference to
+                            // others
+                            focusable = child;
+                            break;
+                        } else {
+                            if (focusable == null) {
+                                focusable = child;
+                            }
+                        }
+                    } catch (DescriptorException ignore) {
+                    }
+                }
+            }
+        }
         if (focusable != null) {
             if (focusable instanceof DateField) {
                 // @todo - workaround
@@ -252,57 +295,6 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
             ApplicationInstance.getActive().setFocusedComponent(focusable);
         }
-    }
-
-    /**
-     * Returns the child component that may have focus set.
-     *
-     * @param container the component container
-     * @return the first child component that may havefocus set, or
-     *         <code>null</code> if none may have focus set
-     */
-    protected Component getFocusable(Component container) {
-        Component result = null;
-        for (Component child : container.getComponents()) {
-            Component focusable = null;
-            // @todo can't programatically set focus on a SelectField
-            if (child instanceof TextComponent || child instanceof CheckBox
-                || child instanceof DateField
-                || child instanceof AbstractButton) {
-                if (child.isEnabled() && child.isFocusTraversalParticipant()) {
-                    focusable = child;
-                }
-            } else if (child.getComponentCount() != 0) {
-                focusable = getFocusable(child);
-            }
-            if (result == null) {
-                result = focusable;
-            } else if (focusable != null) {
-                result = minIndex(result, focusable);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the component with the mimumum traversal index. Note that ehe
-     * value 0 has special meaning: components with a value of 0 will be focused
-     * last.
-     *
-     * @param a the component
-     * @param b the other component
-     * @return <code>a</code> if it has a tab index &lt;= <code>b</code>
-     */
-    protected Component minIndex(Component a, Component b) {
-        Component result;
-        int aIndex = a.getFocusTraversalIndex();
-        int bIndex = b.getFocusTraversalIndex();
-        if (bIndex == 0 || (aIndex <= bIndex)) {
-            result = a;
-        } else {
-            result = b;
-        }
-        return result;
     }
 
     /**

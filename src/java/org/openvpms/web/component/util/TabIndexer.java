@@ -1,4 +1,4 @@
-package org.openvpms.web.component.im.layout;
+package org.openvpms.web.component.util;
 
 import echopointng.DateField;
 import nextapp.echo2.app.Component;

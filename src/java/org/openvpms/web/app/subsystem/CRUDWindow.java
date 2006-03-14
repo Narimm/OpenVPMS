@@ -26,6 +26,8 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -453,8 +455,10 @@ public class CRUDWindow {
      */
     private void edit(IMObject object) {
         final boolean isNew = object.isNew();
-        final IMObjectEditor editor = IMObjectEditorFactory.create(object);
-        EditDialog dialog = new EditDialog(editor);
+        LayoutContext context = new DefaultLayoutContext();
+        final IMObjectEditor editor
+                = IMObjectEditorFactory.create(object, context);
+        EditDialog dialog = new EditDialog(editor, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 onEditCompleted(editor, isNew);

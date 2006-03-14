@@ -27,16 +27,6 @@ public class IMObjectEditorFactory {
     /**
      * Creates a new editor.
      *
-     * @param object the object to edit
-     * @return an editor for <code>object</code>
-     */
-    public static IMObjectEditor create(IMObject object) {
-        return create(object, null);
-    }
-
-    /**
-     * Creates a new editor.
-     *
      * @param object  the object to edit
      * @param context the layout context. May be <code>null</code>
      * @return an editor for <code>object</code>

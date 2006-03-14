@@ -8,6 +8,7 @@ import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.web.component.util.ButtonRow;
+import org.openvpms.web.component.util.TabIndexer;
 
 
 /**
@@ -29,13 +30,14 @@ public abstract class PopupWindow extends WindowPane {
     private final ButtonRow _row;
 
 
+
     /**
      * Construct a new <code>PopupWindow</code>.
      *
      * @param title the window title
      */
     public PopupWindow(String title) {
-        this(title, null);
+        this(title, null, null);
     }
 
     /**
@@ -43,15 +45,16 @@ public abstract class PopupWindow extends WindowPane {
      *
      * @param title the window title
      * @param style the window style
+     * @param indexer the tab indexer. May be <code>null</code>
      */
-    public PopupWindow(String title, String style) {
+    public PopupWindow(String title, String style, TabIndexer indexer) {
         super(title, null, null);
         setStyleName(style);
 
-        _row = new ButtonRow();
+        _row = new ButtonRow(indexer);
 
         _layout = new SplitPane(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                new Extent(32));              // @todo - stylehseet
+                                new Extent(32));     // @todo - stylehseet
         _layout.add(_row);
         add(_layout);
     }

@@ -5,6 +5,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.util.TabIndexer;
 
 /**
  * Default implmentation of the {@link LayoutContext} interface.
@@ -29,7 +30,7 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     private TabIndexer _indexer;
 
-    
+
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
      */

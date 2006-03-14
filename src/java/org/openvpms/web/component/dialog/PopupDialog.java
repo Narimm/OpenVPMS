@@ -49,7 +49,7 @@ public abstract class PopupDialog extends PopupWindow {
      * @param buttons the buttons to display
      */
     public PopupDialog(String title, String style, Buttons buttons) {
-        super(title, style);
+        super(title, style, null);
 
         if (buttons == Buttons.OK || buttons == Buttons.OK_CANCEL) {
             addButton(OK_ID, new ActionListener() {
