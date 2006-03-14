@@ -82,8 +82,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         List<NodeDescriptor> complex;
 
         NodeFilter filter = getNodeFilter(context);
-        simple = filter(descriptor.getSimpleNodeDescriptors(), filter);
-        complex = filter(descriptor.getComplexNodeDescriptors(), filter);
+        simple = filter(object, descriptor.getSimpleNodeDescriptors(), filter);
+        complex = filter(object, descriptor.getComplexNodeDescriptors(), filter);
 
         doSimpleLayout(object, simple, container, context);
         doComplexLayout(object, complex, container, context);
@@ -167,13 +167,15 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     /**
      * Filters a set of node descriptors, using the specfied node filter.
      *
+     * @param object      the object
      * @param descriptors the node descriptors to filter
      * @param filter      the filter to use
      * @return the filtered nodes
      */
-    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors,
+    protected List<NodeDescriptor> filter(IMObject object,
+                                          List<NodeDescriptor> descriptors,
                                           NodeFilter filter) {
-        return FilterHelper.filter(filter, descriptors);
+        return FilterHelper.filter(object, filter, descriptors);
     }
 
     /**

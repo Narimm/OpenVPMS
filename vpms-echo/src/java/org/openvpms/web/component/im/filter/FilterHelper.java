@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -26,18 +27,20 @@ public final class FilterHelper {
      * Filters a list of descriptors returning only those that must be
      * displayed.
      *
+     * @param object the object. May be <code>null</code>
      * @param filter     the filter. If <code>null</code>, all descriptors are
      *                   returned
      * @param descriptor the archetype descriptor
      * @return a list of descriptors
      */
-    public static List<NodeDescriptor> filter(NodeFilter filter,
+    public static List<NodeDescriptor> filter(IMObject object,
+                                              NodeFilter filter,
                                               ArchetypeDescriptor descriptor) {
         List<NodeDescriptor> simple;
         List<NodeDescriptor> complex;
-        simple = FilterHelper.filter(filter,
+        simple = FilterHelper.filter(object, filter,
                                      descriptor.getSimpleNodeDescriptors());
-        complex = FilterHelper.filter(filter,
+        complex = FilterHelper.filter(object, filter,
                                       descriptor.getComplexNodeDescriptors());
         List<NodeDescriptor> filtered = new ArrayList<NodeDescriptor>(simple);
         filtered.addAll(complex);
@@ -48,19 +51,20 @@ public final class FilterHelper {
      * Filters a list of descriptors returning only those that must be
      * displayed.
      *
+     * @param object      the object. May be <code>null</code>
      * @param filter      the filter. If <code>null</code> all descriptors are
      *                    returned.
      * @param descriptors the descriptors to filter
      * @return a list of descriptors
      */
     public static List<NodeDescriptor> filter(
-            NodeFilter filter, List<NodeDescriptor> descriptors) {
+            IMObject object, NodeFilter filter, List<NodeDescriptor> descriptors) {
         List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
         if (filter == null) {
             result.addAll(descriptors);
         } else {
             for (NodeDescriptor descriptor : descriptors) {
-                if (filter.include(descriptor)) {
+                if (filter.include(descriptor, object)) {
                     result.add(descriptor);
                 }
             }

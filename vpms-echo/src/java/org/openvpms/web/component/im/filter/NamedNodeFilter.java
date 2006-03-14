@@ -1,6 +1,7 @@
 package org.openvpms.web.component.im.filter;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -30,10 +31,11 @@ public class NamedNodeFilter implements NodeFilter {
      * Determines if a node should be included.
      *
      * @param descriptor the node descriptor
+     * @param object     the object
      * @return <code>true</code> if the node should be included; otherwise
      *         <code>false</code>
      */
-    public boolean include(NodeDescriptor descriptor) {
+    public boolean include(NodeDescriptor descriptor, IMObject object) {
         boolean result = true;
         for (int i = 0; i < _exclude.length; ++i) {
             if (_exclude[i].equals(descriptor.getName())) {
