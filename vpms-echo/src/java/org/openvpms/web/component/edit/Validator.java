@@ -2,6 +2,8 @@ package org.openvpms.web.component.edit;
 
 import java.util.List;
 
+import org.openvpms.component.business.service.archetype.ValidationError;
+
 
 /**
  * General validation interface..
@@ -18,7 +20,7 @@ public interface Validator {
      * @return a list of error messages if the object is invalid; or an empty
      *         list if valid
      */
-    List<String> validate(Object value);
+    List<ValidationError> validate(Object value);
 
     /**
      * Determines if the object is valid.

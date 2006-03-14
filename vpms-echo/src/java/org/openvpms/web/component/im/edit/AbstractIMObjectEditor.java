@@ -222,14 +222,16 @@ public abstract class AbstractIMObjectEditor
         if (_cancelled) {
             return false;
         }
-        boolean saved;
-        if (!isModified()) {
-            saved = true;
-        } else {
-            saved = doSave();
-            if (saved) {
-                _saved = true;
-                clearModified();
+        boolean saved = false;
+        if (isValid()) {
+            if (!isModified()) {
+                saved = true;
+            } else {
+                saved = doSave();
+                if (saved) {
+                    _saved = true;
+                    clearModified();
+                }
             }
         }
         return saved;
@@ -316,6 +318,16 @@ public abstract class AbstractIMObjectEditor
      */
     public void removeModifiableListener(ModifiableListener listener) {
         _modifiable.removeModifiableListener(listener);
+    }
+
+    /**
+     * Determines if the object is valid.
+     *
+     * @return <code>true</code> if the object is valid; otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        return _modifiable.isValid();
     }
 
     /**

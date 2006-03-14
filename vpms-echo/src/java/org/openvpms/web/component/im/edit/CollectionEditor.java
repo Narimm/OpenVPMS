@@ -243,6 +243,22 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
+     * Determines if the object is valid.
+     *
+     * @return <code>true</code> if the object is valid; otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        boolean valid;
+        if (_editor != null) {
+            valid = _editor.isValid();
+        } else {
+            valid = true;
+        }
+        return valid;
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {

@@ -35,4 +35,12 @@ public interface Modifiable {
      */
     void removeModifiableListener(ModifiableListener listener);
 
+    /**
+     * Determines if the object is valid.
+     *
+     * @return <code>true</code> if the object is valid; otherwise
+     * <code>false</code>
+     */
+    boolean isValid();
+
 }

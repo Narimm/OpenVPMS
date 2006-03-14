@@ -66,4 +66,14 @@ public class ReadOnlyProperty extends IMObjectProperty {
     public void removeModifiableListener(ModifiableListener listener) {
         // no-op
     }
+
+    /**
+     * Determines if the object is valid.
+     *
+     * @return <code>true</code> if the object is valid; otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        return true;
+    }
 }
