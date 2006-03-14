@@ -54,7 +54,7 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
      */
     public Component apply(IMObject object, LayoutContext context) {
         String[] range = _descriptor.getArchetypeRange();
-        ArchetypeDescriptor descriptor
+        ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(range[0]);
 
         List<NodeDescriptor> simple;
@@ -62,8 +62,8 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
         List<NodeDescriptor> filtered;
 
         NodeFilter filter = getNodeFilter(context);
-        simple = filter(descriptor.getSimpleNodeDescriptors(), filter);
-        complex = filter(descriptor.getComplexNodeDescriptors(), filter);
+        simple = filter(object, archetype.getSimpleNodeDescriptors(), filter);
+        complex = filter(object, archetype.getComplexNodeDescriptors(), filter);
 
         filtered = new ArrayList<NodeDescriptor>(simple);
         filtered.addAll(complex);

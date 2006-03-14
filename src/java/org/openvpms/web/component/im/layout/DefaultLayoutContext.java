@@ -3,7 +3,9 @@ package org.openvpms.web.component.im.layout;
 import nextapp.echo2.app.Component;
 
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
+import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.TabIndexer;
 
@@ -45,7 +47,9 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public DefaultLayoutContext(IMObjectComponentFactory factory) {
         _factory = factory;
-        _filter = new BasicNodeFilter(true);
+        NodeFilter id = new ValueNodeFilter("uid", new Long(-1));
+        NodeFilter showOptional = new BasicNodeFilter(true);
+        _filter = new ChainedNodeFilter(id, showOptional);
         _indexer = new TabIndexer();
     }
 

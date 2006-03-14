@@ -55,7 +55,8 @@ public class ActItemTableModel extends DescriptorTableModel {
         ChainedNodeFilter filter = new ChainedNodeFilter();
         filter.add(context.getDefaultNodeFilter());
         filter.add(new NamedNodeFilter("participants"));
-        List<NodeDescriptor> nodes = FilterHelper.filter(filter, archetype);
+        List<NodeDescriptor> nodes = FilterHelper.filter(null, filter, 
+                                                         archetype);
         TableColumnModel columns = new DefaultTableColumnModel();
 
         String[] range = participants.getArchetypeRange();

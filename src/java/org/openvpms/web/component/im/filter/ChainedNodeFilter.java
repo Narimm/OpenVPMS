@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -18,8 +19,24 @@ public class ChainedNodeFilter implements NodeFilter {
     /**
      * The node filters.
      */
-    private List<NodeFilter> _filters = new ArrayList<NodeFilter>();
+    private List<NodeFilter> _filters;
 
+    /**
+     * Construct a new <code>ChainedNodeFilter</code>
+     */
+    public ChainedNodeFilter() {
+        this(new NodeFilter[0]);
+    }
+
+    /**
+     * Construct a new <code>ChainedNodeFilter</code>
+     */
+    public ChainedNodeFilter(NodeFilter ... filters) {
+        _filters = new ArrayList<NodeFilter>(filters.length);
+        for (NodeFilter filter : filters) {
+            _filters.add(filter);
+        }
+    }
 
     /**
      * Add a filter.
@@ -34,13 +51,14 @@ public class ChainedNodeFilter implements NodeFilter {
      * Determines if a node should be included.
      *
      * @param descriptor the node descriptor
+     * @param object
      * @return <code>true</code> if the node should be included; otherwise
      *         <code>false</code>
      */
-    public boolean include(NodeDescriptor descriptor) {
+    public boolean include(NodeDescriptor descriptor, IMObject object) {
         boolean result = true;
         for (NodeFilter filter : _filters) {
-            if (!filter.include(descriptor)) {
+            if (!filter.include(descriptor, object)) {
                 result = false;
                 break;
             }
