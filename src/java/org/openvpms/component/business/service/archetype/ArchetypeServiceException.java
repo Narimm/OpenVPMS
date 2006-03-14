@@ -74,7 +74,9 @@ public class ArchetypeServiceException extends RuntimeException implements
         EntityUidNotSpecified,
         EntityConceptNotSpecified,
         FailedToDeriveValue,
-        FailedInGetByObjectReference
+        FailedInGetByObjectReference,
+        InvalidSortProperty,
+        CannotSortOnProperty
     }
 
     /**
