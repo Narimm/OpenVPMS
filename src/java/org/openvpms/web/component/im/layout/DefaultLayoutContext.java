@@ -24,7 +24,7 @@ public class DefaultLayoutContext implements LayoutContext {
     /**
      * The default node filter.
      */
-    private final NodeFilter _filter;
+    private NodeFilter _filter;
 
     /**
      * The tab index.
@@ -109,5 +109,14 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public NodeFilter getDefaultNodeFilter() {
         return _filter;
+    }
+
+    /**
+     * Sets the default filter.
+     *
+     * @param filter the default filter. May be <code>null</code>
+     */
+    public void setNodeFilter(NodeFilter filter) {
+        _filter = filter;
     }
 }
