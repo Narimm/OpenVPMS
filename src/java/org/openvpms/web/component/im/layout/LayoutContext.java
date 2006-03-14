@@ -29,11 +29,11 @@ public interface LayoutContext {
     void setComponentFactory(IMObjectComponentFactory factory);
 
     /**
-     * Returns the tab index.
+     * Returns the tab indexer.
      *
-     * @return the tab index
+     * @return the tab indexer
      */
-    int getTabIndex();
+    TabIndexer getTabIndexer();
 
     /**
      * Sets the tab index of a component.
