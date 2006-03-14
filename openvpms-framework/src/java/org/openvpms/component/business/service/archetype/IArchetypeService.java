@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
@@ -31,6 +32,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.SortCriteria;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -217,6 +220,49 @@ public interface IArchetypeService {
     public List<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName, boolean activeOnly);
     
+    /**
+     * Uses the specified criteria to return zero, one or more matching . 
+     * entities. This is a very generic query which will constrain the 
+     * returned set on one or more of the supplied values.
+     * <p>
+     * Each of the parameters can denote an exact match or a partial match. If
+     * a partial match is required then the last character of the value must be
+     * a '*'. In every other case the search will look for an exact match.
+     * <p>
+     * All the values are optional. In the case where all the values are null
+     * then all the entities will be returned. In the case where two or more 
+     * values are specified (i.e. rmName and entityName) then only entities 
+     * satisfying both conditions will be returned.
+     * <p>
+     * The results will be returned in a {@link Page} object, which may contain
+     * a subset of the total result set. The caller can then use the context 
+     * information in the {@link Page} object to make subsequent calls.
+     * 
+     * @param rmName
+     *            the reference model name (must be complete name)
+     * @param entityName
+     *            the name of the entity (partial or complete)
+     * @param concept
+     *            the concept name (partial or complete)
+     * @param instanceName
+     *            the particular instance name
+     * @param primaryOnly
+     *            determines whether to restrict processing to archetypes 
+     *            that are marked as primary only.            
+     * @param activeOnly
+     *            whether to retrieve only the active objects            
+     * @param firstRow
+     *            the first row to return. 0 is the first row
+     * @param numOfRows                                      
+     *            the number of rows to return. -1 will return all the rows.                                         
+     * @return Page<IMObject>
+     *            the results and associated context information
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public IPage<IMObject> get(String rmName, String entityName, 
+            String conceptName, String instanceName, boolean primaryOnly,
+            boolean activeOnly, int firstRow, int numOfRows, SortCriteria sortCriteria);
     
     /**
      * Uses the specified criteria to return zero, one or more matching . 

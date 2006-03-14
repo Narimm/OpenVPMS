@@ -203,6 +203,23 @@ public class ActTestCases extends
     }
     
     /**
+     * Test for bug 229 
+     */
+    public void testOVPMS229()
+    throws Exception {
+        // get the initial act count
+        int actCount = archetypeService.getActs("act", null, null, null, null, 
+                null, null, true).size();
+
+        // create an act and check the count again
+        Act act1 = createAct("wake up jim");
+        archetypeService.save(act1);
+        int actCount1 = archetypeService.getActs("act", null, null, null, null, 
+                null, null, true).size();
+        assertTrue(actCount1 == (actCount + 1));
+    }
+    
+    /**
      * Test that we can use the archetype service function resolve in an 
      * xpath expression
      */

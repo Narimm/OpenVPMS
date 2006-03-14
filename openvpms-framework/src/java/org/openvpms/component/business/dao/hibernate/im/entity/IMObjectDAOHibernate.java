@@ -31,17 +31,22 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 // commons-lang
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 //openvpms-framework
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.component.system.common.search.SortCriteria.SortDirection;
 
 
 /**
@@ -53,6 +58,12 @@ import org.openvpms.component.business.domain.im.common.Participation;
  */
 public class IMObjectDAOHibernate extends HibernateDaoSupport implements 
         IMObjectDAO {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(IMObjectDAOHibernate.class);
 
     /**
      *  Default constructor
@@ -218,6 +229,137 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             } finally {
               session.close();  
             }
+            
+            /**
+            return getHibernateTemplate().findByNamedParam(
+                    queryString.toString(),
+                    (String[])names.toArray(new String[names.size()]),
+                    params.toArray());
+            **/
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToFindIMObjects,
+                    new Object[]{rmName, entityName, conceptName, instanceName, clazz},
+                    exception);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, int, int)
+     */
+    @SuppressWarnings("unchecked")
+    public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, String clazz, boolean activeOnly, int firstRow, int numOfRows, String sortProperty, SortCriteria.SortDirection sortDirection) {
+        try {
+            // check that rm has been specified
+            if (StringUtils.isEmpty(clazz)) {
+                throw new IMObjectDAOException(
+                        IMObjectDAOException.ErrorCode.ClassNameMustBeSpecified,
+                        new Object[]{});
+            }
+            
+            StringBuffer queryString = new StringBuffer();
+            List<String> names = new ArrayList<String>();
+            List<Object> params = new ArrayList<Object>();
+            boolean andRequired = false;
+            
+            queryString.append("from ");
+            queryString.append(clazz);
+            queryString.append(" as entity");
+            
+            // check to see if one or more of the values have been specified
+            if ((StringUtils.isEmpty(rmName) == false) ||
+                (StringUtils.isEmpty(entityName) == false) ||
+                (StringUtils.isEmpty(conceptName) == false) ||
+                (StringUtils.isEmpty(instanceName) == false)) {
+                queryString.append(" where ");
+            }
+            
+            // process the rmName
+            if (StringUtils.isEmpty(rmName) == false) {
+                names.add("rmName");
+                andRequired = true;
+                if ((rmName.endsWith("*")) || rmName.startsWith("*")) {
+                    queryString.append(" entity.archetypeId.rmName like :rmName");
+                    params.add(rmName.replace("*", "%"));
+                } else {
+                    queryString.append(" entity.archetypeId.rmName = :rmName");
+                    params.add(rmName);
+                }
+                
+            }
+            
+            // process the entity name
+            if (StringUtils.isEmpty(entityName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("entityName");
+                andRequired = true;
+                if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
+                    queryString.append(" entity.archetypeId.entityName like :entityName");
+                    params.add(entityName.replace("*", "%"));
+                } else {
+                    queryString.append(" entity.archetypeId.entityName = :entityName");
+                    params.add(entityName);
+                }
+                
+            }
+            
+            // process the concept name
+            if (StringUtils.isEmpty(conceptName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("conceptName");
+                andRequired = true;
+                if ((conceptName.endsWith("*")) || (conceptName.startsWith("*"))) {
+                    queryString.append(" entity.archetypeId.concept like :conceptName");
+                    params.add(conceptName.replace("*", "%"));
+                } else {
+                    queryString.append(" entity.archetypeId.concept = :conceptName");
+                    params.add(conceptName);
+                }
+            }
+            
+            // process the instance name
+            if (StringUtils.isEmpty(instanceName) == false) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                
+                names.add("instanceName");
+                andRequired = true;
+                if ((instanceName.endsWith("*")) || (instanceName.startsWith("*"))) {
+                    queryString.append(" entity.name like :instanceName");
+                    params.add(instanceName.replace("*", "%"));
+                } else {
+                    queryString.append(" entity.name = :instanceName");
+                    params.add(instanceName);
+                }
+            }
+            
+            // determine if we are only interested in active objects
+            if (activeOnly) {
+                if (andRequired) {
+                    queryString.append(" and ");
+                }
+                queryString.append(" entity.active = 1");
+            }
+            
+            // determine if a sort order has been specified
+            if (!StringUtils.isEmpty(sortProperty)) {
+                queryString.append(" order by entity." + sortProperty);
+                if (sortDirection == SortDirection.Ascending) {
+                    queryString.append(" asc");
+                } else {
+                    queryString.append(" desc");
+                }
+            }
+            
+            return executeQuery(queryString.toString(), names, params, 
+                    firstRow, numOfRows, new Page<IMObject>());
             
             /**
             return getHibernateTemplate().findByNamedParam(
@@ -836,6 +978,56 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     IMObjectDAOException.ErrorCode.FailedToFindActs,
                     new Object[]{entityName, conceptName, startTimeFrom, endTimeFrom, status},
                     exception);
+        }
+    }
+    
+    /**
+     * This method will execute a query and paginate the result set
+     * 
+     */
+    @SuppressWarnings("unchecked")
+    private IPage executeQuery(String queryString, List<String> names, 
+            List<Object> params, int firstRow, int numOfRows, Page page) 
+    throws Exception {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
+        try {
+            Query query = null;
+            int totalNumOfRows = 0;
+            if (numOfRows != IPage.ALL_ROWS) {
+                query = session.createQuery("select count(*) " + queryString);
+                for (int index = 0; index < names.size(); index++) {
+                    query.setParameter(names.get(index), params.get(index));
+                }
+                totalNumOfRows = ((Integer)query.list().get(0)).intValue();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("The number of rows returned is " + totalNumOfRows);
+                }
+            }
+                
+            query = session.createQuery(queryString);
+            for (int index = 0; index < names.size(); index++) {
+                query.setParameter(names.get(index), params.get(index));
+            }
+            
+            if (firstRow != 0) {
+                query.setFirstResult(firstRow);
+            }
+            
+            if (numOfRows != IPage.ALL_ROWS) {
+                query.setMaxResults(numOfRows);
+                logger.debug("THe maximum number of rows is " + numOfRows);
+            } else {
+                totalNumOfRows =query.list().size();
+            }
+            
+            page.setFirstRow(firstRow);
+            page.setNumOfRows(query.list().size());
+            page.setTotalNumOfRows(totalNumOfRows);
+            page.setRows(query.list());
+
+            return page;
+        } finally {
+          session.close();  
         }
     }
 }

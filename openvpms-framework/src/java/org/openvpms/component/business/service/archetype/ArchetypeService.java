@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 // openvpms-framework
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -47,6 +48,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
 /**
@@ -344,12 +347,13 @@ public class ArchetypeService implements IArchetypeService {
         }
         
         List<IMObject> results = new ArrayList<IMObject>();
-        Set<String> types = getDistinctTypes(rmName, entityName, primaryOnly);
+        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, primaryOnly);
         
-        for (String type : types) {
+        for (ArchetypeDescriptor adesc : adescs) {
             try {
                 List<IMObject> objects = dao.get(rmName, entityName,
-                        conceptName, instanceName, type, activeOnly);
+                        conceptName, instanceName, adesc.getClassName(), 
+                        activeOnly);
                 results.addAll(objects);
             } catch (IMObjectDAOException exception) {
                 logger.error("ArchetypeService.get", new ArchetypeServiceException(
@@ -362,6 +366,109 @@ public class ArchetypeService implements IArchetypeService {
         return results;
     }
     
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, int, int)
+     */
+    public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, boolean primaryOnly, boolean activeOnly, int firstRow, int numOfRows, SortCriteria sortCriteria) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.get: rmName " + rmName
+                    + " entityName " + entityName
+                    + " conceptName " + conceptName
+                    + " instanceName " + instanceName
+                    + " firstRow " + firstRow
+                    + " numOfRows " + numOfRows);
+        }
+        
+        IPage<IMObject> page = null;
+        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, primaryOnly);
+        
+        if (adescs.size() == 1) {
+            ArchetypeDescriptor adesc = adescs.iterator().next();
+            page = dao.get(rmName, entityName, conceptName, instanceName, 
+                    adesc.getClassName(), activeOnly, firstRow, numOfRows,
+                    getSortProperty(adesc, sortCriteria), 
+                    getSortDirection(sortCriteria));
+        } else {
+            List<IMObject> results = new ArrayList<IMObject>();
+            for (ArchetypeDescriptor adesc : adescs) {
+                try {
+                    List<IMObject> objects = dao.get(rmName, entityName,
+                            conceptName, instanceName, adesc.getClassName(), 
+                            activeOnly);
+                    results.addAll(objects);
+                } catch (IMObjectDAOException exception) {
+                    logger.error("ArchetypeService.get", new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.FailedToFindObjects,
+                            new Object[] { rmName, entityName, conceptName,
+                                    instanceName }, exception)); 
+                }
+            }
+            
+            page = new Page<IMObject>(results, 0, results.size(), results.size());
+        }
+
+        return page;
+    }
+
+    /**
+     * Return the sort direction given a sort criteria
+     * 
+     * @param sortCriteria
+     *            the sort criteria
+     * @return SortDirection            
+     */
+    private SortCriteria.SortDirection getSortDirection(SortCriteria sortCriteria) {
+        if (sortCriteria == null) {
+            return SortCriteria.SortDirection.Ascending;
+        }
+        
+        return sortCriteria.getSortDirection();
+    }
+    
+    /**
+     * Search for a the specified node in the archetype descriptor and then 
+     * derive the sort property. A sort property can only be a top level 
+     * property in the adesc (i.e. have a simple path). If the node does not
+     * exist or the node exisits but it is not a top level node then raise an
+     * exception.
+     * 
+     * @param adesc
+     *            the archetype descriptor
+     * @param sortCriteria
+     *            the sort criteris
+     * @return String
+     *            the sort property
+     * @throws ArchetypeServiceException            
+     */
+    private String getSortProperty(ArchetypeDescriptor adesc, SortCriteria sortCriteria) {
+        if (sortCriteria == null) {
+            return null;
+        }
+        
+        String sortNode = sortCriteria.getSortNode();
+        NodeDescriptor ndesc = adesc.getNodeDescriptor(sortNode);
+        if (ndesc == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.InvalidSortProperty,
+                    new Object[] { sortNode });
+        }
+        
+        // stip the leading /, if it exists
+        String property = ndesc.getPath();
+        if (ndesc.getPath().startsWith("/")) {
+            property = ndesc.getPath().substring(1);
+        }
+        
+        // now check for any more / characters
+        if (property.contains("/")) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.CannotSortOnProperty,
+                    new Object[] { sortNode });
+        }
+        
+        return property;
+    }
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[])
      */
@@ -1026,12 +1133,12 @@ public class ArchetypeService implements IArchetypeService {
      *            the entity name (complete or partial)
      * @param primaryOnly
      *            determines whether to restrict processing to primary only            
-     * @return List<String> a list of types
+     * @return List<ArchetypeDescriptor> a list of types
      */
     @SuppressWarnings("unchecked")
-    private Set<String> getDistinctTypes(String rmName, String entityName,
+    private Set<ArchetypeDescriptor> getDistinctTypes(String rmName, String entityName,
             boolean primaryOnly) {
-        Set<String> results = new HashSet<String>();
+        Set<ArchetypeDescriptor> results = new HashSet<ArchetypeDescriptor>();
         
         // adjust the reference model name
         for (ArchetypeDescriptor desc : dCache.getArchetypeDescriptors()) {
@@ -1052,7 +1159,7 @@ public class ArchetypeService implements IArchetypeService {
                     entityName.replace("*", ".*");
                 if ((StringUtils.isEmpty(modEntityName)) || 
                     (archId.getEntityName().matches(modEntityName))) {
-                    results.add(desc.getClassName());
+                    results.add(desc);
                 }
             }
         }

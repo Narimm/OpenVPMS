@@ -24,10 +24,13 @@ import java.util.List;
 import java.util.Map;
 
 // openvpms-framework
+import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.SortCriteria;
 
 /**
  * This interface provides data access object (DAO) support for objects of 
@@ -95,6 +98,55 @@ public interface IMObjectDAO {
      */
     public List<IMObject> get(String rmName, String entityName, String conceptName, 
             String instanceName, String clazz, boolean activeOnly);
+
+    /**
+     * Retrieve the objects that matches the specified search criteria.
+     * This is a very generic method that provides a mechanism to return 
+     * objects based on, one or more criteria.
+     * <p>
+     * All parameters are optional and can either denote an exact or partial
+     * match semantics. If a parameter has a '*' at the start or end of the 
+     * value then it will perform a wildcard match.  If not '*' is specified in
+     * the value then it will only return objects with the exact value.
+     * <p>
+     * If two or more parameters are specified then it will return entities
+     * that matching all criteria.
+     * <p>
+     * The results will be returned in a {@link Page} object, which may contain
+     * a subset of the total result set. The caller can then use the context 
+     * information in the {@link Page} object to make subsequent calls.
+     * 
+     * @param rmName
+     *            the reference model name
+     * @param entityName
+     *            the entity name
+     * @param conceptName
+     *            the concept name
+     * @param instanceName
+     *            the instance name   
+     * @param clazz
+     *            the fully qualified name of the class to search for  
+     * @param activeOnly
+     *            indicates whether to return active objects.
+     * @param firstRow
+     *            the first row to return. 0 is the first row
+     * @param numOfRows                                      
+     *            the number of rows to return. -1 will return all the rows.
+     * @param sortProperty
+     *            if specified defines the property to sort on. It must be a 
+     *            property on that is accessible on the specified class.
+     * @param sortDirection
+     *            if a sort property is not defined then this is ignored and 
+     *            the natural order is returned.                                                                 
+     * @return Page<IMObject>
+     *            the results and associated context information
+     * @throws IMObjectDAOException
+     *             a runtime exception if the request cannot complete
+     */
+    public IPage<IMObject> get(String rmName, String entityName, 
+            String conceptName, String instanceName, String clazz, 
+            boolean activeOnly, int firstRow, int numOfRows, 
+            String sortProperty, SortCriteria.SortDirection sortDirection);
     
     /**
      * Return an object with the specified uid for the nominated clazz and null 
