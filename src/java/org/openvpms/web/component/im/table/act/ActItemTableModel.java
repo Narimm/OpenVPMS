@@ -37,8 +37,7 @@ public class ActItemTableModel extends DescriptorTableModel {
      */
     public ActItemTableModel(ArchetypeDescriptor archetype,
                              LayoutContext context) {
-        super(createColumnModel(archetype, context),
-              context.getComponentFactory());
+        super(createColumnModel(archetype, context), context);
     }
 
     /**

@@ -24,6 +24,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -130,7 +131,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected IMObjectTable createTable(LayoutContext context) {
         DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
-        readOnly.setComponentFactory(new ReadOnlyComponentFactory());
+        readOnly.setComponentFactory(new TableComponentFactory());
         IMObjectTableModel model = new ActItemTableModel(
                 _actItemDescriptor, readOnly);
         return new IMObjectTable(model);

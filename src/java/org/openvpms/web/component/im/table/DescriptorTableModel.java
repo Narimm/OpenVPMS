@@ -1,10 +1,11 @@
 package org.openvpms.web.component.im.table;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
@@ -14,8 +15,7 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 
@@ -28,47 +28,34 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
  */
 public class DescriptorTableModel extends IMObjectTableModel {
 
-    private IMObjectComponentFactory _factory;
+    /**
+     * The layout context.
+     */
+    private final LayoutContext _context;
 
 
     /**
      * Construct a <code>DescriptorTableModel</code>.
      *
      * @param model   the table columne model
-     * @param factory the component factory
+     * @param context the layout context
      */
     protected DescriptorTableModel(TableColumnModel model,
-                                   IMObjectComponentFactory factory) {
+                                   LayoutContext context) {
         super(model);
-        _factory = factory;
-    }
-
-    /**
-     * Create a model.
-     *
-     * @param descriptor the archetype descriptor
-     * @param filter     the node filter. May be <code>null</code>
-     * @param factory    the factory for creating components
-     * @return a new model
-     */
-    public static IMObjectTableModel create(ArchetypeDescriptor descriptor,
-                                            NodeFilter filter,
-                                            IMObjectComponentFactory factory) {
-        List<NodeDescriptor> descriptors
-                = FilterHelper.filter(filter, descriptor);
-        return create(descriptors, factory);
+        _context = context;
     }
 
     /**
      * Create a model.
      *
      * @param descriptors the column descriptors
-     * @param factory     the factory for creating components
+     * @param context     the layout context
      * @return a new model
      */
     public static IMObjectTableModel create(List<NodeDescriptor> descriptors,
-                                            IMObjectComponentFactory factory) {
-        return new DescriptorTableModel(create(descriptors), factory);
+                                            LayoutContext context) {
+        return new DescriptorTableModel(create(descriptors), context);
     }
 
     /**
@@ -135,19 +122,12 @@ public class DescriptorTableModel extends IMObjectTableModel {
     @Override
     protected Object getValue(IMObject object, int index, int row) {
         TableColumn column = getColumn(index);
+        IMObjectComponentFactory factory = _context.getComponentFactory();
         Object result = null;
         if (column instanceof DescriptorTableColumn) {
             DescriptorTableColumn col = (DescriptorTableColumn) column;
             NodeDescriptor descriptor = col.getDescriptor();
-            Component component = _factory.create(object, descriptor);
-            if (descriptor.isNumeric()) {
-                TableLayoutData layout = new TableLayoutData();
-                Alignment right = new Alignment(Alignment.RIGHT,
-                        Alignment.DEFAULT);
-                layout.setAlignment(right);
-                component.setLayoutData(layout);
-            }
-            result = component;
+            result = factory.create(object, descriptor);
         } else {
             result = super.getValue(object, index, row);
         }
@@ -155,12 +135,20 @@ public class DescriptorTableModel extends IMObjectTableModel {
     }
 
     /**
-     * Returns the factory.
+     * Returns the layout context.
      *
-     * @return the factory
+     * @return the layout context
      */
-    protected IMObjectComponentFactory getFactory() {
-        return _factory;
+    protected LayoutContext getLayoutContext() {
+        return _context;
     }
 
+    /**
+     * Returns the component factory.
+     *
+     * @return the component factory
+     */
+    protected IMObjectComponentFactory getFactory() {
+        return _context.getComponentFactory();
+    }
 }
