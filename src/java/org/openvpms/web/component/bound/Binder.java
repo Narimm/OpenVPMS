@@ -43,8 +43,11 @@ abstract class Binder {
      */
     public void setProperty() {
         _property.removeModifiableListener(_listener);
-        _property.setValue(getFieldValue());
-        _property.addModifiableListener(_listener);
+        try {
+            setProperty(_property);
+        } finally {
+            _property.addModifiableListener(_listener);
+        }
     }
 
     /**
@@ -52,6 +55,15 @@ abstract class Binder {
      */
     public void setField() {
         setFieldValue(_property.getValue());
+    }
+
+    /**
+     * Updates the property from the field.
+     *
+     * @param property the propery to update
+     */
+    protected void setProperty(Property property) {
+        property.setValue(getFieldValue());
     }
 
     /**

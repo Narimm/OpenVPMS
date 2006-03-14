@@ -174,4 +174,22 @@ public class ModifiableSet implements Modifiable {
         _listeners.notifyListeners(modified);
     }
 
+    /**
+     * Determines if the object is valid.
+     *
+     * @return <code>true</code> if the object is valid; otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        for (Map.Entry<IMObject, HashSet<Modifiable>> entry :
+                _objects.entrySet()) {
+            for (Modifiable modifiable : entry.getValue()) {
+                if (!modifiable.isValid()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }

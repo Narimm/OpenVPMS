@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ValidationError;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.edit.NodeValidator;
 
 
 /**
@@ -18,19 +19,24 @@ import org.openvpms.web.component.im.edit.NodeValidator;
 public class ModifiableProperty extends IMObjectProperty {
 
     /**
-     * The validator.
-     */
-    private final Validator _validator;
-
-    /**
      * Determines if the underlying object is dirty.
      */
     private boolean _dirty;
 
     /**
+     * Determines if the object is valid.
+     */
+    private Boolean _valid;
+
+    /**
      * The listeners.
      */
     private ModifiableListeners _listeners = new ModifiableListeners();
+
+    /**
+     * The property handler.
+     */
+    private final PropertyHandler _handler;
 
 
     /**
@@ -41,7 +47,7 @@ public class ModifiableProperty extends IMObjectProperty {
      */
     public ModifiableProperty(IMObject object, NodeDescriptor descriptor) {
         super(object, descriptor);
-        _validator = new NodeValidator(descriptor);
+        _handler = PropertyHandlerFactory.create(descriptor);
     }
 
     /**
@@ -51,13 +57,24 @@ public class ModifiableProperty extends IMObjectProperty {
      */
     @Override
     public void setValue(Object value) {
-        List<String> errors = _validator.validate(value);
-        if (errors.isEmpty()) {
+        try {
+            value = _handler.apply(value);
             super.setValue(value);
             _dirty = true;
+            _valid = true;
             _listeners.notifyListeners(this);
-        } else {
-            ErrorDialog.show(errors.get(0));
+        } catch (ValidationException exception) {
+            _valid = false;
+            String title = "Error: " + getDescriptor().getDisplayName();
+            String message;
+            List<ValidationError> errors = exception.getErrors();
+            if (!errors.isEmpty()) {
+                ValidationError error = errors.get(0);
+                message = error.getErrorMessage();
+            } else {
+                message = exception.getMessage();
+            }
+            ErrorDialog.show(title, message);
         }
     }
 
@@ -102,4 +119,18 @@ public class ModifiableProperty extends IMObjectProperty {
     public void removeModifiableListener(ModifiableListener listener) {
         _listeners.removeListener(listener);
     }
+
+    /**
+     * Determines if the object is valid.
+     *
+     * @return <code>true</code> if the object is valid; otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        if (_valid == null) {
+            _valid = _handler.isValid(getValue());
+        }
+        return _valid;
+    }
+
 }
