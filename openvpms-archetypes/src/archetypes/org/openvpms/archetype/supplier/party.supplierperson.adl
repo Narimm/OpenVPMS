@@ -12,7 +12,7 @@
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="title" path="/details/attributes/title" type="java.lang.String"
-				minCardinality="1">
+				minCardinality="1" maxlength="15" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="Mr" value="Mr" />
@@ -25,7 +25,7 @@
 			</node>
 			<node name="firstName" path="/details/attributes/firstName" type="java.lang.String"
 				minCardinality="1" maxLength="30" />
-			<node name="initials" path="/details/attributes/initials" type="java.lang.String" />
+			<node name="initials" path="/details/attributes/initials" type="java.lang.String" maxLength="15" />
 			<node name="lastName" path="/details/attributes/lastName" type="java.lang.String"
 				minCardinality="1" maxLength="30" />
 		</node>
