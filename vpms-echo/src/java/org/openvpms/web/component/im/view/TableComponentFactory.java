@@ -2,20 +2,22 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.text.TextComponent;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.TableLayoutData;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
- * An {@link IMObjectComponentFactory} that returns read-only components.
+ * An {@link IMObjectComponentFactory} that returns read-only components for
+ * display in a table.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
+public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
 
     /**
      * Returns a component to display a lookup.
@@ -25,7 +27,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @return a component to display the lookup
      */
     protected Component getLookup(IMObject context, NodeDescriptor descriptor) {
-        return getTextComponent(context, descriptor);
+        return getLabel(context, descriptor);
     }
 
     /**
@@ -36,11 +38,15 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @return a component to display the datge
      */
     protected Component getNumber(IMObject context, NodeDescriptor descriptor) {
-        final int columns = 10; // @todo. should determine from descriptor.
-        TextComponent text = TextComponentFactory.create(columns);
-        text.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
-        text.setText(getNumericValue(context, descriptor));
-        return text;
+        String value = getNumericValue(context, descriptor);
+        Label label = LabelFactory.create();
+        label.setText(value);
+        TableLayoutData layout = new TableLayoutData();
+        Alignment right = new Alignment(Alignment.RIGHT,
+                                        Alignment.DEFAULT);
+        layout.setAlignment(right);
+        label.setLayoutData(layout);
+        return label;
     }
 
     /**
@@ -52,10 +58,9 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected Component getDate(IMObject context, NodeDescriptor descriptor) {
         String value = getDateValue(context, descriptor);
-        int columns = (value != null) ? value.length() : 10;
-        TextComponent text = TextComponentFactory.create(columns);
-        text.setText(value);
-        return text;
+        Label label = LabelFactory.create();
+        label.setText(value);
+        return label;
     }
 
 }

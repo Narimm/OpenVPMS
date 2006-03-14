@@ -2,10 +2,12 @@ package org.openvpms.web.component.im.edit;
 
 import java.util.List;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.list.ListModel;
+import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -15,11 +17,11 @@ import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -53,7 +55,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Construct a new <code>NodeEditorFactory</code>.
      *
-     * @param context the layout context
+     * @param context    the layout context
      * @param modifiable the modification tracker
      */
     public NodeEditorFactory(LayoutContext context,
@@ -78,7 +80,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         } else if (descriptor.isString()) {
             result = getTextComponent(context, descriptor);
         } else if (descriptor.isNumeric()) {
-            result = getNumericComponent(context, descriptor);
+            result = getNumericEditor(context, descriptor);
         } else if (descriptor.isDate()) {
             result = getDateEditor(context, descriptor);
         } else if (descriptor.isCollection()) {
@@ -99,11 +101,6 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         return result;
     }
 
-    private Component getNumericComponent(IMObject context, NodeDescriptor descriptor) {
-        int maxColumns = 10;
-        return getTextComponent(context, descriptor, maxColumns);
-    }
-
     /**
      * Create a component to display an object.
      *
@@ -120,6 +117,25 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         _modifiable.add(object, editor);
         return editor.getComponent();
     }
+
+    /**
+     * Returns a component to edit a numeric node.
+     *
+     * @param object     the parent object
+     * @param descriptor the node descriptor
+     * @return a component to edit the node
+     */
+    protected Component getNumericEditor(IMObject object,
+                                       NodeDescriptor descriptor) {
+        int maxColumns = 10;
+        TextComponent text = getTextComponent(object, descriptor, maxColumns);
+        if (descriptor.isReadOnly() || descriptor.isDerived()) {
+            Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+            text.setAlignment(align);
+        }
+        return text;
+    }
+
 
     /**
      * Returns a component to edit a date node.

@@ -3,8 +3,10 @@ package org.openvpms.web.component.im.view.act;
 import java.util.List;
 
 import echopointng.GroupBox;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -13,10 +15,12 @@ import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
 
 
@@ -72,7 +76,8 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
 
         container.add(grid);
 
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(object);
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object);
         NodeDescriptor items = archetype.getNodeDescriptor("items");
         GroupBox box = new GroupBox();
         box.setTitle(items.getDisplayName());
@@ -82,6 +87,10 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         } else {
             IMObjectLayoutStrategy strategy
                     = new ActRelationshipTableLayoutStrategy(items);
+
+            context = new DefaultLayoutContext(context);
+            context.setComponentFactory(new TableComponentFactory());
+
             Component child = strategy.apply(object, context);
             box.add(child);
         }
@@ -120,6 +129,11 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
             // @todo - workaround for OVPMS-211
             component.setEnabled(false);
             component.setFocusTraversalParticipant(false);
+            if (component instanceof TextComponent) {
+                Alignment align = new Alignment(Alignment.RIGHT,
+                                                Alignment.DEFAULT);
+                ((TextComponent) component).setAlignment(align);
+            }
         }
         return component;
     }

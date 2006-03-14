@@ -1,5 +1,6 @@
 package org.openvpms.web.component.util;
 
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
@@ -27,6 +28,18 @@ public class TextComponentFactory extends ComponentFactory {
     public static TextField create() {
         TextField text = new TextField();
         text.setStyleName(Styles.DEFAULT);
+        return text;
+    }
+
+    /**
+     * Create a new text field.
+     *
+     * @param columns the no. of columns to display
+     * @return a new text field
+     */
+    public static TextField create(int columns) {
+        TextField text = create();
+        text.setWidth(new Extent(columns, Extent.EX));
         return text;
     }
 
