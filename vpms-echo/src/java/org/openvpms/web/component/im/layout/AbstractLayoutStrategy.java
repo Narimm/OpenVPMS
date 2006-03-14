@@ -131,7 +131,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 // @todo - button doesn't respond to keypress, so don't focus
                 // on it.
 
-                model.insertTab(model.size(), button, child);
+                Component inset = ColumnFactory.create("Inset", child);
+                model.insertTab(model.size(), button, inset);
             }
             TabbedPane pane = new TabbedPane();
             pane.setModel(model);
