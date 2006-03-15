@@ -402,7 +402,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.0.0-beta-bin</version>
+      <version>3.2.0-alpha-bin</version>
       <url>http://www.mysql.com</url>
     </dependency>
     <dependency>
