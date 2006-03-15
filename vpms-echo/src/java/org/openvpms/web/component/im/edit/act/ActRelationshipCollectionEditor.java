@@ -16,6 +16,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -23,7 +24,6 @@ import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -168,6 +168,20 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         Act act = (Act) object;
         ActRelationship relationship = _acts.remove(act);
         descriptor.removeChildFromCollection(parent, relationship);
+    }
+
+    /**
+     * Creates a new editor.
+     *
+     * @param object  the object to edit
+     * @param context the layout context
+     * @return an editor to edit <code>object</code>
+     */
+    @Override
+    protected IMObjectEditor createEditor(IMObject object,
+                                          LayoutContext context) {
+        Act act = (Act) object;
+        return IMObjectEditorFactory.create(act, context);
     }
 
 }
