@@ -1,6 +1,5 @@
 package org.openvpms.web.app.subsystem;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
@@ -24,11 +23,12 @@ import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -186,22 +186,13 @@ public class CRUDWindow {
     public void setObject(IMObject object) {
         Context.getInstance().setCurrent(object);
         getComponent();
+        _objectContainer.removeAll();
         if (object != null) {
-            if (_objectContainer != null) {
-                _objectContainer.remove(_viewer.getComponent());
-            } else {
-                _objectContainer = new GroupBox();
-                _component.add(_objectContainer);
-            }
             _viewer = new IMObjectViewer(object);
             _objectContainer.add(_viewer.getComponent());
             enableButtons(true);
         } else {
-            if (_viewer != null) {
-                _component.remove(_objectContainer);
-                _objectContainer = null;
-                _viewer = null;
-            }
+            _viewer = null;
             enableButtons(false);
         }
     }
@@ -260,9 +251,10 @@ public class CRUDWindow {
         _buttons = RowFactory.create(ROW_STYLE);
         layoutButtons(_buttons);
         enableButtons(false);
+        _objectContainer = ColumnFactory.create("Inset");
         _component = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                STYLE, _buttons);
+                STYLE, _buttons, _objectContainer);
     }
 
     /**
