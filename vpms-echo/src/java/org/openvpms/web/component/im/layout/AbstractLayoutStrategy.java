@@ -61,7 +61,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     public Component apply(IMObject object, LayoutContext context) {
         _components.clear();
-        Column column = ColumnFactory.create("CellSpacingColumn");
+        Column column = ColumnFactory.create("CellSpacing");
         doLayout(object, column, context);
         setFocus(object, column);
         return column;

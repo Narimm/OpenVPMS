@@ -1,12 +1,10 @@
 package org.openvpms.web.component.im.view;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 
 
 /**
@@ -50,10 +48,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @return a title for the viewer
      */
     public String getTitle() {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
-                getObject().getArchetypeId());
-        return descriptor.getDisplayName();
+        return DescriptorHelper.getDisplayName(getObject());
     }
 
     /**

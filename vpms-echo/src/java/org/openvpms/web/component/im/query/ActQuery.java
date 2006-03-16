@@ -107,7 +107,7 @@ public class ActQuery implements Query {
     /**
      * Cell spacing row style.
      */
-    private static final String CELLSPACING_STYLE = "CellSpacingRow";
+    private static final String CELLSPACING_STYLE = "CellSpacing";
 
     /**
      * Row style name.

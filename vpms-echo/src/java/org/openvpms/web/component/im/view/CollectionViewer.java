@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import echopointng.GroupBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -39,6 +40,11 @@ public class CollectionViewer extends Column {
      */
     private final NodeDescriptor _descriptor;
 
+    /**
+     * Box to display child objects in.
+     */
+    private GroupBox _box;
+
 
     /**
      * Construct a new <code>CollectionEditor</code>.
@@ -46,6 +52,7 @@ public class CollectionViewer extends Column {
      * @param descriptor the node descriptor
      */
     public CollectionViewer(IMObject object, NodeDescriptor descriptor) {
+        setStyleName("CellSpacing");
         _object = object;
         _descriptor = descriptor;
         doLayout();
@@ -99,11 +106,25 @@ public class CollectionViewer extends Column {
     protected void onBrowse() {
         IMObject object = _table.getSelected();
         if (object != null) {
-            IMObjectViewer browser
-                    = new IMObjectViewer(object);
-            IMObjectViewerDialog dialog = new IMObjectViewerDialog(browser);
-            dialog.show();
+            browse(object);
         }
+    }
+
+    /**
+     * Browse an object.
+     *
+     * @param object the object to browse.
+     */
+    protected void browse(IMObject object) {
+        if (_box == null) {
+            _box = new GroupBox();
+            add(_box);
+        } else {
+            _box.removeAll();
+        }
+        IMObjectViewer viewer = new IMObjectViewer(object);
+        _box.add(viewer.getComponent());
+        _box.setTitle(viewer.getTitle());
     }
 
 }
