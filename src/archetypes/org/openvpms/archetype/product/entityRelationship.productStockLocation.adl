@@ -25,7 +25,7 @@
 				</assertion>
 			</node>
 		</node>		
-		<node name="source" path="/source"
+		<node name="source" displayName="Product" path="/source"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
@@ -41,7 +41,7 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="target" path="/target"
+		<node name="target" displayName="Stock Location" path="/target"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
