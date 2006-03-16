@@ -116,6 +116,14 @@
         </properties>
     </style>
 
+    <style name="AbstractViewWorkspace.Layout"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="75px"/>
+        </properties>
+    </style>
+
     <style name="ButtonRow" type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="10px 2px"/>
@@ -203,6 +211,11 @@
         </properties>
     </style>
 
+    <style name="WideCellSpacing" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="cellSpacing" value="20px"/>
+        </properties>
+    </style>
 
     <style name="ControlRow" base-name="CellSpacing"
            type="nextapp.echo2.app.Row">

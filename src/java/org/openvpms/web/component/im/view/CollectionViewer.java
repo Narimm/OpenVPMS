@@ -52,7 +52,7 @@ public class CollectionViewer extends Column {
      * @param descriptor the node descriptor
      */
     public CollectionViewer(IMObject object, NodeDescriptor descriptor) {
-        setStyleName("CellSpacing");
+        setStyleName("WideCellSpacing");
         _object = object;
         _descriptor = descriptor;
         doLayout();
@@ -118,13 +118,14 @@ public class CollectionViewer extends Column {
     protected void browse(IMObject object) {
         if (_box == null) {
             _box = new GroupBox();
-            add(_box);
         } else {
             _box.removeAll();
+            remove(_box);
         }
+        add(_box);
         IMObjectViewer viewer = new IMObjectViewer(object);
-        _box.add(viewer.getComponent());
         _box.setTitle(viewer.getTitle());
+        _box.add(viewer.getComponent());
     }
 
 }

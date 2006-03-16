@@ -96,7 +96,8 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
     @Override
     protected Component doLayout() {
         SplitPane layout = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL);
+                SplitPane.ORIENTATION_VERTICAL,
+                "AbstractViewWorkspace.Layout");
         Component heading = super.doLayout();
         Component selector = _selector.getComponent();
 
