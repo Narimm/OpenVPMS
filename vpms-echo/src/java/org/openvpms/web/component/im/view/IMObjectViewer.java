@@ -27,19 +27,38 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @param object the object to view.
      */
     public IMObjectViewer(IMObject object) {
-        this(object, new DefaultLayoutStrategyFactory().create(object));
+        this(object, new DefaultLayoutStrategyFactory().create(object),
+             null);
     }
 
     /**
      * Construct a new <code>IMObjectViewer</code>.
      *
-     * @param object the object to view.
-     * @param layout the layout strategy. May be <code>null</code>
+     * @param object  the object to view.
+     * @param context the layout context. May be <code>null</code>
      */
-    public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout) {
+    public IMObjectViewer(IMObject object, LayoutContext context) {
+        this(object, new DefaultLayoutStrategyFactory().create(object),
+             context);
+    }
+
+    /**
+     * Construct a new <code>IMObjectViewer</code>.
+     *
+     * @param object  the object to view.
+     * @param layout  the layout strategy. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>
+     */
+    public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout,
+                          LayoutContext context) {
         super(object, layout);
         IMObjectComponentFactory factory = new ReadOnlyComponentFactory();
-        _context = new DefaultLayoutContext(factory);
+        if (context == null) {
+            _context = new DefaultLayoutContext(factory);
+        } else {
+            _context = new DefaultLayoutContext(context);
+            _context.setComponentFactory(factory);
+        }
     }
 
     /**

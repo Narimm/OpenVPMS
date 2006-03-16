@@ -11,6 +11,11 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -41,18 +46,33 @@ public class CollectionViewer extends Column {
     private final NodeDescriptor _descriptor;
 
     /**
+     * The layout context.
+     */
+    private final LayoutContext _context;
+
+    /**
      * Box to display child objects in.
      */
     private GroupBox _box;
 
 
     /**
-     * Construct a new <code>CollectionEditor</code>.
+     * Construct a new <code>CollectionViewer</code>.
      *
+     * @param object     the object being viewed
      * @param descriptor the node descriptor
      */
     public CollectionViewer(IMObject object, NodeDescriptor descriptor) {
         setStyleName("WideCellSpacing");
+
+        _context = new DefaultLayoutContext();
+
+        // filter out the uid (aka "id") field
+        NodeFilter idFilter = new NamedNodeFilter("uid");
+        NodeFilter filter = FilterHelper.chain(
+                idFilter, _context.getDefaultNodeFilter());
+        _context.setNodeFilter(filter);
+
         _object = object;
         _descriptor = descriptor;
         doLayout();
@@ -120,10 +140,11 @@ public class CollectionViewer extends Column {
             _box = new GroupBox();
         } else {
             _box.removeAll();
+            // workaround for a bug in EPNG
             remove(_box);
         }
         add(_box);
-        IMObjectViewer viewer = new IMObjectViewer(object);
+        IMObjectViewer viewer = new IMObjectViewer(object, _context);
         _box.setTitle(viewer.getTitle());
         _box.add(viewer.getComponent());
     }
