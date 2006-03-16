@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>0.2-dev</currentVersion>
+    <currentVersion>0.3-dev</currentVersion>
     <package>org.openvpms</package>
     <shortDescription>OpenVPMS Echo2 demo</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
@@ -84,6 +84,15 @@
             <email>tony@verticalconnect.net</email>
             <roles>
                 <role>Project Manager</role>
+            </roles>
+            <timezone>+10</timezone>
+        </developer>
+        <developer>
+            <name>Tim Anderson</name>
+            <id>tanderson</id>
+            <email>tma@netspace.net.au</email>
+            <roles>
+                <role>Developer</role>
             </roles>
             <timezone>+10</timezone>
         </developer>

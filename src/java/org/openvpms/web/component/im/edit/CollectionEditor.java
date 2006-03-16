@@ -118,12 +118,12 @@ public class CollectionEditor implements Saveable {
     /**
      * The button row style.
      */
-    private static final String ROW_STYLE = "CellSpacingRow";
+    private static final String ROW_STYLE = "CellSpacing";
 
     /**
      * The column style.
      */
-    private static final String COLUMN_STYLE = "CellSpacingColumn";
+    private static final String COLUMN_STYLE = "CellSpacing";
 
 
     /**

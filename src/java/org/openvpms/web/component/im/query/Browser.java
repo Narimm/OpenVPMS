@@ -69,7 +69,7 @@ public class Browser {
     /**
      * Cell spacing row style.
      */
-    private static final String CELLSPACING_STYLE = "CellSpacingRow";
+    private static final String CELLSPACING_STYLE = "CellSpacing";
 
     /**
      * Query button id.

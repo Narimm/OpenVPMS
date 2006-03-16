@@ -191,26 +191,27 @@
         </properties>
     </style>
 
-    <style name="CellSpacingRow" type="nextapp.echo2.app.Row">
+    <style name="CellSpacing" type="nextapp.echo2.app.Row">
         <properties>
             <property name="cellSpacing" value="5px"/>
         </properties>
     </style>
 
-    <style name="ControlRow" base-name="CellSpacingRow"
+    <style name="CellSpacing" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="cellSpacing" value="5px"/>
+        </properties>
+    </style>
+
+
+    <style name="ControlRow" base-name="CellSpacing"
            type="nextapp.echo2.app.Row">
         <properties>
             <property name="insets" value="10px 2px"/>
         </properties>
     </style>
 
-    <style name="CellSpacingColumn" type="nextapp.echo2.app.Column">
-        <properties>
-            <property name="cellSpacing" value="10px"/>
-        </properties>
-    </style>
-
-    <style name="ControlColumn" base-name="CellSpacingColumn"
+    <style name="ControlColumn" base-name="CellSpacing"
            type="nextapp.echo2.app.Column">
         <properties>
             <property name="insets" value="10px 2px"/>
