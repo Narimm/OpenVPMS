@@ -43,8 +43,9 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="relationships" path="/entityRelationships"
-			type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*">
+		<node name="products" path="/entityRelationships"
+			type="java.util.HashSet" baseName="entityRelationship" minCardinality="0" maxCardinality="*"
+			filter="entityRelationship.productSupplier" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
