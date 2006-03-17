@@ -1,26 +1,45 @@
 <archetypes>
 	<archetype name="openvpms-party-contact.phoneNumber.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.party.Contact">
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
-		<node name="deails" path="/details"
+		type="org.openvpms.component.business.domain.im.party.Contact"  displayName="Phone Contact" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" derived="true"
+			derivedValue="archetypeId/concept" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat('(',/details/attributes/areaCode,') ', /details/attributes/telephoneNumber)" />
+		
+		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="areaCode" path="/details/attributes/areaCode"
-				type="java.lang.String" minCardinality="1">
-				<assertion name="regularExpression">
-					<property name="expression" value=".*" />
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-			<node name="telephoneNumber" path="/details/attributes/telephoneNumber"
-				type="java.lang.String">
+				type="java.lang.String" minCardinality="0" >
 				<assertion name="regularExpression">
 					<property name="expression" value="[0-9]*" />
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
+			<node name="telephoneNumber" path="/details/attributes/telephoneNumber"
+				type="java.lang.String" minCardinality="0" >
+			</node>
 			<node name="preferred" path="/details/attributes/preferred"
 				type="java.lang.Boolean" defaultValue="false()" />
+		</node>
+		<node name="startDate" path="/activeStartTime"
+			type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
+		<node name="endDate" path="/activeEndTime"
+			type="java.util.Date" minCardinality="0" hidden="true" />			
+		<node name="purposes" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.contactPurpose" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
 		</node>
 	</archetype>
 </archetypes>
