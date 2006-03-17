@@ -30,9 +30,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
@@ -86,7 +85,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * Test create an instance of animal.pet
      */
     public void testCreationAnimalPet() throws Exception {
-        Animal animal = (Animal) service.create("animal.pet");
+        Party animal = (Party)service.create("animal.pet");
         assertTrue(animal != null);
     }
     
@@ -95,16 +94,15 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * {@link NodeDescriptor}
      */
     public void testGetValueFromNodeDescriptor() throws Exception {
-        Person person = createPerson(null, "Mr", "Jim", "Alateras");
+        Party person = createPerson(null, "Mr", "Jim", "Alateras");
 
         NodeDescriptor ndesc = service.getArchetypeDescriptor(
                 person.getArchetypeId()).getNodeDescriptor("description");
-        assertTrue(ndesc.getValue(person).equals(
-                person.getArchetypeId().getConcept()));
+        assertTrue(ndesc.getValue(person).equals("Mr Jim  Alateras"));
 
         ndesc = service.getArchetypeDescriptor(person.getArchetypeId())
                 .getNodeDescriptor("name");
-        assertTrue(ndesc.getValue(person).equals("Jim Alateras"));
+        assertTrue(ndesc.getValue(person).equals("Alateras,Jim"));
     }
 
     /**
@@ -123,9 +121,9 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(StringUtils.isEmpty((String) contact.getDetails()
                 .getAttribute("postCode")));
 
-        Person person = (Person) service.create("person.person");
+        Party person = createPerson("person.person", "Mr", "Jim", "Alateras");
         assertTrue(person != null);
-        assertTrue(person.getTitle().equals("Mr"));
+        assertTrue(person.getDetails().getAttribute("title").equals("Mr"));
     }
     
     /**
@@ -142,7 +140,7 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      */
     public void testOVPMS197()
     throws Exception {
-        Person person = createPerson("person.bernief", "Ms", "Bernadette", "Feeney");
+        Party person = createPerson("person.bernief", "Ms", "Bernadette", "Feeney");
         person.addIdentity(createEntityIdentity("entityIdentity.personAlias", "special"));
         service.validateObject(person);
     }
@@ -209,17 +207,17 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
      * @return Person
      * @throws Exception                       
      */
-    private Person createPerson(String shortName, String title, String firstName, String lastName)
+    private Party createPerson(String shortName, String title, String firstName, String lastName)
     throws Exception {
-        Person person = null;
+        Party person = null;
         if (shortName == null) {
-            person = (Person) service.create("person.person");
+            person = (Party) service.create("person.person");
         } else {
-            person = (Person) service.create(shortName);
+            person = (Party) service.create(shortName);
         }
-        person.setTitle(title);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
         
         return person;
     }

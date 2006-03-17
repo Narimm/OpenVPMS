@@ -69,7 +69,7 @@ public class Party extends Entity {
      * @param details 
      *            party details
      */
-    protected Party(ArchetypeId archetypeId, String name,  
+    public Party(ArchetypeId archetypeId, String name,  
             String description, Set<Contact> contacts, 
             DynamicAttributeMap details) {
         super(archetypeId, name, description, details);

@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
@@ -80,7 +80,7 @@ public class ActTestCases extends
      */
     public void testSimpleActCreation()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetypeService.save(person);
         
         Act act = createAct("wake up");
@@ -96,7 +96,7 @@ public class ActTestCases extends
      */
     public void testGetParticipantsQuery()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetypeService.save(person);
         
         Act act1 = createAct("wake up");
@@ -116,7 +116,7 @@ public class ActTestCases extends
         act3.addParticipation(participation3);
         archetypeService.save(act3);
 
-        person = (Person)archetypeService.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)archetypeService.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getParticipations().size() == 3);
         
@@ -131,7 +131,7 @@ public class ActTestCases extends
      */
     public void testGetActsByEntityIdQuery()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetypeService.save(person);
         
         Act act1 = createAct("wake up");
@@ -254,14 +254,12 @@ public class ActTestCases extends
      *            the person's last name            
      * @return Person                  
      */
-    private Person createPerson(String title, String firstName, String lastName) {
-        Entity entity = (Entity)archetypeService.create("person.person");
-        assertTrue(entity instanceof Person);
+    private Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)archetypeService.create("person.person");
         
-        Person person = (Person)entity;
-        person.setTitle(title);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
+        person.getDetails().setAttribute("title", title);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("lastName", lastName);
         
         return person;
     }

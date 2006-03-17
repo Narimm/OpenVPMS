@@ -88,6 +88,11 @@ public class StaxArchetypeDataLoader {
     private IArchetypeService archetypeService;
 
     /**
+     * Indicates whether it should only validate the data
+     */
+    private boolean validateOnly;
+
+    /**
      * A reference to the idCache
      */
     private Map<String, IMObjectReference> idCache = new HashMap<String, IMObjectReference>();
@@ -158,6 +163,7 @@ public class StaxArchetypeDataLoader {
      */
     private void load() throws Exception {
         verbose = config.getBoolean("verbose");
+        validateOnly = config.getBoolean("validateOnly");
         if (config.getString("file") != null) {
             processFile(config.getString("file"));
         } else if (config.getString("dir") != null) {
@@ -230,7 +236,6 @@ public class StaxArchetypeDataLoader {
                                 current = processElement(null, reader,
                                         firstParse, hasReference);
                             }
-                            
                             stack.push(current);
                         } catch (Exception exception) {
                             logger.error("\n[ERR: Exception in started element]\n" 
@@ -244,11 +249,6 @@ public class StaxArchetypeDataLoader {
                     break;
 
                 case XMLStreamConstants.END_ELEMENT:
-                    if (verbose) {
-                        logger.info("\n[END PROCESSING element=" 
-                                + reader.getLocalName() + "]\n");
-                    }
-                    
                     if (stack.size() > 0) {
                         current = stack.pop();
                         try {
@@ -258,7 +258,11 @@ public class StaxArchetypeDataLoader {
                                     // do nothing since this element needs
                                     // to be processed on the second parse
                                 } else {
-                                    archetypeService.save(current);
+                                    if (validateOnly) {
+                                        archetypeService.validateObject(current);
+                                    } else {
+                                        archetypeService.save(current);
+                                    }
                                     String id = linkIdCache.remove(current.getLinkId());
                                     if (id != null) {
                                         idCache.put(id, new IMObjectReference(current));
@@ -282,7 +286,13 @@ public class StaxArchetypeDataLoader {
                             logger.error("\n[ERR: Error trying to save object" + "]\n"
                                     + exception);
                         }
-                    }                    
+                    }  
+                    if (verbose) {
+                        logger.info("\n[END PROCESSING element=" 
+                                + reader.getLocalName() + "]\n");
+                    }
+                    
+                    
                     break;
 
                 default:
@@ -370,7 +380,7 @@ public class StaxArchetypeDataLoader {
     
                     try {
                         if (isAttributeIdRef(attValue)) {
-                            processIdReference(object, attValue, ndesc);
+                            processIdReference(object, attValue, ndesc, validateOnly);
                         } else {
                             ndesc.setValue(object, attValue);
                         }
@@ -384,7 +394,7 @@ public class StaxArchetypeDataLoader {
                 }
             } else {
                 // childId is defined then we need to retrieve that object
-                object = getObjectForId(reader.getAttributeValue(null, "childId"));
+                object = getObjectForId(reader.getAttributeValue(null, "childId"), validateOnly);
             }
 
             // check whether there is a collection attribute specified. If it is
@@ -434,7 +444,6 @@ public class StaxArchetypeDataLoader {
         return object;
     }
 
-
     /**
      * Process the id reference attribute value and set it accordingly.
      * 
@@ -444,17 +453,24 @@ public class StaxArchetypeDataLoader {
      *            the attribute vlaue that has an id reference
      * @param ndesc
      *            the corresponding node descriptor
+     * @param validateOnly
+     *            are we only validating            
      * @throws Exception
      *            propagate exception to caller            
      */
-    private void processIdReference(IMObject object, String attValue, NodeDescriptor ndesc) {
+    private void processIdReference(IMObject object, String attValue,
+            NodeDescriptor ndesc, boolean validateOnly) {
         String ref = attValue.substring("id:".length());
         IMObjectReference imref = idCache.get(ref);
         Object imobj = null;
         if (ndesc.isObjectReference()) {
             imobj = imref;
         } else {
-            imobj = archetypeService.get(imref);
+            if (validateOnly) {
+                imobj = archetypeService.create(imref.getArchetypeId());
+            } else {
+                imobj = archetypeService.get(imref);
+            }
         }
 
         if (ndesc.isCollection()) {
@@ -469,15 +485,27 @@ public class StaxArchetypeDataLoader {
      * 
      * @param id
      *            the id in the link cache
+     * @param validateOnly
+     *            whether we are doing a validate only            
      * @return IMObject
      *            the returned object
      * @throws Exception                        
      */
-    private IMObject getObjectForId(String id) {
+    private IMObject getObjectForId(String id, boolean validateOnly) {
         String ref = id.substring("id:".length());
         IMObjectReference imref = idCache.get(ref);
+        IMObject imobj = null;
+        
+        if (validateOnly) {
+            if (imref != null) {
+                imobj = archetypeService.create(imref.getArchetypeId());
+            }
+        } else {
+            imobj = archetypeService.get(imref);
+            
+        }
 
-        return archetypeService.get(imref);
+        return imobj;
     }
     
     /**
@@ -581,6 +609,9 @@ public class StaxArchetypeDataLoader {
         jsap.registerParameter(new Switch("verbose").setShortFlag('v')
                 .setLongFlag("verbose").setDefault("false").setHelp(
                         "Displays verbose info to the console."));
+        jsap.registerParameter(new Switch("validateOnly")
+                .setLongFlag("validateOnly").setDefault("false").setHelp(
+                        "Only validate the data file. Do not process."));
     }
 
     /**

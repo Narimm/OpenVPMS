@@ -49,6 +49,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
@@ -369,14 +370,14 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, int, int)
      */
-    public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, boolean primaryOnly, boolean activeOnly, int firstRow, int numOfRows, SortCriteria sortCriteria) {
+    public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.get: rmName " + rmName
                     + " entityName " + entityName
                     + " conceptName " + conceptName
                     + " instanceName " + instanceName
-                    + " firstRow " + firstRow
-                    + " numOfRows " + numOfRows);
+                    + " firstRow " + pagingCriteria.getFirstRow()
+                    + " numOfRows " + pagingCriteria.getNumOfRows());
         }
         
         IPage<IMObject> page = null;
@@ -385,7 +386,7 @@ public class ArchetypeService implements IArchetypeService {
         if (adescs.size() == 1) {
             ArchetypeDescriptor adesc = adescs.iterator().next();
             page = dao.get(rmName, entityName, conceptName, instanceName, 
-                    adesc.getClassName(), activeOnly, firstRow, numOfRows,
+                    adesc.getClassName(), activeOnly, pagingCriteria, 
                     getSortProperty(adesc, sortCriteria), 
                     getSortDirection(sortCriteria));
         } else {
@@ -404,7 +405,9 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
             
-            page = new Page<IMObject>(results, 0, results.size(), results.size());
+            page = new Page<IMObject>(results, 
+                    new PagingCriteria(0, results.size()), 
+                    results.size());
         }
 
         return page;

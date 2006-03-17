@@ -20,7 +20,7 @@ package org.openvpms.component.business.domain.im.common;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
@@ -48,11 +48,11 @@ public class IMObjectTestCase extends BaseTestCase {
      */
     public void testOVPMS149() 
     throws Exception {
-        IMObject obj1 = new Person();
+        IMObject obj1 = new Party();
         obj1.setArchetypeId(new ArchetypeId("openvpms-party-party.customerperson.1.0"));
         obj1.setName("jima");
 
-        IMObject obj2 = new Person();
+        IMObject obj2 = new Party();
         obj2.setArchetypeId(new ArchetypeId("openvpms-party-party.customerperson.1.0"));
         obj2.setName("jima");
         

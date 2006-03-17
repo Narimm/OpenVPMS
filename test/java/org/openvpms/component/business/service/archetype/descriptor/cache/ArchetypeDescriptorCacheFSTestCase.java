@@ -229,7 +229,9 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 (String) cparams.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
-        assertTrue(cache.getArchetypeDescriptorsByRmName("party").size() == ((Integer) params
+        assertTrue("Party Records should be " 
+                +cache.getArchetypeDescriptorsByRmName("party").size(),
+                cache.getArchetypeDescriptorsByRmName("party").size() == ((Integer) params
                 .get("recordCount1")).intValue());
 
         // test retrieval for anything with animal

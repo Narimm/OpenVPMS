@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype;
 // spring-context
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.PagingCriteria;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // log4j
@@ -75,22 +76,28 @@ public class ArchetypeServicePaginationTestCase extends
     public void testPaginationOnEntityAct() throws Exception {
         for (int index = 0; index < 10; index++) {
             int rowsPerPage = index + 1;
-            IPage<IMObject> objects = service.get("entity", "act", null, null, false, false, 0, rowsPerPage, null);
+            IPage<IMObject> objects = service.get("entity", "act", null, null, 
+                    false, false, new PagingCriteria(0, rowsPerPage), null);
             int totalCount = objects.getTotalNumOfRows();
-            int rowCount = objects.getNumOfRows();
+            int rowCount = objects.getPagingCriteria().getNumOfRows();
             int pages = (totalCount % rowsPerPage) == 0 ? totalCount/rowsPerPage : totalCount /rowsPerPage + 1;
             if (logger.isDebugEnabled()) {
-                logger.debug("Page 0 numofRows " + objects.getNumOfRows() + " totalCount " + totalCount + " rowCount " + rowCount);
+                logger.debug("Page 0 numofRows " 
+                        + objects.getPagingCriteria().getNumOfRows() 
+                        + " totalCount " + totalCount + " rowCount " + rowCount);
             }
             
             for (int page = 1; page < pages; page++) {
-                objects = service.get("entity", "act", null, null, false, false, page*rowsPerPage, rowsPerPage, null);
-                rowCount += objects.getNumOfRows();
+                objects = service.get("entity", "act", null, null, false, false, 
+                        new PagingCriteria(page*rowsPerPage, rowsPerPage), null);
+                rowCount += objects.getPagingCriteria().getNumOfRows();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Page " + page + " numofRows " + objects.getNumOfRows() + " totalCount " + totalCount + " rowCount " + rowCount);
+                    logger.debug("Page " + page + " numofRows " 
+                            + objects.getPagingCriteria().getNumOfRows() 
+                            + " totalCount " + totalCount + " rowCount " + rowCount);
                 }
                 assertTrue(objects != null);
-                assertTrue(objects.getNumOfRows() <= rowsPerPage);
+                assertTrue(objects.getPagingCriteria().getNumOfRows() <= rowsPerPage);
                 assertTrue(objects.getRows().size() <= rowsPerPage);
             }
             assertTrue(rowCount == totalCount);
@@ -102,11 +109,27 @@ public class ArchetypeServicePaginationTestCase extends
      */
     public void testPaginationWithOversizedPages()
     throws Exception {
-        IPage<IMObject> objects = service.get("entity", "act", null, null, false, false, 0, 1, null);
+        IPage<IMObject> objects = service.get("entity", "act", null, null, false, 
+                false, new PagingCriteria(0, 1), null);
         int totalCount = objects.getTotalNumOfRows();
-        objects = service.get("entity", "act", null, null, false, false, 0, totalCount*2, null);
+        objects = service.get("entity", "act", null, null, false, false, 
+                new PagingCriteria(0, totalCount*2), null);
         assertTrue(objects.getTotalNumOfRows() == totalCount);
     }
+
+    /**
+     * Test will null pagination
+     */
+    public void testWithNullPagination()
+    throws Exception {
+        IPage<IMObject> objects = service.get("entity", "act", null, null, false, 
+                false, new PagingCriteria(0, 1), null);
+        int totalCount = objects.getTotalNumOfRows();
+        objects = service.get("entity", "act", null, null, false, false,
+                null, null);
+        assertTrue(objects.getTotalNumOfRows() == totalCount);
+    }
+
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */

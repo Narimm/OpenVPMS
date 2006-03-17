@@ -41,9 +41,9 @@ import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -51,7 +51,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
@@ -66,6 +66,12 @@ import org.openvpms.component.system.common.test.BaseTestCase;
  * @version $LastChangedDate$
  */
 public class JXPathTestCase extends BaseTestCase {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(JXPathTestCase.class);
 
     /**
      * Cache a reference to the Archetype service
@@ -120,55 +126,20 @@ public class JXPathTestCase extends BaseTestCase {
         NodeDescriptor ndesc = adesc.getNodeDescriptor("firstName");
         assertTrue(ndesc != null);
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptors/firstName/string")).booleanValue());
+                "nodeDescriptors/name/string")).booleanValue());
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptors/lastName/string")).booleanValue());
+                "nodeDescriptors/description/string")).booleanValue());
         assertTrue(((Boolean) getValue(adesc,
-                "nodeDescriptors/lastName/identifier")).booleanValue() == false);
-        assertTrue(((Boolean) getValue(adesc,
-                "boolean(nodeDescriptors/lastName/string)"))
-                .booleanValue());
+                "nodeDescriptors/uid/identifier")).booleanValue());
         assertTrue(getValue(adesc, "nodeDescriptors/jimbo") == null);
     }
 
-    /**
-     * Test JXPath using the TestPage
-     */
-    public void testPageWithNodeDescriptorAndValue() throws Exception {
-        ArchetypeDescriptor adesc = service
-                .getArchetypeDescriptor("person.person");
-
-        Person person = (Person) service.create("person.person");
-        person.setFirstName("jim");
-        person.setLastName("alateras");
-        
-        TestPage page = new TestPage(person, adesc);
-        assertTrue(page != null);
-
-        assertTrue(getValue(page,
-                "pathToObject(model,  node/nodeDescriptors/lastName/path)")
-                .equals("alateras"));
-        assertTrue(getValue(page,
-                "pathToObject(model,  node/nodeDescriptors/firstName/path)")
-                .equals("jim"));
-
-        setValue(
-                page,
-                "pathToObject(model,  node/nodeDescriptors/firstName/path)",
-                "Bernie");
-        assertTrue(getValue(page,
-                "pathToObject(model,  node/nodeDescriptors/firstName/path)")
-                .equals("Bernie"));
-    }
-    
     /**
      * Test the path to collection bug ovpms-131
      */
     public void testOVPMS131()
     throws Exception {
-        Person person = new Person();
-        person.setFirstName("Jim");
-        person.setLastName("Alateras");
+        Party person = createPerson("Mr", "jima", "alateras");
         EntityIdentity id1 = new EntityIdentity();
         id1.setName("jimbo");
         EntityIdentity id2 = new EntityIdentity();
@@ -203,15 +174,15 @@ public class JXPathTestCase extends BaseTestCase {
                 .getArchetypeDescriptor("person.person");
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptors/firstName/string and nodeDescriptors/lastName/string"))
+                "nodeDescriptors/name/string and nodeDescriptors/description/string"))
                 .booleanValue());
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptors/firstName/string and not(nodeDescriptors/lastName/string)"))
+                "nodeDescriptors/name/string and not(nodeDescriptors/description/string)"))
                 .booleanValue() == false);
         assertTrue(((Boolean) getValue(
                 adesc,
-                "nodeDescriptors/firstName/string and not(nodeDescriptors/firstName/number)"))
+                "nodeDescriptors/name/string and not(nodeDescriptors/description/number)"))
                 .booleanValue());
     }
 
@@ -221,11 +192,7 @@ public class JXPathTestCase extends BaseTestCase {
     public void testDerivedValueNodes() throws Exception {
         // we know that both name and description are derived nodes
         // for person.person
-        Person person = (Person) service.create("person.person");
-
-        person.setLastName("Alateras");
-        person.setFirstName("Jim");
-        person.setTitle("Mr");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         
         try {
             service.validateObject(person);
@@ -233,9 +200,7 @@ public class JXPathTestCase extends BaseTestCase {
             fail("Validation of person failed");
         }
         assertTrue(StringUtils.isEmpty(person.getName()) == false);
-        assertTrue(person.getName().equals("Jim Alateras"));
-        assertTrue(person.getDescription().equals(
-                person.getArchetypeId().getConcept()));
+        assertTrue(person.getName().equals("Alateras,Jim"));
     }
 
     /**
@@ -257,7 +222,7 @@ public class JXPathTestCase extends BaseTestCase {
      */
     @SuppressWarnings("unchecked")
     public void testSetEntityIdentityOnEntity() throws Exception {
-        Person person = (Person) service.create("person.person");
+        Party person = (Party) service.create("person.person");
         assertTrue(person != null);
         EntityIdentity eidentity = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
@@ -297,19 +262,16 @@ public class JXPathTestCase extends BaseTestCase {
      */
     public void testJXPathCollectionExpressions()
     throws Exception {
-        List<Person> list = new ArrayList<Person>();
-        list.add(new Person(new ArchetypeId("openvpms-party-person.person.1.0"), 
-                null, "Mr", "Jim", "Alateras", null));
-        list.add(new Person(new ArchetypeId("openvpms-party-person.person.1.0"), 
-                null, "Ms", "Bernadette", "Feeney", null));
-        list.add(new Person(new ArchetypeId("openvpms-party-person.person.1.0"), 
-                null, "Ms", "Grace", "Alateras", null));
+        List<Party> list = new ArrayList<Party>();
+        list.add(createPerson("Mr", "Jim", "Alateras"));
+        list.add(createPerson("Ms", "Bernadette", "Feeney"));
+        list.add(createPerson("Ms", "Grace", "Alateras"));
         
         JXPathContext ctx = JXPathContext.newContext(list);
         // NOTE: Index starts at 1 not 0.
-        assertTrue(ctx.getValue(".[1]/firstName").equals("Jim"));
-        assertTrue(ctx.getValue(".[2]/lastName").equals("Feeney"));
-        assertTrue(ctx.getValue(".[3]/title").equals("Ms"));
+        assertTrue(ctx.getValue(".[1]/details/attributes/firstName").equals("Jim"));
+        assertTrue(ctx.getValue(".[2]/details/attributes/lastName").equals("Feeney"));
+        assertTrue(ctx.getValue(".[3]/details/attributes/title").equals("Ms"));
     }
     
     /**
@@ -334,22 +296,16 @@ public class JXPathTestCase extends BaseTestCase {
      */
     public void testJXPathSearchCollectionForMatchingUid()
     throws Exception {
-        List<Person> list = new ArrayList<Person>();
-        Person person = new Person(
-                new ArchetypeId("openvpms-party-person.person.1.0"), 
-                null, "Mr", "Jim", "Alateras", null);
+        List<Party> list = new ArrayList<Party>();
+        Party person = createPerson("Mr", "Jim", "Alateras");
         person.setUid(1);
         list.add(person);
 
-        person = new Person(
-                new ArchetypeId("openvpms-party-person.person.1.0"), 
-                null, "Ms", "Bernadette", "Feeney", null);
+        person = createPerson("Ms", "Bernadette", "Feeney");
         person.setUid(2);
         list.add(person);
 
-        person = new Person(
-                new ArchetypeId("openvpms-party-person.person.1.0"), 
-                null, "Ms", "Grace", "Alateras", null);
+        person = createPerson("Ms", "Grace", "Alateras");
         person.setUid(3);
         list.add(person);
         
@@ -369,7 +325,6 @@ public class JXPathTestCase extends BaseTestCase {
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 4)") == null);
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 0)") == null);
         assertTrue(ctx.getValue("collfunc:findObjectWithUid(., 1)/name") != null);
-        
     }
     
     /**
@@ -460,7 +415,7 @@ public class JXPathTestCase extends BaseTestCase {
         props.put("tf", TestFunctions.class.getName());
         new JXPathHelper(props);
         
-        Person person = new Person();
+        Party person = new Party();
         person.setName("Mr Jim Alateras");
         
         JXPathContext context = JXPathHelper.newContext(person);
@@ -494,18 +449,24 @@ public class JXPathTestCase extends BaseTestCase {
     }
 
     /**
-     * This performs a set using an object an jxpath expression and a value
-     * object
+     * Create a person
      * 
-     * @param source
-     *            the source object
-     * @param path
-     *            the path expression
-     * @param value
-     *            the value to set
+     * @param title
+     *            the person's title
+     * @param firstName
+     *            the person's first name
+     * @param lastName
+     *            the person's last name
+     * @return Person
      */
-    private void setValue(Object source, String path, Object value) {
-        JXPathContext.newContext(source).setValue(path, value);
+    private Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)service.create("person.person");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
+        person.setName(title + " " + firstName + " " + lastName);
+        
+        return person;
     }
 }
 
@@ -548,5 +509,4 @@ class ValueHolder {
     public void setTarget(Object target) {
         this.target = target;
     }
-    
 }

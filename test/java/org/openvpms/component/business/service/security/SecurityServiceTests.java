@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 // openvpms-test-component
@@ -61,7 +61,7 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetype.save(person);
     }
     
@@ -72,7 +72,7 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("bernief", "bernief", "archetype:archetypeService.save:party.person");
-        Person person = createPerson("Mr", "Peter", "Alateras");
+        Party person = createPerson("Mr", "Peter", "Alateras");
         
         try {
             archetype.save(person);
@@ -89,7 +89,7 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.per*");
-        Person person = createPerson("Mr", "Peter1", "Alateras");
+        Party person = createPerson("Mr", "Peter1", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:pers*.person");
@@ -124,7 +124,7 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
-        Person person = createPerson("Mr", "Save", "Alateras");
+        Party person = createPerson("Mr", "Save", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.s*:person.person");
@@ -147,7 +147,7 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
-        Person person = createPerson("Mr", "Bob", "Alateras");
+        Party person = createPerson("Mr", "Bob", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.s*:pers*.*son");
@@ -178,13 +178,13 @@ public abstract class SecurityServiceTests extends
      *            the person's last name
      * @return Person
      */
-    private Person createPerson(String title, String firstName, String lastName) {
-        Person person = (Person)archetype.create("person.person");
-        person.setTitle(title);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
+    public Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)archetype.create("person.person");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
         person.addContact(createPhoneContact());
-
+        
         return person;
     }
     

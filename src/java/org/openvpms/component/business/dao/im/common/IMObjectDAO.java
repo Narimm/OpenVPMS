@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 
 /**
@@ -128,10 +129,9 @@ public interface IMObjectDAO {
      *            the fully qualified name of the class to search for  
      * @param activeOnly
      *            indicates whether to return active objects.
-     * @param firstRow
-     *            the first row to return. 0 is the first row
-     * @param numOfRows                                      
-     *            the number of rows to return. -1 will return all the rows.
+     * @param pagingCriteria                                      
+     *            the paging criteria, which holds the first row and 
+     *            the number of rows to include on the returned page.
      * @param sortProperty
      *            if specified defines the property to sort on. It must be a 
      *            property on that is accessible on the specified class.
@@ -145,7 +145,7 @@ public interface IMObjectDAO {
      */
     public IPage<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName, String clazz, 
-            boolean activeOnly, int firstRow, int numOfRows, 
+            boolean activeOnly, PagingCriteria pagingCriteria, 
             String sortProperty, SortCriteria.SortDirection sortDirection);
     
     /**

@@ -106,62 +106,6 @@
         <one-to-many
           class="org.openvpms.component.business.domain.im.party.Contact" />
       </set>
-
-      <!-- Mapping for the Role class -->
-      <joined-subclass
-        name="org.openvpms.component.business.domain.im.party.Role"
-        table="roles">
-        <key column="role_id" />
-        <many-to-one name="actor" column="actor_id" />
-        <property name="activeStartTime" access="property"
-          column="active_start_time" type="date" />
-        <property name="activeEndTime" access="property"
-          column="active_end_time" type="date" />
-      </joined-subclass>
-
-      <!--  Mapping for the abstract Actor class -->
-      <joined-subclass
-        name="org.openvpms.component.business.domain.im.party.Actor"
-        table="actors">
-        <key column="actor_id" />
-        <set name="roles" access="property" lazy="false" inverse="true"
-          cascade="all,delete-orphan">
-          <key column="actor_id" not-null="true" />
-          <one-to-many
-            class="org.openvpms.component.business.domain.im.party.Role" />
-        </set>
-
-        <!-- Mapping for person -->
-        <joined-subclass
-          name="org.openvpms.component.business.domain.im.party.Person"
-          table="persons">
-          <key column="person_id" />
-          <property name="title" access="property" column="title" type="string" />
-          <property name="firstName" access="property" column="first_name"
-            type="string" />
-          <property name="lastName" access="property" column="last_name"
-            type="string" />
-          <property name="initials" access="property" column="initials"
-            type="string" />
-        </joined-subclass>
-
-        <!-- Mapping for animal -->
-        <joined-subclass
-          name="org.openvpms.component.business.domain.im.party.Animal"
-          table="animals">
-          <key column="animal_id" />
-          <property name="species" access="property" column="species"
-            type="string" />
-          <property name="breed" access="property" column="breed" type="string" />
-          <property name="colour" access="property" column="colour"
-            type="string" />
-          <property name="sex" access="property" column="sex" type="string" />
-          <property name="desexed" access="property" column="desexed"
-            type="boolean" />
-          <property name="dateOfBirth" column="date_of_birth" type="date"
-            access="property" />
-        </joined-subclass>
-      </joined-subclass>
     </joined-subclass>
 
     <!--  Mapping for the Product class -->
@@ -178,13 +122,6 @@
     </joined-subclass>
   </class>
 
-  <query name="actor.getRowCount">
-    <![CDATA[
-			select count(actor) from org.openvpms.component.business.domain.im.party.Actor as 
-			actor
-		]]>
-  </query>
-
   <query name="user.getRowCount">
     <![CDATA[
       select count(user) from org.openvpms.component.business.domain.im.security.User as 
@@ -199,18 +136,18 @@
     ]]>
   </query>
 
-  <query name="role.getRowCount">
-    <![CDATA[
-      select count(role) from org.openvpms.component.business.domain.im.party.Role as 
-      role
-    ]]>
-  </query>
-
   <query name="product.getRowCount">
     <![CDATA[
 			select count(product) from org.openvpms.component.business.domain.im.product.Product as 
 			product
 		]]>
+  </query>
+
+  <query name="party.getRowCount">
+    <![CDATA[
+      select count(party) from org.openvpms.component.business.domain.im.party.Party as 
+      party
+    ]]>
   </query>
 
   <query name="entity.getEntityById">

@@ -67,9 +67,6 @@
           /org/openvpms/component/business/domain/im/common/Participation.hbm.xml
         </value>
         <value>
-          /org/openvpms/component/business/domain/im/party/ContactPurpose.hbm.xml
-        </value>
-        <value>
           /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
         </value>
         <value>

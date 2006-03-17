@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Role;
 
 /**
  * Exercise the persistent aspects of the {@link Participantion} class,
@@ -405,10 +404,8 @@ public class PersistentParticipationTestCase extends HibernateInfoModelTestCase 
      * @return Entity
      */
     private Entity createEntity(String name) {
-        return new Role(
-                new ArchetypeId("openvpms-party-role.role.1.0"), name,
-                null, null, null);
-
+        return new Entity(new ArchetypeId("openvpms-party-role.role.1.0"), name,
+                null, null);
     }
     
     /**

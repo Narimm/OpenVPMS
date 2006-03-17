@@ -23,7 +23,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
@@ -50,7 +50,7 @@ public class AnimalPetRules {
      *            the pet entity
      * @throws RuleEngineException            
      */
-    public static void setActiveEndDates(IArchetypeService service, Animal pet) {
+    public static void setActiveEndDates(IArchetypeService service, Party pet) {
         if (logger.isDebugEnabled()) {
             logger.debug("Executing AnimalPetRules.setActiveEndDates");
         }
