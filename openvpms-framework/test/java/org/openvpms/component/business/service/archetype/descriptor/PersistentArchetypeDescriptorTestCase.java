@@ -32,7 +32,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
-import org.openvpms.component.business.domain.im.party.Animal;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.party.Contact;
 
 /**
@@ -166,7 +166,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             int ncount = HibernateDescriptorUtil.getTableRowCount(
                     session, "nodeDescriptor");
             tx = session.beginTransaction();
-            desc.setClassName(Animal.class.getName());
+            desc.setClassName(Party.class.getName());
             desc.addNodeDescriptor(createNodeDescriptor("uid", "/uid", 
                     "java.lang.Long", 1, 1));
             desc.addNodeDescriptor(createNodeDescriptor("name", "/name", 
@@ -328,7 +328,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             // set up the descriptor
             NodeDescriptor ndesc = null;
             AssertionDescriptor adesc = null;
-            desc.setClassName(Animal.class.getName());
+            desc.setClassName(Party.class.getName());
             ndesc = createNodeDescriptor("uid", "/uid", "java.lang.Long", 1, 1);
             desc.addNodeDescriptor(ndesc);
             
@@ -401,7 +401,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             int ncount = HibernateDescriptorUtil.getTableRowCount(
                     session, "nodeDescriptor");
             tx = session.beginTransaction();
-            desc.setClassName(Animal.class.getName());
+            desc.setClassName(Party.class.getName());
             desc.addNodeDescriptor(createNodeDescriptor("uid", "/uid", 
                     "java.lang.Long", 1, 1));
             desc.addNodeDescriptor(createNodeDescriptor("name", "/name", 
@@ -474,7 +474,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             // set up the descriptor
             NodeDescriptor ndesc = null;
             AssertionDescriptor adesc = null;
-            desc.setClassName(Animal.class.getName());
+            desc.setClassName(Party.class.getName());
             ndesc = createNodeDescriptor("uid", "/uid", "java.lang.Long", 1, 1);
             desc.addNodeDescriptor(ndesc);
             

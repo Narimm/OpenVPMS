@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Role;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * 
@@ -76,16 +76,16 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "role");
+            int acount = HibernatePartyUtil.getTableRowCount(session, "party");
 
             // execute the test
             tx = session.beginTransaction();
-            Role role = createRole("doctor");
+            Party role = createRole("doctor");
             session.save(role);
             tx.commit();
 
             // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "role");
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "party");
 
             assertTrue(acount1 == acount + 1);
         } catch (Exception exception) {
@@ -107,17 +107,17 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
         try {
             // get initial numbr of entries in address tabel
-            int acount = HibernatePartyUtil.getTableRowCount(session, "role");
+            int acount = HibernatePartyUtil.getTableRowCount(session, "party");
 
             // execute the test
             tx = session.beginTransaction();
-            Role role = createRole("doctor");
+            Party role = createRole("doctor");
             session.saveOrUpdate(role);
             long id = role.getUid();
             tx.commit();
 
             // ensure that there is still one more address
-            int acount1 = HibernatePartyUtil.getTableRowCount(session, "role");
+            int acount1 = HibernatePartyUtil.getTableRowCount(session, "party");
 
             assertTrue(acount1 == acount + 1);
 
@@ -125,7 +125,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             acount = HibernateUtil.getTableRowCount(session,
                     "entityIdentity");
-            Role role1 = (Role) session.load(Role.class, id);
+            Party role1 = (Party) session.load(Party.class, id);
             EntityIdentity eid = createEntityIdentity();
             role1.addIdentity(eid);
             session.saveOrUpdate(role1);
@@ -164,7 +164,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
 
-            Role role = createRole("doctor");
+            Party role = createRole("doctor");
             for (int index = 0; index < eicount; index++) {
                 EntityIdentity eid = createEntityIdentity();
                 role.addIdentity(eid);
@@ -179,7 +179,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // now retrieve the role and delete a single entity identity
             tx = session.beginTransaction();
-            Role role1 = (Role) session.load(Role.class, role.getUid());
+            Party role1 = (Party) session.load(Party.class, role.getUid());
             assertTrue(role1.getIdentities().size() == eicount);
 
             // delete the first identity
@@ -194,7 +194,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             assertTrue(acount1 == (acount + eicount - 1));
 
             // retrieve the role and check the entity identity count
-            role1 = (Role) session.load(Role.class, role.getUid());
+            role1 = (Party) session.load(Party.class, role.getUid());
             assertTrue(role1.getIdentities().size() == (eicount - 1));
         } catch (Exception exception) {
             if (tx != null) {
@@ -220,16 +220,16 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            Role role = createRole("doctor");
-            Role target = createRole("doctor");
+            Party role = createRole("doctor");
+            Party target = createRole("doctor");
             session.saveOrUpdate(role);
             session.saveOrUpdate(target);
             tx.commit();
 
             // now retrieve the role and add an entity identity
             tx = session.beginTransaction();
-            role = (Role) session.load(Role.class, role.getUid());
-            target = (Role) session.load(Role.class, target.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
+            target = (Party) session.load(Party.class, target.getUid());
 
             EntityRelationship erel = createEntityRelationship(role, target);
             role.addEntityRelationship(erel);
@@ -264,9 +264,9 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            Role role = createRole("doctor");
-            Role target = createRole("doctor1");
-            Role source = createRole("doctor2");
+            Party role = createRole("doctor");
+            Party target = createRole("doctor1");
+            Party source = createRole("doctor2");
             session.saveOrUpdate(role);
             session.saveOrUpdate(target);
             session.saveOrUpdate(source);
@@ -293,7 +293,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // one target relationship entry
             //role = (Role) session.load(Role.class, role.getUid());
             //assertTrue(role.getEntityRelationships().size() == 2);
-            source = (Role) session.load(Role.class, source.getUid());
+            source = (Party) session.load(Party.class, source.getUid());
             assertTrue(source.getEntityRelationships().size() == 1);
             //target = (Role) session.load(Role.class, target.getUid());
             //assertTrue(target.getEntityRelationships().size() == 1);
@@ -321,7 +321,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // get the initial count
             int acount = HibernateUtil.getTableRowCount(session,
                     "entityRelationship");
-            Role role = createRole("doctor");
+            Party role = createRole("doctor");
             session.save(role);
 
             EntityRelationship erel = createEntityRelationship(role, role);
@@ -335,7 +335,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // now retrieve the role and remove the erel
             tx = session.beginTransaction();
-            role = (Role) session.load(Role.class, role.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
             erel = role.getEntityRelationships().iterator().next();
             role.removeEntityRelationship(erel);
             session.delete(erel);
@@ -348,7 +348,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // check that the role now has zero entity relationships
             session.flush();
-            role = (Role) session.load(Role.class, role.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
             assertTrue((role.getEntityRelationships() == null)
                     || (role.getEntityRelationships().size() == 0));
         } catch (Exception exception) {
@@ -377,8 +377,8 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "entityRelationship");
             int classCount = HibernateUtil.getTableRowCount(session,
                     "classification");
-            Role role = createRole("doctor");
-            Role role1 = createRole("patient");
+            Party role = createRole("doctor");
+            Party role1 = createRole("patient");
             session.save(role);
             session.save(role1);
 
@@ -398,7 +398,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
 
             // check that the role now has zero entity relationships
             session.flush();
-            role = (Role) session.load(Role.class, role.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
             assertTrue(role.getClassifications().size() == 1);
             assertTrue(role.getEntityRelationships().size() == 1);
         } catch (Exception exception) {
@@ -423,7 +423,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
 
             // get the initial count
-            Role role = createRole("doctor");
+            Party role = createRole("doctor");
             session.save(role);
             tx.commit();
 
@@ -435,7 +435,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
                     "classification");
 
             tx = session.beginTransaction();
-            role = (Role) session.load(Role.class, role.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
             for (int index = 0; index < eccount; index++) {
                 Classification class1 = createClassification();
                 role.addClassification(class1);
@@ -450,7 +450,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             // retrieve the role, delete the first entity classification and
             // do some checks
             session.flush();
-            role = (Role) session.load(Role.class, role.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
             assertTrue(role.getClassifications().size() == eccount);
 
             tx = session.beginTransaction();
@@ -462,7 +462,7 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
             classCount1 = HibernateUtil.getTableRowCount(session,
                     "classification");
             assertTrue(classCount1 == (classCount + eccount - 1));
-            role = (Role) session.load(Role.class, role.getUid());
+            role = (Party) session.load(Party.class, role.getUid());
             assertTrue(role.getClassifications().size() == (eccount - 1));
         } catch (Exception exception) {
             if (tx != null) {
@@ -481,8 +481,8 @@ public class PersistentRoleTestCase extends HibernateInfoModelTestCase {
      *            the name of the role
      * @return Role
      */
-    private Role createRole(String name) throws Exception {
-        return new Role(createRoleArchetypeId(), name,  name, null, 
+    private Party createRole(String name) throws Exception {
+        return new Party(createRoleArchetypeId(), name,  name, null, 
                 createSimpleAttributeMap());
 
     }

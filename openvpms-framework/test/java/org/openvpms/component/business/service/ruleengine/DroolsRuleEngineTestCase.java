@@ -28,9 +28,8 @@ import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.ValidationError;
@@ -97,7 +96,7 @@ public class DroolsRuleEngineTestCase extends
     public void testRuleEngineOnSave()
     throws Exception {
         try {
-            Person person = createPerson("Mr", "Jim", "Alateras");
+            Party person = createPerson("Mr", "Jim", "Alateras");
             archetype.save(person);
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
@@ -114,11 +113,11 @@ public class DroolsRuleEngineTestCase extends
      */
     public void testOVPMS127()
     throws Exception {
-        Person personA = createPerson("Mr", "Jim", "Alateras");
+        Party personA = createPerson("Mr", "Jim", "Alateras");
         archetype.save(personA);
-        Person personB = createPerson("Mr", "Oscar", "Alateras");
+        Party personB = createPerson("Mr", "Oscar", "Alateras");
         archetype.save(personB);
-        Animal pet = createAnimal("lucky");
+        Party pet = createAnimal("lucky");
         archetype.save(pet);
         
         // create the entity relationships
@@ -154,14 +153,13 @@ public class DroolsRuleEngineTestCase extends
      *            the person's last name
      * @return Person
      */
-    private Person createPerson(String title, String firstName, String lastName) {
-        Person person = (Person)archetype.create("person.person");
-        person.setName("jimmy");
-        person.setTitle(title);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
+    public Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)archetype.create("person.person");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
         person.addContact(createPhoneContact());
-
+        
         return person;
     }
     
@@ -172,21 +170,19 @@ public class DroolsRuleEngineTestCase extends
      *            the name of the pet
      * @return Animal
      */
-    private Animal createAnimal(String name) {
-        Animal animal = (Animal)archetype.create("animal.pet");
-        assertTrue(animal != null);
-
-        animal.setSpecies("dog");
-        animal.setBreed("collie");
-        animal.setColour("brown");
-        animal.setName(name);
-        animal.setSex("male");
-        animal.setDateOfBirth(new Date());
-
-        return animal;
+    private Party createAnimal(String name) {
+        Party pet = (Party)archetype.create("animal.pet");
+        pet.setName(name);
+        pet.getDetails().setAttribute("breed", "dog");
+        pet.getDetails().setAttribute("colour", "brown");
+        pet.getDetails().setAttribute("sex", "unspecified");
+        pet.getDetails().setAttribute("species", "k9");
+        pet.setDescription("A dog");
+        pet.getDetails().setAttribute("dateOfBirth", new Date());
+        
+        return pet;
     }
 
-    
     /**
      * Create a phone contact
      * 

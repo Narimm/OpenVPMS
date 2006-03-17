@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype;
 // spring-context
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.component.system.common.search.SortCriteria.SortDirection;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
@@ -77,7 +78,8 @@ public class ArchetypeServiceSortTestCase extends
     public void testSortOnNonExistentProperty()
     throws Exception {
         try {
-            service.get("entity", "act", null, null, false, false, 0, 1, 
+            service.get("entity", "act", null, null, false, false, 
+                    new PagingCriteria(0, 1), 
                     new SortCriteria("baby", SortDirection.Ascending));
             fail("This request should have thrown an exception");
         } catch (ArchetypeServiceException exception) {
@@ -93,7 +95,7 @@ public class ArchetypeServiceSortTestCase extends
     public void testSortOnNameInAscendingOrder() 
     throws Exception {
         IPage<IMObject> objects = service.get("entity", "act", null, null, 
-                false, false, 0, IPage.ALL_ROWS, 
+                false, false, new PagingCriteria(0, PagingCriteria.ALL_ROWS), 
                 new SortCriteria("name", SortDirection.Ascending));
         IMObject lhs = null;
         IMObject rhs = null;
@@ -120,7 +122,7 @@ public class ArchetypeServiceSortTestCase extends
     public void testSortOnNameInDescendingOrder() 
     throws Exception {
         IPage<IMObject> objects = service.get("entity", "act", null, null, 
-                false, false, 0, IPage.ALL_ROWS, 
+                false, false, new PagingCriteria(0, PagingCriteria.ALL_ROWS), 
                 new SortCriteria("name", SortDirection.Descending));
         IMObject lhs = null;
         IMObject rhs = null;

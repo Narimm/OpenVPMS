@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 
 /**
@@ -251,10 +252,10 @@ public interface IArchetypeService {
      *            that are marked as primary only.            
      * @param activeOnly
      *            whether to retrieve only the active objects            
-     * @param firstRow
-     *            the first row to return. 0 is the first row
-     * @param numOfRows                                      
-     *            the number of rows to return. -1 will return all the rows.                                         
+     * @param pagingCriteria
+     *            indicates how the results will be paged
+     * @param sortCritieria
+     *            indicates how the results will be sorted.            
      * @return Page<IMObject>
      *            the results and associated context information
      * @throws ArchetypeServiceException
@@ -262,7 +263,8 @@ public interface IArchetypeService {
      */
     public IPage<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName, boolean primaryOnly,
-            boolean activeOnly, int firstRow, int numOfRows, SortCriteria sortCriteria);
+            boolean activeOnly, PagingCriteria pagingCriteria, 
+            SortCriteria sortCriteria);
     
     /**
      * Uses the specified criteria to return zero, one or more matching . 

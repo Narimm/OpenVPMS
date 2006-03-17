@@ -25,9 +25,8 @@ import java.util.Hashtable;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
@@ -88,7 +87,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * object
      */
     public void testSimpleValidationException() throws Exception {
-        Person person = new Person();
+        Party person = new Party();
         person.setArchetypeId(service.getArchetypeDescriptor("person.person")
                 .getType());
         try {
@@ -96,7 +95,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
             fail("This object should not have passed validation");
         } catch (Exception exception) {
             assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 3);
+            ValidationException ve = (ValidationException)exception;
+            assertTrue("The size should be " + ve.getErrors().size(), ve.getErrors().size() == 2);
         }
     }
 
@@ -105,14 +105,11 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * example
      */
     public void testExtendedValidationException() throws Exception {
-        Person person = (Person) service.create("person.person");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         EntityIdentity eid = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
         eid.setIdentity("jimmy");
 
-        person.setTitle("Mr");
-        person.setFirstName("Jim");
-        person.setLastName("Alateras");
         person.addIdentity(eid);
         service.validateObject(person);
     }
@@ -121,28 +118,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * Test an object going from 5 to zero validation errors
      */
     public void testDecreaseToZeroErrors() throws Exception {
-        Person person = new Person();
-        person.setArchetypeId(service.getArchetypeDescriptor("person.person")
-                .getType());
+        Party person = (Party)service.create("person.person");
         try {
-            service.validateObject(person);
-            fail("This object should not have passed validation");
-        } catch (Exception exception) {
-            assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 3);
-        }
-
-        try {
-            person.setTitle("Mr");
-            service.validateObject(person);
-            fail("This object should not have passed validation");
-        } catch (Exception exception) {
-            assertTrue(exception instanceof ValidationException);
-            assertTrue(((ValidationException) exception).getErrors().size() == 2);
-        }
-
-        try {
-            person.setFirstName("Jim");
             service.validateObject(person);
             fail("This object should not have passed validation");
         } catch (Exception exception) {
@@ -150,7 +127,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
             assertTrue(((ValidationException) exception).getErrors().size() == 1);
         }
 
-        person.setLastName("Alateras");
+        person.getDetails().setAttribute("lastName", "Alateras");
         service.validateObject(person);
     }
 
@@ -159,13 +136,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * in for title
      */
     public void testIncorrectLookupValue() throws Exception {
-        Person person = new Person();
-        person.setArchetypeId(service.getArchetypeDescriptor("person.person")
-                .getType());
+        Party person = createPerson("Mister", "Jim", "Alateras");
         try {
-            person.setTitle("Mister");
-            person.setFirstName("Jim");
-            person.setLastName("Alateras");
             service.validateObject(person);
             fail("This object should not have passed validation");
         } catch (Exception exception) {
@@ -175,92 +147,15 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test that the archetype range validation works correctly.
-     */
-    public void testArchetypeRangeValidation() throws Exception {
-        Person person = (Person) service.create("person.person");
-        EntityIdentity eid = createEntityIdentity(
-                "entityIdentity.animalAlias", "jimmy");
-
-        try {
-            person.setTitle("Mr");
-            person.setFirstName("Jim");
-            person.setLastName("Alateras");
-            person.addIdentity(eid);
-            service.validateObject(person);
-            fail("This object should not have passed validation");
-        } catch (Exception exception) {
-            assertTrue(exception instanceof ValidationException);
-
-            ValidationException ve = (ValidationException) exception;
-            assertTrue(ve.getErrors().size() == 1);
-            assertTrue(ve.getErrors().get(0).getNodeName().equals("identities"));
-        }
-    }
-
-    /**
-     * Test that the archetype range validation works correctly for multiple
-     * validation exceptions
-     */
-    public void testArchetypeRangeValidation2() throws Exception {
-        Person person = (Person) service.create("person.person");
-        try {
-            person.setTitle("Mr");
-            person.setFirstName("Jim");
-            person.setLastName("Alateras");
-            person.addIdentity(createEntityIdentity("entityIdentity.animalAlias",
-                    "animal1"));
-            person.addIdentity(createEntityIdentity("entityIdentity.animalAlias",
-                    "animal2"));
-            person.addIdentity(createEntityIdentity("entityIdentity.animalAlias",
-                    "animal3"));
-            service.validateObject(person);
-            fail("This object should not have passed validation");
-        } catch (Exception exception) {
-            assertTrue(exception instanceof ValidationException);
-
-            ValidationException ve = (ValidationException) exception;
-            assertTrue(ve.getErrors().size() == 1);
-            assertTrue(ve.getErrors().get(0).getNodeName().equals("identities"));
-        }
-    }
-
-    /**
      * Test the min cardinality attached to the archetypeRange assertion being
      * satisfied
      */
     public void testValidMinCardinalityOnArchetypeRange() throws Exception {
-        Person person = (Person) service.create("person.jima");
+        Party person = createPerson("Mr", "Jim", "Alateras");
 
-        person.setTitle("Mr");
-        person.setFirstName("Jim");
-        person.setLastName("Alateras");
         person.addClassification(createClassification("classification.staff",
                 "class1"));
         service.validateObject(person);
-    }
-
-    /**
-     * Test the min cardinality attached to the archetypeRange assertion not
-     * being satisfied
-     */
-    public void testInvalidMinCardinalityOnArchetypeRange() throws Exception {
-        Person person = (Person) service.create("person.jima");
-
-        try {
-            person.setTitle("Mr");
-            person.setFirstName("Jim");
-            person.setLastName("Alateras");
-            service.validateObject(person);
-            fail("This object should not have passed validation");
-        } catch (Exception exception) {
-            assertTrue(exception instanceof ValidationException);
-
-            ValidationException ve = (ValidationException) exception;
-            assertTrue(ve.getErrors().size() == 1);
-            assertTrue(ve.getErrors().get(0).getNodeName().equals(
-                    "classifications"));
-        }
     }
 
     /**
@@ -269,11 +164,11 @@ public class ValidationErrorTestCase extends BaseTestCase {
      */
     public void testValidMaxCardinalityOnArchetypeRange()
     throws Exception {
-        Person person = (Person)service.create("person.jima");
+        Party person = (Party)service.create("person.jima");
 
-        person.setTitle("Mr");
-        person.setFirstName("Jim");
-        person.setLastName("Alateras");
+        person.getDetails().setAttribute("title", "Mr");
+        person.getDetails().setAttribute("firstName", "Jim");
+        person.getDetails().setAttribute("lastName", "Alateras");
         person.addClassification(createClassification("classification.staff", "class1"));
         assertTrue(person.getClassifications().size() == 1);
         service.validateObject(person);
@@ -359,10 +254,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
         ArchetypeService service = new ArchetypeService(cache);
 
         assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
-        Animal pet = (Animal) service.create("animal.pet");
+        Party pet = (Party) service.create("animal.pet");
         pet.setName("bill");
-        pet.setSex("male");
-        pet.setDateOfBirth(new Date());
+        pet.getDetails().setAttribute("sex", "male");
+        pet.getDetails().setAttribute("dateOfBirth", new Date());
 
         try {
             service.validateObject(pet);
@@ -409,10 +304,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
         ArchetypeService service = new ArchetypeService(cache);
 
         assertTrue(service.getArchetypeDescriptor("animal.pet1") != null);
-        Animal pet = (Animal) service.create("animal.pet1");
+        Party pet = (Party) service.create("animal.pet1");
         pet.setName("bill");
-        pet.setSex("male");
-        pet.setDateOfBirth(new Date());
+        pet.getDetails().setAttribute("sex", "male");
+        pet.getDetails().setAttribute("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should validate
@@ -452,10 +347,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
         ArchetypeService service = new ArchetypeService(cache);
 
         assertTrue(service.getArchetypeDescriptor("animal.pet") != null);
-        Animal pet = (Animal) service.create("animal.pet2");
+        Party pet = (Party) service.create("animal.pet2");
         pet.setName("bill");
-        pet.setSex("male");
-        pet.setDateOfBirth(new Date());
+        pet.getDetails().setAttribute("sex", "male");
+        pet.getDetails().setAttribute("dateOfBirth", new Date());
         try {
             service.validateObject(pet);
             fail("Validation should have failed since min cardinality was violated");
@@ -514,10 +409,10 @@ public class ValidationErrorTestCase extends BaseTestCase {
         ArchetypeService service = new ArchetypeService(cache);
 
         assertTrue(service.getArchetypeDescriptor("animal.pet3") != null);
-        Animal pet = (Animal) service.create("animal.pet3");
+        Party pet = (Party) service.create("animal.pet3");
         pet.setName("bill");
-        pet.setSex("male");
-        pet.setDateOfBirth(new Date());
+        pet.getDetails().setAttribute("sex", "male");
+        pet.getDetails().setAttribute("dateOfBirth", new Date());
         service.validateObject(pet);
 
         // this should also validate
@@ -588,4 +483,25 @@ public class ValidationErrorTestCase extends BaseTestCase {
         
         return eid;
     }
+    
+    /**
+     * Create a person
+     * 
+     * @param title
+     *            the person's title
+     * @param firstName
+     *            the person's first name
+     * @param lastName
+     *            the person's last name
+     * @return Person
+     */
+    public Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)service.create("person.person");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
+        
+        return person;
+    }
+    
 }

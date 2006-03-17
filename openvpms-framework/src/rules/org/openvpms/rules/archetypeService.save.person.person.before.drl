@@ -7,7 +7,7 @@
     				   
     <rule name="Print If Name is Not Null">
         <parameter identifier="person">
-        	<java:class>org.openvpms.component.business.domain.im.party.Person</java:class>
+        	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
         </parameter>
         <parameter identifier="service">
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
@@ -20,7 +20,7 @@
 
     <rule name="Set Active End Date for Person Entity Relationship">
         <parameter identifier="person">
-        	<java:class>org.openvpms.component.business.domain.im.party.Person</java:class>
+        	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
         </parameter>
         <parameter identifier="service">
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>

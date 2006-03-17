@@ -45,6 +45,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.component.system.common.search.SortCriteria.SortDirection;
 
@@ -248,7 +249,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, int, int)
      */
     @SuppressWarnings("unchecked")
-    public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, String clazz, boolean activeOnly, int firstRow, int numOfRows, String sortProperty, SortCriteria.SortDirection sortDirection) {
+    public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, String clazz, boolean activeOnly, PagingCriteria pagingCriteria, String sortProperty, SortCriteria.SortDirection sortDirection) {
         try {
             // check that rm has been specified
             if (StringUtils.isEmpty(clazz)) {
@@ -359,7 +360,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
             
             return executeQuery(queryString.toString(), names, params, 
-                    firstRow, numOfRows, new Page<IMObject>());
+                    pagingCriteria, new Page<IMObject>());
             
             /**
             return getHibernateTemplate().findByNamedParam(
@@ -987,13 +988,22 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      */
     @SuppressWarnings("unchecked")
     private IPage executeQuery(String queryString, List<String> names, 
-            List<Object> params, int firstRow, int numOfRows, Page page) 
+            List<Object> params, PagingCriteria pagingCriteria, Page page) 
     throws Exception {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
             Query query = null;
             int totalNumOfRows = 0;
-            if (numOfRows != IPage.ALL_ROWS) {
+            int firstRow = 0;
+            int numOfRows = PagingCriteria.ALL_ROWS;
+            
+            // check whetehr a paging criteria has been specified
+            if (pagingCriteria != null) {
+                firstRow = pagingCriteria.getFirstRow();
+                numOfRows = pagingCriteria.getNumOfRows();
+            }
+            
+            if (numOfRows != PagingCriteria.ALL_ROWS) {
                 query = session.createQuery("select count(*) " + queryString);
                 for (int index = 0; index < names.size(); index++) {
                     query.setParameter(names.get(index), params.get(index));
@@ -1013,15 +1023,14 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 query.setFirstResult(firstRow);
             }
             
-            if (numOfRows != IPage.ALL_ROWS) {
+            if (numOfRows != PagingCriteria.ALL_ROWS) {
                 query.setMaxResults(numOfRows);
                 logger.debug("THe maximum number of rows is " + numOfRows);
             } else {
                 totalNumOfRows =query.list().size();
             }
             
-            page.setFirstRow(firstRow);
-            page.setNumOfRows(query.list().size());
+            page.setPagingCriteria(new PagingCriteria(firstRow, query.list().size()));
             page.setTotalNumOfRows(totalNumOfRows);
             page.setRows(query.list());
 

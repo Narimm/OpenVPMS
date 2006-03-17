@@ -142,7 +142,7 @@ public class Contact extends IMObject {
     }
     
     /**
-     * Return all the associated {@link ContactPurpose}
+     * Return all the associated {@link Classification}
      * 
      * @return Set<Classification>
      */

@@ -7,7 +7,7 @@
     				   
     <rule name="Set Active End Time for animal.pet">
         <parameter identifier="pet">
-        	<java:class>org.openvpms.component.business.domain.im.party.Animal</java:class>
+        	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
         </parameter>
         <parameter identifier="service">
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>

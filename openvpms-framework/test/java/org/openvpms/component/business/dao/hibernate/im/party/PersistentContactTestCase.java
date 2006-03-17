@@ -28,7 +28,7 @@ import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCa
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * 
@@ -78,7 +78,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             Classification purpose = createClassification("purpose");
             session.save(purpose);
             Contact contact = createContact();
-            Person person = createPerson();
+            Party person = createPerson();
             person.addContact(contact);
             contact.addClassification(purpose);
             session.save(person);
@@ -112,14 +112,14 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             
-            Person person = createPerson();
+            Party person = createPerson();
             Contact contact = createContact();
             person.addContact(contact);
             session.save(person);
             tx.commit();
             
             // Retrieve the person and add a contact purpose to the contact
-            person = (Person)session.get(Person.class, person.getUid());
+            person = (Party)session.get(Party.class, person.getUid());
 
             tx = session.beginTransaction();
             Classification purpose = createClassification("now");
@@ -156,7 +156,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             assertTrue(contact.getClassifications().size() == 2);
             
             // retrieve the person and ensure that there is only one address
-            person = (Person)session.get(Person.class, person.getUid());
+            person = (Party)session.get(Party.class, person.getUid());
             assertTrue(person.getContacts().size() == 1);
             
         } catch (Exception exception) { 
@@ -187,7 +187,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             Classification purpose = createClassification("now");
             session.save(purpose);
-            Person person = createPerson();
+            Party person = createPerson();
             Contact contact = createContact();
             contact.addClassification(purpose );
             person.addContact(contact);
@@ -202,7 +202,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             // retrieve the person and delete a contact purpose from the contact
             tx = session.beginTransaction();
-            person = (Person)session.get(Person.class, person.getUid());
+            person = (Party)session.get(Party.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 1);
             assertTrue(person.getContacts().iterator().next().getClassifications().size() == 1);
@@ -250,7 +250,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             Classification purpose = createClassification("now");
             session.save(purpose);
-            Person person = createPerson();
+            Party person = createPerson();
             Contact contact = createContact();
             contact.addClassification(purpose);
             person.addContact(contact);
@@ -265,7 +265,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             // retrieve the person and delete a contact purpose from the contact
             tx = session.beginTransaction();
-            person = (Person)session.get(Person.class, person.getUid());
+            person = (Party)session.get(Party.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 1);
             assertTrue(person.getContacts().iterator().next().getClassifications().size() == 1);
@@ -314,7 +314,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             session.save(purpose);
             Classification purpose1 = createClassification("later");
             session.save(purpose1);
-            Person person = createPerson();
+            Party person = createPerson();
             Contact contact = createContact();
             contact.addClassification(purpose);
             contact.addClassification(purpose1);
@@ -330,7 +330,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             
             // retrieve the person and delete all contacts 
             tx = session.beginTransaction();
-            person = (Person)session.get(Person.class, person.getUid());
+            person = (Party)session.get(Party.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 1);
             assertTrue(person.getContacts().iterator().next().getClassifications().size() == 2);
@@ -339,7 +339,7 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
             session.saveOrUpdate(person);
             
             // retrieve and check the contacts
-            person = (Person)session.get(Person.class, person.getUid());
+            person = (Party)session.get(Party.class, person.getUid());
             assertTrue(person != null);
             assertTrue(person.getContacts().size() == 0);
 
@@ -409,9 +409,8 @@ public class PersistentContactTestCase extends HibernateInfoModelTestCase {
      * 
      * @rturn person
      */
-    private Person createPerson() throws Exception {
-        return new Person(createPersonArchetypeId(), "person", "Mr", "Jim", 
-                "Alateras", null);
+    private Party createPerson() throws Exception {
+        return new Party(createPersonArchetypeId(), "person", "person", null, null); 
     }
     
     /**

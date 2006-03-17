@@ -23,7 +23,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
@@ -47,13 +47,13 @@ public class PartyPersonRules {
      *            the person entity
      * @throws RuleEngineException            
      */
-    public static void onSaveMessage(IArchetypeService service, Person person) {
+    public static void onSaveMessage(IArchetypeService service, Party person) {
         if (logger.isDebugEnabled()) {
             logger.debug("Executing PartyPersonRules.onSaveMessage");
         }        
         
-        System.out.println("We are about to do a save on " + person.getFirstName() 
-                + " " + person.getLastName()
+        System.out.println("We are about to do a save on " + person.getDetails().getAttribute("firstName") 
+                + " " + person.getDetails().getAttribute("lastName")
                 + " using service " + service.getClass().getName());
     }
      
@@ -67,7 +67,7 @@ public class PartyPersonRules {
      *            the pet entity
      * @throws RuleEngineException            
      */
-    public static void setActiveEndDates(IArchetypeService service, Person person) {
+    public static void setActiveEndDates(IArchetypeService service, Party person) {
         if (logger.isDebugEnabled()) {
             logger.debug("Executing PartyPersonRules.setActiveEndDates");
         }

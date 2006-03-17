@@ -29,28 +29,18 @@ import java.util.List;
 public interface IPage<T> {
 
     /**
-     * Indicates that all the rows should be returned
-     */
-    public final static int ALL_ROWS = -1;
-
-    /**
      * @return Returns the firstRow.
      */
-    public abstract int getFirstRow();
-
-    /**
-     * @return Returns the numOfRows.
-     */
-    public abstract int getNumOfRows();
+    public PagingCriteria getPagingCriteria();
 
     /**
      * @return Returns the rows.
      */
-    public abstract List<T> getRows();
+    public List<T> getRows();
 
     /**
      * @return Returns the totalNumOfRows.
      */
-    public abstract int getTotalNumOfRows();
+    public int getTotalNumOfRows();
 
 }

@@ -52,7 +52,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyColl
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class IMObject implements Serializable, Cloneable {
+public class IMObject implements Serializable, Cloneable {
 
     /**
      * An internal UUID generator

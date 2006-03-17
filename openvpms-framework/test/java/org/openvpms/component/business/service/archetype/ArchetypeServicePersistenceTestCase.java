@@ -18,7 +18,7 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// spring-context
+// spring-context 
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,8 +38,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.party.Person;
-import org.openvpms.component.business.domain.im.party.Animal;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
@@ -88,17 +86,17 @@ public class ArchetypeServicePersistenceTestCase extends
     }
 
     /**
-     * Test that we can create a {@link Person} through this service
+     * Test that we can create a {@link Party} through this service
      */
     public void  testCreatePerson()
     throws Exception {
         Entity entity = (Entity)service.create("person.person");
-        assertTrue(entity instanceof Person);
+        assertTrue(entity instanceof Party);
         
-        Person person = (Person)entity;
-        person.setLastName("Alateras");
-        person.setFirstName("Jim");
-        person.setTitle("Mr");
+        Party person = (Party)entity;
+        person.getDetails().setAttribute("lastName", "Alateras");
+        person.getDetails().setAttribute("firstName", "Jim");
+        person.getDetails().setAttribute("title", "Mr");
         
         try {
             service.save(person);
@@ -113,16 +111,14 @@ public class ArchetypeServicePersistenceTestCase extends
     public void  testPersonLifecycle()
     throws Exception {
         Entity entity = (Entity)service.create("person.person");
-        assertTrue(entity instanceof Person);
+        assertTrue(entity instanceof Party);
         
-        Person person = (Person)entity;
-        person.setLastName("Alateras");
-        person.setFirstName("Jim");
-        person.setTitle("Mr");
+        Party person = (Party)entity;
+        person.getDetails().setAttribute("lastName", "Alateras");
+        person.getDetails().setAttribute("firstName", "Jim");
+        person.getDetails().setAttribute("title", "Mr");
         
-        Contact contact = new Contact();
-        contact.setArchetypeId(new ArchetypeId(
-                "openvpms-contact-contact.draft.1.0"));
+        Contact contact = createConact();
         
         Date start = new Date();
         Date end = new Date(start.getTime() + (7*24*60*60*1000));
@@ -132,14 +128,14 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(person.getContacts().size() == 1);
         service.save(person);
         
-        person = (Person)service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 1);
-        person.setFirstName("Grace");
+        person.getDetails().setAttribute("firstName", "Grace");
         service.save(person);
     }
 
     /**
-     * Test that we can create a {@link Animal} through this service
+     * Test that we can create a {@link Party} through this service
      */
     public void  testAnimalCreation()
     throws Exception {
@@ -470,7 +466,7 @@ public class ArchetypeServicePersistenceTestCase extends
         cf.setDescription("standard");
         service.save(cf);
         
-        Person person = (Person)service.create("person.person");
+        Party person = (Party)service.create("person.person");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
                 person.getArchetypeId());
         NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
@@ -500,18 +496,18 @@ public class ArchetypeServicePersistenceTestCase extends
      */
     public void testActiveFlagOnAnimal()
     throws Exception {
-        Animal pet = createPet("jimbo");
+        Party pet = createPet("jimbo");
         service.save(pet);
         
         ArchetypeId aid = pet.getArchetypeId();
-        Animal retrievePet = (Animal)service.get(aid.getRmName(),  
+        Party retrievePet = (Party)service.get(aid.getRmName(),  
                 aid.getEntityName(), aid.getConcept(), pet.getName(), true).get(0);
         
         assertTrue(retrievePet != null);
         retrievePet.setActive(false);
         service.save(retrievePet);
         
-        retrievePet = (Animal)service.getById(retrievePet.getArchetypeId(), 
+        retrievePet = (Party)service.getById(retrievePet.getArchetypeId(), 
                 retrievePet.getUid());
         assertTrue(retrievePet != null);
         assertTrue(retrievePet.isActive() == false);
@@ -596,18 +592,18 @@ public class ArchetypeServicePersistenceTestCase extends
     public void testOVPMS146() 
     throws Exception {
         Entity entity = (Entity)service.create("person.person");
-        assertTrue(entity instanceof Person);
+        assertTrue(entity instanceof Party);
         
-        Person person = (Person)entity;
-        person.setLastName("Alateras");
-        person.setFirstName("Jim");
-        person.setTitle("Mr");
+        Party person = (Party)entity;
+        person.getDetails().setAttribute("lastName", "Alateras");
+        person.getDetails().setAttribute("firstName", "Jim");
+        person.getDetails().setAttribute("title", "Mr");
         service.save(person);
         
         IMObjectReference ref = new IMObjectReference(person);
-        person = (Person)service.get(ref);
+        person = (Party)service.get(ref);
         assertTrue(person.getLinkId().equals(ref.getLinkId()));
-        assertTrue(person.getLastName().equals("Alateras"));
+        assertTrue(person.getDetails().getAttribute("lastName").equals("Alateras"));
     }
     
     
@@ -656,23 +652,40 @@ public class ArchetypeServicePersistenceTestCase extends
      *            the pet's name
      * @return Animal                  
      */
-    private Animal createPet(String name) {
+    private Party createPet(String name) {
         Entity entity = (Entity)service.create("animal.pet");
-        assertTrue(entity instanceof Animal);
+        assertTrue(entity instanceof Party);
         
-        Animal pet = (Animal)entity;
+        Party pet = (Party)entity;
         pet.setName("brutus");
-        pet.setBreed("dog");
-        pet.setColour("brown");
-        pet.setSex("unspecified");
-        pet.setSpecies("k9");
+        pet.getDetails().setAttribute("breed", "dog");
+        pet.getDetails().setAttribute("colour", "brown");
+        pet.getDetails().setAttribute("sex", "unspecified");
+        pet.getDetails().setAttribute("species", "k9");
         pet.setDescription("A dog");
         
         Calendar date = Calendar.getInstance();
         date.set(1963, 12, 20);
-        pet.setDateOfBirth(new Date());
+        pet.getDetails().setAttribute("dateOfBirth", new Date());
         
         return pet;
+    }
+    
+    /**
+     * Create a contact
+     * 
+     * @return Contact                  
+     */
+    private Contact createConact() {
+        Contact contact = (Contact)service.create("contact.location");
+        
+        contact.getDetails().setAttribute("address", "kalulu rd");
+        contact.getDetails().setAttribute("suburb", "Belgrave");
+        contact.getDetails().setAttribute("postcode", "3160");
+        contact.getDetails().setAttribute("state", "Victoria");
+        contact.getDetails().setAttribute("country", "Australia");
+        
+        return contact;
     }
     
     /**
@@ -684,11 +697,11 @@ public class ArchetypeServicePersistenceTestCase extends
      * 
      * @return Person
      */
-    public Person createPerson(String title, String firstName, String lastName) {
-        Person person = (Person)service.create("person.person");
-        person.setLastName(lastName);
-        person.setFirstName(firstName);
-        person.setTitle(title);
+    public Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)service.create("person.person");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
         
         return person;
     }

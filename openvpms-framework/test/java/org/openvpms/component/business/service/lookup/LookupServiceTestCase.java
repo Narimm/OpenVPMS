@@ -124,7 +124,7 @@ public class LookupServiceTestCase extends
             .getArchetypeDescriptor("person.person");
         assertTrue(descriptor.getNodeDescriptor("title") != null);
         assertTrue(descriptor.getNodeDescriptor("title").isLookup());
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("title")).size() == 4);
+        assertTrue(lookupService.get(descriptor.getNodeDescriptor("title")).size() == 7);
     }
     
     /**

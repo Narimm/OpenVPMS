@@ -28,7 +28,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Classification;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 
 // log4j
 import org.apache.log4j.Logger;
@@ -81,7 +81,7 @@ public class ArchetypeServiceFilteredTestCase extends
      * Test the creation process still works with the filtered set in place.
      */
     public void testSimplePersonCreation() throws Exception {
-        Person person = createPersonFilter("Mr", "Jim", "Alateras");
+        Party person = createPersonFilter("Mr", "Jim", "Alateras");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(person.getArchetypeId());
         NodeDescriptor ndesc1 = adesc.getNodeDescriptor("staffClassifications");
         NodeDescriptor ndesc2 = adesc.getNodeDescriptor("patientClassifications");
@@ -107,7 +107,7 @@ public class ArchetypeServiceFilteredTestCase extends
      * Test the modification process still works with the filtered set in place.
      */
     public void testModificationPersonCreation() throws Exception {
-        Person person = createPersonFilter("Mr", "Jim", "Alateras");
+        Party person = createPersonFilter("Mr", "Jim", "Alateras");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(person.getArchetypeId());
         NodeDescriptor ndesc1 = adesc.getNodeDescriptor("staffClassifications");
         NodeDescriptor ndesc2 = adesc.getNodeDescriptor("patientClassifications");
@@ -156,13 +156,13 @@ public class ArchetypeServiceFilteredTestCase extends
      * @param firstName
      * @param lastName
      * 
-     * @return Person
+     * @return Party
      */
-    public Person createPersonFilter(String title, String firstName, String lastName) {
-        Person person = (Person)service.create("person.filter");
-        person.setLastName(lastName);
-        person.setFirstName(firstName);
-        person.setTitle(title);
+    public Party createPersonFilter(String title, String firstName, String lastName) {
+        Party person = (Party)service.create("person.filter");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
         
         return person;
     }

@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.audit.AuditRecord;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 // openvpms-test-component
@@ -98,7 +98,7 @@ public class AuditServiceTestCase extends
      */
     public void testAuditOnSave()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetype.save(person);
         List<AuditRecord> records = audit.getByObjectId(
                 person.getArchetypeIdAsString(), person.getUid());
@@ -111,12 +111,12 @@ public class AuditServiceTestCase extends
      */
     public void testAuditOnUpdate()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetype.save(person);
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 1);
         
-        person.setFirstName("James");
+        person.getDetails().setAttribute("firstName", "James");
         archetype.save(person);
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 2);
@@ -127,11 +127,12 @@ public class AuditServiceTestCase extends
      */
     public void testAuditOnMultipleUpdates()
     throws Exception {
-        Person person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("Mr", "Jim", "Alateras");
         archetype.save(person);
         
         for (int index = 0; index < 5; index++) {
-            person.setFirstName(person.getFirstName() + index);
+            person.getDetails().setAttribute("firstName", 
+                    (String)person.getDetails().getAttribute("firstName") + index);
             archetype.save(person);
         }
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
@@ -143,7 +144,7 @@ public class AuditServiceTestCase extends
      */
      public void testRetrievalById()
      throws Exception {
-         Person person = createPerson("Mr", "Jim", "Alateras");
+         Party person = createPerson("Mr", "Jim", "Alateras");
          archetype.save(person);
          archetype.save(person);
          archetype.save(person);
@@ -161,7 +162,7 @@ public class AuditServiceTestCase extends
       */
      public void testAuditOnDelete()
      throws Exception {
-         Person person = createPerson("Mr", "Jim", "Alateras");
+         Party person = createPerson("Mr", "Jim", "Alateras");
          archetype.save(person);
          archetype.remove(person);
          List<AuditRecord> records = audit.getByObjectId(
@@ -188,12 +189,12 @@ public class AuditServiceTestCase extends
      *            the person's last name
      * @return Person
      */
-    private Person createPerson(String title, String firstName, String lastName) {
-        Person person = (Person)archetype.create("person.person");
-        person.setTitle(title);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-
-        return person;
-    }
+     public Party createPerson(String title, String firstName, String lastName) {
+         Party person = (Party)archetype.create("person.person");
+         person.getDetails().setAttribute("lastName", lastName);
+         person.getDetails().setAttribute("firstName", firstName);
+         person.getDetails().setAttribute("title", title);
+         
+         return person;
+     }
 }

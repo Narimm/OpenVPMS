@@ -21,9 +21,8 @@ package org.openvpms.component.business.service.entity;
 
 //openvpms-framework
 import org.openvpms.component.business.service.ServiceBaseTestCase;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.party.Person;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 /**
@@ -65,7 +64,7 @@ public class EntityIdentityTestCase extends
      * Test the creation of EntityIdentities on an entity object.
      */
     public void testEntityIdentityCreation() throws Exception {
-        Person person = createPerson("Mr", "EntityIdentity", "Test");
+        Party person = createPerson("Mr", "EntityIdentity", "Test");
         EntityIdentity eidentity = createEntityIdentity("jimbo");
 
         person.addIdentity(eidentity);
@@ -73,7 +72,7 @@ public class EntityIdentityTestCase extends
 
         // retrieve the person and check that there is a single
         // entity identity
-        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         assertTrue(((EntityIdentity)person.getIdentities().iterator().next()).getUid() != -1);
@@ -86,7 +85,7 @@ public class EntityIdentityTestCase extends
      * @throws Exception
      */
     public void testEntityIdentityDeletion() throws Exception {
-        Person person = createPerson("Mr", "EntityIdentity", "Test");
+        Party person = createPerson("Mr", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
         EntityIdentity ident2 = createEntityIdentity("jimmya");
         person.addIdentity(ident1);
@@ -95,7 +94,7 @@ public class EntityIdentityTestCase extends
         service.save(person);
         
         // retrieve the entity, check it and then remove an entity identity
-        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 2);
         
@@ -105,7 +104,7 @@ public class EntityIdentityTestCase extends
         service.save(person);
 
         assertTrue(getObjectById("entityIdentity.getById", ident1.getUid()) == null);
-        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
     }
@@ -115,13 +114,13 @@ public class EntityIdentityTestCase extends
      * person object
      */
     public void testEntityIdentityUpdate() throws Exception {
-        Person person = createPerson("Mr", "EntityIdentity", "Test");
+        Party person = createPerson("Mr", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
         person.addIdentity(ident1);
         service.save(person);
         
         // retrieve the entity, check it and then update an entity identity
-        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
@@ -130,7 +129,7 @@ public class EntityIdentityTestCase extends
         service.save(person);
         
         // make sure the update happened
-        person = (Person) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
@@ -158,15 +157,12 @@ public class EntityIdentityTestCase extends
      *            the person's last name
      * @return Person
      */
-    private Person createPerson(String title, String firstName, String lastName) {
-        Entity entity = (Entity)service.create("person.person");
-        assertTrue(entity instanceof Person);
-
-        Person person = (Person) entity;
-        person.setTitle(title);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-
+    public Party createPerson(String title, String firstName, String lastName) {
+        Party person = (Party)service.create("person.person");
+        person.getDetails().setAttribute("lastName", lastName);
+        person.getDetails().setAttribute("firstName", firstName);
+        person.getDetails().setAttribute("title", title);
+        
         return person;
     }
 
