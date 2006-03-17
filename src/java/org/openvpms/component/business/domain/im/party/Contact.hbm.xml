@@ -51,7 +51,7 @@
       type="date" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-    <set name="classifications" access="property" lazy="false" inverse="true"
+    <set name="classifications" access="property" lazy="false" inverse="false"
       table="contact_classifications" cascade="none">
       <key column="contact_id" />
       <many-to-many
