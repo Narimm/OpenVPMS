@@ -7,6 +7,7 @@ import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundCheckBox;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
@@ -96,5 +97,15 @@ public abstract class AbstractIMObjectComponentFactory
      */
     protected abstract Property getProperty(IMObject object,
                                             NodeDescriptor descriptor);
+
+    /**
+     * Helper to return a collection property given its descriptor.
+     *
+     * @param object     the object that owns the property
+     * @param descriptor the property's descriptor
+     * @return the property corresponding to <code>descriptor</code>.
+     */
+    protected abstract CollectionProperty getCollectionProperty(
+            IMObject object, NodeDescriptor descriptor);
 
 }

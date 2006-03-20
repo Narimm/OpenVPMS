@@ -1,9 +1,11 @@
 package org.openvpms.web.component.edit;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.dialog.ErrorDialog;
 
 
 /**
@@ -12,7 +14,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public abstract class IMObjectProperty implements Property {
+public abstract class IMObjectProperty implements Property, CollectionProperty {
 
     /**
      * The object that the property belongs to.
@@ -37,25 +39,26 @@ public abstract class IMObjectProperty implements Property {
     }
 
     /**
-     * Set the value of the property.
-     *
-     * @param value the property value
-     */
-    public void setValue(Object value) {
-        try {
-            _descriptor.setValue(_object, value);
-        } catch (DescriptorException exception) {
-            ErrorDialog.show(exception);
-        }
-    }
-
-    /**
      * Returns the value of the property.
      *
      * @return the property value
      */
     public Object getValue() {
-        return _descriptor.getValue(_object);
+        return getDescriptor().getValue(getObject());
+    }
+
+    /**
+     * Returns the collection.
+     *
+     * @return the collection
+     */
+    public Collection getValues() {
+        NodeDescriptor descriptor = getDescriptor();
+        List<IMObject> values = descriptor.getChildren(getObject());
+        if (values != null) {
+            values = Collections.unmodifiableList(values);
+        }
+        return values;
     }
 
     /**
@@ -65,6 +68,15 @@ public abstract class IMObjectProperty implements Property {
      */
     public NodeDescriptor getDescriptor() {
         return _descriptor;
+    }
+
+    /**
+     * Returns the object that the property belongs to.
+     *
+     * @return the object
+     */
+    protected IMObject getObject() {
+        return _object;
     }
 
 }

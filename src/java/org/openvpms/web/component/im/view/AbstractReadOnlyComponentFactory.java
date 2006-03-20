@@ -17,6 +17,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.ReadOnlyProperty;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -96,6 +97,18 @@ public abstract class AbstractReadOnlyComponentFactory
      * @return the property corresponding to <code>descriptor</code>.
      */
     protected Property getProperty(IMObject object, NodeDescriptor descriptor) {
+        return new ReadOnlyProperty(object, descriptor);
+    }
+
+    /**
+     * Helper to return a collection property given its descriptor.
+     *
+     * @param object     the object that owns the property
+     * @param descriptor the property's descriptor
+     * @return the property corresponding to <code>descriptor</code>.
+     */
+    protected CollectionProperty getCollectionProperty(
+            IMObject object, NodeDescriptor descriptor) {
         return new ReadOnlyProperty(object, descriptor);
     }
 
