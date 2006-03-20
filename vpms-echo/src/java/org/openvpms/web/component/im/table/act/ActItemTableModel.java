@@ -76,15 +76,15 @@ public class ActItemTableModel extends DescriptorTableModel {
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
-     * @param index  the column model index
+     * @param column
      * @param row    the table row
      */
     @Override
-    protected Object getValue(IMObject object, int index, int row) {
+    protected Object getValue(IMObject object, int column, int row) {
         Object result = null;
-        TableColumn column = getColumn(index);
-        if (column instanceof ParticipantTableColumn) {
-            ParticipantTableColumn col = (ParticipantTableColumn) column;
+        TableColumn c = getColumn(column);
+        if (c instanceof ParticipantTableColumn) {
+            ParticipantTableColumn col = (ParticipantTableColumn) c;
             NodeDescriptor descriptor = col.getDescriptor();
             IMObject child = getByShortName(col.getShortName(),
                                             descriptor.getChildren(object));
@@ -99,7 +99,7 @@ public class ActItemTableModel extends DescriptorTableModel {
                 result = label;
             }
         } else {
-            result = super.getValue(object, index, row);
+            result = super.getValue(object, column, row);
         }
         return result;
     }

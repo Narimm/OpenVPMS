@@ -1,6 +1,5 @@
 package org.openvpms.web.component.table;
 
-import echopointng.table.PageableTableModel;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
@@ -79,7 +78,7 @@ public class TableNavigator extends Row {
             public void actionPerformed(ActionEvent event) {
                 int selected = _pageSelector.getSelectedIndex();
                 PageableTableModel model = getModel();
-                model.setCurrentPage(selected);
+                model.setPage(selected);
             }
         });
 
@@ -109,20 +108,20 @@ public class TableNavigator extends Row {
     }
 
     protected void doFirst() {
-        int page = getModel().getCurrentPage();
+        int page = getModel().getPage();
         if (page != 0) {
             setCurrentPage(0);
         }
     }
 
     protected void setCurrentPage(int page) {
-        getModel().setCurrentPage(page);
+        getModel().setPage(page);
         _pageSelector.setSelectedIndex(page);
     }
 
     protected void doPrevious() {
         PageableTableModel model = getModel();
-        int page = model.getCurrentPage();
+        int page = model.getPage();
         if (page > 0) {
             setCurrentPage(page - 1);
         }
@@ -130,8 +129,8 @@ public class TableNavigator extends Row {
 
     protected void doNext() {
         PageableTableModel model = getModel();
-        int maxPage = model.getTotalRows() / model.getRowsPerPage();
-        int page = model.getCurrentPage();
+        int maxPage = model.getRows() / model.getRowsPerPage();
+        int page = model.getPage();
         if (page < maxPage) {
             setCurrentPage(page + 1);
         }
@@ -139,8 +138,8 @@ public class TableNavigator extends Row {
 
     protected void doLast() {
         PageableTableModel model = getModel();
-        int maxPage = model.getTotalRows() / model.getRowsPerPage();
-        int page = model.getCurrentPage();
+        int maxPage = model.getRows() / model.getRowsPerPage();
+        int page = model.getPage();
         if (page != maxPage) {
             setCurrentPage(maxPage);
         }
@@ -149,14 +148,14 @@ public class TableNavigator extends Row {
     protected void refresh() {
         PageableTableModel model = getModel();
 
-        int total = model.getTotalPages() + 1;
+        int total = model.getPages() + 1;
         _pageCount.setText(Messages.get("label.navigation.page.total", total));
 
-        String[] pages = new String[model.getTotalPages() + 1];
+        String[] pages = new String[model.getPages() + 1];
         for (int i = 0; i < pages.length; ++i) {
             pages[i] = "" + (i + 1);
         }
-        int selected = model.getCurrentPage();
+        int selected = model.getPage();
         _pageSelector.setModel(new DefaultListModel(pages));
         _pageSelector.setSelectedIndex(selected);
     }
