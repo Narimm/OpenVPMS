@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>0.3-dev</currentVersion>
+    <currentVersion>0.2</currentVersion>
     <package>org.openvpms</package>
     <shortDescription>OpenVPMS Echo2 demo</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>

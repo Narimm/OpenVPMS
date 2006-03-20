@@ -17,6 +17,7 @@ import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -185,7 +186,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(
                     ServiceHelper.getArchetypeService(),
                     descriptor, object);
-            Property property = getProperty(object, descriptor);
+            CollectionProperty property = getCollectionProperty(
+                    object, descriptor);
             Palette palette = new BoundPalette(identifiers, property);
             palette.setCellRenderer(new IMObjectListCellRenderer());
             result = palette;
@@ -221,6 +223,18 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 = new ModifiableProperty(object, descriptor);
         _modifiable.add(object, property);
         return property;
+    }
+
+    /**
+     * Helper to return a collection property given its descriptor.
+     *
+     * @param object     the object that owns the property
+     * @param descriptor the property's descriptor
+     * @return the property corresponding to <code>descriptor</code>.
+     */
+    protected CollectionProperty getCollectionProperty(
+            IMObject object, NodeDescriptor descriptor) {
+        return (CollectionProperty) getProperty(object, descriptor);
     }
 
     /**

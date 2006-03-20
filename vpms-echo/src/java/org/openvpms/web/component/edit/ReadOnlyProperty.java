@@ -6,7 +6,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * Read-only version of {@link IMObjectProperty}. Attempts to modify the value
- * will result in a {@link UnsupportedOperationException}.
+ * will result in an {@link UnsupportedOperationException}.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -26,8 +26,29 @@ public class ReadOnlyProperty extends IMObjectProperty {
     /**
      * @throws UnsupportedOperationException if invoked
      */
-    @Override
     public void setValue(Object value) {
+        throw new UnsupportedOperationException(
+                "Attenpt to modify read-only property:"
+                + getDescriptor().getDisplayName());
+    }
+
+    /**
+     * Add a value.
+     *
+     * @param value the value to add
+     */
+    public void add(Object value) {
+        throw new UnsupportedOperationException(
+                "Attenpt to modify read-only property:"
+                + getDescriptor().getDisplayName());
+    }
+
+    /**
+     * Remove a value.
+     *
+     * @param value the value to remove
+     */
+    public void remove(Object value) {
         throw new UnsupportedOperationException(
                 "Attenpt to modify read-only property:"
                 + getDescriptor().getDisplayName());
@@ -50,7 +71,7 @@ public class ReadOnlyProperty extends IMObjectProperty {
     }
 
     /**
-     * Add a listener to be notified when a this changes.
+     * Add a listener to be notified when this changes.
      *
      * @param listener the listener to add
      */

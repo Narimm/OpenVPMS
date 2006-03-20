@@ -31,7 +31,7 @@ public class ModifiableProperty extends IMObjectProperty {
     /**
      * The listeners.
      */
-    private ModifiableListeners _listeners = new ModifiableListeners();
+    private ModifiableListeners _listeners;
 
     /**
      * The property handler.
@@ -55,26 +55,46 @@ public class ModifiableProperty extends IMObjectProperty {
      *
      * @param value the property value
      */
-    @Override
     public void setValue(Object value) {
         try {
             value = _handler.apply(value);
-            super.setValue(value);
-            _dirty = true;
-            _valid = true;
-            _listeners.notifyListeners(this);
+            NodeDescriptor descriptor = getDescriptor();
+            descriptor.setValue(getObject(), value);
+            modified();
         } catch (ValidationException exception) {
-            _valid = false;
-            String title = "Error: " + getDescriptor().getDisplayName();
-            String message;
-            List<ValidationError> errors = exception.getErrors();
-            if (!errors.isEmpty()) {
-                ValidationError error = errors.get(0);
-                message = error.getErrorMessage();
-            } else {
-                message = exception.getMessage();
-            }
-            ErrorDialog.show(title, message);
+            invalidate(exception);
+        }
+    }
+
+    /**
+     * Add a value.
+     *
+     * @param value the value to add
+     */
+    public void add(Object value) {
+        try {
+            value = _handler.apply(value);
+            NodeDescriptor descriptor = getDescriptor();
+            descriptor.addChildToCollection(getObject(), value);
+            modified();
+        } catch (ValidationException exception) {
+            invalidate(exception);
+        }
+    }
+
+    /**
+     * Remove a value.
+     *
+     * @param value the value to remove
+     */
+    public void remove(Object value) {
+        try {
+            value = _handler.apply(value);
+            NodeDescriptor descriptor = getDescriptor();
+            descriptor.removeChildFromCollection(getObject(), value);
+            modified();
+        } catch (ValidationException exception) {
+            invalidate(exception);
         }
     }
 
@@ -99,7 +119,9 @@ public class ModifiableProperty extends IMObjectProperty {
      * Notify any listeners that they need to refresh.
      */
     public void refresh() {
-        _listeners.notifyListeners(this);
+        if (_listeners != null) {
+            _listeners.notifyListeners(this);
+        }
     }
 
     /**
@@ -108,6 +130,9 @@ public class ModifiableProperty extends IMObjectProperty {
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
+        if (_listeners == null) {
+            _listeners = new ModifiableListeners();
+        }
         _listeners.addListener(listener);
     }
 
@@ -117,7 +142,9 @@ public class ModifiableProperty extends IMObjectProperty {
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        _listeners.removeListener(listener);
+        if (_listeners != null) {
+            _listeners.removeListener(listener);
+        }
     }
 
     /**
@@ -132,5 +159,35 @@ public class ModifiableProperty extends IMObjectProperty {
         }
         return _valid;
     }
+
+    /**
+     * Invoked when this is modified. Updates flags, and notifies the
+     * listeners.
+     */
+    private void modified() {
+        _dirty = true;
+        _valid = true;
+        refresh();
+    }
+
+    /**
+     * Invoked when an update fails. Marks this as invalid.
+     *
+     * @param exception the reason for the failure
+     */
+    private void invalidate(ValidationException exception) {
+        _valid = false;
+        String title = "Error: " + getDescriptor().getDisplayName();
+        String message;
+        List<ValidationError> errors = exception.getErrors();
+        if (!errors.isEmpty()) {
+            ValidationError error = errors.get(0);
+            message = error.getErrorMessage();
+        } else {
+            message = exception.getMessage();
+        }
+        ErrorDialog.show(title, message);
+    }
+
 
 }
