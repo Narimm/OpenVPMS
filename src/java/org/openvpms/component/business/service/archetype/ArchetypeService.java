@@ -348,7 +348,8 @@ public class ArchetypeService implements IArchetypeService {
         }
         
         List<IMObject> results = new ArrayList<IMObject>();
-        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, primaryOnly);
+        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, 
+                conceptName, primaryOnly);
         
         for (ArchetypeDescriptor adesc : adescs) {
             try {
@@ -381,7 +382,8 @@ public class ArchetypeService implements IArchetypeService {
         }
         
         IPage<IMObject> page = null;
-        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, primaryOnly);
+        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, 
+                conceptName, primaryOnly);
         
         if (adescs.size() == 1) {
             ArchetypeDescriptor adesc = adescs.iterator().next();
@@ -1134,13 +1136,15 @@ public class ArchetypeService implements IArchetypeService {
      *            the reference model name (complete or partial)
      * @param entityName
      *            the entity name (complete or partial)
+     * @param concept
+     *            the concept name (complete and optional)            
      * @param primaryOnly
      *            determines whether to restrict processing to primary only            
      * @return List<ArchetypeDescriptor> a list of types
      */
     @SuppressWarnings("unchecked")
     private Set<ArchetypeDescriptor> getDistinctTypes(String rmName, String entityName,
-            boolean primaryOnly) {
+            String concept, boolean primaryOnly) {
         Set<ArchetypeDescriptor> results = new HashSet<ArchetypeDescriptor>();
         
         // adjust the reference model name
@@ -1160,8 +1164,10 @@ public class ArchetypeService implements IArchetypeService {
             if (archId.getRmName().matches(modRmName)) {
                 String modEntityName = (entityName == null) ? null : 
                     entityName.replace("*", ".*");
-                if ((StringUtils.isEmpty(modEntityName)) || 
-                    (archId.getEntityName().matches(modEntityName))) {
+                if (((StringUtils.isEmpty(modEntityName)) || 
+                    (archId.getEntityName().matches(modEntityName))) &&
+                    ((StringUtils.isEmpty(concept)) ||
+                     (archId.getConcept().equals(concept)))) {
                     results.add(desc);
                 }
             }
