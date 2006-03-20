@@ -94,9 +94,6 @@
                     /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/component/business/domain/im/party/ContactPurpose.hbm.xml
-                </value>
-                <value>
                     /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
                 </value>
                 <value>

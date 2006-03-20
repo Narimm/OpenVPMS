@@ -77,14 +77,14 @@ public class ActTableModel extends IMObjectTableModel {
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object the object
-     * @param index  the column model index
+     * @param column
      * @param row    the table row
      */
     @Override
-    protected Object getValue(IMObject object, int index, int row) {
+    protected Object getValue(IMObject object, int column, int row) {
         Act act = (Act) object;
         Object result;
-        switch (index) {
+        switch (column) {
             case START_INDEX:
                 result = act.getActivityStartTime();
                 break;
@@ -95,7 +95,7 @@ public class ActTableModel extends IMObjectTableModel {
                 result = act.getStatus();
                 break;
             default:
-                result = super.getValue(object, index, row);
+                result = super.getValue(object, column, row);
                 break;
         }
         return result;

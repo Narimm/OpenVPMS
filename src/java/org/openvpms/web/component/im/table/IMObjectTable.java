@@ -2,11 +2,11 @@ package org.openvpms.web.component.im.table;
 
 import java.util.List;
 
-import echopointng.table.PageableSortableTable;
+import nextapp.echo2.app.Table;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
-import org.openvpms.web.component.table.StyleTableCellRenderer;
+import org.openvpms.web.component.table.SortableTableHeaderRenderer;
 
 
 /**
@@ -15,23 +15,13 @@ import org.openvpms.web.component.table.StyleTableCellRenderer;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class IMObjectTable extends PageableSortableTable {
+public class IMObjectTable extends Table {
 
     /**
      * Construct a new <code>IMObjectTable</code>.
      */
     public IMObjectTable() {
-        this(false);
-    }
-
-    /**
-     * Construct a new <code>IMObjectTable</code>.
-     *
-     * @param deletable if <code>true</code>, add a column to mark objects for
-     *                  deletion
-     */
-    public IMObjectTable(boolean deletable) {
-        this(IMObjectTableModel.create(deletable));
+        this(new IMObjectTableModel());
     }
 
     /**
@@ -45,7 +35,7 @@ public class IMObjectTable extends PageableSortableTable {
         setColumnModel(model.getColumnModel());
         setSelectionEnabled(true);
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
-        setDefaultHeaderRenderer(new StyleTableCellRenderer("Table.Header"));
+        setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
     }
 
     /**
@@ -93,21 +83,12 @@ public class IMObjectTable extends PageableSortableTable {
     public void setSelected(IMObject object) {
         IMObjectTableModel model = (IMObjectTableModel) getModel();
         int index = getObjects().indexOf(object);
-        int minRow = model.getCurrentPage() * model.getRowsPerPage();
+        int minRow = model.getPage() * model.getRowsPerPage();
         int maxRow = minRow + model.getRowsPerPage();
         if (index >= minRow && index < maxRow) {
             int offset = index - minRow;
             getSelectionModel().setSelectedIndex(offset, true);
         }
-    }
-
-    /**
-     * Returns the objects marked for deletion.
-     *
-     * @return the objects marked for deletion
-     */
-    public List<IMObject> getMarked() {
-        return ((IMObjectTableModel) getModel()).getMarked();
     }
 
     /**

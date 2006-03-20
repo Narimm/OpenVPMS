@@ -50,16 +50,16 @@ public class EntityRelationshipTableModel extends IMObjectTableModel {
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
-     * @param index  the column model index
+     * @param column
      * @param row    the table row
      */
     @Override
-    protected Object getValue(IMObject object, int index, int row) {
+    protected Object getValue(IMObject object, int column, int row) {
         Object result;
-        if (index == NAME_INDEX) {
+        if (column == NAME_INDEX) {
             result = getEntity((EntityRelationship) object);
         } else {
-            result = super.getValue(object, index, row);
+            result = super.getValue(object, column, row);
         }
         return result;
     }

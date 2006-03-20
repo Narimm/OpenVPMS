@@ -3,10 +3,6 @@ package org.openvpms.web.component.im.table;
 import java.util.Iterator;
 import java.util.List;
 
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -116,20 +112,20 @@ public class DescriptorTableModel extends IMObjectTableModel {
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
-     * @param index  the column model index
+     * @param column
      * @param row    the table row
      */
     @Override
-    protected Object getValue(IMObject object, int index, int row) {
-        TableColumn column = getColumn(index);
+    protected Object getValue(IMObject object, int column, int row) {
+        TableColumn c = getColumn(column);
         IMObjectComponentFactory factory = _context.getComponentFactory();
         Object result = null;
-        if (column instanceof DescriptorTableColumn) {
-            DescriptorTableColumn col = (DescriptorTableColumn) column;
+        if (c instanceof DescriptorTableColumn) {
+            DescriptorTableColumn col = (DescriptorTableColumn) c;
             NodeDescriptor descriptor = col.getDescriptor();
             result = factory.create(object, descriptor);
         } else {
-            result = super.getValue(object, index, row);
+            result = super.getValue(object, column, row);
         }
         return result;
     }
