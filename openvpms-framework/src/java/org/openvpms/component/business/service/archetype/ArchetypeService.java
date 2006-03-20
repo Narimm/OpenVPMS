@@ -1137,7 +1137,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param entityName
      *            the entity name (complete or partial)
      * @param concept
-     *            the concept name (complete and optional)            
+     *            the concept name (complete )            
      * @param primaryOnly
      *            determines whether to restrict processing to primary only            
      * @return List<ArchetypeDescriptor> a list of types
@@ -1163,12 +1163,15 @@ public class ArchetypeService implements IArchetypeService {
             String modRmName = rmName.replace(".", "\\.").replace("*", ".*");
             if (archId.getRmName().matches(modRmName)) {
                 String modEntityName = (entityName == null) ? null : 
-                    entityName.replace("*", ".*");
-                if (((StringUtils.isEmpty(modEntityName)) || 
-                    (archId.getEntityName().matches(modEntityName))) &&
-                    ((StringUtils.isEmpty(concept)) ||
-                     (archId.getConcept().equals(concept)))) {
-                    results.add(desc);
+                    entityName.replace(".", "\\.").replace("*", ".*");
+                if ((StringUtils.isEmpty(modEntityName)) || 
+                    (archId.getEntityName().matches(modEntityName))) {
+                    String modConcept = (concept == null) ? null :
+                        concept.replace(".", "\\.").replace("*", ".*");
+                    if ((StringUtils.isEmpty(modConcept)) || 
+                        (archId.getConcept().matches(modConcept))) {
+                        results.add(desc);
+                    }
                 }
             }
         }
