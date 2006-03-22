@@ -9,6 +9,7 @@
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat('% ',/price, ' margin')" />
 		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="false()" />
-		<node name="margin" path="/price" type="java.math.BigDecimal"  minCardinality="1" />			
+		<node name="margin" path="/price" type="java.math.BigDecimal"  defaultValue="0.0" minCardinality="1" />			
+		<node name="otherMargin" path="/price" type="java.math.BigDecimal"  defaultValue="0.0" />			
 	</archetype>
 </archetypes>

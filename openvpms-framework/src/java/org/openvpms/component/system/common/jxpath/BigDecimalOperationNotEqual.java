@@ -19,30 +19,39 @@
 
 package org.openvpms.component.system.common.jxpath;
 
+// java core
 import java.math.BigDecimal;
-import java.util.List;
+
+// commons-jxpath
+import org.apache.commons.jxpath.ri.compiler.CoreOperationNotEqual;
+import org.apache.commons.jxpath.ri.compiler.Expression;
 
 /**
- * These are extension functions, used by JXPath for {@link BigDecimal}
- *
+ * BigDecimal support
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class BigDecimalFunctions {
-    /**
-     * Sum the list of {@link BigDecimal} and return the resulting value
+public class BigDecimalOperationNotEqual extends CoreOperationNotEqual {
+
+    /** 
+     * Support for base class construction
      * 
-     * @param list
-     *            the list of big decimals to sum
-     * @return BigDecimal            
-     *            the sum
+     * @param arg1
+     * @param arg2
      */
-    public static BigDecimal sum(List<BigDecimal> list) {
-        BigDecimal total = new BigDecimal(0);
-        for (BigDecimal item : list) {
-            total = total.add(item);
+    public BigDecimalOperationNotEqual(Expression arg1, Expression arg2) {
+        super(arg1, arg2);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.commons.jxpath.ri.compiler.CoreOperationCompare#equal(java.lang.Object, java.lang.Object)
+     */
+    @Override
+    protected boolean equal(Object l, Object r) {
+        if ((l instanceof BigDecimal) && (r instanceof BigDecimal)) {
+            return l.equals(r);
+        } else {
+            return super.equal(l, r);
         }
-        
-        return total;
     }
 }

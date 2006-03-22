@@ -348,10 +348,10 @@ public class ArchetypeService implements IArchetypeService {
         }
         
         List<IMObject> results = new ArrayList<IMObject>();
-        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, 
+        DistinctTypesResultSet resultSet = getDistinctTypes(rmName, entityName, 
                 conceptName, primaryOnly);
         
-        for (ArchetypeDescriptor adesc : adescs) {
+        for (ArchetypeDescriptor adesc : resultSet.descriptors) {
             try {
                 List<IMObject> objects = dao.get(rmName, entityName,
                         conceptName, instanceName, adesc.getClassName(), 
@@ -382,18 +382,25 @@ public class ArchetypeService implements IArchetypeService {
         }
         
         IPage<IMObject> page = null;
-        Set<ArchetypeDescriptor> adescs = getDistinctTypes(rmName, entityName, 
+        DistinctTypesResultSet distinct = getDistinctTypes(rmName, entityName, 
                 conceptName, primaryOnly);
         
-        if (adescs.size() == 1) {
-            ArchetypeDescriptor adesc = adescs.iterator().next();
+        if (distinct.types.size() == 1) {
+            // We can only let the database do the sorting and paging if
+            // a single type is represented by the class request.
             page = dao.get(rmName, entityName, conceptName, instanceName, 
-                    adesc.getClassName(), activeOnly, pagingCriteria, 
-                    getSortProperty(adesc, sortCriteria), 
+                    distinct.types.iterator().next(), activeOnly, pagingCriteria, 
+                    getSortProperty(distinct.descriptors, sortCriteria), 
                     getSortDirection(sortCriteria));
         } else {
+            // TODO At the moment we are outputting an error but this 
+            // scenario shouldn't really occur. If it does then we need
+            // to cache the complete result set and do the sort and paging
+            // in memory......don't really want there are the moment.
+            logger.error("Cannot page a result set for the following archetypes " 
+                    + distinct.descriptors.toString());
             List<IMObject> results = new ArrayList<IMObject>();
-            for (ArchetypeDescriptor adesc : adescs) {
+            for (ArchetypeDescriptor adesc : distinct.descriptors) {
                 try {
                     List<IMObject> objects = dao.get(rmName, entityName,
                             conceptName, instanceName, adesc.getClassName(), 
@@ -435,7 +442,8 @@ public class ArchetypeService implements IArchetypeService {
      * derive the sort property. A sort property can only be a top level 
      * property in the adesc (i.e. have a simple path). If the node does not
      * exist or the node exisits but it is not a top level node then raise an
-     * exception.
+     * exception. In addition if more than one archetype is specified then 
+     * the sort property must be defined in all the archetypes.
      * 
      * @param adesc
      *            the archetype descriptor
@@ -445,30 +453,45 @@ public class ArchetypeService implements IArchetypeService {
      *            the sort property
      * @throws ArchetypeServiceException            
      */
-    private String getSortProperty(ArchetypeDescriptor adesc, SortCriteria sortCriteria) {
+    private String getSortProperty(Set<ArchetypeDescriptor> adescs, SortCriteria sortCriteria) {
         if (sortCriteria == null) {
             return null;
         }
         
+        // ensure the property is defined in all archetypes
         String sortNode = sortCriteria.getSortNode();
-        NodeDescriptor ndesc = adesc.getNodeDescriptor(sortNode);
-        if (ndesc == null) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.InvalidSortProperty,
-                    new Object[] { sortNode });
-        }
+        NodeDescriptor ndesc = null;
+        String property = null;
         
-        // stip the leading /, if it exists
-        String property = ndesc.getPath();
-        if (ndesc.getPath().startsWith("/")) {
-            property = ndesc.getPath().substring(1);
-        }
-        
-        // now check for any more / characters
-        if (property.contains("/")) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.CannotSortOnProperty,
-                    new Object[] { sortNode });
+        for (ArchetypeDescriptor adesc : adescs) {
+            ndesc = adesc.getNodeDescriptor(sortNode);
+            if (ndesc == null) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.InvalidSortProperty,
+                        new Object[] { sortNode });
+            }
+            
+            // stip the leading /, if it exists
+            String aprop = ndesc.getPath();
+            if (aprop.startsWith("/")) {
+                aprop = ndesc.getPath().substring(1);
+            }
+            
+            // now check for any more / characters
+            if (aprop.contains("/")) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.CannotSortOnProperty,
+                        new Object[] { sortNode });
+            }
+            
+            // now check that all archetypes refer to the same property
+            if ((property != null) &&
+                !(property.equals(aprop))) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.SortPropertyNotSupported,
+                        new Object[] { sortNode });
+            }
+            property = aprop;
         }
         
         return property;
@@ -1143,9 +1166,9 @@ public class ArchetypeService implements IArchetypeService {
      * @return List<ArchetypeDescriptor> a list of types
      */
     @SuppressWarnings("unchecked")
-    private Set<ArchetypeDescriptor> getDistinctTypes(String rmName, String entityName,
+    private DistinctTypesResultSet getDistinctTypes(String rmName, String entityName,
             String concept, boolean primaryOnly) {
-        Set<ArchetypeDescriptor> results = new HashSet<ArchetypeDescriptor>();
+        DistinctTypesResultSet results = new DistinctTypesResultSet();
         
         // adjust the reference model name
         for (ArchetypeDescriptor desc : dCache.getArchetypeDescriptors()) {
@@ -1164,13 +1187,19 @@ public class ArchetypeService implements IArchetypeService {
             if (archId.getRmName().matches(modRmName)) {
                 String modEntityName = (entityName == null) ? null : 
                     entityName.replace(".", "\\.").replace("*", ".*");
+                // reference model name matches
                 if ((StringUtils.isEmpty(modEntityName)) || 
                     (archId.getEntityName().matches(modEntityName))) {
                     String modConcept = (concept == null) ? null :
                         concept.replace(".", "\\.").replace("*", ".*");
+                    // entity name matches
                     if ((StringUtils.isEmpty(modConcept)) || 
                         (archId.getConcept().matches(modConcept))) {
-                        results.add(desc);
+                        results.descriptors.add(desc);
+                        if (!results.types.contains(desc.getClassName())) {
+                            // new class name so add
+                            results.types.add(desc.getClassName());
+                        }
                     }
                 }
             }
@@ -1178,5 +1207,21 @@ public class ArchetypeService implements IArchetypeService {
 
         return results;
     }
+
     
+    /**
+     * Private anonymous class to hold the results of {@link getDistinctTypes}
+     */
+    private class DistinctTypesResultSet {
+        /**
+         * The set of distinct archetypes
+         */
+        Set<ArchetypeDescriptor> descriptors =
+            new HashSet<ArchetypeDescriptor>();
+        
+        /**
+         * The set of distinct class names matching the {@link #descriptors}
+         */
+        Set<String> types = new HashSet<String>();
+    }
 }
