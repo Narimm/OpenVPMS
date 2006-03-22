@@ -20,7 +20,6 @@
 package org.openvpms.component.business.dao.hibernate.im;
 
 // java core
-import java.util.Calendar;
 
 //hibernate
 import org.hibernate.Session;
@@ -41,8 +40,6 @@ import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
-import org.openvpms.component.business.domain.im.datatypes.quantity.DvInterval;
-import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -175,21 +172,6 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
         session.set(null);
         if (s != null)
             s.close();
-    }
-    
-    /**
-     * Return a {@link DvDateTime} interval
-     * 
-     * @return DvInterval<DvDateTime>
-     */
-    protected DvInterval<DvDateTime> createTimeInterval() {
-        Calendar lower = Calendar.getInstance();
-        Calendar upper = Calendar.getInstance();
-        
-        lower.set(1963, 12, 20);
-        upper.set(1963, 12, 25);
-        return new DvInterval<DvDateTime>(new DvDateTime(lower), 
-                new DvDateTime(upper));
     }
     
     /**

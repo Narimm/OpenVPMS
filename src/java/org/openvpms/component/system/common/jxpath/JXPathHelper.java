@@ -23,6 +23,8 @@ import java.util.Properties;
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.JXPathContextFactory;
+import org.apache.commons.jxpath.util.TypeUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -51,7 +53,13 @@ public class JXPathHelper {
      * Default constructor
      */
     public JXPathHelper() {
-        // do nothing
+        // set the factory name so that the correct version context
+        // factory is invoked
+        System.setProperty(JXPathContextFactory.FACTORY_NAME_PROPERTY,
+                OpenVPMSContextFactoryReferenceImpl.class.getName());
+        
+        // set the extended type converter
+        TypeUtils.setTypeConverter(new OpenVPMSTypeConverter());
     }
 
     /**
@@ -63,20 +71,32 @@ public class JXPathHelper {
      *            the class function luibraries to include
      */
     public JXPathHelper(Properties props) {
-        for (Object ns : props.keySet()) {
-            String namespace = (String) ns;
-
-            try {
-                Class clazz = Thread.currentThread().getContextClassLoader()
-                        .loadClass(props.getProperty(namespace));
-                functions.addFunctions(new ClassFunctions(clazz, namespace));
-            } catch (Exception exception) {
-                throw new JXPathHelperException(
-                        JXPathHelperException.ErrorCode.InvalidClassSpecified,
-                        new Object[] { props.getProperty(namespace) },
-                        exception);
+        // add the extension functions
+        if (props != null) {
+            for (Object ns : props.keySet()) {
+                String namespace = (String) ns;
+    
+                try {
+                    Class clazz = Thread.currentThread().getContextClassLoader()
+                            .loadClass(props.getProperty(namespace));
+                    functions.addFunctions(new ClassFunctions(clazz, namespace));
+                } catch (Exception exception) {
+                    throw new JXPathHelperException(
+                            JXPathHelperException.ErrorCode.InvalidClassSpecified,
+                            new Object[] { props.getProperty(namespace) },
+                            exception);
+                }
             }
         }
+        
+        // set the factory name so that the correct version context
+        // factory is invoked
+        System.setProperty(JXPathContextFactory.FACTORY_NAME_PROPERTY,
+                OpenVPMSContextFactoryReferenceImpl.class.getName());
+        
+        // set the extended type converter
+        TypeUtils.setTypeConverter(new OpenVPMSTypeConverter());
+        
     }
     
     /**

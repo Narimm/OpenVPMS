@@ -48,7 +48,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.NamedPropert
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-import org.openvpms.component.business.domain.im.datatypes.quantity.datetime.DvDateTime;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 /**
@@ -570,7 +570,7 @@ public class NodeDescriptor extends Descriptor {
      * @param Class
      *            The class
      */
-    private Class getClazz() {
+    public Class getClazz() {
         if (clazz == null) {
             if (StringUtils.isEmpty(type)) {
                 clazz = null;
@@ -901,7 +901,7 @@ public class NodeDescriptor extends Descriptor {
      */
     public boolean isDate() {
         Class aclass = getClazz();
-        if ((Date.class == aclass) || (DvDateTime.class == aclass)) {
+        if (Date.class == aclass) {
             return true;
         }
 
@@ -965,7 +965,20 @@ public class NodeDescriptor extends Descriptor {
         return result;
 
     }
-
+    
+    /**
+     * Check whether this ia a money type
+     * 
+     * @return boolean
+     */
+    public boolean isMoney() {
+        if (getClazz() == Money.class) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     /**
      * Check whether this node is a numeric type.
      * 

@@ -19,6 +19,9 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
@@ -117,6 +120,29 @@ public class ArchetypeServicePaginationTestCase extends
         assertTrue(objects.getTotalNumOfRows() == totalCount);
     }
 
+    /**
+     * Test pagination for distinct types. This also test the reopening
+     * of OVPMS244
+     */
+    public void testOVPMS244()
+    throws Exception {
+        Set<String> linkIds = new HashSet<String>();
+        for (int page = 0;; page++) {
+            IPage<IMObject> objects = service.get("common", "entityRelationship", 
+                "a*", null, false, false, new PagingCriteria(page, 10), null);
+            for (IMObject object : objects.getRows()) {
+                if (linkIds.contains(object.getLinkId())) {
+                    fail("This row has already been returned");
+                }
+                linkIds.add(object.getLinkId());
+            }
+            
+            if (((page + 1) * 10 ) >= objects.getTotalNumOfRows()) {
+                break;
+            }
+        }
+    }
+    
     /**
      * Test will null pagination
      */

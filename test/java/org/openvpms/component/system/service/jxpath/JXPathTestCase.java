@@ -72,6 +72,12 @@ public class JXPathTestCase extends BaseTestCase {
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
             .getLogger(JXPathTestCase.class);
+    
+    /**
+     * A reference to the JXPathHelper
+     */
+    @SuppressWarnings("unused")
+    private JXPathHelper context = new JXPathHelper();
 
     /**
      * Cache a reference to the Archetype service
@@ -252,7 +258,7 @@ public class JXPathTestCase extends BaseTestCase {
      */
     public void testPackagedFunctions() 
     throws Exception {
-        JXPathContext ctx = JXPathContext.newContext(this);
+        JXPathContext ctx = JXPathHelper.newContext(this);
         assertTrue(ctx.getValue("java.util.Date.new()") instanceof Date);
         assertTrue(ctx.getValue("'jimbo'").equals("jimbo"));
     }
@@ -267,7 +273,7 @@ public class JXPathTestCase extends BaseTestCase {
         list.add(createPerson("Ms", "Bernadette", "Feeney"));
         list.add(createPerson("Ms", "Grace", "Alateras"));
         
-        JXPathContext ctx = JXPathContext.newContext(list);
+        JXPathContext ctx = JXPathHelper.newContext(list);
         // NOTE: Index starts at 1 not 0.
         assertTrue(ctx.getValue(".[1]/details/attributes/firstName").equals("Jim"));
         assertTrue(ctx.getValue(".[2]/details/attributes/lastName").equals("Feeney"));
@@ -309,7 +315,7 @@ public class JXPathTestCase extends BaseTestCase {
         person.setUid(3);
         list.add(person);
         
-        JXPathContext ctx = JXPathContext.newContext(list);
+        JXPathContext ctx = JXPathHelper.newContext(list);
         // NOTE: Using a extension function to do the work.
         assertTrue(ctx.getValue("org.openvpms.component.system.service.jxpath.TestFunctions.findObjectWithUid(., 1)") != null);
         assertTrue(ctx.getValue("org.openvpms.component.system.service.jxpath.TestFunctions.findObjectWithUid(., 3)") != null);
@@ -352,7 +358,7 @@ public class JXPathTestCase extends BaseTestCase {
         prop.setType("java.lang.String");
         map.addProperty(prop);
         
-        JXPathContext context = JXPathContext.newContext(map);
+        JXPathContext context = JXPathHelper.newContext(map);
         context.setValue("/properties/shortName/value", "descripor.archetypeRange");
         assertTrue(prop.getValue().equals("descripor.archetypeRange"));
     }
@@ -370,7 +376,7 @@ public class JXPathTestCase extends BaseTestCase {
         values.add(new BigDecimalValues(new BigDecimal(13), new BigDecimal(13)));
         values.add(new BigDecimalValues(new BigDecimal(15), new BigDecimal(15)));
         
-        JXPathContext ctx = JXPathContext.newContext(values);
+        JXPathContext ctx = JXPathHelper.newContext(values);
         ctx.setFunctions(lib);
         
         Object sum = ctx.getValue("ns:sum(child::high)");
@@ -395,7 +401,7 @@ public class JXPathTestCase extends BaseTestCase {
         
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("values", values);
-        JXPathContext ctx = JXPathContext.newContext(map);
+        JXPathContext ctx = JXPathHelper.newContext(map);
         ctx.setFunctions(lib);
         
         //Object sum = ctx.getValue("sum(values/child::high[self::high < 0])");
@@ -425,7 +431,63 @@ public class JXPathTestCase extends BaseTestCase {
         person.setName(null);
         bool = (Boolean)context.getValue("tf:testName(.)");
         assertFalse(bool.booleanValue());
-   }
+    }
+    
+    /**
+     * Test for bug OVPMS-236
+     */
+    public void testOVPMS236()
+    throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("productPrice.margin");
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
+        
+        IMObject object = service.create("productPrice.margin");
+        ndesc.setValue(object, new Float("12.35"));
+        assertTrue(ndesc.getValue(object) != null);
+    }
+    
+    /**
+     * Test for bug OVPMS-228
+     */
+    public void testOVPMS228()
+    throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("productPrice.margin");
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
+        NodeDescriptor ondesc = adesc.getNodeDescriptor("otherMargin");
+        
+        IMObject object = service.create("productPrice.margin");
+        assertTrue(ndesc.getValue(object).getClass().getName(),
+                ndesc.getValue(object).getClass() == ndesc.getClazz());
+        assertTrue(ondesc.getValue(object).getClass().getName(),
+                ondesc.getValue(object).getClass() == ondesc.getClazz());
+    }
+    
+    /**
+     * Test for bug OVPMD-210
+     */
+    public void testOVPMS210()
+    throws Exception {
+        BigDecimalValues values = new BigDecimalValues(new BigDecimal(100),
+                new BigDecimal(200));
+        JXPathContext ctx = JXPathHelper.newContext(values);
+        Object obj = ctx.getValue("/low + /high");
+        assertTrue(obj instanceof BigDecimal);
+        assertTrue(((BigDecimal)obj).equals(new BigDecimal(300)));
+    }
+    
+    /**
+     * Test normal maths operations
+     */
+    public void testJXPathMaths()
+    throws Exception {
+        JXPathContext ctx = JXPathHelper.newContext(new Object());
+        ctx.getValue("2 + 2");
+        ctx.getValue("2 - 2");
+        ctx.getValue("2 div 2");
+        ctx.getValue("2 * 2");
+        ctx.getValue("-2");
+        ctx.getValue("2 mod 2");
+    }
     
     /**
      * This performs a get using an object and a jxpath expression and returns
@@ -439,13 +501,13 @@ public class JXPathTestCase extends BaseTestCase {
      */
     private Object getValue(Object source, String path) {
         /**
-         * Object obj = JXPathContext.newContext(source).getValue(path); if (obj
+         * Object obj = JXPathHelper.newContext(source).getValue(path); if (obj
          * instanceof Pointer) { obj = ((Pointer)obj).getValue(); }
          * 
          * return obj;
          */
 
-        return JXPathContext.newContext(source).getValue(path);
+        return JXPathHelper.newContext(source).getValue(path);
     }
 
     /**

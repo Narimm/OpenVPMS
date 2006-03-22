@@ -76,7 +76,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         FailedToDeriveValue,
         FailedInGetByObjectReference,
         InvalidSortProperty,
-        CannotSortOnProperty
+        CannotSortOnProperty,
+        SortPropertyNotSupported
     }
 
     /**
