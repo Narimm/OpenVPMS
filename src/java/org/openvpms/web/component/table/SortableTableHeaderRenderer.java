@@ -102,7 +102,10 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
         button.setStyleName(_style);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                boolean ascending = model.isSortedAscending();
+                boolean ascending = false;
+                if (column == model.getSortColumn()) {
+                    ascending = model.isSortedAscending();
+                }
                 model.sort(column, !ascending);
             }
         });

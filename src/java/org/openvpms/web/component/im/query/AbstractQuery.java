@@ -17,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.util.LabelFactory;
@@ -39,7 +40,27 @@ public abstract class AbstractQuery implements Query {
     /**
      * Archetype short names to matches on.
      */
-    protected final String[] _shortNames;
+    private final String[] _shortNames;
+
+    /**
+     * Archetype reference model name. May be <code>null</code>
+     */
+    private final String _refModelName;
+
+    /**
+     * Archetype entity name. May be <code>null</code>
+     */
+    private final String _entityName;
+
+    /**
+     * Archetype concept name. May be <code>null</code>
+     */
+    private final String _conceptName;
+
+    /**
+     * Determines if a paged query should be used.
+     */
+    private final boolean _paged;
 
     /**
      * The instance name. If the text is <code>null</code> or empty, indicates
@@ -90,6 +111,7 @@ public abstract class AbstractQuery implements Query {
      */
     private static final String ROW_STYLE = "ControlRow";
 
+
     /**
      * Construct a new <code>Browser</code> that queries IMObjects with the
      * specified short names.
@@ -98,6 +120,10 @@ public abstract class AbstractQuery implements Query {
      */
     public AbstractQuery(String[] shortNames) {
         _shortNames = shortNames;
+        _refModelName = null;
+        _entityName = null;
+        _conceptName = null;
+        _paged = (shortNames.length == 0);
     }
 
     /**
@@ -110,7 +136,11 @@ public abstract class AbstractQuery implements Query {
      */
     public AbstractQuery(String refModelName, String entityName,
                          String conceptName) {
-        this(getShortNames(refModelName, entityName, conceptName));
+        _shortNames = getShortNames(refModelName, entityName, conceptName);
+        _refModelName = refModelName;
+        _entityName = entityName;
+        _conceptName = conceptName;
+        _paged = true;
     }
 
     /**
@@ -127,27 +157,47 @@ public abstract class AbstractQuery implements Query {
     }
 
     /**
-     * Performs the query, returning the matching objects.
+     * Performs the query.
      *
-     * @return the matching objects
+     * @param rows      the maxiomum no. of rows per page
+     * @param node      the node to sort on. May be <code>null</code>
+     * @param ascending if <code>true</code> sort the rows inascending order;
+     *                  otherwise sort them in <code>descebding</code> order
+     * @return the query result set
      */
-    public List<IMObject> query() {
-        List<IMObject> result = Collections.emptyList();
+    public ResultSet query(int rows, String node, boolean ascending) {
+        ResultSet result;
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
 
         IArchetypeService service = ServiceHelper.getArchetypeService();
         String[] shortNames;
+        boolean paged = false;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             shortNames = _shortNames;
+            paged = _paged;
         } else {
             shortNames = new String[]{type};
         }
-        try {
-            result = service.get(shortNames, name, true, activeOnly);
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
+        if (paged) {
+            SortCriteria sort = null;
+            if (node != null) {
+                SortCriteria.SortDirection direction
+                        = (ascending) ? SortCriteria.SortDirection.Ascending
+                          : SortCriteria.SortDirection.Descending;
+                sort = new SortCriteria(node, direction);
+            }
+            result = new ResultSetImpl(_refModelName, _entityName, _conceptName,
+                                       name, activeOnly, sort, rows);
+        } else {
+            List<IMObject> objects = Collections.emptyList();
+            try {
+                objects = service.get(shortNames, name, true, activeOnly);
+            } catch (ArchetypeServiceException exception) {
+                ErrorDialog.show(exception);
+            }
+            result = new PreloadedResultSet(objects, rows);
         }
         return result;
     }
@@ -216,6 +266,15 @@ public abstract class AbstractQuery implements Query {
      */
     protected boolean includeInactive() {
         return _inactive.isSelected();
+    }
+
+    /**
+     * Returns the archetype short names.
+     *
+     * @return the archetype short names
+     */
+    protected String[] getShortNames() {
+        return _shortNames;
     }
 
     /**
@@ -301,7 +360,6 @@ public abstract class AbstractQuery implements Query {
         Label nameLabel = LabelFactory.create(NAME_ID);
         container.add(nameLabel);
         container.add(getInstanceName());
-
     }
 
     /**

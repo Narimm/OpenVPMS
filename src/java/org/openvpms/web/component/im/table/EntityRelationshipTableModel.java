@@ -16,7 +16,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationshipTableModel extends IMObjectTableModel {
+public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
 
     /**
      * Construct a new <code>EntityRelationshipTableModel</code>.

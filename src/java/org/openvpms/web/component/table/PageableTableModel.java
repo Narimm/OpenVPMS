@@ -33,13 +33,6 @@ public interface PageableTableModel extends TableModel {
     int getPages();
 
     /**
-     * Sets the number of rows per page.
-     *
-     * @param rows the rows per page
-     */
-    void setRowsPerPage(int rows);
-
-    /**
      * Returns the number of rows per page.
      *
      * @return the number. of rows per page
@@ -48,7 +41,7 @@ public interface PageableTableModel extends TableModel {
 
     /**
      * Returns the total number of rows.
-     * <em>NOTE: </em> the {@link * #getRowCount} method return the number of
+     * <em>NOTE: </em> the {@link #getRowCount} method returns the number of
      * visible rows.
      *
      * @return the total number of rows

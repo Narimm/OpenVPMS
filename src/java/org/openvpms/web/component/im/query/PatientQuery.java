@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.ApplicationInstance;
 import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -89,23 +89,29 @@ public class PatientQuery extends AbstractQuery {
     }
 
     /**
-     * Performs the query, returning the matching objects.
+     * Performs the query.
      *
-     * @return the matching objects
+     * @param rows      the maxiomum no. of rows per page
+     * @param node      the node to sort on. May be <code>null</code>
+     * @param ascending if <code>true</code> sort the rows inascending order;
+     *                  otherwise sort them in <code>descebding</code> order
+     * @return the query result set
      */
     @Override
-    public List<IMObject> query() {
+    public ResultSet query(int rows, String node, boolean ascending) {
         getComponent();  // ensure the component is rendered
-        List<IMObject> result = null;
+        ResultSet result;
         if (_allPatients.isSelected()) {
-            result = super.query();
+            result = super.query(rows, node, ascending);
         } else {
+            List<IMObject> objects = null;
             if (_customer != null) {
-                result = filterForCustomer();
+                objects = filterForCustomer();
             }
-        }
-        if (result == null) {
-            result = Collections.emptyList();
+            if (objects == null) {
+                objects = Collections.emptyList();
+            }
+            result = new PreloadedResultSet(objects, rows);
         }
         return result;
     }
@@ -164,7 +170,7 @@ public class PatientQuery extends AbstractQuery {
         boolean activeOnly = !includeInactive();
 
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            for (String shortName : _shortNames) {
+            for (String shortName : getShortNames()) {
                 List<IMObject> matches
                         = filter(patients, shortName, name, activeOnly);
                 if (result == null) {

@@ -65,6 +65,7 @@ public abstract class AbstractSortableTableModel
      *                  otherwise sort it in <code>descebding</code> order
      */
     public void sort(int column, boolean ascending) {
+/*
         List<Object> ids = getRowIds();
         Transformer transformer = new IdToDataTransformer(column);
         Comparator comparator = getComparator(column, ascending);
@@ -75,6 +76,7 @@ public abstract class AbstractSortableTableModel
         _sortColumn = column;
         _sortAscending = ascending;
         fireTableDataChanged();
+*/
     }
 
     /**
@@ -114,17 +116,6 @@ public abstract class AbstractSortableTableModel
             comparator = ComparatorUtils.reversedComparator(comparator);
         }
         return comparator;
-    }
-
-    /**
-     * Returns the value at a given column and row. This implementation
-     * delegates to {@link #getValueAt}.
-     *
-     * @param column the column
-     * @param row    the row
-     */
-    protected Object getValue(int column, int row) {
-        return getValueAt(column, row);
     }
 
     /**
@@ -169,7 +160,7 @@ public abstract class AbstractSortableTableModel
          */
         public Object transform(Object input) {
             int row = getRow(input);
-            return getValue(_column, row);
+            return getValueAt(_column, row);
         }
     }
 

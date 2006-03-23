@@ -20,7 +20,6 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -123,18 +122,16 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     }
 
     /**
-     * Create a new table.
+     * Create a new table model.
      *
      * @param context the layout context
-     * @return a new table
+     * @return a new table model
      */
     @Override
-    protected IMObjectTable createTable(LayoutContext context) {
+    protected IMObjectTableModel createTableModel(LayoutContext context) {
         DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
         readOnly.setComponentFactory(new TableComponentFactory());
-        IMObjectTableModel model = new ActItemTableModel(
-                _actItemDescriptor, readOnly);
-        return new IMObjectTable(model);
+        return new ActItemTableModel(_actItemDescriptor, readOnly);
     }
 
     /**

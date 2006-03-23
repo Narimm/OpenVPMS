@@ -33,10 +33,10 @@ import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -233,11 +233,14 @@ public class ActQuery implements Query {
     }
 
     /**
-     * Performs the query, returning the matching objects.
+     * Performs the query.
      *
-     * @return the matching objects
+     * @param rows the maxiomum no. of rows per page
+     * @param node
+     * @param ascending
+     * @return the query result set
      */
-    public List<IMObject> query() {
+    public ResultSet query(int rows, String node, boolean ascending) {
         List<IMObject> result = Collections.emptyList();
 
         if (_entityId != null) {
@@ -255,7 +258,7 @@ public class ActQuery implements Query {
             }
             result = new ArrayList<IMObject>(acts);
         }
-        return result;
+        return new PreloadedResultSet(result, rows);
     }
 
     /**
