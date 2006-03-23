@@ -1,7 +1,5 @@
 package org.openvpms.web.component.im.query;
 
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -23,17 +21,21 @@ public interface Query {
     Component getComponent();
 
     /**
-     * Performs the query, returning the matching objects.
+     * Performs the query.
      *
-     * @return the matching objects
+     * @param rows      the maxiomum no. of rows per page
+     * @param node      the node to sort on. May be <code>null</code>
+     * @param ascending if <code>true</code> sort the rows inascending order;
+     *                  otherwise sort them in <code>descebding</code> order
+     * @return the query result set
      */
-    List<IMObject> query();
+    ResultSet query(int rows, String node, boolean ascending);
 
     /**
      * Determines if the query should be run automatically.
      *
      * @return <code>true</code> if the query should be run automaticaly;
-     * otherwie <code>false</code>
+     *         otherwie <code>false</code>
      */
     boolean isAuto();
 

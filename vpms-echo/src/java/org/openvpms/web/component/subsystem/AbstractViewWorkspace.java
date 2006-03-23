@@ -188,7 +188,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
                                     String conceptName) {
         Query query = QueryFactory.create(refModelName, entityName,
                                           conceptName);
-        return new Browser(query);
+        return new Browser(query, "name");
     }
 
     /**

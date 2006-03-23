@@ -10,8 +10,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.table.IMObjectTable;
-import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -36,19 +37,24 @@ public class Browser {
     private final Query _query;
 
     /**
+     * The node to sort on. May be <code>null</code>
+     */
+    private String _node;
+
+    /**
      * The browser component.
      */
     private Component _component;
 
     /**
-     * The table to display results.
+     * The paged table.
      */
-    private IMObjectTable _table;
+    private PagedIMObjectTable _table;
 
     /**
-     * Table navigation control.
+     * The model to render results.
      */
-    private TableNavigator _navigator;
+    private IMObjectTableModel _model;
 
     /**
      * The selected object.
@@ -76,6 +82,11 @@ public class Browser {
      */
     private static final String QUERY_ID = "query";
 
+    /**
+     * Maximum no. of rows to display.
+     */
+    private static final int ROWS = 15;
+
 
     /**
      * Construct a new <code>Browser</code> that queries IMObjects using the
@@ -84,7 +95,18 @@ public class Browser {
      * @param query the query
      */
     public Browser(Query query) {
-        this(query, new IMObjectTable());
+        this(query, null);
+    }
+
+    /**
+     * Construct a new <code>Browser</code> that queries IMObjects using the
+     * specified query.
+     *
+     * @param query the query
+     * @param node  the node to sort on. May be <code>null</code>
+     */
+    public Browser(Query query, String node) {
+        this(query, node, new DefaultIMObjectTableModel());
     }
 
     /**
@@ -92,18 +114,19 @@ public class Browser {
      * specified query, displaying them in the table.
      *
      * @param query the query
-     * @param table the table
+     * @param node  the node to sort on. May be <code>null</code>
+     * @param model the table model
      */
-    public Browser(Query query, IMObjectTable table) {
+    public Browser(Query query, String node, IMObjectTableModel model) {
         _query = query;
+        _node = node;
         _query.addQueryListener(new QueryListener() {
             public void query() {
                 onQuery();
             }
         });
-        _table = table;
+        _model = model;
     }
-
 
     /**
      * Returns the query component.
@@ -133,7 +156,7 @@ public class Browser {
      * @param object the object to select
      */
     public void setSelected(IMObject object) {
-        _table.setSelected(object);
+        _table.getTable().setSelected(object);
     }
 
     /**
@@ -142,7 +165,7 @@ public class Browser {
      * @return the objects matcing the query.
      */
     public List<IMObject> getObjects() {
-        return _table.getObjects();
+        return _model.getObjects();
     }
 
     /**
@@ -160,18 +183,18 @@ public class Browser {
     public void query() {
         getComponent();  // ensure the component is rendered.
 
-        List<IMObject> result = _query.query();
-        _table.setObjects(result);
-        if (result != null && result.size() > _table.getRowsPerPage()) {
-            // need to show the navigator in order to page through results.
-            // Place it before the table.
-            if (_component.indexOf(_navigator) == -1) {
-                int index = _component.indexOf(_table);
-                _component.add(_navigator, index);
-            }
-        } else {
-            _component.remove(_navigator);
+        ResultSet set = _query.query(ROWS, _node, true);
+        if (_table == null) {
+            _table = new PagedIMObjectTable(_model);
+            _table.getTable().addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onSelect();
+                }
+            });
+            _component.add(_table);
         }
+
+        _table.setResultSet(set);
     }
 
     /**
@@ -188,16 +211,8 @@ public class Browser {
             }
         });
 
-        _table.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onSelect();
-            }
-        });
-
-        _navigator = new TableNavigator(_table);
-
         Row row = RowFactory.create(CELLSPACING_STYLE, component, query);
-        _component = ColumnFactory.create(STYLE, row, _table);
+        _component = ColumnFactory.create(STYLE, row);
 
         if (_query.isAuto()) {
             query();
@@ -210,7 +225,8 @@ public class Browser {
      */
     private void onQuery() {
         query();
-        QueryBrowserListener[] listeners = _listeners.toArray(new QueryBrowserListener[0]);
+        QueryBrowserListener[] listeners
+                = _listeners.toArray(new QueryBrowserListener[0]);
         for (QueryBrowserListener listener : listeners) {
             listener.query();
         }
@@ -221,7 +237,7 @@ public class Browser {
      * listeners.
      */
     private void onSelect() {
-        _selected = _table.getSelected();
+        _selected = _table.getTable().getSelected();
         if (_selected != null) {
             QueryBrowserListener[] listeners
                     = _listeners.toArray(new QueryBrowserListener[0]);

@@ -6,10 +6,10 @@ import java.util.List;
 
 import echopointng.table.DefaultPageableSortableTableModel;
 import echopointng.table.PageableSortableTable;
-import echopointng.table.SortableTableColumn;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -70,7 +70,7 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
 
         TableColumnModel columns = new DefaultTableColumnModel();
         for (int i = 0; i < filtered.size(); ++i) {
-            columns.addColumn(new SortableTableColumn(i));
+            columns.addColumn(new TableColumn(i));
         }
         DefaultPageableSortableTableModel model = new DefaultPageableSortableTableModel(columns);
         for (int i = 0; i < filtered.size(); ++i) {

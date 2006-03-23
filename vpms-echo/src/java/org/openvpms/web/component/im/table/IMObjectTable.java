@@ -18,10 +18,15 @@ import org.openvpms.web.component.table.SortableTableHeaderRenderer;
 public class IMObjectTable extends Table {
 
     /**
+     * IMObject table model.
+     */
+    private final IMObjectTableModel _model;
+
+    /**
      * Construct a new <code>IMObjectTable</code>.
      */
     public IMObjectTable() {
-        this(new IMObjectTableModel());
+        this(new DefaultIMObjectTableModel());
     }
 
     /**
@@ -30,10 +35,12 @@ public class IMObjectTable extends Table {
      * @param model the table model
      */
     public IMObjectTable(IMObjectTableModel model) {
+        _model = model;
         setStyleName("default");
+        setAutoCreateColumnsFromModel(false);
+        setSelectionEnabled(true);
         setModel(model);
         setColumnModel(model.getColumnModel());
-        setSelectionEnabled(true);
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
         setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
     }
@@ -44,7 +51,7 @@ public class IMObjectTable extends Table {
      * @param objects the objects to display
      */
     public void setObjects(List<IMObject> objects) {
-        ((IMObjectTableModel) getModel()).setObjects(objects);
+        _model.setObjects(objects);
     }
 
     /**
@@ -53,7 +60,7 @@ public class IMObjectTable extends Table {
      * @return the object being displayed.
      */
     public List<IMObject> getObjects() {
-        return ((IMObjectTableModel) getModel()).getObjects();
+        return _model.getObjects();
     }
 
     /**
@@ -66,10 +73,9 @@ public class IMObjectTable extends Table {
         IMObject result = null;
         int index = getSelectionModel().getMinSelectedIndex();
         if (index != -1) {
-            IMObjectTableModel model = (IMObjectTableModel) getModel();
-            int row = model.getAbsRow(index);
-            if (row < model.getObjects().size()) {
-                result = model.getObject(row);
+            List<IMObject> objects = _model.getObjects();
+            if (index < objects.size()) {
+                result = objects.get(index);
             }
         }
         return result;
@@ -81,41 +87,10 @@ public class IMObjectTable extends Table {
      * @param object the object to select
      */
     public void setSelected(IMObject object) {
-        IMObjectTableModel model = (IMObjectTableModel) getModel();
         int index = getObjects().indexOf(object);
-        int minRow = model.getPage() * model.getRowsPerPage();
-        int maxRow = minRow + model.getRowsPerPage();
-        if (index >= minRow && index < maxRow) {
-            int offset = index - minRow;
-            getSelectionModel().setSelectedIndex(offset, true);
+        if (index != -1) {
+            getSelectionModel().setSelectedIndex(index, true);
         }
-    }
-
-    /**
-     * Adds an object to the table.
-     *
-     * @param object the object to add
-     */
-    public void add(IMObject object) {
-        ((IMObjectTableModel) getModel()).add(object);
-    }
-
-    /**
-     * Removes an object from the table.
-     *
-     * @param object the object to remove
-     */
-    public void remove(IMObject object) {
-        ((IMObjectTableModel) getModel()).remove(object);
-    }
-
-    /**
-     * Returns the no. of rows per page.
-     *
-     * @return the no. of rows per page
-     */
-    public int getRowsPerPage() {
-        return ((IMObjectTableModel) getModel()).getRowsPerPage();
     }
 
 }

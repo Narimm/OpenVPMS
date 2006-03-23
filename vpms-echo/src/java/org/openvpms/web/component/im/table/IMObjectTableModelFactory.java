@@ -22,14 +22,14 @@ public class IMObjectTableModelFactory {
      * @return a new table model
      */
     public static IMObjectTableModel create(NodeDescriptor descriptor) {
-        IMObjectTableModel result;
+        DefaultIMObjectTableModel result;
         List<ArchetypeDescriptor> archetypes;
         archetypes = DescriptorHelper.getArchetypeDescriptors(
                 descriptor.getArchetypeRange());
         if (EntityRelationshipTableModel.canHandle(archetypes)) {
             result = new EntityRelationshipTableModel();
         } else {
-            result = new IMObjectTableModel();
+            result = new DefaultIMObjectTableModel();
         }
         return result;
     }

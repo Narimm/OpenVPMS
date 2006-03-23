@@ -16,10 +16,11 @@ import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.component.im.table.PagedIMObjectTable;
 
 
 /**
@@ -38,7 +39,7 @@ public class CollectionViewer extends Column {
     /**
      * Collection to browse.
      */
-    private IMObjectTable _table;
+    private PagedIMObjectTable _table;
 
     /**
      * The node descriptor.
@@ -54,6 +55,11 @@ public class CollectionViewer extends Column {
      * Box to display child objects in.
      */
     private GroupBox _box;
+
+    /**
+     * No. of rows to display.
+     */
+    private int ROWS = 15;
 
 
     /**
@@ -84,47 +90,27 @@ public class CollectionViewer extends Column {
     protected void doLayout() {
         IMObjectTableModel model
                 = IMObjectTableModelFactory.create(_descriptor);
-        _table = new IMObjectTable(model);
-        _table.addActionListener(new ActionListener() {
+
+        Collection values = (Collection) _descriptor.getValue(_object);
+        List<IMObject> objects = new ArrayList<IMObject>();
+        for (Object value : values) {
+            objects.add((IMObject) value);
+        }
+        ResultSet set = new PreloadedResultSet(objects, ROWS);
+        _table = new PagedIMObjectTable(model, set);
+        _table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onBrowse();
             }
         });
         add(_table);
-
-        populate();
-    }
-
-    /**
-     * Populates the table.
-     */
-    protected void populate() {
-        Collection values = (Collection) _descriptor.getValue(_object);
-        int size = (values != null) ? values.size() : 0;
-        if (size != 0) {
-            List<IMObject> objects = new ArrayList<IMObject>();
-            for (Object value : values) {
-                objects.add((IMObject) value);
-            }
-            _table.setObjects(objects);
-
-            int rowsPerPage = _table.getRowsPerPage();
-            if (size > rowsPerPage) {
-                // display the navigator before the table
-                TableNavigator navigator = new TableNavigator(_table);
-                add(navigator);
-            }
-            add(_table);
-        } else {
-            _table.setObjects(new ArrayList<IMObject>());
-        }
     }
 
     /**
      * Browses the selected object.
      */
     protected void onBrowse() {
-        IMObject object = _table.getSelected();
+        IMObject object = _table.getTable().getSelected();
         if (object != null) {
             browse(object);
         }

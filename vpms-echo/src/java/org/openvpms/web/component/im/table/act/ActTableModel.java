@@ -7,7 +7,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -18,7 +18,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class ActTableModel extends IMObjectTableModel {
+public class ActTableModel extends DefaultIMObjectTableModel {
 
     /**
      * Start column index.
@@ -56,6 +56,30 @@ public class ActTableModel extends IMObjectTableModel {
     }
 
     /**
+     * Returns the node name associated with a column.
+     *
+     * @param column the column
+     * @return the name of the node associated with the column, or
+     *         <code>null</code>
+     */
+    @Override
+    public String getNode(int column) {
+        String node = null;
+        switch (column) {
+            case START_INDEX:
+                node = "estimationDate";
+                break;
+            case STATUS_INDEX:
+                node = "status";
+                break;
+            default:
+                node = super.getNode(column);
+                break;
+        }
+        return node;
+    }
+
+    /**
      * Helper to create a column model.
      *
      * @return a new column model
@@ -63,7 +87,7 @@ public class ActTableModel extends IMObjectTableModel {
     protected static TableColumnModel createColumnModel() {
         TableColumnModel model = new DefaultTableColumnModel();
         for (int i = 0; i < ACT_COLUMNS.length; ++i) {
-            TableColumn column = new SortableTableColumn(INDEXES[i]);
+            TableColumn column = new TableColumn(INDEXES[i]);
             String key = "table.act." + ACT_COLUMNS[i];
             String label = Messages.get(key);
 
@@ -100,5 +124,6 @@ public class ActTableModel extends IMObjectTableModel {
         }
         return result;
     }
+
 
 }

@@ -15,7 +15,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
@@ -146,8 +145,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void layoutWorkspace(Party customer, Component container) {
         _query = createQuery(customer);
-        IMObjectTable table = new IMObjectTable(new ActTableModel());
-        _acts = new Browser(_query, table);
+        _acts = new Browser(_query, "estimationDate", new ActTableModel());
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
                 selectFirst();

@@ -30,10 +30,11 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.table.IMObjectTable;
+import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-import org.openvpms.web.component.table.TableNavigator;
+import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -63,17 +64,12 @@ public class CollectionEditor implements Saveable {
     /**
      * Collection to edit.
      */
-    private IMObjectTable _table;
+    private PagedIMObjectTable _table;
 
     /**
      * The component representing this.
      */
     private Component _component;
-
-    /**
-     * Table navigator.
-     */
-    private TableNavigator _navigator;
 
     /**
      * The node descriptor.
@@ -124,6 +120,11 @@ public class CollectionEditor implements Saveable {
      * The column style.
      */
     private static final String COLUMN_STYLE = "CellSpacing";
+
+    /**
+     * The no. of rows to display.
+     */
+    private static final int ROWS = 15;
 
 
     /**
@@ -321,40 +322,16 @@ public class CollectionEditor implements Saveable {
 
         _component.add(row);
 
-        _table = createTable(_context);
-        _table.addActionListener(new ActionListener() {
+        _table = new PagedIMObjectTable(createTableModel(_context));
+        _table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEdit();
             }
         });
+
+        populateTable();
+
         _component.add(_table);
-
-        populate();
-    }
-
-    /**
-     * Populates the table.
-     */
-    protected void populate() {
-        List<IMObject> objects = getObjects();
-        int size = objects.size();
-        if (size != 0) {
-            _table.setObjects(objects);
-
-            int rowsPerPage = _table.getRowsPerPage();
-            if (_navigator == null && size > rowsPerPage) {
-                // display the navigator before the table
-                _navigator = new TableNavigator(_table);
-                _component.add(_navigator, _component.indexOf(_table));
-            } else if (_navigator != null && size <= rowsPerPage) {
-                _component.remove(_navigator);
-            }
-        } else {
-            _table.setObjects(new ArrayList<IMObject>());
-            if (_navigator != null) {
-                _component.remove(_navigator);
-            }
-        }
     }
 
     /**
@@ -376,15 +353,13 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
-     * Create a new table.
+     * Create a new table model.
      *
      * @param context the layout context
-     * @return a new table
+     * @return a new table model
      */
-    protected IMObjectTable createTable(LayoutContext context) {
-        IMObjectTableModel model
-                = IMObjectTableModelFactory.create(_descriptor);
-        return new IMObjectTable(model);
+    protected IMObjectTableModel createTableModel(LayoutContext context) {
+        return IMObjectTableModelFactory.create(_descriptor);
     }
 
     /**
@@ -412,7 +387,7 @@ public class CollectionEditor implements Saveable {
      * Deletes the selected object.
      */
     protected void onDelete() {
-        IMObject object = _table.getSelected();
+        IMObject object = _table.getTable().getSelected();
         if (object != null) {
             delete(object);
             _listeners.notifyListeners(this);
@@ -435,7 +410,7 @@ public class CollectionEditor implements Saveable {
      */
     protected void delete(IMObject object) {
         removeFromCollection(object);
-        _table.remove(object);
+        populateTable();
         _modified = true;
         if (_editor != null && _editor.getObject() == object) {
             removeEditor();
@@ -466,7 +441,7 @@ public class CollectionEditor implements Saveable {
      * Edits the selected object.
      */
     protected void onEdit() {
-        IMObject object = _table.getSelected();
+        IMObject object = _table.getTable().getSelected();
         if (object != null) {
             edit(object);
         }
@@ -514,6 +489,16 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
+     * Save any edits.
+     *
+     * @param editor the editor managing the object to save
+     * @return <code>true</code> if the save was successful
+     */
+    protected boolean save(IMObjectEditor editor) {
+        return _editor.save();
+    }
+
+    /**
      * Save any current edits.
      *
      * @return <code>true</code> if the save was successful; otherwise
@@ -524,15 +509,9 @@ public class CollectionEditor implements Saveable {
         if (_editor != null && _editor.isModified()) {
             if (save(_editor)) {
                 result = true;
+                populateTable();
                 IMObject object = _editor.getObject();
-                if (!_table.getObjects().contains(object)) {
-                    _table.add(object);
-                } else {
-                    // force a refresh of the object. Not very elegant...
-                    _table.remove(object);
-                    _table.add(object);
-                }
-                _table.setSelected(object);
+                _table.getTable().setSelected(object);
                 _listeners.notifyListeners(this);
             }
         } else {
@@ -542,13 +521,12 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
-     * Save any edits.
-     *
-     * @param editor the editor managing the object to save
-     * @return <code>true</code> if the save was successful
+     * Populates the table.
      */
-    protected boolean save(IMObjectEditor editor) {
-        return _editor.save();
+    private void populateTable() {
+        List<IMObject> objects = getObjects();
+        ResultSet set = new PreloadedResultSet(objects, ROWS);
+        _table.setResultSet(set);
     }
 
     /**

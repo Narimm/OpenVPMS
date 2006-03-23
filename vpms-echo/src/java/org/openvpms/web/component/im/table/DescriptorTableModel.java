@@ -22,7 +22,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class DescriptorTableModel extends IMObjectTableModel {
+public class DescriptorTableModel extends DefaultIMObjectTableModel {
 
     /**
      * The layout context.
@@ -49,7 +49,7 @@ public class DescriptorTableModel extends IMObjectTableModel {
      * @param context     the layout context
      * @return a new model
      */
-    public static IMObjectTableModel create(List<NodeDescriptor> descriptors,
+    public static DefaultIMObjectTableModel create(List<NodeDescriptor> descriptors,
                                             LayoutContext context) {
         return new DescriptorTableModel(create(descriptors), context);
     }
@@ -75,7 +75,7 @@ public class DescriptorTableModel extends IMObjectTableModel {
     public static void create(List<NodeDescriptor> descriptors,
                               TableColumnModel columns) {
         // determine a unique starting index for the columns
-        int index = IMObjectTableModel.NEXT_INDEX;
+        int index = DefaultIMObjectTableModel.NEXT_INDEX;
         Iterator iterator = columns.getColumns();
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
@@ -109,10 +109,31 @@ public class DescriptorTableModel extends IMObjectTableModel {
     }
 
     /**
+     * Returns the node name associated with a column.
+     *
+     * @param column the column
+     * @return the name of the node associated with the column, or
+     *         <code>null</code>
+     */
+    @Override
+    public String getNode(int column) {
+        String node = null;
+        TableColumn col = getColumn(column);
+        if (col instanceof DescriptorTableColumn) {
+            NodeDescriptor descriptor
+                    = ((DescriptorTableColumn) col).getDescriptor();
+            node = descriptor.getName();
+        } else {
+            node = super.getNode(column);
+        }
+        return node;
+    }
+
+    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
-     * @param column
+     * @param column the table column
      * @param row    the table row
      */
     @Override
