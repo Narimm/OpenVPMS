@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.table.AbstractSortableTableModel;
 
 
 /**
@@ -18,7 +18,7 @@ import org.openvpms.web.component.table.AbstractSortableTableModel;
  * @version $LastChangedDate$
  */
 public abstract class AbstractIMObjectTableModel
-        extends AbstractSortableTableModel implements IMObjectTableModel {
+        extends AbstractTableModel implements IMObjectTableModel {
 
     /**
      * The column model.
@@ -30,10 +30,6 @@ public abstract class AbstractIMObjectTableModel
      */
     private List<IMObject> _objects = new ArrayList<IMObject>();
 
-    /**
-     * The object ids.
-     */
-    private List<Object> _ids = new ArrayList<Object>();
 
     /**
      * Construct a new <code>AbstractIMObjectTableModel</code>.
@@ -69,14 +65,8 @@ public abstract class AbstractIMObjectTableModel
      */
     public void setObjects(List<IMObject> objects) {
         _objects.clear();
-        _ids.clear();
         _objects = objects;
-        _ids = new ArrayList<Object>(objects);
-        if (getSortColumn() != -1) {
-            sort(getSortColumn(), isSortedAscending());
-        } else {
-            fireTableDataChanged();
-        }
+        fireTableDataChanged();
     }
 
     /**
@@ -89,13 +79,13 @@ public abstract class AbstractIMObjectTableModel
     }
 
     /**
-     * Return the object at the given sbsolute row.
+     * Return the object at the given row.
      *
      * @param row the row
      * @return the object at <code>row</code>
      */
     public IMObject getObject(int row) {
-        return (IMObject) _ids.get(row);
+        return _objects.get(row);
     }
 
     /**
@@ -130,24 +120,6 @@ public abstract class AbstractIMObjectTableModel
      * @return the value at the given coordinate.
      */
     protected abstract Object getValue(IMObject object, int column, int row);
-
-    /**
-     * Returns the row identifiers.
-     *
-     * @return the row identifiers.
-     */
-    protected List<Object> getRowIds() {
-        return _ids;
-    }
-
-    /**
-     * Sets the row identifiers.
-     *
-     * @param ids the row identifiers
-     */
-    protected void setRowIds(List<Object> ids) {
-        _ids = ids;
-    }
 
     /**
      * Returns a column given its model index.

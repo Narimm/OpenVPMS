@@ -13,9 +13,9 @@ import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
-import org.openvpms.web.component.im.query.PreloadedResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.PageableTableModel;
+import org.openvpms.web.component.table.SortableTableModel;
 
 
 /**
@@ -26,7 +26,7 @@ import org.openvpms.web.component.table.PageableTableModel;
  */
 public class PagedIMObjectTableModel
         extends AbstractTableModel
-        implements PageableTableModel, IMObjectTableModel {
+        implements PageableTableModel, SortableTableModel, IMObjectTableModel {
 
     /**
      * The result set.
@@ -215,15 +215,13 @@ public class PagedIMObjectTableModel
      *                  otherwise sort it in <code>descebding</code> order
      */
     public void sort(int column, boolean ascending) {
-        if (!(_set instanceof PreloadedResultSet)) {
-            String node = getNode(column);
-            if (node != null) {
-                _sortColumn = column;
-                _set.sort(node, ascending);
-                setPage(0);
-            } else {
-                _sortColumn = -1;
-            }
+        String node = getNode(column);
+        if (node != null) {
+            _sortColumn = column;
+            _set.sort(node, ascending);
+            setPage(0);
+        } else {
+            _sortColumn = -1;
         }
     }
 
