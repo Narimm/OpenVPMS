@@ -60,6 +60,8 @@ public class PagedIMObjectTable extends Column {
         if (model.getPages() > 1) {
             if (_navigator == null) {
                 _navigator = new TableNavigator(_table);
+            }
+            if (indexOf(_navigator) == -1) {
                 add(_navigator, 0);
             }
         } else {
