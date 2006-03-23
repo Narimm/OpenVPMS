@@ -3,9 +3,9 @@ package org.openvpms.web.component.im.table;
 import java.util.List;
 
 import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.table.SortableTableModel;
 
 
 /**
@@ -14,7 +14,7 @@ import org.openvpms.web.component.table.SortableTableModel;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectTableModel extends SortableTableModel {
+public interface IMObjectTableModel extends TableModel {
 
     /**
      * Returns the objects being displayed.

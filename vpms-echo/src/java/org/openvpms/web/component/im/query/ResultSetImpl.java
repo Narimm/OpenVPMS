@@ -9,7 +9,7 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Paged query.
+ * Query result set.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$

@@ -20,11 +20,11 @@ public interface ResultSet extends ListIterator<IPage<IMObject>> {
     void reset();
 
     /**
-     * Sort the set.
+     * Sorts the set.
      * This resets the iterator.
      *
      * @param node the node to sort on
-     * @param ascending if <code>true</code> sort the column ascending order;
+     * @param ascending if <code>true</code> sort the set in ascending order;
      *                  otherwise sort it in <code>descebding</code> order
      */
     void sort(String node, boolean ascending);
