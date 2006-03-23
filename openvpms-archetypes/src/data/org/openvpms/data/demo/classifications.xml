@@ -15,6 +15,8 @@
 	<data archetype="classification.customerType" name="Large Animal" />
 	<data archetype="classification.customerType" name="Stud" />
 	<data archetype="classification.customerType" name="Farm" />
+	<data archetype="classification.insurance" name="PetsFirst" />
+	<data archetype="classification.insurance" name="VetPlan" />
 	<data archetype="classification.paymentType" name="Cash" />
 	<data archetype="classification.paymentType" name="Cheque" />
 	<data archetype="classification.paymentType" name="Credit" />
@@ -34,6 +36,12 @@
 	<data archetype="classification.productIncomeType" name="Medication" />
 	<data archetype="classification.productIncomeType" name="Merchandise" />
 	<data archetype="classification.productIncomeType" name="Other" />
+	<data archetype="classification.species" species="Canine" />
+	<data archetype="classification.species" species="Feline" />
+	<data archetype="classification.species" species="Equine" />
+	<data archetype="classification.species" species="Bovine" />
+	<data archetype="classification.species" species="Porcine" />
+	<data archetype="classification.species" species="Avian" />
 	<data archetype="classification.supplierType" name="Wholesaler" />
 	<data archetype="classification.supplierType" name="Manufacturer" />
 	<data archetype="classification.supplierType" name="Retail" />
