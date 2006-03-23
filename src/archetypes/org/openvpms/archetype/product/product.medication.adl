@@ -13,14 +13,6 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="printedName" path="/details/attributes/printedName" type="java.lang.String"
 				minCardinality="0" />
-			<node name="species" path="/details/attributes/species" type="java.lang.String"
-				minCardinality="0">
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="concept" value="species" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
 			<node name="drugSchedule" path="/details/attributes/drugSchedule" type="java.lang.String"
 				minCardinality="0">
 				<assertion name="lookup.local">
@@ -135,8 +127,22 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+		<node name="species" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.species" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.species" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
 		<node name="classifications" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.product*" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -149,7 +155,20 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.insuranceGroup" />
+							value="classification.productIncomeType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="insurance" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.insurance" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.insurance" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

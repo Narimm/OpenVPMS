@@ -35,32 +35,22 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="prices" path="/productPrices" parentChild="true"
-			type="java.util.HashSet" baseName="ProductPrice" minCardinality="0" maxCardinality="*">
+		<node name="species" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.species" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="productPrice.fixedPrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="productPrice.minimumPrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="productPrice.maximumPrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="productPrice.defaultPrice" />
+							value="classification.species" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
 		<node name="classifications" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.product*" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -73,7 +63,7 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.insuranceGroup" />
+							value="classification.productIncomeType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
