@@ -1,10 +1,20 @@
 package org.openvpms.web.component.im.query;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.search.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -46,6 +56,11 @@ public class ResultSetImpl extends AbstractResultSet {
      */
     private SortCriteria _order;
 
+    /**
+     * The logger.
+     */
+    private final Log _log = LogFactory.getLog(ResultSetImpl.class);
+
 
     /**
      * Construct a new <code>ResultSetImpl</code>.
@@ -70,7 +85,9 @@ public class ResultSetImpl extends AbstractResultSet {
         _conceptName = conceptName;
         _instanceName = instanceName;
         _activeOnly = activeOnly;
-        _order = order;
+        if (order != null && isValidSortNode(order.getSortNode())) {
+            _order = order;
+        }
 
         reset();
     }
@@ -86,8 +103,9 @@ public class ResultSetImpl extends AbstractResultSet {
         SortCriteria.SortDirection direction = (ascending)
                                                ? SortCriteria.SortDirection.Ascending
                                                : SortCriteria.SortDirection.Descending;
-
-        _order = new SortCriteria(node, direction);
+        if (isValidSortNode(node)) {
+            _order = new SortCriteria(node, direction);
+        }
         reset();
     }
 
@@ -122,9 +140,62 @@ public class ResultSetImpl extends AbstractResultSet {
      *         if none exists
      */
     protected IPage<IMObject> getPage(PagingCriteria criteria) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        return service.get(_refModelName, _entityName, _conceptName,
-                           _instanceName, true, _activeOnly, criteria, _order);
+        IPage<IMObject> result = null;
+        try {
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            result = service.get(_refModelName, _entityName, _conceptName,
+                                 _instanceName, true, _activeOnly, criteria, _order);
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
+        return result;
     }
+
+    /**
+     * Determines if a node can be sorted on.
+     *
+     * @param node the node
+     * @return <code>true</code> if the node can be sorted on, otherwise
+     *         <code>false</code>
+     */
+    private boolean isValidSortNode(String node) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<ArchetypeDescriptor> archetypes = getArchetypes(service);
+        NodeDescriptor descriptor = null;
+
+        for (ArchetypeDescriptor archetype : archetypes) {
+            descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor == null) {
+                _log.warn("Can't sort results on node=" + node
+                          + ". Node not supported by archetype="
+                          + archetype.getName());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns all archetypes matching the reference model, entity and concept
+     * names.
+     *
+     * @param service the archetype service
+     * @return the archetypes matching the names
+     */
+    private List<ArchetypeDescriptor> getArchetypes(IArchetypeService service) {
+        List<String> shortNames = service.getArchetypeShortNames(
+                _refModelName, _entityName, _conceptName, true);
+        List<ArchetypeDescriptor> archetypes
+                = new ArrayList<ArchetypeDescriptor>(shortNames.size());
+        for (String shortName : shortNames) {
+            ArchetypeDescriptor archetype = service.getArchetypeDescriptor(shortName);
+            if (archetype != null) {
+                archetypes.add(archetype);
+            }
+        }
+
+        return archetypes;
+    }
+
 
 }
