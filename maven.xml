@@ -20,7 +20,7 @@
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
 		<ant:java
-        	classname="org.openvpms.tools.data.loader.ArchetypeDataLoader"
+        	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
 	        failonerror="true"
 	        maxmemory="512m"
     	    fork="true">
