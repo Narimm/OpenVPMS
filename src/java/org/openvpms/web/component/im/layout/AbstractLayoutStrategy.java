@@ -13,6 +13,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +30,7 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -198,6 +200,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             labels[i] = descriptor.getDisplayName();
             Component component = createComponent(object, descriptor, context);
             setTabIndex(component, context);
+            if (component instanceof SelectField) {
+                // workaround for render bug in firefox. See OVPMS-239 
+                component = RowFactory.create(component);
+            }
             components[i] = component;
         }
 
