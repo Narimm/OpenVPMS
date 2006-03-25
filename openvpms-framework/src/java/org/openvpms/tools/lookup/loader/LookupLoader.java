@@ -317,7 +317,7 @@ public class LookupLoader {
         params.put("value", value);
         
         List<IMObject> result = archetypeService.getByNamedQuery(
-                "lookup.getLookupForConceptAndValue", params);
+                "lookup.getLookupForConceptAndValue", params, null).getRows();
         
         return (Lookup)(result.size() > 0 ? result.get(0) : null);
     }
@@ -346,7 +346,7 @@ public class LookupLoader {
                 .toString());
         
         List<IMObject> result = archetypeService.getByNamedQuery(
-                "lookupRelationship.getTargetLookups", params);
+                "lookupRelationship.getTargetLookups", params, null).getRows();
         for (IMObject imobj : result) {
             if (target.equals((Lookup)imobj)) {
                 return true;

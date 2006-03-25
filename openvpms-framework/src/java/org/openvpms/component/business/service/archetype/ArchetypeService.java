@@ -34,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 // openvpms-framework
-import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -325,47 +324,11 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String,
      *      java.lang.String, java.lang.String, java.lang.String)
      */
-    public List<IMObject> get(String rmName, String entityName,
-            String conceptName, String instanceName, boolean activeOnly) {
-        return get(rmName, entityName, conceptName, instanceName, false, activeOnly);
-    }
-    
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String)
-     */
-    public List<IMObject> get(String rmName, String entityName,
-            String conceptName, String instanceName, boolean primaryOnly,
-            boolean activeOnly) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.get: rmName " + rmName
-                    + " entityName " + entityName
-                    + " conceptName " + conceptName
-                    + " instanceName " + instanceName);
-        }
-        
-        List<IMObject> results = new ArrayList<IMObject>();
-        DistinctTypesResultSet resultSet = getDistinctTypes(rmName, entityName, 
-                conceptName, primaryOnly);
-        
-        for (ArchetypeDescriptor adesc : resultSet.descriptors) {
-            try {
-                List<IMObject> objects = dao.get(rmName, entityName,
-                        conceptName, instanceName, adesc.getClassName(), 
-                        activeOnly);
-                results.addAll(objects);
-            } catch (IMObjectDAOException exception) {
-                logger.error("ArchetypeService.get", new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.FailedToFindObjects,
-                        new Object[] { rmName, entityName, conceptName,
-                                instanceName }, exception)); 
-            }
-        }
-
-        return results;
+    public IPage<IMObject> get(String rmName, String entityName,
+            String conceptName, String instanceName, boolean activeOnly, 
+            PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
+        return get(rmName, entityName, conceptName, instanceName, false, 
+                activeOnly, pagingCriteria, sortCriteria);
     }
     
     /* (non-Javadoc)
@@ -376,9 +339,7 @@ public class ArchetypeService implements IArchetypeService {
             logger.debug("ArchetypeService.get: rmName " + rmName
                     + " entityName " + entityName
                     + " conceptName " + conceptName
-                    + " instanceName " + instanceName
-                    + " firstRow " + pagingCriteria.getFirstRow()
-                    + " numOfRows " + pagingCriteria.getNumOfRows());
+                    + " instanceName " + instanceName);
         }
         
         IPage<IMObject> page = null;
@@ -391,134 +352,44 @@ public class ArchetypeService implements IArchetypeService {
             page = dao.get(rmName, entityName, conceptName, instanceName, 
                     distinct.types.iterator().next(), activeOnly, pagingCriteria, 
                     getSortProperty(distinct.descriptors, sortCriteria), 
-                    getSortDirection(sortCriteria));
+                    isAscending(sortCriteria));
         } else {
-            // TODO At the moment we are outputting an error but this 
-            // scenario shouldn't really occur. If it does then we need
-            // to cache the complete result set and do the sort and paging
-            // in memory......don't really want there are the moment.
-            logger.error("Cannot page a result set for the following archetypes " 
-                    + distinct.descriptors.toString());
-            List<IMObject> results = new ArrayList<IMObject>();
-            for (ArchetypeDescriptor adesc : distinct.descriptors) {
-                try {
-                    List<IMObject> objects = dao.get(rmName, entityName,
-                            conceptName, instanceName, adesc.getClassName(), 
-                            activeOnly);
-                    results.addAll(objects);
-                } catch (IMObjectDAOException exception) {
-                    logger.error("ArchetypeService.get", new ArchetypeServiceException(
-                            ArchetypeServiceException.ErrorCode.FailedToFindObjects,
-                            new Object[] { rmName, entityName, conceptName,
-                                    instanceName }, exception)); 
-                }
-            }
-            
-            page = new Page<IMObject>(results, 
-                    new PagingCriteria(0, results.size()), 
-                    results.size());
+            // We do not support a search across different classes
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.CanOnlySearchAgainstSingleType,
+                    new Object[] {distinct.types.toString()});
         }
 
         return page;
     }
 
-    /**
-     * Return the sort direction given a sort criteria
-     * 
-     * @param sortCriteria
-     *            the sort criteria
-     * @return SortDirection            
-     */
-    private SortCriteria.SortDirection getSortDirection(SortCriteria sortCriteria) {
-        if (sortCriteria == null) {
-            return SortCriteria.SortDirection.Ascending;
-        }
-        
-        return sortCriteria.getSortDirection();
-    }
-    
-    /**
-     * Search for a the specified node in the archetype descriptor and then 
-     * derive the sort property. A sort property can only be a top level 
-     * property in the adesc (i.e. have a simple path). If the node does not
-     * exist or the node exisits but it is not a top level node then raise an
-     * exception. In addition if more than one archetype is specified then 
-     * the sort property must be defined in all the archetypes.
-     * 
-     * @param adesc
-     *            the archetype descriptor
-     * @param sortCriteria
-     *            the sort criteris
-     * @return String
-     *            the sort property
-     * @throws ArchetypeServiceException            
-     */
-    private String getSortProperty(Set<ArchetypeDescriptor> adescs, SortCriteria sortCriteria) {
-        if (sortCriteria == null) {
-            return null;
-        }
-        
-        // ensure the property is defined in all archetypes
-        String sortNode = sortCriteria.getSortNode();
-        NodeDescriptor ndesc = null;
-        String property = null;
-        
-        for (ArchetypeDescriptor adesc : adescs) {
-            ndesc = adesc.getNodeDescriptor(sortNode);
-            if (ndesc == null) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.InvalidSortProperty,
-                        new Object[] { sortNode });
-            }
-            
-            // stip the leading /, if it exists
-            String aprop = ndesc.getPath();
-            if (aprop.startsWith("/")) {
-                aprop = ndesc.getPath().substring(1);
-            }
-            
-            // now check for any more / characters
-            if (aprop.contains("/")) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.CannotSortOnProperty,
-                        new Object[] { sortNode });
-            }
-            
-            // now check that all archetypes refer to the same property
-            if ((property != null) &&
-                !(property.equals(aprop))) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.SortPropertyNotSupported,
-                        new Object[] { sortNode });
-            }
-            property = aprop;
-        }
-        
-        return property;
-    }
-
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[])
      */
-    public List<IMObject> get(String[] shortNames, boolean activeOnly) {
+    public IPage<IMObject> get(String[] shortNames, boolean activeOnly, 
+            PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.get: shortNames " + shortNames);
         }
         
-        List<IMObject> results = new ArrayList<IMObject>();
-        for (String shortName : shortNames) {
-            
-            ArchetypeDescriptor adesc =  dCache.getArchetypeDescriptor(shortName);
-            if (adesc == null) {
-                continue;
-            }
-            ArchetypeId aid = adesc.getType();
-            List<IMObject> objects = get(aid.getRmName(), aid.getEntityName(), 
-                    aid.getConcept(), null, activeOnly);
-            results.addAll(objects);
-        }
+        IPage<IMObject> page = null;
+        DistinctTypesResultSet distinct = getDistinctTypes(shortNames, false); 
         
-        return results;
+        if (distinct.types.size() == 1) {
+            // We can only let the database do the sorting and paging if
+            // a single type is represented by the client request.
+            page = dao.get(shortNames, null, distinct.types.iterator().next(), 
+                    activeOnly, pagingCriteria, 
+                    getSortProperty(distinct.descriptors, sortCriteria), 
+                    isAscending(sortCriteria));
+        } else {
+            // We do not support a search across different classes
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.CanOnlySearchAgainstSingleType,
+                    new Object[] {distinct.types.toString()});
+        }
+
+        return page;
     }
 
     /*
@@ -561,62 +432,39 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[], java.lang.String, boolean, boolean)
      */
-    public List<IMObject> get(String[] shortNames, String instanceName, 
-            boolean primaryOnly, boolean activeOnly) {
+    public IPage<IMObject> get(String[] shortNames, String instanceName, 
+            boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria, 
+            SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.get: shortNames " + shortNames
                     + " instanceName " + instanceName);
         }
         
-        List<IMObject> results =  new ArrayList<IMObject>();
-        if ((shortNames != null) &&
-            (shortNames.length > 0)) {
-            
-            // first go through the list of short names and translate '*' to
-            // '.*' to perform the regular expression matches
-            String[] modShortNames = new String[shortNames.length];
-            for (int index = 0; index < shortNames.length; index++) {
-                modShortNames[index] = shortNames[index]
-                              .replace(".", "\\.")
-                              .replace("*", ".*");
-            }
-            
-            // TODO if may be best to do this in the DAO since with many 
-            // arhetypes this will be very inefficient
-            for (String archetypeShortName : dCache.getArchetypeShortNames()) {
-                for (String shortName : modShortNames) {
-                    // iterate to see whether the short name matches any of the 
-                    // specified shortName. A specified short name may contain 
-                    // wild card characters. 
-                    if (archetypeShortName.matches(shortName)) {
-                        ArchetypeDescriptor adesc = getArchetypeDescriptor(archetypeShortName);
-                        ArchetypeId id = adesc.getType();
-
-                        // if the primaryFlag has been specified check that 
-                        // the archetype meets that constaint.
-                        if ((primaryOnly) &&
-                            (!adesc.isPrimary())) { 
-                            break;
-                        }
-
-                        // if we get here then call the dao
-                        List<IMObject> objects = dao.get(id.getRmName(), 
-                                id.getEntityName(), id.getConcept(), 
-                                instanceName, adesc.getClassName(), activeOnly);
-                        results.addAll(objects);
-                        break;
-                    }
-                }
-            }
-        }
+        IPage<IMObject> page = null;
+        DistinctTypesResultSet distinct = getDistinctTypes(shortNames, primaryOnly); 
         
-        return results;
+        if (distinct.types.size() == 1) {
+            // We can only let the database do the sorting and paging if
+            // a single type is represented by the client request.
+            page = dao.get(shortNames, instanceName, distinct.types.iterator().next(), 
+                    activeOnly, pagingCriteria, 
+                    getSortProperty(distinct.descriptors, sortCriteria), 
+                    isAscending(sortCriteria));
+        } else {
+            // We do not support a search across different classes
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.CanOnlySearchAgainstSingleType,
+                    new Object[] {distinct.types.toString()});
+        }
+
+        return page;
     }
 
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getByNamedQuery(java.lang.String, java.util.Map)
      */
-    public List<IMObject> getByNamedQuery(String name, Map<String, Object> params) {
+    public IPage<IMObject> getByNamedQuery(String name, Map<String, Object> params, 
+            PagingCriteria pagingCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.getByNamedQuery: query " + name);
         }
@@ -634,7 +482,7 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         try {
-            return dao.getByNamedQuery(name, params);
+            return dao.getByNamedQuery(name, params, pagingCriteria, null, true);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedInGetByNamedQuery,
@@ -759,7 +607,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
-    public List<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+    public IPage<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (ref == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
@@ -774,7 +622,8 @@ public class ArchetypeService implements IArchetypeService {
 
         try {
             return dao.getActs(ref, pConceptName, entityName, aConceptName, startTimeFrom, 
-                    startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
+                    startTimeThru, endTimeFrom, endTimeThru, status, activeOnly, 
+                    pagingCriteria, sortCriteria.getSortNode(), isAscending(sortCriteria));
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetActForEntity,
@@ -785,7 +634,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
-    public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly) {
+    public IPage<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.getActs: "  
                     + " entityName " + entityName
@@ -800,7 +649,8 @@ public class ArchetypeService implements IArchetypeService {
         
         try {
             return dao.getActs(entityName, conceptName, startTimeFrom, 
-                    startTimeThru, endTimeFrom, endTimeThru, status, activeOnly);
+                    startTimeThru, endTimeFrom, endTimeThru, status, activeOnly, 
+                    pagingCriteria, sortCriteria.getSortNode(), isAscending(sortCriteria));
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetActs,
@@ -811,7 +661,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getParticipations(long, java.lang.String, java.util.Date, java.util.Date, boolean)
      */
-    public List<Participation> getParticipations(IMObjectReference ref, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly) {
+    public IPage<Participation> getParticipations(IMObjectReference ref, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (ref == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.EntityUidNotSpecified);
@@ -824,7 +674,8 @@ public class ArchetypeService implements IArchetypeService {
 
         try {
             return dao.getParticipations(ref, conceptName, startTimeFrom, 
-                    startTimeThru, endTimeFrom, endTimeThru, activeOnly);
+                    startTimeThru, endTimeFrom, endTimeThru, activeOnly,
+                    pagingCriteria, sortCriteria.getSortNode(), isAscending(sortCriteria));
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetParticipations,
@@ -1072,6 +923,82 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
+     * Check whether the sort direction is ascending
+     * 
+     * @param sortCriteria
+     *            the sort criteria
+     * @return boolean
+     *            true if ascending            
+     */
+    private boolean isAscending(SortCriteria sortCriteria) {
+        if (sortCriteria == null) {
+            return true;
+        }
+        
+        return sortCriteria.isAscending();
+    }
+    
+    /**
+     * Search for a the specified node in the archetype descriptor and then 
+     * derive the sort property. A sort property can only be a top level 
+     * property in the adesc (i.e. have a simple path). If the node does not
+     * exist or the node exisits but it is not a top level node then raise an
+     * exception. In addition if more than one archetype is specified then 
+     * the sort property must be defined in all the archetypes.
+     * 
+     * @param adesc
+     *            the archetype descriptor
+     * @param sortCriteria
+     *            the sort criteris
+     * @return String
+     *            the sort property
+     * @throws ArchetypeServiceException            
+     */
+    private String getSortProperty(Set<ArchetypeDescriptor> adescs, SortCriteria sortCriteria) {
+        if (sortCriteria == null) {
+            return null;
+        }
+        
+        // ensure the property is defined in all archetypes
+        String sortNode = sortCriteria.getSortNode();
+        NodeDescriptor ndesc = null;
+        String property = null;
+        
+        for (ArchetypeDescriptor adesc : adescs) {
+            ndesc = adesc.getNodeDescriptor(sortNode);
+            if (ndesc == null) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.InvalidSortProperty,
+                        new Object[] { sortNode });
+            }
+            
+            // stip the leading /, if it exists
+            String aprop = ndesc.getPath();
+            if (aprop.startsWith("/")) {
+                aprop = ndesc.getPath().substring(1);
+            }
+            
+            // now check for any more / characters
+            if (aprop.contains("/")) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.CannotSortOnProperty,
+                        new Object[] { sortNode });
+            }
+            
+            // now check that all archetypes refer to the same property
+            if ((property != null) &&
+                !(property.equals(aprop))) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.SortPropertyNotSupported,
+                        new Object[] { sortNode });
+            }
+            property = aprop;
+        }
+        
+        return property;
+    }
+
+    /**
      * Iterate through all the nodes in the archetype definition and create the
      * default object.
      * 
@@ -1163,44 +1090,37 @@ public class ArchetypeService implements IArchetypeService {
      *            the concept name (complete )            
      * @param primaryOnly
      *            determines whether to restrict processing to primary only            
-     * @return List<ArchetypeDescriptor> a list of types
+     * @return DistinctTypesResultSet
      */
     @SuppressWarnings("unchecked")
     private DistinctTypesResultSet getDistinctTypes(String rmName, String entityName,
             String concept, boolean primaryOnly) {
         DistinctTypesResultSet results = new DistinctTypesResultSet();
         
-        // adjust the reference model name
+        String modRmName = (rmName == null) ? null : 
+            rmName.replace(".", "\\.").replace("*", ".*");
+        String modEntityName = (entityName == null) ? null : 
+            entityName.replace(".", "\\.").replace("*", ".*");
+        String modConcept = (concept == null) ? null :
+            concept.replace(".", "\\.").replace("*", ".*");
+        
+        // search through the cache for matching archetype descriptors
         for (ArchetypeDescriptor desc : dCache.getArchetypeDescriptors()) {
             ArchetypeId archId = desc.getType();
-            if (StringUtils.isEmpty(rmName)) {
-                // a null or empty rmName is a no match
-                continue;
-            }
-            
             if ((primaryOnly) &&
                 (desc.isPrimary() == false)) {
                 continue;
             }
 
-            String modRmName = rmName.replace(".", "\\.").replace("*", ".*");
-            if (archId.getRmName().matches(modRmName)) {
-                String modEntityName = (entityName == null) ? null : 
-                    entityName.replace(".", "\\.").replace("*", ".*");
-                // reference model name matches
-                if ((StringUtils.isEmpty(modEntityName)) || 
-                    (archId.getEntityName().matches(modEntityName))) {
-                    String modConcept = (concept == null) ? null :
-                        concept.replace(".", "\\.").replace("*", ".*");
-                    // entity name matches
-                    if ((StringUtils.isEmpty(modConcept)) || 
-                        (archId.getConcept().matches(modConcept))) {
-                        results.descriptors.add(desc);
-                        if (!results.types.contains(desc.getClassName())) {
-                            // new class name so add
-                            results.types.add(desc.getClassName());
-                        }
-                    }
+            if (((StringUtils.isEmpty(modRmName)) ||
+                 (archId.getRmName().matches(modRmName))) &&
+                ((StringUtils.isEmpty(modEntityName)) || 
+                 (archId.getEntityName().matches(modEntityName))) &&
+                ((StringUtils.isEmpty(modConcept)) || 
+                 (archId.getConcept().matches(modConcept)))) {
+                results.descriptors.add(desc);
+                if (!results.types.contains(desc.getClassName())) {
+                    results.types.add(desc.getClassName());
                 }
             }
         }
@@ -1208,6 +1128,55 @@ public class ArchetypeService implements IArchetypeService {
         return results;
     }
 
+
+    /**
+     * Iterate through all the archetype short names and return the distinct 
+     * types.
+     * 
+     * @param shortNames
+     *            a list of short names to search against
+     * @param primaryOnly
+     *            determines whether to restrict processing to primary only            
+     * @return DistinctTypesResultSet
+     */
+    @SuppressWarnings("unchecked")
+    private DistinctTypesResultSet getDistinctTypes(String[] shortNames, boolean primaryOnly) {
+        DistinctTypesResultSet results = new DistinctTypesResultSet();
+
+        if ((shortNames == null) ||
+            (shortNames.length == 0)) {
+            return results;
+        }
+        
+        // first go through the list of short names and translate '*' to
+        // '.*' to perform the regular expression matches
+        String[] modShortNames = new String[shortNames.length];
+        for (int index = 0; index < shortNames.length; index++) {
+            modShortNames[index] = shortNames[index]
+                          .replace(".", "\\.")
+                          .replace("*", ".*");
+        }
+        // adjust the reference model name
+        for (String name : dCache.getArchetypeShortNames()) {
+            ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(name); 
+            if ((primaryOnly) &&
+                (!desc.isPrimary())) {
+                    continue;
+            }
+            
+            for (String modShortName : modShortNames) {
+                if (name.matches(modShortName)) {
+                    results.descriptors.add(desc);
+                    if (!results.types.contains(desc.getClassName())) {
+                        results.types.add(desc.getClassName());
+                    }
+                    break;
+                }
+            }
+        }
+
+        return results;
+    }
     
     /**
      * Private anonymous class to hold the results of {@link getDistinctTypes}

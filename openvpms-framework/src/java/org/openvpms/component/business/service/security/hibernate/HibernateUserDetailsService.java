@@ -68,7 +68,7 @@ public class HibernateUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException, DataAccessException {
         List<IMObject> user = dao.get("system", "security",
-                "user", username, User.class.getName(), true);
+                "user", username, User.class.getName(), true, null, null, true).getRows();
         if (user.size() == 0) {
             throw new UsernameNotFoundException("User: " + username + 
                     " is invalid.");

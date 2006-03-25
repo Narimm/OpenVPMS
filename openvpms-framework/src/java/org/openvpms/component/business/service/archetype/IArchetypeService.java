@@ -120,7 +120,7 @@ public interface IArchetypeService {
     /**
      * Return all the {@link ArchetypeDescriptor} managed by this service
      * 
-     * @return ArchetypeDescriptor[]
+     * @return List<ArchetypeDescriptor>
      * @throws ArchetypeServiceException
      *            runtime error, which is thrown if the request cannot be completed
      */
@@ -214,12 +214,17 @@ public interface IArchetypeService {
      *            the particular instance name
      * @param activeOnly
      *            whether to retrieve only the active objects            
-     * @return List<IMObject>                                   
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
-    public List<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName, boolean activeOnly);
+    public IPage<IMObject> get(String rmName, String entityName, 
+            String conceptName, String instanceName, boolean activeOnly,
+            PagingCriteria pagingCriteria, SortCriteria sortCriteria);
     
     /**
      * Uses the specified criteria to return zero, one or more matching . 
@@ -267,44 +272,6 @@ public interface IArchetypeService {
             SortCriteria sortCriteria);
     
     /**
-     * Uses the specified criteria to return zero, one or more matching . 
-     * entities. This is a very generic query which will constrain the 
-     * returned set on one or more of the supplied values.
-     * <p>
-     * Each of the parameters can denote an exact match or a partial match. If
-     * a partial match is required then the last character of the value must be
-     * a '*'. In every other case the search will look for an exact match.
-     * <p>
-     * All the values are optional. In the case where all the values are null
-     * then all the entities will be returned. In the case where two or more 
-     * values are specified (i.e. rmName and entityName) then only entities 
-     * satisfying both conditions will be returned.
-     * <p>
-     * If the caller specified primaryOnly flag then it will only process
-     * archetypes that are marked as primary
-     * 
-     * @param rmName
-     *            the reference model name (must be complete name)
-     * @param entityName
-     *            the name of the entity (partial or complete)
-     * @param concept
-     *            the concept name (partial or complete)
-     * @param instanceName
-     *            the particular instance name
-     * @param primaryOnly
-     *            determines whether to restrict processing to archetypes 
-     *            that are marked as primary only.            
-     * @param activeOnly
-     *            whether to retrieve only the active objects            
-     * @return List<IMObject>                                   
-     * @throws ArchetypeServiceException
-     *            a runtime exception                         
-     */
-    public List<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName, boolean primaryOnly,
-            boolean activeOnly);
-    
-    /**
      * Retrieve a list of IMObjects that match one or more of the supplied
      * short names. The short names are specified as an array of strings.
      * <p>
@@ -312,11 +279,16 @@ public interface IArchetypeService {
      * 
      * @param shortNames
      *            an array of short names
-     * @return List<IMObject>                                   
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
-    public List<IMObject> get(String[] shortNames, boolean activeOnly);
+    public IPage<IMObject> get(String[] shortNames, boolean activeOnly, 
+            PagingCriteria pagingCriteria, SortCriteria sortCriteria);
     
     /**
      * Return the entity with the specified identity or null if it does not
@@ -343,11 +315,16 @@ public interface IArchetypeService {
      *            the query name
      * @param params
      *            a map holding key value pairs.
-     * @return List<IMObject>
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
-    public List<IMObject> getByNamedQuery(String name, Map<String, Object>params);
+    public IPage<IMObject> getByNamedQuery(String name, Map<String, Object>params,
+            PagingCriteria pagingCriteria);
     
     /**
      * Return a list of archtype short names (i.e strings) given the 
@@ -390,10 +367,16 @@ public interface IArchetypeService {
      *            constrain the search to primary archetypes
      * @param activeOnly
      *            constrain the search to active only.
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<IMObject>
      * @throws ArchetypeServiceException                                                                     
      */
-    public List<IMObject> get(String[] shortNames, String instanceName,
-            boolean primaryOnly, boolean activeOnly);
+    public IPage<IMObject> get(String[] shortNames, String instanceName,
+            boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria,
+            SortCriteria sortCriteria);
 
     /**
      * Return a list of {@link Act} for the specfied {@link Entity}. The list
@@ -423,13 +406,18 @@ public interface IArchetypeService {
      *            a particular act status
      * @param activeOnly 
      *            only areturn acts that are active
-     * @param List<Act>            
-     * @param EntityServiceException
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<Act>
+     * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
-    public List<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
+    public IPage<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
             String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
-            Date endTimeThru, String status, boolean activeOnly);
+            Date endTimeThru, String status, boolean activeOnly,
+            PagingCriteria pagingCriteria, SortCriteria sortCriteria);
     
     /**
      * Return a list of {@link Participation} instances for the specified 
@@ -453,13 +441,18 @@ public interface IArchetypeService {
      *            the participation thru end time for the act (optional)
      * @param activeOnly 
      *            only return participations that are active
-     * @param List<Participation>            
-     * @param EntityServiceException
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<Participation>
+     * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
-    public List<Participation> getParticipations(IMObjectReference ref, String conceptName, 
+    public IPage<Participation> getParticipations(IMObjectReference ref, String conceptName, 
             Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
-            Date endTimeThru, boolean activeOnly);
+            Date endTimeThru, boolean activeOnly, PagingCriteria pagingCriteria,
+            SortCriteria sortCriteria);
     
     /**
      * Return a list of {@link Act} instances} filtered by entityName,
@@ -484,11 +477,16 @@ public interface IArchetypeService {
      *            a particular act status
      * @param activeOnly 
      *            only areturn acts that are active
-     * @param List<Act>            
-     * @param EntityServiceException
+     * @param pagingCriteria 
+     *            the paging criteria for the request
+     * @param sortCriteria
+     *            the sort node and sort direction            
+     * @return IPage<Act>
+     * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
-    public List<Act> getActs(String entityName, String conceptName, Date startTimeFrom, 
+    public IPage<Act> getActs(String entityName, String conceptName, Date startTimeFrom, 
             Date startTimeThru, Date endTimeFrom, Date endTimeThru, 
-            String status, boolean activeOnly);
+            String status, boolean activeOnly, PagingCriteria pagingCriteria,
+            SortCriteria sortCriteria);
 }
