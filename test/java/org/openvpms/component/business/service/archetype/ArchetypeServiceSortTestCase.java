@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
-import org.openvpms.component.system.common.search.SortCriteria.SortDirection;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // log4j
@@ -80,7 +79,7 @@ public class ArchetypeServiceSortTestCase extends
         try {
             service.get("entity", "act", null, null, false, false, 
                     new PagingCriteria(0, 1), 
-                    new SortCriteria("baby", SortDirection.Ascending));
+                    new SortCriteria("baby", true));
             fail("This request should have thrown an exception");
         } catch (ArchetypeServiceException exception) {
             if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.InvalidSortProperty) {
@@ -96,7 +95,7 @@ public class ArchetypeServiceSortTestCase extends
     throws Exception {
         IPage<IMObject> objects = service.get("entity", "act", null, null, 
                 false, false, new PagingCriteria(0, PagingCriteria.ALL_ROWS), 
-                new SortCriteria("name", SortDirection.Ascending));
+                new SortCriteria("name", true));
         IMObject lhs = null;
         IMObject rhs = null;
         for (IMObject object : objects.getRows()) {
@@ -123,7 +122,7 @@ public class ArchetypeServiceSortTestCase extends
     throws Exception {
         IPage<IMObject> objects = service.get("entity", "act", null, null, 
                 false, false, new PagingCriteria(0, PagingCriteria.ALL_ROWS), 
-                new SortCriteria("name", SortDirection.Descending));
+                new SortCriteria("name", false));
         IMObject lhs = null;
         IMObject rhs = null;
         for (IMObject object : objects.getRows()) {

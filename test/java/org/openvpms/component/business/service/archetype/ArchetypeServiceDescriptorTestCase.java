@@ -169,7 +169,7 @@ public class ArchetypeServiceDescriptorTestCase extends
         Map<String, Object>params = new HashMap<String, Object>();
         params.put("name", desc.getName());
         List<IMObject> objs = service.getByNamedQuery(
-                "archetypeDescriptor.getByName", params);
+                "archetypeDescriptor.getByName", params, null).getRows();
         assertTrue(objs.size() > 0);
     }
     
@@ -235,7 +235,7 @@ public class ArchetypeServiceDescriptorTestCase extends
             try {
                 params.put("name", desc.getName());
                 List<IMObject> results = service.getByNamedQuery(
-                        "archetypeDescriptor.getByName", params);
+                        "archetypeDescriptor.getByName", params, null).getRows();
                 // only add if the entry does not exist
                 if (results == null || results.size() == 0) {
                     service.save(desc);

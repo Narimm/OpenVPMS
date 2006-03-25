@@ -77,13 +77,22 @@ public class ArchetypeServiceClassificationTestCase extends
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor("contact.phoneNumber");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("purposes");
         
-        List<IMObject> purposes = service.get(new String[]{"classification.contactPurpose"}, true);
+        List<IMObject> purposes = service.get(
+                new String[]{"classification.contactPurpose"}, true, null, null).getRows();
         int acount = purposes.size(); 
-        
         
         ndesc.addChildToCollection(contact, purposes.get(0));
         assertTrue(contact.getClassifications().size() == 1);
-        service.save(contact);
+        
+        try {
+            service.save(contact);
+        } catch (ValidationException exception) {
+            for (ValidationError error : exception.getErrors()) {
+                logger.error("Validation Error Node:" + error.getNodeName() 
+                        + " Message:" + error.getErrorMessage());
+            }
+            throw exception;
+        }
         
         contact = (Contact)service.getById(contact.getArchetypeId(), contact.getUid());
         assertTrue(contact != null);
@@ -95,7 +104,8 @@ public class ArchetypeServiceClassificationTestCase extends
         contact = (Contact)service.getById(contact.getArchetypeId(), contact.getUid());
         assertTrue(contact != null);
         assertTrue(contact.getClassifications().size() == 0);
-        purposes = service.get(new String[]{"classification.contactPurpose"}, true);
+        purposes = service.get(new String[]{"classification.contactPurpose"}, 
+                true, null, null).getRows();
         assertTrue(acount == purposes.size()); 
         
     }

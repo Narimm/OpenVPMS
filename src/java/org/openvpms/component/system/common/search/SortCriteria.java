@@ -36,22 +36,14 @@ public class SortCriteria implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * An enumerator for the sort direction
-     */
-    public enum SortDirection {
-        Ascending,
-        Descending
-    }
-    
-    /**
      * The node that the sort will execute on
      */
     private String sortNode;
     
     /**
-     * The direction of the sort
+     * Whether the sort direction is ascending
      */
-    private SortDirection sortDirection;
+    private boolean ascending;
 
     /**
      * Construct an instance of this constuctor specifying a node and a sort
@@ -59,19 +51,19 @@ public class SortCriteria implements Serializable {
      * 
      * @param node
      *            the node to sort on
-     * @param direction
-     *            the direction of the sort
+     * @param ascending
+     *            indicates that the sort or is ascending
      */
-    public SortCriteria(String node, SortDirection direction) {
+    public SortCriteria(String node, boolean ascending) {
         this.sortNode = node;
-        this.sortDirection = direction;
+        this.ascending = ascending;
     }
 
     /**
-     * @return Returns the sortDirection.
+     * @return Returns the ascending.
      */
-    public SortDirection getSortDirection() {
-        return sortDirection;
+    public boolean isAscending() {
+        return ascending;
     }
 
     /**

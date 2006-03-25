@@ -174,7 +174,8 @@ public class LookupServiceTestCase extends
     public void testOVPMS195()
     throws Exception {
         List<IMObject> objects = archetypeService.get(
-                new String[]{"lookup.relationship"}, null, true, true);
+                new String[]{"lookup.relationship"}, null, true, true,
+                null, null).getRows();
         assertTrue(objects != null);
     }
     

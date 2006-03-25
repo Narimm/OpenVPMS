@@ -127,9 +127,10 @@ public class ArchetypeServicePaginationTestCase extends
     public void testOVPMS244()
     throws Exception {
         Set<String> linkIds = new HashSet<String>();
-        for (int page = 0;; page++) {
+        int rowsPerPage = 10;
+        for (int startRow = 0;; startRow +=10) {
             IPage<IMObject> objects = service.get("common", "entityRelationship", 
-                "a*", null, false, false, new PagingCriteria(page, 10), null);
+                "a*", null, false, false, new PagingCriteria(startRow, rowsPerPage), null);
             for (IMObject object : objects.getRows()) {
                 if (linkIds.contains(object.getLinkId())) {
                     fail("This row has already been returned");
@@ -137,7 +138,7 @@ public class ArchetypeServicePaginationTestCase extends
                 linkIds.add(object.getLinkId());
             }
             
-            if (((page + 1) * 10 ) >= objects.getTotalNumOfRows()) {
+            if ((startRow + rowsPerPage) >= objects.getTotalNumOfRows()) {
                 break;
             }
         }

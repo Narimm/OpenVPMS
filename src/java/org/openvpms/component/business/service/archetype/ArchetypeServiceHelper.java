@@ -72,7 +72,7 @@ public class ArchetypeServiceHelper {
         if (ndesc.containsAssertionType("candidateChildren")) {
             children = ndesc.getCandidateChildren(context);
         } else if (ndesc.containsAssertionType("archetypeRange")) {
-            children = service.get(ndesc.getArchetypeRange(), true);
+            children = service.get(ndesc.getArchetypeRange(), true, null, null).getRows();
         }
         
         return children;

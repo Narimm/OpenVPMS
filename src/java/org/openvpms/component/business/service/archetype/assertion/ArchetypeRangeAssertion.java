@@ -120,7 +120,7 @@ public class ArchetypeRangeAssertion {
                     ArchetypeId aid = adesc.getType();
                     List<IMObject> objects = archetypeService.get(aid.getRmName(), 
                             aid.getEntityName(), aid.getConcept(), 
-                            type.defaultValue, true);
+                            type.defaultValue, true, null, null).getRows();
                     
                     // if can not find a matching entity
                     if (objects.size() == 0) {

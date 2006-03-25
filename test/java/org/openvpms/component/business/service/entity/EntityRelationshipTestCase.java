@@ -288,7 +288,8 @@ public class EntityRelationshipTestCase extends
     public void testOVPMS176()
     throws Exception {
         String[] shortNames = {"entityRelationship.animal*"};
-        int aCount = service.get(shortNames, null, false, false).size();
+        int aCount = service.get(shortNames, null, false, false,
+                null, null).getRows().size();
 
         // create a new entity relationsip and save it
         Party person = createPerson("Mr", "Jim", "Alateras");
@@ -314,7 +315,8 @@ public class EntityRelationshipTestCase extends
         }
 
         // now check that the get actually works
-        int aCount1 = service.get(shortNames, null, false, false).size();
+        int aCount1 = service.get(shortNames, null, false, false,
+                null, null).getRows().size();
         assertTrue(aCount1 == aCount + 2);
     }
     

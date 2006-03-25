@@ -121,7 +121,8 @@ public class ActTestCases extends
         assertTrue(person.getParticipations().size() == 3);
         
         List<Participation> participations = archetypeService.getParticipations(
-                new IMObjectReference(person), null, null, null, null, null, true);
+                new IMObjectReference(person), null, null, null, null, null, true,
+                null, null).getRows();
         assertTrue(participations.size() == 3);
     }
     
@@ -147,8 +148,8 @@ public class ActTestCases extends
         archetypeService.save(act2);
 
         List<Act> acts = archetypeService.getActs(
-                new IMObjectReference(person), null, null, null, null, null, null, null, 
-                null, true);
+                new IMObjectReference(person), null, null, null, null, null, 
+                null, null, null, true, null, null).getRows();
         assertTrue(acts.size() == 2);
     }
     
@@ -179,13 +180,13 @@ public class ActTestCases extends
     throws Exception {
         // get the initial act count
         int actCount = archetypeService.getActs("act", null, null, null, null, 
-                null, null, false).size();
+                null, null, false, null, null).getRows().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up");
         archetypeService.save(act1);
         int actCount1 = archetypeService.getActs("act", null, null, null, null, 
-                null, null, false).size();
+                null, null, false, null, null).getRows().size();
         assertTrue(actCount1 == (actCount + 1));
 
         // create multiple acts and check the count again
@@ -194,12 +195,12 @@ public class ActTestCases extends
         act1 = createAct("wake up now");
         archetypeService.save(act1);
         actCount1 = archetypeService.getActs("act", null, null, null, null, 
-                null, null, false).size();
+                null, null, false, null, null).getRows().size();
         assertTrue(actCount1 == (actCount + 3));
         
         // check that it retrieves null result set correctly
         assertTrue(archetypeService.getActs("jimmya-act", null, null, null, 
-                null, null, null, false).size() == 0);
+                null, null, null, false, null, null).getRows().size() == 0);
     }
     
     /**
@@ -209,13 +210,13 @@ public class ActTestCases extends
     throws Exception {
         // get the initial act count
         int actCount = archetypeService.getActs("act", null, null, null, null, 
-                null, null, true).size();
+                null, null, true, null, null).getRows().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up jim");
         archetypeService.save(act1);
         int actCount1 = archetypeService.getActs("act", null, null, null, null, 
-                null, null, true).size();
+                null, null, true, null, null).getRows().size();
         assertTrue(actCount1 == (actCount + 1));
     }
     
