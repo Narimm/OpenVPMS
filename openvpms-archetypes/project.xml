@@ -1,6 +1,6 @@
 <project>
   <pomVersion>3</pomVersion>
-  <groupId>openvpms</groupId>
+  <groupId>org.openvpms</groupId>
   <logo></logo>
   <organization>
     <name>OpenVPMS</name>
@@ -411,7 +411,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>3.2.0-alpha-bin</version>
+      <version>5.0.0-beta-bin</version>
       <url>http://www.mysql.com</url>
     </dependency>
     <dependency>
@@ -451,9 +451,9 @@
         <url>http://jakarta.apache.org</url>
     </dependency>
     <dependency>
-      <groupId>openvpms</groupId>
+      <groupId>org.openvpms</groupId>
       <artifactId>openvpms-framework</artifactId>
-      <version>0.6</version>
+      <version>0.6-20060325.191116</version>
       <url>http://www.openvpms.org</url>
     </dependency>
   </dependencies>
