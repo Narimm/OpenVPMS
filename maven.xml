@@ -10,8 +10,8 @@
           failonerror="true"
           fork="true">
             <ant:classpath>
-               <ant:path refid="maven.dependency.classpath"/>
                <ant:pathelement path="${maven.build.dest}"/>
+               <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
           <arg line="${openvpms.archetype.loader.cmdline}"/>
       </ant:java>  
@@ -25,8 +25,8 @@
 	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
-           		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
+           		<ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
         	<arg line="${openvpms.data.loader.cmdline}"/>
     	</ant:java>	
