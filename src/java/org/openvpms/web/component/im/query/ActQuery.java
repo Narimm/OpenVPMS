@@ -2,9 +2,7 @@ package org.openvpms.web.component.im.query;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -22,13 +20,10 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -235,30 +230,25 @@ public class ActQuery implements Query {
     /**
      * Performs the query.
      *
-     * @param rows the maxiomum no. of rows per page
-     * @param node
-     * @param ascending
+     * @param rows      the maxiomum no. of rows per page
+     * @param node      the node to sort on. May be <code>null</code>
+     * @param ascending if <code>true</code> sort the rows inascending order;
+     *                  otherwise sort them in <code>descebding</code> order
      * @return the query result set
      */
     public ResultSet query(int rows, String node, boolean ascending) {
-        List<IMObject> result = Collections.emptyList();
-
+        ResultSet result = null;
         if (_entityId != null) {
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            List<Act> acts = Collections.emptyList();
-            try {
-                acts = service.getActs(_entityId, null,
-                                       _entityName, _conceptName,
-                                       startFrom, startTo, null, null,
-                                       _status, true);
-            } catch (ArchetypeServiceException exception) {
-                ErrorDialog.show(exception);
+            SortCriteria order = null;
+            if (node != null) {
+                order = new SortCriteria(node, ascending);
             }
-            result = new ArrayList<IMObject>(acts);
+            result = new ActResultSet(_entityId, _entityName, _conceptName,
+                                      startFrom, startTo, _status, rows, order);
         }
-        return new PreloadedResultSet(result, rows);
+        return result;
     }
 
     /**

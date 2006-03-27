@@ -2,7 +2,6 @@ package org.openvpms.web.component.im.query;
 
 import java.util.NoSuchElementException;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 
@@ -13,7 +12,7 @@ import org.openvpms.component.system.common.search.PagingCriteria;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractResultSet implements ResultSet {
+public abstract class AbstractResultSet<T> implements ResultSet<T> {
 
     /**
      * The no. of rows per page.
@@ -23,7 +22,7 @@ public abstract class AbstractResultSet implements ResultSet {
     /**
      * The last retrieved page.
      */
-    private IPage<IMObject> _page;
+    private IPage<T> _page;
 
     /**
      * The page cursor.
@@ -67,8 +66,8 @@ public abstract class AbstractResultSet implements ResultSet {
      * @param page the page no.
      * @return the page corresponding to <code>page</code>
      */
-    public IPage<IMObject> getPage(int page) {
-        IPage<IMObject> result = get(page);
+    public IPage<T> getPage(int page) {
+        IPage<T> result = get(page);
         _cursor = page;
         return result;
     }
@@ -137,8 +136,8 @@ public abstract class AbstractResultSet implements ResultSet {
      * @return the next element in the list.
      * @throws NoSuchElementException if the iteration has no next element.
      */
-    public IPage<IMObject> next() {
-        IPage<IMObject> page = get(_cursor);
+    public IPage<T> next() {
+        IPage<T> page = get(_cursor);
         if (page == null) {
             throw new NoSuchElementException();
         }
@@ -156,8 +155,8 @@ public abstract class AbstractResultSet implements ResultSet {
      * @return the previous element in the list.
      * @throws NoSuchElementException if the iteration has no previous element.
      */
-    public IPage<IMObject> previous() {
-        IPage<IMObject> page = get(_cursor - 1);
+    public IPage<T> previous() {
+        IPage<T> page = get(_cursor - 1);
         if (page == null) {
             throw new NoSuchElementException();
         }
@@ -209,7 +208,7 @@ public abstract class AbstractResultSet implements ResultSet {
      *               by <tt>next</tt> or <tt>previous</tt>.
      * @throws UnsupportedOperationException if invoked
      */
-    public void set(IPage<IMObject> object) {
+    public void set(IPage<T> object) {
         throw new UnsupportedOperationException();
     }
 
@@ -219,7 +218,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @param object the element to insert.
      * @throws UnsupportedOperationException if invoked
      */
-    public void add(IPage<IMObject> object) {
+    public void add(IPage<T> object) {
         throw new UnsupportedOperationException();
     }
 
@@ -230,7 +229,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @return the page corresponding to <code>page</code>, or <code>null</code>
      *         if none exists
      */
-    protected abstract IPage<IMObject> getPage(PagingCriteria criteria);
+    protected abstract IPage<T> getPage(PagingCriteria criteria);
 
     /**
      * Returns the current page.
@@ -238,7 +237,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @return the current page or <code>null</code> if there is no current
      *         page
      */
-    protected IPage<IMObject> getPage() {
+    protected IPage<T> getPage() {
         return _page;
     }
 
@@ -248,7 +247,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @param page the current page
      * @return the index of the current page
      */
-    protected int getIndex(IPage<IMObject> page) {
+    protected int getIndex(IPage<T> page) {
         int first = getFirstRow(page);
         if (_rowsPerPage == PagingCriteria.ALL_ROWS) {
             return 0;
@@ -262,7 +261,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @param page the current page
      * @return the total no. of pages
      */
-    protected int getPages(IPage<IMObject> page) {
+    protected int getPages(IPage<T> page) {
         if (_rowsPerPage == PagingCriteria.ALL_ROWS) {
             return 1;
         }
@@ -279,7 +278,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @param page the current page
      * @return the index of the first row
      */
-    protected int getFirstRow(IPage<IMObject> page) {
+    protected int getFirstRow(IPage<T> page) {
         return page.getPagingCriteria().getFirstRow();
     }
 
@@ -290,7 +289,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @return the index of the first row in the next page. If
      *         <code>&gt;objects.size()</code> indicates at end of set
      */
-    protected int getNextRow(IPage<IMObject> page) {
+    protected int getNextRow(IPage<T> page) {
         return getFirstRow(page) + page.getRows().size();
     }
 
@@ -300,7 +299,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @return the index of the first row of the previous page. If
      *         <code>&lt;0</code> indicates at beginning of set
      */
-    protected int getPreviousRow(IPage<IMObject> page) {
+    protected int getPreviousRow(IPage<T> page) {
         if (_rowsPerPage == PagingCriteria.ALL_ROWS) {
             return -1;
         }
@@ -313,7 +312,7 @@ public abstract class AbstractResultSet implements ResultSet {
      * @param page the page no.
      * @return the page
      */
-    protected IPage<IMObject> get(int page) {
+    protected IPage<T> get(int page) {
         int row = page * _rowsPerPage;
         if (_page == null || _page.getPagingCriteria().getFirstRow() != row) {
             _page = getPage(new PagingCriteria(row, _rowsPerPage));

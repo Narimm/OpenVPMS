@@ -14,7 +14,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.search.SortCriteria;
@@ -58,9 +57,11 @@ public abstract class AbstractQuery implements Query {
     private final String _conceptName;
 
     /**
-     * Determines if a paged query should be used.
+     * Determines which result set should be used. If <code>true</code>,
+     * indicates that {@link DefaultResultSet} should be used. If
+     * <code>false</code>, indicates {@link ShortNameResultSet} should be used.
      */
-    private final boolean _paged;
+    private final boolean _defaultResultSet;
 
     /**
      * The instance name. If the text is <code>null</code> or empty, indicates
@@ -123,7 +124,7 @@ public abstract class AbstractQuery implements Query {
         _refModelName = null;
         _entityName = null;
         _conceptName = null;
-        _paged = (shortNames.length == 0);
+        _defaultResultSet = (shortNames.length == 0);
     }
 
     /**
@@ -140,7 +141,7 @@ public abstract class AbstractQuery implements Query {
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
-        _paged = true;
+        _defaultResultSet = true;
     }
 
     /**
@@ -171,33 +172,25 @@ public abstract class AbstractQuery implements Query {
         String name = getName();
         boolean activeOnly = !includeInactive();
 
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        String[] shortNames;
-        boolean paged = false;
+        String[] shortNames = null;
+        boolean useDefault = false;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             shortNames = _shortNames;
-            paged = _paged;
-        } else {
-            shortNames = new String[]{type};
+            useDefault = _defaultResultSet;
         }
-        if (paged) {
-            SortCriteria sort = null;
-            if (node != null) {
-                SortCriteria.SortDirection direction
-                        = (ascending) ? SortCriteria.SortDirection.Ascending
-                          : SortCriteria.SortDirection.Descending;
-                sort = new SortCriteria(node, direction);
-            }
-            result = new ResultSetImpl(_refModelName, _entityName, _conceptName,
-                                       name, activeOnly, sort, rows);
+
+        SortCriteria sort = null;
+        if (node != null) {
+            sort = new SortCriteria(node, ascending);
+        }
+
+        if (useDefault) {
+            result = new DefaultResultSet(_refModelName, _entityName,
+                                          _conceptName, name, activeOnly, sort,
+                                          rows);
         } else {
-            List<IMObject> objects = Collections.emptyList();
-            try {
-                objects = service.get(shortNames, name, true, activeOnly);
-            } catch (ArchetypeServiceException exception) {
-                ErrorDialog.show(exception);
-            }
-            result = new PreloadedResultSet(objects, rows);
+            result = new ShortNameResultSet(shortNames, name, activeOnly, sort,
+                                            rows);
         }
         return result;
     }
