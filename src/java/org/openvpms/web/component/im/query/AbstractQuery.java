@@ -177,6 +177,8 @@ public abstract class AbstractQuery implements Query {
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             shortNames = _shortNames;
             useDefault = _defaultResultSet;
+        } else {
+            shortNames = new String[]{type};
         }
 
         SortCriteria sort = null;
