@@ -19,12 +19,12 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Query result set.
+ * Result set where archetype names are used as the criteria.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class ResultSetImpl extends AbstractResultSet {
+public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject> {
 
     /**
      * The archetype reference model name.
@@ -52,41 +52,36 @@ public class ResultSetImpl extends AbstractResultSet {
     private final boolean _activeOnly;
 
     /**
-     * The sort criteria.
-     */
-    private SortCriteria _order;
-
-    /**
      * The logger.
      */
-    private final Log _log = LogFactory.getLog(ResultSetImpl.class);
+    private final Log _log = LogFactory.getLog(DefaultResultSet.class);
 
 
     /**
-     * Construct a new <code>ResultSetImpl</code>.
+     * Construct a new <code>DefaultResultSet</code>.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
-     * @param instanceName the instabce name
+     * @param instanceName the instance name
      * @param activeOnly   determines if active and/or inactive results should
      *                     be retrieved
      * @param order        the sort criteria. May be <code>null</code>
      * @param rows         the maximum no. of rows per page
      */
-    public ResultSetImpl(String refModelName, String entityName,
-                         String conceptName, String instanceName,
-                         boolean activeOnly,
-                         SortCriteria order,
-                         int rows) {
-        super(rows);
+    public DefaultResultSet(String refModelName, String entityName,
+                            String conceptName, String instanceName,
+                            boolean activeOnly,
+                            SortCriteria order,
+                            int rows) {
+        super(rows, order);
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
         _instanceName = instanceName;
         _activeOnly = activeOnly;
         if (order != null && isValidSortNode(order.getSortNode())) {
-            _order = order;
+            setSortCriteria(null);
         }
 
         reset();
@@ -100,36 +95,12 @@ public class ResultSetImpl extends AbstractResultSet {
      *                  otherwise sort it in <code>descebding</code> order
      */
     public void sort(String node, boolean ascending) {
-        SortCriteria.SortDirection direction = (ascending)
-                                               ? SortCriteria.SortDirection.Ascending
-                                               : SortCriteria.SortDirection.Descending;
         if (isValidSortNode(node)) {
-            _order = new SortCriteria(node, direction);
+            super.sort(node, ascending);
+        } else {
+            setSortCriteria(null);
+            reset();
         }
-        reset();
-    }
-
-    /**
-     * Returns the node the set was sorted on.
-     *
-     * @return the sort node, or <code>null</code> if the set is unsorted
-     */
-    public String getSortNode() {
-        return (_order != null) ? _order.getSortNode() : null;
-    }
-
-    /**
-     * Determines if the node is sorted ascending or descending.
-     *
-     * @return <code>true</code> if the node is sorted ascending;
-     *         <code>false</code> if it is sorted descending
-     */
-    public boolean isSortedAscending() {
-        SortCriteria.SortDirection direction
-                = (_order != null) ? _order.getSortDirection()
-                  : SortCriteria.SortDirection.Ascending;
-
-        return (direction == SortCriteria.SortDirection.Ascending);
     }
 
     /**
@@ -144,7 +115,8 @@ public class ResultSetImpl extends AbstractResultSet {
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             result = service.get(_refModelName, _entityName, _conceptName,
-                                 _instanceName, true, _activeOnly, criteria, _order);
+                                 _instanceName, true, _activeOnly, criteria,
+                                 getSortCriteria());
         } catch (ArchetypeServiceException exception) {
             ErrorDialog.show(exception);
         }

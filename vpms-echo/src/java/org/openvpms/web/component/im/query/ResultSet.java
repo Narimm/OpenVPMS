@@ -2,7 +2,6 @@ package org.openvpms.web.component.im.query;
 
 import java.util.ListIterator;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.search.IPage;
 
 
@@ -12,7 +11,7 @@ import org.openvpms.component.system.common.search.IPage;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public interface ResultSet extends ListIterator<IPage<IMObject>> {
+public interface ResultSet<T> extends ListIterator<IPage<T>> {
 
     /**
      * Reset the iterator.
@@ -20,10 +19,9 @@ public interface ResultSet extends ListIterator<IPage<IMObject>> {
     void reset();
 
     /**
-     * Sorts the set.
-     * This resets the iterator.
+     * Sorts the set. This resets the iterator.
      *
-     * @param node the node to sort on
+     * @param node      the node to sort on
      * @param ascending if <code>true</code> sort the set in ascending order;
      *                  otherwise sort it in <code>descebding</code> order
      */
@@ -35,7 +33,7 @@ public interface ResultSet extends ListIterator<IPage<IMObject>> {
      * @param page the page no.
      * @return the page corresponding to <code>page</code>
      */
-    IPage<IMObject> getPage(int page);
+    IPage<T> getPage(int page);
 
     /**
      * Returns the total number of pages.
@@ -70,7 +68,7 @@ public interface ResultSet extends ListIterator<IPage<IMObject>> {
      * Determines if the node is sorted ascending or descending.
      *
      * @return <code>true</code> if the node is sorted ascending;
-     * <code>false</code> if it is sorted descending
+     *         <code>false</code> if it is sorted descending
      */
     boolean isSortedAscending();
 

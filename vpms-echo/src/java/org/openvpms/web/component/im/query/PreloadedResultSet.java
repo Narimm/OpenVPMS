@@ -30,7 +30,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class PreloadedResultSet extends AbstractResultSet {
+public class PreloadedResultSet extends AbstractResultSet<IMObject> {
 
     /**
      * The logger.
