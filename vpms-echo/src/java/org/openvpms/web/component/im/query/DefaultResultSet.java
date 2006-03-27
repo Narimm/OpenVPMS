@@ -80,7 +80,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
         _conceptName = conceptName;
         _instanceName = instanceName;
         _activeOnly = activeOnly;
-        if (order != null && isValidSortNode(order.getSortNode())) {
+        if (order != null && !isValidSortNode(order.getSortNode())) {
             setSortCriteria(null);
         }
 
