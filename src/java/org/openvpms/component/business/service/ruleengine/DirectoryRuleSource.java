@@ -100,7 +100,18 @@ public class DirectoryRuleSource extends AbstractRuleSource {
         }
 
         // check that a valid directory was specified
-        File dir = new File(directory);
+        File dir = FileUtils.toFile(Thread.currentThread()
+                .getContextClassLoader().getResource(directory));
+        if (dir == null) {
+            throw new RuleEngineException(
+                    RuleEngineException.ErrorCode.InvalidDir,
+                    new Object[] { directory});
+        }
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("The base rules directory is " + dir.getAbsolutePath());
+        }
+        
         if (!dir.isDirectory()) {
             throw new RuleEngineException(
                     RuleEngineException.ErrorCode.InvalidDir,
@@ -111,7 +122,12 @@ public class DirectoryRuleSource extends AbstractRuleSource {
         Collection collection = FileUtils.listFiles(dir, new String[] {"drl"}, true);
         Iterator files = collection.iterator();
         while (files.hasNext()) {
-            registerRuleExecutionSet((File) files.next());
+            File afile = (File)files.next();
+            if (logger.isDebugEnabled()) {
+                logger.debug("Registeting the rule set in  " 
+                        + afile.getAbsolutePath());
+            }
+            registerRuleExecutionSet(afile);
         }
     }
 

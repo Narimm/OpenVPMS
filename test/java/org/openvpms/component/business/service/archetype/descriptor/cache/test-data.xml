@@ -8,7 +8,7 @@
 				org/openvpms/archetype/assertionTypes.xml
 			</param>
 			<param name="dir" type="java.lang.String">
-				target/classes/org/openvpms/archetype
+				org/openvpms/archetype
 			</param>
 			<param name="extension" type="java.lang.String">adl</param>
 		</params>

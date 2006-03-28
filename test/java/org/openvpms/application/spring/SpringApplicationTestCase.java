@@ -66,7 +66,7 @@ public class SpringApplicationTestCase extends
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] { "org/openvpms/component/business/service/security/memory-security-service-appcontext.xml" };
+        return new String[] { "org/openvpms/application/spring/openvpms-app-appcontext.xml" };
     }
 
     /*

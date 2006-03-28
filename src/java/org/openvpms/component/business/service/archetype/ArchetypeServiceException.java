@@ -78,7 +78,8 @@ public class ArchetypeServiceException extends RuntimeException implements
         InvalidSortProperty,
         CannotSortOnProperty,
         SortPropertyNotSupported,
-        CanOnlySearchAgainstSingleType
+        CanOnlySearchAgainstSingleType,
+        FailedToFindObjectsMatchingShortNames
     }
 
     /**
