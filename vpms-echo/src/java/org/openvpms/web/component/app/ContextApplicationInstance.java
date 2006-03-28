@@ -2,6 +2,7 @@ package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.spring.SpringApplicationInstance;
 
 
@@ -37,6 +38,13 @@ public abstract class ContextApplicationInstance
     public Context getContext() {
         return _context;
     }
+
+    /**
+     * Switches the current workspace to display an object.
+     *
+     * @param object the object to view
+     */
+    public abstract void switchTo(IMObject object);
 
     /**
      * Clears the current context.

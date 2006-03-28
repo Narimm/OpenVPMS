@@ -1,5 +1,7 @@
 package org.openvpms.web.component.table;
 
+import java.util.Iterator;
+
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -7,6 +9,7 @@ import nextapp.echo2.app.Style;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableCellRenderer;
+import org.apache.commons.beanutils.BeanUtils;
 
 
 /**
@@ -33,7 +36,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                                                    int column, int row) {
         Component component = getComponent(value);
         String style = getStyle(column, row);
-        mergeLayout(component, style);
+        mergeStyle(component, style);
         return component;
     }
 
@@ -69,15 +72,16 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
     }
 
     /**
-     * Merges the layout of a component with that defined by the stylesheet.
+     * Merges the style of a component with that defined by the stylesheet.
      *
      * @param component the component
      * @param styleName the stylesheet style name
      */
-    protected void mergeLayout(Component component, String styleName) {
-        if (component.getLayoutData() == null) {
+    protected void mergeStyle(Component component, String styleName) {
+        if (component.getLayoutData() == null
+            && component.getStyleName() == null) {
             component.setStyleName(styleName);
-        } else {
+        } else if (component.getStyleName() == null) {
             Style style = ApplicationInstance.getActive().getStyle(
                     Component.class, styleName);
             if (style != null) {
@@ -98,6 +102,23 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
                     }
                     if (layout.getInsets() == null) {
                         layout.setInsets(styleLayout.getInsets());
+                    }
+                }
+            }
+        } else {
+            Style style = ApplicationInstance.getActive().getStyle(
+                    Component.class, styleName);
+            if (style != null) {
+                Iterator names = style.getPropertyNames();
+                while (names.hasNext()) {
+                    String name = (String) names.next();
+                    if (component.getProperty(name) == null) {
+                        try {
+                            BeanUtils.setProperty(component, name,
+                                                  style.getProperty(name));
+                        } catch (Throwable ignore) {
+                            // no-op
+                        }
                     }
                 }
             }

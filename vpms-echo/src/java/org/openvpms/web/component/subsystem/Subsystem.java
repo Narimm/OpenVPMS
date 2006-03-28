@@ -49,4 +49,13 @@ public interface Subsystem {
      */
     List<Workspace> getWorkspaces();
 
+    /**
+     * Returns the first workspace that can handle a particular archetype.
+     *
+     * @param shortName the archetype's short name.
+     * @return a workspace that supports the specifiad archetype or
+     *         <code>null</code> if no workspace supports it
+     */
+    Workspace getWorkspaceForArchetype(String shortName);
+
 }

@@ -1,5 +1,7 @@
 package org.openvpms.web.component.subsystem;
 
+import java.util.List;
+
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
@@ -9,6 +11,9 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
@@ -17,6 +22,7 @@ import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -89,6 +95,45 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
     }
 
     /**
+     * Determines if the workspace supports an archetype.
+     *
+     * @param shortName the archetype's short name
+     * @return <code>true</code> if the workspace can handle the archetype;
+     *         otherwise <code>false</code>
+     */
+    public boolean canHandle(String shortName) {
+        boolean result = false;
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        try {
+            List<String> shortNames = service.getArchetypeShortNames(
+                    _refModelName, _entityName, _conceptName, true);
+            result = shortNames.contains(shortName);
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
+        return result;
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    public void setObject(IMObject object) {
+        _object = object;
+        _selector.setObject(object);
+    }
+
+    /**
+     * Returns the current object.
+     *
+     * @return the current object. May be <code>null</code>
+     */
+    public IMObject getObject() {
+        return _object;
+    }
+
+    /**
      * Lays out the component.
      *
      * @return the component
@@ -146,25 +191,6 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     protected String getType() {
         return _type;
-    }
-
-    /**
-     * Sets the current object.
-     *
-     * @param object the object. May be <code>null</code>
-     */
-    protected void setObject(IMObject object) {
-        _object = object;
-        _selector.setObject(object);
-    }
-
-    /**
-     * Returns the current object.
-     *
-     * @return the current object. May be <code>null</code>
-     */
-    protected IMObject getObject() {
-        return _object;
     }
 
     /**

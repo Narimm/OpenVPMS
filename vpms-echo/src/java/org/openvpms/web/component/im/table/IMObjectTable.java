@@ -38,7 +38,8 @@ public class IMObjectTable extends Table {
         _model = model;
         setStyleName("default");
         setAutoCreateColumnsFromModel(false);
-        setSelectionEnabled(true);
+        setSelectionEnabled(model.getEnableSelection());
+        setRolloverEnabled(model.getEnableSelection());
         setModel(model);
         setColumnModel(model.getColumnModel());
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());

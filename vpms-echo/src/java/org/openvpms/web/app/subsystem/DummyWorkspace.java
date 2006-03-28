@@ -1,5 +1,6 @@
 package org.openvpms.web.app.subsystem;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 
 
@@ -22,4 +23,33 @@ public class DummyWorkspace extends AbstractWorkspace {
         super(subsystemId, workspaceId);
     }
 
+
+    /**
+     * Determines if the workspace supports an archetype.
+     *
+     * @param shortName the archetype's short name
+     * @return <code>true</code> if the workspace can handle the archetype;
+     *         otherwise <code>false</code>
+     */
+    public boolean canHandle(String shortName) {
+        return false;
+    }
+
+    /**
+     * Sets the object to be viewed/edited by the workspace.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    public void setObject(IMObject object) {
+        // no-op
+    }
+
+    /**
+     * Returns the object to to be viewed/edited by the workspace.
+     *
+     * @return the the object. May be <oode>null</code>
+     */
+    public IMObject getObject() {
+        return null;
+    }
 }

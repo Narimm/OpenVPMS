@@ -256,6 +256,16 @@ public class PagedIMObjectTableModel
     }
 
     /**
+     * Determines if selection should be enabled.
+     *
+     * @return <code>true</code> if selection should be enabled; otherwise
+     *         <code>false</code>
+     */
+    public boolean getEnableSelection() {
+        return _model.getEnableSelection();
+    }
+
+    /**
      * Returns the column associated witha node.
      *
      * @param node the node

@@ -7,6 +7,7 @@ import nextapp.echo2.app.Window;
 import org.openvpms.web.app.login.LoginPane;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.resource.util.Styles;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -21,6 +22,11 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * The window.
      */
     private Window _window;
+
+    /**
+     * Context change listener.
+     */
+    private ContextChangeListener _listener;
 
 
     /**
@@ -69,6 +75,27 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     public void logout() {
         getDefaultWindow().removeAll();
         setContent(new LoginPane());
+        setContextChangeListener(null);
         clearContext();
+    }
+
+    /**
+     * Switches the current workspace to display an object.
+     *
+     * @param object the object to view
+     */
+    public void switchTo(IMObject object) {
+        if (_listener != null) {
+            _listener.changeContext(object);
+        }
+    }
+
+    /**
+     * Sets the context change listener.
+     *
+     * @param listener the context change listener
+     */
+    protected void setContextChangeListener(ContextChangeListener listener) {
+        _listener = listener;
     }
 }

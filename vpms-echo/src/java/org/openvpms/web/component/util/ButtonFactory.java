@@ -58,6 +58,7 @@ public final class ButtonFactory extends ComponentFactory {
         return button;
     }
 
+
     /**
      * Create a new button with a localised text message, default style, and
      * listener.
@@ -73,6 +74,19 @@ public final class ButtonFactory extends ComponentFactory {
     }
 
     /**
+     * Create a new button with a localised text message and style.
+     *
+     * @param key   the resource bundle key. May be <code>null</code>
+     * @param style the style name
+     * @return a new button
+     */
+    public static Button create(String key, String style) {
+        Button button = create(key);
+        button.setStyleName(style);
+        return button;
+    }
+
+    /**
      * Create a new button with a localised text message, specific style, and
      * listener.
      *
@@ -83,8 +97,7 @@ public final class ButtonFactory extends ComponentFactory {
      */
     public static Button create(String key, String style,
                                 ActionListener listener) {
-        Button button = create(key);
-        button.setStyleName(style);
+        Button button = create(key, style);
         button.addActionListener(listener);
         return button;
     }

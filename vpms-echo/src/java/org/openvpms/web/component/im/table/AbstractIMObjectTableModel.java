@@ -112,6 +112,16 @@ public abstract class AbstractIMObjectTableModel
     }
 
     /**
+     * Determines if selection should be enabled.
+     *
+     * @return <code>true</code> if selection should be enabled; otherwise
+     * <code>false</code>
+     */
+    public boolean getEnableSelection() {
+        return true;
+    }
+    
+    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object

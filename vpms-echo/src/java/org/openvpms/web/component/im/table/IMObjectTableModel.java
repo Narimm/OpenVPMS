@@ -46,4 +46,12 @@ public interface IMObjectTableModel extends TableModel {
      */
     String getNode(int column);
 
+    /**
+     * Determines if selection should be enabled.
+     *
+     * @return <code>true</code> if selection should be enabled; otherwise
+     * <code>false</code>
+     */
+    boolean getEnableSelection();
+
 }

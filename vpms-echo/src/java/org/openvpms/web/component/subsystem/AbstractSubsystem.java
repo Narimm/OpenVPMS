@@ -12,7 +12,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
  */
-public class AbstractSubsystem implements Subsystem {
+public abstract class AbstractSubsystem implements Subsystem {
 
     /**
      * The identity of the subsystem.
@@ -91,6 +91,22 @@ public class AbstractSubsystem implements Subsystem {
      */
     public List<Workspace> getWorkspaces() {
         return _workspaces;
+    }
+
+    /**
+     * Returns the first workspace that can handle a particular archetype.
+     *
+     * @param shortName the archetype's short name.
+     * @return a workspace that supports the specifiad archetype or
+     *         <code>null</code> if no workspace supports it
+     */
+    public Workspace getWorkspaceForArchetype(String shortName) {
+        for (Workspace workspace : _workspaces) {
+            if (workspace.canHandle(shortName)) {
+                return workspace;
+            }
+        }
+        return null;
     }
 
 }

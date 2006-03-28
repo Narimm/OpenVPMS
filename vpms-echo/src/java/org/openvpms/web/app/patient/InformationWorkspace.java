@@ -3,8 +3,6 @@ package org.openvpms.web.app.patient;
 import java.util.Date;
 import java.util.Set;
 
-import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -38,17 +36,6 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     public InformationWorkspace() {
         super("patient", "info", "party", "party", "patient*");
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    @Override
-    protected void doLayout(Component container) {
-        setObject(Context.getInstance().getPatient());
-        super.doLayout(container);
     }
 
     /**
