@@ -5,11 +5,9 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -40,7 +38,18 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
                          String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
         _window = new CRUDWindow(getType(), refModelName, entityName,
-                conceptName);
+                                 conceptName);
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(IMObject object) {
+        super.setObject(object);
+        _window.setObject(object);
     }
 
     /**
@@ -62,23 +71,13 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
     }
 
     /**
-     * Sets the object.
-     *
-     * @param object the object
-     */
-    protected void setObject(IMObject object) {
-        super.setObject(object);
-       _window.setObject(object);
-    }
-
-    /**
      * Invoked when the 'select' button is pressed. This pops up an {@link
      * Browser} to select an object.
      */
     @Override
     protected void onSelect() {
         final Browser browser = createBrowser(getRefModelName(),
-                getEntityName(), getConceptName());
+                                              getEntityName(), getConceptName());
 
         String title = Messages.get("imobject.select.title", getType());
         final BrowserDialog popup = new BrowserDialog(title, browser, true);

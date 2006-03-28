@@ -1,7 +1,5 @@
 package org.openvpms.web.component.subsystem;
 
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 
 import org.openvpms.web.resource.util.Messages;
@@ -52,37 +50,9 @@ public abstract class AbstractWorkspace implements Workspace {
     }
 
     /**
-     * Returns the actions which may be performed in this workspace.
+     * Renders the workspace.
      *
-     * @return the actions which may be performed in this workspace. May be
-     *         <code>null</code>
-     */
-    public List<Action> getActions() {
-        return null;
-    }
-
-    /**
-     * Returns the the default action.
-     *
-     * @return the default action. May be <code>null</code>
-     */
-    public Action getDefaultAction() {
-        return null;
-    }
-
-    /**
-     * Sets the current action.
-     *
-     * @param id the current action
-     */
-    public void setAction(String id) {
-
-    }
-
-    /**
-     * Returns the component representing the current action.
-     *
-     * @return the component for the current action
+     * @return the component representing the workspace
      */
     public Component getComponent() {
         if (_component == null || refreshWorkspace()) {

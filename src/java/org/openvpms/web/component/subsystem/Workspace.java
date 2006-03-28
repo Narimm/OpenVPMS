@@ -1,8 +1,8 @@
 package org.openvpms.web.component.subsystem;
 
-import java.util.List;
-
 import nextapp.echo2.app.Component;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -22,32 +22,33 @@ public interface Workspace {
     String getTitle();
 
     /**
-     * Returns the actions which may be performed in this workspace.
+     * Renders the workspace.
      *
-     * @return the actions which may be performed in this workspace. May be
-     *         <code>null</code>
-     */
-    List<Action> getActions();
-
-    /**
-     * Returns the the default action.
-     *
-     * @return the default action. May be <code>null</code>
-     */
-    Action getDefaultAction();
-
-    /**
-     * Sets the current action.
-     *
-     * @param id the current action
-     */
-    void setAction(String id);
-
-    /**
-     * Returns the component representing the current action.
-     *
-     * @return the component for the current action
+     * @return the component representing the workspace
      */
     Component getComponent();
+
+    /**
+     * Determines if the workspace supports an archetype.
+     *
+     * @param shortName the archetype's short name
+     * @return <code>true</code> if the workspace can handle the archetype;
+     *         otherwise <code>false</code>
+     */
+    boolean canHandle(String shortName);
+
+    /**
+     * Sets the object to be viewed/edited by the workspace.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    void setObject(IMObject object);
+
+    /**
+     * Returns the object to to be viewed/edited by the workspace.
+     *
+     * @return the the object. May be <oode>null</code>
+     */
+    IMObject getObject();
 
 }

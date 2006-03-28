@@ -12,6 +12,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
@@ -44,6 +45,19 @@ public final class DescriptorHelper {
     public static ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         return service.getArchetypeDescriptor(shortName);
+    }
+
+    /**
+     * Returns an archetype descriptor, given a reference.
+     *
+     * @param reference the object reference.
+     * @return the descriptor corresponding to <code>reference</code>, or
+     *         <code>null</code> if none exists
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(
+            IMObjectReference reference) {
+        ArchetypeId id = reference.getArchetypeId();
+        return getArchetypeDescriptor(id.getShortName());
     }
 
     /**

@@ -145,7 +145,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void layoutWorkspace(Party customer, Component container) {
         _query = createQuery(customer);
-        _acts = new Browser(_query, "estimationDate", new ActTableModel());
+        _acts = new Browser(_query, null, new ActTableModel());
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
                 selectFirst();

@@ -381,6 +381,18 @@
         </properties>
     </style>
 
+
+    <style name="hyperlink" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="foreground" value="#0000ff"/>
+            <property name="rolloverForeground" value="#ff3000"/>
+            <property name="rolloverEnabled" value="true"/>
+            <property name="font">
+                <font underline="true"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="default" type="nextapp.echo2.app.WindowPane">
         <properties>
             <!-- Container-specific property to enable Internet Explorer PNG Alpha Renderer for shadow window border. -->

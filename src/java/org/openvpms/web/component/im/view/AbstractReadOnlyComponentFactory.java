@@ -15,12 +15,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.ReadOnlyProperty;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
@@ -154,7 +153,8 @@ public abstract class AbstractReadOnlyComponentFactory
     protected abstract Component getDate(IMObject context,
                                          NodeDescriptor descriptor);
 
-     /** Returns a viewer for an object.
+    /**
+     * Returns a viewer for an object.
      *
      * @param parent     the parent object
      * @param descriptor the node descriptor
@@ -165,15 +165,7 @@ public abstract class AbstractReadOnlyComponentFactory
         Property property = getProperty(parent, descriptor);
         IMObjectReference ref = (IMObjectReference) property.getValue();
         IMObject value = IMObjectHelper.getObject(ref);
-        Label label = LabelFactory.create();
-
-        if (value != null) {
-            String text = Messages.get("imobject.name", value.getName());
-            label.setText(text);
-        } else {
-            label.setText(Messages.get("imobject.none"));
-        }
-        return label;
+        return new IMObjectReferenceViewer(ref).getComponent();
     }
 
     /**

@@ -2,12 +2,15 @@ package org.openvpms.web.component.im.table;
 
 import java.util.List;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
 /**
@@ -47,6 +50,17 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
     }
 
     /**
+     * Determines if selection should be enabled.
+     *
+     * @return <code>true</code> if selection should be enabled; otherwise
+     *         <code>false</code>
+     */
+    @Override
+    public boolean getEnableSelection() {
+        return false;
+    }
+
+    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
@@ -72,23 +86,22 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
      * then the target entity of the relationship is used.
      *
      * @param relationship the relationship
-     * @return the name of the "non-current" entity of the relationship, or
-     *         <code>null</code> if none exists.
+     * @return a viewer of the "non-current" entity of the relationship
      */
-    protected String getEntity(EntityRelationship relationship) {
-        IMObject entity = null;
+    protected Component getEntity(EntityRelationship relationship) {
+        IMObjectReference entity = null;
         IMObject current = Context.getInstance().getCurrent();
         if (current == null) {
-            entity = getObject(relationship.getTarget());
+            entity = relationship.getTarget();
         } else {
             IMObjectReference ref = new IMObjectReference(current);
             if (ref.equals(relationship.getSource())) {
-                entity = getObject(relationship.getTarget());
+                entity = relationship.getTarget();
             } else if (ref.equals(relationship.getTarget())) {
-                entity = getObject(relationship.getSource());
+                entity = relationship.getSource();
             }
         }
-        return (entity != null) ? entity.getName() : null;
+        return new IMObjectReferenceViewer(entity).getComponent();
     }
 
     /**
