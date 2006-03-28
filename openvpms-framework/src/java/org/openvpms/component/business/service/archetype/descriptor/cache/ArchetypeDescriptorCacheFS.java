@@ -194,7 +194,14 @@ public class ArchetypeDescriptorCacheFS extends BaseArchetypeDescriptorCache
         }
 
         // check that a valid directory was specified
-        File dir = new File(adir);
+        File dir = FileUtils.toFile(Thread.currentThread()
+                .getContextClassLoader().getResource(adir));
+        if (dir == null) {
+            throw new ArchetypeDescriptorCacheException(
+                    ArchetypeDescriptorCacheException.ErrorCode.InvalidDir,
+                    new Object[] {adir});
+        }
+        
         if (!dir.isDirectory()) {
             throw new ArchetypeDescriptorCacheException(
                     ArchetypeDescriptorCacheException.ErrorCode.InvalidDir,

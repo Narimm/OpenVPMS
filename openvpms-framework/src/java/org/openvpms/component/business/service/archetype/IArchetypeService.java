@@ -215,9 +215,9 @@ public interface IArchetypeService {
      * @param activeOnly
      *            whether to retrieve only the active objects            
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction   (optional)         
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
@@ -258,9 +258,9 @@ public interface IArchetypeService {
      * @param activeOnly
      *            whether to retrieve only the active objects            
      * @param pagingCriteria
-     *            indicates how the results will be paged
+     *            indicates how the results will be paged. (optional)
      * @param sortCritieria
-     *            indicates how the results will be sorted.            
+     *            indicates how the results will be sorted. (optional)           
      * @return Page<IMObject>
      *            the results and associated context information
      * @throws ArchetypeServiceException
@@ -280,9 +280,9 @@ public interface IArchetypeService {
      * @param shortNames
      *            an array of short names
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request. (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction. (optional)           
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
@@ -316,9 +316,9 @@ public interface IArchetypeService {
      * @param params
      *            a map holding key value pairs.
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request. (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction . (optional)           
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
@@ -368,9 +368,9 @@ public interface IArchetypeService {
      * @param activeOnly
      *            constrain the search to active only.
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request. (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction. (optional)            
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException                                                                     
      */
@@ -407,9 +407,9 @@ public interface IArchetypeService {
      * @param activeOnly 
      *            only areturn acts that are active
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request. (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction . (optional)           
      * @return IPage<Act>
      * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
@@ -442,9 +442,9 @@ public interface IArchetypeService {
      * @param activeOnly 
      *            only return participations that are active
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request. (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction. (optional)            
      * @return IPage<Participation>
      * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
@@ -478,9 +478,9 @@ public interface IArchetypeService {
      * @param activeOnly 
      *            only areturn acts that are active
      * @param pagingCriteria 
-     *            the paging criteria for the request
+     *            the paging criteria for the request. (optional)
      * @param sortCriteria
-     *            the sort node and sort direction            
+     *            the sort node and sort direction. (optional)            
      * @return IPage<Act>
      * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  

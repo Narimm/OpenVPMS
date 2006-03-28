@@ -277,8 +277,6 @@
   <!--  Use the standard role vote -->
   <bean id='archetypeAwareVoter' class='org.openvpms.component.business.service.security.ArchetypeAwareVoter' />
 
-
-
   <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->
   <bean id="ruleServiceProvider"
     class="org.springmodules.jsr94.factory.DefaultRuleServiceProviderFactoryBean">
@@ -315,7 +313,7 @@
     <property name="ruleAdministrator">
       <ref local="ruleAdministrator" />
     </property>
-    <property name="directory" value="target/classes/org/openvpms/rules" />
+    <property name="directory" value="org/openvpms/rules" />
   </bean>
 
   <!-- Jsr94Template -->

@@ -349,10 +349,17 @@ public class ArchetypeService implements IArchetypeService {
         if (distinct.types.size() == 1) {
             // We can only let the database do the sorting and paging if
             // a single type is represented by the class request.
-            page = dao.get(rmName, entityName, conceptName, instanceName, 
-                    distinct.types.iterator().next(), activeOnly, pagingCriteria, 
-                    getSortProperty(distinct.descriptors, sortCriteria), 
-                    isAscending(sortCriteria));
+            try {
+                page = dao.get(rmName, entityName, conceptName, instanceName, 
+                        distinct.types.iterator().next(), activeOnly, pagingCriteria, 
+                        getSortProperty(distinct.descriptors, sortCriteria), 
+                        isAscending(sortCriteria));
+            } catch (IMObjectDAOException exception) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.FailedToFindObjects,
+                        new Object[] { rmName, entityName, conceptName, instanceName}, 
+                        exception);
+            }
         } else {
             // We do not support a search across different classes
             throw new ArchetypeServiceException(
@@ -378,10 +385,17 @@ public class ArchetypeService implements IArchetypeService {
         if (distinct.types.size() == 1) {
             // We can only let the database do the sorting and paging if
             // a single type is represented by the client request.
-            page = dao.get(shortNames, null, distinct.types.iterator().next(), 
-                    activeOnly, pagingCriteria, 
-                    getSortProperty(distinct.descriptors, sortCriteria), 
-                    isAscending(sortCriteria));
+            try {
+                page = dao.get(shortNames, null, distinct.types.iterator().next(), 
+                        activeOnly, pagingCriteria, 
+                        getSortProperty(distinct.descriptors, sortCriteria), 
+                        isAscending(sortCriteria));
+            } catch (IMObjectDAOException exception) {
+                throw new ArchetypeServiceException(
+                        ArchetypeServiceException.ErrorCode.FailedToFindObjectsMatchingShortNames,
+                        new Object[] { distinct.types.toString()}, 
+                        exception);
+            }
         } else {
             // We do not support a search across different classes
             throw new ArchetypeServiceException(
@@ -620,10 +634,13 @@ public class ArchetypeService implements IArchetypeService {
                     + " aConceptName " + aConceptName);
         }
 
+        DistinctTypesResultSet distinct = getDistinctTypes(Act.class.getName(),
+                entityName, aConceptName);
         try {
             return dao.getActs(ref, pConceptName, entityName, aConceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, status, activeOnly, 
-                    pagingCriteria, sortCriteria.getSortNode(), isAscending(sortCriteria));
+                    pagingCriteria, getSortProperty(distinct.descriptors, sortCriteria), 
+                    isAscending(sortCriteria));
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetActForEntity,
@@ -647,10 +664,14 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.EntityConceptNotSpecified);
         }
         
+        DistinctTypesResultSet distinct = getDistinctTypes(Act.class.getName(),
+                entityName, conceptName);
+        
         try {
             return dao.getActs(entityName, conceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, status, activeOnly, 
-                    pagingCriteria, sortCriteria.getSortNode(), isAscending(sortCriteria));
+                    pagingCriteria, getSortProperty(distinct.descriptors, sortCriteria), 
+                    isAscending(sortCriteria));
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetActs,
@@ -672,10 +693,14 @@ public class ArchetypeService implements IArchetypeService {
                     + " conceptName " + conceptName);
         }
 
+        DistinctTypesResultSet distinct = getDistinctTypes(Participation.class.getName(),
+                null, conceptName);
+
         try {
             return dao.getParticipations(ref, conceptName, startTimeFrom, 
                     startTimeThru, endTimeFrom, endTimeThru, activeOnly,
-                    pagingCriteria, sortCriteria.getSortNode(), isAscending(sortCriteria));
+                    pagingCriteria, getSortProperty(distinct.descriptors, sortCriteria), 
+                    isAscending(sortCriteria));
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToGetParticipations,
@@ -1128,6 +1153,46 @@ public class ArchetypeService implements IArchetypeService {
         return results;
     }
 
+
+    /**
+     * Iterate through all the archetype descriptors and return those matching
+     * the specified class name, entity and concept name. 
+     * 
+     * @param clazz
+     *            the class name (mandatory)
+     * @param entityName
+     *            the entity name (complete or partial)
+     * @param concept
+     *            the concept name (complete or partial)            
+     * @return DistinctTypesResultSet
+     */
+    @SuppressWarnings("unchecked")
+    private DistinctTypesResultSet getDistinctTypes(String clazz, String entityName,
+            String concept) {
+        DistinctTypesResultSet results = new DistinctTypesResultSet();
+        
+        results.types.add(clazz);
+
+        // modify to regular expression syntax
+        String modEntityName = (entityName == null) ? null : 
+            entityName.replace(".", "\\.").replace("*", ".*");
+        String modConcept = (concept == null) ? null :
+            concept.replace(".", "\\.").replace("*", ".*");
+        
+        // search through the cache for matching archetype descriptors
+        for (ArchetypeDescriptor desc : dCache.getArchetypeDescriptors()) {
+            ArchetypeId archId = desc.getType();
+            if ((desc.getClassName().equals(clazz)) &&
+                (StringUtils.isEmpty(modEntityName) || 
+                 archId.getEntityName().matches(modEntityName)) &&
+                (StringUtils.isEmpty(modConcept) ||
+                 archId.getConcept().equals(modConcept))) {
+                results.descriptors.add(desc);
+            }
+        }
+
+        return results;
+    }
 
     /**
      * Iterate through all the archetype short names and return the distinct 

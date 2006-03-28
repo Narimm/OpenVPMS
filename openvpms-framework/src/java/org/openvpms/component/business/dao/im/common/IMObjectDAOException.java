@@ -48,7 +48,8 @@ public class IMObjectDAOException extends RuntimeException implements
         FailedToFindParticipations,
         FailedToFindActs,
         FailedToFindIMObjectReference,
-        FailedToFindObjectsWithArchetypes
+        FailedToFindObjectsWithArchetypes,
+        InvalidQueryString
     }
 
     /**

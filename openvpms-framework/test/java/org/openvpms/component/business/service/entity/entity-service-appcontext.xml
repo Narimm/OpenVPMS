@@ -108,7 +108,7 @@
   <!--  The Archetype Descriptor Cache -->
   <bean id="archetypeDescriptorCache"
     class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS">
-    <constructor-arg index="0" value="target/classes/org/openvpms/archetype" />
+    <constructor-arg index="0" value="org/openvpms/archetype" />
     <constructor-arg index="1">
       <list>
         <value>adl</value>

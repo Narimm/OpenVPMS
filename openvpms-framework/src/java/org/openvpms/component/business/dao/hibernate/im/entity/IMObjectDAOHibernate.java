@@ -678,8 +678,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             queryString.append("select act from ");
             queryString.append(Act.class.getName());
             queryString.append(" as act ");
-            queryString
-                    .append(" left outer join act.participations as participation ");
+            queryString.append(" left outer join act.participations as participation ");
 
             // check to see if one or more of the values have been specified
             if ((!StringUtils.isEmpty(entityName))
@@ -704,27 +703,24 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
 
             // process the participant concept name
-            if (StringUtils.isEmpty(pConceptName) == false) {
+            if (!StringUtils.isEmpty(pConceptName)) {
                 if (andRequired) {
                     queryString.append(" and ");
                 }
 
                 names.add("pConceptName");
                 andRequired = true;
-                if ((pConceptName.endsWith("*"))
-                        || (pConceptName.startsWith("*"))) {
-                    queryString
-                            .append(" participation.archetypeId.concept like :pConceptName");
+                if ((pConceptName.endsWith("*")) || (pConceptName.startsWith("*"))) {
+                    queryString.append(" participation.archetypeId.concept like :pConceptName");
                     params.add(pConceptName.replace("*", "%"));
                 } else {
-                    queryString
-                            .append(" participation.archetypeId.concept = :pConceptName");
+                    queryString.append(" participation.archetypeId.concept = :pConceptName");
                     params.add(pConceptName);
                 }
             }
 
             // process the act entity name
-            if (StringUtils.isEmpty(entityName) == false) {
+            if (!StringUtils.isEmpty(entityName)) {
                 if (andRequired) {
                     queryString.append(" and ");
                 }
@@ -732,32 +728,27 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 names.add("entityName");
                 andRequired = true;
                 if ((entityName.endsWith("*")) || (entityName.startsWith("*"))) {
-                    queryString
-                            .append(" act.archetypeId.entityName like :entityName");
+                    queryString.append(" act.archetypeId.entityName like :entityName");
                     params.add(entityName.replace("*", "%"));
                 } else {
-                    queryString
-                            .append(" act.archetypeId.entityName = :entityName");
+                    queryString.append(" act.archetypeId.entityName = :entityName");
                     params.add(entityName);
                 }
             }
 
             // process the activity concept name
-            if (StringUtils.isEmpty(aConceptName) == false) {
+            if (!StringUtils.isEmpty(aConceptName)) {
                 if (andRequired) {
                     queryString.append(" and ");
                 }
 
                 names.add("aConceptName");
                 andRequired = true;
-                if ((aConceptName.endsWith("*"))
-                        || (aConceptName.startsWith("*"))) {
-                    queryString
-                            .append(" act.archetypeId.concept like :aConceptName");
+                if ((aConceptName.endsWith("*"))|| (aConceptName.startsWith("*"))) {
+                    queryString.append(" act.archetypeId.concept like :aConceptName");
                     params.add(aConceptName.replace("*", "%"));
                 } else {
-                    queryString
-                            .append(" act.archetypeId.concept = :aConceptName");
+                    queryString.append(" act.archetypeId.concept = :aConceptName");
                     params.add(aConceptName);
                 }
             }
@@ -1032,7 +1023,16 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             // first query the number of rows
             Query query = null;
             if (numOfRows != PagingCriteria.ALL_ROWS) {
-                query = session.createQuery("select count(*) " + queryString);
+                int indexOfFrom = queryString.indexOf("from");
+                if (indexOfFrom >= 0) {
+                    query = session.createQuery("select count(*) " 
+                            + queryString.substring(indexOfFrom));
+                } else {
+                    throw new IMObjectDAOException(
+                            IMObjectDAOException.ErrorCode.InvalidQueryString,
+                            new Object[] {queryString});
+                }
+                
                 // set the parameters if specified
                 if (names != null) {
                     for (int index = 0; index < names.size(); index++) {
