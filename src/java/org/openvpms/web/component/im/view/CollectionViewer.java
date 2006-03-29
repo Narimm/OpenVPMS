@@ -96,7 +96,7 @@ public class CollectionViewer extends Column {
         for (Object value : values) {
             objects.add((IMObject) value);
         }
-        ResultSet set = new PreloadedResultSet(objects, ROWS);
+        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
         _table = new PagedIMObjectTable(model, set);
         _table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

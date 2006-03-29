@@ -525,7 +525,7 @@ public class CollectionEditor implements Saveable {
      */
     private void populateTable() {
         List<IMObject> objects = getObjects();
-        ResultSet set = new PreloadedResultSet(objects, ROWS);
+        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
         _table.setResultSet(set);
     }
 

@@ -1,9 +1,17 @@
 package org.openvpms.web.app.customer;
 
+import java.util.List;
+
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -39,6 +47,11 @@ public class EstimationWorkspace extends ActWorkspace {
      * @return a new query
      */
     protected ActQuery createQuery(Party customer) {
-        return new ActQuery(customer, "act", "estimation");
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor("act.estimation");
+        NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
+        ILookupService lookup = ServiceHelper.getLookupService();
+        List<Lookup> lookups = lookup.get(descriptor);
+        return new ActQuery(customer, "act", "estimation", lookups);
     }
 }

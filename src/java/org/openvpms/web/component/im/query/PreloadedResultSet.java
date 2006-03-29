@@ -30,7 +30,8 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class PreloadedResultSet extends AbstractResultSet<IMObject> {
+public class PreloadedResultSet<T extends IMObject>
+        extends AbstractResultSet<T> {
 
     /**
      * The logger.
@@ -40,7 +41,7 @@ public class PreloadedResultSet extends AbstractResultSet<IMObject> {
     /**
      * The query objects.
      */
-    private final List<IMObject> _objects;
+    private final List<T> _objects;
 
     /**
      * The sort node.
@@ -59,7 +60,7 @@ public class PreloadedResultSet extends AbstractResultSet<IMObject> {
      * @param objects the objects
      * @param rows    the maximum no. of rows per page
      */
-    public PreloadedResultSet(List<IMObject> objects, int rows) {
+    public PreloadedResultSet(List<T> objects, int rows) {
         super(rows);
         _objects = objects;
 
@@ -109,7 +110,7 @@ public class PreloadedResultSet extends AbstractResultSet<IMObject> {
      * @return the page corresponding to <code>page</code>, or <code>null</code>
      *         if none exists
      */
-    protected IPage<IMObject> getPage(PagingCriteria criteria) {
+    protected IPage<T> getPage(PagingCriteria criteria) {
         int from = criteria.getFirstRow();
         int count = criteria.getNumOfRows();
         int to;
@@ -119,9 +120,8 @@ public class PreloadedResultSet extends AbstractResultSet<IMObject> {
         } else {
             to = from + count;
         }
-        List<IMObject> rows
-                = new ArrayList<IMObject>(_objects.subList(from, to));
-        return new Page<IMObject>(rows, criteria, _objects.size());
+        List<T> rows = new ArrayList<T>(_objects.subList(from, to));
+        return new Page<T>(rows, criteria, _objects.size());
     }
 
     /**

@@ -66,7 +66,7 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
                                                          context);
         Act act = (Act) object;
         List<IMObject> acts = getActs(act);
-        ResultSet set = new PreloadedResultSet(acts, 25);
+        ResultSet set = new PreloadedResultSet<IMObject>(acts, 25);
         return new PagedIMObjectTable(model, set);
     }
 

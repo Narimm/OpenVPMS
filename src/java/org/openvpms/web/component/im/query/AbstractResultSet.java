@@ -310,12 +310,15 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page
+     * @return the page, or <code>null</code> if there is no such page
      */
     protected IPage<T> get(int page) {
         int row = page * _rowsPerPage;
         if (_page == null || _page.getPagingCriteria().getFirstRow() != row) {
             _page = getPage(new PagingCriteria(row, _rowsPerPage));
+            if (_page.getRows().isEmpty()) {
+                _page = null;
+            }
         }
         return _page;
     }
