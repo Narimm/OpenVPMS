@@ -37,7 +37,7 @@ public class EstimationWorkspace extends ActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("customer.estimation.createtype");
-        return new EstimationCRUDWindow(type, "common", "act", "estimation");
+        return new EstimationCRUDWindow(type, "common", "act", "customerEstimation");
     }
 
     /**
@@ -48,10 +48,10 @@ public class EstimationWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.estimation");
+                = DescriptorHelper.getArchetypeDescriptor("act.customerEstimation");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         ILookupService lookup = ServiceHelper.getLookupService();
         List<Lookup> lookups = lookup.get(descriptor);
-        return new ActQuery(customer, "act", "estimation", lookups);
+        return new ActQuery(customer, "act", "customerEstimation", lookups);
     }
 }

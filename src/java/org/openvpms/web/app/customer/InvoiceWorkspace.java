@@ -37,7 +37,7 @@ public class InvoiceWorkspace extends ActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("customer.invoice.createtype");
-        return new InvoiceCRUDWindow(type, "common", "act", "customer*");
+        return new InvoiceCRUDWindow(type, "common", "act", "customerAccountCharges*");
     }
 
     /**
@@ -48,11 +48,11 @@ public class InvoiceWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.customerInvoice");
+                = DescriptorHelper.getArchetypeDescriptor("act.customerAccountChargesInvoice");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         ILookupService lookup = ServiceHelper.getLookupService();
         List<Lookup> lookups = lookup.get(descriptor);
-        return new ActQuery(customer, "act", "customer*", lookups, "Posted");
+        return new ActQuery(customer, "act", "customerAccountCharges*", lookups, "Posted");
     }
 
 }

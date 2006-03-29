@@ -18,7 +18,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.estimationItem</em>.
+ * <em>act.customerEstimationItem</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -57,7 +57,7 @@ public class EstimationItemEditor extends ActItemEditor {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(object);
             if (archetype != null
-                && archetype.getShortName().equals("act.estimationItem")) {
+                && archetype.getShortName().equals("act.customerEstimationItem")) {
                 result = new EstimationItemEditor((Act) object, parent,
                                                   descriptor, context);
             }

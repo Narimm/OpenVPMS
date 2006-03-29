@@ -18,7 +18,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerInvoiceItem</em> and <em>act.customerCreditItem</em>.
+ * <em>act.customerInvoiceItem</em> and <em>act.customerAccountCreditItem</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -58,8 +58,8 @@ public class InvoiceItemEditor extends ActItemEditor {
                     = DescriptorHelper.getArchetypeDescriptor(object);
             if (archetype != null) {
                 String shortName = archetype.getShortName();
-                if (shortName.equals("act.customerInvoiceItem")
-                    || shortName.equals("act.customerCreditItem")) {
+                if (shortName.equals("act.customerAccountInvoiceItem")
+                    || shortName.equals("act.customerAccountCreditItem")) {
                     result = new InvoiceItemEditor((Act) object, parent,
                                                    descriptor, context);
                 }

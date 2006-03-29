@@ -22,7 +22,7 @@ import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
- * Table model for {@link Act}s of archetype <em>"act.estimationItem"</em>.
+ * Table model for {@link Act}s of archetype <em>"act.customerEstimationItem"</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$

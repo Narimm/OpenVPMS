@@ -18,12 +18,17 @@ public class InvoiceCRUDWindow extends ActCRUDWindow {
     /**
      * Invoice act type.
      */
-    private static final String INVOICE_TYPE = "act.customerInvoice";
+    private static final String INVOICE_TYPE = "act.customerAccountChargesInvoice";
 
     /**
      * Credit act type.
      */
-    private static final String CREDIT_TYPE = "act.customerCredit";
+    private static final String CREDIT_TYPE = "act.customerAccountChargesCredit";
+
+    /**
+     * Counter Sale act type.
+     */
+    private static final String COUNTER_TYPE = "act.customerAccountChargesCounter";
 
 
     /**
@@ -85,7 +90,7 @@ public class InvoiceCRUDWindow extends ActCRUDWindow {
             }
         };
 
-        String[] shortNames = {INVOICE_TYPE, CREDIT_TYPE};
+        String[] shortNames = {INVOICE_TYPE, CREDIT_TYPE, COUNTER_TYPE};
         IMObjectCreator.create(getTypeDisplayName(), shortNames, listener);
     }
 

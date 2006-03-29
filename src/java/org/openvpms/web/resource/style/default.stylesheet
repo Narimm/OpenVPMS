@@ -112,7 +112,7 @@
     <style name="ActWorkspace.Layout" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="true"/>
-            <property name="separatorPosition" value="300px"/>
+            <property name="separatorPosition" value="150px"/>
         </properties>
     </style>
 
@@ -169,9 +169,12 @@
     <style name="EditDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="closable" value="false"/>
-            <property name="width" value="1024px"/>
-            <property name="height" value="768px"/>
+            <property name="closable" value="true"/>
+            <property name="font">
+                <font size="9pt"/>
+            </property>
+            <property name="width" value="800px"/>
+            <property name="height" value="675px"/>
             <property name="resizable" value="true"/>
         </properties>
     </style>
@@ -180,8 +183,13 @@
     <style name="BrowserDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
         <properties>
+            <property name="closable" value="true"/>
             <property name="width" value="800px"/>
-            <property name="height" value="600px"/>
+            <property name="height" value="675px"/>
+            <property name="resizable" value="true"/>
+            <property name="font">
+                <font size="9pt"/>
+            </property>
         </properties>
     </style>
 
@@ -195,7 +203,7 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="800px"/>
-            <property name="height" value="600px"/>
+            <property name="height" value="675px"/>
         </properties>
     </style>
 
@@ -410,6 +418,9 @@
                 </fill-image>
             </property-->
             <property name="titleForeground" value="#ffffff"/>
+            <property name="font">
+                <font size="9pt"/>
+            </property>
             <property name="border">
                 <fill-image-border content-insets="8px 8px 14px 14px"
                                    border-insets="17px 17px 23px 23px">
@@ -579,6 +590,22 @@
             <property name="border">
                 <border size="1px" style="inset" color="#f0e68c"/>
                 <!-- khaki -->
+            </property>
+        </properties>
+    </style>
+
+    <style name="default" type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="background" value="#fffacd"/>
+            <!-- lemonchiffon -->
+            <property name="foreground" value="#000000"/>
+            <!-- black -->
+            <property name="border">
+                <border size="1px" style="inset" color="#f0e68c"/>
+                <!-- khaki -->
+            </property>
+            <property name="font">
+                <font size="9pt"/>
             </property>
         </properties>
     </style>
