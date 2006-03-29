@@ -152,7 +152,7 @@ public class ActQuery implements Query {
             for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
                  iterator.hasNext();) {
                 Lookup lookup = iterator.next();
-                if (lookup.getCode().equals(_excludeStatus)) {
+                if (lookup.getValue().equals(_excludeStatus)) {
                     iterator.remove();
                 }
             }

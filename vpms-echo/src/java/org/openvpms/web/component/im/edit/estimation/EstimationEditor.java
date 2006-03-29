@@ -15,7 +15,7 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.estimation</em>.
+ * <em>act.customerEstimation</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -58,7 +58,7 @@ public class EstimationEditor extends ActEditor {
                 if (items != null) {
                     String[] range = items.getArchetypeRange();
                     if (range.length == 1
-                        && range[0].equals("actRelationship.estimationItem")) {
+                        && range[0].equals("actRelationship.customerEstimationItem")) {
                         result = new EstimationEditor((Act) object, parent,
                                                       descriptor, context);
                     }
@@ -77,7 +77,7 @@ public class EstimationEditor extends ActEditor {
         Property highTotal = getProperty("highTotal");
         Property lowTotal = getProperty("lowTotal");
 
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.estimationItem");
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerEstimationItem");
         NodeDescriptor highDesc = archetype.getNodeDescriptor("highTotal");
         NodeDescriptor lowDesc = archetype.getNodeDescriptor("lowTotal");
         BigDecimal low = new BigDecimal(0);

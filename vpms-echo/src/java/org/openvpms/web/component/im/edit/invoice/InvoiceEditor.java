@@ -15,7 +15,7 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerInvoice</em> and <em>act.customerCredit</em>.
+ * <em>act.customerInvoice</em> and <em>act.customerAccountChargesCredit</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -54,11 +54,12 @@ public class InvoiceEditor extends ActEditor {
                     = DescriptorHelper.getArchetypeDescriptor(object);
             if (archetype != null) {
                 NodeDescriptor items = archetype.getNodeDescriptor("items");
+                
                 if (items != null) {
                     String[] range = items.getArchetypeRange();
                     if (range.length == 1
-                        && (range[0].equals("actRelationship.customerInvoiceItem")
-                            || range[0].equals("actRelationship.customerCreditItem")))
+                        && (range[0].equals("actRelationship.customerAccountInvoiceItem")
+                            || range[0].equals("actRelationship.customerAccountCreditItem")))
                     {
                         result = new InvoiceEditor((Act) object, parent,
                                                    descriptor, context);
@@ -77,7 +78,7 @@ public class InvoiceEditor extends ActEditor {
     protected void updateTotals() {
         Property total = getProperty("total");
 
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerInvoiceItem");
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerAccountInvoiceItem");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("total");
         BigDecimal value = new BigDecimal(0);
         for (Act act : getEditor().getActs()) {
