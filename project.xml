@@ -365,7 +365,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>1.0</version>
+            <version>1.2</version>
             <url>http://jakarta.apache.org/commons/io/</url>
             <properties>
                 <war.bundle>false</war.bundle>
@@ -533,7 +533,7 @@
             <version>1.3-20060323</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
@@ -614,7 +614,16 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>0.6-SNAPSHOT</version>
+            <version>0.6-20060329.051941</version>
+            <url>http://www.openvpms.org</url>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-archetypes</artifactId>
+            <version>0.3-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>

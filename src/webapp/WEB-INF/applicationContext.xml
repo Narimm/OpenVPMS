@@ -3,9 +3,10 @@
         "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-    <!-- ========================================================================== -->
-    <!-- ========================= GENERAL DEFINITIONS ============================ -->
-    <!-- ========================================================================== -->
+
+    <!-- ================================================================== -->
+    <!-- ======================= GENERAL DEFINITIONS ====================== -->
+    <!-- ================================================================== -->
 
     <!--  Property configuration -->
     <bean id="props"
@@ -17,9 +18,9 @@
         </property>
     </bean>
 
-    <!-- ========================================================================== -->
-    <!-- ========================= RESOURCE DEFINITIONS =========================== -->
-    <!-- ========================================================================== -->
+    <!-- ================================================================== -->
+    <!-- ======================= RESOURCE DEFINITIONS ===================== -->
+    <!-- ================================================================== -->
 
     <!--  The MySQL DataSource -->
     <bean id="mySQLDataSource"
@@ -121,9 +122,10 @@
         </property>
     </bean>
 
-    <!-- ========================================================================== -->
-    <!-- =============== DAO DEFINITIONS ========================================== -->
-    <!-- ========================================================================== -->
+    <!-- ================================================================== -->
+    <!-- ========================= DAO DEFINITIONS ======================== -->
+    <!-- ================================================================== -->
+
     <!--  The Lookup DAO bean -->
     <bean id="lookupDao"
           class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
@@ -131,6 +133,7 @@
             <ref local="sessionFactory"/>
         </property>
     </bean>
+
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
@@ -139,9 +142,10 @@
         </property>
     </bean>
 
-    <!-- ========================================================================== -->
-    <!-- =============== BUSINESS SERVICE BEANS =================================== -->
-    <!-- ========================================================================== -->
+    <!-- ================================================================== -->
+    <!-- ==================== BUSINESS SERVICE BEANS======================= -->
+    <!-- ================================================================== -->
+
     <!--  The Archetype Descriptor Cache -->
     <bean id="archetypeDescriptorCache"
           class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
@@ -158,6 +162,7 @@
             <ref local="imObjectDao"/>
         </property>
     </bean>
+
     <!--  The Lookup Service -->
     <bean id="lookupService"
           class="org.openvpms.component.business.service.lookup.LookupService">
@@ -168,13 +173,50 @@
             <ref bean="lookupDao"/>
         </constructor-arg>
     </bean>
-    <!-- ========================================================================== -->
-    <!-- =============== SECURITY DEFINITIONS (ACEGI SECURITY)===================== -->
-    <!-- ========================================================================== -->
+
+    <!-- ================================================================== -->
+    <!-- ======================= ARCHETYPE SUPPORT ======================== -->
+    <!-- ================================================================== -->
+
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper"
+          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg index="0">
+            <props>
+                <prop key="openvpms">
+                    org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions</prop>
+                <prop key="party">
+                    org.openvpms.archetype.function.party.PartyFunctions</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+
+    <!--  The Archetype Service Functions Bean -->
+    <bean id="archetypeServiceFunctions"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  The Party Functions Bean -->
+    <bean id="partyFunctions"
+          class="org.openvpms.archetype.function.party.PartyFunctions">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
+
+    <!-- =============== SECURITY DEFINITIONS (ACEGI SECURITY)============= -->
+    <!-- ================================================================== -->
 
     <!--  see applicationContext-security.xml -->
 
-    <!-- -->
+
+    <!-- ================================================================== -->
+    <!-- ====================== APPLICATION =============================== -->
+    <!-- ================================================================== -->
+
     <bean id="app" class="org.openvpms.web.app.OpenVPMSApp" singleton="false"/>
 
 </beans>
