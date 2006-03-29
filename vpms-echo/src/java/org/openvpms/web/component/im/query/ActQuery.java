@@ -2,9 +2,11 @@ package org.openvpms.web.component.im.query;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 
 import echopointng.DateField;
 import nextapp.echo2.app.CheckBox;
@@ -16,23 +18,19 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.search.IPage;
 import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -74,6 +72,16 @@ public class ActQuery implements Query {
     private String _status;
 
     /**
+     * The act status lookups.
+     */
+    private final List<Lookup> _statusLookups;
+
+    /**
+     * Status to exclude. May be <code>null</code>
+     */
+    private final String _excludeStatus;
+
+    /**
      * Indicates if all start dates should be queried. If so, the startFrom and
      * startTo dates are ignored.
      */
@@ -113,14 +121,44 @@ public class ActQuery implements Query {
     /**
      * Construct a new <code>ActQuery</code>.
      *
-     * @param entity      the entity to search for
-     * @param entityName  the act entity name
-     * @param conceptName the act concept name
+     * @param entity        the entity to search for
+     * @param entityName    the act entity name
+     * @param conceptName   the act concept name
+     * @param statusLookups the act status lookups
      */
-    public ActQuery(Entity entity, String entityName, String conceptName) {
+    public ActQuery(Entity entity, String entityName, String conceptName,
+                    List<Lookup> statusLookups) {
+        this(entity, entityName, conceptName, statusLookups, null);
+    }
+
+    /**
+     * Construct a new <code>ActQuery</code>.
+     *
+     * @param entity        the entity to search for
+     * @param entityName    the act entity name
+     * @param conceptName   the act concept name
+     * @param statusLookups the act status lookups
+     * @param excludeStatus to exclude. May be <code>null</code>
+     */
+    public ActQuery(Entity entity, String entityName, String conceptName,
+                    List<Lookup> statusLookups,
+                    String excludeStatus) {
         setEntity(entity);
         _entityName = entityName;
         _conceptName = conceptName;
+        _excludeStatus = excludeStatus;
+        if (_excludeStatus != null) {
+            _statusLookups = new ArrayList<Lookup>(statusLookups);
+            for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
+                 iterator.hasNext();) {
+                Lookup lookup = iterator.next();
+                if (lookup.getCode().equals(_excludeStatus)) {
+                    iterator.remove();
+                }
+            }
+        } else {
+            _statusLookups = statusLookups;
+        }
     }
 
     /**
@@ -176,12 +214,7 @@ public class ActQuery implements Query {
      * Lays out the component.
      */
     protected void doLayout() {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.estimation");
-        NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        ILookupService lookup = ServiceHelper.getLookupService();
-        List<Lookup> lookups = lookup.get(descriptor);
-        LookupListModel model = new LookupListModel(lookups, true);
+        LookupListModel model = new LookupListModel(_statusLookups, true);
         _statusSelector = SelectFieldFactory.create(model);
         _statusSelector.setCellRenderer(new LookupListCellRenderer());
         _statusSelector.addActionListener(new ActionListener() {
@@ -237,7 +270,7 @@ public class ActQuery implements Query {
      * @return the query result set
      */
     public ResultSet query(int rows, String node, boolean ascending) {
-        ResultSet result = null;
+        ResultSet<Act> result = null;
         if (_entityId != null) {
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
@@ -247,6 +280,9 @@ public class ActQuery implements Query {
             }
             result = new ActResultSet(_entityId, _entityName, _conceptName,
                                       startFrom, startTo, _status, rows, order);
+            if (_excludeStatus != null) {
+                result = filter(result, _excludeStatus);
+            }
         }
         return result;
     }
@@ -383,5 +419,28 @@ public class ActQuery implements Query {
         calendar.setTime(date);
         field.getDateChooser().setSelectedDate(calendar);
     }
+
+    /**
+     * Filters a result set to remove acts with a particular status.
+     *
+     * @param set    the result set to filter
+     * @param status the status to exclude
+     * @return the filtered result set
+     * @todo this is a workaround for OVPMS-254
+     */
+    private ResultSet<Act> filter(ResultSet<Act> set, String status) {
+        List<Act> acts = new ArrayList<Act>(set.getRows());
+        while (set.hasNext()) {
+            IPage<Act> page = set.next();
+            for (Act act : page.getRows()) {
+                if (!status.equals(act.getStatus())) {
+                    acts.add(act);
+                }
+            }
+        }
+        return new PreloadedResultSet<Act>(acts, set.getRowsPerPage());
+    }
+
 }
+
 
