@@ -1,34 +1,28 @@
 <archetypes>
-	<archetype name="openvpms-common-act.estimation.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Estimation" >
+	<archetype name="openvpms-common-act.customerAccountChargesCredit.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Customer Credit" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/title, '')" />
+			derivedValue="concat('Customer Credit', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/title, ' Low Estimate: ',/lowTotal,' High Estimate: ', /highTotal)" />
-		<node name="estimationDate" path="/activityStartTime"
+			derivedValue="concat(' Description of the Customer Credit Act', ' ')" />
+		<node name="invoiceDate" path="/activityStartTime"
 			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="title" path="/title" type="java.lang.String" minCardinality="1" maxLength="30" defaultValue="'Enter a title ...'" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="lowTotal" path="/details/attributes/lowTotal" type="java.math.BigDecimal" 
-				defaultValue="'0.0'" minCardinality="1" />
-			<node name="highTotal" path="/details/attributes/highTotal" type="java.math.BigDecimal" 
-				defaultValue="'0.0'" minCardinality="1" />
-			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1" />			
+			<node name="total" path="/details/attributes/total" 
+                        type="java.math.BigDecimal" minCardinality="1"
+                        defaultValue="'0.0'"/>
+			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" />			
 		</node>
 		<node name="status" path="/status" type="java.lang.String"
 			minCardinality="1">
-			<assertion name="lookup.local">
-				<propertyList name="entries">
-					<property name="In Progress" value="In Progress" />
-					<property name="Completed" value="Completed" />
-					<property name="Cancelled" value="Cancelled" />
-					<property name="Posted" value="Posted" />
-				</propertyList>
+			<assertion name="lookup">
+				<property name="type" value="lookup" />
+				<property name="concept" value="chargeStatus" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
@@ -38,7 +32,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="actRelationship.estimationItem" />
+							value="actRelationship.customerAccountCreditItem" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

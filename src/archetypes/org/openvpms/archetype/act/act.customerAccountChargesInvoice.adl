@@ -1,13 +1,13 @@
 <archetypes>
-	<archetype name="openvpms-common-act.customerCredit.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Customer Credit" >
+	<archetype name="openvpms-common-act.customerAccountChargesInvoice.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Customer Invoice" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Customer Credit', '')" />
+			derivedValue="concat('Customer Invoice', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Description of the Customer Credit Act', ' ')" />
+			derivedValue="concat(' Description of the Customer Invoice Act', ' ')" />
 		<node name="invoiceDate" path="/activityStartTime"
 			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="details" path="/details" hidden="true"
@@ -20,13 +20,9 @@
 		</node>
 		<node name="status" path="/status" type="java.lang.String"
 			minCardinality="1">
-			<assertion name="lookup.local">
-				<propertyList name="entries">
-					<property name="In Progress" value="In Progress" />
-					<property name="Completed" value="Completed" />
-					<property name="On Hold" value="Cancelled" />
-					<property name="Posted" value="Posted" />
-				</propertyList>
+			<assertion name="lookup">
+				<property name="type" value="lookup" />
+				<property name="concept" value="chargeStatus" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
@@ -36,7 +32,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="actRelationship.customerCreditItem" />
+							value="actRelationship.customerAccountInvoiceItem" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

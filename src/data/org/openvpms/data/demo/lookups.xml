@@ -8,6 +8,10 @@
 	<data id="ST6" archetype="lookup.state" state="Tasmania" />
 	<data id="ST7" archetype="lookup.state" state="Australian Capital Territory" />
 	<data id="ST8" archetype="lookup.state" state="Queensland" />
+	<data archetype="lookup.chargeStatus" status="In Progress" />
+	<data archetype="lookup.chargeStatus" status="Completed" />
+	<data archetype="lookup.chargeStatus" status="On Hold" />
+	<data archetype="lookup.chargeStatus" status="Posted" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST1" type="country.state" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST2" type="country.state" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST3" type="country.state" />
