@@ -1,26 +1,26 @@
 <archetypes>
-	<archetype name="openvpms-common-act.estimationItem.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Estimation Item" >
+	<archetype name="openvpms-common-act.customerAccountCreditItem.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Customer Credit Item" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat('need derived name', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Description of the Estimation Product', ' ')" />
+			derivedValue="concat(' Description of the Customer Credit Item', ' ')" />
 		<node name="participants" path="/participations" parentChild="true"
 			type="java.util.HashSet" baseName="Participation" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="participation.patient" />
+							value="participation.product" />
 						<property name="minCardinality" value="0" />
 						<property name="maxCardinality" value="1" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="participation.product" />
+							value="participation.patient" />
 						<property name="minCardinality" value="0" />
 						<property name="maxCardinality" value="1" />
 					</propertyMap>
@@ -37,15 +37,11 @@
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="lowQty" path="/details/attributes/lowQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1" />
-			<node name="highQty" path="/details/attributes/highQty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
-			<node name="fixedPrice" path="/details/attributes/fixedPrice" type="java.math.BigDecimal" defaultValue="0.0" minCardinality="1"/>
-			<node name="lowUnitPrice" path="/details/attributes/lowUnitPrice" type="java.math.BigDecimal" defaultValue="0.0" minCardinality="1"/>
-			<node name="highUnitPrice" path="/details/attributes/highUnitPrice" type="java.math.BigDecimal" defaultValue="0.0" minCardinality="1"/>
-			<node name="lowTotal" path="/details/attributes/lowTotal" type="java.math.BigDecimal" 
-				derived="true" derivedValue="/details/attributes/fixedPrice + /details/attributes/lowQty * /details/attributes/lowUnitPrice" minCardinality="1"/>
-			<node name="highTotal" path="/details/attributes/highTotal" type="java.math.BigDecimal" 
-				derived="true" derivedValue="/details/attributes/fixedPrice + /details/attributes/highQty * /details/attributes/highUnitPrice" minCardinality="1"/>
+			<node name="quantity" path="/details/attributes/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
+			<node name="fixedPrice" path="/details/attributes/fixedPrice" type="java.math.BigDecimal" defaultValue="0.0"/>
+			<node name="unitPrice" path="/details/attributes/unitPrice" type="java.math.BigDecimal" defaultValue="0.0"/>
+			<node name="total" path="/details/attributes/total" type="java.math.BigDecimal" 
+				derived="true" derivedValue="/details/attributes/fixedPrice + /details/attributes/quantity * /details/attributes/unitPrice"/>
 		</node>
 	</archetype>
 </archetypes>
