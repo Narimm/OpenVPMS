@@ -470,6 +470,12 @@
           <include>**/*.xml</include>
         </includes>
       </resource>
+	  <resource>
+        <directory>${basedir}/src/rules</directory>
+        <includes>
+          <include>**/*.drl</include>
+        </includes>
+	  </resource>
     </resources>
   </build>
 
