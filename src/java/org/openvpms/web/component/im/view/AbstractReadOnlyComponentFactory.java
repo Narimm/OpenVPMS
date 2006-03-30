@@ -18,7 +18,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.ReadOnlyProperty;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -36,6 +36,15 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     private static final Log _log
             = LogFactory.getLog(ReadOnlyComponentFactory.class);
+
+    /**
+     * Construct a new <code>AbstractReadOnlyComponentFactory</code>.
+     *
+     * @param context the layout context.
+     */
+    public AbstractReadOnlyComponentFactory(LayoutContext context) {
+        super(context);
+    }
 
     /**
      * Create a component to display the an object.
@@ -63,6 +72,8 @@ public abstract class AbstractReadOnlyComponentFactory
             enable = true;
         } else if (descriptor.isObjectReference()) {
             result = getObjectViewer(context, descriptor);
+            // need to enable this for hyperlinks to work
+            enable = true;
         } else {
             Label label = LabelFactory.create();
             label.setText("No viewer for type " + descriptor.getType());
@@ -164,8 +175,12 @@ public abstract class AbstractReadOnlyComponentFactory
                                         NodeDescriptor descriptor) {
         Property property = getProperty(parent, descriptor);
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        IMObject value = IMObjectHelper.getObject(ref);
-        return new IMObjectReferenceViewer(ref).getComponent();
+        boolean link = true;
+        if (getLayoutContext().isEdit()) {
+            // disable hyperlinks if an edit is in progress.
+            link = false;
+        }
+        return new IMObjectReferenceViewer(ref, link).getComponent();
     }
 
     /**

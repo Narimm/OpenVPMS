@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 
 
@@ -19,15 +20,17 @@ public class IMObjectTableModelFactory {
      * Create a new {@link IMObjectTableModel} given a node descriptor.
      *
      * @param descriptor the node descriptor
+     * @param context    the layout context
      * @return a new table model
      */
-    public static IMObjectTableModel create(NodeDescriptor descriptor) {
+    public static IMObjectTableModel create(NodeDescriptor descriptor,
+                                            LayoutContext context) {
         DefaultIMObjectTableModel result;
         List<ArchetypeDescriptor> archetypes;
         archetypes = DescriptorHelper.getArchetypeDescriptors(
                 descriptor.getArchetypeRange());
         if (EntityRelationshipTableModel.canHandle(archetypes)) {
-            result = new EntityRelationshipTableModel();
+            result = new EntityRelationshipTableModel(context);
         } else {
             result = new DefaultIMObjectTableModel();
         }

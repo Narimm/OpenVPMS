@@ -28,14 +28,22 @@ public class IMObjectReferenceViewer {
      */
     private final IMObjectReference _reference;
 
+    /**
+     * Determines if a hyperlink should be created, to launch a view of the
+     * object.
+     */
+    private final boolean _link;
+
 
     /**
      * Construct a new <code>IMObjectReferenceViewer</code>.
      *
      * @param reference the reference to view
+     * @param link if <code>true</code> enable an hyperlink to the object
      */
-    public IMObjectReferenceViewer(IMObjectReference reference) {
+    public IMObjectReferenceViewer(IMObjectReference reference, boolean link) {
         _reference = reference;
+        _link = link;
     }
 
     /**
@@ -48,14 +56,20 @@ public class IMObjectReferenceViewer {
         final IMObject object = IMObjectHelper.getObject(_reference);
         if (object != null) {
             String text = Messages.get("imobject.name", object.getName());
-            Button button = ButtonFactory.create(null, "hyperlink");
-            button.setText(text);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onView(object);
-                }
-            });
-            result = button;
+            if (_link) {
+                Button button = ButtonFactory.create(null, "hyperlink");
+                button.setText(text);
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        onView(object);
+                    }
+                });
+                result = button;
+            } else {
+                Label label = LabelFactory.create();
+                label.setText(text);
+                result = label;
+            }
         } else {
             Label label = LabelFactory.create();
             label.setText(Messages.get("imobject.none"));

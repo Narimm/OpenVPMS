@@ -41,6 +41,18 @@ public class ActItemTableModel extends DescriptorTableModel {
     }
 
     /**
+     * Determines if selection should be enabled. This implementation returns
+     * <code>true</code> if in edit mode.
+     *
+     * @return <code>true</code> if selection should be enabled; otherwise
+     *         <code>false</code>
+     */
+    @Override
+    public boolean getEnableSelection() {
+        return getLayoutContext().isEdit();
+    }
+
+    /**
      * Helper to create a column model.
      *
      * @param archetype the act archetype descriptor
@@ -55,7 +67,7 @@ public class ActItemTableModel extends DescriptorTableModel {
         ChainedNodeFilter filter = new ChainedNodeFilter();
         filter.add(context.getDefaultNodeFilter());
         filter.add(new NamedNodeFilter("participants"));
-        List<NodeDescriptor> nodes = FilterHelper.filter(null, filter, 
+        List<NodeDescriptor> nodes = FilterHelper.filter(null, filter,
                                                          archetype);
         TableColumnModel columns = new DefaultTableColumnModel();
 

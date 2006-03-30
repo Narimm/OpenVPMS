@@ -130,7 +130,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected IMObjectTableModel createTableModel(LayoutContext context) {
         DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
-        readOnly.setComponentFactory(new TableComponentFactory());
+        readOnly.setComponentFactory(new TableComponentFactory(context));
         return new ActItemTableModel(_actItemDescriptor, readOnly);
     }
 

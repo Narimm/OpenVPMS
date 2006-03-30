@@ -359,7 +359,7 @@ public class CollectionEditor implements Saveable {
      * @return a new table model
      */
     protected IMObjectTableModel createTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(_descriptor);
+        return IMObjectTableModelFactory.create(_descriptor, context);
     }
 
     /**

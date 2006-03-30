@@ -89,7 +89,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
                     = new ActRelationshipTableLayoutStrategy(items);
 
             context = new DefaultLayoutContext(context);
-            context.setComponentFactory(new TableComponentFactory());
+            context.setComponentFactory(new TableComponentFactory(context));
 
             Component child = strategy.apply(object, context);
             box.add(child);
