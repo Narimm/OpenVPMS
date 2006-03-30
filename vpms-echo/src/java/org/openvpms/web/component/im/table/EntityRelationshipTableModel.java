@@ -9,6 +9,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
@@ -22,10 +23,18 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
 
     /**
-     * Construct a new <code>EntityRelationshipTableModel</code>.
+     * Determines if hypelinks should be created for entities.
      */
-    public EntityRelationshipTableModel() {
+    private final boolean _edit;
+
+    /**
+     * Construct a new <code>EntityRelationshipTableModel</code>.
+     *
+     * @param context layout context
+     */
+    public EntityRelationshipTableModel(LayoutContext context) {
         super(createTableColumnModel());
+        _edit = context.isEdit();
     }
 
     /**
@@ -50,14 +59,15 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
     }
 
     /**
-     * Determines if selection should be enabled.
+     * Determines if selection should be enabled. This implementation returns
+     * <code>true</code> if in edit mode.
      *
      * @return <code>true</code> if selection should be enabled; otherwise
      *         <code>false</code>
      */
     @Override
     public boolean getEnableSelection() {
-        return false;
+        return _edit;
     }
 
     /**
@@ -99,9 +109,13 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
                 entity = relationship.getTarget();
             } else if (ref.equals(relationship.getTarget())) {
                 entity = relationship.getSource();
+            } else {
+                entity = relationship.getTarget();
             }
         }
-        return new IMObjectReferenceViewer(entity).getComponent();
+
+        boolean hyperlink = !_edit; // disable hyperlinks when editing
+        return new IMObjectReferenceViewer(entity, hyperlink).getComponent();
     }
 
     /**

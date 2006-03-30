@@ -52,7 +52,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
     public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout,
                           LayoutContext context) {
         super(object, layout);
-        IMObjectComponentFactory factory = new ReadOnlyComponentFactory();
+        IMObjectComponentFactory factory = new ReadOnlyComponentFactory(context);
         if (context == null) {
             _context = new DefaultLayoutContext(factory);
         } else {

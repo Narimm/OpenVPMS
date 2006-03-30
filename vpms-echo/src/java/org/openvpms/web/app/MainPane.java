@@ -133,7 +133,8 @@ public class MainPane extends SplitPane implements ContextChangeListener {
             Workspace workspace = subsystem.getWorkspaceForArchetype(shortName);
             if (workspace != null) {
                 workspace.setObject(context);
-                select(subsystem, workspace);
+                subsystem.setWorkspace(workspace);
+                select(subsystem);
                 break;
             }
         }

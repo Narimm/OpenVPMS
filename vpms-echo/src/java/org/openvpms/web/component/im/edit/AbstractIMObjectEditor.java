@@ -142,7 +142,7 @@ public abstract class AbstractIMObjectEditor
         _descriptor = descriptor;
 
         if (context == null) {
-            _context = new DefaultLayoutContext();
+            _context = new DefaultLayoutContext(true);
         } else {
             _context = new DefaultLayoutContext(context);
         }

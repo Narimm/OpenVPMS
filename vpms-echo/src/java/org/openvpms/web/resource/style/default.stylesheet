@@ -330,12 +330,6 @@
         </properties>
     </style>
 
-    <style name="RelationshipEditor.EntityRow" type="nextapp.echo2.app.Row">
-        <properties>
-            <property name="cellSpacing" value="3px"/>
-        </properties>
-    </style>
-
     <style name="Table.OddRow" type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">

@@ -2,8 +2,8 @@ package org.openvpms.web.component.im.layout;
 
 import nextapp.echo2.app.Component;
 
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.util.TabIndexer;
 
 
@@ -14,6 +14,22 @@ import org.openvpms.web.component.util.TabIndexer;
  * @version $LastChangedDate$
  */
 public interface LayoutContext {
+
+    /**
+     * Determines if this is an edit context.
+     *
+     * @return <code>true</code> if this is an edit context; <code>false</code>
+     *         if it is a view context. Defaults to <code>false</code>
+     */
+    boolean isEdit();
+
+    /**
+     * Sets if this is an edit context.
+     *
+     * @param edit if <code>true</code> this is an edit context; if
+     *             <code>false</code> it is a view context.
+     */
+    void setEdit(boolean edit);
 
     /**
      * Returns the component factory.

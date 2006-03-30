@@ -36,7 +36,7 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
      * @param model   the table columne model
      * @param context the layout context
      */
-    protected DescriptorTableModel(TableColumnModel model,
+    protected DescriptorTableModel(TableColumnModel model, 
                                    LayoutContext context) {
         super(model);
         _context = context;

@@ -89,7 +89,7 @@ public class CollectionViewer extends Column {
      */
     protected void doLayout() {
         IMObjectTableModel model
-                = IMObjectTableModelFactory.create(_descriptor);
+                = IMObjectTableModelFactory.create(_descriptor, _context);
 
         Collection values = (Collection) _descriptor.getValue(_object);
         List<IMObject> objects = new ArrayList<IMObject>();

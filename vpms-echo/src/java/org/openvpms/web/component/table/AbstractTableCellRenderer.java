@@ -81,47 +81,64 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
         if (component.getLayoutData() == null
             && component.getStyleName() == null) {
             component.setStyleName(styleName);
-        } else if (component.getStyleName() == null) {
-            Style style = ApplicationInstance.getActive().getStyle(
-                    Component.class, styleName);
-            if (style != null) {
-                TableLayoutData layout =
-                        (TableLayoutData) component.getLayoutData();
-                TableLayoutData styleLayout
-                        = (TableLayoutData) style.getProperty("layoutData");
-                if (styleLayout != null) {
-                    if (layout.getAlignment() == null) {
-                        layout.setAlignment(styleLayout.getAlignment());
-                    }
-                    if (layout.getBackground() == null) {
-                        layout.setBackground(styleLayout.getBackground());
-                    }
-                    if (layout.getBackgroundImage() == null) {
-                        layout.setBackgroundImage(
-                                styleLayout.getBackgroundImage());
-                    }
-                    if (layout.getInsets() == null) {
-                        layout.setInsets(styleLayout.getInsets());
-                    }
-                }
-            }
         } else {
             Style style = ApplicationInstance.getActive().getStyle(
                     Component.class, styleName);
             if (style != null) {
-                Iterator names = style.getPropertyNames();
-                while (names.hasNext()) {
-                    String name = (String) names.next();
-                    if (component.getProperty(name) == null) {
-                        try {
-                            BeanUtils.setProperty(component, name,
-                                                  style.getProperty(name));
-                        } catch (Throwable ignore) {
-                            // no-op
-                        }
-                    }
+                mergeStyle(style, component);
+            }
+        }
+    }
+
+    /**
+     * Merge style from a stylessheet with a component's properties
+     *
+     * @param style     the style
+     * @param component the component
+     */
+    private void mergeStyle(Style style, Component component) {
+        Iterator names = style.getPropertyNames();
+        while (names.hasNext()) {
+            String name = (String) names.next();
+            if (name.equals("layoutData")
+                && component.getLayoutData() != null) {
+                TableLayoutData from;
+                TableLayoutData to;
+
+                from = (TableLayoutData) style.getProperty(name);
+                to = (TableLayoutData) component.getLayoutData();
+                if (to != null) {
+                    mergeLayoutData(from, to);
+                }
+            } else if (component.getProperty(name) == null) {
+                try {
+                    BeanUtils.setProperty(component, name,
+                                          style.getProperty(name));
+                } catch (Throwable ignore) {
+                    // no-op
                 }
             }
+        }
+    }
+
+    /**
+     * Merge layout data.
+     *
+     * @param from the layout data to merge from
+     * @param to   the layout data to merge to
+     */
+    private void mergeLayoutData(TableLayoutData from, TableLayoutData to) {
+        if (to.getAlignment() == null) {
+            to.setAlignment(from.getAlignment());
+        }
+        if (to.getBackground() == null) {
+            to.setBackground(from.getBackground());
+        }
+        if (to.getBackgroundImage() == null) {
+            to.setBackgroundImage(from.getBackgroundImage());
+        }
+        if (to.getInsets() == null) {
+            to.setInsets(to.getInsets());
         }
     }
 }

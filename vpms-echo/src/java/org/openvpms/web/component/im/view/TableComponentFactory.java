@@ -7,6 +7,7 @@ import nextapp.echo2.app.layout.TableLayoutData;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -18,6 +19,15 @@ import org.openvpms.web.component.util.LabelFactory;
  * @version $LastChangedDate$
  */
 public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
+
+    /**
+     * Construct a new <code>TableComponentFactory</code>.
+     *
+     * @param context the layout context.
+     */
+    public TableComponentFactory(LayoutContext context) {
+        super(context);
+    }
 
     /**
      * Returns a component to display a lookup.

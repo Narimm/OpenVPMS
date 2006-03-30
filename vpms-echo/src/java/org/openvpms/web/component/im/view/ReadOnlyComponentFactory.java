@@ -7,6 +7,7 @@ import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -16,6 +17,15 @@ import org.openvpms.web.component.util.TextComponentFactory;
  * @version $LastChangedDate$
  */
 public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
+
+    /**
+     * Construct a new <code>ReadOnlyComponentFactory</code>.
+     *
+     * @param context the layout context.
+     */
+    public ReadOnlyComponentFactory(LayoutContext context) {
+        super(context);
+    }
 
     /**
      * Returns a component to display a lookup.

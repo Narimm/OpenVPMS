@@ -18,6 +18,11 @@ import org.openvpms.web.component.util.TabIndexer;
 public class DefaultLayoutContext implements LayoutContext {
 
     /**
+     * Determines if this is an edit context.
+     */
+    private boolean _edit;
+
+    /**
      * The component factory.
      */
     private IMObjectComponentFactory _factory;
@@ -43,6 +48,16 @@ public class DefaultLayoutContext implements LayoutContext {
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
      *
+     * @param edit if <code>true</code> this is an edit context; if
+     *             <code>false</code> it is a view context.
+     */
+    public DefaultLayoutContext(boolean edit) {
+        this((IMObjectComponentFactory) null);
+        _edit = edit;
+    }
+    /**
+     * Construct a new <code>DefaultLayoutContext</code>.
+     *
      * @param factory the component factory. May  be <code>null</code>
      */
     public DefaultLayoutContext(IMObjectComponentFactory factory) {
@@ -63,6 +78,27 @@ public class DefaultLayoutContext implements LayoutContext {
         _factory = context.getComponentFactory();
         _filter = context.getDefaultNodeFilter();
         _indexer = context.getTabIndexer();
+        _edit = context.isEdit();
+    }
+
+    /**
+     * Determines if this is an edit context.
+     *
+     * @return <code>true</code> if this is an edit context; <code>false</code>
+     *         if it is a view context. Defaults to <code>false</code>
+     */
+    public boolean isEdit() {
+        return _edit;
+    }
+
+    /**
+     * Sets if this is an edit context.
+     *
+     * @param edit if <code>true</code> this is an edit context; if
+     *             <code>false</code> it is a view context.
+     */
+    public void setEdit(boolean edit) {
+        _edit = edit;
     }
 
     /**

@@ -447,7 +447,7 @@ public class CRUDWindow {
      */
     private void edit(IMObject object) {
         final boolean isNew = object.isNew();
-        LayoutContext context = new DefaultLayoutContext();
+        LayoutContext context = new DefaultLayoutContext(true);
         final IMObjectEditor editor
                 = IMObjectEditorFactory.create(object, context);
         EditDialog dialog = new EditDialog(editor, context);

@@ -39,11 +39,6 @@ import org.openvpms.web.spring.ServiceHelper;
 public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
 
     /**
-     * The layout context.
-     */
-    private LayoutContext _context;
-
-    /**
      * The modification tracker;
      */
     private ModifiableSet _modifiable;
@@ -61,7 +56,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     public NodeEditorFactory(LayoutContext context,
                              ModifiableSet modifiable) {
-        _context = context;
+        super(context);
         _modifiable = modifiable;
     }
 
@@ -114,7 +109,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                             NodeDescriptor descriptor) {
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context,
                                                              descriptor,
-                                                             _context);
+                                                             getLayoutContext());
         _modifiable.add(object, editor);
         return editor.getComponent();
     }
@@ -179,7 +174,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         Component result;
         if (descriptor.isParentChild()) {
             CollectionEditor editor = new CollectionEditor(object, descriptor,
-                                                           _context);
+                                                           getLayoutContext());
             _modifiable.add(object, editor);
             result = editor.getComponent();
         } else {

@@ -9,6 +9,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 
@@ -21,6 +22,29 @@ import org.openvpms.web.component.util.TextComponentFactory;
  */
 public abstract class AbstractIMObjectComponentFactory
         implements IMObjectComponentFactory {
+
+    /**
+     * The layout context.
+     */
+    private final LayoutContext _context;
+
+    /**
+     * Construct a new <code>AbstractIMObjectComponentFactory</code>.
+     *
+     * @param context the layout context.
+     */
+    public AbstractIMObjectComponentFactory(LayoutContext context) {
+        _context = context;
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getLayoutContext() {
+        return _context;
+    }
 
     /**
      * Returns a label to display a node.
