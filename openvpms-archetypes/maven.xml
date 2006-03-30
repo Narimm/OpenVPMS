@@ -3,6 +3,45 @@
   xmlns:maven="jelly:maven"
   xmlns:j="jelly:core">
 
+  <preGoal name="hibernate:schema-export">
+    <attainGoal name="generate-hibernate-properties"/>
+    <attainGoal name="extract-mapping-files"/>
+  </preGoal>
+
+  <goal name="generate-hibernate-properties">
+    <copy tofile="${maven.hibernate.properties}" 
+          file="src/conf/hibernate.properties">
+      <filterset>
+        <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
+        <filter token="JDBC_DRIVER" value="${hibernate.connection.driver_class}"/>
+        <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
+        <filter token="JDBC_USERNAME" value="${hibernate.connection.username}"/>
+        <filter token="JDBC_PASSWORD" value="${hibernate.connection.password}"/>
+      </filterset>
+    </copy>
+  </goal>
+
+  <goal name="extract-mapping-files">
+    <attainGoal name="clean-mapping-files"/>
+
+    <j:set var="repo" value="${context.getVariable('maven.repo.local')}"/>
+    <j:set var="dependencyId" value="org.openvpms:openvpms-framework"/>
+    <j:set var="artifactPath" value="${pom.getDependencyPath(dependencyId)}"/>
+    <j:set var="artifactRepoPath" value="${repo}/${artifactPath}"/>
+          
+    <unzip src="${artifactPath}" dest="${maven.hibernate.input.dir}">
+      <patternset>
+        <include name="**/*.hbm.xml"/>
+      </patternset>
+    </unzip>
+  </goal>
+
+  <goal name="clean-mapping-files">
+    <delete>
+      <fileset dir="${maven.build.dir}/hibernate" includes="**/*.hbm"/>
+    </delete>
+  </goal>
+
   <goal name="archetype:load"
         description="Load the Archetypes from a directory">
     <ant:java
@@ -10,13 +49,14 @@
           failonerror="true"
           fork="true">
             <ant:classpath>
-               <ant:pathelement path="${maven.build.dest}"/>
+               <ant:pathelement path="${maven.build.dir}/hibernate"/>
                <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
           <arg line="${openvpms.archetype.loader.cmdline}"/>
       </ant:java>  
     </goal>
-	<goal name="data:load" description="Load the Archetyped Data">
+
+    <goal name="data:load" description="Load the Archetyped Data">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
 		<ant:java
@@ -25,27 +65,11 @@
 	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
-           		<ant:pathelement path="${maven.build.dest}"/>
-           		<ant:path refid="maven.dependency.classpath"/>
+               <ant:pathelement path="${maven.build.dir}/hibernate"/>
+               <ant:path refid="maven.dependency.classpath"/>
             </ant:classpath>
         	<arg line="${openvpms.data.loader.cmdline}"/>
     	</ant:java>	
     </goal>
-	
-	<goal name="stax:data:load" description="Load the Archetyped Data Using STAX">
-    	<attainGoal name="java:compile"/>
-	    <attainGoal name="java:jar-resources"/>
-		<ant:java
-        	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
-	        failonerror="true"
-	        maxmemory="512m"
-    	    fork="true">
-            <ant:classpath>
-           		<ant:path refid="maven.dependency.classpath"/>
-           		<ant:pathelement path="${maven.build.dest}"/>
-            </ant:classpath>
-        	<arg line="${openvpms.data.loader.cmdline}"/>
-    	</ant:java>	
-    </goal>
-	
+
 </project>
