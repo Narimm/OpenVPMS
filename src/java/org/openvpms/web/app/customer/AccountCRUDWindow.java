@@ -14,11 +14,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.im.util.IMObjectCopyHandler;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -177,10 +179,19 @@ public class AccountCRUDWindow extends ActCRUDWindow {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        Act act = (Act) getObject();
+        final Act act = (Act) getObject();
         String status = act.getStatus();
         if (POSTED_STATUS.equals(status)) {
-            reverse(act);
+            String name = getArchetypeDescriptor().getDisplayName();
+            String title = Messages.get("customer.account.reverse.title", name);
+            String message = Messages.get("customer.account.reverse.message", name);
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+            dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    reverse(act);
+                }
+            });
+            dialog.show();
         } else {
             showStatusError(act, "customer.account.noreverse.title",
                             "customer.account.noreverse.message");
