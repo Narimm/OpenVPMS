@@ -2,15 +2,16 @@ package org.openvpms.web.app.customer;
 
 import java.util.List;
 
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -37,7 +38,8 @@ public class InvoiceWorkspace extends ActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("customer.invoice.createtype");
-        return new InvoiceCRUDWindow(type, "common", "act", "customerAccountCharges*");
+        return new InvoiceCRUDWindow(type, "common", "act",
+                                     "customerAccountCharges*");
     }
 
     /**
@@ -48,11 +50,27 @@ public class InvoiceWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.customerAccountChargesInvoice");
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.customerAccountChargesInvoice");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         ILookupService lookup = ServiceHelper.getLookupService();
         List<Lookup> lookups = lookup.get(descriptor);
-        return new ActQuery(customer, "act", "customerAccountCharges*", lookups, "Posted");
+        return new ActQuery(customer, "act", "customerAccountCharges*",
+                            lookups, "Posted");
     }
 
+    /**
+     * Invoked when the object has been saved.
+     *
+     * @param object the object
+     * @param isNew  determines if the object is a new instance
+     */
+    @Override
+    protected void onSaved(IMObject object, boolean isNew) {
+        super.onSaved(object, isNew);
+        Act act = (Act) object;
+        if ("Posted".equals(act.getStatus())) {
+            actSelected(null);
+        }
+    }
 }

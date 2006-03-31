@@ -62,8 +62,8 @@ public class PatientQuery extends AbstractQuery {
      */
     public PatientQuery(String refModelName, String entityName,
                         String conceptName) {
-        this(getShortNames(refModelName, entityName, conceptName),
-             Context.getInstance().getCustomer());
+        super(refModelName, entityName, conceptName);
+        _customer = Context.getInstance().getCustomer();
     }
 
     /**
@@ -111,7 +111,7 @@ public class PatientQuery extends AbstractQuery {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet(objects, rows);
+            result = new PreloadedResultSet<IMObject>(objects, rows);
         }
         return result;
     }
