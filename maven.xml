@@ -3,9 +3,13 @@
   xmlns:maven="jelly:maven"
   xmlns:j="jelly:core">
 
+  <postGoal name="java:compile">
+    <attainGoal name="generate-hibernate-properties"/>
+  </postGoal>
+
   <goal name="generate-hibernate-properties">
-    <copy tofile="${maven.hibernate.properties}" 
-          file="src/conf/hibernate.properties">
+    <copy tofile="${maven.build.dest}/hibernate.properties" 
+          file="${basedir}/src/conf/hibernate/hibernate.properties">
       <filterset>
         <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
         <filter token="JDBC_DRIVER" value="${hibernate.connection.driver_class}"/>
