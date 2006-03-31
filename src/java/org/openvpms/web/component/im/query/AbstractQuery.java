@@ -1,7 +1,6 @@
 package org.openvpms.web.component.im.query;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import nextapp.echo2.app.ApplicationInstance;
@@ -14,16 +13,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.search.SortCriteria;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -137,7 +133,8 @@ public abstract class AbstractQuery implements Query {
      */
     public AbstractQuery(String refModelName, String entityName,
                          String conceptName) {
-        _shortNames = getShortNames(refModelName, entityName, conceptName);
+        _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
+                                                     conceptName);
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
@@ -162,7 +159,7 @@ public abstract class AbstractQuery implements Query {
      *
      * @param rows      the maxiomum no. of rows per page
      * @param node      the node to sort on. May be <code>null</code>
-     * @param ascending if <code>true</code> sort the rows inascending order;
+     * @param ascending if <code>true</code> sort the rows in ascending order;
      *                  otherwise sort them in <code>descebding</code> order
      * @return the query result set
      */
@@ -223,6 +220,33 @@ public abstract class AbstractQuery implements Query {
      */
     public void removeQueryListener(QueryListener listener) {
         _listeners.remove(listener);
+    }
+
+    /**
+     * Returns the archetype reference model name.
+     *
+     * @return the archetype reference model name. May be <code>null</code>
+     */
+    public String getRefModelName() {
+        return _refModelName;
+    }
+
+    /**
+     * Returns the archetype entity name.
+     *
+     * @return the archetype entity name. May be <code>null</code>
+     */
+    public String getEntityName() {
+        return _entityName;
+    }
+
+    /**
+     * Returns the archetype concept name.
+     *
+     * @return the archetype concept name. May be <code>null</code>
+     */
+    public String getConceptName() {
+        return _conceptName;
     }
 
     /**
@@ -378,28 +402,6 @@ public abstract class AbstractQuery implements Query {
         for (QueryListener listener : listeners) {
             listener.query();
         }
-    }
-
-    /**
-     * Helper to return short names matching certain criteria.
-     *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     * @return a list of short names matching the criteria
-     */
-    protected static String[] getShortNames(String refModelName,
-                                            String entityName,
-                                            String conceptName) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<String> names = Collections.emptyList();
-        try {
-            names = service.getArchetypeShortNames(refModelName,
-                                                   entityName, conceptName, true);
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
-        }
-        return names.toArray(new String[0]);
     }
 
 }

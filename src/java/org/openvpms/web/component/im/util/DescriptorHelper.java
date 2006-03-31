@@ -1,6 +1,7 @@
 package org.openvpms.web.component.im.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -16,7 +17,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -58,6 +61,90 @@ public final class DescriptorHelper {
             IMObjectReference reference) {
         ArchetypeId id = reference.getArchetypeId();
         return getArchetypeDescriptor(id.getShortName());
+    }
+
+    /**
+     * Returns the archetype descriptor for the specified object.
+     *
+     * @param object the object
+     * @return the archetype descriptor corresponding to <code>object</code>
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
+        return getArchetypeDescriptor(object,
+                                      ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the archetype descriptor for the specified object.
+     *
+     * @param object  the object
+     * @param service the archetype service
+     * @return the archetype descriptor corresponding to <code>object</code>
+     */
+    public static ArchetypeDescriptor getArchetypeDescriptor(
+            IMObject object, IArchetypeService service) {
+        ArchetypeDescriptor descriptor;
+        ArchetypeId archId = object.getArchetypeId();
+
+        //TODO This is a work around until we resolve the current
+        // problem with archetyping and archetype. We need to
+        // extend this page and create a new archetype specific
+        // edit page.
+        if (object instanceof AssertionDescriptor) {
+            AssertionTypeDescriptor atDesc = service.getAssertionTypeDescriptor(
+                    object.getName());
+            archId = new ArchetypeId(atDesc.getPropertyArchetype());
+        }
+
+        descriptor = service.getArchetypeDescriptor(archId);
+        if (descriptor == null) {
+            descriptor = getArchetypeDescriptor(
+                    object.getArchetypeId().getShortName());
+        }
+
+        if (_log.isDebugEnabled()) {
+            _log.debug("Returning archetypeDescriptor="
+                       + (descriptor == null ? null : descriptor.getName())
+                       + " for archId=" + archId
+                       + " and object=" + object.getClass().getName());
+        }
+
+        return descriptor;
+    }
+
+    /**
+     * Returns the archetype descriptors for an archetype range.
+     */
+    public static List<ArchetypeDescriptor> getArchetypeDescriptors(
+            String[] range) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<ArchetypeDescriptor> result = new ArrayList<ArchetypeDescriptor>();
+        for (String shortName : range) {
+            result.addAll(service.getArchetypeDescriptors(shortName));
+        }
+        return result;
+    }
+
+    /**
+     * Returns archetype short names matching the specified criteria.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a list of short names matching the criteria
+     */
+    public static String[] getShortNames(String refModelName,
+                                         String entityName,
+                                         String conceptName) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<String> names = Collections.emptyList();
+        try {
+            names = service.getArchetypeShortNames(refModelName,
+                                                   entityName, conceptName, true);
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
+        return names.toArray(new String[0]);
     }
 
     /**
@@ -125,68 +212,6 @@ public final class DescriptorHelper {
     public static boolean matches(String shortName, String wildcard) {
         String regexp = wildcard.replace(".", "\\.").replace("*", ".*");
         return shortName.matches(regexp);
-    }
-
-    /**
-     * Returns the archetype descriptors for an archetype range.
-     */
-    public static List<ArchetypeDescriptor> getArchetypeDescriptors(
-            String[] range) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<ArchetypeDescriptor> result = new ArrayList<ArchetypeDescriptor>();
-        for (String shortName : range) {
-            result.addAll(service.getArchetypeDescriptors(shortName));
-        }
-        return result;
-    }
-
-    /**
-     * Returns the archetype descriptor for the specified object.
-     *
-     * @param object the object
-     * @return the archetype descriptor corresponding to <code>object</code>
-     */
-    public static ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
-        return getArchetypeDescriptor(object,
-                                      ServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Returns the archetype descriptor for the specified object.
-     *
-     * @param object  the object
-     * @param service the archetype service
-     * @return the archetype descriptor corresponding to <code>object</code>
-     */
-    public static ArchetypeDescriptor getArchetypeDescriptor(
-            IMObject object, IArchetypeService service) {
-        ArchetypeDescriptor descriptor;
-        ArchetypeId archId = object.getArchetypeId();
-
-        //TODO This is a work around until we resolve the current
-        // problem with archetyping and archetype. We need to
-        // extend this page and create a new archetype specific
-        // edit page.
-        if (object instanceof AssertionDescriptor) {
-            AssertionTypeDescriptor atDesc = service.getAssertionTypeDescriptor(
-                    object.getName());
-            archId = new ArchetypeId(atDesc.getPropertyArchetype());
-        }
-
-        descriptor = service.getArchetypeDescriptor(archId);
-        if (descriptor == null) {
-            descriptor = getArchetypeDescriptor(
-                    object.getArchetypeId().getShortName());
-        }
-
-        if (_log.isDebugEnabled()) {
-            _log.debug("Returning archetypeDescriptor="
-                       + (descriptor == null ? null : descriptor.getName())
-                       + " for archId=" + archId
-                       + " and object=" + object.getClass().getName());
-        }
-
-        return descriptor;
     }
 
     /**

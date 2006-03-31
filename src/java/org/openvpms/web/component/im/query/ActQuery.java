@@ -18,14 +18,18 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.search.IPage;
 import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -39,7 +43,7 @@ import org.openvpms.web.component.util.SelectFieldFactory;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class ActQuery implements Query {
+public class ActQuery extends AbstractQuery {
 
     /**
      * The id of the entity to search for.
@@ -47,19 +51,9 @@ public class ActQuery implements Query {
     private IMObjectReference _entityId;
 
     /**
-     * The archetype entity name.
+     * Determines if acts should be filtered on type.
      */
-    private final String _entityName;
-
-    /**
-     * The archetype conceptName.
-     */
-    private final String _conceptName;
-
-    /**
-     * The component representing the query.
-     */
-    private Component _component;
+    private final boolean _selectType;
 
     /**
      * The status dropdown.
@@ -143,9 +137,8 @@ public class ActQuery implements Query {
     public ActQuery(Entity entity, String entityName, String conceptName,
                     List<Lookup> statusLookups,
                     String excludeStatus) {
+        super(null, entityName, conceptName);
         setEntity(entity);
-        _entityName = entityName;
-        _conceptName = conceptName;
         _excludeStatus = excludeStatus;
         if (_excludeStatus != null) {
             _statusLookups = new ArrayList<Lookup>(statusLookups);
@@ -159,6 +152,25 @@ public class ActQuery implements Query {
         } else {
             _statusLookups = statusLookups;
         }
+        _selectType = false;
+    }
+
+    /**
+     * Construct a new <code>ActQuery</code> to query acts for a specific
+     * status.
+     *
+     * @param entityName  the act entity name
+     * @param conceptName the act concept name
+     * @param status      the act status
+     */
+    public ActQuery(Entity entity, String entityName, String conceptName,
+                    String status) {
+        super(null, entityName, conceptName);
+        setEntity(entity);
+        _status = status;
+        _statusLookups = null;
+        _excludeStatus = null;
+        _selectType = true;
     }
 
     /**
@@ -168,18 +180,6 @@ public class ActQuery implements Query {
      */
     public void setEntity(Entity entity) {
         _entityId = (entity != null) ? entity.getObjectReference() : null;
-    }
-
-    /**
-     * Returns the query component.
-     *
-     * @return the query component
-     */
-    public Component getComponent() {
-        if (_component == null) {
-            doLayout();
-        }
-        return _component;
     }
 
     /**
@@ -193,35 +193,70 @@ public class ActQuery implements Query {
     }
 
     /**
-     * Add a listener for query events.
+     * Performs the query.
      *
-     * @param listener the listener to add
+     * @param rows      the maxiomum no. of rows per page
+     * @param node      the node to sort on. May be <code>null</code>
+     * @param ascending if <code>true</code> sort the rows in ascending order;
+     *                  otherwise sort them in <code>descebding</code> order
+     * @return the query result set
      */
-    public void addQueryListener(QueryListener listener) {
-        // no-op
-    }
+    @Override
+    public ResultSet query(int rows, String node, boolean ascending) {
+        ResultSet<Act> result = null;
 
-    /**
-     * Remove a listener.
-     *
-     * @param listener the listener to remove
-     */
-    public void removeQueryListener(QueryListener listener) {
-        // no-op
-    }
+        String type = getShortName();
+        String entityName;
+        String conceptName;
+        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+            entityName = getEntityName();
+            conceptName = getConceptName();
+        } else {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(type);
+            ArchetypeId id = archetype.getArchetypeId();
+            entityName = id.getEntityName();
+            conceptName = id.getConcept();
+        }
 
-    /**
-     * Lays out the component.
-     */
-    protected void doLayout() {
-        LookupListModel model = new LookupListModel(_statusLookups, true);
-        _statusSelector = SelectFieldFactory.create(model);
-        _statusSelector.setCellRenderer(new LookupListCellRenderer());
-        _statusSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onStatusChanged();
+        if (_entityId != null) {
+            Date startFrom = getStartFrom();
+            Date startTo = getStartTo();
+            SortCriteria order = null;
+            if (node != null) {
+                order = new SortCriteria(node, ascending);
             }
-        });
+            result = new ActResultSet(_entityId, entityName, conceptName,
+                                      startFrom, startTo, _status, rows, order);
+            if (_excludeStatus != null) {
+                result = filter(result, _excludeStatus);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Lays out the component in a container, and sets focus on the instance
+     * name.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        if (_selectType) {
+            addShortNameSelector(container);
+        }
+
+        if (_statusLookups != null) {
+            LookupListModel model = new LookupListModel(_statusLookups, true);
+            _statusSelector = SelectFieldFactory.create(model);
+            _statusSelector.setCellRenderer(new LookupListCellRenderer());
+            _statusSelector.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    onStatusChanged();
+                }
+            });
+        }
 
         _startAll = CheckBoxFactory.create("actquery.all", true);
         _startAll.addActionListener(new ActionListener() {
@@ -255,36 +290,11 @@ public class ActQuery implements Query {
 
         onStartAllChanged();
 
-        _component = RowFactory.create(CELLSPACING_STYLE,
-                                       LabelFactory.create("actquery.status"),
-                                       _statusSelector, startRow);
-    }
-
-    /**
-     * Performs the query.
-     *
-     * @param rows      the maxiomum no. of rows per page
-     * @param node      the node to sort on. May be <code>null</code>
-     * @param ascending if <code>true</code> sort the rows inascending order;
-     *                  otherwise sort them in <code>descebding</code> order
-     * @return the query result set
-     */
-    public ResultSet query(int rows, String node, boolean ascending) {
-        ResultSet<Act> result = null;
-        if (_entityId != null) {
-            Date startFrom = getStartFrom();
-            Date startTo = getStartTo();
-            SortCriteria order = null;
-            if (node != null) {
-                order = new SortCriteria(node, ascending);
-            }
-            result = new ActResultSet(_entityId, _entityName, _conceptName,
-                                      startFrom, startTo, _status, rows, order);
-            if (_excludeStatus != null) {
-                result = filter(result, _excludeStatus);
-            }
+        if (_statusSelector != null) {
+            container.add(LabelFactory.create("actquery.status"));
+            container.add(_statusSelector);
         }
-        return result;
+        container.add(startRow);
     }
 
     /**
@@ -442,5 +452,3 @@ public class ActQuery implements Query {
     }
 
 }
-
-
