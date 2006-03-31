@@ -1,5 +1,7 @@
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -10,7 +12,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class DefaultIMObjectCopyHandler implements IMObjectCopyHandler {
+public class DefaultIMObjectCopyHandler extends AbstractIMObjectCopyHandler {
 
     /**
      * Determines how {@link IMObjectCopier} should treat an object. This

@@ -1,5 +1,7 @@
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -23,5 +25,15 @@ public interface IMObjectCopyHandler {
      *         copied
      */
     IMObject getObject(IMObject object, IArchetypeService service);
+
+    /**
+     * Determines how a node should be copied
+     *
+     * @param source the source node
+     * @param target the target archetype
+     * @return a node to copy source to, or <code>null</code> if the node
+     *         shouldn't be copied
+     */
+    NodeDescriptor getNode(NodeDescriptor source, ArchetypeDescriptor target);
 
 }

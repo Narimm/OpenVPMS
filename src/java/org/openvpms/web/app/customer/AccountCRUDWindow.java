@@ -17,8 +17,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.IMObjectCopier;
-import org.openvpms.web.component.im.util.IMObjectCopyHandler;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -232,7 +232,7 @@ public class AccountCRUDWindow extends ActCRUDWindow {
     }
 
 
-    private static class ReversalHandler implements IMObjectCopyHandler {
+    private static class ReversalHandler extends AbstractIMObjectCopyHandler {
 
         /**
          * Determines if the act is a charge or a credit.

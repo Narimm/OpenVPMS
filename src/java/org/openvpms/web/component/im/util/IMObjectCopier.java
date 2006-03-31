@@ -91,49 +91,31 @@ public class IMObjectCopier {
                 = DescriptorHelper.getArchetypeDescriptor(target, _service);
 
         // copy the nodes
-        for (NodeDescriptor descriptor : sourceType.getAllNodeDescriptors()) {
-            if (copyNode(descriptor, targetType)) {
-                if (descriptor.isObjectReference()) {
+        for (NodeDescriptor sourceDesc : sourceType.getAllNodeDescriptors()) {
+            NodeDescriptor targetDesc = _handler.getNode(sourceDesc, targetType);
+            if (targetDesc != null) {
+                if (sourceDesc.isObjectReference()) {
                     IMObjectReference ref
-                            = (IMObjectReference) descriptor.getValue(source);
+                            = (IMObjectReference) sourceDesc.getValue(source);
                     if (ref != null) {
                         ref = copyReference(ref);
-                        descriptor.setValue(target, ref);
+                        sourceDesc.setValue(target, ref);
                     }
-                } else if (!descriptor.isCollection()) {
-                    descriptor.setValue(target, descriptor.getValue(source));
+                } else if (!sourceDesc.isCollection()) {
+                    targetDesc.setValue(target, sourceDesc.getValue(source));
                 } else {
-                    for (IMObject child : descriptor.getChildren(source)) {
+                    for (IMObject child : sourceDesc.getChildren(source)) {
                         IMObject value;
-                        if (descriptor.isParentChild()) {
+                        if (sourceDesc.isParentChild()) {
                             value = apply(child);
                         } else {
                             value = child;
                         }
-                        descriptor.addChildToCollection(target, value);
+                        targetDesc.addChildToCollection(target, value);
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Determines if a node should be copied.
-     *
-     * @param descriptor the node descriptor
-     * @param archetype  the target archetpy
-     * @return <code>true</code> if the node should be copied; otherwise
-     *         <code>false</code>
-     */
-    protected boolean copyNode(NodeDescriptor descriptor,
-                               ArchetypeDescriptor archetype) {
-        boolean result = false;
-        if (!descriptor.isReadOnly() && !descriptor.isHidden()
-            && !descriptor.isDerived()) {
-            String name = descriptor.getName();
-            result = (archetype.getNodeDescriptor(name) != null);
-        }
-        return result;
     }
 
     /**
