@@ -8,6 +8,11 @@
         <attainGoal name="extract-mapping-files"/>
     </preGoal>
 
+    <preGoal name="hibernate:schema-update">
+        <attainGoal name="generate-hibernate-properties"/>
+        <attainGoal name="extract-mapping-files"/>
+    </preGoal>
+
     <goal name="generate-hibernate-properties">
         <copy tofile="${maven.hibernate.properties}"
               file="src/conf/hibernate/hibernate.properties">
