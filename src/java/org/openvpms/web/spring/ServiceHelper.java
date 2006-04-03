@@ -11,7 +11,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
  * Helper for accessing services managed by Spring.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $Revision$ $Date$
  */
 public final class ServiceHelper {
 

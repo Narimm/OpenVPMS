@@ -10,7 +10,7 @@ import org.openvpms.web.resource.util.Messages;
  * Abstract implementation of the {@link Subsystem} interface.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $LastChangedDate: 2005-12-05 22:57:22 +1100 (Mon, 05 Dec 2005) $
+ * @version $LastChangedDate$
  */
 public abstract class AbstractSubsystem implements Subsystem {
 
