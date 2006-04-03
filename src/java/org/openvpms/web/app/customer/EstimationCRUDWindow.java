@@ -18,6 +18,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
@@ -25,6 +26,7 @@ import org.openvpms.web.component.im.util.DefaultIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -179,15 +181,31 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
      * Invoked when the 'invoice' button is pressed.
      */
     protected void onInvoice() {
-        IMObject object = getObject();
+        final Act act = (Act) getObject();
+        String title = Messages.get("customer.estimation.invoice.title");
+        String message = Messages.get("customer.estimation.invoice.message");
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
+        dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                invoice(act);
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Invoice out an estimation to the customer.
+     *
+     * @param estimation the estimation
+     */
+    private void invoice(Act estimation) {
         try {
-            Act estimation = (Act) object;
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
             Act invoice = (Act) copier.copy(estimation);
             invoice.setStatus(INPROGRESS_STATUS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
-            calcTotal(invoice);
+            calcAmount(invoice);
             SaveHelper.save(invoice);
 
             if (!estimation.getStatus().equals(POSTED_STATUS)) {
@@ -212,14 +230,14 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
      * @param act the act
      * @todo - workaround for OVPMS-211
      */
-    private void calcTotal(Act act) {
+    private void calcAmount(Act act) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         ArchetypeDescriptor invoiceDesc
                 = DescriptorHelper.getArchetypeDescriptor(INVOICE_TYPE);
         ArchetypeDescriptor itemDesc
                 = DescriptorHelper.getArchetypeDescriptor(INVOICE_ITEM_TYPE);
         NodeDescriptor itemTotalDesc = itemDesc.getNodeDescriptor("total");
-        NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("total");
+        NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
         BigDecimal total = new BigDecimal("0.0");
         for (ActRelationship relationship : act.getSourceActRelationships()) {
             Act item = (Act) service.get(relationship.getTarget());
