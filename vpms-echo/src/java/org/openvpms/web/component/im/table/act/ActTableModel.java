@@ -1,10 +1,11 @@
 package org.openvpms.web.component.im.table.act;
 
-import echopointng.table.SortableTableColumn;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
@@ -36,23 +37,27 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     private static final int STATUS_INDEX = TYPE_INDEX + 1;
 
     /**
-     * Act column identifiers.
+     * Credit column index.
      */
-    private static final String[] ACT_COLUMNS = {"start", "type", "status",
-                                                 "description"};
-
-    /**
-     * Column indexes.
-     */
-    private static final int INDEXES[] = {START_INDEX, TYPE_INDEX, STATUS_INDEX,
-                                          DESCRIPTION_INDEX};
+    private static final int CREDIT_INDEX = STATUS_INDEX + 1;
 
 
     /**
      * Construct a new <code>ActTableModel</code>.
      */
     public ActTableModel() {
-        super(createColumnModel());
+        this(true, false);
+    }
+
+    /**
+     * Construct a new <code>ActTableModel</code>.
+     *
+     * @param showStatus determines if the status colunn should be displayed
+     * @param showCredit determines if the credit/debit column should be
+     *                   displayed
+     */
+    public ActTableModel(boolean showStatus, boolean showCredit) {
+        super(createColumnModel(showStatus, showCredit));
     }
 
     /**
@@ -72,6 +77,9 @@ public class ActTableModel extends DefaultIMObjectTableModel {
             case STATUS_INDEX:
                 node = "status";
                 break;
+            case CREDIT_INDEX:
+                node = "credit";
+                break;
             default:
                 node = super.getNode(column);
                 break;
@@ -82,18 +90,23 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     /**
      * Helper to create a column model.
      *
+     * @param showStatus determines if the status colunn should be displayed
+     * @param showCredit determines if the credit/debit column should be
+     *                   displayed
      * @return a new column model
      */
-    protected static TableColumnModel createColumnModel() {
+    protected static TableColumnModel createColumnModel(boolean showStatus,
+                                                        boolean showCredit) {
         TableColumnModel model = new DefaultTableColumnModel();
-        for (int i = 0; i < ACT_COLUMNS.length; ++i) {
-            TableColumn column = new TableColumn(INDEXES[i]);
-            String key = "table.act." + ACT_COLUMNS[i];
-            String label = Messages.get(key);
-
-            column.setHeaderValue(label);
-            model.addColumn(column);
+        model.addColumn(createTableColumn(START_INDEX, "start"));
+        model.addColumn(createTableColumn(TYPE_INDEX, "type"));
+        if (showStatus) {
+            model.addColumn(createTableColumn(STATUS_INDEX, "status"));
         }
+        if (showCredit) {
+            model.addColumn(createTableColumn(CREDIT_INDEX, "debit_credit"));
+        }
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX, "description"));
         return model;
     }
 
@@ -118,11 +131,41 @@ public class ActTableModel extends DefaultIMObjectTableModel {
             case STATUS_INDEX:
                 result = act.getStatus();
                 break;
+            case CREDIT_INDEX:
+                ArchetypeDescriptor archetype
+                        = DescriptorHelper.getArchetypeDescriptor(act);
+                NodeDescriptor credit = archetype.getNodeDescriptor("credit");
+                if (credit != null) {
+                    Boolean value = (Boolean) credit.getValue(object);
+                    if (Boolean.TRUE.equals(value)) {
+                        result = Messages.get("table.act.credit");
+                    } else {
+                        result = Messages.get("table.act.debit");
+                    }
+                } else {
+                    result = "";
+                }
+                break;
             default:
                 result = super.getValue(object, column, row);
                 break;
         }
         return result;
+    }
+
+    /**
+     * Helper to create a table column.
+     *
+     * @param index the column model index
+     * @param name  the column name
+     * @return a new column
+     */
+    private static TableColumn createTableColumn(int index, String name) {
+        TableColumn column = new TableColumn(index);
+        String key = "table.act." + name;
+        String label = Messages.get(key);
+        column.setHeaderValue(label);
+        return column;
     }
 
 

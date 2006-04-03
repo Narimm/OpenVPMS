@@ -76,7 +76,7 @@ public class InvoiceEditor extends ActEditor {
      * @todo - workaround for OVPMS-211
      */
     protected void updateTotals() {
-        Property total = getProperty("total");
+        Property amount = getProperty("amount");
 
         ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerAccountInvoiceItem");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("total");
@@ -84,7 +84,7 @@ public class InvoiceEditor extends ActEditor {
         for (Act act : getEditor().getActs()) {
             value = sum(value, act, descriptor);
         }
-        total.setValue(value);
+        amount.setValue(value);
     }
 
 }
