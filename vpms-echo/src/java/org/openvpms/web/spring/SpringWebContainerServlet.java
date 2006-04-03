@@ -9,7 +9,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * <code>WebContainerServlet</code> for integrating Echo with Spring.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
- * @version $Revision: 1.4 $ $Date: 2002/02/21 09:49:41 $
+ * @version $Revision$ $Date$
  */
 public class SpringWebContainerServlet extends WebContainerServlet {
 
