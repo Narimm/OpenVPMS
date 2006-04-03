@@ -50,6 +50,8 @@ public class ShortNameResultSet extends AbstractArchetypeServiceResultSet<IMObje
         _shortNames = shortNames;
         _instanceName = instanceName;
         _activeOnly = activeOnly;
+
+        reset();
     }
 
     /**
