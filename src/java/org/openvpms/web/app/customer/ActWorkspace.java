@@ -15,6 +15,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
@@ -145,7 +146,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void layoutWorkspace(Party customer, Component container) {
         _query = createQuery(customer);
-        _acts = new Browser(_query, null, new ActTableModel());
+        _acts = new Browser(_query, null, createTableModel());
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
                 selectFirst();
@@ -189,6 +190,15 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return a new query
      */
     protected abstract ActQuery createQuery(Party customer);
+
+    /**
+     * Creates a new table model to display acts.
+     *
+     * @return a new table model.
+     */
+    protected IMObjectTableModel createTableModel() {
+        return new ActTableModel();
+    }
 
     /**
      * Perform an initial query, selecting the first available act.

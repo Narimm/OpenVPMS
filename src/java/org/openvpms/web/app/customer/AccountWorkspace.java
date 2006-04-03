@@ -3,11 +3,13 @@ package org.openvpms.web.app.customer;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Invoice workspace.
+ * Account workspace.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -40,6 +42,16 @@ public class AccountWorkspace extends ActWorkspace {
     protected ActQuery createQuery(Party customer) {
         return new ActQuery(customer, "act", "customerAccountCharges*",
                             "Posted");
+    }
+
+    /**
+     * Creates a new table model to display acts.
+     *
+     * @return a new table model.
+     */
+    @Override
+    protected IMObjectTableModel createTableModel() {
+        return new ActTableModel(false, true);
     }
 
 }
