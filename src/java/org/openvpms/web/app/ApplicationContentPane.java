@@ -6,8 +6,9 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.web.component.util.ComponentFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
+
 /**
- * Enter description here.
+ * Content pane that displays the {@link TitlePane} and {@link MainPane}.  
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
@@ -21,7 +22,7 @@ public class ApplicationContentPane extends ContentPane {
 
 
     /**
-     * Construact a new <code>ApplicationContentPane</code>
+     * Construct a new <code>ApplicationContentPane</code>
      */
     public ApplicationContentPane() {
     }

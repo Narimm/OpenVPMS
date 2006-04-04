@@ -67,6 +67,17 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
     }
 
     /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    @Override
+    public Component getSummary() {
+        return CustomerSummary.getSummary((Party) getObject());
+    }
+
+    /**
      * Determines if the workspace should be refreshed. This implementation
      * returns true if the current customer has changed.
      *
@@ -107,6 +118,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
             layoutWorkspace(party, getComponent());
         }
         initQuery(party);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
@@ -118,6 +130,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
     protected void onSaved(IMObject object, boolean isNew) {
         _acts.query();
         _acts.setSelected(object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
@@ -127,6 +140,7 @@ abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void onDeleted(IMObject object) {
         _acts.query();
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**

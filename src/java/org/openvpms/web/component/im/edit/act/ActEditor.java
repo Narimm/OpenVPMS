@@ -1,7 +1,5 @@
 package org.openvpms.web.component.im.edit.act;
 
-import java.math.BigDecimal;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -93,16 +91,5 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
      * @todo - workaround for OVPMS-211
      */
     protected abstract void updateTotals();
-
-    protected BigDecimal sum(BigDecimal value, IMObject object, NodeDescriptor descriptor) {
-        // @todo OVPMS-210
-        Number tmp = (Number) descriptor.getValue(object);
-        if (tmp instanceof BigDecimal) {
-            value = value.add((BigDecimal) tmp);
-        } else {
-            value = value.add(new BigDecimal(tmp.doubleValue()));
-        }
-        return value;
-    }
 
 }

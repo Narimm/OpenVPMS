@@ -1,5 +1,7 @@
 package org.openvpms.web.app.customer;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;

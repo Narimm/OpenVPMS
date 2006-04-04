@@ -1,6 +1,7 @@
 package org.openvpms.web.component.im.edit.estimation;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -9,6 +10,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 
@@ -58,7 +60,8 @@ public class EstimationEditor extends ActEditor {
                 if (items != null) {
                     String[] range = items.getArchetypeRange();
                     if (range.length == 1
-                        && range[0].equals("actRelationship.customerEstimationItem")) {
+                        && range[0].equals("actRelationship.customerEstimationItem"))
+                    {
                         result = new EstimationEditor((Act) object, parent,
                                                       descriptor, context);
                     }
@@ -77,15 +80,9 @@ public class EstimationEditor extends ActEditor {
         Property highTotal = getProperty("highTotal");
         Property lowTotal = getProperty("lowTotal");
 
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerEstimationItem");
-        NodeDescriptor highDesc = archetype.getNodeDescriptor("highTotal");
-        NodeDescriptor lowDesc = archetype.getNodeDescriptor("lowTotal");
-        BigDecimal low = new BigDecimal(0);
-        BigDecimal high = new BigDecimal(0);
-        for (Act act : getEditor().getActs()) {
-            low = sum(low, act, lowDesc);
-            high = sum(high, act, highDesc);
-        }
+        Set<Act> acts = getEditor().getActs();
+        BigDecimal low = ActHelper.sum(acts, "lowTotal");
+        BigDecimal high = ActHelper.sum(acts, "highTotal");
         lowTotal.setValue(low);
         highTotal.setValue(high);
     }
