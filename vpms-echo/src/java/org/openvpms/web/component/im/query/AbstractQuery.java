@@ -116,7 +116,7 @@ public abstract class AbstractQuery implements Query {
      * @param shortNames the short names
      */
     public AbstractQuery(String[] shortNames) {
-        _shortNames = shortNames;
+        _shortNames = DescriptorHelper.getShortNames(shortNames);
         _refModelName = null;
         _entityName = null;
         _conceptName = null;

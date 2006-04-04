@@ -148,6 +148,35 @@ public final class DescriptorHelper {
     }
 
     /**
+     * Returns primary archetype short names matching the specified criteria.
+     *
+     * @param shortNames the short names. May contain wildcards
+     * @return a list of short names matching the criteria
+     */
+    public static String[] getShortNames(String[] shortNames) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        List<String> result = new ArrayList<String>();
+        try {
+            // @todo workaround of OVPMS-262
+            List<ArchetypeDescriptor> archetypes
+                    = service.getArchetypeDescriptors();
+            for (String shortName : shortNames) {
+                shortName = shortName.replace(".", "\\.").replace("*", ".*");
+                for (ArchetypeDescriptor archetype : archetypes) {
+                    String name = archetype.getShortName();
+                    if (archetype.isPrimary()
+                        && name.matches(shortName) && !result.contains(name)) {
+                        result.add(name);
+                    }
+                }
+            }
+        } catch (ArchetypeServiceException exception) {
+            ErrorDialog.show(exception);
+        }
+        return result.toArray(new String[0]);
+    }
+
+    /**
      * Returns the display name for an archetype.
      *
      * @param shortName the archetype short name

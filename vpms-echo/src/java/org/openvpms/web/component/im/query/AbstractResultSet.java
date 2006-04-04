@@ -316,7 +316,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
         int row = page * _rowsPerPage;
         if (_page == null || _page.getPagingCriteria().getFirstRow() != row) {
             _page = getPage(new PagingCriteria(row, _rowsPerPage));
-            if (_page.getRows().isEmpty()) {
+            if (_page != null && _page.getRows().isEmpty()) {
                 _page = null;
             }
         }
