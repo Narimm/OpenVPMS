@@ -67,7 +67,7 @@
     <style name="MainPane" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="150px"/>
+            <property name="separatorPosition" value="200px"/>
             <property name="background" value="#339933"/>
         </properties>
     </style>
@@ -77,6 +77,22 @@
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="25px"/>
             <property name="background" value="#339933"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Left.Menu" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="300px"/>
+        </properties>
+    </style>
+
+    <style name="MainPane.Left.Menu.Summary" base-name="ControlColumn"
+           type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="font">
+                <font size="8pt"/>
+            </property>
         </properties>
     </style>
 
@@ -108,6 +124,7 @@
             <property name="background" value="#ffffff"/>
         </properties>
     </style>
+
 
     <style name="ActWorkspace.Layout" type="nextapp.echo2.app.SplitPane">
         <properties>

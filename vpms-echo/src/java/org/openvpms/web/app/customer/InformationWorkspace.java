@@ -1,5 +1,7 @@
 package org.openvpms.web.app.customer;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
@@ -19,6 +21,17 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     public InformationWorkspace() {
         super("customer", "info", "party", "party", "customer*");
+    }
+
+    /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    @Override
+    public Component getSummary() {
+        return CustomerSummary.getSummary((Party) getObject());
     }
 
     /**
@@ -43,6 +56,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     protected void onSelected(IMObject object) {
         super.onSelected(object);
         Context.getInstance().setCustomer((Party) object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
@@ -66,5 +80,6 @@ public class InformationWorkspace extends CRUDWorkspace {
     protected void onDeleted(IMObject object) {
         super.onDeleted(object);
         Context.getInstance().setCustomer(null);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 }

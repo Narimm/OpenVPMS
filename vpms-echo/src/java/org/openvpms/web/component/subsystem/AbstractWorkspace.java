@@ -1,5 +1,8 @@
 package org.openvpms.web.component.subsystem;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 import nextapp.echo2.app.Component;
 
 import org.openvpms.web.resource.util.Messages;
@@ -27,6 +30,11 @@ public abstract class AbstractWorkspace implements Workspace {
      * The workspace localisation id.
      */
     private final String _workspaceId;
+
+    /**
+     * Property change listener notifier.
+     */
+    private PropertyChangeSupport _propertyChangeNotifier;
 
 
     /**
@@ -61,6 +69,60 @@ public abstract class AbstractWorkspace implements Workspace {
         return _component;
     }
 
+    /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    public Component getSummary() {
+        return null;
+    }
+
+    /**
+     * Add a property change listener.
+     *
+     * @param name     the property name to listen on
+     * @param listener the listener
+     */
+    public void addPropertyChangeListener(String name,
+                                          PropertyChangeListener listener) {
+        if (_propertyChangeNotifier == null) {
+            _propertyChangeNotifier = new PropertyChangeSupport(this);
+        }
+        _propertyChangeNotifier.addPropertyChangeListener(name, listener);
+    }
+
+    /**
+     * Remove a property change listener.
+     *
+     * @param name     the property name to remove the listener for
+     * @param listener the listener to remove
+     */
+    public void removePropertyChangeListener(String name,
+                                             PropertyChangeListener listener) {
+        if (_propertyChangeNotifier != null) {
+            _propertyChangeNotifier.removePropertyChangeListener(
+                    name, listener);
+        }
+    }
+
+    /**
+     * Report a bound property update to any registered listeners. No event is
+     * fired if old and new are equal and non-null.
+     *
+     * @param name     the name of the property that was changed
+     * @param oldValue the old value of the property
+     * @param newValue the new value of the property
+     */
+    protected void firePropertyChange(String name, Object oldValue,
+                                      Object newValue) {
+        if (_propertyChangeNotifier != null) {
+            _propertyChangeNotifier.firePropertyChange(name, oldValue,
+                                                       newValue);
+        }
+    }
+    
     /**
      * Lays out the component.
      *

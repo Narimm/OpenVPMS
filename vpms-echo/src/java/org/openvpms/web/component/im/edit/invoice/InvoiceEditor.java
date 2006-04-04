@@ -9,6 +9,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 
@@ -54,7 +55,7 @@ public class InvoiceEditor extends ActEditor {
                     = DescriptorHelper.getArchetypeDescriptor(object);
             if (archetype != null) {
                 NodeDescriptor items = archetype.getNodeDescriptor("items");
-                
+
                 if (items != null) {
                     String[] range = items.getArchetypeRange();
                     if (range.length == 1
@@ -77,13 +78,7 @@ public class InvoiceEditor extends ActEditor {
      */
     protected void updateTotals() {
         Property amount = getProperty("amount");
-
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerAccountInvoiceItem");
-        NodeDescriptor descriptor = archetype.getNodeDescriptor("total");
-        BigDecimal value = new BigDecimal(0);
-        for (Act act : getEditor().getActs()) {
-            value = sum(value, act, descriptor);
-        }
+        BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
         amount.setValue(value);
     }
 

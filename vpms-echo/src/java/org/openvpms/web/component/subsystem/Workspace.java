@@ -1,5 +1,7 @@
 package org.openvpms.web.component.subsystem;
 
+import java.beans.PropertyChangeListener;
+
 import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -15,6 +17,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public interface Workspace {
 
     /**
+     * The summary property name, used in event notification.
+     */
+    final String SUMMARY_PROPERTY = "summary";
+
+    /**
      * Returns the localised title of this workspace.
      *
      * @return the localised title of this workspace
@@ -27,6 +34,14 @@ public interface Workspace {
      * @return the component representing the workspace
      */
     Component getComponent();
+
+    /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    Component getSummary();
 
     /**
      * Determines if the workspace supports an archetype.
@@ -50,5 +65,23 @@ public interface Workspace {
      * @return the the object. May be <oode>null</code>
      */
     IMObject getObject();
+
+    /**
+     * Add a property change listener.
+     *
+     * @param name     the property name to listen on
+     * @param listener the listener
+     */
+    void addPropertyChangeListener(String name,
+                                   PropertyChangeListener listener);
+
+    /**
+     * Remove a property change listener.
+     *
+     * @param name     the property name to remove the listener for
+     * @param listener the listener to remove
+     */
+    void removePropertyChangeListener(String name,
+                                      PropertyChangeListener listener);
 
 }
