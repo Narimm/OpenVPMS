@@ -36,6 +36,19 @@ public class GroupBoxFactory extends ComponentFactory {
     }
 
     /**
+     * Create a new group box with localised title and style.
+     *
+     * @param key   the resource bundle key. May be <code>null</code>
+     * @param style the style name
+     * @return a new group box
+     */
+    public static GroupBox create(String key, String style) {
+        GroupBox box = create(key);
+        box.setStyleName(style);
+        return box;
+    }
+
+    /**
      * Create a new group box, containing a set of components.
      *
      * @param components the components to add
@@ -61,4 +74,18 @@ public class GroupBoxFactory extends ComponentFactory {
         return box;
     }
 
+    /**
+     * Create a new group box with localised title and style.
+     *
+     * @param key        the resource bundle key. May be <code>null</code>
+     * @param style      the style name
+     * @param components the components to add
+     * @return a new group box
+     */
+    public static GroupBox create(String key, String style,
+                                  Component ... components) {
+        GroupBox box = create(key, style);
+        add(box, components);
+        return box;
+    }
 }

@@ -80,14 +80,18 @@
         </properties>
     </style>
 
-    <style name="MainPane.Left.Menu" type="nextapp.echo2.app.SplitPane">
+    <style name="MainPane.Left.Menu" base-name="WideCellSpacing"
+           type="nextapp.echo2.app.Column">
+    </style>
+
+    <style name="MainPane.Left.Menu.SummaryBox"
+           type="echopointng.GroupBox">
         <properties>
-            <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="300px"/>
+            <property name="foreground" value="#ffffff"/>
         </properties>
     </style>
 
-    <style name="MainPane.Left.Menu.Summary" base-name="ControlColumn"
+    <style name="MainPane.Left.Menu.Summary"
            type="nextapp.echo2.app.Column">
         <properties>
             <property name="font">

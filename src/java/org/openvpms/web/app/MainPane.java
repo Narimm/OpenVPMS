@@ -5,6 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -28,6 +29,7 @@ import org.openvpms.web.component.subsystem.Workspace;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.ContentPaneFactory;
+import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
@@ -53,7 +55,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
     /**
      * The left menu, containing the submenu and summary.
      */
-    private SplitPane _leftMenu;
+    private Column _leftMenu;
 
     /**
      * Submenu button column.
@@ -61,9 +63,9 @@ public class MainPane extends SplitPane implements ContextChangeListener {
     private Column _subMenu;
 
     /**
-     * Workspace summary. May be <code>null</code>.
+     * Workspace summary group box. May be <code>null</code>.
      */
-    private Component _summary;
+    private GroupBox _summary;
 
     /**
      * Listener to refresh the summary.
@@ -130,8 +132,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
 
         _menu = RowFactory.create(BUTTON_ROW_STYLE);
         _subMenu = ColumnFactory.create(BUTTON_COLUMN_STYLE);
-        _leftMenu = SplitPaneFactory.create(ORIENTATION_VERTICAL,
-                                            LEFT_MENU_STYLE, _subMenu);
+        _leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, _subMenu);
         _subsystem = ContentPaneFactory.create(WORKSPACE_STYLE);
 
         Button button = addSubsystem(new CustomerSubsystem());
@@ -254,9 +255,13 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         if (summary != null) {
             summary = ColumnFactory.create("MainPane.Left.Menu.Summary",
                                            summary);
-            _leftMenu.add(summary);
+            _summary = GroupBoxFactory.create("workspace.summary",
+                                              "MainPane.Left.Menu.SummaryBox",
+                                              summary);
+            _leftMenu.add(_summary);
+        } else {
+            _summary = null;
         }
-        _summary = summary;
     }
 
 }
