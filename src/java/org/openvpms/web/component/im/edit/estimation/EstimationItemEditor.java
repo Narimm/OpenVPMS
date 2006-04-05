@@ -13,6 +13,8 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -27,6 +29,15 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  */
 public class EstimationItemEditor extends ActItemEditor {
 
+    /**
+     * Node filter, used to disable properties when a product template is
+     * selected.
+     */
+    private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
+            "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice",
+            "lowTotal", "highTotal");
+
+    
     /**
      * Construct a new <code>EstimationItemEdtor</code>.
      *
@@ -87,18 +98,34 @@ public class EstimationItemEditor extends ActItemEditor {
         IMObjectReference entity = participation.getEntity();
         IMObject object = IMObjectHelper.getObject(entity);
         if (object instanceof Product) {
-            Property fixedPrice = getProperty("fixedPrice");
-            Property lowUnitPrice = getProperty("lowUnitPrice");
-            Property highUnitPrice = getProperty("highUnitPrice");
             Product product = (Product) object;
-            ProductPrice fixed = getPrice("productPrice.fixedPrice", product);
-            ProductPrice unit = getPrice("productPrice.unitPrice", product);
-            if (fixed != null) {
-                fixedPrice.setValue(fixed.getPrice());
-            }
-            if (unit != null) {
-                lowUnitPrice.setValue(unit.getPrice());
-                highUnitPrice.setValue(unit.getPrice());
+            if (IMObjectHelper.isA(product, "product.template")) {
+                if (getFilter() != TEMPLATE_FILTER) {
+                    changeLayout(TEMPLATE_FILTER);
+                }
+                // zero out the fixed, low and high prices.
+                Property fixedPrice = getProperty("fixedPrice");
+                Property lowUnitPrice = getProperty("lowUnitPrice");
+                Property highUnitPrice = getProperty("highUnitPrice");
+                fixedPrice.setValue(BigDecimal.ZERO);
+                lowUnitPrice.setValue(BigDecimal.ZERO);
+                highUnitPrice.setValue(BigDecimal.ZERO);
+            } else {
+                if (getFilter() != null) {
+                    changeLayout(null);
+                }
+                Property fixedPrice = getProperty("fixedPrice");
+                Property lowUnitPrice = getProperty("lowUnitPrice");
+                Property highUnitPrice = getProperty("highUnitPrice");
+                ProductPrice fixed = getPrice("productPrice.fixedPrice", product);
+                ProductPrice unit = getPrice("productPrice.unitPrice", product);
+                if (fixed != null) {
+                    fixedPrice.setValue(fixed.getPrice());
+                }
+                if (unit != null) {
+                    lowUnitPrice.setValue(unit.getPrice());
+                    highUnitPrice.setValue(unit.getPrice());
+                }
             }
         }
     }
