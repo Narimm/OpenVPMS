@@ -111,7 +111,9 @@ public class IMObjectCopier {
                         } else {
                             value = child;
                         }
-                        targetDesc.addChildToCollection(target, value);
+                        if (value != null) {
+                            targetDesc.addChildToCollection(target, value);
+                        }
                     }
                 }
             }

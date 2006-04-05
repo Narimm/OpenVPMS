@@ -34,8 +34,8 @@ import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
-import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -202,6 +202,15 @@ public abstract class AbstractIMObjectEditor
      */
     public IMObject getParent() {
         return _parent;
+    }
+
+    /**
+     * Returns the parent descriptor.
+     *
+     * @return the parent descriptor. May be <code>null</code>
+     */
+    public NodeDescriptor getDescriptor() {
+        return _descriptor;
     }
 
     /**

@@ -418,17 +418,6 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
-     * Remove the editor.
-     */
-    private void removeEditor() {
-        _editBox.remove(_editor.getComponent());
-        _component.remove(_editBox);
-        _editor = null;
-        _editBox = null;
-
-    }
-
-    /**
      * Remove an object from the collection.
      *
      * @param object the object to remove
@@ -496,6 +485,17 @@ public class CollectionEditor implements Saveable {
      */
     protected boolean save(IMObjectEditor editor) {
         return _editor.save();
+    }
+
+    /**
+     * Remove the editor.
+     */
+    private void removeEditor() {
+        _editBox.remove(_editor.getComponent());
+        _component.remove(_editBox);
+        _editor = null;
+        _editBox = null;
+
     }
 
     /**

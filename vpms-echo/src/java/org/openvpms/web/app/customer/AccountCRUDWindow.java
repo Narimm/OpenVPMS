@@ -19,6 +19,7 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.IMObjectCopier;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -259,8 +260,7 @@ public class AccountCRUDWindow extends ActCRUDWindow {
          * @param act the act to reverse
          */
         public ReversalHandler(Act act) {
-            String shortName = act.getArchetypeId().getShortName();
-            _charge = !shortName.equals(CREDIT_TYPE);
+            _charge = !IMObjectHelper.isA(act, CREDIT_TYPE);
         }
 
         /**

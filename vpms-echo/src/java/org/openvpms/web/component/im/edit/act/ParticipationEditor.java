@@ -10,7 +10,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -50,6 +49,15 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns the participation entity property.
+     *
+     * @return the participation entity property
+     */
+    public Property getEntity() {
+        return getProperty("entity");
+    }
+
+    /**
      * Save the object.
      *
      * @return <code>true</code> if the save was successful
@@ -76,10 +84,10 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
+    public static ParticipationEditor create(IMObject object, IMObject parent,
+                                             NodeDescriptor descriptor,
+                                             LayoutContext context) {
+        ParticipationEditor result = null;
         if (object instanceof Participation
             && parent instanceof Act) {
             result = new ParticipationEditor((Participation) object,

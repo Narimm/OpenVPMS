@@ -1,5 +1,7 @@
 package org.openvpms.web.component.im.edit.estimation;
 
+import java.math.BigDecimal;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
@@ -11,9 +13,9 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -31,7 +33,7 @@ public class EstimationItemEditor extends ActItemEditor {
      * @param act        the act to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context the layout context
+     * @param context    the layout context
      */
     protected EstimationItemEditor(Act act, IMObject parent,
                                    NodeDescriptor descriptor,
@@ -40,12 +42,22 @@ public class EstimationItemEditor extends ActItemEditor {
     }
 
     /**
+     * Sets the product quantity.
+     *
+     * @param quantity the product quantity
+     */
+    public void setQuantity(BigDecimal quantity) {
+        getProperty("lowQty").setValue(quantity);
+        getProperty("highQty").setValue(quantity);
+    }
+
+    /**
      * Create a new editor for an object, if it can be edited by this class.
      *
      * @param object     the object to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context the layout context
+     * @param context    the layout context
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
@@ -57,7 +69,8 @@ public class EstimationItemEditor extends ActItemEditor {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(object);
             if (archetype != null
-                && archetype.getShortName().equals("act.customerEstimationItem")) {
+                && archetype.getShortName().equals("act.customerEstimationItem"))
+            {
                 result = new EstimationItemEditor((Act) object, parent,
                                                   descriptor, context);
             }
