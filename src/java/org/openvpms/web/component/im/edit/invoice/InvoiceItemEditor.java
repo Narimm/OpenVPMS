@@ -1,5 +1,7 @@
 package org.openvpms.web.component.im.edit.invoice;
 
+import java.math.BigDecimal;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
@@ -37,6 +39,15 @@ public class InvoiceItemEditor extends ActItemEditor {
                                 NodeDescriptor descriptor,
                                 LayoutContext context) {
         super(act, parent, descriptor, context);
+    }
+
+    /**
+     * Sets the product quantity.
+     *
+     * @param quantity the product quantity
+     */
+    public void setQuantity(BigDecimal quantity) {
+        getProperty("quantity").setValue(quantity);
     }
 
     /**

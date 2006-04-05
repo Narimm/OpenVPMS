@@ -5,6 +5,8 @@ import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -51,6 +53,74 @@ public class IMObjectHelper {
     }
 
     /**
+     * Determines if a object is an instance of a particular archetype.
+     *
+     * @param object    the object. May be <code>null</code>
+     * @param shortName the archetype short name
+     * @return <code>true</code> if object is an instance of
+     *         <code>shortName</code>
+     */
+    public static boolean isA(IMObject object, String shortName) {
+        if (object != null) {
+            return object.getArchetypeId().getShortName().equals(shortName);
+        }
+        return false;
+    }
+
+    /**
+     * Determines if an object reference refers to an instance of a particular
+     * archetype.
+     *
+     * @param reference the object. May be <code>null</code>
+     * @param shortName the archetype short name
+     * @return <code>true</code> if the reference refers to an instance of
+     *         <code>shortName</code>
+     */
+    public static boolean isA(IMObjectReference reference, String shortName) {
+        if (reference != null) {
+            return reference.getArchetypeId().getShortName().equals(shortName);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a value from an object, given the value's node descriptor name,
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the value corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static Object getValue(IMObject object, String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object);
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+        if (descriptor != null) {
+            return descriptor.getValue(object);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a collection from an object, given the collection's node
+     * descriptor name.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the collection corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static Collection getValues(IMObject object, String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object);
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+        if (descriptor != null) {
+            return descriptor.getChildren(object);
+        }
+        return null;
+    }
+
+    /**
      * Returns the first object instance from a collection with matching short
      * name.
      *
@@ -59,11 +129,11 @@ public class IMObjectHelper {
      * @return the first object from the collection with matching short name, or
      *         <code>null</code> if none exists.
      */
-    public static final <T extends IMObject> T
+    public static <T extends IMObject> T
             getObject(String shortName, Collection<T> objects) {
         T result = null;
         for (T object : objects) {
-            if (object.getArchetypeId().getShortName().equals(shortName)) {
+            if (isA(object, shortName)) {
                 result = object;
                 break;
             }

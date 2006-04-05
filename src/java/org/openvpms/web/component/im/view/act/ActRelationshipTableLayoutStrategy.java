@@ -73,10 +73,14 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
     protected List<IMObject> getActs(Act act) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         Set<ActRelationship> relationships = act.getSourceActRelationships();
-        List<IMObject> result = new ArrayList<IMObject>(relationships.size());
+        List<IMObject> result = new ArrayList<IMObject>();
         for (ActRelationship relationship : relationships) {
-            Act item = (Act) service.get(relationship.getTarget());
-            result.add(item);
+            if (relationship.getTarget() != null) {
+                Act item = (Act) service.get(relationship.getTarget());
+                if (item != null) {
+                    result.add(item);
+                }
+            }
         }
         return result;
     }

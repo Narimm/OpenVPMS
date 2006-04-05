@@ -7,9 +7,9 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -46,19 +46,18 @@ public class PatientParticipationEditor extends ParticipationEditor {
      * @param object     the object to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context       the layout context. May be <code>null</code>
+     * @param context    the layout context. May be <code>null</code>
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
+    public static ParticipationEditor create(IMObject object, IMObject parent,
+                                             NodeDescriptor descriptor,
+                                             LayoutContext context) {
+        ParticipationEditor result = null;
         if (object instanceof Participation
             && parent instanceof Act) {
             Participation participation = (Participation) object;
-            if (participation.getArchetypeId().getShortName().equals(
-                    "participation.patient")) {
+            if (IMObjectHelper.isA(participation, "participation.patient")) {
                 result = new PatientParticipationEditor(
                         participation, (Act) parent, descriptor, context);
             }

@@ -2,6 +2,7 @@ package org.openvpms.web.component.im.edit.act;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -9,11 +10,13 @@ import nextapp.echo2.app.Grid;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -40,6 +43,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      */
     private List<IMObjectEditor> _participants
             = new ArrayList<IMObjectEditor>();
+
+    /**
+     * The product editor.
+     */
+    private ParticipationEditor _productEditor;
 
     /**
      * Patient participation short name.
@@ -92,6 +100,33 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
             }
         }
     }
+
+    /**
+     * Returns a reference to the product.
+     *
+     * @return a reference to the product, or <code>null</code> if the act has
+     *         no product
+     */
+    public IMObjectReference getProduct() {
+        return (IMObjectReference) _productEditor.getEntity().getValue();
+    }
+
+    /**
+     * Sets the product.
+     *
+     * @param product a reference to the product.
+     */
+    public void setProduct(IMObjectReference product) {
+        Property entity = _productEditor.getEntity();
+        entity.setValue(product);
+    }
+
+    /**
+     * Sets the product quantity.
+     *
+     * @param quantity the product quantity
+     */
+    public abstract void setQuantity(BigDecimal quantity);
 
     /**
      * Save any edits.
@@ -162,12 +197,13 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         if (participant.isNew()) {
             productModified(participant);
         }
-        IMObjectEditor editor = addEditor(participant, act, descriptor);
+        ParticipationEditor editor = addEditor(participant, act, descriptor);
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 productModified(participant);
             }
         });
+        _productEditor = editor;
     }
 
     /**
@@ -178,9 +214,9 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @param descriptor  the participants node descriptor
      * @return the editor
      */
-    private IMObjectEditor addEditor(Participation participant, Act act,
-                                     NodeDescriptor descriptor) {
-        final IMObjectEditor editor = ParticipationEditor.create(
+    private ParticipationEditor addEditor(Participation participant, Act act,
+                                          NodeDescriptor descriptor) {
+        final ParticipationEditor editor = ParticipationEditor.create(
                 participant, act, descriptor, getLayoutContext());
         getModifiableSet().add(participant, editor);
         _participants.add(editor);

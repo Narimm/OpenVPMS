@@ -20,6 +20,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -233,8 +234,8 @@ public class PatientQuery extends AbstractQuery {
         IMObjectReference source = new IMObjectReference(customer);
 
         for (EntityRelationship relationship : relationships) {
-            ArchetypeId id = relationship.getArchetypeId();
-            if (id.getShortName().equals("entityRelationship.patientOwner")) {
+            if (IMObjectHelper.isA(relationship,
+                                   "entityRelationship.patientOwner")) {
                 if (source.equals(relationship.getSource())) {
                     IMObject object = service.get(relationship.getTarget());
                     result.add(object);

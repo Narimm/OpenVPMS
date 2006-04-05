@@ -21,8 +21,8 @@ import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
-import org.openvpms.web.component.im.util.DefaultIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -245,30 +245,6 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
             total = total.add(value);
         }
         totalDesc.setValue(act, total);
-    }
-
-    private class ActCopyHandler extends DefaultIMObjectCopyHandler {
-
-        /**
-         * Determines how {@link IMObjectCopier} should treat an object.
-         *
-         * @param object  the source object
-         * @param service the archetype service
-         * @return <code>object</code> if the object shouldn't be copied,
-         *         <code>null</code> if it should be replaced with
-         *         <code>null</code>, or a new instance if the object should be
-         *         copied
-         */
-        public IMObject getObject(IMObject object, IArchetypeService service) {
-            IMObject result;
-            if (object instanceof Act || object instanceof ActRelationship
-                || object instanceof Participation) {
-                result = super.getObject(object, service);
-            } else {
-                result = object;
-            }
-            return result;
-        }
     }
 
     private static class InvoiceHandler extends AbstractIMObjectCopyHandler {

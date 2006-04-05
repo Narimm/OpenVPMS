@@ -1,6 +1,8 @@
 package org.openvpms.web.component.im.edit.act;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +12,10 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.edit.CollectionEditor;
@@ -23,6 +27,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectCopier;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -84,18 +91,13 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     protected boolean save(IMObjectEditor editor) {
         Act act = (Act) editor.getObject();
         boolean saved = false;
-        if (super.save(editor)) {
+        IMObjectReference product = ((ActItemEditor) editor).getProduct();
+        if (IMObjectHelper.isA(product, "product.template")) {
+            saved = expandTemplate(act, product);
+        } else if (super.save(editor)) {
             ActRelationship relationship = _acts.get(act);
             if (relationship.isNew()) {
-                Act parent = (Act) getObject();
-                IMObjectReference source = new IMObjectReference(parent);
-                IMObjectReference target = new IMObjectReference(act);
-                relationship.setSource(source);
-                relationship.setTarget(target);
-                NodeDescriptor descriptor = getDescriptor();
-                if (SaveHelper.save(relationship, parent, descriptor)) {
-                    saved = true;
-                }
+                saved = saveRelationship(relationship, act);
             } else {
                 saved = true;
             }
@@ -177,8 +179,119 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected IMObjectEditor createEditor(IMObject object,
                                           LayoutContext context) {
-        Act act = (Act) object;
-        return IMObjectEditorFactory.create(act, context);
+        return IMObjectEditorFactory.create(object, context);
     }
 
+    /**
+     * Determines if an act contains a product template.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act contains a product template,
+     *         otherwise <code>false</code>
+     */
+    protected IMObjectReference getProductTemplate(Act act) {
+        Participation participant = IMObjectHelper.getObject(
+                "participation.product", act.getParticipations());
+        if (participant != null) {
+            IMObjectReference ref = participant.getEntity();
+            if (IMObjectHelper.isA(ref, "product.template")) {
+                return ref;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Copies an act item for each product referred to in its template.
+     *
+     * @param act         the act
+     * @param templateRef a reference to the template
+     */
+    protected boolean expandTemplate(Act act, IMObjectReference templateRef) {
+        boolean saved = false;
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        IMObject template = IMObjectHelper.getObject(templateRef);
+        if (template != null) {
+            // need to remove the relationship as a new relationship is
+            // created for each child act
+            ActRelationship actRelationship = _acts.remove(act);
+            String shortName = actRelationship.getArchetypeId().getShortName();
+
+            IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
+            Collection values = IMObjectHelper.getValues(template, "includes");
+            for (Object value : values) {
+                EntityRelationship relationship = (EntityRelationship) value;
+                IMObjectReference product = relationship.getTarget();
+
+                // copy the act, and associate the product
+                Act copy = (Act) copier.copy(act);
+                LayoutContext context = new DefaultLayoutContext();
+                context.setComponentFactory(new ReadOnlyComponentFactory(context));
+                ActItemEditor editor = (ActItemEditor) createEditor(
+                        copy, context);
+                editor.setProduct(product);
+
+                Object quantity = IMObjectHelper.getValue(relationship,
+                                                          "includeQty");
+                if (quantity != null) {
+                    editor.setQuantity((BigDecimal) quantity);
+                }
+
+                // create a new act relationship linking the copied act with
+                // the parent act
+                ActRelationship relationshipCopy
+                        = (ActRelationship) service.create(shortName);
+                if (saveRelationship(relationshipCopy, copy)) {
+                    // register and save the act
+                    _acts.put(copy, relationshipCopy);
+                    saved = editor.save();
+                }
+            }
+        }
+        return saved;
+    }
+
+    /**
+     * Save an act relationsip.
+     *
+     * @param act the act relationship
+     * @param act the child act
+     * @return <code>true</code> if the save was successful
+     */
+    private boolean saveRelationship(ActRelationship relationship, Act act) {
+        Act parent = (Act) getObject();
+        relationship.setSource(parent.getObjectReference());
+        relationship.setTarget(act.getObjectReference());
+        NodeDescriptor descriptor = getDescriptor();
+        return SaveHelper.save(relationship, parent, descriptor);
+    }
+
+    private class ActItemCopyHandler extends ActCopyHandler {
+
+        /**
+         * Determines how {@link IMObjectCopier} should treat an object.
+         *
+         * @param object  the source object
+         * @param service the archetype service
+         * @return <code>object</code> if the object shouldn't be copied,
+         *         <code>null</code> if it should be replaced with
+         *         <code>null</code>, or a new instance if the object should be
+         *         copied
+         */
+        public IMObject getObject(IMObject object, IArchetypeService service) {
+            IMObject result;
+            if (object instanceof Participation) {
+                Participation participant = (Participation) object;
+                if (IMObjectHelper.isA(participant.getEntity(),
+                                       "product.template")) {
+                    result = null;
+                } else {
+                    result = super.getObject(object, service);
+                }
+            } else {
+                result = super.getObject(object, service);
+            }
+            return result;
+        }
+    }
 }

@@ -18,6 +18,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -127,7 +128,7 @@ public class ActItemTableModel extends DescriptorTableModel {
     private IMObject getByShortName(String shortName, List<IMObject> objects) {
         IMObject result = null;
         for (IMObject object : objects) {
-            if (object.getArchetypeId().getShortName().equals(shortName)) {
+            if (IMObjectHelper.isA(object, shortName)) {
                 result = object;
                 break;
             }
