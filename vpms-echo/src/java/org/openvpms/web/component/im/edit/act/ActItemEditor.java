@@ -1,8 +1,8 @@
 package org.openvpms.web.component.im.edit.act;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.math.BigDecimal;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
@@ -20,6 +20,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -48,6 +49,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * The product editor.
      */
     private ParticipationEditor _productEditor;
+
+    /**
+     * Current node filter. May be <code>null</code>
+     */
+    private NodeFilter _filter;
 
     /**
      * Patient participation short name.
@@ -172,6 +178,25 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Change the layout of the act.
+     *
+     * @param filter the node filter to use
+     */
+    protected void changeLayout(NodeFilter filter) {
+        _filter = filter;
+        onLayout();
+    }
+
+    /**
+     * Returns the current node filter, used to lay out the act.
+     *
+     * @return the current node filter. May be <code>null</code>
+     */
+    protected NodeFilter getFilter() {
+        return _filter;
+    }
+
+    /**
      * Add a patient editor.
      *
      * @param act        the act
@@ -279,7 +304,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         @Override
         protected NodeFilter getNodeFilter(LayoutContext context) {
             NodeFilter filter = new NamedNodeFilter(PARTICIPANTS);
-            return getNodeFilter(context, filter);
+            ChainedNodeFilter chain = getNodeFilter(context, filter);
+            if (_filter != null) {
+                chain.add(_filter);
+            }
+            return chain;
         }
 
     }
