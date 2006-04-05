@@ -16,31 +16,16 @@
  *  $Id$
  */
 
-package org.openvpms.component.system.common.search;
 
-import java.util.List;
+package org.openvpms.component.system.common.query;
+
+import java.io.Serializable;
 
 /**
- * This interface is used to support pagination of large result sets.
+ * Base class of all constraints. This is a marker interface
  * 
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public interface IPage<T> {
-
-    /**
-     * @return Returns the firstRow.
-     */
-    public PagingCriteria getPagingCriteria();
-
-    /**
-     * @return Returns the rows.
-     */
-    public List<T> getRows();
-
-    /**
-     * @return Returns the totalNumOfRows.
-     */
-    public int getTotalNumOfRows();
-
+public interface IConstraint extends Serializable, Cloneable {
 }

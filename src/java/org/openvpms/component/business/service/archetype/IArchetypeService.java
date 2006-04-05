@@ -32,7 +32,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 
@@ -191,6 +192,19 @@ public interface IArchetypeService {
     public void save(IMObject entity);
     
     /**
+     * Retrieve the objects specified by the following {@link ArchetypeQuery}
+     * request.
+     * 
+     * @param query
+     *        the archetype query
+     * @return IPage<IMObject>
+     *            the list of objects meeting request constraints
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public IPage<IMObject> get(ArchetypeQuery query);
+    
+    /**
      * Uses the specified criteria to return zero, one or more matching . 
      * entities. This is a very generic query which will constrain the 
      * returned set on one or more of the supplied values.
@@ -222,6 +236,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
+    @Deprecated
     public IPage<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName, boolean activeOnly,
             PagingCriteria pagingCriteria, SortCriteria sortCriteria);
@@ -266,6 +281,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
+    @Deprecated
     public IPage<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName, boolean primaryOnly,
             boolean activeOnly, PagingCriteria pagingCriteria, 
@@ -287,6 +303,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
+    @Deprecated
     public IPage<IMObject> get(String[] shortNames, boolean activeOnly, 
             PagingCriteria pagingCriteria, SortCriteria sortCriteria);
     
@@ -303,6 +320,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
+    @Deprecated
     public IMObject getById(ArchetypeId archId, long id);
     
     /**
@@ -337,12 +355,24 @@ public interface IArchetypeService {
      * @param conceptName
      *            the concept name
      * @param primaryOnly
-     *            indicates whether to return primary objects only.                                                     
+     *            indicates whether to return primary objects only.  
+     * @return List<String>
+     *            a list of short names                                                               
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
     public List<String> getArchetypeShortNames(String rmName, String entityName,
             String conceptName, boolean primaryOnly);
+    
+    /**
+     * Return all the archetype short names
+     * 
+     * @return List<String>
+     *            a list of short names                                                               
+     * @throws ArchetypeServiceException
+     *            a runtime exception if it cannot complete the call                        
+     */
+    public List<String> getArchetypeShortNames();
     
     /**
      * Retrieve the {@link IMObject} given an {@link IMObjectReference}
@@ -353,6 +383,7 @@ public interface IArchetypeService {
      *            the object or null if it cannot be resolved.
      * @throws ArchetypeServiceException            
      */
+    @Deprecated
     public IMObject get(IMObjectReference reference);
     
     /**
@@ -374,6 +405,7 @@ public interface IArchetypeService {
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException                                                                     
      */
+    @Deprecated
     public IPage<IMObject> get(String[] shortNames, String instanceName,
             boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria,
             SortCriteria sortCriteria);
@@ -414,6 +446,7 @@ public interface IArchetypeService {
      * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
+    @Deprecated
     public IPage<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
             String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, String status, boolean activeOnly,
@@ -449,6 +482,7 @@ public interface IArchetypeService {
      * @param ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
+    @Deprecated
     public IPage<Participation> getParticipations(IMObjectReference ref, String conceptName, 
             Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
             Date endTimeThru, boolean activeOnly, PagingCriteria pagingCriteria,

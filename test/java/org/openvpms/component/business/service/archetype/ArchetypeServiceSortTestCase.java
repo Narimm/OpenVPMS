@@ -20,7 +20,7 @@ package org.openvpms.component.business.service.archetype;
 
 // spring-context
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;

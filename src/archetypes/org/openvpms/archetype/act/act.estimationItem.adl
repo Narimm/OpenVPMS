@@ -16,7 +16,7 @@
 			<node name="lowUnitPrice" path="/details/attributes/lowQty" type="java.math.BigDecimal" defaultValue="0.0"/>
 			<node name="highUnitPrice" path="/details/attributes/lowQty" type="java.math.BigDecimal" defaultValue="0.0"/>
 		</node>
-		<node name="participants" path="/participations" parentChild="true"
+		<node name="participations" path="/participations" parentChild="true"
 			type="java.util.HashSet" baseName="Participation" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">

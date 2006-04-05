@@ -28,6 +28,7 @@ import java.io.Serializable;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
+@Deprecated
 public class PagingCriteria implements Serializable {
     /**
      * Default SUID
