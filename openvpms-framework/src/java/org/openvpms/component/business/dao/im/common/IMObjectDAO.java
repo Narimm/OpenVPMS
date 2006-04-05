@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 
 /**
@@ -66,6 +66,24 @@ public interface IMObjectDAO {
      */
     public void delete(IMObject object);
 
+    /**
+     * Execute a get using the specified query string and a map of the
+     * values. The first row and ther number of rows is used to control
+     * the paging of the result set 
+     * 
+     * @param queryString
+     *            the query string
+     * @param valueMap
+     *            the values applied to the query
+     * @param pagingCriteria
+     *            the paging criteria for the request
+     * @return IPage<IMObject>
+     * @throws IMObjectDAOException
+     *            a runtime exception, raised if the request cannot complete.            
+     */
+    public IPage<IMObject> get(String queryString, Map<String, Object> valueMap,
+            PagingCriteria pagingCriteria);
+    
     /**
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return 

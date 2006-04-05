@@ -22,7 +22,7 @@ package org.openvpms.component.business.dao.im;
 import java.io.Serializable;
 import java.util.List;
 
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 
 /**

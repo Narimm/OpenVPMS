@@ -26,10 +26,11 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.search.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 // log4j
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -50,8 +51,9 @@ public class ArchetypeServiceActTestCase extends
     /**
      * Holds a reference to the entity service
      */
-    private ArchetypeService service;
+    private IArchetypeService service;
     
+
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(ArchetypeServiceActTestCase.class);
@@ -82,7 +84,7 @@ public class ArchetypeServiceActTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
         
-        this.service = (ArchetypeService)applicationContext.getBean(
+        this.service = (IArchetypeService)applicationContext.getBean(
                 "archetypeService");
     }
     
@@ -99,12 +101,14 @@ public class ArchetypeServiceActTestCase extends
         service.save(act);
         service.save(person);
         
-        person = (Party)service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)ArchetypeQueryHelper.getByUid(service, 
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getParticipations().size() == 1);
         
         participation = person.getParticipations().iterator().next();
-        act = (Act)service.get(participation.getAct());
+        act = (Act)ArchetypeQueryHelper.getByObjectReference(service, 
+                participation.getAct());
         assertTrue(act != null);
         assertTrue(act.getParticipations().size() == 1);
     }
@@ -112,6 +116,7 @@ public class ArchetypeServiceActTestCase extends
     /**
      * Test the search by acts function
      */
+    @SuppressWarnings("unchecked")
     public void testGetActs()
     throws Exception {
         
@@ -126,17 +131,19 @@ public class ArchetypeServiceActTestCase extends
         }
         
         service.save(person);
-        
+      
         // now use the getActs request
-        IPage<Act> acts = service.getActs(person.getObjectReference(), "simple", "act", "simple",
-                null, null, null, null, null, false, null, null);
+        IPage<Act> acts = ArchetypeQueryHelper.getActs(service, 
+                person.getObjectReference(), "participation.simple", "act", "simple",
+            null, null, null, null, null, false, 0, ArchetypeQuery.ALL_ROWS);
         assertTrue(acts.getTotalNumOfRows() == 5);
         
         // now look at the paging aspects
-        acts = service.getActs(person.getObjectReference(), "simple", "act", "simple",
-                null, null, null, null, null, false, new PagingCriteria(0, 1), null);
+        acts = ArchetypeQueryHelper.getActs(service, person.getObjectReference(), 
+                "participation.simple", "act", "simple", null, null, null, null, null, false, 0, 1);
         assertTrue(acts.getTotalNumOfRows() == 5);
         assertTrue(acts.getRows().size() == acts.getPagingCriteria().getNumOfRows());
+        assertFalse(StringUtils.isEmpty(acts.getRows().get(0).getName()));
     }
     
     /**

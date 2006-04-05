@@ -22,6 +22,8 @@ package org.openvpms.component.business.service.archetype;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.hibernate.Query;
+import org.hibernate.SessionFactory;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -49,6 +51,10 @@ public class ArchetypeServicePartyTestCase extends
      */
     private ArchetypeService service;
     
+    /**
+     * A reference to the hibernate session factory
+     */
+    private SessionFactory sessionFactory;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(ArchetypeServicePartyTestCase.class);
@@ -81,11 +87,14 @@ public class ArchetypeServicePartyTestCase extends
         
         this.service = (ArchetypeService)applicationContext.getBean(
                 "archetypeService");
+        this.sessionFactory = (SessionFactory)applicationContext.getBean(
+                "sessionFactory");
     }
     
     /**
      * Test the creation of a simple contact with a contact classification
      */
+    @SuppressWarnings("unchecked")
     public void testSimplePartyWithContactCreation()
     throws Exception {
         Classification classification = createClassification("email");
@@ -97,6 +106,14 @@ public class ArchetypeServicePartyTestCase extends
         person.addContact(createContact(classification));
         person.addContact(createContact(classification1));
         service.save(person);
+        
+        // try the hql query
+        Query query = sessionFactory.openSession().createQuery(
+                "select party from " + Party.class.getName() + " as party inner join party.contacts as contact left outer join contact.classifications as classification where contact.archetypeId.entityName = :entityName and contact.archetypeId.concept = :concept and classification.name = :classification");
+        query.setParameter("entityName", "contact");
+        query.setParameter("concept", "location");
+        query.setParameter("classification", "email");
+        query.list();
     }
     
     /**

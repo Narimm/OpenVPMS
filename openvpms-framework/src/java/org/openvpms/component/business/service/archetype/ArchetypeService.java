@@ -46,8 +46,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.business.service.archetype.query.QueryBuilder;
+import org.openvpms.component.business.service.archetype.query.QueryContext;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.component.system.service.hibernate.EntityInterceptor;
@@ -61,6 +64,10 @@ import org.openvpms.component.system.service.hibernate.EntityInterceptor;
  * is specified on construction 2. The archetype records must be stored in a
  * single XML document and the structure of the document must comply with XML
  * Schema defined in <b>archetype.xsd</b>.
+ * <p>
+ * NOTE: The archetype service is currently supporting both styles of queries
+ * but this will change to support a single query api for all queries once it
+ * has been validated.
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -81,6 +88,13 @@ public class ArchetypeService implements IArchetypeService {
      * The DAO instance it will use...optional
      */
     private IMObjectDAO dao;
+    
+    /**
+     * A reference to the query builder. The query build is stuff is not
+     * well abstracted at this stage since there are no requirements to 
+     * support anything outside (hibernate).
+     */
+    private QueryBuilder builder = new QueryBuilder(this);
 
     /**
      * The entity interceptor that is used to intercept calls hibernate
@@ -318,12 +332,41 @@ public class ArchetypeService implements IArchetypeService {
         return dCache.getArchetypeDescriptorsByRmName(rmName);
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.system.common.query.ArchetypeQuery)
+     */
+    public IPage<IMObject> get(ArchetypeQuery query) {
+       if (query == null) {
+           return null;
+       }
+       
+       if (logger.isDebugEnabled()) {
+           logger.debug("ArchetypeService.get: query " + query);
+       }
+       
+       try {
+           QueryContext context = builder.build(query);
+           if (logger.isDebugEnabled()) {
+               logger.debug("ArchetypeService.get: query " + context.getQueryString());
+           }
+           
+           return dao.get(context.getQueryString(), context.getValueMap(),
+                   new PagingCriteria(query.getFirstRow(), query.getNumOfRows()));
+       } catch (Exception exception) {
+           throw new ArchetypeServiceException(
+                   ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
+                   new Object[] { query.toString()}, 
+                   exception);
+       }
+    }
+
     /*
      * (non-Javadoc)
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String,
      *      java.lang.String, java.lang.String, java.lang.String)
      */
+    @Deprecated
     public IPage<IMObject> get(String rmName, String entityName,
             String conceptName, String instanceName, boolean activeOnly, 
             PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
@@ -334,6 +377,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean, int, int)
      */
+    @Deprecated
     public IPage<IMObject> get(String rmName, String entityName, String conceptName, String instanceName, boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.get: rmName " + rmName
@@ -373,6 +417,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[])
      */
+    @Deprecated
     public IPage<IMObject> get(String[] shortNames, boolean activeOnly, 
             PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
@@ -412,6 +457,7 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getById(org.openvpms.component.business.domain.archetype.ArchetypeId,
      *      long)
      */
+    @Deprecated
     public IMObject getById(ArchetypeId archId, long id) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.getById: Retrieving object of type " 
@@ -446,6 +492,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(java.lang.String[], java.lang.String, boolean, boolean)
      */
+    @Deprecated
     public IPage<IMObject> get(String[] shortNames, String instanceName, 
             boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria, 
             SortCriteria sortCriteria) {
@@ -477,6 +524,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getByNamedQuery(java.lang.String, java.util.Map)
      */
+    @Deprecated
     public IPage<IMObject> getByNamedQuery(String name, Map<String, Object> params, 
             PagingCriteria pagingCriteria) {
         if (logger.isDebugEnabled()) {
@@ -507,6 +555,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.business.domain.im.common.IMObjectReference)
      */
+    @Deprecated
     public IMObject get(IMObjectReference reference) {
         if (reference == null) {
             return null;
@@ -619,8 +668,16 @@ public class ArchetypeService implements IArchetypeService {
     }
     
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames()
+     */
+    public List<String> getArchetypeShortNames() {
+        return dCache.getArchetypeShortNames();
+    }
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
+    @Deprecated
     public IPage<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (ref == null) {
             throw new ArchetypeServiceException(
@@ -651,6 +708,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getActs(java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.String, boolean)
      */
+    @Deprecated
     public IPage<Act> getActs(String entityName, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, String status, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.getActs: "  
@@ -682,6 +740,7 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.entity.IEntityService#getParticipations(long, java.lang.String, java.util.Date, java.util.Date, boolean)
      */
+    @Deprecated
     public IPage<Participation> getParticipations(IMObjectReference ref, String conceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, Date endTimeThru, boolean activeOnly, PagingCriteria pagingCriteria, SortCriteria sortCriteria) {
         if (ref == null) {
             throw new ArchetypeServiceException(

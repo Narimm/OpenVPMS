@@ -32,7 +32,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * Test the entity service with acts
@@ -94,6 +97,7 @@ public class ActTestCases extends
      * Create 3 participations for the same entity and then use the entity 
      * service get to retrieve them all
      */
+    @SuppressWarnings("unchecked")
     public void testGetParticipantsQuery()
     throws Exception {
         Party person = createPerson("Mr", "Jim", "Alateras");
@@ -116,13 +120,15 @@ public class ActTestCases extends
         act3.addParticipation(participation3);
         archetypeService.save(act3);
 
-        person = (Party)archetypeService.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)ArchetypeQueryHelper.getByUid(archetypeService,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getParticipations().size() == 3);
         
-        List<Participation> participations = archetypeService.getParticipations(
-                new IMObjectReference(person), null, null, null, null, null, true,
-                null, null).getRows();
+        List<Participation> participations = ArchetypeQueryHelper.getParticipations(
+                archetypeService, new IMObjectReference(person), "participation.simple", 
+                null, null, 
+                null, null, true, 0, ArchetypeQuery.ALL_ROWS).getRows();
         assertTrue(participations.size() == 3);
     }
     
@@ -130,6 +136,7 @@ public class ActTestCases extends
      * Create 2 participations for the same entity and then use the archetype
      * service to retrieve the acts for the specified entity
      */
+    @SuppressWarnings("unchecked")
     public void testGetActsByEntityIdQuery()
     throws Exception {
         Party person = createPerson("Mr", "Jim", "Alateras");
@@ -147,9 +154,10 @@ public class ActTestCases extends
         act2.addParticipation(participation2);
         archetypeService.save(act2);
 
-        List<Act> acts = archetypeService.getActs(
-                new IMObjectReference(person), null, null, null, null, null, 
-                null, null, null, true, null, null).getRows();
+        List<Act> acts = ArchetypeQueryHelper.getActs(archetypeService,
+                new IMObjectReference(person), "participation.simple", 
+                "act", null, null, null, null, null, null, true, 0,
+                ArchetypeQuery.ALL_ROWS).getRows();
         assertTrue(acts.size() == 2);
     }
     
@@ -165,9 +173,11 @@ public class ActTestCases extends
         archetypeService.save(act2);
         act1.addSourceActRelationship(createActRelationship(act1, act2));
         archetypeService.save(act1);
-        act1 = (Act)archetypeService.getById(act1.getArchetypeId(), act1.getUid());
+        act1 = (Act)ArchetypeQueryHelper.getByUid(archetypeService,
+                act1.getArchetypeId(), act1.getUid());
         for (ActRelationship theRel : act1.getSourceActRelationships()) {
-            act2 = (Act)archetypeService.get(theRel.getTarget());
+            act2 = (Act)ArchetypeQueryHelper.getByObjectReference(archetypeService,
+                    theRel.getTarget());
         }
         archetypeService.save(act2);
        archetypeService.save(act1);
@@ -176,17 +186,20 @@ public class ActTestCases extends
     /**
      * Exercise the getActs query 
      */
+    @SuppressWarnings("unchecked")
     public void testGetActsQuery()
     throws Exception {
         // get the initial act count
-        int actCount = archetypeService.getActs("act", null, null, null, null, 
-                null, null, false, null, null).getRows().size();
+        int actCount = ArchetypeQueryHelper.getActs(archetypeService,
+                "act", null, null, null, null, null, null, false, 1, 
+                ArchetypeQuery.ALL_ROWS).getRows().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up");
         archetypeService.save(act1);
-        int actCount1 = archetypeService.getActs("act", null, null, null, null, 
-                null, null, false, null, null).getRows().size();
+        int actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
+                "act", null, null, null, null, null, null, false, 1, 
+                ArchetypeQuery.ALL_ROWS).getRows().size();
         assertTrue(actCount1 == (actCount + 1));
 
         // create multiple acts and check the count again
@@ -194,29 +207,41 @@ public class ActTestCases extends
         archetypeService.save(act1);
         act1 = createAct("wake up now");
         archetypeService.save(act1);
-        actCount1 = archetypeService.getActs("act", null, null, null, null, 
-                null, null, false, null, null).getRows().size();
+        actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
+                "act", null, null, null, null, null, null, false, 1, 
+                ArchetypeQuery.ALL_ROWS).getRows().size();
         assertTrue(actCount1 == (actCount + 3));
         
         // check that it retrieves null result set correctly
-        assertTrue(archetypeService.getActs("jimmya-act", null, null, null, 
-                null, null, null, false, null, null).getRows().size() == 0);
+        try {
+            ArchetypeQueryHelper.getActs(archetypeService, "jimmya-act", null, 
+                null, null, null, null, null, false, 1, ArchetypeQuery.ALL_ROWS)
+                .getRows().size();
+            fail("This request should not have completed");
+        } catch (ArchetypeServiceException exception) {
+            if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.FailedToExecuteQuery) {
+                fail("Incorrect exception received: " + exception.getErrorCode());
+            }
+        }
     }
     
     /**
      * Test for bug 229 
      */
+    @SuppressWarnings("unchecked")
     public void testOVPMS229()
     throws Exception {
         // get the initial act count
-        int actCount = archetypeService.getActs("act", null, null, null, null, 
-                null, null, true, null, null).getRows().size();
+        int actCount = ArchetypeQueryHelper.getActs(archetypeService,
+                "act", null, null, null, null, null, null, false, 1, 
+                ArchetypeQuery.ALL_ROWS).getRows().size();
 
         // create an act and check the count again
         Act act1 = createAct("wake up jim");
         archetypeService.save(act1);
-        int actCount1 = archetypeService.getActs("act", null, null, null, null, 
-                null, null, true, null, null).getRows().size();
+        int actCount1 = ArchetypeQueryHelper.getActs(archetypeService,
+                "act", null, null, null, null, null, null, false, 1, 
+                ArchetypeQuery.ALL_ROWS).getRows().size();
         assertTrue(actCount1 == (actCount + 1));
     }
     
@@ -237,7 +262,8 @@ public class ActTestCases extends
         act1.addActRelationship(rel);
         archetypeService.save(act1);
         
-        Act tmp = (Act)archetypeService.get(act1.getObjectReference());
+        Act tmp = (Act)ArchetypeQueryHelper.getByObjectReference(archetypeService,
+                act1.getObjectReference());
         assertTrue(tmp != null);
         assertFalse(StringUtils.isEmpty(rel.getName()));
         assertFalse(StringUtils.isEmpty(rel.getDescription()));

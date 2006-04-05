@@ -44,7 +44,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 
 /**
@@ -115,6 +115,24 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     new Object[] { new Long(object.getUid()) });
         }
     }
+    
+    
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#get(java.lang.String, java.util.Map, int, int)
+     */
+    @SuppressWarnings("unchecked")
+    public IPage<IMObject> get(String queryString, Map<String, Object> valueMap, PagingCriteria pagingCriteria) {
+        try {
+            return executeQuery(queryString, new ArrayList<String>(valueMap.keySet()), 
+                    new ArrayList<Object>(valueMap.values()), pagingCriteria, 
+                    new Page<IMObject>());
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
+                new Object[] { queryString }, exception);
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -316,7 +334,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             }
 
 
-            // process the rmName
+            // process the short names
             if (shortNames != null && shortNames.length > 0) {
                 boolean orRequired = false;
                 boolean appendClosingBrace = false;

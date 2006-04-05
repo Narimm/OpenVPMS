@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
