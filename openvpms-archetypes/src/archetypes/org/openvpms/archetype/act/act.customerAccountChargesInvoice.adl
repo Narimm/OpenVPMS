@@ -8,7 +8,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat(' Description of the Customer Invoice Act', ' ')" />
-		<node name="invoiceDate" path="/activityStartTime"
+		<node name="startTime" path="/activityStartTime"
 			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
