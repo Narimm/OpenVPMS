@@ -9,6 +9,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
@@ -43,7 +44,8 @@ public class IMObjectHelper {
             if (result == null) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 try {
-                    result = service.get(reference);
+                    result = ArchetypeQueryHelper.getByObjectReference(
+                            service, reference);
                 } catch (ArchetypeServiceException error) {
                     _log.error(error, error);
                 }
@@ -84,7 +86,7 @@ public class IMObjectHelper {
     }
 
     /**
-     * Returns a value from an object, given the value's node descriptor name,
+     * Returns a value from an object, given the value's node descriptor name.
      *
      * @param object the object
      * @param node   the node name
@@ -94,6 +96,20 @@ public class IMObjectHelper {
     public static Object getValue(IMObject object, String node) {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(object);
+        return getValue(object, archetype, node);
+    }
+
+    /**
+     * Returns a value from an object, given the value's node descriptor name.
+     *
+     * @param object    the object
+     * @param archetype the archetype descriptor
+     * @param node      the node name
+     * @return the value corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static Object getValue(IMObject object,
+                                  ArchetypeDescriptor archetype, String node) {
         NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
         if (descriptor != null) {
             return descriptor.getValue(object);
