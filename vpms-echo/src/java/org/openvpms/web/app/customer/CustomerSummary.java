@@ -11,6 +11,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
 
 
@@ -34,7 +35,8 @@ public class CustomerSummary {
         if (customer != null) {
             Label title = LabelFactory.create("customer.account.balance");
             Label balance = LabelFactory.create();
-            balance.setText(getBalance(customer).toString());
+            BigDecimal value = getBalance(customer);
+            balance.setText(NumberFormatter.format(value));
             result = RowFactory.create("CellSpacing", title, balance);
         }
         return result;
@@ -44,7 +46,7 @@ public class CustomerSummary {
         ActResultSet set = new ActResultSet(customer.getObjectReference(),
                                             "act", "customerAccountCharges*",
                                             null, null, "Posted", 50, null);
-        BigDecimal balance = new BigDecimal("0.0");
+        BigDecimal balance = BigDecimal.ZERO;
         while (set.hasNext()) {
             IPage<Act> acts = set.next();
             balance = ActHelper.sum(balance, acts.getRows(), "amount");

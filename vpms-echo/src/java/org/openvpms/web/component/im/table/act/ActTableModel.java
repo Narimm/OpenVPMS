@@ -1,8 +1,6 @@
 package org.openvpms.web.component.im.table.act;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
@@ -14,6 +12,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -160,6 +159,12 @@ public class ActTableModel extends DefaultIMObjectTableModel {
         return column;
     }
 
+    /**
+     * Returns an amount from an act.
+     *
+     * @param act the act
+     * @return the stringified amount
+     */
     private String getAmount(Act act) {
         String result = "";
         ArchetypeDescriptor archetype
@@ -173,14 +178,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
             if (Boolean.TRUE.equals(credit)) {
                 amount = amount.negate();
             }
-            try {
-                // @todo - potential loss of precision here as NumberFormat converts
-                // BigDecimal to double before formatting
-                NumberFormat format = new DecimalFormat("#,##0.00;(#,##0.00)");
-                result = format.format(amount);
-            } catch (IllegalArgumentException exception) {
-                result = amount.toString();
-            }
+            result = NumberFormatter.format(amount);
         }
         return result;
     }
