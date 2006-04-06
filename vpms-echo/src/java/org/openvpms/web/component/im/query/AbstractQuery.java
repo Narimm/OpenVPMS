@@ -13,7 +13,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.system.common.search.SortCriteria;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -178,9 +177,9 @@ public abstract class AbstractQuery implements Query {
             shortNames = new String[]{type};
         }
 
-        SortCriteria sort = null;
+        SortOrder sort = null;
         if (node != null) {
-            sort = new SortCriteria(node, ascending);
+            sort = new SortOrder(node, ascending);
         }
 
         if (useDefault) {

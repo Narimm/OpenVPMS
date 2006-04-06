@@ -1,11 +1,13 @@
 package org.openvpms.web.component.im.query;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.search.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
-import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -16,7 +18,8 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate$
  */
-public class ShortNameResultSet extends AbstractArchetypeServiceResultSet<IMObject> {
+public class ShortNameResultSet
+        extends AbstractArchetypeServiceResultSet<IMObject> {
 
     /**
      * The instance name.
@@ -45,7 +48,7 @@ public class ShortNameResultSet extends AbstractArchetypeServiceResultSet<IMObje
      * @param rows         the maximum no. of rows per page
      */
     public ShortNameResultSet(String[] shortNames, String instanceName,
-                              boolean activeOnly, SortCriteria order, int rows) {
+                              boolean activeOnly, SortOrder order, int rows) {
         super(rows, order);
         _shortNames = shortNames;
         _instanceName = instanceName;
@@ -57,16 +60,23 @@ public class ShortNameResultSet extends AbstractArchetypeServiceResultSet<IMObje
     /**
      * Returns the specified page.
      *
-     * @param criteria the paging criteria
+     * @param firstRow
+     * @param maxRows
      * @return the page corresponding to <code>page</code>, or <code>null</code>
      *         if none exists
      */
-    protected IPage<IMObject> getPage(PagingCriteria criteria) {
+    protected IPage<IMObject> getPage(int firstRow, int maxRows) {
         IPage<IMObject> result = null;
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            result = service.get(_shortNames, _instanceName, true, _activeOnly,
-                                 criteria, getSortCriteria());
+            ArchetypeQuery query = new ArchetypeQuery(_shortNames, true,
+                                                      _activeOnly);
+            if (!StringUtils.isEmpty(_instanceName)) {
+                query.add(new NodeConstraint("name", _instanceName));
+            }
+            query.setFirstRow(firstRow);
+            query.setNumOfRows(maxRows);
+            result = service.get(query);
         } catch (ArchetypeServiceException exception) {
             ErrorDialog.show(exception);
         }

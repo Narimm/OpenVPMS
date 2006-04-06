@@ -2,7 +2,7 @@ package org.openvpms.web.component.im.query;
 
 import java.util.ListIterator;
 
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 
 
 /**

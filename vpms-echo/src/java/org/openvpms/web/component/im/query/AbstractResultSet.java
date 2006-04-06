@@ -2,8 +2,8 @@ package org.openvpms.web.component.im.query;
 
 import java.util.NoSuchElementException;
 
-import org.openvpms.component.system.common.search.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 
 /**
@@ -225,11 +225,12 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the specified page.
      *
-     * @param criteria the paging criteria
-     * @return the page corresponding to <code>page</code>, or <code>null</code>
-     *         if none exists
+     * @param firstRow the first row of the page to retrieve
+     * @param maxRows  the maximun no of rows in the page
+     * @return the page corresponding to <code>firstRow</code>, or
+     *         <code>null</code> if none exists
      */
-    protected abstract IPage<T> getPage(PagingCriteria criteria);
+    protected abstract IPage<T> getPage(int firstRow, int maxRows);
 
     /**
      * Returns the current page.
@@ -249,7 +250,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      */
     protected int getIndex(IPage<T> page) {
         int first = getFirstRow(page);
-        if (_rowsPerPage == PagingCriteria.ALL_ROWS) {
+        if (_rowsPerPage == ArchetypeQuery.ALL_ROWS) {
             return 0;
         }
         return page.getTotalNumOfRows() / first;
@@ -262,7 +263,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * @return the total no. of pages
      */
     protected int getPages(IPage<T> page) {
-        if (_rowsPerPage == PagingCriteria.ALL_ROWS) {
+        if (_rowsPerPage == ArchetypeQuery.ALL_ROWS) {
             return 1;
         }
         int pages = (page.getTotalNumOfRows() / _rowsPerPage);
@@ -300,7 +301,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      *         <code>&lt;0</code> indicates at beginning of set
      */
     protected int getPreviousRow(IPage<T> page) {
-        if (_rowsPerPage == PagingCriteria.ALL_ROWS) {
+        if (_rowsPerPage == ArchetypeQuery.ALL_ROWS) {
             return -1;
         }
         return getFirstRow(page) - _rowsPerPage;
@@ -315,7 +316,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     protected IPage<T> get(int page) {
         int row = page * _rowsPerPage;
         if (_page == null || _page.getPagingCriteria().getFirstRow() != row) {
-            _page = getPage(new PagingCriteria(row, _rowsPerPage));
+            _page = getPage(row, _rowsPerPage);
             if (_page != null && _page.getRows().isEmpty()) {
                 _page = null;
             }
