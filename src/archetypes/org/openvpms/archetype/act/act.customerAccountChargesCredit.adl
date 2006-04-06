@@ -17,7 +17,7 @@
                         type="java.math.BigDecimal" minCardinality="1"
                         defaultValue="'0.0'"/>
 			<node name="credit" path="/details/attributes/credit" type="java.lang.Boolean"
-				defaultValue="false()" readOnly="true" />
+				defaultValue="true()" readOnly="true" />
 			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" />			
 		</node>
 		<node name="status" path="/status" type="java.lang.String"
