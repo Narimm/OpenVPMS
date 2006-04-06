@@ -12,6 +12,8 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -73,4 +75,14 @@ public class InvoiceWorkspace extends ActWorkspace {
             actSelected(null);
         }
     }
+
+    /**
+     * Creates a new table model to display acts.
+     *
+     * @return a new table model.
+     */
+    protected IMObjectTableModel createTableModel() {
+        return new ActTableModel(true, true);
+    }
+
 }
