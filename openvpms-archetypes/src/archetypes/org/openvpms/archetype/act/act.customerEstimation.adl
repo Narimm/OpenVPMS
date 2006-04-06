@@ -8,7 +8,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat(/title, ' Low Estimate: ',/lowTotal,' High Estimate: ', /highTotal)" />
-		<node name="estimationDate" path="/activityStartTime"
+		<node name="startTime" path="/activityStartTime"
 			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="title" path="/title" type="java.lang.String" minCardinality="1" maxLength="30" defaultValue="'Enter a title ...'" />
 		<node name="details" path="/details" hidden="true"
