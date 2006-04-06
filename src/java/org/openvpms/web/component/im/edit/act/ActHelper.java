@@ -48,9 +48,19 @@ public class ActHelper {
                     = DescriptorHelper.getArchetypeDescriptor(act, service);
             NodeDescriptor decscriptor = archetype.getNodeDescriptor(node);
             if (decscriptor != null) {
+                NodeDescriptor creditDesc
+                        = archetype.getNodeDescriptor("credit");
+                Boolean credit = Boolean.FALSE;
+                if (creditDesc != null) {
+                    credit = (Boolean) creditDesc.getValue(act);
+                }
                 BigDecimal value = (BigDecimal) decscriptor.getValue(act);
                 if (value != null) {
-                    result = result.add(value);
+                    if (Boolean.TRUE.equals(credit)) {
+                        result = result.subtract(value);
+                    } else {
+                        result = result.add(value);
+                    }
                 }
             }
         }
