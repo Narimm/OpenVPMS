@@ -2,7 +2,6 @@ package org.openvpms.web.component.im.edit.invoice;
 
 import java.math.BigDecimal;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -13,16 +12,17 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerInvoiceItem</em> and <em>act.customerAccountCreditItem</em>.
+ * <em>act.customerAccountInvoiceItem</em>,
+ * <em>act.customerAccountCreditItem</em> and
+ * <em>act.customerAccountCounterItem</em>.
  *
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -74,17 +74,11 @@ public class InvoiceItemEditor extends ActItemEditor {
                                         NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectEditor result = null;
-        if (object instanceof Act) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(object);
-            if (archetype != null) {
-                String shortName = archetype.getShortName();
-                if (shortName.equals("act.customerAccountInvoiceItem")
-                    || shortName.equals("act.customerAccountCreditItem")) {
-                    result = new InvoiceItemEditor((Act) object, parent,
-                                                   descriptor, context);
-                }
-            }
+        if (IMObjectHelper.isA(object, "act.customerAccountInvoiceItem")
+            || IMObjectHelper.isA(object, "act.customerAccountCreditItem")
+            || IMObjectHelper.isA(object, "act.customerAccountCounterItem")) {
+            result = new InvoiceItemEditor((Act) object, parent,
+                                           descriptor, context);
         }
         return result;
     }
