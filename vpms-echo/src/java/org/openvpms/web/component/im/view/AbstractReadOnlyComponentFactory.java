@@ -218,14 +218,14 @@ public abstract class AbstractReadOnlyComponentFactory
             } catch (NumberFormatException exception) {
                 _log.error("Invalid number for " + descriptor.getName() + ": "
                            + object);
-                value = new BigDecimal(0);
+                value = BigDecimal.ZERO;
             }
         } else {
             if (object != null) {
                 _log.error("Invalid number for " + descriptor.getName() + ": "
                            + object);
             }
-            value = new BigDecimal(0);
+            value = BigDecimal.ZERO;
         }
 
         try {

@@ -125,7 +125,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
                                                     context);
         String name = descriptor.getName();
         if (name.equals("lowTotal") || name.equals("highTotal")
-            || name.equals("total")) {
+            || name.equals("amount")) {
             // @todo - workaround for OVPMS-211
             component.setEnabled(false);
             component.setFocusTraversalParticipant(false);

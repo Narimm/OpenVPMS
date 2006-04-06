@@ -1,15 +1,19 @@
 package org.openvpms.web.component.im.table.act;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -22,14 +26,14 @@ import org.openvpms.web.resource.util.Messages;
 public class ActTableModel extends DefaultIMObjectTableModel {
 
     /**
-     * Start column index.
+     * Date column index.
      */
-    private static final int START_INDEX = NEXT_INDEX;
+    private static final int DATE_INDEX = NEXT_INDEX;
 
     /**
      * Type column index.
      */
-    private static final int TYPE_INDEX = START_INDEX + 1;
+    private static final int TYPE_INDEX = DATE_INDEX + 1;
 
     /**
      * Status column index.
@@ -37,9 +41,9 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     private static final int STATUS_INDEX = TYPE_INDEX + 1;
 
     /**
-     * Credit column index.
+     * Amount column index.
      */
-    private static final int CREDIT_INDEX = STATUS_INDEX + 1;
+    private static final int AMOUNT_INDEX = STATUS_INDEX + 1;
 
 
     /**
@@ -53,11 +57,11 @@ public class ActTableModel extends DefaultIMObjectTableModel {
      * Construct a new <code>ActTableModel</code>.
      *
      * @param showStatus determines if the status colunn should be displayed
-     * @param showCredit determines if the credit/debit column should be
+     * @param showAmount determines if the credit/debit amount should be
      *                   displayed
      */
-    public ActTableModel(boolean showStatus, boolean showCredit) {
-        super(createColumnModel(showStatus, showCredit));
+    public ActTableModel(boolean showStatus, boolean showAmount) {
+        super(createColumnModel(showStatus, showAmount));
     }
 
     /**
@@ -71,13 +75,13 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     public String getNode(int column) {
         String node = null;
         switch (column) {
-            case START_INDEX:
+            case DATE_INDEX:
                 node = "estimationDate";
                 break;
             case STATUS_INDEX:
                 node = "status";
                 break;
-            case CREDIT_INDEX:
+            case AMOUNT_INDEX:
                 node = "credit";
                 break;
             default:
@@ -91,20 +95,20 @@ public class ActTableModel extends DefaultIMObjectTableModel {
      * Helper to create a column model.
      *
      * @param showStatus determines if the status colunn should be displayed
-     * @param showCredit determines if the credit/debit column should be
+     * @param showAmount determines if the credit/debit amount should be
      *                   displayed
      * @return a new column model
      */
     protected static TableColumnModel createColumnModel(boolean showStatus,
-                                                        boolean showCredit) {
+                                                        boolean showAmount) {
         TableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(createTableColumn(START_INDEX, "start"));
+        model.addColumn(createTableColumn(DATE_INDEX, "date"));
         model.addColumn(createTableColumn(TYPE_INDEX, "type"));
         if (showStatus) {
             model.addColumn(createTableColumn(STATUS_INDEX, "status"));
         }
-        if (showCredit) {
-            model.addColumn(createTableColumn(CREDIT_INDEX, "debit_credit"));
+        if (showAmount) {
+            model.addColumn(createTableColumn(AMOUNT_INDEX, "amount"));
         }
         model.addColumn(createTableColumn(DESCRIPTION_INDEX, "description"));
         return model;
@@ -122,7 +126,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
         Act act = (Act) object;
         Object result;
         switch (column) {
-            case START_INDEX:
+            case DATE_INDEX:
                 result = act.getActivityStartTime();
                 break;
             case TYPE_INDEX:
@@ -131,20 +135,8 @@ public class ActTableModel extends DefaultIMObjectTableModel {
             case STATUS_INDEX:
                 result = act.getStatus();
                 break;
-            case CREDIT_INDEX:
-                ArchetypeDescriptor archetype
-                        = DescriptorHelper.getArchetypeDescriptor(act);
-                NodeDescriptor credit = archetype.getNodeDescriptor("credit");
-                if (credit != null) {
-                    Boolean value = (Boolean) credit.getValue(object);
-                    if (Boolean.TRUE.equals(value)) {
-                        result = Messages.get("table.act.credit");
-                    } else {
-                        result = Messages.get("table.act.debit");
-                    }
-                } else {
-                    result = "";
-                }
+            case AMOUNT_INDEX:
+                result = getAmount(act);
                 break;
             default:
                 result = super.getValue(object, column, row);
@@ -168,5 +160,29 @@ public class ActTableModel extends DefaultIMObjectTableModel {
         return column;
     }
 
+    private String getAmount(Act act) {
+        String result = "";
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(act);
+        BigDecimal amount;
+        Boolean credit;
+
+        amount = (BigDecimal) IMObjectHelper.getValue(act, archetype, "amount");
+        credit = (Boolean) IMObjectHelper.getValue(act, archetype, "credit");
+        if (amount != null) {
+            if (Boolean.TRUE.equals(credit)) {
+                amount = amount.negate();
+            }
+            try {
+                // @todo - potential loss of precision here as NumberFormat converts
+                // BigDecimal to double before formatting
+                NumberFormat format = new DecimalFormat("#,##0.00;(#,##0.00)");
+                result = format.format(amount);
+            } catch (IllegalArgumentException exception) {
+                result = amount.toString();
+            }
+        }
+        return result;
+    }
 
 }
