@@ -4,7 +4,7 @@
 		type="org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor">
 		<node name="uid" path="/uid" displayName="id"
 			type="java.lang.Long" />
-		<node name="type" path="/name" type="java.lang.String" displayName="Name"
+		<node name="name" path="/name" type="java.lang.String" displayName="Name"
 			minCardinality="1" />
 		<node name="displayName" path="/displayName"
 			type="java.lang.String" minCardinality="1" />
