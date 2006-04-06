@@ -24,8 +24,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.system.common.search.IPage;
-import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -222,9 +221,9 @@ public class ActQuery extends AbstractQuery {
         if (_entityId != null) {
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
-            SortCriteria order = null;
+            SortOrder order = null;
             if (node != null) {
-                order = new SortCriteria(node, ascending);
+                order = new SortOrder(node, ascending);
             }
             result = new ActResultSet(_entityId, entityName, conceptName,
                                       startFrom, startTo, _status, rows, order);

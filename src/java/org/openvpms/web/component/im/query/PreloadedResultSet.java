@@ -18,7 +18,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
@@ -106,22 +107,22 @@ public class PreloadedResultSet<T extends IMObject>
     /**
      * Returns the specified page.
      *
-     * @param criteria the paging criteria
+     * @param firstRow
+     * @param maxRows
      * @return the page corresponding to <code>page</code>, or <code>null</code>
      *         if none exists
      */
-    protected IPage<T> getPage(PagingCriteria criteria) {
-        int from = criteria.getFirstRow();
-        int count = criteria.getNumOfRows();
+    protected IPage<T> getPage(int firstRow, int maxRows) {
         int to;
-        if (count == PagingCriteria.ALL_ROWS
-            || ((from + count) >= _objects.size())) {
+        if (maxRows == ArchetypeQuery.ALL_ROWS
+            || ((firstRow + maxRows) >= _objects.size())) {
             to = _objects.size();
         } else {
-            to = from + count;
+            to = firstRow + maxRows;
         }
-        List<T> rows = new ArrayList<T>(_objects.subList(from, to));
-        return new Page<T>(rows, criteria, _objects.size());
+        List<T> rows = new ArrayList<T>(_objects.subList(firstRow, to));
+        return new Page<T>(rows, new PagingCriteria(firstRow, maxRows),
+                           _objects.size());
     }
 
     /**

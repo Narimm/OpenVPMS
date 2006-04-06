@@ -3,6 +3,7 @@ package org.openvpms.web.component.im.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -11,9 +12,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.search.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
-import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -72,7 +73,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
     public DefaultResultSet(String refModelName, String entityName,
                             String conceptName, String instanceName,
                             boolean activeOnly,
-                            SortCriteria order,
+                            SortOrder order,
                             int rows) {
         super(rows, order);
         _refModelName = refModelName;
@@ -80,8 +81,8 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
         _conceptName = conceptName;
         _instanceName = instanceName;
         _activeOnly = activeOnly;
-        if (order != null && !isValidSortNode(order.getSortNode())) {
-            setSortCriteria(null);
+        if (order != null && !isValidSortNode(order.getNode())) {
+            setSortOrder(null);
         }
 
         reset();
@@ -98,7 +99,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
         if (isValidSortNode(node)) {
             super.sort(node, ascending);
         } else {
-            setSortCriteria(null);
+            setSortOrder(null);
             reset();
         }
     }
@@ -106,17 +107,24 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
     /**
      * Returns the specified page.
      *
-     * @param criteria the paging criteria
-     * @return the page corresponding to <code>page</code>, or <code>null</code>
-     *         if none exists
+     * @param firstRow the first row of the page to retrieve
+     * @param maxRows  the maximun no of rows in the page
+     * @return the page corresponding to <code>firstRow</code>, or
+     *         <code>null</code> if none exists
      */
-    protected IPage<IMObject> getPage(PagingCriteria criteria) {
+    protected IPage<IMObject> getPage(int firstRow, int maxRows) {
         IPage<IMObject> result = null;
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            result = service.get(_refModelName, _entityName, _conceptName,
-                                 _instanceName, true, _activeOnly, criteria,
-                                 getSortCriteria());
+            ArchetypeQuery query = new ArchetypeQuery(_refModelName,
+                                                      _entityName, _conceptName,
+                                                      true, _activeOnly);
+            if (!StringUtils.isEmpty(_instanceName)) {
+                query.add(new NodeConstraint("name", _instanceName));
+            }
+            query.setFirstRow(firstRow);
+            query.setNumOfRows(maxRows);
+            result = service.get(query);
         } catch (ArchetypeServiceException exception) {
             ErrorDialog.show(exception);
         }

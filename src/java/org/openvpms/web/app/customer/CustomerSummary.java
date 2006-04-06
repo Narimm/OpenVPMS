@@ -7,7 +7,7 @@ import nextapp.echo2.app.Label;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.util.LabelFactory;

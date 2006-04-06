@@ -16,13 +16,11 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -227,7 +225,6 @@ public class PatientQuery extends AbstractQuery {
      * @return a list of patients associated with <code>nustomer</code>
      */
     private List<IMObject> getPatients(Party customer) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
         List<IMObject> result = new ArrayList<IMObject>();
         Set<EntityRelationship> relationships
                 = customer.getEntityRelationships();
@@ -237,8 +234,11 @@ public class PatientQuery extends AbstractQuery {
             if (IMObjectHelper.isA(relationship,
                                    "entityRelationship.patientOwner")) {
                 if (source.equals(relationship.getSource())) {
-                    IMObject object = service.get(relationship.getTarget());
-                    result.add(object);
+                    IMObject object = IMObjectHelper.getObject(
+                            relationship.getTarget());
+                    if (object != null) {
+                        result.add(object);
+                    }
                 }
             }
         }

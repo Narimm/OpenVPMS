@@ -12,7 +12,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.search.IPage;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.PageableTableModel;
 import org.openvpms.web.component.table.SortableTableModel;

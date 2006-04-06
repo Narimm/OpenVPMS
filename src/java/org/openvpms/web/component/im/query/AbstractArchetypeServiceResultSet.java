@@ -1,7 +1,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.component.system.common.query.IPage;
 
 
 /**
@@ -15,9 +15,9 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         extends AbstractResultSet<T> {
 
     /**
-     * The sort criteria. May be <code>null</code>.
+     * The sort order. May be <code>null</code>.
      */
-    private SortCriteria _order;
+    private SortOrder _order;
 
     /**
      * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
@@ -25,7 +25,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @param rows  the maximum no. of rows per page
      * @param order the sort criteria. May be <code>null</code>
      */
-    public AbstractArchetypeServiceResultSet(int rows, SortCriteria order) {
+    public AbstractArchetypeServiceResultSet(int rows, SortOrder order) {
         super(rows);
         _order = order;
     }
@@ -38,7 +38,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *                  otherwise sort it in <code>descebding</code> order
      */
     public void sort(String node, boolean ascending) {
-        _order = new SortCriteria(node, ascending);
+        _order = new SortOrder(node, ascending);
         reset();
     }
 
@@ -48,7 +48,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @return the sort node, or <code>null</code> if the set is unsorted
      */
     public String getSortNode() {
-        return (_order != null) ? _order.getSortNode() : null;
+        return (_order != null) ? _order.getNode() : null;
     }
 
     /**
@@ -66,7 +66,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *
      * @return the sort criteria
      */
-    public SortCriteria getSortCriteria() {
+    public SortOrder getSortOrder() {
         return _order;
     }
 
@@ -75,8 +75,19 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *
      * @param order the sort criteria
      */
-    protected void setSortCriteria(SortCriteria order) {
+    protected void setSortOrder(SortOrder order) {
         _order = order;
     }
 
+    /**
+     * Helper to convert a page from one type to another. <strong>Use with
+     * caution</strong>: No attempt is made to verify the contents of the page.
+     *
+     * @param page the page to convert
+     * @return the converted page
+     */
+    @SuppressWarnings("unchecked")
+    protected final <K, T> IPage<K> convert(IPage<T> page) {
+        return (IPage<K>) page;
+    }
 }
