@@ -79,7 +79,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     public ActResultSet(IMObjectReference entityId, String entityName,
                         String conceptName, Date from, Date to, String status,
                         int rows, SortOrder order) {
-        this(entityId, entityName, conceptName, from, to, status, true,
+        this(entityId, entityName, conceptName, from, to, status, false,
              rows, order);
     }
 
