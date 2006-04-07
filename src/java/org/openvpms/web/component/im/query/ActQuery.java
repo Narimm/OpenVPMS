@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -225,11 +224,17 @@ public class ActQuery extends AbstractQuery {
             if (node != null) {
                 order = new SortOrder(node, ascending);
             }
-            result = new ActResultSet(_entityId, entityName, conceptName,
-                                      startFrom, startTo, _status, rows, order);
-            if (_excludeStatus != null) {
-                result = filter(result, _excludeStatus);
+            String status;
+            boolean exclude = false;
+            if (_excludeStatus != null && _status == null) {
+                status = _excludeStatus;
+                exclude = true;
+            } else {
+                status = _status;
             }
+            result = new ActResultSet(_entityId, entityName, conceptName,
+                                      startFrom, startTo, status, exclude, rows,
+                                      order);
         }
         return result;
     }
@@ -427,27 +432,6 @@ public class ActQuery extends AbstractQuery {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         field.getDateChooser().setSelectedDate(calendar);
-    }
-
-    /**
-     * Filters a result set to remove acts with a particular status.
-     *
-     * @param set    the result set to filter
-     * @param status the status to exclude
-     * @return the filtered result set
-     * @todo this is a workaround for OVPMS-254
-     */
-    private ResultSet<Act> filter(ResultSet<Act> set, String status) {
-        List<Act> acts = new ArrayList<Act>(set.getRows());
-        while (set.hasNext()) {
-            IPage<Act> page = set.next();
-            for (Act act : page.getRows()) {
-                if (!status.equals(act.getStatus())) {
-                    acts.add(act);
-                }
-            }
-        }
-        return new PreloadedResultSet<Act>(acts, set.getRowsPerPage());
     }
 
 }

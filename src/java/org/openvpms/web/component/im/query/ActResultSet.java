@@ -53,9 +53,15 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     private final Date _startTo;
 
     /**
-     * The act status.
+     * The act status. May  be <code>null</code>
      */
     private final String _status;
+
+    /**
+     * Determines if acts with <code>_status</code> should be excluded. Only
+     * applies when <code>status != null</code>.
+     */
+    private final boolean _exclude;
 
 
     /**
@@ -64,12 +70,37 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      * @param entityId    the id of the entity to search for
      * @param entityName  the act entity name
      * @param conceptName the act concept name
+     * @param from        the act start-from date. May be <code>null</code>
+     * @param to          the act start-to date. May be <code>null</code>
+     * @param status      the act status. May be <code>null</code>
      * @param rows        the maximum no. of rows per page
      * @param order       the sort criteria. May be <code>null</code>
      */
     public ActResultSet(IMObjectReference entityId, String entityName,
                         String conceptName, Date from, Date to, String status,
                         int rows, SortOrder order) {
+        this(entityId, entityName, conceptName, from, to, status, true,
+             rows, order);
+    }
+
+    /**
+     * Construct a new <code>ActResultSet</code>.
+     *
+     * @param entityId    the id of the entity to search for
+     * @param entityName  the act entity name
+     * @param conceptName the act concept name
+     * @param from        the act start-from date. May be <code>null</code>
+     * @param to          the act start-to date. May be <code>null</code>
+     * @param status      the act status. May be <code>null</code>
+     * @param exclude     if <code>true</code> exclude acts with
+     *                    <code>status</code>; otherwise include them. Only
+     *                    applies when <code>status != null</code>
+     * @param rows        the maximum no. of rows per page
+     * @param order       the sort criteria. May be <code>null</code>
+     */
+    public ActResultSet(IMObjectReference entityId, String entityName,
+                        String conceptName, Date from, Date to, String status,
+                        boolean exclude, int rows, SortOrder order) {
         super(rows, order);
         _entityId = entityId;
         _entityName = entityName;
@@ -77,6 +108,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
         _startFrom = from;
         _startTo = to;
         _status = status;
+        _exclude = exclude;
     }
 
     /**
@@ -99,7 +131,11 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             query.setNumOfRows(maxRows);
 
             if (!StringUtils.isEmpty(_status)) {
-                query.add(new NodeConstraint("status", RelationalOp.EQ, _status));
+                RelationalOp op = RelationalOp.EQ;
+                if (_exclude) {
+                    op = RelationalOp.NE;
+                }
+                query.add(new NodeConstraint("status", op, _status));
             }
 
             if (_startFrom != null && _startTo != null) {
@@ -112,14 +148,6 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
                     .setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin)
                     .add(new ObjectRefNodeConstraint("entity", _entityId));
             query.add(participations);
-
-/*
-            result = (IPage<Act>) ArchetypeQueryHelper.getActs(
-                    service, _entityId, "participation.customer", _entityName,
-                    _conceptName,
-                    _startFrom, _startTo, null, null,
-                    _status, true, firstRow, maxRows);
-*/
             IPage<IMObject> page = service.get(query);
             result = convert(page);
         } catch (ArchetypeServiceException exception) {
