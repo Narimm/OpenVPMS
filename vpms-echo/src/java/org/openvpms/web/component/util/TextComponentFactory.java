@@ -1,11 +1,14 @@
 package org.openvpms.web.component.util;
 
+import java.text.Format;
+
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 
+import org.openvpms.web.component.bound.BoundFormattedField;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
 import org.openvpms.web.component.edit.Property;
@@ -52,6 +55,20 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField create(Property property, int columns) {
         TextField text = new BoundTextField(property, columns);
+        text.setStyleName(Styles.DEFAULT);
+        return text;
+    }
+
+    /**
+     * Create a new bound formatted text field.
+     *
+     * @param property the property to bind
+     * @param columns  the no. of columns to display
+     * @param format   the field format
+     * @return a new bound text field
+     */
+    public static TextField create(Property property, int columns, Format format) {
+        TextField text = new BoundFormattedField(property, columns, format);
         text.setStyleName(Styles.DEFAULT);
         return text;
     }

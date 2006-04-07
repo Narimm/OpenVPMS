@@ -1,16 +1,12 @@
 package org.openvpms.web.component.im.view;
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -20,6 +16,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.ReadOnlyProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
 
 
 /**
@@ -31,11 +28,6 @@ import org.openvpms.web.component.util.LabelFactory;
 public abstract class AbstractReadOnlyComponentFactory
         extends AbstractIMObjectComponentFactory {
 
-    /**
-     * The logger.
-     */
-    private static final Log _log
-            = LogFactory.getLog(ReadOnlyComponentFactory.class);
 
     /**
      * Construct a new <code>AbstractReadOnlyComponentFactory</code>.
@@ -207,35 +199,11 @@ public abstract class AbstractReadOnlyComponentFactory
                                      NodeDescriptor descriptor) {
         String result;
         Property property = getProperty(context, descriptor);
-        Object object = property.getValue();
-        Number value;
-        if (object instanceof Number) {
-            value = (Number) object;
-        } else if (object instanceof String) {
-            // @todo workaround for OVPMS-228
-            try {
-                value = new BigDecimal((String) object);
-            } catch (NumberFormatException exception) {
-                _log.error("Invalid number for " + descriptor.getName() + ": "
-                           + object);
-                value = BigDecimal.ZERO;
-            }
+        Number value = (Number) property.getValue();
+        if (value != null) {
+            result = NumberFormatter.format(value, descriptor, false);
         } else {
-            if (object != null) {
-                _log.error("Invalid number for " + descriptor.getName() + ": "
-                           + object);
-            }
-            value = BigDecimal.ZERO;
-        }
-
-        try {
-            // @todo - potential loss of precision here as NumberFormat converts
-            // BigDecimal to double before formatting
-            Locale locale = ApplicationInstance.getActive().getLocale();
-            NumberFormat format = NumberFormat.getInstance(locale);
-            result = format.format(value);
-        } catch (IllegalArgumentException exception) {
-            result = value.toString();
+            result = "";
         }
         return result;
     }

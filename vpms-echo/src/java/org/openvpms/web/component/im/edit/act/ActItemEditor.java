@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
@@ -309,6 +311,35 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                 chain.add(_filter);
             }
             return chain;
+        }
+
+        /**
+         * Creates a component for a node descriptor. This maintains a cache of
+         * created components, in order for the focus to be set on an
+         * appropriate component.
+         *
+         * @param parent     the parent object
+         * @param descriptor the node descriptor
+         * @param context    the layout context
+         */
+        @Override
+        protected Component createComponent(IMObject parent, NodeDescriptor
+                descriptor, LayoutContext context) {
+            Component component = super.createComponent(parent, descriptor,
+                                                        context);
+            String name = descriptor.getName();
+            if (name.equals("lowTotal") || name.equals("highTotal")
+                || name.equals("total")) {
+                // @todo - workaround for OVPMS-211
+                component.setEnabled(false);
+                component.setFocusTraversalParticipant(false);
+                if (component instanceof TextComponent) {
+                    Alignment align = new Alignment(Alignment.RIGHT,
+                                                    Alignment.DEFAULT);
+                    ((TextComponent) component).setAlignment(align);
+                }
+            }
+            return component;
         }
 
     }

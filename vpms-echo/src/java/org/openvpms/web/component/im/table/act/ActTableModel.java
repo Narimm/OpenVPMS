@@ -2,6 +2,9 @@ package org.openvpms.web.component.im.table.act;
 
 import java.math.BigDecimal;
 
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
@@ -12,6 +15,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
 
@@ -75,7 +79,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
         String node = null;
         switch (column) {
             case DATE_INDEX:
-                node = "estimationDate";
+                node = "startTime";
                 break;
             case STATUS_INDEX:
                 node = "status";
@@ -165,7 +169,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
      * @param act the act
      * @return the stringified amount
      */
-    private String getAmount(Act act) {
+    private Label getAmount(Act act) {
         String result = "";
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(act);
@@ -180,7 +184,14 @@ public class ActTableModel extends DefaultIMObjectTableModel {
             }
             result = NumberFormatter.format(amount);
         }
-        return result;
+        Label label = LabelFactory.create();
+        label.setText(result);
+        TableLayoutData layout = new TableLayoutData();
+        Alignment right = new Alignment(Alignment.RIGHT,
+                                        Alignment.DEFAULT);
+        layout.setAlignment(right);
+        label.setLayoutData(layout);
+        return label;
     }
 
 }
