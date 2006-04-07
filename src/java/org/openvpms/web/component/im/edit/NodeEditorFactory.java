@@ -1,23 +1,24 @@
 package org.openvpms.web.component.im.edit;
 
+import java.text.Format;
 import java.util.List;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.list.ListModel;
-import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.bound.BoundPalette;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -26,7 +27,9 @@ import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -122,10 +125,14 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a component to edit the node
      */
     protected Component getNumericEditor(IMObject object,
-                                       NodeDescriptor descriptor) {
+                                         NodeDescriptor descriptor) {
         int maxColumns = 10;
-        TextComponent text = getTextComponent(object, descriptor, maxColumns);
-        if (descriptor.isReadOnly() || descriptor.isDerived()) {
+        Property property = getProperty(object, descriptor);
+        boolean edit = !descriptor.isReadOnly() || descriptor.isDerived();
+        Format format = NumberFormatter.getFormat(descriptor, edit);
+        TextField text = TextComponentFactory.create(property, maxColumns,
+                                                     format);
+        if (!edit) {
             Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
             text.setAlignment(align);
         }
