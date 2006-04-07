@@ -14,13 +14,13 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="participation.product" />
+							value="participation.patient" />
 						<property name="minCardinality" value="0" />
 						<property name="maxCardinality" value="1" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="participation.patient" />
+							value="participation.product" />
 						<property name="minCardinality" value="0" />
 						<property name="maxCardinality" value="1" />
 					</propertyMap>
