@@ -212,7 +212,7 @@ public class ActQuery extends AbstractQuery {
         } else {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(type);
-            ArchetypeId id = archetype.getArchetypeId();
+            ArchetypeId id = new ArchetypeId(archetype.getName());
             entityName = id.getEntityName();
             conceptName = id.getConcept();
         }
