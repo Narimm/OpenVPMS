@@ -128,8 +128,8 @@ public class PagedIMObjectTableModel
                 objects = result.getRows();
             }
         }
-        _model.setObjects(objects);
         _page = page;
+        _model.setObjects(objects);
     }
 
     /**
