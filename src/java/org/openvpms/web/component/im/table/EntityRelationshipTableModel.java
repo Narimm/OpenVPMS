@@ -10,7 +10,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
@@ -105,9 +104,12 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
             entity = relationship.getTarget();
         } else {
             IMObjectReference ref = new IMObjectReference(current);
-            if (ref.equals(relationship.getSource())) {
+
+            if (relationship.getSource() != null
+                && ref.equals(relationship.getSource())) {
                 entity = relationship.getTarget();
-            } else if (ref.equals(relationship.getTarget())) {
+            } else if (relationship.getTarget() != null
+                       && ref.equals(relationship.getTarget())) {
                 entity = relationship.getSource();
             } else {
                 entity = relationship.getTarget();
@@ -118,14 +120,4 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
         return new IMObjectReferenceViewer(entity, hyperlink).getComponent();
     }
 
-    /**
-     * Returns an object given its reference.
-     *
-     * @param reference the object reference
-     * @return the object corresponding to <code>reference</code> or
-     *         <code>null</code> if none exists
-     */
-    protected IMObject getObject(IMObjectReference reference) {
-        return IMObjectHelper.getObject(reference);
-    }
 }
