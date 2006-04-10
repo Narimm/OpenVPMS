@@ -13,14 +13,6 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="printedName" path="/details/attributes/printedName" type="java.lang.String"
 				minCardinality="0" />
-			<node name="species" path="/details/attributes/species" type="java.lang.String"
-				minCardinality="0">
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="concept" value="species" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="includes" path="/entityRelationships"
