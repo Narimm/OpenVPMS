@@ -1,10 +1,7 @@
 package org.openvpms.web.component.im.view;
 
-import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 
-import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 
@@ -15,6 +12,7 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.ReadOnlyProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 
@@ -197,15 +195,12 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     protected String getNumericValue(IMObject context,
                                      NodeDescriptor descriptor) {
-        String result;
         Property property = getProperty(context, descriptor);
         Number value = (Number) property.getValue();
         if (value != null) {
-            result = NumberFormatter.format(value, descriptor, false);
-        } else {
-            result = "";
+            return NumberFormatter.format(value, descriptor, false);
         }
-        return result;
+        return null;
     }
 
     /**
@@ -213,23 +208,14 @@ public abstract class AbstractReadOnlyComponentFactory
      *
      * @param context    the context object
      * @param descriptor the node descriptor
-     * @return a component to display the datge
+     * @return the string value of the property associated with
+     *         <code>descriptor</code>
      */
     protected String getDateValue(IMObject context,
                                   NodeDescriptor descriptor) {
-        String result;
         Property property = getProperty(context, descriptor);
         Date value = (Date) property.getValue();
-        if (value != null) {
-            Locale locale = ApplicationInstance.getActive().getLocale();
-            DateFormat format = DateFormat.getDateInstance(
-                    DateFormat.DEFAULT, locale);
-            result = format.format(value);
-        } else {
-            result = null;
-        }
-        return result;
+        return (value != null) ? DateFormatter.format(value, false) : null;
     }
-
 
 }
