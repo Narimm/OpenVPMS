@@ -3,11 +3,9 @@ package org.openvpms.web.component.util;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Locale;
-
-import nextapp.echo2.app.ApplicationInstance;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -17,6 +15,31 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
  * @version $LastChangedDate$
  */
 public class NumberFormatter {
+
+    /**
+     * Decimal edit format.
+     */
+    private static final DecimalFormat DECIMAL_EDIT
+            = new DecimalFormat(Messages.get("decimal.format.edit"));
+
+    /**
+     * Decimal view format.
+     */
+    private static final DecimalFormat DECIMAL_VIEW
+            = new DecimalFormat(Messages.get("decimal.format.view"));
+
+    /**
+     * Integer edit format.
+     */
+    private static final DecimalFormat INTEGER_EDIT
+            = new DecimalFormat(Messages.get("integer.format.edit"));
+
+    /**
+     * Integer view format.
+     */
+    private static final DecimalFormat INTEGER_VIEW
+            = new DecimalFormat(Messages.get("integer.format.view"));
+
 
     /**
      * Format a number according to its node descriptor.
@@ -46,17 +69,9 @@ public class NumberFormatter {
             || descriptor.getClazz().isAssignableFrom(Float.class)
             || descriptor.getClazz().isAssignableFrom(Double.class)
             || descriptor.getClazz().isAssignableFrom(BigDecimal.class)) {
-            if (edit) {
-                format = new DecimalFormat("###0.00");
-            } else {
-                format = new DecimalFormat("#,##0.00;(#,##0.00)");
-            }
+            format = (edit) ? DECIMAL_EDIT : DECIMAL_VIEW;
         } else {
-            if (edit) {
-                format = new DecimalFormat("###0");
-            } else {
-                format = new DecimalFormat("#,##0");
-            }
+            format = (edit) ? INTEGER_EDIT : INTEGER_VIEW;
         }
         return format;
     }
@@ -69,12 +84,11 @@ public class NumberFormatter {
      */
     public static String format(Number value) {
         NumberFormat format;
-        Locale locale = ApplicationInstance.getActive().getLocale();
         if (value instanceof Long || value instanceof Integer ||
             value instanceof Short || value instanceof Byte) {
-            format = NumberFormat.getIntegerInstance(locale);
+            format = INTEGER_VIEW;
         } else {
-            format = new DecimalFormat("#,##0.00;(#,##0.00)");
+            format = DECIMAL_VIEW;
         }
         return format(value, format);
     }
