@@ -5,11 +5,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
@@ -143,16 +143,13 @@ public class ObjectReferenceEditor {
             result = match(descriptor);
         } else {
             IMObject edit = Context.getInstance().getCurrent();
-            if (edit != null) {
-                if (edit.getArchetypeId().equals(reference.getArchetypeId())
-                    && StringUtils.equals(edit.getLinkId(), reference.getLinkId()))
-                {
-                    result = edit;
-                }
+            if (edit != null && edit.getObjectReference().equals(reference)) {
+                result = edit;
             }
             if (result == null) {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
-                result = service.get(reference);
+                result = ArchetypeQueryHelper.getByObjectReference(service,
+                                                                   reference);
             }
         }
         return result;
@@ -162,8 +159,7 @@ public class ObjectReferenceEditor {
      * Pops up a dialog to select an object.
      */
     protected void onSelect() {
-        String[] shortNames = _descriptor.getArchetypeRange();
-        Query query = QueryFactory.create(shortNames);
+        Query query = createQuery();
         final Browser browser = new Browser(query);
 
         String title = Messages.get("imobject.select.title",
@@ -189,6 +185,16 @@ public class ObjectReferenceEditor {
      */
     protected void onSelected(IMObject object) {
         setObject(object);
+    }
+
+    /**
+     * Creates a query to select objects.
+     *
+     * @return a new query
+     */
+    protected Query createQuery() {
+        String[] shortNames = _descriptor.getArchetypeRange();
+        return QueryFactory.create(shortNames);
     }
 
     /**

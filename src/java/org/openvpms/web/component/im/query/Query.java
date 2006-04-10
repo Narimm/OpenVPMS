@@ -3,6 +3,7 @@ package org.openvpms.web.component.im.query;
 import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.IConstraint;
 
 
 /**
@@ -52,5 +53,12 @@ public interface Query {
      * @param listener the listener to remove
      */
     void removeQueryListener(QueryListener listener);
+
+    /**
+     * Set query constraints.
+     *
+     * @param constraints the constraints
+     */
+    void setConstraints(IConstraint constraints);
 
 }

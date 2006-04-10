@@ -13,6 +13,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -67,15 +68,16 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
      * @param instanceName the instance name
      * @param activeOnly   determines if active and/or inactive results should
      *                     be retrieved
+     * @param constraints  additional query constraints. May be
+     *                     <code<null</code>
      * @param order        the sort criteria. May be <code>null</code>
      * @param rows         the maximum no. of rows per page
      */
     public DefaultResultSet(String refModelName, String entityName,
                             String conceptName, String instanceName,
-                            boolean activeOnly,
-                            SortOrder order,
-                            int rows) {
-        super(rows, order);
+                            boolean activeOnly, IConstraint constraints,
+                            SortOrder order, int rows) {
+        super(constraints, rows, order);
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
@@ -121,6 +123,10 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
                                                       true, _activeOnly);
             if (!StringUtils.isEmpty(_instanceName)) {
                 query.add(new NodeConstraint("name", _instanceName));
+            }
+            IConstraint constraints = getConstraints();
+            if (constraints != null) {
+                query.add(constraints);
             }
             query.setFirstRow(firstRow);
             query.setNumOfRows(maxRows);
