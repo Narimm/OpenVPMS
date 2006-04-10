@@ -105,15 +105,18 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     protected static TableColumnModel createColumnModel(boolean showStatus,
                                                         boolean showAmount) {
         TableColumnModel model = new DefaultTableColumnModel();
-        model.addColumn(createTableColumn(DATE_INDEX, "date"));
-        model.addColumn(createTableColumn(TYPE_INDEX, "type"));
+        model.addColumn(createTableColumn(DATE_INDEX, "table.act.date"));
+        model.addColumn(createTableColumn(TYPE_INDEX, "table.act.type"));
         if (showStatus) {
-            model.addColumn(createTableColumn(STATUS_INDEX, "status"));
+            model.addColumn(createTableColumn(STATUS_INDEX,
+                                              "table.act.status"));
         }
         if (showAmount) {
-            model.addColumn(createTableColumn(AMOUNT_INDEX, "amount"));
+            model.addColumn(createTableColumn(AMOUNT_INDEX,
+                                              "table.act.amount"));
         }
-        model.addColumn(createTableColumn(DESCRIPTION_INDEX, "description"));
+        model.addColumn(createTableColumn(DESCRIPTION_INDEX,
+                                          "table.act.description"));
         return model;
     }
 
@@ -157,9 +160,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
      */
     private static TableColumn createTableColumn(int index, String name) {
         TableColumn column = new TableColumn(index);
-        String key = "table.act." + name;
-        String label = Messages.get(key);
-        column.setHeaderValue(label);
+        column.setHeaderValue(Messages.get(name));
         return column;
     }
 

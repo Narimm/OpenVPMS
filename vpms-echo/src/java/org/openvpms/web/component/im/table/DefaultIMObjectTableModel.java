@@ -44,7 +44,8 @@ public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
      * Table column identifiers.
      */
     protected static final String[] COLUMNS = {
-            "archetype", "name", "description"};
+            "table.imobject.archetype", "table.imobject.name",
+            "table.imobject.description"};
 
 
     /**
@@ -72,8 +73,7 @@ public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
         TableColumnModel model = new DefaultTableColumnModel();
         for (int i = 1; i < COLUMNS.length; ++i) {
             TableColumn column = new TableColumn(i);
-            String key = "table.imobject." + COLUMNS[i];
-            String label = Messages.get(key);
+            String label = Messages.get(COLUMNS[i]);
 
             column.setHeaderValue(label);
             model.addColumn(column);
@@ -85,8 +85,7 @@ public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
      * @see TableModel#getColumnName
      */
     public String getColumnName(int column) {
-        String key = "table.imobject." + COLUMNS[column];
-        return Messages.get(key);
+        return Messages.get(COLUMNS[column]);
     }
 
     /**
