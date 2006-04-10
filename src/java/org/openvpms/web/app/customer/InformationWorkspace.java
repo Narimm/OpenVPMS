@@ -69,6 +69,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     protected void onSaved(IMObject object, boolean isNew) {
         super.onSaved(object, isNew);
         Context.getInstance().setCustomer((Party) object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
