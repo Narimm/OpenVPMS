@@ -50,7 +50,12 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * The product editor.
      */
-    private ParticipationEditor _productEditor;
+    private ProductParticipationEditor _productEditor;
+
+    /**
+     * The patient editor.
+     */
+    private PatientParticipationEditor _patientEditor;
 
     /**
      * Current node filter. May be <code>null</code>
@@ -106,6 +111,9 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                 }
                 addEditor(participant, act, participants);
             }
+        }
+        if (_patientEditor != null && _productEditor != null) {
+            _productEditor.setPatient(_patientEditor.getEntity());
         }
     }
 
@@ -206,9 +214,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      */
     private void addPatientEditor(Act act, NodeDescriptor descriptor) {
         Participation participant = getParticipation(PATIENT_SHORTNAME, act);
-        final IMObjectEditor editor = PatientParticipationEditor.create(
+        final PatientParticipationEditor editor
+                = PatientParticipationEditor.create(
                 participant, act, descriptor, getLayoutContext());
         getModifiableSet().add(participant, editor);
+        _patientEditor = editor;
         _participants.add(editor);
     }
 
@@ -224,13 +234,18 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         if (participant.isNew()) {
             productModified(participant);
         }
-        ParticipationEditor editor = addEditor(participant, act, descriptor);
+        final ProductParticipationEditor editor
+                = ProductParticipationEditor.create(
+                participant, act, descriptor, getLayoutContext());
+        getModifiableSet().add(participant, editor);
+        _participants.add(editor);
+        _productEditor = editor;
+
         editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 productModified(participant);
             }
         });
-        _productEditor = editor;
     }
 
     /**
@@ -241,10 +256,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @param descriptor  the participants node descriptor
      * @return the editor
      */
-    private ParticipationEditor addEditor(Participation participant, Act act,
-                                          NodeDescriptor descriptor) {
-        final ParticipationEditor editor = ParticipationEditor.create(
-                participant, act, descriptor, getLayoutContext());
+    private IMObjectEditor addEditor(Participation participant, Act act,
+                                     NodeDescriptor descriptor) {
+        final AbstractParticipationEditor editor =
+                DefaultParticipationEditor.create(
+                        participant, act, descriptor, getLayoutContext());
         getModifiableSet().add(participant, editor);
         _participants.add(editor);
         return editor;

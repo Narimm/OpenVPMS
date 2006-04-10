@@ -13,6 +13,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -50,6 +51,12 @@ public abstract class AbstractQuery implements Query {
      * Archetype concept name. May be <code>null</code>
      */
     private final String _conceptName;
+
+    /**
+     * Additional constraints to associate with the query. May be
+     * <code>null</code>
+     */
+    private IConstraint _constraints;
 
     /**
      * Determines which result set should be used. If <code>true</code>,
@@ -184,11 +191,11 @@ public abstract class AbstractQuery implements Query {
 
         if (useDefault) {
             result = new DefaultResultSet(_refModelName, _entityName,
-                                          _conceptName, name, activeOnly, sort,
-                                          rows);
+                                          _conceptName, name, activeOnly,
+                                          _constraints, sort, rows);
         } else {
-            result = new ShortNameResultSet(shortNames, name, activeOnly, sort,
-                                            rows);
+            result = new ShortNameResultSet(shortNames, name, activeOnly,
+                                            _constraints, sort, rows);
         }
         return result;
     }
@@ -219,6 +226,15 @@ public abstract class AbstractQuery implements Query {
      */
     public void removeQueryListener(QueryListener listener) {
         _listeners.remove(listener);
+    }
+
+    /**
+     * Set query constraints.
+     *
+     * @param constraints the constraints
+     */
+    public void setConstraints(IConstraint constraints) {
+        _constraints = constraints;
     }
 
     /**

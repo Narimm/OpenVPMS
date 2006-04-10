@@ -22,7 +22,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class ParticipationEditor extends AbstractIMObjectEditor {
+public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor {
 
     /**
      * The entity editor.
@@ -31,16 +31,16 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Construct a new <code>ParticipationEditor</code>.
+     * Construct a new <code>AbstractParticipationEditor</code>.
      *
      * @param participation the object to edit
      * @param parent        the parent object
      * @param descriptor    the parent descriptor
      * @param context       the layout context. May be <code>null</code>
      */
-    public ParticipationEditor(Participation participation, Act parent,
-                               NodeDescriptor descriptor,
-                               LayoutContext context) {
+    public AbstractParticipationEditor(Participation participation, Act parent,
+                                       NodeDescriptor descriptor,
+                                       LayoutContext context) {
         super(participation, parent, descriptor, context);
         NodeDescriptor entityNode = getDescriptor("entity");
         Property property = new ModifiableProperty(participation, entityNode);
@@ -72,29 +72,6 @@ public class ParticipationEditor extends AbstractIMObjectEditor {
             return SaveHelper.save(act);
         }
         return true;
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context. Nay be <code>null</code>
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static ParticipationEditor create(IMObject object, IMObject parent,
-                                             NodeDescriptor descriptor,
-                                             LayoutContext context) {
-        ParticipationEditor result = null;
-        if (object instanceof Participation
-            && parent instanceof Act) {
-            result = new ParticipationEditor((Participation) object,
-                                             (Act) parent, descriptor,
-                                             context);
-        }
-        return result;
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 
 
@@ -15,9 +16,16 @@ public abstract class AbstractArchetypeServiceResultSet<T>
         extends AbstractResultSet<T> {
 
     /**
+     * Additional constraints to associate with the query. May be
+     * <code>null</code>
+     */
+    private final IConstraint _constraints;
+
+    /**
      * The sort order. May be <code>null</code>.
      */
     private SortOrder _order;
+
 
     /**
      * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
@@ -26,7 +34,20 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @param order the sort criteria. May be <code>null</code>
      */
     public AbstractArchetypeServiceResultSet(int rows, SortOrder order) {
+        this(null, rows, order);
+    }
+
+    /**
+     * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
+     *
+     * @param constraints query constraints. May be <code>null</code>
+     * @param rows        the maximum no. of rows per page
+     * @param order       the sort criteria. May be <code>null</code>
+     */
+    public AbstractArchetypeServiceResultSet(IConstraint constraints,
+                                             int rows, SortOrder order) {
         super(rows);
+        _constraints = constraints;
         _order = order;
     }
 
@@ -77,6 +98,15 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      */
     protected void setSortOrder(SortOrder order) {
         _order = order;
+    }
+
+    /**
+     * Returns the query constraints.
+     *
+     * @return the query constraints
+     */
+    protected IConstraint getConstraints() {
+        return _constraints;
     }
 
     /**

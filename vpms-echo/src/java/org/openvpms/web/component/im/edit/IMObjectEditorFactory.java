@@ -2,7 +2,7 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
 import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
@@ -64,7 +64,8 @@ public class IMObjectEditorFactory {
             result = InvoiceItemEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
-            result = ParticipationEditor.create(object, parent, descriptor, context);
+            result = DefaultParticipationEditor.create(object, parent, descriptor,
+                                                       context);
         }
         if (result == null) {
             result = new DefaultIMObjectEditor(object, parent, descriptor, context);
