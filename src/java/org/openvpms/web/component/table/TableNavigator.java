@@ -149,14 +149,17 @@ public class TableNavigator extends Row {
         PageableTableModel model = getModel();
 
         int pages = model.getPages();
-        _pageCount.setText(Messages.get("label.navigation.page.total", pages));
+        if (pages != _pageSelector.getModel().size()) {
+            String total = Messages.get("label.navigation.page.total", pages);
+            _pageCount.setText(total);
 
-        String[] pageNos = new String[pages];
-        for (int i = 0; i < pageNos.length; ++i) {
-            pageNos[i] = "" + (i + 1);
+            String[] pageNos = new String[pages];
+            for (int i = 0; i < pageNos.length; ++i) {
+                pageNos[i] = "" + (i + 1);
+            }
+            _pageSelector.setModel(new DefaultListModel(pageNos));
         }
         int selected = model.getPage();
-        _pageSelector.setModel(new DefaultListModel(pageNos));
         _pageSelector.setSelectedIndex(selected);
     }
 
