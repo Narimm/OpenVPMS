@@ -1,3 +1,21 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.web.app.customer;
 
 import nextapp.echo2.app.Button;
@@ -13,14 +31,12 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
@@ -29,7 +45,7 @@ import org.openvpms.web.spring.ServiceHelper;
 /**
  * CRUD Window for acts.
  *
- * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 abstract class ActCRUDWindow extends CRUDWindow {
@@ -101,6 +117,31 @@ abstract class ActCRUDWindow extends CRUDWindow {
     }
 
     /**
+     * Invoked when a new object has been created.
+     *
+     * @param object the new object
+     */
+    @Override
+    protected void onCreated(IMObject object) {
+        Act act = (Act) object;
+        Party customer = Context.getInstance().getCustomer();
+        if (customer != null) {
+            try {
+                IArchetypeService service
+                        = ServiceHelper.getArchetypeService();
+                Participation participation
+                        = (Participation) service.create("participation.customer");
+                participation.setEntity(new IMObjectReference(customer));
+                participation.setAct(new IMObjectReference(act));
+                act.addParticipation(participation);
+            } catch (ArchetypeServiceException exception) {
+                ErrorDialog.show(exception);
+            }
+        }
+        super.onCreated(object);
+    }
+
+    /**
      * Invoked when the edit button is pressed. This popups up an {@link
      * EditDialog}.
      */
@@ -116,40 +157,6 @@ abstract class ActCRUDWindow extends CRUDWindow {
                                 "customer.act.noedit.message");
             }
         }
-    }
-
-    /**
-     * Invoked when the object has been saved.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        if (isNew) {
-            Act act = (Act) object;
-            Party customer = Context.getInstance().getCustomer();
-            if (customer != null) {
-                try {
-                    IArchetypeService service
-                            = ServiceHelper.getArchetypeService();
-                    Participation participation
-                            = (Participation) service.create("participation.customer");
-                    participation.setEntity(new IMObjectReference(customer));
-                    participation.setAct(new IMObjectReference(act));
-                    act.addParticipation(participation);
-
-                    if (ValidationHelper.isValid(act)) {
-                        service.save(act);
-                    }
-                } catch (ArchetypeServiceException exception) {
-                    ErrorDialog.show(exception);
-                } catch (ValidationException exception) {
-                    ErrorDialog.show(exception);
-                }
-            }
-        }
-        super.onSaved(object, isNew);
     }
 
     /**

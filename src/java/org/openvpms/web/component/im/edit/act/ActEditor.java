@@ -1,3 +1,21 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -6,7 +24,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
@@ -15,7 +32,7 @@ import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 /**
  * An editor for {@link Act}s.
  *
- * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public abstract class ActEditor extends AbstractIMObjectEditor {
@@ -46,24 +63,6 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
                 updateTotals();
             }
         });
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @return <code>true</code> if the save was successful
-     */
-    @Override
-    protected boolean doSave() {
-        IMObject object = getObject();
-        if (object.isNew()) {
-            // @todo need to save this before children in order for the children
-            // to create relationships to it. May be fixed by OVPMS-175
-            if (!SaveHelper.save(object)) {
-                return false;
-            }
-        }
-        return super.doSave();
     }
 
     /**
