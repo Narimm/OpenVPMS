@@ -1,0 +1,45 @@
+<archetypes>
+	<archetype name="openvpms-common-actRelationship.customerAccountRefundItem.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.common.ActRelationship" displayName="Customer Refund Item Relationship" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat('Item Product Name', '')" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat('Refund Item Relationship Description','')" />
+		<node name="source" displayName="Invoice" path="/source"
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountRefund" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="target" displayName="Refund Item" path="/target"
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountRefundCash" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountRefundCredit" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountRefundEFT" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>
