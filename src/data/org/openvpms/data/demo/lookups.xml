@@ -12,6 +12,9 @@
 	<data archetype="lookup.chargeStatus" status="Completed" />
 	<data archetype="lookup.chargeStatus" status="On Hold" />
 	<data archetype="lookup.chargeStatus" status="Posted" />
+	<data archetype="lookup.paymentStatus" status="In Progress" />
+	<data archetype="lookup.paymentStatus" status="On Hold" />
+	<data archetype="lookup.paymentStatus" status="Posted" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST1" type="country.state" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST2" type="country.state" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST3" type="country.state" />
