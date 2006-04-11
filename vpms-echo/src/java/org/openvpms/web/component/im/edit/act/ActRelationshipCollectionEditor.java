@@ -1,3 +1,21 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.web.component.im.edit.act;
 
 import java.math.BigDecimal;
@@ -17,6 +35,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -37,7 +56,7 @@ import org.openvpms.web.spring.ServiceHelper;
 /**
  * Editor for collections of {@link ActRelationship}s.
  *
- * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ActRelationshipCollectionEditor extends CollectionEditor
@@ -117,7 +136,8 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         _acts = new HashMap<Act, ActRelationship>(relationships.size());
         for (IMObject object : relationships) {
             ActRelationship relationship = (ActRelationship) object;
-            Act item = (Act) service.get(relationship.getTarget());
+            Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
+                    service, relationship.getTarget());
             _acts.put(item, relationship);
         }
         return new ArrayList<IMObject>(_acts.keySet());
