@@ -1,3 +1,21 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
 package org.openvpms.web.component.im.edit;
 
 import java.text.Format;
@@ -24,6 +42,8 @@ import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.palette.Palette;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -36,7 +56,7 @@ import org.openvpms.web.spring.ServiceHelper;
 /**
  * Factory for editors for {@link IMObject} instances.
  *
- * @author <a href="mailto:tma@netspace.net.au">Tim Anderson</a>
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
@@ -50,6 +70,11 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * The lookup service.
      */
     private ILookupService _lookup;
+
+    /**
+     * Component factory for read-only/derived nodes.
+     */
+    private IMObjectComponentFactory _readOnly;
 
     /**
      * Construct a new <code>NodeEditorFactory</code>.
@@ -72,29 +97,28 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     public Component create(IMObject context, NodeDescriptor descriptor) {
         Component result;
-        if (descriptor.isLookup()) {
-            result = getSelectEditor(context, descriptor);
-        } else if (descriptor.isBoolean()) {
-            result = getCheckBox(context, descriptor);
-        } else if (descriptor.isString()) {
-            result = getTextComponent(context, descriptor);
-        } else if (descriptor.isNumeric()) {
-            result = getNumericEditor(context, descriptor);
-        } else if (descriptor.isDate()) {
-            result = getDateEditor(context, descriptor);
-        } else if (descriptor.isCollection()) {
-            result = getCollectionEditor(context, descriptor);
-        } else if (descriptor.isObjectReference()) {
-            result = getObjectReferenceEditor(context, descriptor);
-        } else {
-            Label label = LabelFactory.create();
-            label.setText("No editor for type " + descriptor.getType());
-            result = label;
-        }
         if (descriptor.isReadOnly() || descriptor.isDerived()) {
-            result.setEnabled(false);
-            result.setFocusTraversalParticipant(false);
+            result = getReadOnlyFactory().create(context, descriptor);
         } else {
+            if (descriptor.isLookup()) {
+                result = getSelectEditor(context, descriptor);
+            } else if (descriptor.isBoolean()) {
+                result = getCheckBox(context, descriptor);
+            } else if (descriptor.isString()) {
+                result = getTextComponent(context, descriptor);
+            } else if (descriptor.isNumeric()) {
+                result = getNumericEditor(context, descriptor);
+            } else if (descriptor.isDate()) {
+                result = getDateEditor(context, descriptor);
+            } else if (descriptor.isCollection()) {
+                result = getCollectionEditor(context, descriptor);
+            } else if (descriptor.isObjectReference()) {
+                result = getObjectReferenceEditor(context, descriptor);
+            } else {
+                Label label = LabelFactory.create();
+                label.setText("No editor for type " + descriptor.getType());
+                result = label;
+            }
             result.setFocusTraversalParticipant(true);
         }
         return result;
@@ -237,6 +261,18 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected CollectionProperty getCollectionProperty(
             IMObject object, NodeDescriptor descriptor) {
         return (CollectionProperty) getProperty(object, descriptor);
+    }
+
+    /**
+     * Returns a factory for creating read-only components.
+     *
+     * @return a factory for creating read-only components
+     */
+    private IMObjectComponentFactory getReadOnlyFactory() {
+        if (_readOnly == null) {
+            _readOnly = new ReadOnlyComponentFactory(getLayoutContext());
+        }
+        return _readOnly;
     }
 
     /**
