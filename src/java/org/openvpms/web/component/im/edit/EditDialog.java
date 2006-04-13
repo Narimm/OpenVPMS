@@ -75,7 +75,7 @@ public class EditDialog extends PopupWindow {
      * @param context the layout context
      */
     public EditDialog(IMObjectEditor editor, LayoutContext context) {
-        super(editor.getTitle(), STYLE, context.getTabIndexer());
+        super(editor.getTitle(), STYLE, context.getFocusTree());
         _editor = editor;
         setModal(true);
 

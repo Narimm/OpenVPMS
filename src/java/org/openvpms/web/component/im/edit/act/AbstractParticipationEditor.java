@@ -101,7 +101,8 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      */
     protected ObjectReferenceEditor createObjectReferenceEditor(
             Property property, NodeDescriptor descriptor) {
-        return new ObjectReferenceEditor(property, descriptor);
+        return new ObjectReferenceEditor(property, descriptor,
+                                         getLayoutContext());
     }
 
     /**

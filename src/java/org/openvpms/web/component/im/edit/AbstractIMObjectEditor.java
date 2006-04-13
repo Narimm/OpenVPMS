@@ -54,6 +54,7 @@ import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -381,6 +382,15 @@ public abstract class AbstractIMObjectEditor
      */
     public Component getComponent() {
         return getView().getComponent();
+    }
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    public FocusGroup getFocusGroup() {
+        return getView().getFocusGroup();
     }
 
     /**

@@ -57,6 +57,8 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -310,9 +312,12 @@ public class CollectionEditor implements Saveable {
                 onDelete();
             }
         });
-        _context.setTabIndex(create);
-        _context.setTabIndex(cancel);
-        _context.setTabIndex(delete);
+
+        FocusSet focus = new FocusSet("CollectionEditor");
+        focus.add(create);
+        focus.add(cancel);
+        focus.add(delete);
+        _context.getFocusTree().add(focus);
 
         Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
@@ -335,7 +340,7 @@ public class CollectionEditor implements Saveable {
                 }
             });
             row.add(archetypeNames);
-            _context.setTabIndex(archetypeNames);
+            focus.add(archetypeNames);
         }
 
         _component.add(row);
@@ -349,6 +354,7 @@ public class CollectionEditor implements Saveable {
 
         populateTable();
 
+        focus.add(_table);
         _component.add(_table);
     }
 
@@ -461,6 +467,9 @@ public class CollectionEditor implements Saveable {
      */
     protected void edit(final IMObject object) {
         if (_editor != null) {
+            FocusTree tabTree = _context.getFocusTree();
+            tabTree.remove(_editor.getFocusGroup());
+
             _editor.removePropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                     _componentListener);
@@ -509,6 +518,8 @@ public class CollectionEditor implements Saveable {
      * Remove the editor.
      */
     private void removeEditor() {
+        FocusTree tabTree = _context.getFocusTree();
+        tabTree.remove(_editor.getFocusGroup());
         _editBox.remove(_editor.getComponent());
         _component.remove(_editBox);
         _editor = null;

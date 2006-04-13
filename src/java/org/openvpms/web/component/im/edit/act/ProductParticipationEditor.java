@@ -105,7 +105,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected ObjectReferenceEditor createObjectReferenceEditor(
             Property property, NodeDescriptor descriptor) {
-        return new ObjectReferenceEditor(property, descriptor) {
+        return new ObjectReferenceEditor(property, descriptor,
+                                         getLayoutContext()) {
 
             @Override
             protected Query createQuery() {
