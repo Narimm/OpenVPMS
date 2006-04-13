@@ -78,6 +78,8 @@ public class PagedIMObjectTable extends Column {
         if (model.getPages() > 1) {
             if (_navigator == null) {
                 _navigator = new TableNavigator(_table);
+                _navigator.setFocusTraversalIndex(
+                        _table.getFocusTraversalIndex());
             }
             if (indexOf(_navigator) == -1) {
                 add(_navigator, 0);
@@ -96,6 +98,20 @@ public class PagedIMObjectTable extends Column {
      */
     public IMObjectTable getTable() {
         return _table;
+    }
+
+    /**
+     * Sets the focus traversal (tab) index of the component.
+     *
+     * @param newValue the new focus traversal index
+     * @see #getFocusTraversalIndex()
+     */
+    @Override
+    public void setFocusTraversalIndex(int newValue) {
+        if (_navigator != null) {
+            _navigator.setFocusTraversalIndex(newValue);
+        }
+        _table.setFocusTraversalIndex(newValue);
     }
 
 
