@@ -50,6 +50,26 @@ public class TableNavigator extends Row {
     private Table _table;
 
     /**
+     * The 'first' button.
+     */
+    private Button _first;
+
+    /**
+     * The 'previous' button.
+     */
+    private Button _previous;
+
+    /**
+     * The 'next' button.
+     */
+    private Button _next;
+
+    /**
+     * The 'last' button.
+     */
+    private Button _last;
+
+    /**
      * The page selector combobox.
      */
     private SelectField _pageSelector;
@@ -75,17 +95,32 @@ public class TableNavigator extends Row {
         doLayout();
     }
 
+    /**
+     * Sets the focus traversal (tab) index of the component.
+     *
+     * @param newValue the new focus traversal index
+     * @see #getFocusTraversalIndex()
+     */
+    @Override
+    public void setFocusTraversalIndex(int newValue) {
+        _first.setFocusTraversalIndex(newValue);
+        _previous.setFocusTraversalIndex(newValue);
+        _pageSelector.setFocusTraversalIndex(newValue);
+        _next.setFocusTraversalIndex(newValue);
+        _last.setFocusTraversalIndex(newValue);
+    }
+
     protected void doLayout() {
         setCellSpacing(new Extent(10));
 
         Label page = LabelFactory.create("navigation.page");
 
-        Button first = ButtonFactory.create(null, "navigation.first", new ActionListener() {
+        _first = ButtonFactory.create(null, "navigation.first", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doFirst();
             }
         });
-        Button previous = ButtonFactory.create(null, "navigation.previous", new ActionListener() {
+        _previous = ButtonFactory.create(null, "navigation.previous", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doPrevious();
             }
@@ -102,24 +137,24 @@ public class TableNavigator extends Row {
 
         _pageCount = LabelFactory.create();
 
-        Button next = ButtonFactory.create(null, "navigation.next", new ActionListener() {
+        _next = ButtonFactory.create(null, "navigation.next", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doNext();
             }
         });
 
-        Button last = ButtonFactory.create(null, "navigation.last", new ActionListener() {
+        _last = ButtonFactory.create(null, "navigation.last", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doLast();
             }
         });
 
         add(page);
-        add(first);
-        add(previous);
+        add(_first);
+        add(_previous);
         add(_pageSelector);
-        add(next);
-        add(last);
+        add(_next);
+        add(_last);
         add(_pageCount);
 
         refresh();
