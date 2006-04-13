@@ -69,6 +69,17 @@ public class Palette extends Row {
     private ListBox _selectedList;
 
     /**
+     * The add button.
+     */
+    private Button _add;
+
+    /**
+     * The remove button.
+     */
+    private Button _remove;
+
+
+    /**
      * Construct a new <code>Palette</code>,
      *
      * @param items    all items that may be selected
@@ -93,6 +104,20 @@ public class Palette extends Row {
     }
 
     /**
+     * Sets the focus traversal (tab) index of the component.
+     *
+     * @param newValue the new focus traversal index
+     * @see #getFocusTraversalIndex()
+     */
+    @Override
+    public void setFocusTraversalIndex(int newValue) {
+        _unselectedList.setFocusTraversalIndex(newValue);
+        _selectedList.setFocusTraversalIndex(newValue);
+        _add.setFocusTraversalIndex(newValue);
+        _remove.setFocusTraversalIndex(newValue);
+    }
+
+    /**
      * Lay out the component.
      */
     protected void doLayout() {
@@ -105,12 +130,12 @@ public class Palette extends Row {
         _selectedList.setStyleName("Palette.List");
         _selectedList.setSelectionMode(mode);
 
-        Button add = ButtonFactory.create("right_add", new ActionListener() {
+        _add = ButtonFactory.create("right_add", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onAdd();
             }
         });
-        Button remove = ButtonFactory.create("left_remove", new ActionListener() {
+        _remove = ButtonFactory.create("left_remove", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onRemove();
             }
@@ -118,7 +143,7 @@ public class Palette extends Row {
         Label available = LabelFactory.create("available", "Palette.ListLabel");
         Label selected = LabelFactory.create("selected", "Palette.ListLabel");
         Column left = ColumnFactory.create("Palette.ListColumn", available, _unselectedList);
-        Column middle = ColumnFactory.create("ControlColumn", add, remove);
+        Column middle = ColumnFactory.create("ControlColumn", _add, _remove);
         Column right = ColumnFactory.create("Palette.ListColumn", selected, _selectedList);
         add(left);
         add(middle);

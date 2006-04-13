@@ -26,6 +26,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.EventListenerList;
 
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusTree;
+
 
 /**
  * A row of buttons.
@@ -41,9 +44,9 @@ public class ButtonRow extends Row {
     private final ActionListener _listener;
 
     /**
-     * The tab indexer. May be <code>null</code>
+     * The focus set. May be <code>null</code>
      */
-    private final TabIndexer _indexer;
+    private final FocusSet _focus;
 
     /**
      * The row style.
@@ -66,12 +69,18 @@ public class ButtonRow extends Row {
     /**
      * Construct a new <code>ButtonRow</code>.
      *
-     * @param indexer the tab indexer. May be <code>null</code>
+     * @param focus the focus tree. May be <code>null</code>
      */
-    public ButtonRow(TabIndexer indexer) {
+    public ButtonRow(FocusTree focus) {
         setStyleName(STYLE);
 
-        _indexer = indexer;
+        if (focus != null) {
+            _focus = new FocusSet("ButtonRow");
+            focus.add(_focus);
+        } else {
+            _focus = null;
+        }
+
         _listener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 doAction(event);
@@ -172,8 +181,8 @@ public class ButtonRow extends Row {
         Button button = ButtonFactory.create(id, BUTTON_STYLE, _listener);
         button.setId(id);
         button.setActionCommand(id);
-        if (_indexer != null) {
-            _indexer.setTabIndex(button);
+        if (_focus != null) {
+            _focus.add(button);
         }
         add(button);
         return button;
