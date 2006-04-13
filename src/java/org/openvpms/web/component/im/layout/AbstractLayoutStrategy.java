@@ -49,6 +49,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.focus.FocusSet;
 
 
 /**
@@ -67,6 +68,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             = new LinkedHashMap<NodeDescriptor, Component>();
 
     /**
+     * The focus set.
+     */
+    private FocusSet _focusSet;
+
+    /**
      * Construct a new <code>AbstractLayoutStrategy</code>.
      */
     public AbstractLayoutStrategy() {
@@ -81,6 +87,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     public Component apply(IMObject object, LayoutContext context) {
         _components.clear();
+        _focusSet = new FocusSet(DescriptorHelper.getDisplayName(object));
+        context.getFocusTree().add(_focusSet);
         Column column = ColumnFactory.create("CellSpacing");
         doLayout(object, column, context);
         setFocus(object, column);
@@ -153,6 +161,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
                 Component inset = ColumnFactory.create("Inset", child);
                 model.insertTab(model.size(), button, inset);
+                setTabIndex(child, context);
             }
             TabbedPane pane = new TabbedPane();
             pane.setModel(model);
@@ -333,7 +342,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected void setTabIndex(Component component, LayoutContext context) {
         if (component.isFocusTraversalParticipant()) {
-            context.setTabIndex(component);
+            _focusSet.add(component);
         }
     }
 

@@ -18,11 +18,9 @@
 
 package org.openvpms.web.component.im.layout;
 
-import nextapp.echo2.app.Component;
-
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.util.TabIndexer;
+import org.openvpms.web.component.focus.FocusTree;
 
 
 /**
@@ -64,18 +62,11 @@ public interface LayoutContext {
     void setComponentFactory(IMObjectComponentFactory factory);
 
     /**
-     * Returns the tab indexer.
+     * Returns the focus tree.
      *
-     * @return the tab indexer
+     * @return the focus tree
      */
-    TabIndexer getTabIndexer();
-
-    /**
-     * Sets the tab index of a component.
-     *
-     * @param component the component
-     */
-    void setTabIndex(Component component);
+    FocusTree getFocusTree();
 
     /**
      * Returns the default filter.
