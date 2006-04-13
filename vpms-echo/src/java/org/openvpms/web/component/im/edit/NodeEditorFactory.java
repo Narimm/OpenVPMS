@@ -231,8 +231,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected Component getObjectReferenceEditor(IMObject object,
                                                  NodeDescriptor descriptor) {
         Property property = getProperty(object, descriptor);
-        ObjectReferenceEditor editor
-                = new ObjectReferenceEditor(property, descriptor);
+        ObjectReferenceEditor editor = new ObjectReferenceEditor(
+                property, descriptor, getLayoutContext());
         return editor.getComponent();
     }
 

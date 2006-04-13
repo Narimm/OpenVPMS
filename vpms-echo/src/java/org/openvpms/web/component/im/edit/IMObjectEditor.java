@@ -25,6 +25,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -102,6 +103,12 @@ public interface IMObjectEditor extends Saveable {
      */
     Component getComponent();
 
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    FocusGroup getFocusGroup();
 
     /**
      * Add a property change listener.

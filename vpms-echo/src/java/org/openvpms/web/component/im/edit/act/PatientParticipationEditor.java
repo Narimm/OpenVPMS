@@ -94,7 +94,8 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected ObjectReferenceEditor createObjectReferenceEditor(
             Property property, NodeDescriptor descriptor) {
-        return new ObjectReferenceEditor(property, descriptor) {
+        return new ObjectReferenceEditor(property, descriptor,
+                                         getLayoutContext()) {
             @Override
             protected void onSelected(IMObject object) {
                 super.onSelected(object);

@@ -94,7 +94,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
             srcReadOnly = false;
         }
 
-        _source = getEditor(relationship, sourceDesc, srcReadOnly);
+        _source = getEditor(relationship, sourceDesc, srcReadOnly, context);
         if (source != null && relationship.getSource() == null) {
             _source.setObject(source);
         }
@@ -104,7 +104,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
             targetReadOnly = false;
         }
 
-        _target = getEditor(relationship, targetDesc, targetReadOnly);
+        _target = getEditor(relationship, targetDesc, targetReadOnly, context);
         if (target != null && relationship.getTarget() == null) {
             _target.setObject(target);
         }
@@ -147,16 +147,18 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param relationship the relationship
      * @param descriptor   the descriptor of the node to edit
      * @param readOnly     determines if the node is read-only
+     * @param context      the layout context
      */
     protected ObjectReferenceEditor getEditor(EntityRelationship relationship,
                                               NodeDescriptor descriptor,
-                                              boolean readOnly) {
+                                              boolean readOnly,
+                                              LayoutContext context) {
 
         ModifiableProperty property
                 = new ModifiableProperty(relationship, descriptor);
 
         getModifiableSet().add(relationship, property);
-        return new Entity(property, descriptor, readOnly);
+        return new Entity(property, descriptor, readOnly, context);
     }
 
     /**
@@ -293,10 +295,11 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
          * @param property   the reference property
          * @param descriptor the entity descriptor
          * @param readOnly   if <code>true<code> don't render the select button
+         * @param context    the layout context
          */
         public Entity(Property property, NodeDescriptor descriptor,
-                      boolean readOnly) {
-            super(property, descriptor, readOnly);
+                      boolean readOnly, LayoutContext context) {
+            super(property, descriptor, readOnly, context);
         }
 
         /**

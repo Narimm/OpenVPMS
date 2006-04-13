@@ -37,6 +37,8 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -70,9 +72,11 @@ public class ObjectReferenceEditor {
      *
      * @param property   the reference property
      * @param descriptor the reference descriptor
+     * @param context    the layout context
      */
-    public ObjectReferenceEditor(Property property, NodeDescriptor descriptor) {
-        this(property, descriptor, false);
+    public ObjectReferenceEditor(Property property, NodeDescriptor descriptor,
+                                 LayoutContext context) {
+        this(property, descriptor, false, context);
     }
 
     /**
@@ -81,9 +85,10 @@ public class ObjectReferenceEditor {
      * @param property   the reference property
      * @param descriptor the reference descriptor
      * @param readOnly   if <code>true</code> the reference cannot be edited
+     * @param context    the layout context
      */
     public ObjectReferenceEditor(Property property, NodeDescriptor descriptor,
-                                 boolean readOnly) {
+                                 boolean readOnly, LayoutContext context) {
         _property = property;
         _descriptor = descriptor;
 
@@ -91,6 +96,9 @@ public class ObjectReferenceEditor {
             _selector = new Selector(Selector.ButtonStyle.HIDE);
         } else {
             _selector = new Selector(Selector.ButtonStyle.RIGHT);
+            FocusSet set = new FocusSet("ObjectReferenceEditor");
+            set.add(_selector.getSelect());
+            context.getFocusTree().add(set);
             _selector.getSelect().addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onSelect();
