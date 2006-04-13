@@ -23,6 +23,7 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.focus.FocusGroup;
 
 
 /**
@@ -46,6 +47,13 @@ public interface IMObjectView {
      * @return the rendered object
      */
     Component getComponent();
+
+    /**
+     * Returns the focus group.
+     *
+     * @return the focus group
+     */
+    FocusGroup getFocusGroup();
 
     /**
      * Changes the layout.
