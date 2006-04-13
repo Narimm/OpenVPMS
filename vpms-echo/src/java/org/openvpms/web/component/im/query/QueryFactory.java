@@ -139,7 +139,8 @@ public final class QueryFactory {
         try {
             try {
                 Constructor constructor = clazz.getConstructor(String[].class);
-                result = (Query) constructor.newInstance((Object[]) shortNames);
+                result = (Query) constructor.newInstance(
+                        new Object[]{shortNames});
             } catch (NoSuchMethodException exception) {
                 Constructor constructor = clazz.getConstructor();
                 result = (Query) constructor.newInstance();
