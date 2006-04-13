@@ -18,14 +18,12 @@
 
 package org.openvpms.web.component.im.layout;
 
-import nextapp.echo2.app.Component;
-
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.util.TabIndexer;
+import org.openvpms.web.component.focus.FocusTree;
 
 /**
  * Default implmentation of the {@link LayoutContext} interface.
@@ -51,9 +49,9 @@ public class DefaultLayoutContext implements LayoutContext {
     private NodeFilter _filter;
 
     /**
-     * The tab indexer.
+     * The foocus tree.
      */
-    private TabIndexer _indexer;
+    private final FocusTree _focus;
 
 
     /**
@@ -73,6 +71,7 @@ public class DefaultLayoutContext implements LayoutContext {
         this((IMObjectComponentFactory) null);
         _edit = edit;
     }
+
     /**
      * Construct a new <code>DefaultLayoutContext</code>.
      *
@@ -83,7 +82,7 @@ public class DefaultLayoutContext implements LayoutContext {
         NodeFilter id = new ValueNodeFilter("uid", new Long(-1));
         NodeFilter showOptional = new BasicNodeFilter(true);
         _filter = new ChainedNodeFilter(id, showOptional);
-        _indexer = new TabIndexer();
+        _focus = new FocusTree("root");
     }
 
     /**
@@ -95,7 +94,11 @@ public class DefaultLayoutContext implements LayoutContext {
     public DefaultLayoutContext(LayoutContext context) {
         _factory = context.getComponentFactory();
         _filter = context.getDefaultNodeFilter();
-        _indexer = context.getTabIndexer();
+
+        FocusTree root = context.getFocusTree();
+        _focus = new FocusTree("child");
+        root.add(_focus);
+
         _edit = context.isEdit();
     }
 
@@ -138,21 +141,12 @@ public class DefaultLayoutContext implements LayoutContext {
     }
 
     /**
-     * Returns the tab indexer.
+     * Returns the tab tree.
      *
-     * @return the tab indexer
+     * @return the tab tree
      */
-    public TabIndexer getTabIndexer() {
-        return _indexer;
-    }
-
-    /**
-     * Sets the tab index of a component.
-     *
-     * @param component the component
-     */
-    public void setTabIndex(Component component) {
-        _indexer.setTabIndex(component);
+    public FocusTree getFocusTree() {
+        return _focus;
     }
 
     /**
