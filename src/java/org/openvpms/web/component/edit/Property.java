@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.edit;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+
 
 /**
  * Property that provides notification on modification.
@@ -40,5 +42,17 @@ public interface Property extends Modifiable {
      * @return the property value
      */
     Object getValue();
+
+    /**
+     * Returns the property descriptor.
+     *
+     * @return the property descriptor
+     */
+    NodeDescriptor getDescriptor();
+
+    /**
+     * Notify any listeners that they need to refresh.
+     */
+    void refresh();
 
 }

@@ -18,15 +18,19 @@
 
 package org.openvpms.web.component.im.view;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
 
 
 /**
@@ -48,25 +52,23 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     }
 
     /**
-     * Returns a component to display a lookup.
+     * Returns a component to display a lookup property.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a component to display the lookup
+     * @param property the lookup property
+     * @return a component to display the lookup property
      */
-    protected Component getLookup(IMObject context, NodeDescriptor descriptor) {
-        return getLabel(context, descriptor);
+    protected Component getLookup(Property property) {
+        return getLabel(property);
     }
 
     /**
-     * Returns a component to display a number.
+     * Returns a component to display a numeric property.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a component to display the datge
+     * @param property the numeric property
+     * @return a component to display the property
      */
-    protected Component getNumber(IMObject context, NodeDescriptor descriptor) {
-        String value = getNumericValue(context, descriptor);
+    protected Component getNumber(Property property) {
+        String value = getNumericValue(property);
         Label label = LabelFactory.create();
         label.setText(value);
         TableLayoutData layout = new TableLayoutData();
@@ -78,17 +80,49 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     }
 
     /**
-     * Returns a component to display a date.
+     * Returns a component to display a date property.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a component to display the datge
+     * @param property the date property
+     * @return a component to display the property
      */
-    protected Component getDate(IMObject context, NodeDescriptor descriptor) {
-        String value = getDateValue(context, descriptor);
+    protected Component getDate(Property property) {
+        String value = getDateValue(property);
         Label label = LabelFactory.create();
         label.setText(value);
         return label;
+    }
+
+    /**
+     * Helper to convert a numeric property to string.
+     *
+     * @param property the numeric property
+     * @return the string value of the property associated with
+     *         <code>property</code>
+     */
+    protected String getNumericValue(Property property) {
+        Object tmp = property.getValue();
+        Number value;
+        if (tmp instanceof String) {
+            value = new BigDecimal((String) tmp);
+        } else {
+            value = (Number) tmp;
+        }
+        if (value != null) {
+            return NumberFormatter.format(value, property.getDescriptor(),
+                                          false);
+        }
+        return null;
+    }
+
+    /**
+     * Helper to convert a date value to a string.
+     *
+     * @param property the date property
+     * @return the string value of the property
+     */
+    protected String getDateValue(Property property) {
+        Date value = (Date) property.getValue();
+        return (value != null) ? DateFormatter.format(value, false) : null;
     }
 
 }

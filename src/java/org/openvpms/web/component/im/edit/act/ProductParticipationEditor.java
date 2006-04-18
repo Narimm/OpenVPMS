@@ -98,15 +98,13 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
     /**
      * Creates a new object reference editor.
      *
-     * @param property   the reference property
-     * @param descriptor the reference descriptor
+     * @param property the reference property
      * @return a new object reference editor
      */
     @Override
     protected ObjectReferenceEditor createObjectReferenceEditor(
-            Property property, NodeDescriptor descriptor) {
-        return new ObjectReferenceEditor(property, descriptor,
-                                         getLayoutContext()) {
+            Property property) {
+        return new ObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
             protected Query createQuery() {

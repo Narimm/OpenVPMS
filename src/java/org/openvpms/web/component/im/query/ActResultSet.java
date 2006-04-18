@@ -20,18 +20,20 @@ package org.openvpms.web.component.im.query;
 
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
-
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.AndConstraint;
+import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IConstraintContainer;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
@@ -46,87 +48,81 @@ import org.openvpms.web.spring.ServiceHelper;
 public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
 
     /**
-     * The id of the entity to search for.
+     * The archetype query.
      */
-    private IMObjectReference _entityId;
-
-    /**
-     * The archetype entity name.
-     */
-    private final String _entityName;
-
-    /**
-     * The archetype conceptName.
-     */
-    private final String _conceptName;
-
-    /**
-     * The start-from date.
-     */
-    private final Date _startFrom;
-
-    /**
-     * The start-to date.
-     */
-    private final Date _startTo;
-
-    /**
-     * The act status. May  be <code>null</code>
-     */
-    private final String _status;
-
-    /**
-     * Determines if acts with <code>_status</code> should be excluded. Only
-     * applies when <code>status != null</code>.
-     */
-    private final boolean _exclude;
+    private final ArchetypeQuery _query;
 
 
     /**
      * Construct a new <code>ActResultSet</code>.
      *
-     * @param entityId    the id of the entity to search for
-     * @param entityName  the act entity name
-     * @param conceptName the act concept name
-     * @param from        the act start-from date. May be <code>null</code>
-     * @param to          the act start-to date. May be <code>null</code>
-     * @param status      the act status. May be <code>null</code>
-     * @param rows        the maximum no. of rows per page
-     * @param order       the sort criteria. May be <code>null</code>
+     * @param entityId   the id of the entity to search for
+     * @param archetypes the act archetype constraint
+     * @param from       the act start-from date. May be <code>null</code>
+     * @param to         the act start-to date. May be <code>null</code>
+     * @param statuses   the act statuses. If empty, indicates all acts
+     * @param rows       the maximum no. of rows per page
+     * @param order      the sort criteria. May be <code>null</code>
      */
-    public ActResultSet(IMObjectReference entityId, String entityName,
-                        String conceptName, Date from, Date to, String status,
-                        int rows, SortOrder order) {
-        this(entityId, entityName, conceptName, from, to, status, false,
-             rows, order);
+    public ActResultSet(IMObjectReference entityId,
+                        ArchetypeConstraint archetypes, Date from, Date to,
+                        String[] statuses, int rows, SortOrder order) {
+        this(entityId, archetypes, from, to, statuses, false, rows, order);
     }
 
     /**
      * Construct a new <code>ActResultSet</code>.
      *
-     * @param entityId    the id of the entity to search for
-     * @param entityName  the act entity name
-     * @param conceptName the act concept name
-     * @param from        the act start-from date. May be <code>null</code>
-     * @param to          the act start-to date. May be <code>null</code>
-     * @param status      the act status. May be <code>null</code>
-     * @param exclude     if <code>true</code> exclude acts with
-     *                    <code>status</code>; otherwise include them. Only
-     *                    applies when <code>status != null</code>
-     * @param rows        the maximum no. of rows per page
-     * @param order       the sort criteria. May be <code>null</code>
+     * @param entityId   the id of the entity to search for
+     * @param archetypes the act archetype constraint
+     * @param from       the act start-from date. May be <code>null</code>
+     * @param to         the act start-to date. May be <code>null</code>
+     * @param statuses   the act statuses. If empty, indicates all acts
+     * @param exclude    if <code>true</code> exclude acts with status in
+     *                   <code>statuses</code>; otherwise include them.
+     * @param rows       the maximum no. of rows per page
+     * @param order      the sort criteria. May be <code>null</code>
      */
-    public ActResultSet(IMObjectReference entityId, String entityName,
-                        String conceptName, Date from, Date to, String status,
-                        boolean exclude, int rows, SortOrder order) {
+    public ActResultSet(IMObjectReference entityId,
+                        ArchetypeConstraint archetypes, Date from, Date to,
+                        String[] statuses, boolean exclude, int rows,
+                        SortOrder order) {
         super(rows, order);
-        _entityId = entityId;
-        _entityName = entityName;
-        _conceptName = conceptName;
-        _startFrom = from;
-        _startTo = to;
-        _status = status;
-        _exclude = exclude;
+
+        _query = new ArchetypeQuery(archetypes);
+
+        if (statuses.length > 1) {
+            IConstraintContainer constraint;
+            RelationalOp op;
+            if (exclude) {
+                constraint = new AndConstraint();
+                op = RelationalOp.NE;
+            } else {
+                constraint = new OrConstraint();
+                op = RelationalOp.EQ;
+            }
+            for (String status : statuses) {
+                constraint.add(new NodeConstraint("status", op, status));
+            }
+            _query.add(constraint);
+        } else if (statuses.length == 1) {
+            RelationalOp op = RelationalOp.EQ;
+            if (exclude) {
+                op = RelationalOp.NE;
+            }
+            _query.add(new NodeConstraint("status", op, statuses[0]));
+        }
+
+        if (from != null && to != null) {
+            _query.add(new NodeConstraint("startTime", RelationalOp.BTW,
+                                         new Object[]{from, to}));
+        }
+
+        CollectionNodeConstraint participations = new CollectionNodeConstraint(
+                "participants", "participation.customer", true, true)
+                .setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin)
+                .add(new ObjectRefNodeConstraint("entity", entityId));
+        _query.add(participations);
     }
 
     /**
@@ -140,33 +136,10 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     protected IPage<Act> getPage(int firstRow, int maxRows) {
         IPage<Act> result = null;
         try {
-
+            _query.setFirstRow(firstRow);
+            _query.setNumOfRows(maxRows);
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            ArchetypeQuery query = new ArchetypeQuery(null, _entityName,
-                                                      _conceptName,
-                                                      true, true);
-            query.setFirstRow(firstRow);
-            query.setNumOfRows(maxRows);
-
-            if (!StringUtils.isEmpty(_status)) {
-                RelationalOp op = RelationalOp.EQ;
-                if (_exclude) {
-                    op = RelationalOp.NE;
-                }
-                query.add(new NodeConstraint("status", op, _status));
-            }
-
-            if (_startFrom != null && _startTo != null) {
-                query.add(new NodeConstraint("startTime", RelationalOp.BTW,
-                                             new Object[]{_startFrom, _startTo}));
-            }
-
-            CollectionNodeConstraint participations = new CollectionNodeConstraint(
-                    "participants", "participation.customer", true, true)
-                    .setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin)
-                    .add(new ObjectRefNodeConstraint("entity", _entityId));
-            query.add(participations);
-            IPage<IMObject> page = service.get(query);
+            IPage<IMObject> page = service.get(_query);
             result = convert(page);
         } catch (ArchetypeServiceException exception) {
             ErrorDialog.show(exception);

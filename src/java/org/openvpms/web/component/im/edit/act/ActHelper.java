@@ -45,7 +45,7 @@ public class ActHelper {
      * @return the summed total
      */
     public static BigDecimal sum(Collection<Act> acts, String node) {
-        return sum(new BigDecimal("0.0"), acts, node);
+        return sum(BigDecimal.ZERO, acts, node);
     }
 
     /**
@@ -72,8 +72,18 @@ public class ActHelper {
                 if (creditDesc != null) {
                     credit = (Boolean) creditDesc.getValue(act);
                 }
-                BigDecimal value = (BigDecimal) decscriptor.getValue(act);
-                if (value != null) {
+                Number number = (Number) decscriptor.getValue(act);
+                if (number != null) {
+                    BigDecimal value;
+                    if (number instanceof BigDecimal) {
+                        value = (BigDecimal) number;
+                        value = new BigDecimal(number.longValue());
+                    } else if (number instanceof Double
+                               || number instanceof Float) {
+                        value = new BigDecimal(number.doubleValue());
+                    } else {
+                        value = new BigDecimal(number.longValue());
+                    }
                     if (Boolean.TRUE.equals(credit)) {
                         result = result.subtract(value);
                     } else {

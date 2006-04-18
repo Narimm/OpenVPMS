@@ -22,25 +22,23 @@ import nextapp.echo2.app.Row;
 
 
 /**
- * CRUD window for invoices.
+ * CRUD window for payments.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceCRUDWindow extends ActCRUDWindow {
+public class PaymentCRUDWindow extends ActCRUDWindow {
+
 
     /**
-     * Create a new <code>InvoiceCRUDWindow</code>.
+     * Create a new <code>ActCRUDWindow</code>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param type       display name for the types of objects that this may
+     *                   create
+     * @param shortNames the short names of archetypes that this may create
      */
-    public InvoiceCRUDWindow(String type, String refModelName,
-                             String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
+    public PaymentCRUDWindow(String type, String[] shortNames) {
+        super(type, shortNames);
     }
 
     /**

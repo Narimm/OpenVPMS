@@ -38,10 +38,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -57,8 +60,6 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -70,6 +71,11 @@ import org.openvpms.web.spring.ServiceHelper;
  * @see IMObjectEditor
  */
 public class CollectionEditor implements Saveable {
+
+    /**
+     * The collection property.
+     */
+    private final CollectionProperty _property;
 
     /**
      * The object to edit.
@@ -90,11 +96,6 @@ public class CollectionEditor implements Saveable {
      * The component representing this.
      */
     private Component _component;
-
-    /**
-     * The node descriptor.
-     */
-    private final NodeDescriptor _descriptor;
 
     /**
      * The archetype short name used to create a new object.
@@ -150,14 +151,14 @@ public class CollectionEditor implements Saveable {
     /**
      * Construct a new <code>CollectionEditor</code>.
      *
-     * @param object     the object being edited
-     * @param descriptor the collection node descriptor
-     * @param context    the layout context
+     * @param property the collection property
+     * @param object   the object being edited
+     * @param context  the layout context
      */
-    public CollectionEditor(IMObject object, NodeDescriptor descriptor,
-                            LayoutContext context) {
+    public CollectionEditor(CollectionProperty property,
+                            IMObject object, LayoutContext context) {
+        _property = property;
         _object = object;
-        _descriptor = descriptor;
         _context = new DefaultLayoutContext(context);
 
         // filter out the uid (aka "id") field
@@ -200,7 +201,7 @@ public class CollectionEditor implements Saveable {
      * @return the collection descriptor
      */
     public NodeDescriptor getDescriptor() {
-        return _descriptor;
+        return _property.getDescriptor();
     }
 
     /**
@@ -321,7 +322,7 @@ public class CollectionEditor implements Saveable {
 
         Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
-        String[] range = _descriptor.getArchetypeRange();
+        String[] range = getArchetypeRange();
         if (range.length == 1) {
             _shortname = range[0];
         } else if (range.length > 1) {
@@ -365,7 +366,7 @@ public class CollectionEditor implements Saveable {
      */
     protected List<IMObject> getObjects() {
         List<IMObject> objects = Collections.emptyList();
-        Collection values = (Collection) _descriptor.getValue(_object);
+        Collection values = _property.getValues();
         int size = values.size();
         if (size != 0) {
             objects = new ArrayList<IMObject>();
@@ -377,13 +378,22 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
+     * Returns the range of archetypes that this may create.
+     *
+     * @return the range of archetypes that this may create
+     */
+    protected String[] getArchetypeRange() {
+        return getDescriptor().getArchetypeRange();
+    }
+
+    /**
      * Create a new table model.
      *
      * @param context the layout context
      * @return a new table model
      */
     protected IMObjectTableModel createTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(_descriptor, context);
+        return IMObjectTableModelFactory.create(getDescriptor(), context);
     }
 
     /**
@@ -447,7 +457,7 @@ public class CollectionEditor implements Saveable {
      * @param object the object to remove
      */
     protected void removeFromCollection(IMObject object) {
-        _descriptor.removeChildFromCollection(_object, object);
+        _property.remove(object);
     }
 
     /**
@@ -500,7 +510,7 @@ public class CollectionEditor implements Saveable {
      */
     protected IMObjectEditor createEditor(IMObject object,
                                           LayoutContext context) {
-        return IMObjectEditorFactory.create(object, _object, _descriptor,
+        return IMObjectEditorFactory.create(object, _object, getDescriptor(),
                                             context);
     }
 

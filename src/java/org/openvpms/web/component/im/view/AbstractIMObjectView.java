@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.focus.FocusGroup;
+import org.openvpms.web.component.edit.PropertySet;
 
 
 /**
@@ -40,6 +41,11 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * The object to display.
      */
     private final IMObject _object;
+
+    /**
+     * The object's properties.
+     */
+    private PropertySet _properties;
 
     /**
      * The layout strafegy.
@@ -61,9 +67,10 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * Construct a new <code>AbstractIMObjectView</code>.
      *
      * @param object the object to display
+     * @param properties the object's properties
      */
-    public AbstractIMObjectView(IMObject object) {
-        this(object, null);
+    public AbstractIMObjectView(IMObject object, PropertySet properties) {
+        this(object, properties, null);
     }
 
     /**
@@ -72,8 +79,10 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @param object the object to display
      * @param layout the layout strategy. May be <code>null</code>
      */
-    public AbstractIMObjectView(IMObject object, IMObjectLayoutStrategy layout) {
+    public AbstractIMObjectView(IMObject object, PropertySet properties,
+                                IMObjectLayoutStrategy layout) {
         _object = object;
+        _properties = properties;
         _layout = layout;
     }
 
@@ -145,7 +154,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return a new component
      */
     protected Component createComponent() {
-        return _layout.apply(_object, getLayoutContext());
+        return _layout.apply(_object, _properties, getLayoutContext());
     }
 
     /**

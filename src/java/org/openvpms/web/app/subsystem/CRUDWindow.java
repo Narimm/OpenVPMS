@@ -30,9 +30,9 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -62,22 +62,9 @@ import org.openvpms.web.spring.ServiceHelper;
 public class CRUDWindow {
 
     /**
-     * The reference model name of the archetypes that this window may create.
-     * May be <code>null</code>.
+     * Short names of archetypes that this may create.
      */
-    private final String _refModelName;
-
-    /**
-     * The entity name of the archetypes that this window may create. May be
-     * <code>null</code>.
-     */
-    private final String _entityName;
-
-    /**
-     * The concept name of the archetypes that this window may create. May be
-     * <code>null</code>.
-     */
-    private final String _conceptName;
+    private final String[] _shortNames;
 
     /**
      * Localised type display name (e.g, Customer, Product).
@@ -162,9 +149,20 @@ public class CRUDWindow {
     public CRUDWindow(String type, String refModelName, String entityName,
                       String conceptName) {
         _type = type;
-        _refModelName = refModelName;
-        _entityName = entityName;
-        _conceptName = conceptName;
+        _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
+                                                     conceptName);
+    }
+
+    /**
+     * Create a new <code>CRUDWindow</code>.
+     *
+     * @param type       display name for the types of objects that this may
+     *                   create
+     * @param shortNames the short names of archetypes that this may create
+     */
+    public CRUDWindow(String type, String[] shortNames) {
+        _type = type;
+        _shortNames = shortNames;
     }
 
     /**
@@ -250,8 +248,7 @@ public class CRUDWindow {
             }
         };
 
-        IMObjectCreator.create(_type, _refModelName, _entityName, _conceptName,
-                               listener);
+        IMObjectCreator.create(_type, _shortNames, listener);
     }
 
     /**

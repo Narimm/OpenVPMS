@@ -23,6 +23,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.edit.PropertySet;
 
 
 /**
@@ -69,7 +70,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      */
     public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout,
                           LayoutContext context) {
-        super(object, layout);
+        super(object, new PropertySet(object), layout);
         IMObjectComponentFactory factory = new ReadOnlyComponentFactory(context);
         if (context == null) {
             _context = new DefaultLayoutContext(factory);

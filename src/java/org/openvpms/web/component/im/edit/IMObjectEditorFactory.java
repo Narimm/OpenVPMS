@@ -25,6 +25,8 @@ import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
 import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
 import org.openvpms.web.component.im.edit.invoice.InvoiceItemEditor;
+import org.openvpms.web.component.im.edit.payment.PaymentEditor;
+import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -80,6 +82,12 @@ public class IMObjectEditorFactory {
         }
         if (result == null) {
             result = InvoiceItemEditor.create(object, parent, descriptor, context);
+        }
+        if (result == null) {
+            result = PaymentEditor.create(object, parent, descriptor, context);
+        }
+        if (result == null) {
+            result = PaymentItemEditor.create(object, parent, descriptor, context);
         }
         if (result == null) {
             result = DefaultParticipationEditor.create(object, parent, descriptor,

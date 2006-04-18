@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.table.act;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nextapp.echo2.app.Label;
@@ -29,6 +30,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.ReadOnlyProperty;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -51,12 +53,12 @@ public class ActItemTableModel extends DescriptorTableModel {
     /**
      * Construct a <code>ActItemTableModel</code>.
      *
-     * @param archetype the act archetype descriptor
-     * @param context   the layout context
+     * @param shortNames the act archetype short names
+     * @param context    the layout context
      */
-    public ActItemTableModel(ArchetypeDescriptor archetype,
+    public ActItemTableModel(String[] shortNames,
                              LayoutContext context) {
-        super(createColumnModel(archetype, context), context);
+        super(createColumnModel(shortNames, context), context);
     }
 
     /**
@@ -72,34 +74,58 @@ public class ActItemTableModel extends DescriptorTableModel {
     }
 
     /**
-     * Helper to create a column model.
+     * Creates a column model for a set of archetypes.
      *
-     * @param archetype the act archetype descriptor
-     * @param context   the layout context
+     * @param shortNames the archetype short names
+     * @param context    the layout context
      * @return a new column model
      */
-    protected static TableColumnModel createColumnModel(
-            ArchetypeDescriptor archetype, LayoutContext context) {
+    protected static TableColumnModel createColumnModel(String[] shortNames,
+                                                        LayoutContext context) {
+        TableColumnModel columns;
+        List<ArchetypeDescriptor> archetypes
+                = DescriptorHelper.getArchetypeDescriptors(shortNames);
+        if (archetypes.size() > 1) {
+            columns = createColumnModel(archetypes, context);
+        } else if (!archetypes.isEmpty()) {
+            ArchetypeDescriptor archetype = archetypes.get(0);
+            columns = addColumns(new DefaultTableColumnModel(),
+                                 archetype.getAllNodeDescriptors(),
+                                 context);
+        } else {
+            throw new IllegalArgumentException(
+                    "Argument 'shortNames' doesn't refer to a valid archetype");
+        }
+        return columns;
+    }
 
-        NodeDescriptor participants
-                = archetype.getNodeDescriptor("participants");
-        ChainedNodeFilter filter = new ChainedNodeFilter();
-        filter.add(context.getDefaultNodeFilter());
-        filter.add(new NamedNodeFilter("participants"));
-        List<NodeDescriptor> nodes = FilterHelper.filter(null, filter,
-                                                         archetype);
+    /**
+     * Creates a column model for a list of archetypes. The first column is the
+     * archetype, the last column the archetype description. The middle columns
+     * are the nodes common to all the archetypes.
+     *
+     * @param archetypes the archetypes
+     * @param context    the layout context
+     * @return a new column model
+     */
+    private static TableColumnModel createColumnModel(
+            List<ArchetypeDescriptor> archetypes, LayoutContext context) {
         TableColumnModel columns = new DefaultTableColumnModel();
 
-        String[] range = participants.getArchetypeRange();
-        for (int i = 0; i < range.length; ++i) {
-            String shortName = range[i];
-            if (!shortName.equals("participation.author")) {
-                TableColumn column = new ParticipantTableColumn(
-                        shortName, participants, NEXT_INDEX + i);
-                columns.addColumn(column);
+        columns.addColumn(new TableColumn(ARCHETYPE_INDEX));
+
+        List<NodeDescriptor> common = null;
+        for (ArchetypeDescriptor archetype : archetypes) {
+            List<NodeDescriptor> nodes = archetype.getAllNodeDescriptors();
+            if (common == null) {
+                common = nodes;
+            } else {
+                common = getIntersection(common, nodes);
             }
         }
-        DescriptorTableModel.create(nodes, columns);
+
+        addColumns(columns, common, context);
+        columns.addColumn(new TableColumn(DESCRIPTION_INDEX));
         return columns;
     }
 
@@ -123,7 +149,8 @@ public class ActItemTableModel extends DescriptorTableModel {
                 ArchetypeDescriptor archetype
                         = DescriptorHelper.getArchetypeDescriptor(child);
                 NodeDescriptor entity = archetype.getNodeDescriptor("entity");
-                result = getFactory().create(child, entity);
+                ReadOnlyProperty property = new ReadOnlyProperty(child, entity);
+                result = getFactory().create(property, child);
             } else {
                 Label label = LabelFactory.create();
                 label.setText("No " + col.getHeaderValue());
@@ -149,6 +176,73 @@ public class ActItemTableModel extends DescriptorTableModel {
             if (IMObjectHelper.isA(object, shortName)) {
                 result = object;
                 break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Adds columns to a column model. Any "participant" descriptor is treated
+     * specicially: the participants archetypes referred to by the descriptor
+     * are displayed first (except "participation.author" which is never
+     * displayed).
+     *
+     * @param columns     the column model
+     * @param descriptors the column descriptors
+     * @param context     the layout context
+     * @return the column model
+     */
+    private static TableColumnModel addColumns(
+            TableColumnModel columns,
+            List<NodeDescriptor> descriptors,
+            LayoutContext context) {
+
+        NodeDescriptor participants = null;
+        for (NodeDescriptor decscriptor : descriptors) {
+            if (decscriptor.getName().equals("participants")) {
+                participants = decscriptor;
+                break;
+            }
+        }
+        List<NodeDescriptor> nodes;
+        if (participants == null) {
+            nodes = FilterHelper.filter(null, context.getDefaultNodeFilter(),
+                                        descriptors);
+        } else {
+            ChainedNodeFilter filter = new ChainedNodeFilter();
+            filter.add(context.getDefaultNodeFilter());
+            filter.add(new NamedNodeFilter("participants"));
+            nodes = FilterHelper.filter(null, filter, descriptors);
+            String[] range = participants.getArchetypeRange();
+            for (int i = 0; i < range.length; ++i) {
+                String shortName = range[i];
+                if (!shortName.equals("participation.author")) {
+                    TableColumn column = new ParticipantTableColumn(
+                            shortName, participants, NEXT_INDEX + i);
+                    columns.addColumn(column);
+                }
+            }
+        }
+        DescriptorTableModel.create(nodes, columns);
+        return columns;
+    }
+
+    /**
+     * Helper to return the intersection of two lists of node descriptors.
+     *
+     * @param first  the first list of nodes
+     * @param second the second list of nodes
+     * @return the intersection of the two lists
+     */
+    private static List<NodeDescriptor> getIntersection(
+            List<NodeDescriptor> first, List<NodeDescriptor> second) {
+        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
+        for (NodeDescriptor a : first) {
+            for (NodeDescriptor b : second) {
+                if (a.getName().equals(b.getName())) {
+                    result.add(a);
+                    break;
+                }
             }
         }
         return result;

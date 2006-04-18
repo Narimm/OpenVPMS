@@ -195,7 +195,16 @@ public class ActTableModel extends DefaultIMObjectTableModel {
         BigDecimal amount;
         Boolean credit;
 
-        amount = (BigDecimal) IMObjectHelper.getValue(act, archetype, "amount");
+        // @todo workaround for OVPMS-228
+        Object value = IMObjectHelper.getValue(act, archetype, "amount");
+        if (value instanceof BigDecimal) {
+            amount = (BigDecimal) value;
+        } else if (value instanceof String) {
+            amount = new BigDecimal((String) value);
+        } else {
+            amount = BigDecimal.ZERO;
+        }
+
         credit = (Boolean) IMObjectHelper.getValue(act, archetype, "credit");
         if (amount != null) {
             if (Boolean.TRUE.equals(credit)) {

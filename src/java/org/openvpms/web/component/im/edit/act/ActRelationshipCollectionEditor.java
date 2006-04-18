@@ -34,9 +34,10 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -68,27 +69,24 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     private Map<Act, ActRelationship> _acts;
 
     /**
-     * The act item archetype.
+     * The relationship short name.
      */
-    private final ArchetypeDescriptor _actItemDescriptor;
+    private final String _relationshipType;
 
 
     /**
      * Construct a new <code>ActRelationshipCollectionEditor</code>.
      *
+     * @param property   the collection property
      * @param act        the parent act
-     * @param descriptor the node descriptor
      * @param context    the layout context
      */
-    public ActRelationshipCollectionEditor(Act act, NodeDescriptor descriptor,
-                                           LayoutContext context) {
-        super(act, descriptor, context);
-        String relationshipType = descriptor.getArchetypeRange()[0];
-        ArchetypeDescriptor relationship
-                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
-        NodeDescriptor target = relationship.getNodeDescriptor("target");
-        String itemType = target.getArchetypeRange()[0];
-        _actItemDescriptor = DescriptorHelper.getArchetypeDescriptor(itemType);
+    public ActRelationshipCollectionEditor(CollectionProperty property,
+                                           Act act, LayoutContext context) {
+        super(property, act, context);
+        // @todo - no support for multiple relationship archetypes
+        NodeDescriptor descriptor = property.getDescriptor();
+       _relationshipType = descriptor.getArchetypeRange()[0];
     }
 
     /**
@@ -110,9 +108,12 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     protected boolean save(IMObjectEditor editor) {
         Act act = (Act) editor.getObject();
         boolean saved = false;
-        IMObjectReference product = ((ActItemEditor) editor).getProduct();
-        if (IMObjectHelper.isA(product, "product.template")) {
-            saved = expandTemplate(act, product);
+        if (editor instanceof ActItemEditor
+            && hasProductTemplate((ActItemEditor) editor)) {
+            IMObjectReference product = ((ActItemEditor) editor).getProduct();
+            if (IMObjectHelper.isA(product, "product.template")) {
+                saved = expandTemplate(act, product);
+            }
         } else if (super.save(editor)) {
             ActRelationship relationship = _acts.get(act);
             if (relationship.isNew()) {
@@ -144,6 +145,19 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     }
 
     /**
+     * Returns the range of archetypes that this may create.
+     *
+     * @return the range of archetypes that this may create
+     */
+    @Override
+    protected String[] getArchetypeRange() {
+        ArchetypeDescriptor relationship
+                = DescriptorHelper.getArchetypeDescriptor(_relationshipType);
+        NodeDescriptor target = relationship.getNodeDescriptor("target");
+        return target.getArchetypeRange();
+    }
+
+    /**
      * Create a new table model.
      *
      * @param context the layout context
@@ -153,7 +167,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     protected IMObjectTableModel createTableModel(LayoutContext context) {
         DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
         readOnly.setComponentFactory(new TableComponentFactory(context));
-        return new ActItemTableModel(_actItemDescriptor, readOnly);
+        return new ActItemTableModel(getArchetypeRange(), readOnly);
     }
 
     /**
@@ -164,10 +178,12 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     @Override
     protected void edit(final IMObject object) {
         if (object.isNew()) {
-            ActRelationship relationship = (ActRelationship) object;
+            // Create a relationship for new acts.
+            Act act = (Act) object;
 
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            Act act = (Act) service.create(_actItemDescriptor.getShortName());
+            ActRelationship relationship = (ActRelationship) service.create(
+                    _relationshipType);
             _acts.put(act, relationship);
             super.edit(act);
         } else {
@@ -284,6 +300,17 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
         relationship.setTarget(act.getObjectReference());
         NodeDescriptor descriptor = getDescriptor();
         return SaveHelper.save(relationship, parent, descriptor);
+    }
+
+    /**
+     * Helper to determine if an editor has a template product that needs
+     * expanding.
+     *
+     * @param editor the editor
+     */
+    private boolean hasProductTemplate(ActItemEditor editor) {
+        IMObjectReference product = editor.getProduct();
+        return IMObjectHelper.isA(product, "product.template");
     }
 
     private class ActItemCopyHandler extends ActCopyHandler {

@@ -21,9 +21,7 @@ package org.openvpms.web.component.im.edit;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -42,7 +40,10 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -54,7 +55,6 @@ import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
-import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -97,6 +97,11 @@ public abstract class AbstractIMObjectEditor
      * The change tracker.
      */
     private ModifiableSet _modifiable;
+
+    /**
+     * The object properties.
+     */
+    private PropertySet _properties;
 
     /**
      * Lookup fields. These may beed to be refreshed.
@@ -167,7 +172,8 @@ public abstract class AbstractIMObjectEditor
         }
 
         _archetype = DescriptorHelper.getArchetypeDescriptor(object);
-        _modifiable = new ModifiableSet();
+        _properties = new PropertySet(object, _archetype);
+        _modifiable = new ModifiableSet(object, _properties);
         IMObjectComponentFactory factory
                 = new ComponentFactory(_context, _modifiable);
         _context.setComponentFactory(factory);
@@ -503,7 +509,8 @@ public abstract class AbstractIMObjectEditor
      */
     protected IMObjectView createView(IMObject object) {
         IMObjectLayoutStrategy layout = createLayoutStrategy();
-        IMObjectView view = new AbstractIMObjectView(object, layout) {
+        IMObjectView view;
+        view = new AbstractIMObjectView(object, _properties, layout) {
             @Override
             protected Component createComponent() {
                 _lookups.clear();
@@ -568,10 +575,9 @@ public abstract class AbstractIMObjectEditor
             IArchetypeService service = ServiceHelper.getArchetypeService();
             service.deriveValues(getObject());
 
-            Set<ModifiableProperty> properties = getProperties();
-            for (ModifiableProperty property : properties) {
-                if (modified != property && property.getDescriptor().isDerived())
-                {
+            for (Property property : _properties.getProperties()) {
+                if (modified != property
+                    && property.getDescriptor().isDerived()) {
                     property.refresh();
                 }
             }
@@ -616,47 +622,14 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Helper to return a property, given its descriptor's name. If the property
-     * has been rendered, then that will be returned, otherwise an instance will
-     * be created.
+     * Helper to return a property, given its descriptor's name.
      *
      * @param name the descriptor's name
      * @return the property corresponding to <code>name</code> or
      *         <code>null</code> if none exists
      */
-    protected ModifiableProperty getProperty(String name) {
-        ModifiableProperty result = null;
-        for (Modifiable modifiable : _modifiable.getModifiable()) {
-            if (modifiable instanceof ModifiableProperty) {
-                ModifiableProperty property = (ModifiableProperty) modifiable;
-                if (property.getDescriptor().getName().equals(name)) {
-                    result = property;
-                    break;
-                }
-            }
-        }
-        if (result == null) {
-            NodeDescriptor descriptor = getDescriptor(name);
-            if (descriptor != null) {
-                result = new ModifiableProperty(getObject(), descriptor);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns all of the properties associatged with this editor.
-     *
-     * @return the properties associated with the editor.
-     */
-    protected Set<ModifiableProperty> getProperties() {
-        Set<ModifiableProperty> result = new HashSet<ModifiableProperty>();
-        for (Modifiable modifiable : _modifiable.getModifiable()) {
-            if (modifiable instanceof ModifiableProperty) {
-                result.add((ModifiableProperty) modifiable);
-            }
-        }
-        return result;
+    protected Property getProperty(String name) {
+        return _properties.get(name);
     }
 
 
@@ -674,16 +647,16 @@ public abstract class AbstractIMObjectEditor
         }
 
         /**
-         * Returns a component to edit a lookup node.
+         * Returns a component to edit a lookup property.
          *
-         * @param object     the parent object
-         * @param descriptor the node descriptor
-         * @return a component to edit the node
+         * @param property the lookup property
+         * @param context  the parent object
+         * @return a component to edit the property
          */
         @Override
-        protected Component getSelectEditor(IMObject object,
-                                            NodeDescriptor descriptor) {
-            Component editor = super.getSelectEditor(object, descriptor);
+        protected Component getSelectEditor(Property property,
+                                            IMObject context) {
+            Component editor = super.getSelectEditor(property, context);
             SelectField lookup = (SelectField) editor;
             lookup.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {

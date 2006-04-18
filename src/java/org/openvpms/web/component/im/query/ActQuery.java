@@ -42,6 +42,8 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.system.common.query.ArchetypeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -77,9 +79,9 @@ public class ActQuery extends AbstractQuery {
     private SelectField _statusSelector;
 
     /**
-     * The selected status.
+     * The statuses to query on.
      */
-    private String _status;
+    private String[] _statuses;
 
     /**
      * The act status lookups.
@@ -169,12 +171,14 @@ public class ActQuery extends AbstractQuery {
             _statusLookups = statusLookups;
         }
         _selectType = false;
+        _statuses = new String[0];
     }
 
     /**
      * Construct a new <code>ActQuery</code> to query acts for a specific
      * status.
      *
+     * @param entity      the entity to search for
      * @param entityName  the act entity name
      * @param conceptName the act concept name
      * @param status      the act status
@@ -183,7 +187,24 @@ public class ActQuery extends AbstractQuery {
                     String status) {
         super(null, entityName, conceptName);
         setEntity(entity);
-        _status = status;
+        _statuses = new String[]{status};
+        _statusLookups = null;
+        _excludeStatus = null;
+        _selectType = true;
+    }
+
+    /**
+     * Construct a new  <code>ActQuery</code>.
+     *
+     * @param entity     the entity to search for
+     * @param shortNames the act short names
+     * @param statuses   the act statuses to search on. May be
+     *                   <code>empty</code>
+     */
+    public ActQuery(Entity entity, String[] shortNames, String[] statuses) {
+        super(shortNames);
+        setEntity(entity);
+        _statuses = statuses;
         _statusLookups = null;
         _excludeStatus = null;
         _selectType = true;
@@ -221,37 +242,36 @@ public class ActQuery extends AbstractQuery {
     public ResultSet query(int rows, String node, boolean ascending) {
         ResultSet<Act> result = null;
 
-        String type = getShortName();
-        String entityName;
-        String conceptName;
-        if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            entityName = getEntityName();
-            conceptName = getConceptName();
-        } else {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(type);
-            ArchetypeId id = new ArchetypeId(archetype.getName());
-            entityName = id.getEntityName();
-            conceptName = id.getConcept();
-        }
-
         if (_entityId != null) {
+            ArchetypeConstraint archetypes;
+            String type = getShortName();
+
+            if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
+                archetypes = getArchetypeConstraint();
+            } else {
+                ArchetypeDescriptor archetype
+                        = DescriptorHelper.getArchetypeDescriptor(type);
+                ArchetypeId id = new ArchetypeId(archetype.getName());
+                archetypes = new ArchetypeLongNameConstraint(
+                        null, id.getEntityName(), id.getConcept(), true, true);
+            }
+
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
             SortOrder order = null;
             if (node != null) {
                 order = new SortOrder(node, ascending);
             }
-            String status;
+            String[] statuses;
             boolean exclude = false;
-            if (_excludeStatus != null && _status == null) {
-                status = _excludeStatus;
+            if (_excludeStatus != null) {
+                statuses = new String[]{_excludeStatus};
                 exclude = true;
             } else {
-                status = _status;
+                statuses = _statuses;
             }
-            result = new ActResultSet(_entityId, entityName, conceptName,
-                                      startFrom, startTo, status, exclude, rows,
+            result = new ActResultSet(_entityId, archetypes, startFrom,
+                                      startTo, statuses, exclude, rows,
                                       order);
         }
         return result;
@@ -323,7 +343,8 @@ public class ActQuery extends AbstractQuery {
      * Invoked when a status is selected.
      */
     private void onStatusChanged() {
-        _status = (String) _statusSelector.getSelectedItem();
+        String value = (String) _statusSelector.getSelectedItem();
+        _statuses = new String[]{value};
     }
 
     /**

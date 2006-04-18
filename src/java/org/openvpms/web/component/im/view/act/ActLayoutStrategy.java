@@ -37,9 +37,12 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.edit.Property;
 
 
 /**
@@ -72,23 +75,26 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         _editor = editor;
     }
 
+
     /**
-     * Lays out each child component in a group box.
+     * Lays out each child component in a group box
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param container   the container to use
-     * @param context
+     * @param context     the layout context
      */
     @Override
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
-                                   Component container,
+                                   PropertySet properties, Component container,
                                    LayoutContext context) {
         Grid grid = GridFactory.create(4);
         IMObjectComponentFactory factory = context.getComponentFactory();
         for (NodeDescriptor descriptor : descriptors) {
-            Component component = factory.create(object, descriptor);
+            Property property = properties.get(descriptor);
+            Component component = factory.create(property, object);
             add(grid, descriptor.getDisplayName(), component, context);
         }
 
@@ -97,22 +103,24 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(object);
         NodeDescriptor items = archetype.getNodeDescriptor("items");
-        GroupBox box = new GroupBox();
-        box.setTitle(items.getDisplayName());
+        if (items != null) {
+            GroupBox box = new GroupBox();
+            box.setTitle(items.getDisplayName());
 
-        if (_editor != null) {
-            box.add(_editor.getComponent());
-        } else {
-            IMObjectLayoutStrategy strategy
-                    = new ActRelationshipTableLayoutStrategy(items);
+            if (_editor != null) {
+                box.add(_editor.getComponent());
+            } else {
+                IMObjectLayoutStrategy strategy
+                        = new ActRelationshipTableLayoutStrategy(items);
 
-            context = new DefaultLayoutContext(context);
-            context.setComponentFactory(new TableComponentFactory(context));
+                context = new DefaultLayoutContext(context);
+                context.setComponentFactory(new TableComponentFactory(context));
 
-            Component child = strategy.apply(object, context);
-            box.add(child);
+                Component child = strategy.apply(object, properties, context);
+                box.add(child);
+            }
+            container.add(box);
         }
-        container.add(box);
     }
 
     /**
@@ -129,22 +137,30 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Helper to create a component for a node desciprotr.
+     * Creates a component for a property.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
-     * @param context    the layout context
+     * @param property the property
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a component to display <code>property</code>
      */
     @Override
-    protected Component createComponent(IMObject parent,
-                                        NodeDescriptor descriptor,
+    protected Component createComponent(Property property, IMObject parent, 
                                         LayoutContext context) {
-        Component component = super.createComponent(parent, descriptor,
+        Component component = super.createComponent(property, parent,
                                                     context);
-        String name = descriptor.getName();
+        String name = property.getDescriptor().getName();
         if (name.equals("lowTotal") || name.equals("highTotal")
             || name.equals("amount")) {
             // @todo - workaround for OVPMS-211
+
+            if (IMObjectHelper.isA(parent, "act.customerAccountPayment*",
+                                   "act.customerAccountRefund*")
+                && !(IMObjectHelper.isA(parent, "act.customerAccountPayment",
+                                        "Act.customerAccountRefund"))) {
+                // need to exclude act item amounts
+                return component;
+            }
             component.setEnabled(false);
             component.setFocusTraversalParticipant(false);
             if (component instanceof TextComponent) {

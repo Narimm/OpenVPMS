@@ -26,6 +26,7 @@ import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.PropertySet;
 
 
 /**
@@ -43,23 +44,26 @@ public class SinglePageLayoutStrategy extends AbstractLayoutStrategy {
     public SinglePageLayoutStrategy() {
     }
 
+
     /**
      * Lays out each child component in a group box.
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param container   the container to use
-     * @param context
+     * @param context     the layout context
      */
+    @Override
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
-                                   Component container,
+                                   PropertySet properties, Component container,
                                    LayoutContext context) {
         for (NodeDescriptor node : descriptors) {
             GroupBox box = new GroupBox(node.getDisplayName());
             Collection values = (Collection) node.getValue(object);
             for (Object value : values) {
-                doLayout((IMObject) value, box, context);
+                doLayout((IMObject) value, properties, box, context);
             }
             container.add(box);
         }

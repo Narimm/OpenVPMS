@@ -115,4 +115,11 @@ public class ReadOnlyProperty extends IMObjectProperty {
     public boolean isValid() {
         return true;
     }
+
+    /**
+     * Notify any listeners that they need to refresh.
+     */
+    public void refresh() {
+        // no-op
+    }
 }

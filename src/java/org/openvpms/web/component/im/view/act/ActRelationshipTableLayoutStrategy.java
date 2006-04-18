@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.table.act.ActItemTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -52,9 +53,10 @@ import org.openvpms.web.spring.ServiceHelper;
 public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * The act item archetype.
+     * The act short names.
      */
-    private final ArchetypeDescriptor _actDescriptor;
+    private final String[] _shortNames;
+
 
     /**
      * Construct a new <code>ActRelationshipTableLayoutStrategy</code>.
@@ -66,8 +68,7 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
         ArchetypeDescriptor relationship
                 = DescriptorHelper.getArchetypeDescriptor(relationshipType);
         NodeDescriptor target = relationship.getNodeDescriptor("target");
-        String itemType = target.getArchetypeRange()[0];
-        _actDescriptor = DescriptorHelper.getArchetypeDescriptor(itemType);
+        _shortNames = target.getArchetypeRange();
     }
 
     /**
@@ -77,12 +78,12 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
      * create the child components.
      *
      * @param object  the object to apply
+     * @param properties
      * @param context the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, LayoutContext context) {
-        IMObjectTableModel model = new ActItemTableModel(_actDescriptor,
-                                                         context);
+    public Component apply(IMObject object, PropertySet properties, LayoutContext context) {
+        IMObjectTableModel model = new ActItemTableModel(_shortNames, context);
         Act act = (Act) object;
         List<IMObject> acts = getActs(act);
         ResultSet set = new PreloadedResultSet<IMObject>(acts, 25);

@@ -92,6 +92,17 @@ abstract class ActCRUDWindow extends CRUDWindow {
     }
 
     /**
+     * Create a new <code>ActCRUDWindow</code>.
+     *
+     * @param type       display name for the types of objects that this may
+     *                   create
+     * @param shortNames the short names of archetypes that this may create
+     */
+    public ActCRUDWindow(String type, String[] shortNames) {
+        super(type, shortNames);
+    }
+
+    /**
      * Determines if an act can be edited.
      *
      * @param act the act
