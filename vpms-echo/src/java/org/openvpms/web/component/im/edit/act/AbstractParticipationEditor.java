@@ -25,8 +25,8 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -60,10 +60,8 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
                                        NodeDescriptor descriptor,
                                        LayoutContext context) {
         super(participation, parent, descriptor, context);
-        NodeDescriptor entityNode = getDescriptor("entity");
-        Property property = new ModifiableProperty(participation, entityNode);
-        _editor = createObjectReferenceEditor(property, entityNode);
-        getModifiableSet().add(participation, property);
+        Property property = getProperty("entity");
+        _editor = createObjectReferenceEditor(property);
     }
 
     /**
@@ -96,13 +94,11 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      * Creates a new object reference editor.
      *
      * @param property   the reference property
-     * @param descriptor the reference descriptor
      * @return a new object reference editor
      */
     protected ObjectReferenceEditor createObjectReferenceEditor(
-            Property property, NodeDescriptor descriptor) {
-        return new ObjectReferenceEditor(property, descriptor,
-                                         getLayoutContext());
+            Property property) {
+        return new ObjectReferenceEditor(property, getLayoutContext());
     }
 
     /**
@@ -123,7 +119,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
             public Component apply(IMObject object,
-                                   LayoutContext context) {
+                                   PropertySet properties, LayoutContext context) {
                 return _editor.getComponent();
             }
         };

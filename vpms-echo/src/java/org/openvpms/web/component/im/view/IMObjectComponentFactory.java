@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Property;
 
 
 /**
@@ -33,13 +34,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public interface IMObjectComponentFactory {
 
     /**
-     * Create a component to display an object.
+     * Create a component to display a property.
      *
+     * @param property   the property to display
      * @param context    the context object
-     * @param descriptor the object's descriptor
      * @return a component to display <code>object</code>
      */
-    Component create(IMObject context, NodeDescriptor descriptor);
+    Component create(Property property, IMObject context);
 
     /**
      * Create a component to display an object.

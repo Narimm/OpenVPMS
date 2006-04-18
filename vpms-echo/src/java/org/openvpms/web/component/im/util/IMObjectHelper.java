@@ -73,16 +73,34 @@ public class IMObjectHelper {
     }
 
     /**
-     * Determines if a object is an instance of a particular archetype.
+     * Determines if an object is an instance of a particular archetype.
      *
      * @param object    the object. May be <code>null</code>
-     * @param shortName the archetype short name
+     * @param shortName the archetype short name. May contain wildcards
      * @return <code>true</code> if object is an instance of
      *         <code>shortName</code>
      */
     public static boolean isA(IMObject object, String shortName) {
         if (object != null) {
-            return object.getArchetypeId().getShortName().equals(shortName);
+            return DescriptorHelper.matches(object.getArchetypeId(), shortName);
+        }
+        return false;
+    }
+
+    /**
+     * Determines if an object is one of a set of archetypes.
+     *
+     * @param object the object. May be <code>null</code>
+     * @param shortNames the archetype short names. May contain wildcards
+     * @return <code>true</code> if object is one of <code>shortNames</code>
+     */
+    public static boolean isA(IMObject object, String ... shortNames) {
+        if (object != null) {
+            for (String shortName : shortNames) {
+                if (isA(object, shortName)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -92,13 +110,14 @@ public class IMObjectHelper {
      * archetype.
      *
      * @param reference the object. May be <code>null</code>
-     * @param shortName the archetype short name
+     * @param shortName the archetype short name. May contain wildcards
      * @return <code>true</code> if the reference refers to an instance of
      *         <code>shortName</code>
      */
     public static boolean isA(IMObjectReference reference, String shortName) {
         if (reference != null) {
-            return reference.getArchetypeId().getShortName().equals(shortName);
+            return DescriptorHelper.matches(reference.getArchetypeId(),
+                                            shortName);
         }
         return false;
     }

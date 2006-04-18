@@ -53,6 +53,19 @@ public class ModifiableSet implements Modifiable {
     private final Map<IMObject, HashSet<Modifiable>> _objects
             = new HashMap<IMObject, HashSet<Modifiable>>();
 
+    /**
+     * Construct a new <code>ModifiableSet</code>.
+     *
+     * @param object the object
+     * @param properties the object's properties
+     */
+    public ModifiableSet(IMObject object, PropertySet properties) {
+        for (Property property : properties.getProperties()) {
+             if (property instanceof Modifiable) {
+                 add(object, (Modifiable) property);
+             }
+        }
+    }
 
     /**
      * Add a modifiable object.

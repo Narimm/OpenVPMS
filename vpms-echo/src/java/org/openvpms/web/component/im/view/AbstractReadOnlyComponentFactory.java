@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.view;
 
-import java.util.Date;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 
@@ -28,11 +26,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.ReadOnlyProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
 
 
 /**
@@ -55,31 +50,32 @@ public abstract class AbstractReadOnlyComponentFactory
     }
 
     /**
-     * Create a component to display the an object.
+     * Create a component to display a property.
      *
-     * @param context    the context object
-     * @param descriptor the object's descriptor
+     * @param property the property to display
+     * @param context  the context object
      * @return a component to display <code>object</code>
      */
-    public Component create(IMObject context, NodeDescriptor descriptor) {
+    public Component create(Property property, IMObject context) {
         Component result;
         boolean enable = false;
+        NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isLookup()) {
-            result = getLookup(context, descriptor);
+            result = getLookup(property);
         } else if (descriptor.isBoolean()) {
-            result = getBoolean(context, descriptor);
+            result = getBoolean(property);
         } else if (descriptor.isString()) {
-            result = getTextComponent(context, descriptor);
+            result = getTextComponent(property);
         } else if (descriptor.isNumeric()) {
-            result = getNumber(context, descriptor);
+            result = getNumber(property);
         } else if (descriptor.isDate()) {
-            result = getDate(context, descriptor);
+            result = getDate(property);
         } else if (descriptor.isCollection()) {
-            result = getCollectionViewer(context, descriptor);
+            result = getCollectionViewer((CollectionProperty) property, context);
             // need to enable this otherwise table selection is disabled
             enable = true;
         } else if (descriptor.isObjectReference()) {
-            result = getObjectViewer(context, descriptor);
+            result = getObjectViewer(property);
             // need to enable this for hyperlinks to work
             enable = true;
         } else {
@@ -91,7 +87,6 @@ public abstract class AbstractReadOnlyComponentFactory
         result.setFocusTraversalParticipant(false);
         return result;
     }
-
 
     /**
      * Create a component to display an object.
@@ -108,80 +103,46 @@ public abstract class AbstractReadOnlyComponentFactory
     }
 
     /**
-     * Helper to return a property given its descriptor.
+     * Returns a component to display a lookup property.
      *
-     * @param object     the object that owns the property
-     * @param descriptor the property's descriptor
-     * @return the property corresponding to <code>descriptor</code>.
+     * @param property the lookup property
+     * @return a component to display the property
      */
-    protected Property getProperty(IMObject object, NodeDescriptor descriptor) {
-        return new ReadOnlyProperty(object, descriptor);
+    protected abstract Component getLookup(Property property);
+
+    /**
+     * Returns a component to display a boolean property.
+     *
+     * @param property the boolean property
+     * @return a componnet to display the property
+     */
+    protected Component getBoolean(Property property) {
+        return getCheckBox(property);
     }
 
     /**
-     * Helper to return a collection property given its descriptor.
+     * Returns a component to display a number property.
      *
-     * @param object     the object that owns the property
-     * @param descriptor the property's descriptor
-     * @return the property corresponding to <code>descriptor</code>.
+     * @param property the number property
+     * @return a component to display the property
      */
-    protected CollectionProperty getCollectionProperty(
-            IMObject object, NodeDescriptor descriptor) {
-        return new ReadOnlyProperty(object, descriptor);
-    }
+    protected abstract Component getNumber(Property property);
 
     /**
-     * Returns a component to display a lookup.
+     * Returns a component to display a date property.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a component to display the lookup
+     * @param property the date property
+     * @return a component to display the property
      */
-    protected abstract Component getLookup(IMObject context,
-                                           NodeDescriptor descriptor);
+    protected abstract Component getDate(Property property);
 
     /**
-     * Returns a component to display a boolean.
+     * Returns a viewer for an object reference.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a componnet to display the boolean
+     * @param property the object reference property
+     * @return an component to display the object reference.
      */
-    protected Component getBoolean(IMObject context,
-                                   NodeDescriptor descriptor) {
-        return getCheckBox(context, descriptor);
-    }
-
-    /**
-     * Returns a component to display a number.
-     *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a component to display the datge
-     */
-    protected abstract Component getNumber(IMObject context,
-                                           NodeDescriptor descriptor);
-
-    /**
-     * Returns a component to display a date.
-     *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return a component to display the datge
-     */
-    protected abstract Component getDate(IMObject context,
-                                         NodeDescriptor descriptor);
-
-    /**
-     * Returns a viewer for an object.
-     *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
-     * @return an component to display the object.
-     */
-    protected Component getObjectViewer(IMObject parent,
-                                        NodeDescriptor descriptor) {
-        Property property = getProperty(parent, descriptor);
+    protected Component getObjectViewer(Property property) {
         IMObjectReference ref = (IMObjectReference) property.getValue();
         boolean link = true;
         if (getLayoutContext().isEdit()) {
@@ -194,46 +155,12 @@ public abstract class AbstractReadOnlyComponentFactory
     /**
      * Returns a component to display a collection.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
+     * @param parent the parent object
      * @return a collection to display the node
      */
-    protected Component getCollectionViewer(IMObject parent,
-                                            NodeDescriptor descriptor) {
-        return new CollectionViewer(parent, descriptor);
-    }
-
-    /**
-     * Helper to convert a numeric property to string.
-     *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return the string value of the property associated with
-     *         <code>descriptor</code>
-     */
-    protected String getNumericValue(IMObject context,
-                                     NodeDescriptor descriptor) {
-        Property property = getProperty(context, descriptor);
-        Number value = (Number) property.getValue();
-        if (value != null) {
-            return NumberFormatter.format(value, descriptor, false);
-        }
-        return null;
-    }
-
-    /**
-     * Helper to convert a date value to a string.
-     *
-     * @param context    the context object
-     * @param descriptor the node descriptor
-     * @return the string value of the property associated with
-     *         <code>descriptor</code>
-     */
-    protected String getDateValue(IMObject context,
-                                  NodeDescriptor descriptor) {
-        Property property = getProperty(context, descriptor);
-        Date value = (Date) property.getValue();
-        return (value != null) ? DateFormatter.format(value, false) : null;
+    protected Component getCollectionViewer(CollectionProperty property,
+                                            IMObject parent) {
+        return new CollectionViewer(property, parent);
     }
 
 }

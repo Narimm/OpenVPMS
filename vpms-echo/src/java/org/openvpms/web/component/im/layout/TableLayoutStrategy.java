@@ -35,6 +35,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.edit.Property;
 
 
 /**
@@ -66,11 +68,14 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
      * This renders an object in a <code>Component</code>, using a factory to
      * create the child components.
      *
-     * @param object  the object
-     * @param context
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, LayoutContext context) {
+    @Override
+    public Component apply(IMObject object, PropertySet properties,
+                           LayoutContext context) {
         String[] range = _descriptor.getArchetypeRange();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(range[0]);
@@ -90,20 +95,22 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
         for (int i = 0; i < filtered.size(); ++i) {
             columns.addColumn(new TableColumn(i));
         }
-        DefaultPageableSortableTableModel model = new DefaultPageableSortableTableModel(columns);
+        DefaultPageableSortableTableModel model
+                = new DefaultPageableSortableTableModel(columns);
         for (int i = 0; i < filtered.size(); ++i) {
             NodeDescriptor node = filtered.get(i);
             model.setColumnName(i, node.getDisplayName());
         }
         Collection values = (Collection) _descriptor.getValue(object);
         PageableSortableTable table = new PageableSortableTable(model, columns);
-        populate(model, values, filtered, context);
+        populate(model, values, filtered, properties, context);
         return table;
     }
 
     protected void populate(DefaultPageableSortableTableModel table,
                             Collection values,
                             List<NodeDescriptor> descriptors,
+                            PropertySet properties,
                             LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
         int row = 0;
@@ -111,7 +118,8 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
             IMObject object = (IMObject) value;
             int column = 0;
             for (NodeDescriptor descriptor : descriptors) {
-                Component c = factory.create(object, descriptor);
+                Property property = properties.get(descriptor);
+                Component c = factory.create(property, object);
                 table.setValueAt(c, column, row);
                 ++column;
             }

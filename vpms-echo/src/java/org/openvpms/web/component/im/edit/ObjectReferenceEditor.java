@@ -57,11 +57,6 @@ public class ObjectReferenceEditor {
     private Property _property;
 
     /**
-     * The node descriptor.
-     */
-    private NodeDescriptor _descriptor;
-
-    /**
      * The selector.
      */
     private Selector _selector;
@@ -71,26 +66,22 @@ public class ObjectReferenceEditor {
      * Construct a new <code>ObjectReferenceEditor</code>.
      *
      * @param property   the reference property
-     * @param descriptor the reference descriptor
      * @param context    the layout context
      */
-    public ObjectReferenceEditor(Property property, NodeDescriptor descriptor,
-                                 LayoutContext context) {
-        this(property, descriptor, false, context);
+    public ObjectReferenceEditor(Property property, LayoutContext context) {
+        this(property, false, context);
     }
 
     /**
      * Construct a new <code>ObjectReferenceEditor</code>.
      *
      * @param property   the reference property
-     * @param descriptor the reference descriptor
      * @param readOnly   if <code>true</code> the reference cannot be edited
      * @param context    the layout context
      */
-    public ObjectReferenceEditor(Property property, NodeDescriptor descriptor,
-                                 boolean readOnly, LayoutContext context) {
+    public ObjectReferenceEditor(Property property, boolean readOnly,
+                                 LayoutContext context) {
         _property = property;
-        _descriptor = descriptor;
 
         if (readOnly) {
             _selector = new Selector(Selector.ButtonStyle.HIDE);
@@ -108,6 +99,7 @@ public class ObjectReferenceEditor {
         _selector.setFormat(Selector.Format.NAME);
         IMObjectReference reference = (IMObjectReference) _property.getValue();
         if (reference != null) {
+            NodeDescriptor descriptor = property.getDescriptor();
             _selector.setObject(getObject(reference, descriptor));
         }
     }
@@ -130,7 +122,7 @@ public class ObjectReferenceEditor {
      * @return the display name
      */
     public String getDisplayName() {
-        return _descriptor.getDisplayName();
+        return _property.getDescriptor().getDisplayName();
     }
 
     /**
@@ -148,7 +140,7 @@ public class ObjectReferenceEditor {
      * @return the object reference's descriptor
      */
     public NodeDescriptor getDescriptor() {
-        return _descriptor;
+        return _property.getDescriptor();
     }
 
     /**
@@ -189,7 +181,7 @@ public class ObjectReferenceEditor {
         final Browser browser = new Browser(query);
 
         String title = Messages.get("imobject.select.title",
-                                    _descriptor.getDisplayName());
+                                    _property.getDescriptor().getDisplayName());
         final BrowserDialog popup = new BrowserDialog(title, browser);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
@@ -219,7 +211,7 @@ public class ObjectReferenceEditor {
      * @return a new query
      */
     protected Query createQuery() {
-        String[] shortNames = _descriptor.getArchetypeRange();
+        String[] shortNames = getDescriptor().getArchetypeRange();
         return QueryFactory.create(shortNames);
     }
 

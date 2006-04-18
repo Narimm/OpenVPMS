@@ -29,6 +29,7 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -50,7 +51,7 @@ import org.openvpms.web.component.im.table.PagedIMObjectTable;
 public class CollectionViewer extends Column {
 
     /**
-     * The object to view.
+     * The object that owns the collection to view.
      */
     private final IMObject _object;
 
@@ -60,7 +61,7 @@ public class CollectionViewer extends Column {
     private PagedIMObjectTable _table;
 
     /**
-     * The node descriptor.
+     * The collection node descriptor.
      */
     private final NodeDescriptor _descriptor;
 
@@ -83,10 +84,10 @@ public class CollectionViewer extends Column {
     /**
      * Construct a new <code>CollectionViewer</code>.
      *
-     * @param object     the object being viewed
-     * @param descriptor the node descriptor
+     * @param property the collection to view
+     * @param parent   the parent object
      */
-    public CollectionViewer(IMObject object, NodeDescriptor descriptor) {
+    public CollectionViewer(CollectionProperty property, IMObject parent) {
         setStyleName("WideCellSpacing");
 
         _context = new DefaultLayoutContext();
@@ -97,8 +98,8 @@ public class CollectionViewer extends Column {
                 idFilter, _context.getDefaultNodeFilter());
         _context.setNodeFilter(filter);
 
-        _object = object;
-        _descriptor = descriptor;
+        _object = parent;
+        _descriptor = property.getDescriptor();
         doLayout();
     }
 

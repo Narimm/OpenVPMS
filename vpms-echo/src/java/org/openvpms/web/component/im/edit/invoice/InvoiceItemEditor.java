@@ -38,9 +38,8 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountInvoiceItem</em>,
- * <em>act.customerAccountCreditItem</em> and
- * <em>act.customerAccountCounterItem</em>.
+ * <em>act.customerAccountInvoiceItem</em>, <em>act.customerAccountCreditItem</em>
+ * or <em>act.customerAccountCounterItem</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -92,9 +91,9 @@ public class InvoiceItemEditor extends ActItemEditor {
                                         NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object, "act.customerAccountInvoiceItem")
-            || IMObjectHelper.isA(object, "act.customerAccountCreditItem")
-            || IMObjectHelper.isA(object, "act.customerAccountCounterItem")) {
+        if (IMObjectHelper.isA(object, "act.customerAccountInvoiceItem",
+                               "act.customerAccountCreditItem",
+                               "act.customerAccountCounterItem")) {
             result = new InvoiceItemEditor((Act) object, parent,
                                            descriptor, context);
         }

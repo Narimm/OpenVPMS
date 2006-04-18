@@ -30,11 +30,15 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -47,29 +51,14 @@ import org.openvpms.web.spring.ServiceHelper;
 public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject> {
 
     /**
-     * The archetype reference model name.
+     * The archetypes to query.
      */
-    private final String _refModelName;
-
-    /**
-     * the archetype entity name.
-     */
-    private final String _entityName;
-
-    /**
-     * The archetype concept name.
-     */
-    private final String _conceptName;
+    private final ArchetypeConstraint _archetypes;
 
     /**
      * The instance name.
      */
     private final String _instanceName;
-
-    /**
-     * Determines if only active records should be included.
-     */
-    private final boolean _activeOnly;
 
     /**
      * The logger.
@@ -80,27 +69,18 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
     /**
      * Construct a new <code>DefaultResultSet</code>.
      *
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
+     * @param archetypes   the archetypes to query
      * @param instanceName the instance name
-     * @param activeOnly   determines if active and/or inactive results should
-     *                     be retrieved
      * @param constraints  additional query constraints. May be
      *                     <code<null</code>
      * @param order        the sort criteria. May be <code>null</code>
      * @param rows         the maximum no. of rows per page
      */
-    public DefaultResultSet(String refModelName, String entityName,
-                            String conceptName, String instanceName,
-                            boolean activeOnly, IConstraint constraints,
-                            SortOrder order, int rows) {
+    public DefaultResultSet(ArchetypeConstraint archetypes, String instanceName,
+                            IConstraint constraints, SortOrder order, int rows) {
         super(constraints, rows, order);
-        _refModelName = refModelName;
-        _entityName = entityName;
-        _conceptName = conceptName;
+        _archetypes = archetypes;
         _instanceName = instanceName;
-        _activeOnly = activeOnly;
         if (order != null && !isValidSortNode(order.getNode())) {
             setSortOrder(null);
         }
@@ -136,9 +116,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
         IPage<IMObject> result = null;
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            ArchetypeQuery query = new ArchetypeQuery(_refModelName,
-                                                      _entityName, _conceptName,
-                                                      true, _activeOnly);
+            ArchetypeQuery query = new ArchetypeQuery(_archetypes);
             if (!StringUtils.isEmpty(_instanceName)) {
                 query.add(new NodeConstraint("name", _instanceName));
             }
@@ -187,12 +165,26 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
      * @return the archetypes matching the names
      */
     private List<ArchetypeDescriptor> getArchetypes(IArchetypeService service) {
-        List<String> shortNames = service.getArchetypeShortNames(
-                _refModelName, _entityName, _conceptName, true);
+        String[] shortNames;
+        if (_archetypes instanceof ArchetypeLongNameConstraint) {
+            ArchetypeLongNameConstraint constraint
+                    = (ArchetypeLongNameConstraint) _archetypes;
+            shortNames = DescriptorHelper.getShortNames(
+                    constraint.getRmName(), constraint.getEntityName(),
+                    constraint.getConceptName());
+        } else if (_archetypes instanceof ArchetypeShortNameConstraint) {
+            ArchetypeShortNameConstraint constraint
+                    = (ArchetypeShortNameConstraint) _archetypes;
+            shortNames = DescriptorHelper.getShortNames(
+                    constraint.getShortNames());
+        } else {
+            shortNames = new String[0];
+        }
         List<ArchetypeDescriptor> archetypes
-                = new ArrayList<ArchetypeDescriptor>(shortNames.size());
+                = new ArrayList<ArchetypeDescriptor>(shortNames.length);
         for (String shortName : shortNames) {
-            ArchetypeDescriptor archetype = service.getArchetypeDescriptor(shortName);
+            ArchetypeDescriptor archetype = service.getArchetypeDescriptor(
+                    shortName);
             if (archetype != null) {
                 archetypes.add(archetype);
             }

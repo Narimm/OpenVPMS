@@ -18,14 +18,19 @@
 
 package org.openvpms.web.component.im.view;
 
+import java.text.DateFormat;
+import java.text.Format;
+
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.text.TextComponent;
+import nextapp.echo2.app.TextField;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.component.util.TextComponentFactory;
 
 
 /**
@@ -48,42 +53,40 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
     /**
      * Returns a component to display a lookup.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
+     * @param property
      * @return a component to display the lookup
      */
-    protected Component getLookup(IMObject context, NodeDescriptor descriptor) {
-        return getTextComponent(context, descriptor);
+    protected Component getLookup(Property property) {
+        return getTextComponent(property);
     }
 
     /**
      * Returns a component to display a number.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
+     * @param property
      * @return a component to display the datge
      */
-    protected Component getNumber(IMObject context, NodeDescriptor descriptor) {
-        final int columns = 10; // @todo. should determine from descriptor.
-        TextComponent text = TextComponentFactory.create(columns);
-        text.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
-        text.setText(getNumericValue(context, descriptor));
+    protected Component getNumber(Property property) {
+        int maxColumns = 10;
+        NodeDescriptor descriptor = property.getDescriptor();
+        Format format = NumberFormatter.getFormat(descriptor, false);
+        TextField text = TextComponentFactory.create(property, maxColumns,
+                                                     format);
+        Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+        text.setAlignment(align);
         return text;
     }
 
     /**
      * Returns a component to display a date.
      *
-     * @param context    the context object
-     * @param descriptor the node descriptor
+     * @param property
      * @return a component to display the datge
      */
-    protected Component getDate(IMObject context, NodeDescriptor descriptor) {
-        String value = getDateValue(context, descriptor);
-        int columns = (value != null) ? value.length() : 10;
-        TextComponent text = TextComponentFactory.create(columns);
-        text.setText(value);
-        return text;
+    protected Component getDate(Property property) {
+        int maxColumns = 10;
+        DateFormat format = DateFormatter.getFormat(false);
+        return TextComponentFactory.create(property, maxColumns, format);
     }
 
 }

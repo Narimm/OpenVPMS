@@ -37,6 +37,7 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -298,13 +299,15 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
          * Lays out child components in a 2x2 grid.
          *
          * @param object      the parent object
-         * @param descriptors the child descriptors
+         * @param descriptors the property descriptors
+         * @param properties  the properties
          * @param container   the container to use
-         * @param context
+         * @param context     the layout context
          */
         @Override
         protected void doSimpleLayout(IMObject object,
                                       List<NodeDescriptor> descriptors,
+                                      PropertySet properties,
                                       Component container,
                                       LayoutContext context) {
             Grid grid = GridFactory.create(4);
@@ -312,7 +315,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                 add(grid, editor.getDisplayName(), editor.getComponent(),
                     context);
             }
-            doGridLayout(object, descriptors, grid, context);
+            doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
 
@@ -334,20 +337,19 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         }
 
         /**
-         * Creates a component for a node descriptor. This maintains a cache of
-         * created components, in order for the focus to be set on an
-         * appropriate component.
+         * Creates a component for a property.
          *
-         * @param parent     the parent object
-         * @param descriptor the node descriptor
-         * @param context    the layout context
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <code>property</code>
          */
         @Override
-        protected Component createComponent(IMObject parent, NodeDescriptor
-                descriptor, LayoutContext context) {
-            Component component = super.createComponent(parent, descriptor,
+        protected Component createComponent(Property property, IMObject parent, 
+                                            LayoutContext context) {
+            Component component = super.createComponent(property, parent,
                                                         context);
-            String name = descriptor.getName();
+            String name = property.getDescriptor().getName();
             if (name.equals("lowTotal") || name.equals("highTotal")
                 || name.equals("total")) {
                 // @todo - workaround for OVPMS-211

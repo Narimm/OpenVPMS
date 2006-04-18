@@ -30,8 +30,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -154,11 +154,8 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
                                               boolean readOnly,
                                               LayoutContext context) {
 
-        ModifiableProperty property
-                = new ModifiableProperty(relationship, descriptor);
-
-        getModifiableSet().add(relationship, property);
-        return new Entity(property, descriptor, readOnly, context);
+        Property property = getProperty(descriptor.getName());
+        return new Entity(property, readOnly, context);
     }
 
     /**
@@ -264,21 +261,22 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
          * Lays out child components in a 2x2 grid.
          *
          * @param object      the parent object
-         * @param descriptors the child descriptors
+         * @param descriptors the property descriptors
+         * @param properties  the properties
          * @param container   the container to use
-         * @param context
+         * @param context     the layout context
          */
         @Override
         protected void doSimpleLayout(IMObject object,
                                       List<NodeDescriptor> descriptors,
-                                      Component container,
+                                      PropertySet properties, Component container,
                                       LayoutContext context) {
             Grid grid = GridFactory.create(4);
-            add(grid, _source.getDisplayName(), _source.getComponent(), 
+            add(grid, _source.getDisplayName(), _source.getComponent(),
                 context);
             add(grid, _target.getDisplayName(), _target.getComponent(),
                 context);
-            doGridLayout(object, descriptors, grid, context);
+            doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
 
@@ -292,14 +290,13 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         /**
          * Construct a new <code>Entity</code>.
          *
-         * @param property   the reference property
-         * @param descriptor the entity descriptor
-         * @param readOnly   if <code>true<code> don't render the select button
-         * @param context    the layout context
+         * @param property the reference property
+         * @param readOnly if <code>true<code> don't render the select button
+         * @param context  the layout context
          */
-        public Entity(Property property, NodeDescriptor descriptor,
-                      boolean readOnly, LayoutContext context) {
-            super(property, descriptor, readOnly, context);
+        public Entity(Property property, boolean readOnly,
+                      LayoutContext context) {
+            super(property, readOnly, context);
         }
 
         /**

@@ -23,9 +23,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundCheckBox;
-import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.LabelFactory;
@@ -65,14 +63,12 @@ public abstract class AbstractIMObjectComponentFactory
     }
 
     /**
-     * Returns a label to display a node.
+     * Returns a label to display a property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @return a label to display the node
+     * @param property the property to display
+     * @return a label to display the property
      */
-    protected Label getLabel(IMObject object, NodeDescriptor descriptor) {
-        Property property = getProperty(object, descriptor);
+    protected Label getLabel(Property property) {
         Label label = LabelFactory.create();
         Object value = property.getValue();
         if (value != null) {
@@ -82,46 +78,39 @@ public abstract class AbstractIMObjectComponentFactory
     }
 
     /**
-     * Returns a check box to display a node.
+     * Returns a check box to display a property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @return a check box to display the node
+     * @param property the property to display
+     * @return a check box to display the property
      */
-    protected Component getCheckBox(IMObject object,
-                                    NodeDescriptor descriptor) {
-        Property property = getProperty(object, descriptor);
+    protected Component getCheckBox(Property property) {
         return new BoundCheckBox(property);
     }
 
     /**
-     * Returns a text component to display a node.
+     * Returns a text component to display a property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
+     * @param property the property to display
      * @return a text field to display the node, or a text area if it is large
      */
-    protected TextComponent getTextComponent(IMObject object,
-                                             NodeDescriptor descriptor) {
+    protected TextComponent getTextComponent(Property property) {
         final int maxDisplayLength = 50;
+        NodeDescriptor descriptor = property.getDescriptor();
         int length = descriptor.getMaxLength();
         int maxColumns = (length < maxDisplayLength) ? length : maxDisplayLength;
-        return getTextComponent(object, descriptor, maxColumns);
+        return getTextComponent(property, maxColumns);
     }
 
     /**
-     * Returns a text component to display a node.
+     * Returns a text component to display a property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @param columns    the maximum no, of columns to display
+     * @param property the property to display
+     * @param columns  the maximum no, of columns to display
      * @return a text field to display the node, or a text area if it is large
      */
-    protected TextComponent getTextComponent(IMObject object,
-                                             NodeDescriptor descriptor,
-                                             int columns) {
+    protected TextComponent getTextComponent(Property property, int columns) {
         TextComponent result;
-        Property property = getProperty(object, descriptor);
+        NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isLarge()) {
             result = TextComponentFactory.createTextArea(property, columns);
         } else {
@@ -129,25 +118,5 @@ public abstract class AbstractIMObjectComponentFactory
         }
         return result;
     }
-
-    /**
-     * Helper to return a property given its descriptor.
-     *
-     * @param object     the object that owns the property
-     * @param descriptor the property's descriptor
-     * @return the property corresponding to <code>descriptor</code>.
-     */
-    protected abstract Property getProperty(IMObject object,
-                                            NodeDescriptor descriptor);
-
-    /**
-     * Helper to return a collection property given its descriptor.
-     *
-     * @param object     the object that owns the property
-     * @param descriptor the property's descriptor
-     * @return the property corresponding to <code>descriptor</code>.
-     */
-    protected abstract CollectionProperty getCollectionProperty(
-            IMObject object, NodeDescriptor descriptor);
 
 }

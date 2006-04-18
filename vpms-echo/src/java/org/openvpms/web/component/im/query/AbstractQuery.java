@@ -31,6 +31,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
+import org.openvpms.component.system.common.query.ArchetypeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -49,6 +52,11 @@ import org.openvpms.web.component.util.TextComponentFactory;
  * @version $LastChangedDate$
  */
 public abstract class AbstractQuery implements Query {
+
+    /**
+     * The archetypes to query.
+     */
+    private final ArchetypeConstraint _archetypes;
 
     /**
      * Archetype short names to matches on.
@@ -75,13 +83,6 @@ public abstract class AbstractQuery implements Query {
      * <code>null</code>
      */
     private IConstraint _constraints;
-
-    /**
-     * Determines which result set should be used. If <code>true</code>,
-     * indicates that {@link DefaultResultSet} should be used. If
-     * <code>false</code>, indicates {@link ShortNameResultSet} should be used.
-     */
-    private final boolean _defaultResultSet;
 
     /**
      * The instance name. If the text is <code>null</code> or empty, indicates
@@ -141,10 +142,10 @@ public abstract class AbstractQuery implements Query {
      */
     public AbstractQuery(String[] shortNames) {
         _shortNames = DescriptorHelper.getShortNames(shortNames);
+        _archetypes = new ArchetypeShortNameConstraint(shortNames, true, true);
         _refModelName = null;
         _entityName = null;
         _conceptName = null;
-        _defaultResultSet = (shortNames.length == 0);
     }
 
     /**
@@ -159,10 +160,11 @@ public abstract class AbstractQuery implements Query {
                          String conceptName) {
         _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
                                                      conceptName);
+        _archetypes = new ArchetypeLongNameConstraint(
+                refModelName, entityName, conceptName, true, true);
         _refModelName = refModelName;
         _entityName = entityName;
         _conceptName = conceptName;
-        _defaultResultSet = true;
     }
 
     /**
@@ -188,18 +190,17 @@ public abstract class AbstractQuery implements Query {
      * @return the query result set
      */
     public ResultSet query(int rows, String node, boolean ascending) {
-        ResultSet result;
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
 
-        String[] shortNames = null;
-        boolean useDefault = false;
+        ArchetypeConstraint archetypes;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
-            shortNames = _shortNames;
-            useDefault = _defaultResultSet;
+            archetypes = _archetypes;
+            archetypes.setActiveOnly(activeOnly);
         } else {
-            shortNames = new String[]{type};
+            archetypes = new ArchetypeShortNameConstraint(type, true,
+                                                          activeOnly);
         }
 
         SortOrder sort = null;
@@ -207,15 +208,7 @@ public abstract class AbstractQuery implements Query {
             sort = new SortOrder(node, ascending);
         }
 
-        if (useDefault) {
-            result = new DefaultResultSet(_refModelName, _entityName,
-                                          _conceptName, name, activeOnly,
-                                          _constraints, sort, rows);
-        } else {
-            result = new ShortNameResultSet(shortNames, name, activeOnly,
-                                            _constraints, sort, rows);
-        }
-        return result;
+        return new DefaultResultSet(archetypes, name, _constraints, sort, rows);
     }
 
     /**
@@ -255,6 +248,15 @@ public abstract class AbstractQuery implements Query {
         _constraints = constraints;
     }
 
+    /**
+     * Returns the archetype constraint.
+     *
+     * @return the archetype constraint
+     */
+    public ArchetypeConstraint getArchetypeConstraint() {
+        return _archetypes;
+    }
+    
     /**
      * Returns the archetype reference model name.
      *

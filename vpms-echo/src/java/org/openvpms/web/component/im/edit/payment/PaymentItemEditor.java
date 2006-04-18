@@ -16,42 +16,37 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
-
-import java.math.BigDecimal;
+package org.openvpms.web.component.im.edit.payment;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActEditor;
-import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountChargesInvoice</em>,
- * <em>act.customerAccountChargesCredit</em>
- * or <em>act.customerAccountChargesCounter</em>.
+ * An editor for {@link Act}s which have an archetype in
+ * <em>act.customerAccountPayment*</em>, and <em>act.customerAccountRefund*</em>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class InvoiceEditor extends ActEditor {
+public class PaymentItemEditor extends AbstractIMObjectEditor {
 
     /**
-     * Construct a new <code>ActEditor</code>.
+     * Construct a new <code>EstimationItemEdtor</code>.
      *
      * @param act        the act to edit
      * @param parent     the parent object. May be <code>null</code>
      * @param descriptor the parent descriptor. May be <code>null</cocde>
      * @param context    the layout context
      */
-    protected InvoiceEditor(Act act, IMObject parent,
-                            NodeDescriptor descriptor, LayoutContext context) {
+    protected PaymentItemEditor(Act act, IMObject parent,
+                                NodeDescriptor descriptor,
+                                LayoutContext context) {
         super(act, parent, descriptor, context);
     }
 
@@ -70,24 +65,15 @@ public class InvoiceEditor extends ActEditor {
                                         LayoutContext context) {
         IMObjectEditor result = null;
         if (IMObjectHelper.isA(object,
-                               "act.customerAccountChargesInvoice",
-                               "act.customerAccountChargesCredit",
-                               "act.customerAccountChargesCounter")) {
-            result = new InvoiceEditor((Act) object, parent,
-                                       descriptor, context);
+                               "act.customerAccountPayment*",
+                               "act.customerAccountRefund*")
+            && !IMObjectHelper.isA(object,
+                                   "act.customerAccountPayment",
+                                   "act.customerAccountRefund")) {
+            result = new PaymentItemEditor((Act) object, parent, descriptor,
+                                           context);
         }
         return result;
-    }
-
-    /**
-     * Update totals when an act item changes.
-     *
-     * @todo - workaround for OVPMS-211
-     */
-    protected void updateTotals() {
-        Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
-        amount.setValue(value);
     }
 
 }

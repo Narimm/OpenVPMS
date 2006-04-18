@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.edit.ReadOnlyProperty;
 
 
 /**
@@ -54,7 +55,7 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
      * @param model   the table columne model
      * @param context the layout context
      */
-    protected DescriptorTableModel(TableColumnModel model, 
+    protected DescriptorTableModel(TableColumnModel model,
                                    LayoutContext context) {
         super(model);
         _context = context;
@@ -68,7 +69,7 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
      * @return a new model
      */
     public static DefaultIMObjectTableModel create(List<NodeDescriptor> descriptors,
-                                            LayoutContext context) {
+                                                   LayoutContext context) {
         return new DescriptorTableModel(create(descriptors), context);
     }
 
@@ -162,7 +163,8 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
         if (c instanceof DescriptorTableColumn) {
             DescriptorTableColumn col = (DescriptorTableColumn) c;
             NodeDescriptor descriptor = col.getDescriptor();
-            result = factory.create(object, descriptor);
+            ReadOnlyProperty property = new ReadOnlyProperty(object, descriptor);
+            result = factory.create(property, object);
         } else {
             result = super.getValue(object, column, row);
         }

@@ -30,6 +30,7 @@ import nextapp.echo2.app.layout.RowLayoutData;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -94,14 +95,15 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Lay out out the object in the specified container.
      *
-     * @param object    the object to lay out
-     * @param container the container to use
-     * @param context
+     * @param object     the object to lay out
+     * @param properties the object's properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
     @Override
-    protected void doLayout(IMObject object, Component container,
-                            LayoutContext context) {
-        super.doLayout(object, container, context);
+    protected void doLayout(IMObject object, PropertySet properties,
+                            Component container, LayoutContext context) {
+        super.doLayout(object, properties, container, context);
         if (_button == null && _showButton) {
             Row row = getButtonRow();
             ColumnLayoutData right = new ColumnLayoutData();
@@ -115,20 +117,22 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * Lays out child components in a 2x2 grid.
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param container   the container to use
-     * @param context
+     * @param context     the layout context
      */
     @Override
     protected void doSimpleLayout(IMObject object,
                                   List<NodeDescriptor> descriptors,
+                                  PropertySet properties,
                                   Component container,
                                   LayoutContext context) {
         if (_button != null || !_showButton) {
-            super.doSimpleLayout(object, descriptors, container, context);
+            super.doSimpleLayout(object, descriptors, properties, container, context);
         } else if (!descriptors.isEmpty()) {
             Row group = RowFactory.create();
-            super.doSimpleLayout(object, descriptors, group, context);
+            super.doSimpleLayout(object, descriptors, properties, group, context);
             group.add(getButtonRow());
             container.add(group);
         }
@@ -138,14 +142,15 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
      * Lays out each child component in a group box.
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param container   the container to use
-     * @param context
+     * @param context     the layout context
      */
     @Override
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
-                                   Component container,
+                                   PropertySet properties, Component container,
                                    LayoutContext context) {
         if (_button == null && _showButton && !descriptors.isEmpty()) {
             Row row = getButtonRow();
@@ -154,7 +159,7 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
             row.setLayoutData(right);
             container.add(row);
         }
-        super.doComplexLayout(object, descriptors, container, context);
+        super.doComplexLayout(object, descriptors, properties, container, context);
     }
 
     /**
@@ -194,6 +199,5 @@ public class ExpandableLayoutStrategy extends AbstractLayoutStrategy {
         wrapper.setLayoutData(right);
         return wrapper;
     }
-
 
 }

@@ -34,7 +34,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -72,9 +71,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     private ILookupService _lookup;
 
     /**
-     * Component factory for read-only/derived nodes.
+     * Component factory for read-only/derived properties.
      */
     private IMObjectComponentFactory _readOnly;
+
 
     /**
      * Construct a new <code>NodeEditorFactory</code>.
@@ -89,31 +89,33 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     }
 
     /**
-     * Create a component to display an object.
+     * Create a component to display a property.
      *
-     * @param context    the context object
-     * @param descriptor the object's descriptor
+     * @param property the property to display
+     * @param context  the context object
      * @return a component to display <code>object</code>
      */
-    public Component create(IMObject context, NodeDescriptor descriptor) {
+    public Component create(Property property, IMObject context) {
         Component result;
+        NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isReadOnly() || descriptor.isDerived()) {
-            result = getReadOnlyFactory().create(context, descriptor);
+            result = getReadOnlyFactory().create(property, context);
         } else {
             if (descriptor.isLookup()) {
-                result = getSelectEditor(context, descriptor);
+                result = getSelectEditor(property, context);
             } else if (descriptor.isBoolean()) {
-                result = getCheckBox(context, descriptor);
+                result = getCheckBox(property);
             } else if (descriptor.isString()) {
-                result = getTextComponent(context, descriptor);
+                result = getTextComponent(property);
             } else if (descriptor.isNumeric()) {
-                result = getNumericEditor(context, descriptor);
+                result = getNumericEditor(property);
             } else if (descriptor.isDate()) {
-                result = getDateEditor(context, descriptor);
+                result = getDateEditor(property);
             } else if (descriptor.isCollection()) {
-                result = getCollectionEditor(context, descriptor);
+                result = getCollectionEditor((CollectionProperty) property,
+                                             context);
             } else if (descriptor.isObjectReference()) {
-                result = getObjectReferenceEditor(context, descriptor);
+                result = getObjectReferenceEditor(property);
             } else {
                 Label label = LabelFactory.create();
                 label.setText("No editor for type " + descriptor.getType());
@@ -142,16 +144,14 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     }
 
     /**
-     * Returns a component to edit a numeric node.
+     * Returns a component to edit a numeric property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @return a component to edit the node
+     * @param property the numeric property
+     * @return a component to edit the property
      */
-    protected Component getNumericEditor(IMObject object,
-                                         NodeDescriptor descriptor) {
+    protected Component getNumericEditor(Property property) {
         int maxColumns = 10;
-        Property property = getProperty(object, descriptor);
+        NodeDescriptor descriptor = property.getDescriptor();
         boolean edit = !descriptor.isReadOnly() || descriptor.isDerived();
         Format format = NumberFormatter.getFormat(descriptor, edit);
         TextField text = TextComponentFactory.create(property, maxColumns,
@@ -165,29 +165,24 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
 
 
     /**
-     * Returns a component to edit a date node.
+     * Returns a component to edit a date property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
+     * @param property the date property
      * @return a component to edit the node
      */
-    protected Component getDateEditor(IMObject object,
-                                      NodeDescriptor descriptor) {
-        Property property = getProperty(object, descriptor);
+    protected Component getDateEditor(Property property) {
         return DateFieldFactory.create(property);
     }
 
     /**
-     * Returns a component to edit a lookup node.
+     * Returns a component to edit a lookup property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @return a component to edit the node
+     * @param property the lookup property
+     * @param context  the parent object
+     * @return a component to edit the property
      */
-    protected Component getSelectEditor(IMObject object,
-                                        NodeDescriptor descriptor) {
-        Property property = getProperty(object, descriptor);
-        ListModel model = new LookupListModel(object, descriptor,
+    protected Component getSelectEditor(Property property, IMObject context) {
+        ListModel model = new LookupListModel(context, property.getDescriptor(),
                                               getLookupService());
         SelectField field = SelectFieldFactory.create(property, model);
         field.setCellRenderer(new LookupListCellRenderer());
@@ -195,25 +190,24 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     }
 
     /**
-     * Returns a component to edit a collection node.
+     * Returns a component to edit a collection property.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @return a component to edit the node
+     * @param property the collection property
+     * @param object   the parent object
+     * @return a component to edit the property
      */
-    protected Component getCollectionEditor(IMObject object, NodeDescriptor descriptor) {
+    protected Component getCollectionEditor(CollectionProperty property,
+                                            IMObject object) {
         Component result;
+        NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isParentChild()) {
-            CollectionEditor editor = new CollectionEditor(object, descriptor,
+            CollectionEditor editor = new CollectionEditor(property, object,
                                                            getLayoutContext());
-            _modifiable.add(object, editor);
             result = editor.getComponent();
         } else {
             List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(
                     ServiceHelper.getArchetypeService(),
                     descriptor, object);
-            CollectionProperty property = getCollectionProperty(
-                    object, descriptor);
             Palette palette = new BoundPalette(identifiers, property);
             palette.setCellRenderer(new IMObjectListCellRenderer());
             result = palette;
@@ -224,43 +218,13 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     /**
      * Returns a component to edit an object reference.
      *
-     * @param object     the parent object
-     * @param descriptor the node descriptor
-     * @return a component to edit the node
+     * @param property the object reference properrty
+     * @return a component to edit the property
      */
-    protected Component getObjectReferenceEditor(IMObject object,
-                                                 NodeDescriptor descriptor) {
-        Property property = getProperty(object, descriptor);
+    protected Component getObjectReferenceEditor(Property property) {
         ObjectReferenceEditor editor = new ObjectReferenceEditor(
-                property, descriptor, getLayoutContext());
+                property, getLayoutContext());
         return editor.getComponent();
-    }
-
-    /**
-     * Helper to return a property given its descriptor. This implementation
-     * returns a {@link ModifiableProperty}.
-     *
-     * @param object     the object that owns the property
-     * @param descriptor the property's descriptor
-     * @return the property corresponding to <code>descriptor</code>.
-     */
-    protected Property getProperty(IMObject object, NodeDescriptor descriptor) {
-        ModifiableProperty property
-                = new ModifiableProperty(object, descriptor);
-        _modifiable.add(object, property);
-        return property;
-    }
-
-    /**
-     * Helper to return a collection property given its descriptor.
-     *
-     * @param object     the object that owns the property
-     * @param descriptor the property's descriptor
-     * @return the property corresponding to <code>descriptor</code>.
-     */
-    protected CollectionProperty getCollectionProperty(
-            IMObject object, NodeDescriptor descriptor) {
-        return (CollectionProperty) getProperty(object, descriptor);
     }
 
     /**

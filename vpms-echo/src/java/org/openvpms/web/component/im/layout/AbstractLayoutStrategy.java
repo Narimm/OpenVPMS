@@ -40,6 +40,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -49,7 +52,6 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.focus.FocusSet;
 
 
 /**
@@ -61,11 +63,10 @@ import org.openvpms.web.component.focus.FocusSet;
 public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * Map of node descriptors to their corresponding components, used to set
-     * focus.
+     * Map of properties to their corresponding components, used to set focus.
      */
-    private final Map<NodeDescriptor, Component> _components
-            = new LinkedHashMap<NodeDescriptor, Component>();
+    private final Map<Property, Component> _components
+            = new LinkedHashMap<Property, Component>();
 
     /**
      * The focus set.
@@ -80,30 +81,36 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a <code>Component</code>, using a factory to
+     * create the child components.
      *
-     * @param object  the object to apply
-     * @param context
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, LayoutContext context) {
+    public Component apply(IMObject object, PropertySet properties,
+                           LayoutContext context) {
         _components.clear();
         _focusSet = new FocusSet(DescriptorHelper.getDisplayName(object));
         context.getFocusTree().add(_focusSet);
         Column column = ColumnFactory.create("CellSpacing");
-        doLayout(object, column, context);
-        setFocus(object, column);
+        doLayout(object, properties, column, context);
+        setFocus(column);
         return column;
     }
 
     /**
      * Lay out out the object in the specified container.
      *
-     * @param object    the object to lay out
-     * @param container the container to use
-     * @param context
+     * @param object     the object to lay out
+     * @param properties the object's properties
+     * @param container  the container to use
+     * @param context    the layout context
      */
-    protected void doLayout(IMObject object, Component container,
-                            LayoutContext context) {
+    protected void doLayout(IMObject object, PropertySet properties,
+                            Component container, LayoutContext context) {
         ArchetypeDescriptor descriptor
                 = DescriptorHelper.getArchetypeDescriptor(object);
         List<NodeDescriptor> simple;
@@ -113,25 +120,26 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         simple = filter(object, descriptor.getSimpleNodeDescriptors(), filter);
         complex = filter(object, descriptor.getComplexNodeDescriptors(), filter);
 
-        doSimpleLayout(object, simple, container, context);
-        doComplexLayout(object, complex, container, context);
+        doSimpleLayout(object, simple, properties, container, context);
+        doComplexLayout(object, complex, properties, container, context);
     }
 
     /**
      * Lays out child components in a 2x2 grid.
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param container   the container to use
-     * @param context
+     * @param context     the layout context
      */
     protected void doSimpleLayout(IMObject object,
                                   List<NodeDescriptor> descriptors,
-                                  Component container,
+                                  PropertySet properties, Component container,
                                   LayoutContext context) {
         if (!descriptors.isEmpty()) {
             Grid grid = GridFactory.create(4);
-            doGridLayout(object, descriptors, grid, context);
+            doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
     }
@@ -140,18 +148,20 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Lays out each child component in a tabbed pane.
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param container   the container to use
-     * @param context
+     * @param context     the layout context
      */
     protected void doComplexLayout(IMObject object,
                                    List<NodeDescriptor> descriptors,
-                                   Component container,
+                                   PropertySet properties, Component container,
                                    LayoutContext context) {
         if (!descriptors.isEmpty()) {
             DefaultTabModel model = new DefaultTabModel();
             for (NodeDescriptor nodeDesc : descriptors) {
-                Component child = createComponent(object, nodeDesc, context);
+                Property property = properties.get(nodeDesc);
+                Component child = createComponent(property, object, context);
 
                 DefaultTabModel.TabButton button
                         = model.new TabButton(nodeDesc.getDisplayName(), null);
@@ -212,12 +222,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * Lays out child components in 2 columns.
      *
      * @param object      the parent object
-     * @param descriptors the child descriptors
+     * @param descriptors the property descriptors
+     * @param properties  the properties
      * @param grid        the grid to use
      * @param context     the layout context
      */
     protected void doGridLayout(IMObject object,
-                                List<NodeDescriptor> descriptors, Grid grid,
+                                List<NodeDescriptor> descriptors,
+                                PropertySet properties, Grid grid,
                                 LayoutContext context) {
         int size = descriptors.size();
         Component[] components = new Component[size];
@@ -225,7 +237,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         for (int i = 0; i < components.length; ++i) {
             NodeDescriptor descriptor = descriptors.get(i);
             labels[i] = descriptor.getDisplayName();
-            Component component = createComponent(object, descriptor, context);
+            Property property = properties.get(descriptor);
+            Component component = createComponent(property, object, context);
             setTabIndex(component, context);
             if (component instanceof SelectField) {
                 // workaround for render bug in firefox. See OVPMS-239 
@@ -272,41 +285,40 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Creates a component for a node descriptor. This maintains a cache of
-     * created components, in order for the focus to be set on an appropriate
+     * Creates a component for a property. This maintains a cache of created
+     * components, in order for the focus to be set on an appropriate
      * component.
      *
-     * @param parent     the parent object
-     * @param descriptor the node descriptor
-     * @param context    the layout context
+     * @param property the property
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a component to display <code>property</code>
      */
-    protected Component createComponent(IMObject parent,
-                                        NodeDescriptor descriptor,
+    protected Component createComponent(Property property, IMObject parent,
                                         LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
-        Component component = factory.create(parent, descriptor);
-        _components.put(descriptor, component);
+        Component component = factory.create(property, parent);
+        _components.put(property, component);
         return component;
     }
 
     /**
      * Sets focus on the first focusable field.
      *
-     * @param object    the object
      * @param container the component container
      */
-    protected void setFocus(IMObject object, Component container) {
+    protected void setFocus(Component container) {
         Component focusable = null;
-        for (Map.Entry<NodeDescriptor, Component> entry :
+        for (Map.Entry<Property, Component> entry :
                 _components.entrySet()) {
             Component child = entry.getValue();
             if (child instanceof TextComponent || child instanceof CheckBox
                 || child instanceof DateField
                 || child instanceof AbstractButton) {
                 if (child.isEnabled() && child.isFocusTraversalParticipant()) {
-                    NodeDescriptor descriptor = entry.getKey();
+                    Property property = entry.getKey();
                     try {
-                        Object value = descriptor.getValue(object);
+                        Object value = property.getValue();
                         if (value == null
                             || (value instanceof String
                                 && StringUtils.isEmpty((String) value))) {

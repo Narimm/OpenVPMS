@@ -25,6 +25,8 @@ import nextapp.echo2.app.Label;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.ArchetypeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -61,9 +63,12 @@ public class CustomerSummary {
     }
 
     private static BigDecimal getBalance(Party customer) {
+        String[] statuses = {"Posted"};
+        ArchetypeConstraint archetypes = new ArchetypeLongNameConstraint(
+                null, "act", "customerAccountCharges*", true, true);
         ActResultSet set = new ActResultSet(customer.getObjectReference(),
-                                            "act", "customerAccountCharges*",
-                                            null, null, "Posted", 50, null);
+                                            archetypes, null, null, statuses,
+                                            50, null);
         BigDecimal balance = BigDecimal.ZERO;
         while (set.hasNext()) {
             IPage<Act> acts = set.next();

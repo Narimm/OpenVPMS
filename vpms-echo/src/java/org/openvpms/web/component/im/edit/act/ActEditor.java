@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -54,10 +55,9 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
     protected ActEditor(Act act, IMObject parent, NodeDescriptor descriptor,
                         LayoutContext context) {
         super(act, parent, descriptor, context);
-        NodeDescriptor items = getDescriptor("items");
-        _editor = new ActRelationshipCollectionEditor(act, items,
+        CollectionProperty items = (CollectionProperty) getProperty("items");
+        _editor = new ActRelationshipCollectionEditor(items, act,
                                                       getLayoutContext());
-        getModifiableSet().add(act, _editor);
         _editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateTotals();
