@@ -27,17 +27,11 @@ import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.IMObjectCopier;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -79,60 +73,6 @@ public class AccountCRUDWindow extends ActCRUDWindow {
      * Adjust button identifier.
      */
     private static final String ADJUST_ID = "adjust";
-
-    /**
-     * Invoice act short name.
-     */
-    private static final String INVOICE_TYPE
-            = "act.customerAccountChargesInvoice";
-
-    /**
-     * Invoice act item short name.
-     */
-    private static final String INVOICE_ITEM_TYPE
-            = "act.customerAccountInvoiceItem";
-
-    /**
-     * Invoice act item relationship short name.
-     */
-    private static final String INVOICE_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerAccountInvoiceItem";
-
-    /**
-     * Counter act short name.
-     */
-    private static final String COUNTER_TYPE
-            = "act.customerAccountChargesCounter";
-
-    /**
-     * Counter act item short name.
-     */
-    private static final String COUNTER_ITEM_TYPE
-            = "act.customerAccountChargesCounterItem";
-
-    /**
-     * Counter act item relationship type.
-     */
-    private static final String COUNTER_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerAccountChargesCounterItem";
-
-    /**
-     * Credit act type.
-     */
-    private static final String CREDIT_TYPE
-            = "act.customerAccountChargesCredit";
-
-    /**
-     * Credit item act type.
-     */
-    private static final String CREDIT_ITEM_TYPE
-            = "act.customerAccountCreditItem";
-
-    /**
-     * Credit item act relationship type.
-     */
-    private static final String CREDIT_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerAccountCreditItem";
 
 
     /**
@@ -237,7 +177,7 @@ public class AccountCRUDWindow extends ActCRUDWindow {
     private void reverse(Act act) {
         try {
             IMObjectCopier copier
-                    = new IMObjectCopier(new ReversalHandler(act));
+                    = new IMObjectCopier(new ActReversalHandler(act));
             Act reversal = (Act) copier.copy(act);
             reversal.setStatus(INPROGRESS_STATUS);
             reversal.setActivityStartTime(new Date());
@@ -250,78 +190,5 @@ public class AccountCRUDWindow extends ActCRUDWindow {
         }
     }
 
-
-    private static class ReversalHandler extends AbstractIMObjectCopyHandler {
-
-        /**
-         * Determines if the act is a charge or a credit.
-         */
-        private final boolean _charge;
-
-
-        /**
-         * Map of invoice types to their corresponding credit types.
-         */
-        private static final String[][] TYPE_MAP = {
-                {INVOICE_TYPE, CREDIT_TYPE},
-                {INVOICE_ITEM_TYPE, CREDIT_ITEM_TYPE},
-                {INVOICE_ITEM_RELATIONSHIP_TYPE, CREDIT_ITEM_RELATIONSHIP_TYPE},
-                {COUNTER_TYPE, CREDIT_TYPE},
-                {COUNTER_ITEM_TYPE, CREDIT_ITEM_TYPE},
-                {COUNTER_ITEM_RELATIONSHIP_TYPE, CREDIT_ITEM_RELATIONSHIP_TYPE}
-        };
-
-
-        /**
-         * Construct a nedw <code>ReversalHandler</code>.
-         *
-         * @param act the act to reverse
-         */
-        public ReversalHandler(Act act) {
-            _charge = !IMObjectHelper.isA(act, CREDIT_TYPE);
-        }
-
-        /**
-         * Determines how {@link IMObjectCopier} should treat an object.
-         *
-         * @param object  the source object
-         * @param service the archetype service
-         * @return <code>object</code> if the object shouldn't be copied,
-         *         <code>null</code> if it should be replaced with
-         *         <code>null</code>, or a new instance if the object should be
-         *         copied
-         */
-        public IMObject getObject(IMObject object, IArchetypeService service) {
-            IMObject result;
-            if (object instanceof Act || object instanceof ActRelationship
-                || object instanceof Participation) {
-                String shortName = object.getArchetypeId().getShortName();
-                for (String[] map : TYPE_MAP) {
-                    String chargeType = map[0];
-                    String creditType = map[1];
-                    if (_charge) {
-                        if (chargeType.equals(shortName)) {
-                            shortName = creditType;
-                            break;
-                        }
-                    } else {
-                        if (creditType.equals(shortName)) {
-                            shortName = chargeType;
-                            break;
-                        }
-                    }
-                }
-                result = service.create(shortName);
-                if (result == null) {
-                    throw new ArchetypeServiceException(
-                            ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
-                            new String[]{shortName});
-                }
-            } else {
-                result = object;
-            }
-            return result;
-        }
-    }
 
 }
