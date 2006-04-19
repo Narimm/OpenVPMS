@@ -89,6 +89,12 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
                         SortOrder order) {
         super(rows, order);
 
+        try {
+            // @todo workaround for OVPMS-278
+            archetypes = (ArchetypeConstraint) archetypes.clone();
+        } catch (CloneNotSupportedException exception) {
+            throw new IllegalArgumentException(exception);
+        }
         _query = new ArchetypeQuery(archetypes);
 
         if (statuses.length > 1) {
@@ -120,7 +126,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
 
         CollectionNodeConstraint participations = new CollectionNodeConstraint(
                 "participants", "participation.customer", true, true)
-                .setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin)
+//                .setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin)
                 .add(new ObjectRefNodeConstraint("entity", entityId));
         _query.add(participations);
     }
