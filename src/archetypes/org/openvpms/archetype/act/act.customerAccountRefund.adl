@@ -28,7 +28,7 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
-		<node name="items" path="/sourceRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
+		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
 			filter="actRelationship.customerAccountRefundItem" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
