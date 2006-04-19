@@ -79,7 +79,13 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
     public DefaultResultSet(ArchetypeConstraint archetypes, String instanceName,
                             IConstraint constraints, SortOrder order, int rows) {
         super(constraints, rows, order);
-        _archetypes = archetypes;
+        try {
+            // @todo workaround for OVPMS-278
+            _archetypes = (ArchetypeConstraint) archetypes.clone();
+        } catch (CloneNotSupportedException exception) {
+            throw new IllegalArgumentException(exception);
+        }
+
         _instanceName = instanceName;
         if (order != null && !isValidSortNode(order.getNode())) {
             setSortOrder(null);
