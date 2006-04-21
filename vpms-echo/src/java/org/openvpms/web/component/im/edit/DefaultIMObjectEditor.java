@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -38,22 +37,20 @@ public class DefaultIMObjectEditor extends AbstractIMObjectEditor {
      * @param context the layout context
      */
     public DefaultIMObjectEditor(IMObject object, LayoutContext context) {
-        this(object, null, null, context);
+        this(object, null, context);
     }
 
     /**
      * Construct a new <code>DefaultIMObjectEditor</code> for an object that
      * belongs to a collection.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object.
-     * @param descriptor the parent descriptor
-     * @param context    the layout context
+     * @param object  the object to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context
      */
     public DefaultIMObjectEditor(IMObject object, IMObject parent,
-                                 NodeDescriptor descriptor,
                                  LayoutContext context) {
-        super(object, parent, descriptor, context);
+        super(object, parent, context);
     }
 
 }

@@ -30,7 +30,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.ReadOnlyProperty;
+import org.openvpms.web.component.edit.IMObjectProperty;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -149,7 +150,7 @@ public class ActItemTableModel extends DescriptorTableModel {
                 ArchetypeDescriptor archetype
                         = DescriptorHelper.getArchetypeDescriptor(child);
                 NodeDescriptor entity = archetype.getNodeDescriptor("entity");
-                ReadOnlyProperty property = new ReadOnlyProperty(child, entity);
+                Property property = new IMObjectProperty(child, entity);
                 result = getFactory().create(property, child);
             } else {
                 Label label = LabelFactory.create();

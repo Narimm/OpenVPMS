@@ -32,7 +32,7 @@ import org.openvpms.web.spring.ServiceHelper;
 
 /**
  * PropertyHandler is responsible for processing user input prior to it being
- * set on {@link ModifiableProperty}.
+ * set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $Revision$ $Date$

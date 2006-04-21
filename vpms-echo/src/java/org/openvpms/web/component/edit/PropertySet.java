@@ -59,12 +59,7 @@ public class PropertySet {
     public PropertySet(IMObject object, ArchetypeDescriptor archetype) {
         for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
             if (!descriptor.isHidden()) {
-                Property property;
-                if (descriptor.isReadOnly()) {
-                    property = new ReadOnlyProperty(object, descriptor);
-                } else {
-                    property = new ModifiableProperty(object, descriptor);
-                }
+                Property property = new IMObjectProperty(object, descriptor);
                 _properties.put(descriptor.getName(), property);
             }
         }

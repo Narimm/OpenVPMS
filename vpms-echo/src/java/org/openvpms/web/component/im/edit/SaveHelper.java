@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -43,39 +42,12 @@ public class SaveHelper {
      *         <code>false</code>
      */
     public static boolean save(IMObject object) {
-        return save(object, null, null);
-    }
-
-    /**
-     * Save an object.
-     *
-     * @param object     the object to save
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent's descriptor. May be <code>null</code>
-     * @return <code>true</code> if the object was saved; otherwise
-     *         <code>false</code>
-     */
-    public static boolean save(IMObject object, IMObject parent, NodeDescriptor descriptor) {
         boolean saved = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
         if (ValidationHelper.isValid(object)) {
             try {
-                if (parent == null) {
-                    service.save(object);
-                    saved = true;
-                } else {
-                    if (object.isNew()) {
-                        descriptor.addChildToCollection(parent, object);
-                        saved = true;
-                    } else if (parent != null && !parent.isNew()) {
-                        service.save(object);
-                        saved = true;
-                    } else {
-                        // new parent, new child. Parent must be saved first.
-                        // Not a failure, so return true.
-                        saved = true;
-                    }
-                }
+                service.save(object);
+                saved = true;
             } catch (ArchetypeServiceException exception) {
                 ErrorDialog.show(exception);
             } catch (DescriptorException exception) {

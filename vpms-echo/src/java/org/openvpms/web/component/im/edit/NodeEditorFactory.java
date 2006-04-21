@@ -137,9 +137,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     public Component create(IMObject object, IMObject context,
                             NodeDescriptor descriptor) {
         IMObjectEditor editor = IMObjectEditorFactory.create(object, context,
-                                                             descriptor,
                                                              getLayoutContext());
-        _modifiable.add(object, editor);
+        _modifiable.add(editor);
         return editor.getComponent();
     }
 
@@ -203,6 +202,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         if (descriptor.isParentChild()) {
             CollectionEditor editor = new CollectionEditor(property, object,
                                                            getLayoutContext());
+            _modifiable.add(editor);
             result = editor.getComponent();
         } else {
             List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(

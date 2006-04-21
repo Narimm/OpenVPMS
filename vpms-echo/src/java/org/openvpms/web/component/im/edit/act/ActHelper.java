@@ -19,13 +19,22 @@
 package org.openvpms.web.component.im.edit.act;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -36,6 +45,46 @@ import org.openvpms.web.spring.ServiceHelper;
  * @version $LastChangedDate$
  */
 public class ActHelper {
+
+    /**
+     * Returns an account balance for a customer.
+     *
+     * @param customer the customer
+     * @return the account balance for <code>customer</code>
+     */
+    public static BigDecimal getAccountBalance(Party customer) {
+        String[] statuses = {"Posted"};
+        String[] shortNames = {"act.customerAccountCharges*",
+                               "act.customerAccountPayment",
+                               "act.customerAccountRefund"};
+        ArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+                shortNames, true, true);
+        ActResultSet set = new ActResultSet(customer.getObjectReference(),
+                                            archetypes, null, null, statuses,
+                                            50, null);
+        BigDecimal balance = BigDecimal.ZERO;
+        while (set.hasNext()) {
+            IPage<Act> acts = set.next();
+            balance = ActHelper.sum(balance, acts.getRows(), "amount");
+        }
+        return balance;
+    }
+
+    /**
+     * Suma a node in a list of act items.
+     *
+     * @param act  the parent act
+     * @param node the node to sum
+     * @return the summed total
+     */
+    public static BigDecimal sum(Act act, String node) {
+        List<Act> acts = new ArrayList<Act>();
+        for (ActRelationship relationship : act.getSourceActRelationships()) {
+            Act item = (Act) IMObjectHelper.getObject(relationship.getTarget());
+            acts.add(item);
+        }
+        return sum(acts, node);
+    }
 
     /**
      * Sums a node in a list of acts.
@@ -77,7 +126,6 @@ public class ActHelper {
                     BigDecimal value;
                     if (number instanceof BigDecimal) {
                         value = (BigDecimal) number;
-                        value = new BigDecimal(number.longValue());
                     } else if (number instanceof Double
                                || number instanceof Float) {
                         value = new BigDecimal(number.doubleValue());

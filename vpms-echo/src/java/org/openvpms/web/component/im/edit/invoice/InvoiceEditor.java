@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.edit.invoice;
 
 import java.math.BigDecimal;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
@@ -33,8 +32,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountChargesInvoice</em>,
- * <em>act.customerAccountChargesCredit</em>
+ * <em>act.customerAccountChargesInvoice</em>, <em>act.customerAccountChargesCredit</em>
  * or <em>act.customerAccountChargesCounter</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -45,36 +43,31 @@ public class InvoiceEditor extends ActEditor {
     /**
      * Construct a new <code>ActEditor</code>.
      *
-     * @param act        the act to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context
+     * @param act     the act to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context
      */
-    protected InvoiceEditor(Act act, IMObject parent,
-                            NodeDescriptor descriptor, LayoutContext context) {
-        super(act, parent, descriptor, context);
+    protected InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
+        super(act, parent, context);
     }
 
     /**
      * Create a new editor for an object, if it can be edited by this class.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context
+     * @param object  the object to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectEditor result = null;
         if (IMObjectHelper.isA(object,
                                "act.customerAccountChargesInvoice",
                                "act.customerAccountChargesCredit",
                                "act.customerAccountChargesCounter")) {
-            result = new InvoiceEditor((Act) object, parent,
-                                       descriptor, context);
+            result = new InvoiceEditor((Act) object, parent, context);
         }
         return result;
     }

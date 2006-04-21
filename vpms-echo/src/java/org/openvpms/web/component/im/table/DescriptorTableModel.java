@@ -29,9 +29,10 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.IMObjectProperty;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.edit.ReadOnlyProperty;
 
 
 /**
@@ -163,7 +164,7 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
         if (c instanceof DescriptorTableColumn) {
             DescriptorTableColumn col = (DescriptorTableColumn) c;
             NodeDescriptor descriptor = col.getDescriptor();
-            ReadOnlyProperty property = new ReadOnlyProperty(object, descriptor);
+            Property property = new IMObjectProperty(object, descriptor);
             result = factory.create(property, object);
         } else {
             result = super.getValue(object, column, row);
