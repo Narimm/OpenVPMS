@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -47,14 +46,12 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
     /**
      * Construct a new <code>ActEditor</code>.
      *
-     * @param act        the act to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context. May be <code>null</code>
+     * @param act     the act to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>
      */
-    protected ActEditor(Act act, IMObject parent, NodeDescriptor descriptor,
-                        LayoutContext context) {
-        super(act, parent, descriptor, context);
+    protected ActEditor(Act act, IMObject parent, LayoutContext context) {
+        super(act, parent, context);
         CollectionProperty items = (CollectionProperty) getProperty("items");
         _editor = new ActRelationshipCollectionEditor(items, act,
                                                       getLayoutContext());
@@ -63,6 +60,7 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
                 updateTotals();
             }
         });
+        getModifiableSet().add(_editor);
     }
 
     /**

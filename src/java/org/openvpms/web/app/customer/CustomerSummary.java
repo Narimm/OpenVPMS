@@ -23,13 +23,8 @@ import java.math.BigDecimal;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 
-import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ArchetypeConstraint;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
@@ -43,7 +38,6 @@ import org.openvpms.web.component.util.RowFactory;
  */
 public class CustomerSummary {
 
-
     /**
      * Returns summary information for a customer.
      *
@@ -55,29 +49,11 @@ public class CustomerSummary {
         if (customer != null) {
             Label title = LabelFactory.create("customer.account.balance");
             Label balance = LabelFactory.create();
-            BigDecimal value = getBalance(customer);
+            BigDecimal value = ActHelper.getAccountBalance(customer);
             balance.setText(NumberFormatter.format(value));
             result = RowFactory.create("CellSpacing", title, balance);
         }
         return result;
-    }
-
-    private static BigDecimal getBalance(Party customer) {
-        String[] statuses = {"Posted"};
-        String[] shortNames = {"act.customerAccountCharges*",
-                               "act.customerAccountPayment",
-                               "act.customerAccountRefund"};
-        ArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
-                shortNames, true, true);
-        ActResultSet set = new ActResultSet(customer.getObjectReference(),
-                                            archetypes, null, null, statuses,
-                                            50, null);
-        BigDecimal balance = BigDecimal.ZERO;
-        while (set.hasNext()) {
-            IPage<Act> acts = set.next();
-            balance = ActHelper.sum(balance, acts.getRows(), "amount");
-        }
-        return balance;
     }
 
 }

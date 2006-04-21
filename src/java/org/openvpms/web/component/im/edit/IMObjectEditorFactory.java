@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
@@ -53,48 +52,44 @@ public class IMObjectEditorFactory {
      */
     public static IMObjectEditor create(IMObject object,
                                         LayoutContext context) {
-        return create(object, null, null, context);
+        return create(object, null, context);
     }
 
     /**
      * Creates a new editor.
      *
-     * @param object     the object to edit
-     * @param context    the parent object. May be <code>null</code>
-     * @param descriptor the parent object's descriptor. May be
-     *                   <code>null</code>
-     * @param context    the layout context. May be <code>null</code>
+     * @param object  the object to edit
+     * @param context the parent object. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>
      * @return an editor for <code>object</code>
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectEditor result;
-        result = RelationshipEditor.create(object, parent, descriptor, context);
+        result = RelationshipEditor.create(object, parent, context);
         if (result == null) {
-            result = EstimationEditor.create(object, parent, descriptor, context);
+            result = EstimationEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = EstimationItemEditor.create(object, parent, descriptor, context);
+            result = EstimationItemEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = InvoiceEditor.create(object, parent, descriptor, context);
+            result = InvoiceEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = InvoiceItemEditor.create(object, parent, descriptor, context);
+            result = InvoiceItemEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = PaymentEditor.create(object, parent, descriptor, context);
+            result = PaymentEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = PaymentItemEditor.create(object, parent, descriptor, context);
+            result = PaymentItemEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = DefaultParticipationEditor.create(object, parent, descriptor,
-                                                       context);
+            result = DefaultParticipationEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = new DefaultIMObjectEditor(object, parent, descriptor, context);
+            result = new DefaultIMObjectEditor(object, parent, context);
         }
         return result;
     }

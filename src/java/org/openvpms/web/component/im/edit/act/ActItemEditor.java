@@ -105,22 +105,20 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Construct a new <code>ActItemEditor</code>.
      *
-     * @param act        the act to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context. May be <code>null</code>
+     * @param act     the act to edit
+     * @param parent  the parent act.
+     * @param context the layout context. May be <code>null</code>
      */
-    public ActItemEditor(Act act, IMObject parent, NodeDescriptor descriptor,
-                         LayoutContext context) {
-        super(act, parent, descriptor, context);
+    public ActItemEditor(Act act, Act parent, LayoutContext context) {
+        super(act, parent, context);
 
         NodeDescriptor participants = getDescriptor(PARTICIPANTS);
 
         for (String shortName : participants.getArchetypeRange()) {
             if (shortName.equals(PATIENT_SHORTNAME)) {
-                addPatientEditor(act, participants);
+                addPatientEditor(act);
             } else if (shortName.equals(PRODUCT_SHORTNAME)) {
-                addProductEditor(act, participants);
+                addProductEditor(act);
             } else if (!shortName.equals(AUTHOR_SHORTNAME)) {
                 Participation participant = IMObjectHelper.getObject(
                         shortName, act.getParticipations());
@@ -128,7 +126,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                     participant = (Participation) IMObjectCreator.create(
                             shortName);
                 }
-                addEditor(participant, act, participants);
+                addEditor(participant, act);
             }
         }
         if (_patientEditor != null && _productEditor != null) {
@@ -214,15 +212,14 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Add a patient editor.
      *
-     * @param act        the act
-     * @param descriptor the participants node descriptor
+     * @param act the act
      */
-    private void addPatientEditor(Act act, NodeDescriptor descriptor) {
+    private void addPatientEditor(Act act) {
         Participation participant = getParticipation(PATIENT_SHORTNAME, act);
         final PatientParticipationEditor editor
                 = PatientParticipationEditor.create(
-                participant, act, descriptor, getLayoutContext());
-        getModifiableSet().add(participant, editor);
+                participant, act, getLayoutContext());
+        getModifiableSet().add(editor);
         _patientEditor = editor;
         _participants.add(editor);
     }
@@ -230,10 +227,9 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Add a product editor.
      *
-     * @param act        the act
-     * @param descriptor the participants node descriptor
+     * @param act the act
      */
-    private void addProductEditor(Act act, NodeDescriptor descriptor) {
+    private void addProductEditor(Act act) {
         final Participation participant
                 = getParticipation(PRODUCT_SHORTNAME, act);
         if (participant.isNew()) {
@@ -241,8 +237,8 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         }
         final ProductParticipationEditor editor
                 = ProductParticipationEditor.create(
-                participant, act, descriptor, getLayoutContext());
-        getModifiableSet().add(participant, editor);
+                participant, act, getLayoutContext());
+        getModifiableSet().add(editor);
         _participants.add(editor);
         _productEditor = editor;
 
@@ -258,15 +254,13 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      *
      * @param participant the participant
      * @param act         the parent act
-     * @param descriptor  the participants node descriptor
      * @return the editor
      */
-    private IMObjectEditor addEditor(Participation participant, Act act,
-                                     NodeDescriptor descriptor) {
+    private IMObjectEditor addEditor(Participation participant, Act act) {
         final AbstractParticipationEditor editor =
                 DefaultParticipationEditor.create(
-                        participant, act, descriptor, getLayoutContext());
-        getModifiableSet().add(participant, editor);
+                        participant, act, getLayoutContext());
+        getModifiableSet().add(editor);
         _participants.add(editor);
         return editor;
     }
@@ -345,7 +339,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
          * @return a component to display <code>property</code>
          */
         @Override
-        protected Component createComponent(Property property, IMObject parent, 
+        protected Component createComponent(Property property, IMObject parent,
                                             LayoutContext context) {
             Component component = super.createComponent(property, parent,
                                                         context);

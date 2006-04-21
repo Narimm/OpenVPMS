@@ -20,8 +20,6 @@ package org.openvpms.web.component.im.edit.estimation;
 
 import java.math.BigDecimal;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -34,7 +32,6 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
@@ -55,19 +52,17 @@ public class EstimationItemEditor extends ActItemEditor {
             "lowQty", "highQty", "fixedPrice", "lowUnitPrice", "highUnitPrice",
             "lowTotal", "highTotal");
 
-    
+
     /**
      * Construct a new <code>EstimationItemEdtor</code>.
      *
-     * @param act        the act to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context
+     * @param act     the act to edit
+     * @param parent  the parent act
+     * @param context the layout context
      */
-    protected EstimationItemEditor(Act act, IMObject parent,
-                                   NodeDescriptor descriptor,
+    protected EstimationItemEditor(Act act, Act parent,
                                    LayoutContext context) {
-        super(act, parent, descriptor, context);
+        super(act, parent, context);
     }
 
     /**
@@ -83,26 +78,19 @@ public class EstimationItemEditor extends ActItemEditor {
     /**
      * Create a new editor for an object, if it can be edited by this class.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context
+     * @param object  the object to edit
+     * @param parent  the parent act
+     * @param context the layout context
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectEditor result = null;
-        if (object instanceof Act) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(object);
-            if (archetype != null
-                && archetype.getShortName().equals("act.customerEstimationItem"))
-            {
-                result = new EstimationItemEditor((Act) object, parent,
-                                                  descriptor, context);
-            }
+        if (IMObjectHelper.isA(object, "act.customerEstimationItem")
+            && parent instanceof Act) {
+            result = new EstimationItemEditor((Act) object, (Act) parent,
+                                              context);
         }
         return result;
     }

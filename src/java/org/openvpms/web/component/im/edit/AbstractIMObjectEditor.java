@@ -30,7 +30,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -38,7 +37,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.ModifiableProperty;
 import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -77,11 +75,6 @@ public abstract class AbstractIMObjectEditor
      * The parent object. May be <code>null</code>.
      */
     private final IMObject _parent;
-
-    /**
-     * The parent descriptor. May be <code>null</code>.
-     */
-    private final NodeDescriptor _descriptor;
 
     /**
      * The object's descriptor.
@@ -153,17 +146,14 @@ public abstract class AbstractIMObjectEditor
      * Construct a new <code>DefaultIMObjectEditor</code> for an object that
      * belongs to a collection.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object
-     * @param descriptor the parent descriptor
-     * @param context    the layout context. May be <code>null</code>.
+     * @param object  the object to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>.
      */
     public AbstractIMObjectEditor(IMObject object, IMObject parent,
-                                  NodeDescriptor descriptor,
                                   LayoutContext context) {
         _object = object;
         _parent = parent;
-        _descriptor = descriptor;
 
         if (context == null) {
             _context = new DefaultLayoutContext(true);
@@ -173,7 +163,7 @@ public abstract class AbstractIMObjectEditor
 
         _archetype = DescriptorHelper.getArchetypeDescriptor(object);
         _properties = new PropertySet(object, _archetype);
-        _modifiable = new ModifiableSet(object, _properties);
+        _modifiable = new ModifiableSet(_properties);
         IMObjectComponentFactory factory
                 = new ComponentFactory(_context, _modifiable);
         _context.setComponentFactory(factory);
@@ -230,15 +220,6 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Returns the parent descriptor.
-     *
-     * @return the parent descriptor. May be <code>null</code>
-     */
-    public NodeDescriptor getDescriptor() {
-        return _descriptor;
-    }
-
-    /**
      * Returns the archetype descriptor of the object.
      *
      * @return the object's archetype descriptor
@@ -291,14 +272,9 @@ public abstract class AbstractIMObjectEditor
         }
         boolean deleted = false;
         IMObject object = getObject();
-        if (_parent != null) {
-            try {
-                _descriptor.removeChildFromCollection(_parent, object);
-                deleted = true;
-            } catch (DescriptorException exception) {
-                ErrorDialog.show(exception);
-            }
-        } else if (!object.isNew()) {
+        if (object.isNew()) {
+            deleted = true;
+        } else {
             try {
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 service.remove(object);
@@ -461,7 +437,7 @@ public abstract class AbstractIMObjectEditor
      */
     protected boolean saveObject() {
         IMObject object = getObject();
-        return SaveHelper.save(object, _parent, _descriptor);
+        return SaveHelper.save(object);
     }
 
     /**
@@ -570,7 +546,7 @@ public abstract class AbstractIMObjectEditor
     }
 
     protected void updateDerivedFields(Modifiable modified) {
-        if (modified instanceof ModifiableProperty) {
+        if (modified instanceof Property) {
             _modifiable.removeModifiableListener(_derivedFieldRefresher);
             IArchetypeService service = ServiceHelper.getArchetypeService();
             service.deriveValues(getObject());

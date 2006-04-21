@@ -73,9 +73,9 @@ import org.openvpms.web.spring.ServiceHelper;
 public class CollectionEditor implements Saveable {
 
     /**
-     * The collection property.
+     * The collection.
      */
-    private final CollectionProperty _property;
+    private final CollectionProperty _collection;
 
     /**
      * The object to edit.
@@ -157,7 +157,7 @@ public class CollectionEditor implements Saveable {
      */
     public CollectionEditor(CollectionProperty property,
                             IMObject object, LayoutContext context) {
-        _property = property;
+        _collection = property;
         _object = object;
         _context = new DefaultLayoutContext(context);
 
@@ -196,12 +196,21 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
+     * Returns the collection property.
+     *
+     * @return the collection property
+     */
+    public CollectionProperty getCollection() {
+        return _collection;
+    }
+
+    /**
      * Returns the collection descriptor.
      *
      * @return the collection descriptor
      */
     public NodeDescriptor getDescriptor() {
-        return _property.getDescriptor();
+        return _collection.getDescriptor();
     }
 
     /**
@@ -210,10 +219,8 @@ public class CollectionEditor implements Saveable {
      * @return <code>true</code> if the object has been modified
      */
     public boolean isModified() {
-        if (!_modified) {
-            if (_editor != null) {
-                _modified = _editor.isModified();
-            }
+        if (!_modified && _editor != null) {
+            _modified = _editor.isModified();
         }
         return _modified;
     }
@@ -366,7 +373,7 @@ public class CollectionEditor implements Saveable {
      */
     protected List<IMObject> getObjects() {
         List<IMObject> objects = Collections.emptyList();
-        Collection values = _property.getValues();
+        Collection values = _collection.getValues();
         int size = values.size();
         if (size != 0) {
             objects = new ArrayList<IMObject>();
@@ -457,7 +464,7 @@ public class CollectionEditor implements Saveable {
      * @param object the object to remove
      */
     protected void removeFromCollection(IMObject object) {
-        _property.remove(object);
+        _collection.remove(object);
     }
 
     /**
@@ -466,6 +473,15 @@ public class CollectionEditor implements Saveable {
     protected void onEdit() {
         IMObject object = _table.getTable().getSelected();
         if (object != null) {
+            if (_editor != null && _editor.isModified()) {
+                // need to save any edits after getting the selected object
+                // as this may change the order within the table
+                if (!saveCurrentEdits()) {
+                    return;
+                }
+                // reselect it
+                _table.getTable().setSelected(object);
+            }
             edit(object);
         }
     }
@@ -477,8 +493,8 @@ public class CollectionEditor implements Saveable {
      */
     protected void edit(final IMObject object) {
         if (_editor != null) {
-            FocusTree tabTree = _context.getFocusTree();
-            tabTree.remove(_editor.getFocusGroup());
+            FocusTree focus = _context.getFocusTree();
+            focus.remove(_editor.getFocusGroup());
 
             _editor.removePropertyChangeListener(
                     IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
@@ -510,8 +526,7 @@ public class CollectionEditor implements Saveable {
      */
     protected IMObjectEditor createEditor(IMObject object,
                                           LayoutContext context) {
-        return IMObjectEditorFactory.create(object, _object, getDescriptor(),
-                                            context);
+        return IMObjectEditorFactory.create(object, _object, context);
     }
 
     /**
@@ -521,7 +536,16 @@ public class CollectionEditor implements Saveable {
      * @return <code>true</code> if the save was successful
      */
     protected boolean save(IMObjectEditor editor) {
-        return _editor.save();
+        boolean saved = false;
+        IMObject object = editor.getObject();
+        boolean isNew = object.isNew();
+        if (_editor.save()) {
+            if (isNew) {
+                _collection.add(object);
+            }
+            saved = true;
+        }
+        return saved;
     }
 
     /**
@@ -538,7 +562,8 @@ public class CollectionEditor implements Saveable {
     }
 
     /**
-     * Save any current edits.
+     * Save any current edits. If there are edits to save, the table will be
+     * repopulated and the edited object reselected.
      *
      * @return <code>true</code> if the save was successful; otherwise
      *         <code>false</code>

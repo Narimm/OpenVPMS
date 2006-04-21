@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -44,13 +43,12 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param descriptor    the parent descriptor
      * @param context       the layout context. May be <code>null</code>
      */
-    protected PatientParticipationEditor(Participation participation, Act parent,
-                                         NodeDescriptor descriptor,
+    protected PatientParticipationEditor(Participation participation,
+                                         Act parent,
                                          LayoutContext context) {
-        super(participation, parent, descriptor, context);
+        super(participation, parent, context);
 
         if (participation.isNew() && participation.getEntity() == null) {
             IMObject patient = Context.getInstance().getPatient();
@@ -61,16 +59,14 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
     /**
      * Create a new editor for an object, if it can be edited by this class.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context. May be <code>null</code>
+     * @param object  the object to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
     public static PatientParticipationEditor create(IMObject object,
                                                     IMObject parent,
-                                                    NodeDescriptor descriptor,
                                                     LayoutContext context) {
         PatientParticipationEditor result = null;
         if (object instanceof Participation
@@ -78,7 +74,7 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
             Participation participation = (Participation) object;
             if (IMObjectHelper.isA(participation, "participation.patient")) {
                 result = new PatientParticipationEditor(
-                        participation, (Act) parent, descriptor, context);
+                        participation, (Act) parent, context);
             }
         }
         return result;

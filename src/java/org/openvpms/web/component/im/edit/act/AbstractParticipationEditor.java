@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.edit.act;
 
 import nextapp.echo2.app.Component;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -53,13 +52,11 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      *
      * @param participation the object to edit
      * @param parent        the parent object
-     * @param descriptor    the parent descriptor
      * @param context       the layout context. May be <code>null</code>
      */
     public AbstractParticipationEditor(Participation participation, Act parent,
-                                       NodeDescriptor descriptor,
                                        LayoutContext context) {
-        super(participation, parent, descriptor, context);
+        super(participation, parent, context);
         Property property = getProperty("entity");
         _editor = createObjectReferenceEditor(property);
     }
@@ -93,7 +90,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     /**
      * Creates a new object reference editor.
      *
-     * @param property   the reference property
+     * @param property the reference property
      * @return a new object reference editor
      */
     protected ObjectReferenceEditor createObjectReferenceEditor(

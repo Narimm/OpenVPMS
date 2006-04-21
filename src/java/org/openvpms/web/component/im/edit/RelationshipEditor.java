@@ -71,13 +71,11 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      *
      * @param relationship the relationship
      * @param parent       the parent object
-     * @param descriptor   the parent descriptor
      * @param context      the layout context
      */
     protected RelationshipEditor(EntityRelationship relationship,
-                                 IMObject parent, NodeDescriptor descriptor,
-                                 LayoutContext context) {
-        super(relationship, parent, descriptor, context);
+                                 IMObject parent, LayoutContext context) {
+        super(relationship, parent, context);
         IMObject source;
         IMObject target;
 
@@ -113,20 +111,18 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     /**
      * Create a new editor for an object, if it can be edited by this class.
      *
-     * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param descriptor the parent descriptor. May be <code>null</cocde>
-     * @param context    the layout context
+     * @param object  the object to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context
      * @return a new editor for <code>object</code>, or <code>null</code> if it
      *         cannot be edited by this
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        NodeDescriptor descriptor,
                                         LayoutContext context) {
         IMObjectEditor result = null;
         if (object instanceof EntityRelationship) {
             result = new RelationshipEditor((EntityRelationship) object, parent,
-                                            descriptor, context);
+                                            context);
         }
         return result;
     }
