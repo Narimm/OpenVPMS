@@ -94,8 +94,9 @@
     <style name="MainPane.Left.Menu.Summary"
            type="nextapp.echo2.app.Column">
         <properties>
+            <property name="background" value="#ffffff"/>
             <property name="font">
-                <font size="8pt"/>
+                <font size="9pt" bold="true" />
             </property>
         </properties>
     </style>
