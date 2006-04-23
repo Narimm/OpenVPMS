@@ -32,8 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate: 2005-11-15 04:52:09 +1100 (Tue, 15 Nov 2005) $
  */
-public class AuditServiceException extends RuntimeException implements
-        OpenVPMSException {
+public class AuditServiceException extends OpenVPMSException {
 
     /**
      * Generated SUID

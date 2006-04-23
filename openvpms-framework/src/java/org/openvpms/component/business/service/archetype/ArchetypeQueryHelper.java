@@ -143,7 +143,6 @@ public class ArchetypeQueryHelper {
         
         CollectionNodeConstraint participations = new CollectionNodeConstraint(
                 "participations", pShortName, false, activeOnly)
-                .setJoinType(JoinType.LeftOuterJoin)
                 .add(new ObjectRefNodeConstraint("entity", ref));
         query.add(participations);
         

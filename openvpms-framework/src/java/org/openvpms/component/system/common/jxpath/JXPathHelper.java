@@ -60,6 +60,9 @@ public class JXPathHelper {
         
         // set the extended type converter
         TypeUtils.setTypeConverter(new OpenVPMSTypeConverter());
+        
+        // now just add the default functions
+        functions.addFunctions(JXPathContext.newContext(new Object()).getFunctions());
     }
 
     /**
@@ -71,6 +74,9 @@ public class JXPathHelper {
      *            the class function luibraries to include
      */
     public JXPathHelper(Properties props) {
+        // call the default constructor
+        this();
+        
         // add the extension functions
         if (props != null) {
             for (Object ns : props.keySet()) {
@@ -88,15 +94,6 @@ public class JXPathHelper {
                 }
             }
         }
-        
-        // set the factory name so that the correct version context
-        // factory is invoked
-        System.setProperty(JXPathContextFactory.FACTORY_NAME_PROPERTY,
-                OpenVPMSContextFactoryReferenceImpl.class.getName());
-        
-        // set the extended type converter
-        TypeUtils.setTypeConverter(new OpenVPMSTypeConverter());
-        
     }
     
     /**
@@ -109,8 +106,11 @@ public class JXPathHelper {
      */
     public static JXPathContext newContext(Object object) {
         JXPathContext context  = JXPathContext.newContext(object);
-        functions.addFunctions(context.getFunctions());
-        context.setFunctions(functions);
+        FunctionLibrary lib = new FunctionLibrary();
+        lib.addFunctions(context.getFunctions());
+        lib.addFunctions(functions);
+        context.setFunctions(lib);
+        context.setLenient(true);
         
         return context;
     }

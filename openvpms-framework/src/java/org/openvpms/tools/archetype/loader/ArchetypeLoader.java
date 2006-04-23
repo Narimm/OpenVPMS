@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 //commons-lang
 import org.apache.commons.io.FileUtils;
@@ -62,6 +63,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorValidationError;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 
@@ -283,13 +285,13 @@ public class ArchetypeLoader {
         fileName = config.getString("file");
         mappingFile  = config.getString("mappingFile");
         
-        if (!StringUtils.isEmpty(mappingFile)) {
+        if (StringUtils.isEmpty(mappingFile)) {
             throw new ArchetypeLoaderException(
                     ArchetypeLoaderException.ErrorCode.UsageError, 
                     new Object[] {"Mapping file has not been specified."});
         }
         
-        if (!StringUtils.isEmpty(fileName)) {
+        if (StringUtils.isEmpty(fileName)) {
             throw new ArchetypeLoaderException(
                     ArchetypeLoaderException.ErrorCode.UsageError, 
                     new Object[] {"File name has not been specified."});
@@ -397,6 +399,35 @@ public class ArchetypeLoader {
         for (ArchetypeDescriptor adesc : adescs.getArchetypeDescriptorsAsArray()) {
             if (verbose) {
                 logger.info("Processing Archetype: " + adesc.getName());
+            }
+            
+            // first attempt to validate the archetype descriptor. If the 
+            // validation fails then do not save the archetype but display
+            // the associated errors.
+            List<DescriptorValidationError> validation = adesc.validate();
+            if (validation.size() > 0) {
+                StringBuffer buf = new StringBuffer("[Validation Error] ");
+                buf.append("[")
+                    .append(fileName)
+                    .append("]")
+                    .append(" archetype ")
+                    .append(adesc.getName())
+                    .append(" had ")
+                    .append(validation.size())
+                    .append(" errors.\n");
+                for (DescriptorValidationError error : validation) {
+                    buf.append("\ttype:")
+                        .append(error.getDescriptorType())
+                        .append(" instance:")
+                        .append(error.getInstanceName())
+                        .append(" attrubute:")
+                        .append(error.getAttributeName())
+                        .append(" error:")
+                        .append(error.getError());
+                }
+                
+                logger.error(buf.toString());
+                continue;
             }
             
             Transaction tx = session.beginTransaction();
@@ -575,10 +606,10 @@ public class ArchetypeLoader {
         // set the root logger level to error
         Logger.getRootLogger().setLevel(Level.ERROR);
         Logger.getRootLogger().removeAllAppenders();
+        Logger.getRootLogger().addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
         
         logger = Logger.getLogger(ArchetypeLoader.class);
         logger.setLevel(Level.INFO);
-        logger.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
     }
     
     /**

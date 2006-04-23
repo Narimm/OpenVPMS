@@ -70,7 +70,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      * 
      * @param nodeName
      */
-    private CollectionNodeConstraint(String nodeName) {
+    CollectionNodeConstraint(String nodeName) {
         if (StringUtils.isEmpty(nodeName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);

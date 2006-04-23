@@ -44,11 +44,6 @@ public abstract class AbstractNodeConstraint implements IConstraint {
     protected String nodeName;
     
     /**
-     * The sort order
-     */
-    protected SortOrder sortOrder = SortOrder.None;
-    
-    /**
      * The operator to apply
      */
     protected RelationalOp operator;
@@ -102,13 +97,6 @@ public abstract class AbstractNodeConstraint implements IConstraint {
     }
     
     /**
-     * @return Returns the sortOrder.
-     */
-    public SortOrder getSortOrder() {
-        return sortOrder;
-    }
-
-    /**
      * @return Returns the operator.
      */
     public RelationalOp getOperator() {
@@ -139,7 +127,6 @@ public abstract class AbstractNodeConstraint implements IConstraint {
         return new EqualsBuilder()
             .appendSuper(super.equals(rhs))
             .append(nodeName, rhs.nodeName)
-            .append(sortOrder, rhs.sortOrder)
             .append(operator, rhs.operator)
             .append(parameters, rhs.parameters)
             .isEquals();
@@ -153,7 +140,6 @@ public abstract class AbstractNodeConstraint implements IConstraint {
         return new ToStringBuilder(this)
             .appendSuper(super.toString())
             .append("nodeName", nodeName)
-            .append("sortOrder", sortOrder)
             .append("operator", operator)
             .append("parameters", parameters)
             .toString();
@@ -167,7 +153,6 @@ public abstract class AbstractNodeConstraint implements IConstraint {
         AbstractNodeConstraint copy = (AbstractNodeConstraint)super.clone();
         copy.nodeName = this.nodeName;
         copy.operator = this.operator;
-        copy.sortOrder = this.sortOrder;
         
         copy.parameters = new Object[this.parameters.length];
         System.arraycopy(this.parameters, 0, copy.parameters, 0, 

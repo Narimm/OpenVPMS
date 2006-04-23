@@ -34,8 +34,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ValidationException extends RuntimeException implements
-        OpenVPMSException {
+public class ValidationException extends OpenVPMSException {
 
     /**
      * Generated SUID
@@ -152,6 +151,26 @@ public class ValidationException extends RuntimeException implements
      */
     public List<ValidationError> getErrors() {
         return errors;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Throwable#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer(getMessage());
+        buf.append(" ")
+           .append(getErrorCode())
+           .append("\n");
+        for (ValidationError error : errors) {
+            buf.append("\tnode:")
+                .append(error.getNodeName())
+                .append(" msg:")
+                .append(error.getErrorMessage())
+                .append("\n");
+        }
+
+        return buf.toString();
     }
 
 }

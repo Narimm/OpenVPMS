@@ -31,8 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate: 2005-11-15 15:45:50 +1100 (Tue, 15 Nov 2005) $
  */
-public class RuleEngineException extends RuntimeException implements
-        OpenVPMSException {
+public class RuleEngineException extends OpenVPMSException {
 
     /**
      * Generated SUID

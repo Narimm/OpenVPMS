@@ -13,6 +13,10 @@
 			type="java.lang.String" />
 		<node name="status" path="/status" displayName="status"
 			type="java.lang.String" />
+		<node name="startTime" path="/activityStartTime" display="start time" 
+			type="java.util.Date" />
+		<node name="endTime" path="/activityEndTime" display="end time" 
+			type="java.util.Date" />
 		<node name="participations" path="/participations"
 			parentChild="true" type="java.util.HashSet"
 			baseName="participation" maxCardinality="*"/>

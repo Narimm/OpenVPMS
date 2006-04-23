@@ -27,6 +27,8 @@ import java.util.List;
 // openvpms-framework
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 
 /**
  * Some test finctions for JXPath test cases
@@ -104,5 +106,35 @@ public class TestFunctions {
         }
         
         return dec;
+    }
+    
+    /**
+     * Return the contacts as a string
+     * 
+     * @param party
+     *            the party object
+     * @return String            
+     */
+    public static String getContactsss(Party party) {
+        StringBuffer buf = new StringBuffer();
+        if (party != null) {
+            for (Contact contact : party.getContacts()) {
+                buf.append(contact.getDescription());
+                buf.append(" ");
+            }
+        }
+        
+        return buf.toString();
+    }
+    
+    /**
+     * Return the contacts as a string
+     * 
+     * @param party
+     *            the party object
+     * @return String            
+     */
+    public static String getContacts() {
+        return "Jimmy";
     }
 }

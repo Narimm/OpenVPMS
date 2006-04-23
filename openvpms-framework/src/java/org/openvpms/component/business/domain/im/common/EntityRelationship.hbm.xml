@@ -56,14 +56,16 @@
         <property name="qualifiedName" access="property" type="string"
           column="source_archetype_id" />
       </component>
-      <property name="linkId" access="field" type="string" column="source_linkId"/>
+      <property name="linkId" access="field" type="string"
+        column="source_linkId"  index="entity_relationship_source_linkId_idx" />
     </component>
     <component name="target">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"
           column="target_archetype_id" />
       </component>
-      <property name="linkId" access="field" type="string" column="target_linkId"/>
+      <property name="linkId" access="field" type="string"
+        column="target_linkId" index="entity_relationship_target_linkId_idx" />
     </component>
     <many-to-one name="identity" access="property" column="identity_id"
       cascade="none" />

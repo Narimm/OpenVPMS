@@ -199,11 +199,11 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 (String) cparams.get("assertionFile"));
 
         // test retrieval of all records that start with entityRelationship
-        assertTrue(cache.getArchetypeDescriptors("entityRelationship\\..*").size() == ((Integer) params
+        assertTrue(cache.getArchetypeDescriptors("entityRelationship.*").size() == ((Integer) params
                 .get("recordCount1")).intValue());
 
         // test retrieval for anything with animal
-        assertTrue(cache.getArchetypeDescriptors(".*pet.*").size() == ((Integer) params
+        assertTrue(cache.getArchetypeDescriptors("animal.*pet*").size() == ((Integer) params
                 .get("recordCount2")).intValue());
 
         // test retrieval for anything that starts with person
@@ -211,7 +211,7 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 .get("recordCount3")).intValue());
 
         // test retrieval for anything that matchers person\\.person
-        assertTrue(cache.getArchetypeDescriptors("person\\.person").size() == ((Integer) params
+        assertTrue(cache.getArchetypeDescriptors("person.person").size() == ((Integer) params
                 .get("recordCount4")).intValue());
     }
 

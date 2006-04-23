@@ -42,8 +42,10 @@
         type="string" />
     </component>
     <property name="active" access="property" column="active" type="boolean" />
-    <property name="type" access="field" column="type" type="string" />
-    <many-to-one name="source" column="source" access="field" not-null="true" />
+    <property name="type" access="field" column="type" type="string"
+      index="lookup_relationship_type_source_idx" />
+    <many-to-one name="source" column="source" access="field" not-null="true"
+      index="lookup_relationship_type_source_idx" />
     <many-to-one name="target" column="target" access="field" not-null="true" />
   </class>
 

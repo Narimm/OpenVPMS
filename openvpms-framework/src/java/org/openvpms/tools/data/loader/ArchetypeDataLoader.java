@@ -50,6 +50,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.ValidationError;
@@ -73,6 +74,7 @@ import com.martiansoftware.jsap.Switch;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
+@Deprecated
 public class ArchetypeDataLoader {
     /**
      * Define a logger for this class
@@ -153,7 +155,7 @@ public class ArchetypeDataLoader {
      *            the file where the data is stored is passed in as the first
      *            argument
      */
-    public static void main(String[] args) throws Exception {
+    private static void main(String[] args) throws Exception {
         ArchetypeDataLoader loader = new ArchetypeDataLoader(args);
         loader.load();
     }
@@ -401,7 +403,8 @@ public class ArchetypeDataLoader {
         if (ndesc.isObjectReference()) {
             imobj = imref;
         } else {
-            imobj = archetypeService.get(imref);
+            imobj = ArchetypeQueryHelper.getByObjectReference(archetypeService, 
+                    imref);
         }
 
         if (ndesc.isCollection()) {

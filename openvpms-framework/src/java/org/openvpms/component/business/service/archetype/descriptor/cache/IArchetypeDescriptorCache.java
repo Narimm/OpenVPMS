@@ -135,6 +135,19 @@ public interface IArchetypeDescriptorCache {
             String conceptName, boolean primaryOnly);
 
     /**
+     * Return all the archetypes which match the specified short name
+     * 
+     * @param shortName
+     *            the short name, which may contain a wildcard character
+     * @param primaryOnly
+     *            return only the primary archetypes
+     * @return List<String>                              
+     * @throws ArchetypeDescriptorCacheException
+     *            a runtime exception if it cannot complete the call                        
+     */
+    public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly);
+    
+    /**
      * Add the specified archetype descriptor to the cache. If the replace
      * flag is specified and the archetype descriptor exists, then replace the
      * existing archetype descriptor with the new one.

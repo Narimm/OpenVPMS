@@ -18,7 +18,10 @@
 
 package org.openvpms.component.business.domain.im.security;
 
+// commons-resources
 import org.apache.commons.resources.Messages;
+
+// openvpms-framework
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
@@ -28,8 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-09-22 19:30:20 +1000 (Thu, 22 Sep 2005) $
  */
-public class GrantedAuthorityException extends RuntimeException implements
-        OpenVPMSException {
+public class GrantedAuthorityException extends OpenVPMSException {
 
     /**
      * Generated SUID
