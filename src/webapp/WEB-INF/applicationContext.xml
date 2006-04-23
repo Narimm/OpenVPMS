@@ -126,6 +126,9 @@
                 <value>
                     /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
                 </value>
+		        <value>
+		          /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
+		        </value>
             </list>
         </property>
     </bean>
@@ -149,6 +152,14 @@
             <ref local="sessionFactory"/>
         </property>
     </bean>
+
+	<!--  The AuditRecord DAO bean -->
+	<bean id="auditDao"
+		class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
+		<property name="sessionFactory">
+		  <ref local="sessionFactory" />
+		</property>
+	</bean>
 
     <!-- ================================================================== -->
     <!-- ==================== BUSINESS SERVICE BEANS======================= -->
@@ -184,6 +195,14 @@
             <ref bean="lookupDao"/>
         </constructor-arg>
     </bean>
+
+	<!--  The Audit Service -->
+	<bean id="auditService"
+		class="org.openvpms.component.business.service.audit.AuditService">
+		<constructor-arg index="0">
+		  <ref local="auditDao" />
+		</constructor-arg>
+	</bean>
 
     <!-- ================================================================== -->
     <!-- ======================= ARCHETYPE SUPPORT ======================== -->
@@ -306,9 +325,40 @@
 		</property>
 	</bean>
 
+    <!-- =============== AUDIT DEFINITIONS ============================= -->
+    <!-- ================================================================== -->
+    
+	<!--  Create a proxy for the ArchetypeService bean -->
+	<bean id="autoProxyCreator"
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="beanNames">
+		  <list>
+		    <value>archetypeService</value>
+		  </list>
+		</property>
+		<property name="interceptorNames">
+		  <list>
+		    <value>auditServiceAdvisor</value>
+		  </list>
+		</property>
+	</bean>
+	
+	<!-- The audit service advisor -->
+	<bean id="auditServiceAdvisor"
+		class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="advice">
+		  <ref local="auditService" />
+		</property>
+		<property name="patterns">
+		  <list>
+		    <value>.*ArchetypeService\.save</value>
+		    <value>.*ArchetypeService\.remove</value>
+		  </list>
+		</property>
+	</bean>
+
     <!-- =============== SECURITY DEFINITIONS (ACEGI SECURITY)============= -->
     <!-- ================================================================== -->
-
     <!--  see applicationContext-security.xml -->
 
 
