@@ -31,6 +31,7 @@ import java.util.Map;
 
 // commons-lang
 import org.apache.commons.beanutils.MethodUtils;
+import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
@@ -283,8 +284,14 @@ public class NodeDescriptor extends Descriptor {
      * 
      * @param child
      *            the child node descriptor to add
+     * @throws            
      */
     public void addNodeDescriptor(NodeDescriptor child) {
+        if (nodeDescriptors.containsKey(child.getName())) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.DuplicateNodeDescriptor,
+                    new Object[] {child.getName(), getName()});
+        }
         nodeDescriptors.put(child.getName(), child);
     }
 
@@ -348,6 +355,37 @@ public class NodeDescriptor extends Descriptor {
      */
     public boolean containsAssertionType(String type) {
         return assertionDescriptors.containsKey(type);
+    }
+    
+    /**
+     * Derive the node value for the specified {@link NodeDescriptor}. If the
+     * node does not support derived value or the value cannot be derived then
+     * raise an exception.
+     * 
+     * @param imobj
+     *            the {@link IMObject}
+     * @throws FailedToDeriveValueException
+     *            if the node is not declared to support dervied value or
+     *            the value cannot be derived correctly.            
+     */
+    public void deriveValue(IMObject imobj) {
+        if (!isDerived()) {
+            throw new FailedToDeriveValueException(
+                    FailedToDeriveValueException.ErrorCode.DerivedValueUnsupported,
+                    new Object[] {getName()});
+        }
+        
+        // attempt to derive the value
+        try {
+            JXPathContext context = JXPathHelper.newContext(imobj);   
+            Object value = context.getValue(this.getDerivedValue());
+            context.getPointer(this.getPath()).setValue(value);
+        } catch (Exception exception) {
+            throw new FailedToDeriveValueException(
+                    FailedToDeriveValueException.ErrorCode.FailedToDeriveValue,
+                    new Object[] {getName(), getPath(), getDerivedValue()},
+                    exception);
+        }
     }
 
     /**

@@ -75,9 +75,10 @@ public class ArchetypeServiceFunctions {
     public static List<IMObject> resolveRefs(List<IMObjectReference> references) {
         List<IMObject> objects = new ArrayList<IMObject>();
         for (IMObjectReference ref : references) {
-            objects.add(archetypeService.get(ref));
+            objects.add(ArchetypeQueryHelper.getByObjectReference(
+                    archetypeService, ref));
         }
-        
+
         return objects;
     }
     
@@ -89,6 +90,6 @@ public class ArchetypeServiceFunctions {
      * @return IMObject            
      */
     public static IMObject resolve(IMObjectReference reference) {
-        return archetypeService.get(reference);
+        return ArchetypeQueryHelper.getByObjectReference(archetypeService, reference);
     }
 }

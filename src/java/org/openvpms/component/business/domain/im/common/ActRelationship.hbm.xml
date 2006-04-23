@@ -52,7 +52,7 @@
           column="source_archetype_id" />
       </component>
       <property name="linkId" access="field" type="string"
-        column="source_linkId" />
+        column="source_linkId" index="act_relationship_source_linkId_idx"/>
     </component>
     <component name="target">
       <component name="archetypeId" access="field">
@@ -60,7 +60,7 @@
           column="target_archetype_id" />
       </component>
       <property name="linkId" access="field" type="string"
-        column="target_linkId" />
+        column="target_linkId" index="act_relationship_target_linkId_idx"/>
     </component>
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

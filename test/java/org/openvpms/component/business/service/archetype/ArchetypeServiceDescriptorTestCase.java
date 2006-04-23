@@ -161,7 +161,8 @@ public class ArchetypeServiceDescriptorTestCase extends
             throw ex;
         }
         
-        IMObject obj = service.getById(desc.getArchetypeId(), desc.getUid());
+        IMObject obj = ArchetypeQueryHelper.getByUid(service, 
+                desc.getArchetypeId(), desc.getUid());
         assertTrue(obj != null);
         assertTrue(obj instanceof ArchetypeDescriptor);
         assertTrue(((ArchetypeDescriptor)obj).getNodeDescriptors().size() == 1);
@@ -259,6 +260,32 @@ public class ArchetypeServiceDescriptorTestCase extends
        } else {
            fail("This should have been a collection");
        }
+    }
+    
+    /**
+     * Test for the improvement specified in OVPMS-261
+     */
+    public void testOVPMS261()
+    throws Exception {
+        List<String> shortNames = service.getArchetypeShortNames("entityRelationship.*", false);
+        assertTrue(shortNames != null);
+        assertTrue(shortNames.size() > 0);
+        
+        for (String shortName : shortNames) {
+            if (!shortName.matches("entityRelationship\\..*")) {
+                fail(shortName + " does not match expression entityRelationship.*");
+            }
+        }
+
+        shortNames = service.getArchetypeShortNames("entityRelationship.an*", false);
+        assertTrue(shortNames != null);
+        assertTrue(shortNames.size() > 0);
+        
+        for (String shortName : shortNames) {
+            if (!shortName.matches("entityRelationship\\.an.*")) {
+                fail(shortName + " does not match expression entityRelationship.an*");
+            }
+        }
     }
     
     /* (non-Javadoc)

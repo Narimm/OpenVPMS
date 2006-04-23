@@ -27,7 +27,8 @@
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" />
+    <property name="linkId" access="property" type="string"
+      index="participation_linkId_idx" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"
         type="string" />
@@ -56,14 +57,16 @@
         <property name="qualifiedName" access="property" type="string"
           column="entity_archetype_id" />
       </component>
-      <property name="linkId" access="field" type="string" column="entity_linkId" />
+      <property name="linkId" access="field" type="string"
+        column="entity_linkId" index="participation_entity_linkId_idx" />
     </component>
     <component name="act">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"
           column="act_archetype_id" />
       </component>
-      <property name="linkId" access="field" type="string" column="act_linkId" />
+      <property name="linkId" access="field" type="string" column="act_linkId"
+        index="participation_act_linkId_idx" />
     </component>
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

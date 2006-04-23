@@ -31,8 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeQueryException extends RuntimeException implements
-        OpenVPMSException {
+public class ArchetypeQueryException extends OpenVPMSException {
 
     /**
      * Generated SUID
@@ -48,7 +47,8 @@ public class ArchetypeQueryException extends RuntimeException implements
         InvalidLongNameConstraint,
         MustSpecifyNodeName,
         MustSpecifyOperator,
-        ParameterCountMismatch
+        ParameterCountMismatch,
+        CloneNotSupported
     }
 
     /**

@@ -69,7 +69,15 @@ public class ArchetypeQuery implements IConstraintContainer {
      *            the constraint to use
      */
     public ArchetypeQuery(ArchetypeConstraint constraint) {
-        this.archetypeConstraint = constraint;
+        try {
+            this.archetypeConstraint = (ArchetypeConstraint)constraint.clone();
+        } catch (CloneNotSupportedException exception) {
+            throw new ArchetypeQueryException(
+                    ArchetypeQueryException.ErrorCode.CloneNotSupported,
+                            new Object[] {constraint.getClass()},
+                            exception);
+        }
+            
     }
 
     /**
@@ -98,7 +106,7 @@ public class ArchetypeQuery implements IConstraintContainer {
      * Create an instance of this query specifying one or more elements.
      * Any of the parameters can be null or may  include the wild card character
      *  
-     * @param rmName 
+     * @param rmName  
      *            the reference model name (optional)
      * @param entityName
      *            the entity name (optional)         

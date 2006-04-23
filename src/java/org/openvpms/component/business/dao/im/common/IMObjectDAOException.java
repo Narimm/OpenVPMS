@@ -27,8 +27,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectDAOException extends RuntimeException implements
-        OpenVPMSException {
+public class IMObjectDAOException extends OpenVPMSException {
 
     /**
      * Generated SUID.

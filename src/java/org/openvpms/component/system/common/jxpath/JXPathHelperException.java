@@ -31,8 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class JXPathHelperException extends RuntimeException implements
-        OpenVPMSException {
+public class JXPathHelperException extends OpenVPMSException {
 
     /**
      * Generated SUID

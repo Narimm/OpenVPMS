@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,9 +196,16 @@ public class ArchetypeDescriptor extends Descriptor {
      * Add a node descriptor to this archetype descripor
      * 
      * @param node
-     *            the node descriptor to add             
+     *            the node descriptor to add
+     * @throws DescriptorException
+     *            if we are adding a node descriptor with the same name                         
      */
     public void addNodeDescriptor(NodeDescriptor node) {
+        if (nodeDescriptors.containsKey(node.getName())) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.DuplicateNodeDescriptor,
+                    new Object[] {node.getName(), getName()});
+        }
         nodeDescriptors.put(node.getName(), node);
     }
     
@@ -398,6 +406,7 @@ public class ArchetypeDescriptor extends Descriptor {
         List<DescriptorValidationError> errors = 
             new ArrayList<DescriptorValidationError>();
         
+        
         if (type == null) {
             errors.add(new DescriptorValidationError(
                     Descriptor.DescriptorType.ArchetypeDescriptor, null, 
@@ -411,6 +420,20 @@ public class ArchetypeDescriptor extends Descriptor {
         }
         
         
+        // validate that there are no duplicate node descriptor names
+        List<NodeDescriptor> nodes = getAllNodeDescriptors();
+        Map<String, NodeDescriptor> names = new HashMap<String, NodeDescriptor>();
+        
+        for (NodeDescriptor node :nodes) {
+            if (names.containsKey(node.getName())) {
+                errors.add(new DescriptorValidationError(
+                        Descriptor.DescriptorType.NodeDescriptor,
+                        node.getName(), "name",
+                        Descriptor.ValidationError.DuplicateNodeDescriptor));
+            }
+            names.put(node.getName(), node);
+        }
+
         return errors;
     }
     

@@ -31,8 +31,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeLoaderException extends RuntimeException implements
-        OpenVPMSException {
+public class ArchetypeLoaderException extends OpenVPMSException {
 
     /**
      * Generated SUID

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 // commons-lang
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
@@ -40,9 +41,11 @@ import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -496,8 +499,6 @@ public class QueryBuilder {
      *            the context
      */
     private void process(CollectionNodeConstraint constraint, QueryContext context) {
-        context.pushLogicalOperator(LogicalOperator.And);
-        
         DistinctTypesResultSet types = context.peekDistinctTypes();
         NodeDescriptor ndesc = getMatchingNodeDescriptor(types.descriptors, 
                 constraint.getNodeName());
@@ -512,11 +513,65 @@ public class QueryBuilder {
                 getProperty(ndesc), constraint.getJoinType());
 
         // process common portion of constraint
-        processArchetypeConstraint(constraint.getArchetypeConstraint(), context);
+        if (constraint.getArchetypeConstraint() != null) {
+            context.pushLogicalOperator(LogicalOperator.And);
+            processArchetypeConstraint(constraint.getArchetypeConstraint(), 
+                    context);
+            context.popLogicalOperator();
+        }
         
         // pop the stack when we have finished processing this constraint
         context.popDistinctTypes();
-        context.popLogicalOperator();
+    }
+
+    /**
+     * Process the specified archetype sort constraint.
+     * 
+     * @param constraint
+     *            an archetype sort constraint          
+     * @param context
+     *            the context
+     */
+    private void process(ArchetypeSortConstraint constraint, QueryContext context) {
+        String property = null;
+        
+        switch (constraint.getProperty()) {
+        case EntityName:
+            property = "archetypeId.entityName";
+            break;
+            
+        case ConceptName:
+            property = "archetypeId.concept";
+            break;
+            
+        case ReferenceModelName:
+            property = "archetypeId.rmName";
+            break;
+        }
+        
+        context.addSortConstraint(property, constraint.isAscending());
+    }
+
+    /**
+     * Process the specified sort constraint on a property.
+     * 
+     * @param constraint
+     *            a sort constraint on a node
+     * @param context
+     *            the context
+     */
+    private void process(NodeSortConstraint constraint, QueryContext context) {
+        NodeDescriptor ndesc = getMatchingNodeDescriptor(
+                context.peekDistinctTypes().descriptors, constraint.getNodeName());
+        if (ndesc == null) {
+            throw new QueryBuilderException(
+                    QueryBuilderException.ErrorCode.NoNodeDescriptorForName,
+                    new Object[] {constraint.getNodeName()});
+        }
+        
+        // get the name of the attribute
+        String property = getProperty(ndesc);
+        context.addSortConstraint(property, constraint.isAscending());
     }
 
     /**
@@ -589,7 +644,7 @@ public class QueryBuilder {
             (StringUtils.isEmpty(types.type))) {
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.NoMatchingArchetypesForId,
-                    new Object[] {constraint.getShortNames()});
+                    new Object[] {ArrayUtils.toString(constraint.getShortNames())});
         }
         
         return types;
@@ -851,6 +906,10 @@ public class QueryBuilder {
             process((AndConstraint)constraint, context);
         } else if (constraint instanceof OrConstraint) {
             process((OrConstraint)constraint, context);
+        } else if (constraint instanceof NodeSortConstraint) {
+            process((NodeSortConstraint)constraint, context);
+        } else if (constraint instanceof ArchetypeSortConstraint) {
+            process((ArchetypeSortConstraint)constraint, context);
         } else {
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,

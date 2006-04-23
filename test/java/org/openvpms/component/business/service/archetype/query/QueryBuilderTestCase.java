@@ -19,15 +19,18 @@
 package org.openvpms.component.business.service.archetype.query;
 
 // spring-context
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.SortOrder;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint.ArchetypeSortProperty;
 
 // log4j
 import org.apache.log4j.Logger;
@@ -92,7 +95,7 @@ public class QueryBuilderTestCase extends
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
                     .add(new NodeConstraint("uid", "1"));
-        logger.debug(builder.build(query).getQueryString());
+        builder.build(query).getQueryString();
     }
     
     /**
@@ -102,7 +105,7 @@ public class QueryBuilderTestCase extends
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery("person.person", false, false)
                     .add(new NodeConstraint("uid", "1"));
-        logger.debug(builder.build(query).getQueryString());
+        builder.build(query).getQueryString();
     }
     
     /**
@@ -113,7 +116,7 @@ public class QueryBuilderTestCase extends
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
                     .add(new NodeConstraint("name", "sa*"));
-        logger.debug(builder.build(query).getQueryString());
+        builder.build(query).getQueryString();
     }
     
     /**
@@ -123,11 +126,11 @@ public class QueryBuilderTestCase extends
     throws Exception {
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
-                    .add(new NodeConstraint("name", "sa*")
-                            .setSortOrder(SortOrder.Ascending))
+                    .add(new NodeConstraint("name", "sa*"))
+                    .add(new NodeSortConstraint("name", true))
                     .add(new CollectionNodeConstraint("contacts",
                             new ArchetypeShortNameConstraint("contact.location", false, false)));
-        logger.debug(builder.build(query).getQueryString());
+        builder.build(query).getQueryString();
     }
         
     /**
@@ -138,11 +141,58 @@ public class QueryBuilderTestCase extends
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeShortNameConstraint(new String[]{"person.person", "organization.organization"}, false, false))
                     .add(new NodeConstraint("uid", "1"))
-                    .add(new NodeConstraint("name", "sa*")
-                            .setSortOrder(SortOrder.Ascending))
+                    .add(new NodeConstraint("name", "sa*"))
+                    .add(new NodeSortConstraint("name", true))
                     .add(new CollectionNodeConstraint("contacts",
                             new ArchetypeShortNameConstraint("contact.location", false, false)));
-        logger.debug(builder.build(query).getQueryString());    
+        builder.build(query).getQueryString();    
+    }
+    
+    /**
+     * Test the query on a collection constraint without specifying 
+     * archetype constraint info
+     */
+    public void testCollectionNodeConstraintWithNodeNameOnly()
+    throws Exception {
+        ArchetypeQuery query =  new ArchetypeQuery(
+                new ArchetypeShortNameConstraint(new String[]{"person.person", "organization.organization"}, false, false))
+                    .add(new NodeConstraint("uid", "1"))
+                    .add(new NodeConstraint("name", "sa*"))
+                    .add(new NodeSortConstraint("name", true))
+                    .add(new CollectionNodeConstraint("contacts", 
+                            new ArchetypeShortNameConstraint("contact.*", false, false)));
+        builder.build(query).getQueryString();    
     }
 
+    /**
+     * Test query with an archetype and node based sort constraint
+     */
+    public void testWithMultipleSortConstraints()
+    throws Exception {
+        ArchetypeQuery query =  new ArchetypeQuery(
+                new ArchetypeShortNameConstraint(new String[]{"person.person", "organization.organization"}, false, false))
+                    .add(new NodeConstraint("uid", "1"))
+                    .add(new NodeConstraint("name", "sa*"))
+                    .add(new NodeSortConstraint("name", true))
+                    .add(new ArchetypeSortConstraint(ArchetypeSortProperty.ConceptName, true))
+                    .add(new CollectionNodeConstraint("contacts",
+                            new ArchetypeShortNameConstraint("contact.*", false, false))
+                            .add(new ArchetypeSortConstraint(ArchetypeSortProperty.ConceptName, false)));
+        builder.build(query).getQueryString();    
+    }
+    
+    /**
+     * Test for ovpms-240 
+     */
+    public void testOVPMS240()
+    throws Exception {
+        ArchetypeQuery query = new ArchetypeQuery(
+                new ArchetypeShortNameConstraint("product.product", false, true))
+                    .add(new CollectionNodeConstraint("classifications",
+                            new ArchetypeShortNameConstraint("classification.staff", false, false))
+                            .add(new OrConstraint()
+                                    .add(new NodeConstraint("name", "equine"))
+                                    .add(new NodeConstraint("name", "all"))));
+        builder.build(query).getQueryString();    
+    }
 }

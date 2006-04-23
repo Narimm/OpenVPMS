@@ -119,6 +119,19 @@ public interface IArchetypeService {
     public void deriveValues(IMObject object);
 
     /**
+     * Derive the value for the {@link NodeDescriptor} with the specified 
+     * name
+     * 
+     * @param object
+     *            the object to operate on.
+     * @param node
+     *            the name of the {@link NodeDescriptor}, which will be used
+     *            to derive the value            
+     * @param FailedToDeriveValueException
+     *            if it cannot derive the value            
+     */
+    public void deriveValue(IMObject object, String node);
+    /**
      * Return all the {@link ArchetypeDescriptor} managed by this service
      * 
      * @return List<ArchetypeDescriptor>
@@ -374,6 +387,19 @@ public interface IArchetypeService {
      */
     public List<String> getArchetypeShortNames();
     
+    /**
+     * Return all the archetypes which match the specified short name
+     * 
+     * @param shortName
+     *            the short name, which may contain a wildcard character
+     * @param primaryOnly
+     *            return only the primary archetypes
+     * @return List<String>                              
+     * @throws ArchetypeServiceException
+     *            a runtime exception if it cannot complete the call                        
+     */
+    public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly);
+
     /**
      * Retrieve the {@link IMObject} given an {@link IMObjectReference}
      * 

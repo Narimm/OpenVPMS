@@ -22,17 +22,20 @@ package org.openvpms.tools.data.loader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-// log4j
+// commons-io
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+
+//log4j
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -48,6 +51,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.ValidationError;
@@ -95,12 +99,12 @@ public class StaxArchetypeDataLoader {
     /**
      * A reference to the idCache
      */
-    private Map<String, IMObjectReference> idCache = new HashMap<String, IMObjectReference>();
+    private Cache idCache;
 
     /**
      * A linkId to id cache
      */
-    private Map<String, String> linkIdCache = new HashMap<String, String>();
+    private Cache linkIdCache;
 
     /**
      * Indicates whether the directory search is recursive
@@ -117,6 +121,13 @@ public class StaxArchetypeDataLoader {
      * archetypes
      */
     private boolean verbose;
+    
+    /**
+     * Indicates to do a first parse on all the files and then do a second
+     * parse on all the files. The default is do a first parse and a second 
+     * parse on a file before moving on to the next file. 
+     */
+    private boolean parseOrder;
 
     /**
      * Used to process the command line
@@ -164,8 +175,12 @@ public class StaxArchetypeDataLoader {
     private void load() throws Exception {
         verbose = config.getBoolean("verbose");
         validateOnly = config.getBoolean("validateOnly");
+        parseOrder = config.getBoolean("parseOrder");
         if (config.getString("file") != null) {
-            processFile(config.getString("file"));
+            // first parse
+            processFile(config.getString("file"), true);
+            // second parse
+            processFile(config.getString("file"), false);
         } else if (config.getString("dir") != null) {
             processDir(config.getString("dir"));
         } else {
@@ -183,9 +198,26 @@ public class StaxArchetypeDataLoader {
         String[] extensions = { extension };
         Collection collection = FileUtils.listFiles(new File(dir), extensions,
                 subdir);
-        for (Object obj : collection) {
-            File file = (File) obj;
-            processFile(file.getAbsolutePath());
+        if (parseOrder) {
+            // first parse
+            for (Object obj : collection) {
+                File file = (File) obj;
+                processFile(file.getAbsolutePath(), true);
+            }
+            
+            // second parse
+            for (Object obj : collection) {
+                File file = (File) obj;
+                processFile(file.getAbsolutePath(), false);
+            }
+        } else {
+            for (Object obj : collection) {
+                File file = (File) obj;
+                // first parse
+                processFile(file.getAbsolutePath(), true);
+                // second parse;
+                processFile(file.getAbsolutePath(), false);
+            }
         }
     }
 
@@ -194,110 +226,117 @@ public class StaxArchetypeDataLoader {
      * 
      * @param file
      *            the file to process
+     * @param boolean
+     *            if this is the first parse for this file            
      * @throws Exception
      *             propagate all exceptions to client
      */
-    private void processFile(String file) throws Exception {
-        for (int iteration = 0; iteration < 2; iteration++) {
-            boolean firstParse = (iteration == 0 ? true : false);
+    private void processFile(String file, boolean firstParse) throws Exception {
+        if (firstParse) {
+            logger.info("\n[Executing first parse for : " + file + "]\n");
+        } else {
+            logger.info("\n[Executing second parse for : " + file + "]\n");
+        }
 
-            if (firstParse) {
-                logger.info("\n[Executing first parse for : " + file + "]\n");
-            } else {
-                logger.info("\n[Executing second parse for : " + file + "]\n");
-            }
+        XMLStreamReader reader = getReader(file);
+        Stack<IMObject> stack = new Stack<IMObject>();
+        boolean hasReference = false;
+        for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader
+                .next()) {
+            IMObject current = null;
+            switch (event) {
+            case XMLStreamConstants.START_DOCUMENT:
+                break;
 
-            XMLStreamReader reader = getReader(file);
-            Stack<IMObject> stack = new Stack<IMObject>();
-            boolean hasReference = false;
-            for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader
-                    .next()) {
-                IMObject current = null;
-                switch (event) {
-                case XMLStreamConstants.START_DOCUMENT:
-                    break;
-
-                case XMLStreamConstants.START_ELEMENT:
-                    if (verbose) {
-                        logger.info("\n[START PROCESSING element=" 
-                                + reader.getLocalName() 
-                                + " parent=" + (stack.size() == 0 
-                                ? "none" : stack.peek().getArchetypeIdAsString()) 
-                                + "]\n" + formatElement(reader));
-                    }
-                    
-                    if (reader.getLocalName().equals("data")) {
-                        try {
-                            hasReference = attributesContainReferences(reader);
-                            if (stack.size() > 0) {
-                                current = processElement(stack.peek(), reader,
-                                        firstParse, hasReference);
-                            } else {
-                                current = processElement(null, reader,
-                                        firstParse, hasReference);
-                            }
-                            stack.push(current);
-                        } catch (Exception exception) {
-                            logger.error("\n[ERR: Exception in started element]\n" 
-                                    + formatElement(reader) + "\n",
-                                    exception);
-                        }
-                    }
-                    break;
-
-                case XMLStreamConstants.END_DOCUMENT:
-                    break;
-
-                case XMLStreamConstants.END_ELEMENT:
-                    if (stack.size() > 0) {
-                        current = stack.pop();
-                        try {
-                            if ((stack.size() == 0) && (current != null)) {
-                                if ((firstParse && hasReference) ||
-                                    (!firstParse && !hasReference)) {
-                                    // do nothing since this element needs
-                                    // to be processed on the second parse
-                                } else {
-                                    if (validateOnly) {
-                                        archetypeService.validateObject(current);
-                                    } else {
-                                        archetypeService.save(current);
-                                    }
-                                    String id = linkIdCache.remove(current.getLinkId());
-                                    if (id != null) {
-                                        idCache.put(id, new IMObjectReference(current));
-                                    }
-        
-                                    if (verbose) {
-                                        logger.info("\n[CREATED]\n"
-                                                + current.toString());
-                                    }
-                                }
-                                hasReference = false;
-                            }
-                        } catch (ValidationException validation) {
-                            logger.error("\n[ERR: Failed to process element. "
-                                    + "Validation errors follow].");
-                            for (ValidationError error : validation.getErrors()) {
-                                logger.error(error.toString());
-                            }
-                            logger.error(current.toString());
-                        } catch (Exception exception) {
-                            logger.error("\n[ERR: Error trying to save object" + "]\n"
-                                    + exception);
-                        }
-                    }  
-                    if (verbose) {
-                        logger.info("\n[END PROCESSING element=" 
-                                + reader.getLocalName() + "]\n");
-                    }
-                    
-                    
-                    break;
-
-                default:
-                    break;
+            case XMLStreamConstants.START_ELEMENT:
+                if (verbose) {
+                    logger.info("\n[START PROCESSING element=" 
+                            + reader.getLocalName() 
+                            + " parent=" + (stack.size() == 0 
+                            ? "none" : stack.peek().getArchetypeIdAsString()) 
+                            + "]\n" + formatElement(reader));
                 }
+                
+                if (reader.getLocalName().equals("data")) {
+                    try {
+                        hasReference = attributesContainReferences(reader);
+                        if (stack.size() > 0) {
+                            current = processElement(stack.peek(), reader,
+                                    firstParse, hasReference);
+                        } else {
+                            current = processElement(null, reader,
+                                    firstParse, hasReference);
+                        }
+                        stack.push(current);
+                    } catch (Exception exception) {
+                        logger.error("\n[ERR: Exception in started element]\n" 
+                                + formatElement(reader) + "\n",
+                                exception);
+                    }
+                }
+                break;
+
+            case XMLStreamConstants.END_DOCUMENT:
+                break;
+
+            case XMLStreamConstants.END_ELEMENT:
+                if (stack.size() > 0) {
+                    current = stack.pop();
+                    try {
+                        if ((stack.size() == 0) && (current != null)) {
+                            if ((firstParse && hasReference) ||
+                                (!firstParse && !hasReference)) {
+                                // do nothing since this element needs
+                                // to be processed on the second parse
+                            } else {
+                                if (validateOnly) {
+                                    archetypeService.validateObject(current);
+                                } else {
+                                    archetypeService.save(current);
+                                }
+                                
+                                Element element = linkIdCache.get(current.getLinkId());
+                                String id = null;
+                                if (element != null) {
+                                    id = (String)element.getValue();
+                                    linkIdCache.remove(current.getLinkId());
+                                }
+                                
+                                if (id != null) {
+                                    idCache.put(new Element(id, 
+                                            new IMObjectReference(current)));
+                                }
+    
+                                if (verbose) {
+                                    logger.info("\n[CREATED]\n"
+                                            + current.toString());
+                                }
+                            }
+                            hasReference = false;
+                        }
+                    } catch (ValidationException validation) {
+                        logger.error("\n[ERR: Failed to process element. "
+                                + "Validation errors follow].");
+                        for (ValidationError error : validation.getErrors()) {
+                            logger.error(error.toString());
+                        }
+                        logger.error(current.toString());
+                    } catch (Exception exception) {
+                        logger.error("\n[ERR: Error trying to save object" + "]\n"
+                                + exception);
+                        exception.printStackTrace();
+                    }
+                }  
+                if (verbose) {
+                    logger.info("\n[END PROCESSING element=" 
+                            + reader.getLocalName() + "]\n");
+                }
+                
+                
+                break;
+
+            default:
+                break;
             }
         }
     }
@@ -434,7 +473,7 @@ public class StaxArchetypeDataLoader {
             
             if (valid) {
                 if (!StringUtils.isEmpty(id)) {
-                    linkIdCache.put(object.getLinkId(), id);
+                    linkIdCache.put(new Element(object.getLinkId(), id));
                 }
             } else {
                 object = null;
@@ -459,9 +498,10 @@ public class StaxArchetypeDataLoader {
      *            propagate exception to caller            
      */
     private void processIdReference(IMObject object, String attValue,
-            NodeDescriptor ndesc, boolean validateOnly) {
+            NodeDescriptor ndesc, boolean validateOnly) 
+        throws Exception {
         String ref = attValue.substring("id:".length());
-        IMObjectReference imref = idCache.get(ref);
+        IMObjectReference imref = (IMObjectReference)idCache.get(ref).getValue();
         Object imobj = null;
         if (ndesc.isObjectReference()) {
             imobj = imref;
@@ -469,7 +509,8 @@ public class StaxArchetypeDataLoader {
             if (validateOnly) {
                 imobj = archetypeService.create(imref.getArchetypeId());
             } else {
-                imobj = archetypeService.get(imref);
+                imobj = ArchetypeQueryHelper.getByObjectReference(
+                        archetypeService, imref);
             }
         }
 
@@ -491,9 +532,10 @@ public class StaxArchetypeDataLoader {
      *            the returned object
      * @throws Exception                        
      */
-    private IMObject getObjectForId(String id, boolean validateOnly) {
+    private IMObject getObjectForId(String id, boolean validateOnly) 
+    throws Exception {
         String ref = id.substring("id:".length());
-        IMObjectReference imref = idCache.get(ref);
+        IMObjectReference imref = (IMObjectReference)idCache.get(ref).getValue();
         IMObject imobj = null;
         
         if (validateOnly) {
@@ -501,7 +543,8 @@ public class StaxArchetypeDataLoader {
                 imobj = archetypeService.create(imref.getArchetypeId());
             }
         } else {
-            imobj = archetypeService.get(imref);
+            imobj = ArchetypeQueryHelper.getByObjectReference(
+                    archetypeService, imref);
             
         }
 
@@ -569,9 +612,13 @@ public class StaxArchetypeDataLoader {
         archetypeService = (IArchetypeService) context
                 .getBean("archetypeService");
 
+        linkIdCache = (Cache)context.getBean("linkIdCache");
+        idCache = (Cache)context.getBean("idCache");
+        
         // set up the options for the command line and creater the logger
         createOptions();
         createLogger();
+        
     }
 
     /**
@@ -612,6 +659,9 @@ public class StaxArchetypeDataLoader {
         jsap.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
                         "Only validate the data file. Do not process."));
+        jsap.registerParameter(new Switch("parseOrder").setShortFlag('p')
+                .setLongFlag("parseOrder").setDefault("false").setHelp(
+                        "Do a first parse on all files and then do a second parse on all files."));
     }
 
     /**
@@ -625,10 +675,11 @@ public class StaxArchetypeDataLoader {
         // set the root logger level to error
         Logger.getRootLogger().setLevel(Level.ERROR);
         Logger.getRootLogger().removeAllAppenders();
-
+        Logger.getRootLogger().addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+        
         logger = Logger.getLogger(ArchetypeLoader.class);
         logger.setLevel(Level.INFO);
-        logger.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+        //logger.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
     }
 
     /**
@@ -637,7 +688,7 @@ public class StaxArchetypeDataLoader {
     private void displayUsage() {
         System.err.println();
         System.err
-                .println("Usage: java " + ArchetypeDataLoader.class.getName());
+                .println("Usage: java " + StaxArchetypeDataLoader.class.getName());
         System.err.println("                " + jsap.getUsage());
         System.err.println();
         System.err.println(jsap.getHelp());

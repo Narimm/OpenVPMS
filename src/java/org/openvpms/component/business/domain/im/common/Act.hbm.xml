@@ -27,14 +27,15 @@
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" />
+    <property name="linkId" access="property" type="string"
+      index="act_linkId_idx" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"
         type="string" />
       <property name="rmName" access="property" column="arch_rm_name"
         type="string" />
       <property name="concept" access="property" column="arch_concept_name"
-        type="string" />
+        type="string" index="act_concept_idx,act_concept_start_time_idx" />
       <property name="entityName" access="property" column="arch_entity_name"
         type="string" />
       <property name="version" access="property" column="arch_version"
@@ -46,7 +47,8 @@
     <property name="active" access="property" column="active" type="boolean" />
     <property name="mood" column="mood" type="string" />
     <property name="title" column="title" type="string" />
-    <property name="activityStartTime" column="activity_start_time" type="date" />
+    <property name="activityStartTime" column="activity_start_time" type="date"
+      index="act_concept_start_time_idx" />
     <property name="activityEndTime" column="activity_end_time" type="date" />
     <property name="reason" column="reason" type="string" />
     <property name="repeatNumber" column="repeat_number" type="int" />
@@ -55,19 +57,19 @@
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <set name="sourceActRelationships" access="property" lazy="false"
       cascade="all,delete-orphan" inverse="true">
-      <key column="source_linkId" not-null="true" property-ref="linkId"/>
+      <key column="source_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.ActRelationship" />
     </set>
     <set name="targetActRelationships" access="property" lazy="false"
       cascade="all,delete-orphan" inverse="true">
-      <key column="target_linkId" not-null="true" property-ref="linkId"/>
+      <key column="target_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.ActRelationship" />
     </set>
     <set name="participations" access="property" lazy="false" inverse="true"
       cascade="all,delete-orphan">
-      <key column="act_linkId" not-null="true" property-ref="linkId"/>
+      <key column="act_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.Participation" />
     </set>

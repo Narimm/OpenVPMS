@@ -32,8 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class DescriptorException extends RuntimeException implements
-        OpenVPMSException {
+public class DescriptorException extends OpenVPMSException {
 
     /**
      * Generated SUID
@@ -53,7 +52,8 @@ public class DescriptorException extends RuntimeException implements
         CannotSetValueForReadOnlyNode,
         CannotAddNodeDescriptor,
         FailedToGetChildren,
-        CannotCastToCollection
+        CannotCastToCollection,
+        DuplicateNodeDescriptor
     }
 
     /**

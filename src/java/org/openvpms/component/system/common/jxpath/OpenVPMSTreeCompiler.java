@@ -19,6 +19,7 @@
 
 package org.openvpms.component.system.common.jxpath;
 
+// commons-jxpath
 import org.apache.commons.jxpath.ri.Compiler;
 import org.apache.commons.jxpath.ri.QName;
 import org.apache.commons.jxpath.ri.compiler.Expression;
@@ -160,6 +161,14 @@ public class OpenVPMSTreeCompiler extends TreeCompiler {
     @Override
     public Object sum(Object[] arguments) {
         return new BigDecimalOperationAdd(toExpressionArray(arguments));
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.commons.jxpath.ri.compiler.TreeCompiler#function(int, java.lang.Object[])
+     */
+    @Override
+    public Object function(int code, Object[] args) {
+        return new OpenVPMSCoreFunction(code, toExpressionArray(args));
     }
 
     /**

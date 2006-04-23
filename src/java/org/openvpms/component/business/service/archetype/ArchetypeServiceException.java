@@ -32,8 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeServiceException extends RuntimeException implements
-        OpenVPMSException {
+public class ArchetypeServiceException extends OpenVPMSException {
 
     /**
      * Generated SUID
@@ -80,7 +79,12 @@ public class ArchetypeServiceException extends RuntimeException implements
         SortPropertyNotSupported,
         CanOnlySearchAgainstSingleType,
         FailedToFindObjectsMatchingShortNames,
-        FailedToExecuteQuery
+        FailedToExecuteQuery,
+        NonNullObjectRequired,
+        NonNullNodeNameRequired,
+        InvalidArchetypeDescriptor,
+        InvalidNodeDescriptor,
+        InvalidDefaultValue
     }
 
     /**

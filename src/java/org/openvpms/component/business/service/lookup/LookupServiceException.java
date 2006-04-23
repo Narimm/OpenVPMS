@@ -28,8 +28,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LookupServiceException extends RuntimeException implements
-        OpenVPMSException {
+public class LookupServiceException extends OpenVPMSException {
 
     /**
      * Generated SUID

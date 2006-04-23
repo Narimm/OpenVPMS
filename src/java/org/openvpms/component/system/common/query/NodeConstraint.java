@@ -82,13 +82,22 @@ public class NodeConstraint extends AbstractNodeConstraint {
     public NodeConstraint(String nodeName, RelationalOp operator, Object[] parameters) {
         super(nodeName, operator, parameters);
     }
-
+    
     /**
-     * @param sortOrder The sortOrder to set.
+     * Construct a constraint which takes two parameters such as in 'between'.
+     * 
+     * @param nodeName
+     *            the name of the node descriptor
+     * @param operator
+     *            the relational operator
+     * @param param1
+     *            the first parameter
+     * @param param2
+     *            the second parameter                                    
      */
-    public NodeConstraint setSortOrder(SortOrder sortOrder) {
-        this.sortOrder = sortOrder;
-        return this;
+    public NodeConstraint(String nodeName, RelationalOp operator, Object param1, 
+            Object param2) {
+        super(nodeName, operator, new Object[]{param1, param2});
     }
 
     /**

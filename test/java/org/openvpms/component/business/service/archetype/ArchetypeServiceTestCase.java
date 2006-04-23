@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDeriveValueException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -158,6 +159,65 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         service.deriveValues(country);
         assertFalse(StringUtils.isEmpty(country.getName()));
         assertFalse(StringUtils.isEmpty(country.getDescription()));
+    }
+    
+    /**
+     * Test that the use of derive values through the node descriptor and 
+     * the archetype service.
+     */
+    public void testDeriveValue()
+    throws Exception {
+        Lookup country = (Lookup)service.create("lookup.country");
+        country.setValue("Australia");
+        assertTrue(StringUtils.isEmpty(country.getName()));
+        assertTrue(StringUtils.isEmpty(country.getDescription()));
+
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(country.getArchetypeId());
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("name");
+        assertTrue(ndesc != null);
+
+        // through node descriptor
+        ndesc.deriveValue(country);
+        assertFalse(StringUtils.isEmpty(country.getName()));
+        assertTrue(StringUtils.isEmpty(country.getDescription()));
+        
+        // through archetype service
+        service.deriveValue(country, "description");
+        assertFalse(StringUtils.isEmpty(country.getDescription()));
+    }
+    
+    /**
+     * Test that deriveValue throws exception when an invalid node 
+     * is specified (i.e. a node that does not support derive value}.
+     */
+    public void testFailedToDeriveValue()
+    throws Exception {
+        Lookup country = (Lookup)service.create("lookup.country");
+        country.setValue("Australia");
+        assertTrue(StringUtils.isEmpty(country.getName()));
+        assertTrue(StringUtils.isEmpty(country.getDescription()));
+
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(country.getArchetypeId());
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("country");
+        assertTrue(ndesc != null);
+
+        // through node descriptor
+        try {
+            ndesc.deriveValue(country);
+            fail("The node [country] does not support derived value");
+        } catch (FailedToDeriveValueException exception) {
+            // this is expected
+        }
+        
+        // through archetype service
+        try {
+            service.deriveValue(country, "country");
+            fail("The node [country] does not support derived value");
+        } catch (FailedToDeriveValueException exception) {
+            // this is expected
+        }
     }
     
     /* (non-Javadoc)

@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // java core
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -29,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 // log4j
+import org.apache.commons.beanutils.ConstructorUtils;
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -256,7 +259,6 @@ public class ArchetypeService implements IArchetypeService {
         // associated assertions
         if (descriptor.getNodeDescriptors().size() > 0) {
             JXPathContext context = JXPathHelper.newContext(object);
-            context.setLenient(true);
             validateObject(context, descriptor.getNodeDescriptors(), errors);
         }
 
@@ -300,9 +302,41 @@ public class ArchetypeService implements IArchetypeService {
         // associated assertions
         if (descriptor.getNodeDescriptors().size() > 0) {
             JXPathContext context = JXPathHelper.newContext(object);
-            context.setLenient(true);
             deriveValues(context, descriptor.getNodeDescriptors());
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#deriveValue(org.openvpms.component.business.domain.im.common.IMObject, java.lang.String)
+     */
+    public void deriveValue(IMObject object, String node) {
+        if (object == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.NonNullObjectRequired);
+        }
+        
+        if (StringUtils.isEmpty(node)) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.NonNullNodeNameRequired);
+        }
+        
+        // check that the node name is valid for the specified object
+        ArchetypeDescriptor adesc = getArchetypeDescriptor(object.getArchetypeId());
+        if (adesc == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.InvalidArchetypeDescriptor,
+                    new Object[] {object.getArchetypeId()});
+        }
+        
+        NodeDescriptor ndesc = adesc.getNodeDescriptor(node);
+        if (ndesc == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.InvalidNodeDescriptor,
+                    new Object[] {node, object.getArchetypeId()});
+        }
+
+        // derive the value
+        ndesc.deriveValue(object);
     }
 
     /*
@@ -668,6 +702,13 @@ public class ArchetypeService implements IArchetypeService {
     }
     
     /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String, boolean)
+     */
+    public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly) {
+        return dCache.getArchetypeShortNames(shortName, primaryOnly);
+    }
+
+    /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames()
      */
     public List<String> getArchetypeShortNames() {
@@ -804,9 +845,8 @@ public class ArchetypeService implements IArchetypeService {
                     value = null;
                     errors.add(new ValidationError(node.getName(),
                             "Cannot derive value"));
-                    logger.error(
-                            "Failed to derive value for " + node.getName(),
-                            exception);
+                    logger.error("Failed to derive value for " + 
+                            node.getName(),exception);
                 }
             }
 
@@ -1091,6 +1131,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param nodes
      *            the node descriptors for the archetype
      */
+    @SuppressWarnings("unchecked")
     private void create(JXPathContext context, Map nodes) {
         Iterator iter = nodes.values().iterator();
         while (iter.hasNext()) {
@@ -1125,7 +1166,21 @@ public class ArchetypeService implements IArchetypeService {
                                 + node.getDefaultValue());
                     }
                     context.createPath(node.getPath());
-                    context.setValue(node.getPath(), context.getValue(value));
+                    
+                    // evaluate the default value
+                    Object defValue = context.getValue(value);
+                    if (!defValue.getClass().isAssignableFrom(node.getClazz())) {
+                        try {
+                            defValue = convertValue(defValue, node.getClazz());
+                        } catch (Exception exception) {
+logger.error("def clazz:" + defValue.getClass() + " node clazz:" + node.getClazz());                            
+                            throw new ArchetypeServiceException(
+                                    ArchetypeServiceException.ErrorCode.InvalidDefaultValue,
+                                    new Object[]{node.getDefaultValue(), node.getName()},
+                                    exception);
+                        }
+                    }
+                    context.setValue(node.getPath(), defValue);
                 }
             }
 
@@ -1162,6 +1217,23 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
+    /**
+     * Convert value to the specified type
+     * 
+     * @param value 
+     *            the value to convert
+     * @param clazz
+     *            the class that the value should be converted too
+     * @return Object
+     *            the converted value      
+     * @thorws Exception
+     *            let the client handle the exception                              
+     */
+    @SuppressWarnings("unchecked")
+    private Object convertValue(Object value, Class clazz) 
+    throws Exception {
+        return ConvertUtils.convert(ConvertUtils.convert(value), clazz);
+    }
     /**
      * Iterate through all the archetype id's and return the different types (as
      * string) given the nominated rmName and entityName

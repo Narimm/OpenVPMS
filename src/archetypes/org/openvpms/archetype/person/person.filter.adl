@@ -69,12 +69,6 @@
 				</errorMessage>
 			</assertion>
 		</node>
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat(/firstName, ' ', /lastName)" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="/archetypeId/concept" />
 		<node name="identities" type="java.util.HashSet"
 			baseName="identity" path="/identities" maxCardinality="*">
 			<assertion name="archetypeRange">

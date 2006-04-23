@@ -262,6 +262,32 @@ public class QueryContext {
     }
     
     /**
+     * Add the specified sort constraint
+     * 
+     * @param property
+     *            the property to be sorted.
+     * @param ascending
+     *            whether it is ascending or not
+     * return QueryContext                        
+     */
+    QueryContext addSortConstraint(String property, boolean ascending) {
+        if (orderedClause.length() > initOrderedClauseLen) {
+            orderedClause.append(", ");
+        }
+        
+        orderedClause.append(varStack.peek())
+                .append(".")
+                .append(property);
+        if (ascending) {
+            orderedClause.append(" asc");
+        } else {
+            orderedClause.append(" desc");
+        }
+
+        return this;
+    }
+    
+    /**
      * Add a where constraint given the property and the node constraint
      * 
      * @param property
@@ -272,11 +298,6 @@ public class QueryContext {
      */
     QueryContext addWhereConstraint(String property, NodeConstraint constraint) {
         String varName = null;
-        
-        if (!isLastCharacter(whereClause, '(')) {
-            whereClause.append(opStack.peek().getValue());
-        }
-        
         
         switch (constraint.getOperator()) {
         case BTW:
@@ -289,11 +310,11 @@ public class QueryContext {
                     whereClause.append(varStack.peek())
                         .append(".")
                         .append(property)
-                        .append(getOperator(constraint.getOperator(), 
+                        .append(getOperator(RelationalOp.GTE, 
                                 constraint.getParameters()[0]))
                         .append(" :")
                         .append(varName);
-                    params.put(varName, getValue(constraint.getOperator(), 
+                    params.put(varName, getValue(RelationalOp.GTE, 
                             constraint.getParameters()[0]));
                 }
                 
@@ -304,11 +325,11 @@ public class QueryContext {
                         .append(varStack.peek())
                         .append(".")
                         .append(property)
-                        .append(getOperator(constraint.getOperator(), 
+                        .append(getOperator(RelationalOp.LTE, 
                                 constraint.getParameters()[1]))
                         .append(" :")
                         .append(varName);
-                    params.put(varName, getValue(constraint.getOperator(), 
+                    params.put(varName, getValue(RelationalOp.LTE, 
                             constraint.getParameters()[1]));
                 }
                 popLogicalOperator();
@@ -321,6 +342,10 @@ public class QueryContext {
         case LT:
         case LTE:
         case NE:
+            if (!isLastCharacter(whereClause, '(')) {
+                whereClause.append(opStack.peek().getValue());
+            }
+
             varName = getVariableName();
             whereClause.append(varStack.peek())
                 .append(".")

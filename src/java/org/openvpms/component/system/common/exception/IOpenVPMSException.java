@@ -37,7 +37,7 @@ package org.openvpms.component.system.common.exception;
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface OpenVPMSException {
+public interface IOpenVPMSException {
     /**
      * The base name of the resource file, which holds the error messages.
      */

@@ -32,8 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class AssertionRuntimeException extends RuntimeException implements
-        OpenVPMSException {
+public class AssertionRuntimeException extends OpenVPMSException {
 
     /**
      * Generated SUID

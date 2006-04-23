@@ -53,7 +53,8 @@ public abstract class Descriptor extends IMObject {
      * An enumeration of the different validation errors
      */
     public enum ValidationError {
-        IsRequired
+        IsRequired,
+        DuplicateNodeDescriptor
     }
     
     /**

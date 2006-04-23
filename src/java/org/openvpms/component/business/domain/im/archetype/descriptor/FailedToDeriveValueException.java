@@ -16,35 +16,35 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.im.party;
 
+package org.openvpms.component.business.domain.im.archetype.descriptor;
+
+// commons-resources
 import org.apache.commons.resources.Messages;
+
+// openvpms-common
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * 
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * This is the base exception thrown by the objects of type
+ * {@link IArchetypeService} 
+ *
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class PartyDAOException extends RuntimeException implements
-        OpenVPMSException {
+public class FailedToDeriveValueException extends OpenVPMSException {
 
     /**
-     * Generated SUID.
+     * Generated SUID
      */
-    private static final long serialVersionUID = 1403478672254798421L;
+    private static final long serialVersionUID = 1L;
 
     /**
-     * An enumeration of error codes.
+     * An enumeration of error codes
      */
     public enum ErrorCode {
-        FailedToInitializeService,
-        FailedToInsertParty, 
-        FailedToDeleteParty, 
-        FailedToUpdateParty, 
-        FailedToFindPartyWithId,
-        FailedToFindParties,
-
+        DerivedValueUnsupported,
+        FailedToDeriveValue
     }
 
     /**
@@ -57,7 +57,7 @@ public class PartyDAOException extends RuntimeException implements
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.dao.im.party."
+            .getMessages("org.openvpms.component.business.domain.im.archetype.descriptor"
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -67,7 +67,7 @@ public class PartyDAOException extends RuntimeException implements
      * @param errorCode
      *            the error code
      */
-    public PartyDAOException(ErrorCode errorCode) {
+    public FailedToDeriveValueException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -82,7 +82,7 @@ public class PartyDAOException extends RuntimeException implements
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public PartyDAOException(ErrorCode errorCode, Object[] params) {
+    public FailedToDeriveValueException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -96,7 +96,7 @@ public class PartyDAOException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public PartyDAOException(ErrorCode errorCode, Throwable cause) {
+    public FailedToDeriveValueException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -113,7 +113,7 @@ public class PartyDAOException extends RuntimeException implements
      * @param cause
      *            the root exception
      */
-    public PartyDAOException(ErrorCode errorCode, Object[] params,
+    public FailedToDeriveValueException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;
