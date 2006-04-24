@@ -70,14 +70,14 @@ public class TitlePane extends ContentPane {
         Label logo = LabelFactory.create(new ResourceImageReference(PATH));
 
         Label label = LabelFactory.create();
-        label.setText(Messages.get("label.welcome", " Guest "));
+        label.setText(Messages.get("label.welcome", " Guest"));
         Button logout = ButtonFactory.create("logout", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 OpenVPMSApp.getInstance().logout();
             }
         });
 
-        Row logoutRow = RowFactory.create(label, logout);
+        Row logoutRow = RowFactory.create("CellSpacing", label, logout);
         RowLayoutData right = new RowLayoutData();
         right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
         right.setWidth(new Extent(100, Extent.PERCENT));
