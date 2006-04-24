@@ -3,24 +3,13 @@
 <stylesheet>
 
     <style name="LoginPane" type="nextapp.echo2.app.ContentPane">
-        <properties>
-            <property name="backgroundImage">
-                <fill-image repeat="vertical">
-                    <image type="nextapp.echo2.app.ResourceImageReference">
-                        <resource-image-reference
-                                resource="/org/openvpms/web/resource/image/loginbackground.png"/>
-                    </image>
-                </fill-image>
-            </property>
-        </properties>
+        <properties/>
     </style>
 
     <style name="LoginDialog" base-name="default"
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="positionX" value="160px"/>
-            <property name="positionY" value="320px"/>
             <property name="width" value="450px"/>
             <property name="height" value="160px"/>
         </properties>
