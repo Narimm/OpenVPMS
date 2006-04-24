@@ -94,7 +94,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test the query by uid and archetype Id
      */
-    public void xtestQueryByUidAndArchetypeId() 
+    public void testQueryByUidAndArchetypeId() 
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
@@ -105,7 +105,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test the query by uid and archetype short name
      */
-    public void xtestQueryByUidAndArchetypeShortName() 
+    public void testQueryByUidAndArchetypeShortName() 
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery("person.person", false, false)
                     .add(new NodeConstraint("uid", "1"));
@@ -115,7 +115,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test the query by person and name
      */
-    public void xtestQueryByArchetypeIdAndName() 
+    public void testQueryByArchetypeIdAndName() 
     throws Exception {
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
@@ -126,7 +126,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test the query on archetype id, name and a sort criteria
      */
-    public void xtestQueryByArchetypeIdAndNameAndSort() 
+    public void testQueryByArchetypeIdAndNameAndSort() 
     throws Exception {
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeId("openvpms-party-person.person.1.0"), false)
@@ -140,7 +140,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test the query on archetype short name, name and a sort criteria
      */
-    public void xtestQueryByArchetypeShortNameAndNameAndSort() 
+    public void testQueryByArchetypeShortNameAndNameAndSort() 
     throws Exception {
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeShortNameConstraint(new String[]{"person.person", "organization.organization"}, false, false))
@@ -156,7 +156,7 @@ public class QueryBuilderTestCase extends
      * Test the query on a collection constraint without specifying 
      * archetype constraint info
      */
-    public void xtestCollectionNodeConstraintWithNodeNameOnly()
+    public void testCollectionNodeConstraintWithNodeNameOnly()
     throws Exception {
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeShortNameConstraint(new String[]{"person.person", "organization.organization"}, false, false))
@@ -171,7 +171,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test query with an archetype and node based sort constraint
      */
-    public void xtestWithMultipleSortConstraints()
+    public void testWithMultipleSortConstraints()
     throws Exception {
         ArchetypeQuery query =  new ArchetypeQuery(
                 new ArchetypeShortNameConstraint(new String[]{"person.person", "organization.organization"}, false, false))
@@ -188,7 +188,7 @@ public class QueryBuilderTestCase extends
     /**
      * Test for ovpms-240 
      */
-    public void xtestOVPMS240()
+    public void testOVPMS240()
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
                 new ArchetypeShortNameConstraint("product.product", false, true))
@@ -209,11 +209,11 @@ public class QueryBuilderTestCase extends
                 new ArchetypeShortNameConstraint("product.product", false, true))
                     .add(new CollectionNodeConstraint("classifications", true)
                             .setJoinType(JoinType.LeftOuterJoin)
-                            .add(new OrConstraint())
-                                .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.NULL))
+                            .add(new OrConstraint()
+                                .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.IsNULL))
                                 .add(new AndConstraint()
                                         .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.EQ, "species"))
-                                        .add(new NodeConstraint("name", RelationalOp.EQ, "Canine"))));
+                                        .add(new NodeConstraint("name", RelationalOp.EQ, "Canine")))));
         builder.build(query).getQueryString();    
     }
 }
