@@ -76,6 +76,7 @@
             <ant:classpath>
                 <ant:pathelement path="${maven.build.dir}/hibernate"/>
                 <ant:path refid="maven.dependency.classpath"/>
+                <ant:pathelement path="${maven.build.dest}"/>
             </ant:classpath>
             <arg line="${openvpms.data.loader.cmdline}"/>
         </ant:java>
