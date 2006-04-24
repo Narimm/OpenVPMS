@@ -51,8 +51,10 @@
         </delete>
     </goal>
 
-    <goal name="archetype:load"
-          description="Load the Archetypes from a directory">
+    <goal name="archetype:load" description="Load the Archetypes from a directory">
+        <attainGoal name="java:compile"/>
+        <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
         <ant:java
                 classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
                 failonerror="true"
@@ -68,6 +70,7 @@
     <goal name="data:load" description="Load the Archetyped Data">
         <attainGoal name="java:compile"/>
         <attainGoal name="java:jar-resources"/>
+        <attainGoal name="generate-hibernate-properties"/>
         <ant:java
                 classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
                 failonerror="true"
