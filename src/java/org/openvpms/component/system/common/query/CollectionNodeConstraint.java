@@ -23,6 +23,8 @@ package org.openvpms.component.system.common.query;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
@@ -63,19 +65,23 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      * The archetype constraint associated with this collection
      * node
      */
-    private ArchetypeConstraint archetypeConstraint;
+    private BaseArchetypeConstraint archetypeConstraint;
 
     /**
      * Constructor to initialize the node name
      * 
      * @param nodeName
+     *            the node name
+     * @param activeOnly
+     *            constraint to active only instances            
      */
-    CollectionNodeConstraint(String nodeName) {
+    public CollectionNodeConstraint(String nodeName, boolean activeOnly) {
         if (StringUtils.isEmpty(nodeName)) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.MustSpecifyNodeName);
         }
-        this.nodeName = nodeName;
+        this.nodeName = nodeName; 
+        this.archetypeConstraint = new ArchetypeConstraint(activeOnly);
     }
     
     /**
@@ -87,8 +93,8 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      * @param constraint
      *            the archetype constraint to use for the collection node
      */
-    public CollectionNodeConstraint(String nodeName, ArchetypeConstraint constraint) {
-        this(nodeName);
+    public CollectionNodeConstraint(String nodeName, BaseArchetypeConstraint constraint) {
+        this.nodeName = nodeName;
         this.archetypeConstraint = constraint;
     }
 
@@ -104,7 +110,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      */
     public CollectionNodeConstraint(String nodeName, ArchetypeId archetypeId,
             boolean activeOnly) {
-        this(nodeName);
+        this.nodeName = nodeName;
         this.archetypeConstraint = new ArchetypeIdConstraint(archetypeId, activeOnly);
     }
     
@@ -127,7 +133,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      */
     public CollectionNodeConstraint(String nodeName, String rmName, String entityName, 
             String conceptName, boolean primaryOnly, boolean activeOnly) {
-        this(nodeName);
+        this.nodeName = nodeName;
         this.archetypeConstraint = new ArchetypeLongNameConstraint(rmName, 
                 entityName, conceptName, primaryOnly, activeOnly);
     }
@@ -146,7 +152,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      */
     public CollectionNodeConstraint(String nodeName, String shortName, 
             boolean primaryOnly, boolean activeOnly) {
-        this(nodeName);
+        this.nodeName = nodeName;
         this.archetypeConstraint = new ArchetypeShortNameConstraint(
                 shortName, primaryOnly, activeOnly);
     }
@@ -166,7 +172,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
      */
     public CollectionNodeConstraint(String nodeName, String[] shortNames,
             boolean primaryOnly, boolean activeOnly) {
-        this(nodeName);
+        this.nodeName = nodeName;
         this.archetypeConstraint = new ArchetypeShortNameConstraint(
                 shortNames, primaryOnly, activeOnly);
     }
@@ -174,7 +180,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
     /**
      * @return Returns the archetypeConstraint.
      */
-    public ArchetypeConstraint getArchetypeConstraint() {
+    public BaseArchetypeConstraint getArchetypeConstraint() {
         return archetypeConstraint;
     }
 
@@ -256,7 +262,7 @@ public class CollectionNodeConstraint implements IConstraintContainer {
     public Object clone() throws CloneNotSupportedException {
         CollectionNodeConstraint copy = (CollectionNodeConstraint)super.clone();
         copy.nodeName = this.nodeName;
-        copy.archetypeConstraint = (ArchetypeConstraint)this.archetypeConstraint.clone();
+        copy.archetypeConstraint = (BaseArchetypeConstraint)this.archetypeConstraint.clone();
         
         return copy;
     }

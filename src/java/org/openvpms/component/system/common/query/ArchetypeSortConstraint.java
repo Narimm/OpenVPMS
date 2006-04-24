@@ -37,18 +37,9 @@ public class ArchetypeSortConstraint extends SortConstraint {
     private static final long serialVersionUID = 1L;
 
     /**
-     * An enumeration of the different archetype properties
-     */
-    public enum ArchetypeSortProperty {
-        ReferenceModelName,
-        EntityName,
-        ConceptName
-    }
-    
-    /**
      * Holds the archetype sort property type
      */
-    private ArchetypeSortProperty property;
+    private ArchetypeProperty property;
     
     
     /**
@@ -59,7 +50,7 @@ public class ArchetypeSortConstraint extends SortConstraint {
      * @param ascending
      *            whether to sort in ascending order            
      */
-    public ArchetypeSortConstraint(ArchetypeSortProperty property, boolean ascending) {
+    public ArchetypeSortConstraint(ArchetypeProperty property, boolean ascending) {
         super(ascending);
         this.property = property;
     }
@@ -67,14 +58,14 @@ public class ArchetypeSortConstraint extends SortConstraint {
     /**
      * @return Returns the property.
      */
-    public ArchetypeSortProperty getProperty() {
+    public ArchetypeProperty getProperty() {
         return property;
     }
 
     /**
      * @param property The property to set.
      */
-    public void setProperty(ArchetypeSortProperty property) {
+    public void setProperty(ArchetypeProperty property) {
         this.property = property;
     }
     

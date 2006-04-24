@@ -29,15 +29,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public abstract class ArchetypeConstraint extends ConstraintContainer {
-
+public abstract class BaseArchetypeConstraint extends ConstraintContainer {
     /**
      * Constraint to active only entities
      */
     private boolean activeOnly;
     
     /**
-     * Whether to search for primary instances only
+     * Whether to search for primary instances only 
      */
     private boolean primaryOnly;
     
@@ -49,7 +48,7 @@ public abstract class ArchetypeConstraint extends ConstraintContainer {
      * @param activeOnly
      *            only process active archetypes            
      */
-    ArchetypeConstraint(boolean primaryOnly, boolean activeOnly) {
+    BaseArchetypeConstraint(boolean primaryOnly, boolean activeOnly) {
         this.primaryOnly = primaryOnly;
         this.activeOnly = activeOnly;
     }
@@ -91,11 +90,11 @@ public abstract class ArchetypeConstraint extends ConstraintContainer {
             return true;
         }
 
-        if (!(obj instanceof ArchetypeConstraint)) {
+        if (!(obj instanceof BaseArchetypeConstraint)) {
             return false;
         }
         
-        ArchetypeConstraint rhs = (ArchetypeConstraint) obj;
+        BaseArchetypeConstraint rhs = (BaseArchetypeConstraint) obj;
         return new EqualsBuilder()
             .appendSuper(super.equals(rhs))
             .append(activeOnly, rhs.activeOnly)
@@ -120,7 +119,7 @@ public abstract class ArchetypeConstraint extends ConstraintContainer {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        ArchetypeConstraint copy = (ArchetypeConstraint)super.clone();
+        BaseArchetypeConstraint copy = (BaseArchetypeConstraint)super.clone();
         copy.activeOnly = this.activeOnly;
         copy.primaryOnly = this.primaryOnly;
         

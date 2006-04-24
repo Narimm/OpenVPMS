@@ -63,7 +63,7 @@ public abstract class HibernateInfoModelTestCase extends BaseTestCase {
     /**
      * A UUID generator.
      */
-    private JUGGenerator generator;
+    private JUGGenerator generator; 
     
     /**
      * A Hibernate session factory.

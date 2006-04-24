@@ -15,43 +15,18 @@
  *
  *  $Id$
  */
+
+
 package org.openvpms.component.system.common.query;
 
 /**
- * An enumeration of relational operators
- * 
+ * An enumeration of the different archetype properties
+ *  
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public enum RelationalOp {
-    NULL(0),
-    EQ(1),
-    NE(1),
-    LT(1),
-    LTE(1), 
-    GT(1),
-    GTE(1),
-    BTW(2);
-    
-    /**
-     * The number of parameters required for each operator
-     */
-    int paramCount;
-    
-    /**
-     * This is the constructor for the enumeration 
-     * 
-     * @param paramCount
-     *            the number of parameters for this operator
-     */
-    RelationalOp(int paramCount) {
-        this.paramCount = paramCount;
-    }
-
-    /**
-     * @return Returns the paramCount.
-     */
-    public int getParamCount() {
-        return paramCount;
-    }
+public enum ArchetypeProperty {
+    ReferenceModelName,
+    EntityName,
+    ConceptName
 }

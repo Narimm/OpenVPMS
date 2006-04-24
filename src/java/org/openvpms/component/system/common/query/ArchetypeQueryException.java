@@ -34,7 +34,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class ArchetypeQueryException extends OpenVPMSException {
 
     /**
-     * Generated SUID
+     * Generated SUID 
      */
     private static final long serialVersionUID = 1L;
 
@@ -48,7 +48,8 @@ public class ArchetypeQueryException extends OpenVPMSException {
         MustSpecifyNodeName,
         MustSpecifyOperator,
         ParameterCountMismatch,
-        CloneNotSupported
+        CloneNotSupported,
+        BtwInvalidForArchetypeNodeConstraint
     }
 
     /**

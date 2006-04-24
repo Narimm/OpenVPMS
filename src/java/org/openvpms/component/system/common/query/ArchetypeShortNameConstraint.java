@@ -32,12 +32,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeShortNameConstraint extends ArchetypeConstraint {
+public class ArchetypeShortNameConstraint extends BaseArchetypeConstraint {
 
     /**
      * Default SUID
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; 
 
     /**
      * The list of short names

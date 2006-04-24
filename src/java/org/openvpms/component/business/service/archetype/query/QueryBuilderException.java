@@ -34,7 +34,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class QueryBuilderException extends OpenVPMSException {
 
     /**
-     * Generated SUID
+     * Generated SUID 
      */
     private static final long serialVersionUID = 1L;
 
@@ -58,7 +58,8 @@ public class QueryBuilderException extends OpenVPMSException {
         InvalidObjectReferenceConstraint,
         NoMatchingArchetypesForId,
         NoMatchingArchetypesForShortName,
-        NoMatchingArchetypesForLongName        
+        NoMatchingArchetypesForLongName    ,
+        MustSpecifyArchetypeProperty
     }
 
     /**

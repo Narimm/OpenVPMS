@@ -37,7 +37,7 @@ public abstract class ConstraintContainer implements IConstraintContainer {
     /**
      * Default SUID
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; 
     
     /**
      * Maintain an list of {@link IConstraint}
@@ -83,7 +83,7 @@ public abstract class ConstraintContainer implements IConstraintContainer {
             return true;
         }
 
-        if (!(obj instanceof ArchetypeConstraint)) {
+        if (!(obj instanceof BaseArchetypeConstraint)) {
             return false;
         }
         
