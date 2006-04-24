@@ -32,11 +32,11 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class ArchetypeIdConstraint extends ArchetypeConstraint {
+public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
     /**
      * Default SUID
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; 
     
     /**
      * The archetypeId

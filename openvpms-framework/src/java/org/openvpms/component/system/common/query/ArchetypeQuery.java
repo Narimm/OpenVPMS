@@ -35,7 +35,7 @@ public class ArchetypeQuery implements IConstraintContainer {
     /**
      * Default SUID
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; 
 
     /**
      * Indicates that all the rows should be returned
@@ -53,14 +53,19 @@ public class ArchetypeQuery implements IConstraintContainer {
     private int numOfRows = ALL_ROWS;
     
     /**
+     * indicates whether to select distinct rows only
+     */
+    private boolean distinct;
+    
+    /**
      * Indicates whether to search only for active entities
      */
     private boolean activeOnly = false;
     
     /**
-     * Define the {@link ArchetypeConstraint}. mandatory.
+     * Define the {@link BaseArchetypeConstraint}. mandatory.
      */
-    private ArchetypeConstraint archetypeConstraint;
+    private BaseArchetypeConstraint archetypeConstraint;
     
     /**
      * Construct a query with the specified constraint
@@ -68,9 +73,9 @@ public class ArchetypeQuery implements IConstraintContainer {
      * @param constraint
      *            the constraint to use
      */
-    public ArchetypeQuery(ArchetypeConstraint constraint) {
+    public ArchetypeQuery(BaseArchetypeConstraint constraint) {
         try {
-            this.archetypeConstraint = (ArchetypeConstraint)constraint.clone();
+            this.archetypeConstraint = (BaseArchetypeConstraint)constraint.clone();
         } catch (CloneNotSupportedException exception) {
             throw new ArchetypeQueryException(
                     ArchetypeQueryException.ErrorCode.CloneNotSupported,
@@ -211,9 +216,23 @@ public class ArchetypeQuery implements IConstraintContainer {
     }
 
     /**
+     * @return Returns the distinct.
+     */
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    /**
+     * @param distinct The distinct to set.
+     */
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    /**
      * @return Returns the archetypeConstraint.
      */
-    public ArchetypeConstraint getArchetypeConstraint() {
+    public BaseArchetypeConstraint getArchetypeConstraint() {
         return archetypeConstraint;
     }
 

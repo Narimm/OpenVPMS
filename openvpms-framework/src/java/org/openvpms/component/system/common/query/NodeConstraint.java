@@ -22,7 +22,7 @@ package org.openvpms.component.system.common.query;
 
 /**
  * Used to construct a query constraint on a particular node of the enclosed
- * {@link ArchetypeConstraint}. A constraint required a node name, a relational
+ * {@link BaseArchetypeConstraint}. A constraint required a node name, a relational
  * operator and one or more values. The number of values will depend on the 
  * select operator type. For example a 'GT' operator requires a single parameter
  * where an 'BTW' operator requires two parameters.
@@ -34,7 +34,7 @@ public class NodeConstraint extends AbstractNodeConstraint {
 
     /**
      * Default SUID
-     */
+     */ 
     private static final long serialVersionUID = 1L;
 
     /**
@@ -51,6 +51,19 @@ public class NodeConstraint extends AbstractNodeConstraint {
         super(nodeName, RelationalOp.EQ, new Object[] {parameters});
     }
 
+    /**
+     * Construct a constraint on the specified node with a relational operator 
+     * the takes zero parameters. Convenience constructor.
+     * 
+     * @param nodeName
+     *            the name of the node descriptor
+     * @param operator
+     *            the relational operator            
+     */
+    public NodeConstraint(String nodeName, RelationalOp operator) {
+        this(nodeName, operator, null);
+    }
+    
     /**
      * Construct a constraint on the specified node with the associated relational
      * operator and parameter

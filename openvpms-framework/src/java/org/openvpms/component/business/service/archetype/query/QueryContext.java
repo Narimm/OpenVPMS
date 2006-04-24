@@ -37,7 +37,7 @@ public class QueryContext {
     /**
      * The ordered clause part of the hql query
      */
-    private StringBuffer orderedClause = new StringBuffer("ordered by ");
+    private StringBuffer orderedClause = new StringBuffer("order by ");
     private int initOrderedClauseLen = orderedClause.length();
     
     /**
@@ -91,7 +91,7 @@ public class QueryContext {
      * @return QueryContext
      */
     QueryContext pushLogicalOperator(LogicalOperator op) {
-        if (opStack.size() > 0) {
+        if (opStack.size() > 0) { 
             if (!isLastCharacter(whereClause, '(')) {
                 whereClause.append(opStack.peek().getValue());
             }
@@ -357,6 +357,19 @@ public class QueryContext {
             params.put(varName, getValue(constraint.getOperator(), constraint.getParameters()[0]));
             break;
 
+        case NULL:
+            if (!isLastCharacter(whereClause, '(')) {
+                whereClause.append(opStack.peek().getValue());
+            }
+
+            varName = getVariableName();
+            whereClause.append(varStack.peek())
+                .append(".")
+                .append(property)
+                .append(" ")
+                .append(getOperator(constraint.getOperator(), null));
+            break;
+
         default:
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.OperatorNotSupported,
@@ -425,6 +438,9 @@ public class QueryContext {
 
         case NE:
             return "!=";
+
+        case NULL:
+            return "is NULL";
 
         default:
             throw new QueryBuilderException(

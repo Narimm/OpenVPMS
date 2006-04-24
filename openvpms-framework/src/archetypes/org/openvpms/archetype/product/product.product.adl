@@ -32,11 +32,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityClassification.animalOwner" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="entityClassification.animalCarer" />
+							value="classification.species" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

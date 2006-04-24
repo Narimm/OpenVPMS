@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 // commons-lang
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -39,9 +40,11 @@ import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -61,6 +64,12 @@ import org.openvpms.component.system.common.query.OrConstraint;
  * @version  $LastChangedDate$
  */
 public class QueryBuilder {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(QueryBuilder.class);
+    
     /**
      * The archetype service
      */
@@ -246,6 +255,28 @@ public class QueryBuilder {
             processConstraint(oc, context);
         }
     }
+    
+    /**
+     * Process this archetype constraint
+     * 
+     * @param constraint
+     *            a fundamental archetype constraint
+     * @param context
+     *            the hql context            
+     */
+    private void processArchetypeConstraint(ArchetypeConstraint constraint, 
+            QueryContext context) {
+        
+        // process the active flag
+        if (constraint.isActiveOnly()) {
+            context.addWhereConstraint("active", RelationalOp.EQ, new Boolean(true));
+        }
+        
+        // process the embedded constraints.
+        for (IConstraint oc : constraint.getConstraints()) {
+            processConstraint(oc, context);
+        }
+    }
 
     /**
      * Process an archetype constraint where the reference model name, entity name
@@ -412,6 +443,41 @@ public class QueryBuilder {
     }
 
     /**
+     * Process the archetype node constraint
+     * 
+     * @param constraint
+     *            the archetype node constraint
+     * @param context
+     *            the context
+     */
+    private void process(ArchetypeNodeConstraint constraint, QueryContext context) {
+        if ((constraint == null) ||
+            (constraint.getProperty() == null)) {
+            throw new QueryBuilderException(
+                    QueryBuilderException.ErrorCode.MustSpecifyArchetypeProperty);
+        }
+        
+        String property = null;
+        
+        switch (constraint.getProperty()) {
+        case EntityName:
+            property = "archetypeId.entityName";
+            break;
+            
+        case ConceptName:
+            property = "archetypeId.concept";
+            break;
+            
+        case ReferenceModelName:
+            property = "archetypeId.rmName";
+            break;
+        }
+        
+        context.addWhereConstraint(property, constraint.getOperator(), 
+                constraint.getParameter());
+    }
+
+    /**
      * Process the specified constraint on a object reference node
      * 
      * @param constraint
@@ -502,22 +568,30 @@ public class QueryBuilder {
         DistinctTypesResultSet types = context.peekDistinctTypes();
         NodeDescriptor ndesc = getMatchingNodeDescriptor(types.descriptors, 
                 constraint.getNodeName());
+
         if (ndesc == null) {
             throw new QueryBuilderException(
                     QueryBuilderException.ErrorCode.NoNodeDescriptorForName,
                     new Object[] {constraint.getNodeName()});
         }
-        
-        // process the type
-        context.pushDistinctTypes(getDistinctTypes(constraint.getArchetypeConstraint()), 
-                getProperty(ndesc), constraint.getJoinType());
 
+        // push the new type
+        if (constraint.getArchetypeConstraint() instanceof ArchetypeConstraint) {
+            context.pushDistinctTypes(getDistinctTypes(ndesc.getArchetypeRange(),
+                    constraint.getArchetypeConstraint().isPrimaryOnly()),
+                    getProperty(ndesc), constraint.getJoinType());
+        } else {
+            context.pushDistinctTypes(getDistinctTypes(
+                    constraint.getArchetypeConstraint()), getProperty(ndesc), 
+                    constraint.getJoinType());
+        }
+        
         // process common portion of constraint
         if (constraint.getArchetypeConstraint() != null) {
-            context.pushLogicalOperator(LogicalOperator.And);
+            //context.pushLogicalOperator(LogicalOperator.And);
             processArchetypeConstraint(constraint.getArchetypeConstraint(), 
                     context);
-            context.popLogicalOperator();
+            //context.popLogicalOperator();
         }
         
         // pop the stack when we have finished processing this constraint
@@ -624,6 +698,19 @@ public class QueryBuilder {
         }
 
         return types;
+    }
+    
+    /**
+     * Return the {@link DistinctTypeResultSet} given an {@link ArchetypeConstraint}
+     * 
+     * @param constraint
+     *            the arhcetype constraint
+     * @return DistinctTypeResultSet  
+     * @throws QueryBuilderException
+     *            if there are no matching archetypes          
+     */
+    private DistinctTypesResultSet getDistinctTypes(ArchetypeConstraint constraint) {
+        return new DistinctTypesResultSet();
     }
     
     /**
@@ -843,17 +930,18 @@ public class QueryBuilder {
      * @param archetypeConstraint
      * @return DistinctTypesResultSet
      */
-    private DistinctTypesResultSet getDistinctTypes(ArchetypeConstraint constraint) {
+    private DistinctTypesResultSet getDistinctTypes(BaseArchetypeConstraint constraint) {
         if (constraint instanceof ArchetypeIdConstraint) {
             return getDistinctTypes((ArchetypeIdConstraint)constraint);
         } else if (constraint instanceof ArchetypeShortNameConstraint) {
             return getDistinctTypes((ArchetypeShortNameConstraint)constraint);
         } else if (constraint instanceof ArchetypeLongNameConstraint) {
             return getDistinctTypes((ArchetypeLongNameConstraint)constraint);
-        } else {
-            // raise an exception
-            return null;
+        } else if (constraint instanceof ArchetypeConstraint) {
+            return getDistinctTypes((ArchetypeConstraint)constraint);
         }
+
+        return null;
     }
 
     /**
@@ -863,7 +951,7 @@ public class QueryBuilder {
      *            the constraint
      * @param context
      */
-    private void processArchetypeConstraint(ArchetypeConstraint constraint, 
+    private void processArchetypeConstraint(BaseArchetypeConstraint constraint, 
             QueryContext context) {
         if (constraint instanceof ArchetypeIdConstraint) {
             processArchetypeConstraint((ArchetypeIdConstraint)constraint,
@@ -874,6 +962,8 @@ public class QueryBuilder {
         } else if (constraint instanceof ArchetypeLongNameConstraint) {
             processArchetypeConstraint((ArchetypeLongNameConstraint)constraint,
                     context);
+        } else if (constraint instanceof ArchetypeConstraint) {
+            processArchetypeConstraint((ArchetypeConstraint)constraint, context);
         } else {
             // raise an exception
         }
@@ -898,6 +988,8 @@ public class QueryBuilder {
             process((ArchetypeShortNameConstraint)constraint, context);
         } else if (constraint instanceof CollectionNodeConstraint) {
             process((CollectionNodeConstraint)constraint, context);
+        } else if (constraint instanceof ArchetypeNodeConstraint) {
+            process((ArchetypeNodeConstraint)constraint, context);
         } else if (constraint instanceof NodeConstraint) {
             process((NodeConstraint)constraint, context);
         } else if (constraint instanceof ObjectRefNodeConstraint) {
