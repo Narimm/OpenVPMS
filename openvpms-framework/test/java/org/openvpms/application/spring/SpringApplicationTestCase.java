@@ -19,12 +19,9 @@
 package org.openvpms.application.spring;
 
 // log4j
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
 // spring-test
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -90,9 +87,6 @@ public class SpringApplicationTestCase extends
      */
     public void testApplication() throws Exception {
         long start = System.currentTimeMillis();
-        List<IMObject> objects = service.get("entity", "act", null, null, false, 
-                null, null).getRows();
-        assertTrue(objects != null);
         logger.debug("Time to complete " + (System.currentTimeMillis() - start)
                 + "ms");
     }

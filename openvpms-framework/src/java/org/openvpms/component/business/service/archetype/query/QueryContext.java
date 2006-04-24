@@ -53,7 +53,7 @@ public class QueryContext {
     /**
      * A stack of the current logical operator
      */
-    private Stack<LogicalOperator> opStack = new Stack<LogicalOperator>();
+    private Stack<LogicalOpCounter> opStack = new Stack<LogicalOpCounter>();
     
     /**
      * Holds a reference to the parameters and the values used to process
@@ -91,14 +91,10 @@ public class QueryContext {
      * @return QueryContext
      */
     QueryContext pushLogicalOperator(LogicalOperator op) {
-        if (opStack.size() > 0) { 
-            if (!isLastCharacter(whereClause, '(')) {
-                whereClause.append(opStack.peek().getValue());
-            }
-        }
+        appendLogicalOperator();
         
         whereClause.append(" (");
-        opStack.push(op);
+        opStack.push(new LogicalOpCounter(op));
         return this;
     }
     
@@ -109,7 +105,7 @@ public class QueryContext {
      */
     LogicalOperator popLogicalOperator() {
         whereClause.append(") ");
-        return opStack.pop();
+        return ((LogicalOpCounter)opStack.pop()).operator;
     }
     
     /**
@@ -244,20 +240,22 @@ public class QueryContext {
      * @return QueryContext                        
      */
     QueryContext addWhereConstraint(String property, RelationalOp op, Object value) {
-        String varName = getVariableName();
-
-        if (!isLastCharacter(whereClause, '(')) {
-            whereClause.append(opStack.peek().getValue());
-        }
         
+        appendLogicalOperator();
         whereClause.append(varStack.peek())
             .append(".")
             .append(property)
             .append(" ")
-            .append(getOperator(op, value))
-            .append(" :")
-            .append(varName);
-        params.put(varName, getValue(op, value));
+            .append(getOperator(op, value));
+        
+        // check if we need a parameter
+        if (value != null) {
+            String varName = getVariableName();
+            whereClause.append(" :")
+                .append(varName);
+            params.put(varName, getValue(op, value));
+        }
+        opStack.peek().count++;
         return this;
     }
     
@@ -306,6 +304,7 @@ public class QueryContext {
                 // process left hand side
                 pushLogicalOperator(LogicalOperator.And);
                 if (constraint.getParameters()[0] != null) {
+                    appendLogicalOperator();
                     varName = getVariableName();
                     whereClause.append(varStack.peek())
                         .append(".")
@@ -320,9 +319,9 @@ public class QueryContext {
                 
                 // process right hand side
                 if (constraint.getParameters()[1] != null) {
+                    appendLogicalOperator();
                     varName = getVariableName();
-                    whereClause.append(opStack.peek().getValue())
-                        .append(varStack.peek())
+                    whereClause.append(varStack.peek())
                         .append(".")
                         .append(property)
                         .append(getOperator(RelationalOp.LTE, 
@@ -342,9 +341,7 @@ public class QueryContext {
         case LT:
         case LTE:
         case NE:
-            if (!isLastCharacter(whereClause, '(')) {
-                whereClause.append(opStack.peek().getValue());
-            }
+            appendLogicalOperator();
 
             varName = getVariableName();
             whereClause.append(varStack.peek())
@@ -357,12 +354,8 @@ public class QueryContext {
             params.put(varName, getValue(constraint.getOperator(), constraint.getParameters()[0]));
             break;
 
-        case NULL:
-            if (!isLastCharacter(whereClause, '(')) {
-                whereClause.append(opStack.peek().getValue());
-            }
-
-            varName = getVariableName();
+        case IsNULL:
+            appendLogicalOperator();
             whereClause.append(varStack.peek())
                 .append(".")
                 .append(property)
@@ -439,7 +432,7 @@ public class QueryContext {
         case NE:
             return "!=";
 
-        case NULL:
+        case IsNULL:
             return "is NULL";
 
         default:
@@ -473,28 +466,15 @@ public class QueryContext {
     }
     
     /**
-     * Check if the last non-white space character is of the specified type
-     * 
-     * @param buffer
-     *            the string buffer to check
-     * @param character
-     *            the character to check for
-     * @return boolean                         
+     * Append the logical operator to the where class
      */
-    private boolean isLastCharacter(StringBuffer buffer, char character) {
-        if (buffer.length() > 0) {
-            for (int index = buffer.length() - 1; index >=0; index--) {
-                if (Character.isWhitespace(buffer.charAt(index))) {
-                    continue;
-                } else if (buffer.charAt(index) == character) {
-                    return true;
-                } else {
-                    return false;
-                }
+    private void appendLogicalOperator() {
+        if (opStack.size() > 0) {
+            if (opStack.peek().count > 0) {
+                whereClause.append(opStack.peek().operator.getValue());
             }
+            opStack.peek().count++;
         }
-
-        return false;
     }
 
     /**
@@ -527,4 +507,30 @@ public class QueryContext {
             return value;
         }
     }
+
+    
+    /**
+     * Private anonymous class to track the usage of the logical operator
+     */
+    class LogicalOpCounter {
+        /**
+         * The relational operator
+         */
+        LogicalOperator operator;
+        
+        /**
+         * Counts the number of terms applied to this operator  
+         */
+        int count;
+        
+        /**
+         * Create an instance using the specified operator
+         * 
+         * @param operator
+         */
+        LogicalOpCounter(LogicalOperator operator) {
+            this.operator = operator;
+        }
+    }
+    
 }

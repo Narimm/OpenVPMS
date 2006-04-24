@@ -276,6 +276,8 @@ public class QueryBuilder {
         for (IConstraint oc : constraint.getConstraints()) {
             processConstraint(oc, context);
         }
+        
+        
     }
 
     /**
@@ -588,10 +590,8 @@ public class QueryBuilder {
         
         // process common portion of constraint
         if (constraint.getArchetypeConstraint() != null) {
-            //context.pushLogicalOperator(LogicalOperator.And);
             processArchetypeConstraint(constraint.getArchetypeConstraint(), 
                     context);
-            //context.popLogicalOperator();
         }
         
         // pop the stack when we have finished processing this constraint
