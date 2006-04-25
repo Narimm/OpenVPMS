@@ -5,16 +5,16 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Set Active End Time for party.patientPet">
-        <parameter identifier="pet">
+    <rule name="Check Patient Relationships">
+        <parameter identifier="party">
         	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
         </parameter>
         <parameter identifier="service">
         	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
-        <java:condition>pet.getEntityRelationships().size() > 0</java:condition>
+        <java:condition>party.getEntityRelationships().size() > 0</java:condition>
         <java:consequence>
-            org.openvpms.rules.PatientRules.setActiveEndDates(service, pet);
+            org.openvpms.rules.PartyRelationshipRules.checkPatientRelationships(service, party);
         </java:consequence>
     </rule>
 
