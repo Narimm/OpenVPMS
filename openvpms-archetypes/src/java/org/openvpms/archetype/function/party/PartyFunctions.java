@@ -37,7 +37,7 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns a stringified form of a party's contacts.
+     * Returns a stringfield form of a party's contacts.
      *
      * @param context the expression context. Expected to reference a party.
      * @return the stringified form of the party's contacts or
