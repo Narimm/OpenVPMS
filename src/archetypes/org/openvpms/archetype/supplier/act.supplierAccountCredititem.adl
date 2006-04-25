@@ -1,0 +1,38 @@
+<archetypes>
+    <archetype name="openvpms-common-act.supplierAccountCreditItem.1.0" latest="true"
+        type="org.openvpms.component.business.domain.im.common.Act" displayName="Supplier Credit Item" >
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+        <node name="name" type="java.lang.String" path="/name"
+            hidden="true" minCardinality="1" derived="true"
+            derivedValue="concat('need derived name', '')" />
+        <node name="description" type="java.lang.String"
+            path="/description" hidden="true" derived="true"
+            derivedValue="concat(' Description of the Supplier Credit Item', ' ')" />
+        <node name="participants" path="/participations" parentChild="true"
+            type="java.util.HashSet" baseName="Participation" minCardinality="2" maxCardinality="*">
+            <assertion name="archetypeRange">
+                <propertyList name="archetypes">
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="participation.product" />
+                        <property name="minCardinality" value="1"/> 
+                        <property name="maxCardinality" value="1"/> 
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="participation.author" />
+                        <property name="minCardinality" value="0"/> 
+                        <property name="maxCardinality" value="1"/> 
+                    </propertyMap>
+                </propertyList>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="details" path="/details" hidden="true"
+            type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+            minCardinality="1" maxCardinality="1">
+            <node name="quantity" path="/details/attributes/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
+            <node name="unitCost" path="/details/attributes/unitCost" type="java.math.BigDecimal" defaultValue="0.0"/>
+            <node name="total" path="/details/attributes/total" type="java.math.BigDecimal" 
+                derived="true" derivedValue="/details/attributes/quantity * /details/attributes/unitCost"/>
+        </node>
+    </archetype>
+</archetypes>
