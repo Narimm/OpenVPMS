@@ -1,0 +1,60 @@
+<archetypes>
+	<archetype name="openvpms-common-act.supplierAccountChargesInvoice.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Supplier Invoice" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat('Supplier Invoice', '')" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(' Description of the Supplier Invoice Act', ' ')" />
+		<node name="startTime" path="/activityStartTime"
+			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="amount" path="/details/attributes/amount" 
+                        type="java.math.BigDecimal" minCardinality="1"
+                        defaultValue="'0.0'"/>
+			<node name="credit" path="/details/attributes/credit" type="java.lang.Boolean"
+				defaultValue="false()" readOnly="true" />
+			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" />			
+		</node>
+		<node name="status" path="/status" type="java.lang.String"
+			minCardinality="1">
+			<assertion name="lookup">
+				<property name="type" value="lookup" />
+				<property name="concept" value="chargeStatus" />
+				<errorMessage>An error message</errorMessage>
+			</assertion>
+		</node>
+		<node name="items" path="/sourceActRelationships"
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="actRelationship.supplierAccountInvoiceItem" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="participants" path="/participations" parentChild="true"
+			type="java.util.HashSet" baseName="Participation" minCardinality="1" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="participation.supplier" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="participation.author" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+	</archetype>
+</archetypes>

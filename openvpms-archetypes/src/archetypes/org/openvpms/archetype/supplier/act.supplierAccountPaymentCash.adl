@@ -1,0 +1,20 @@
+<archetypes>
+	<archetype name="openvpms-common-act.supplierAccountPaymentCash.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Supplier Payment Cash" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat('Cash Payment', '')" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(' Amount : ', /details/attributes/amount,' Tendered : ',/details/attributes/tendered)" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="amount" path="/details/attributes/amount" type="java.math.BigDecimal" defaultValue="1.0"/>
+			<node name="tendered" path="/details/attributes/tendered" type="java.math.BigDecimal" defaultValue="0.0"/>
+			<node name="change" path="/details/attributes/change" type="java.math.BigDecimal" 
+				derived="true" derivedValue="/details/attributes/tendered - /details/attributes/amount"/>
+		</node>
+	</archetype>
+</archetypes>

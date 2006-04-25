@@ -1,0 +1,19 @@
+<archetypes>
+	<archetype name="openvpms-common-act.supplierAccountPaymentEFT.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Supplier Payment EFT" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="concat('EFT Payment', '')" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat(' Amount : ', /details/attributes/amount,' Cash Out : ',/details/attributes/cashout)" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="amount" path="/details/attributes/amount" type="java.math.BigDecimal" defaultValue="1.0"/>
+			<node name="total" path="/details/attributes/total" type="java.math.BigDecimal" 
+				derived="true" derivedValue="/details/attributes/amount"/>
+		</node>
+	</archetype>
+</archetypes>
