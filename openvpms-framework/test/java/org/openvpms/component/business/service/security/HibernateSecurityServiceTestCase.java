@@ -35,6 +35,7 @@ import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedA
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * Exercises the security test cases using a hibernate user details service
@@ -184,7 +185,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     protected void createSecurityContext(String name, String password,
             String authority) {
         List<IMObject> users = dao.get("system", "security", "user", name,
-                User.class.getName(), true, null, null, true).getRows();
+                User.class.getName(), true, 0, ArchetypeQuery.ALL_ROWS).getRows();
         if (users.size() != 1) {
             fail("Failed to create security context. Could not locate user "
                     + name + " in database");
@@ -206,7 +207,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
     throws Exception {
         // delete and recreate the user jima
         List<IMObject> users = dao.get("system", "security", "user", name,
-                User.class.getName(), true, null, null, true).getRows();
+                User.class.getName(), true, 0, ArchetypeQuery.ALL_ROWS).getRows();
         if (users.size() > 0) {
             for (IMObject im : users) {
                 dao.delete(im);

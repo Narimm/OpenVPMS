@@ -23,6 +23,7 @@ package org.openvpms.component.business.service.entity;
 import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 /**
@@ -72,7 +73,8 @@ public class EntityIdentityTestCase extends
 
         // retrieve the person and check that there is a single
         // entity identity
-        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         assertTrue(((EntityIdentity)person.getIdentities().iterator().next()).getUid() != -1);
@@ -94,7 +96,8 @@ public class EntityIdentityTestCase extends
         service.save(person);
         
         // retrieve the entity, check it and then remove an entity identity
-        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 2);
         
@@ -104,7 +107,8 @@ public class EntityIdentityTestCase extends
         service.save(person);
 
         assertTrue(getObjectById("entityIdentity.getById", ident1.getUid()) == null);
-        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
     }
@@ -120,7 +124,8 @@ public class EntityIdentityTestCase extends
         service.save(person);
         
         // retrieve the entity, check it and then update an entity identity
-        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();
@@ -129,7 +134,8 @@ public class EntityIdentityTestCase extends
         service.save(person);
         
         // make sure the update happened
-        person = (Party) service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party) ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 1);
         ident1 = person.getIdentities().iterator().next();

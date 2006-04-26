@@ -202,7 +202,6 @@
   <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
     <constructor-arg index="0">
       <props>
-        <prop key="test">org.openvpms.component.system.service.jxpath.TestFunctions</prop>
       </props>
     </constructor-arg>
   </bean>

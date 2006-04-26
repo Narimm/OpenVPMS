@@ -20,9 +20,9 @@ package org.openvpms.component.business.service.archetype;
 
 // spring-context
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
-import org.openvpms.component.system.common.search.SortCriteria;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // log4j
@@ -77,12 +77,16 @@ public class ArchetypeServiceSortTestCase extends
     public void testSortOnNonExistentProperty()
     throws Exception {
         try {
-            service.get("entity", "act", null, null, false, false, 
-                    new PagingCriteria(0, 1), 
-                    new SortCriteria("baby", true));
+            ArchetypeQuery query = new ArchetypeQuery("entity", "act", null,
+                    false, false)
+                    .setFirstRow(0)
+                    .setNumOfRows(1)
+                    .add(new NodeSortConstraint("baby", true));
+                    
+            service.get(query);
             fail("This request should have thrown an exception");
         } catch (ArchetypeServiceException exception) {
-            if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.InvalidSortProperty) {
+            if (exception.getErrorCode() != ArchetypeServiceException.ErrorCode.FailedToExecuteQuery) {
                 fail (exception.getErrorCode() + " is not a valid exception");
             }
         }
@@ -93,9 +97,9 @@ public class ArchetypeServiceSortTestCase extends
      */
     public void testSortOnNameInAscendingOrder() 
     throws Exception {
-        IPage<IMObject> objects = service.get("entity", "act", null, null, 
-                false, false, new PagingCriteria(0, PagingCriteria.ALL_ROWS), 
-                new SortCriteria("name", true));
+        IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
+                "entity", "act", null, null, false, 0, 
+                ArchetypeQuery.ALL_ROWS);
         IMObject lhs = null;
         IMObject rhs = null;
         for (IMObject object : objects.getRows()) {
@@ -120,9 +124,12 @@ public class ArchetypeServiceSortTestCase extends
      */
     public void testSortOnNameInDescendingOrder() 
     throws Exception {
-        IPage<IMObject> objects = service.get("entity", "act", null, null, 
-                false, false, new PagingCriteria(0, PagingCriteria.ALL_ROWS), 
-                new SortCriteria("name", false));
+        ArchetypeQuery query = new ArchetypeQuery("entity", "act", null,
+                false, false)
+                .setFirstRow(0)
+                .setNumOfRows(ArchetypeQuery.ALL_ROWS)
+                .add(new NodeSortConstraint("name", false));
+        IPage<IMObject> objects = service.get(query);
         IMObject lhs = null;
         IMObject rhs = null;
         for (IMObject object : objects.getRows()) {

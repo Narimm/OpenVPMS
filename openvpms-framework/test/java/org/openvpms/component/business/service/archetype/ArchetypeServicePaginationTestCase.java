@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // log4j
@@ -79,28 +79,27 @@ public class ArchetypeServicePaginationTestCase extends
     public void testPaginationOnEntityAct() throws Exception {
         for (int index = 0; index < 10; index++) {
             int rowsPerPage = index + 1;
-            IPage<IMObject> objects = service.get("entity", "act", null, null, 
-                    false, false, new PagingCriteria(0, rowsPerPage), null);
+            IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
+                    "entity", "act", null, null, false, 0, rowsPerPage);
             int totalCount = objects.getTotalNumOfRows();
-            int rowCount = objects.getPagingCriteria().getNumOfRows();
+            int rowCount = objects.getRows().size();
             int pages = (totalCount % rowsPerPage) == 0 ? totalCount/rowsPerPage : totalCount /rowsPerPage + 1;
             if (logger.isDebugEnabled()) {
                 logger.debug("Page 0 numofRows " 
-                        + objects.getPagingCriteria().getNumOfRows() 
+                        + objects.getRows().size() 
                         + " totalCount " + totalCount + " rowCount " + rowCount);
             }
             
             for (int page = 1; page < pages; page++) {
-                objects = service.get("entity", "act", null, null, false, false, 
-                        new PagingCriteria(page*rowsPerPage, rowsPerPage), null);
-                rowCount += objects.getPagingCriteria().getNumOfRows();
+                objects = ArchetypeQueryHelper.get(service, "entity", "act", 
+                        null, null, false, page*rowsPerPage, rowsPerPage);
+                rowCount += objects.getRows().size();
                 if (logger.isDebugEnabled()) {
                     logger.debug("Page " + page + " numofRows " 
-                            + objects.getPagingCriteria().getNumOfRows() 
+                            + objects.getRows().size() 
                             + " totalCount " + totalCount + " rowCount " + rowCount);
                 }
                 assertTrue(objects != null);
-                assertTrue(objects.getPagingCriteria().getNumOfRows() <= rowsPerPage);
                 assertTrue(objects.getRows().size() <= rowsPerPage);
             }
             assertTrue(rowCount == totalCount);
@@ -112,11 +111,11 @@ public class ArchetypeServicePaginationTestCase extends
      */
     public void testPaginationWithOversizedPages()
     throws Exception {
-        IPage<IMObject> objects = service.get("entity", "act", null, null, false, 
-                false, new PagingCriteria(0, 1), null);
+        IPage<IMObject> objects = ArchetypeQueryHelper.get(service, "entity", 
+                "act", null, null, false, 0, 1);
         int totalCount = objects.getTotalNumOfRows();
-        objects = service.get("entity", "act", null, null, false, false, 
-                new PagingCriteria(0, totalCount*2), null);
+        objects = ArchetypeQueryHelper.get(service, "entity", "act", null, null, 
+                false, 0, totalCount*2);
         assertTrue(objects.getTotalNumOfRows() == totalCount);
     }
 
@@ -129,8 +128,9 @@ public class ArchetypeServicePaginationTestCase extends
         Set<String> linkIds = new HashSet<String>();
         int rowsPerPage = 10;
         for (int startRow = 0;; startRow +=10) {
-            IPage<IMObject> objects = service.get("common", "entityRelationship", 
-                "a*", null, false, false, new PagingCriteria(startRow, rowsPerPage), null);
+            IPage<IMObject> objects = ArchetypeQueryHelper.get(service,
+                    "common", "entityRelationship", "a*", null, false, 
+                    startRow, rowsPerPage);
             for (IMObject object : objects.getRows()) {
                 if (linkIds.contains(object.getLinkId())) {
                     fail("This row has already been returned");
@@ -149,11 +149,11 @@ public class ArchetypeServicePaginationTestCase extends
      */
     public void testWithNullPagination()
     throws Exception {
-        IPage<IMObject> objects = service.get("entity", "act", null, null, false, 
-                false, new PagingCriteria(0, 1), null);
+        IPage<IMObject> objects = ArchetypeQueryHelper.get(service, "entity", 
+                "act", null, null, false, 0, 1);
         int totalCount = objects.getTotalNumOfRows();
-        objects = service.get("entity", "act", null, null, false, false,
-                null, null);
+        objects = ArchetypeQueryHelper.get(service, "entity", "act", null, null, 
+                false, 0, ArchetypeQuery.ALL_ROWS);
         assertTrue(objects.getTotalNumOfRows() == totalCount);
     }
 

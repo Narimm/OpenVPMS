@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * 
@@ -173,9 +174,11 @@ public class LookupServiceTestCase extends
      */
     public void testOVPMS195()
     throws Exception {
-        List<IMObject> objects = archetypeService.get(
-                new String[]{"lookup.relationship"}, null, true, true,
-                null, null).getRows();
+        ArchetypeQuery query = new ArchetypeQuery(
+                new String[]{"lookup.relationship"}, true, true)
+                .setFirstRow(0)
+                .setNumOfRows(ArchetypeQuery.ALL_ROWS);
+        List<IMObject> objects = archetypeService.get(query).getRows();
         assertTrue(objects != null);
     }
     

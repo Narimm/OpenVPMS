@@ -18,9 +18,9 @@
 
 package org.openvpms.component.system.common.query;
 
+// java-core
 import java.util.List;
 
-import org.openvpms.component.system.common.search.PagingCriteria;
 
 /**
  * This interface is used to support pagination of large result sets.
@@ -29,12 +29,6 @@ import org.openvpms.component.system.common.search.PagingCriteria;
  * @version  $LastChangedDate$
  */
 public interface IPage<T> {
-
-    /**
-     * @return Returns the firstRow.
-     */
-    public PagingCriteria getPagingCriteria();
-
     /**
      * @return Returns the rows.
      */
@@ -45,4 +39,17 @@ public interface IPage<T> {
      */
     public int getTotalNumOfRows();
 
+    /**
+     * Return the first row requested
+     * 
+     * @return int
+     */
+    public int getFirstRow();
+    
+    /**
+     * Return the number of rows requested
+     * 
+     * @return int
+     */
+    public int getNumOfRows();
 }

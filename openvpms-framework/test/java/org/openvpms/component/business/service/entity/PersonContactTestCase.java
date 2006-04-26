@@ -24,6 +24,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 
 /**
@@ -74,7 +75,8 @@ public class PersonContactTestCase extends
         person.addContact(contact);
         service.save(person);
         
-        person = (Party)service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getContacts().size() == 1);
     }
@@ -99,11 +101,13 @@ public class PersonContactTestCase extends
         // save the entities
         
         // now attempt to retrieve the entities
-        person1 = (Party)service.getById(person1.getArchetypeId(), person1.getUid());
+        person1 = (Party)ArchetypeQueryHelper.getByUid(service,
+                person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 1);
 
-        person2 = (Party)service.getById(person2.getArchetypeId(), person2.getUid());
+        person2 = (Party)ArchetypeQueryHelper.getByUid(service,
+                person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
         
@@ -114,11 +118,13 @@ public class PersonContactTestCase extends
         
         // retrieve the entities again and check that the addresses are
         // still valid
-        person1 = (Party)service.getById(person1.getArchetypeId(), person1.getUid());
+        person1 = (Party)ArchetypeQueryHelper.getByUid(service,
+                person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 0);
         
-        person2 = (Party)service.getById(person2.getArchetypeId(), person2.getUid());
+        person2 = (Party)ArchetypeQueryHelper.getByUid(service,
+                person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
     }
@@ -136,7 +142,8 @@ public class PersonContactTestCase extends
         service.save(person);
         
         // retrieve and remove the first contact and update
-        person = (Party)service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 3);
         Contact contact = person.getContacts().iterator().next();
         person.getContacts().remove(contact);
@@ -144,7 +151,8 @@ public class PersonContactTestCase extends
         service.save(person);
         
         // retrieve and ensure thagt there are only 2 contacts
-        person = (Party)service.getById(person.getArchetypeId(), person.getUid());
+        person = (Party)ArchetypeQueryHelper.getByUid(service,
+                person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 2);
     }
     

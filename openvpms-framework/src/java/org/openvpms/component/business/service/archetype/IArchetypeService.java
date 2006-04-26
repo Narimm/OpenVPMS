@@ -19,23 +19,15 @@
 package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
-import org.openvpms.component.system.common.search.SortCriteria;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -218,125 +210,6 @@ public interface IArchetypeService {
     public IPage<IMObject> get(ArchetypeQuery query);
     
     /**
-     * Uses the specified criteria to return zero, one or more matching . 
-     * entities. This is a very generic query which will constrain the 
-     * returned set on one or more of the supplied values.
-     * <p>
-     * Each of the parameters can denote an exact match or a partial match. If
-     * a partial match is required then the last character of the value must be
-     * a '*'. In every other case the search will look for an exact match.
-     * <p>
-     * All the values are optional. In the case where all the values are null
-     * then all the entities will be returned. In the case where two or more 
-     * values are specified (i.e. rmName and entityName) then only entities 
-     * satisfying both conditions will be returned.
-     * 
-     * @param rmName
-     *            the reference model name (must be complete name)
-     * @param entityName
-     *            the name of the entity (partial or complete)
-     * @param concept
-     *            the concept name (partial or complete)
-     * @param instanceName
-     *            the particular instance name
-     * @param activeOnly
-     *            whether to retrieve only the active objects            
-     * @param pagingCriteria 
-     *            the paging criteria for the request (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction   (optional)         
-     * @return IPage<IMObject>
-     * @throws ArchetypeServiceException
-     *            a runtime exception                         
-     */
-    @Deprecated
-    public IPage<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName, boolean activeOnly,
-            PagingCriteria pagingCriteria, SortCriteria sortCriteria);
-    
-    /**
-     * Uses the specified criteria to return zero, one or more matching . 
-     * entities. This is a very generic query which will constrain the 
-     * returned set on one or more of the supplied values.
-     * <p>
-     * Each of the parameters can denote an exact match or a partial match. If
-     * a partial match is required then the last character of the value must be
-     * a '*'. In every other case the search will look for an exact match.
-     * <p>
-     * All the values are optional. In the case where all the values are null
-     * then all the entities will be returned. In the case where two or more 
-     * values are specified (i.e. rmName and entityName) then only entities 
-     * satisfying both conditions will be returned.
-     * <p>
-     * The results will be returned in a {@link Page} object, which may contain
-     * a subset of the total result set. The caller can then use the context 
-     * information in the {@link Page} object to make subsequent calls.
-     * 
-     * @param rmName
-     *            the reference model name (must be complete name)
-     * @param entityName
-     *            the name of the entity (partial or complete)
-     * @param concept
-     *            the concept name (partial or complete)
-     * @param instanceName
-     *            the particular instance name
-     * @param primaryOnly
-     *            determines whether to restrict processing to archetypes 
-     *            that are marked as primary only.            
-     * @param activeOnly
-     *            whether to retrieve only the active objects            
-     * @param pagingCriteria
-     *            indicates how the results will be paged. (optional)
-     * @param sortCritieria
-     *            indicates how the results will be sorted. (optional)           
-     * @return Page<IMObject>
-     *            the results and associated context information
-     * @throws ArchetypeServiceException
-     *            a runtime exception                         
-     */
-    @Deprecated
-    public IPage<IMObject> get(String rmName, String entityName, 
-            String conceptName, String instanceName, boolean primaryOnly,
-            boolean activeOnly, PagingCriteria pagingCriteria, 
-            SortCriteria sortCriteria);
-    
-    /**
-     * Retrieve a list of IMObjects that match one or more of the supplied
-     * short names. The short names are specified as an array of strings.
-     * <p>
-     * The short names must be valid short names without wild card characters.
-     * 
-     * @param shortNames
-     *            an array of short names
-     * @param pagingCriteria 
-     *            the paging criteria for the request. (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction. (optional)           
-     * @return IPage<IMObject>
-     * @throws ArchetypeServiceException
-     *            a runtime exception                         
-     */
-    @Deprecated
-    public IPage<IMObject> get(String[] shortNames, boolean activeOnly, 
-            PagingCriteria pagingCriteria, SortCriteria sortCriteria);
-    
-    /**
-     * Return the entity with the specified identity or null if it does not
-     * exist
-     * 
-     * @param archId
-     *            the archetype id
-     * @param id
-     *            the entities identity
-     * @return IMObject
-     *            the entity object
-     * @throws ArchetypeServiceException
-     *            a runtime exception                         
-     */
-    @Deprecated
-    public IMObject getById(ArchetypeId archId, long id);
-    
-    /**
      * Retrun a list of {@link IMObject} instances that satisfy the specified
      * named query. The query name must map to a valid query in the target 
      * database. That params are key-value pairs that are required for the 
@@ -346,16 +219,16 @@ public interface IArchetypeService {
      *            the query name
      * @param params
      *            a map holding key value pairs.
-     * @param pagingCriteria 
-     *            the paging criteria for the request. (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction . (optional)           
+     * @param firstRow
+     *            the firstRow to retrieve
+     * @param numOfRows
+     *            the maximum number of rows to retrieve             
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException
      *            a runtime exception                         
      */
     public IPage<IMObject> getByNamedQuery(String name, Map<String, Object>params,
-            PagingCriteria pagingCriteria);
+            int firstRow, int numOfRows);
     
     /**
      * Return a list of archtype short names (i.e strings) given the 
@@ -399,154 +272,4 @@ public interface IArchetypeService {
      *            a runtime exception if it cannot complete the call                        
      */
     public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly);
-
-    /**
-     * Retrieve the {@link IMObject} given an {@link IMObjectReference}
-     * 
-     * @param reference
-     *            a valid reference
-     * @return IMObject
-     *            the object or null if it cannot be resolved.
-     * @throws ArchetypeServiceException            
-     */
-    @Deprecated
-    public IMObject get(IMObjectReference reference);
-    
-    /**
-     * Retrieve all the {@link IMObject} that satisfiy the following search
-     * criteria. 
-     * 
-     * @param shortNames
-     *            an array of archetype short names
-     * @param instanceName
-     *            the instance name, which may contain wildcard 
-     * @param primaryOnly
-     *            constrain the search to primary archetypes
-     * @param activeOnly
-     *            constrain the search to active only.
-     * @param pagingCriteria 
-     *            the paging criteria for the request. (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction. (optional)            
-     * @return IPage<IMObject>
-     * @throws ArchetypeServiceException                                                                     
-     */
-    @Deprecated
-    public IPage<IMObject> get(String[] shortNames, String instanceName,
-            boolean primaryOnly, boolean activeOnly, PagingCriteria pagingCriteria,
-            SortCriteria sortCriteria);
-
-    /**
-     * Return a list of {@link Act} for the specfied {@link Entity}. The list
-     * will be further filtered by entityName, conceptName, startTime, 
-     * endTime and status.
-     * <p>
-     * For some parameters you can specifiy the '*' wildcard character, which 
-     * can appear at the start or end of the parameter value
-     * 
-     * @param ref
-     *            the reference of the entity to search for {mandatory}
-     * @param pConceptName
-     *            the participaton concept name (optional)            
-     * @param entityName
-     *            the act entityName, which can be wildcarded (optional}
-     * @param aConceptName
-     *            the act concept name, which can be wildcarded  (optional)
-     * @param startTimeFrom
-     *            the activity from  start time for the act(optional)
-     * @param startTimeThru
-     *            the activity thru from  start time for the act(optional)
-     * @param endTimeFrom
-     *            the activity from end time for the act (optional)
-     * @param endTimeThru
-     *            the activity thru end time for the act (optional)
-     * @param status
-     *            a particular act status
-     * @param activeOnly 
-     *            only areturn acts that are active
-     * @param pagingCriteria 
-     *            the paging criteria for the request. (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction . (optional)           
-     * @return IPage<Act>
-     * @param ArchetypeServiceException
-     *            if there is a problem executing the service request                                                                                  
-     */
-    @Deprecated
-    public IPage<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
-            String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
-            Date endTimeThru, String status, boolean activeOnly,
-            PagingCriteria pagingCriteria, SortCriteria sortCriteria);
-    
-    /**
-     * Return a list of {@link Participation} instances for the specified 
-     * entity. The list will be constrained by psrticipation concept name,
-     * start time and end time, as specfied below.
-     * <p>
-     * For some parameters you can specifiy the '*' wildcard character, which 
-     * can appear at the start or end of the parameter value
-     * 
-     * @param ref
-     *            the ref of the entity to search for {mandatory}
-     * @param conceptName
-     *            the participation concept name, which can be wildcarded  (optional)
-     * @param startTimeFrom 
-     *            the participation from start time for the act(optional)
-     * @param startTimeThru 
-     *            the participation thru start time for the act(optional)
-     * @param endTimeFrom
-     *            the participation from end time for the act (optional)
-     * @param endTimeThru
-     *            the participation thru end time for the act (optional)
-     * @param activeOnly 
-     *            only return participations that are active
-     * @param pagingCriteria 
-     *            the paging criteria for the request. (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction. (optional)            
-     * @return IPage<Participation>
-     * @param ArchetypeServiceException
-     *            if there is a problem executing the service request                                                                                  
-     */
-    @Deprecated
-    public IPage<Participation> getParticipations(IMObjectReference ref, String conceptName, 
-            Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
-            Date endTimeThru, boolean activeOnly, PagingCriteria pagingCriteria,
-            SortCriteria sortCriteria);
-    
-    /**
-     * Return a list of {@link Act} instances} filtered by entityName,
-     * conceptName, startTime, endTime and status as described below.
-     * <p>
-     * For some parameters you can specifiy the '*' wildcard character, which 
-     * can appear at the start or end of the parameter value
-     * 
-     * @param entityName
-     *            the act entityName, which can be wildcarded (optional}
-     * @param conceptName
-     *            the act concept name, which can be wildcarded  (optional)
-     * @param startTimeFrom
-     *            the activity from  start time for the act(optional)
-     * @param startTimeThru
-     *            the activity thru from  start time for the act(optional)
-     * @param endTimeFrom
-     *            the activity from end time for the act (optional)
-     * @param endTimeThru
-     *            the activity thru end time for the act (optional)
-     * @param status
-     *            a particular act status
-     * @param activeOnly 
-     *            only areturn acts that are active
-     * @param pagingCriteria 
-     *            the paging criteria for the request. (optional)
-     * @param sortCriteria
-     *            the sort node and sort direction. (optional)            
-     * @return IPage<Act>
-     * @param ArchetypeServiceException
-     *            if there is a problem executing the service request                                                                                  
-     */
-    public IPage<Act> getActs(String entityName, String conceptName, Date startTimeFrom, 
-            Date startTimeThru, Date endTimeFrom, Date endTimeThru, 
-            String status, boolean activeOnly, PagingCriteria pagingCriteria,
-            SortCriteria sortCriteria);
 }
