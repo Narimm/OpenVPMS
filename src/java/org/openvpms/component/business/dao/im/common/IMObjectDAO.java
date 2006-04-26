@@ -19,17 +19,12 @@
 package org.openvpms.component.business.dao.im.common;
 
 // java
-import java.util.Date;
 import java.util.Map;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.im.Page;
-import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
 
 /**
  * This interface provides data access object (DAO) support for objects of 
@@ -75,14 +70,16 @@ public interface IMObjectDAO {
      *            the query string
      * @param valueMap
      *            the values applied to the query
-     * @param pagingCriteria
-     *            the paging criteria for the request
+     * @param firstRow
+     *            the first row to retrieve
+     * @param numOfRows
+     *            the maximum number of rows to return            
      * @return IPage<IMObject>
      * @throws IMObjectDAOException
      *            a runtime exception, raised if the request cannot complete.            
      */
     public IPage<IMObject> get(String queryString, Map<String, Object> valueMap,
-            PagingCriteria pagingCriteria);
+            int firstRow, int numOfRows);
     
     /**
      * Retrieve the objects that matches the specified search criteria.
@@ -113,14 +110,10 @@ public interface IMObjectDAO {
      *            the fully qualified name of the class to search for  
      * @param activeOnly
      *            indicates whether to return active objects.
-     * @param pagingCriteria                                      
-     *            the paging criteria, which holds the first row and 
-     *            the number of rows to include on the returned page.
-     * @param sortProperty
-     *            if specified defines the property to sort on. It must be a 
-     *            property on that is accessible on the specified class.
-     * @param ascending
-     *            if  the sort order is ascending.                                                                 
+     * @param firstRow
+     *            the first row to retrieve
+     * @param numOfRows
+     *            the maximum number of rows to return            
      * @return IPage<IMObject>
      *            the results and associated context information
      * @throws IMObjectDAOException
@@ -128,42 +121,7 @@ public interface IMObjectDAO {
      */
     public IPage<IMObject> get(String rmName, String entityName, 
             String conceptName, String instanceName, String clazz, 
-            boolean activeOnly, PagingCriteria pagingCriteria, 
-            String sortProperty, boolean ascending);
-    
-    /**
-     * Retrieve the objects that match the specified archetype short names and 
-     * the instanceName if supplied. Both the archetypes and the instanceName
-     * may be include the wildcard character '*'.
-     * <p>
-     * The results will be returned in a {@link Page} object, which may contain
-     * a subset of the total result set. The caller can then use the context 
-     * information in the {@link Page} object to make subsequent calls.
-     * 
-     * @param shortNames
-     *            the list of shortNames to match
-     * @param instanceName
-     *            the instance name   
-     * @param clazz
-     *            the fully qualified name of the class to search for  
-     * @param activeOnly
-     *            indicates whether to return active objects.
-     * @param pagingCriteria                                      
-     *            the paging criteria, which holds the first row and 
-     *            the number of rows to include on the returned page.
-     * @param sortProperty
-     *            if specified defines the property to sort on. It must be a 
-     *            property on that is accessible on the specified class.
-     * @param ascending
-     *            if  the sort order is ascending.                                                                 
-     * @return IPage<IMObject>
-     *            the results and associated context information
-     * @throws IMObjectDAOException
-     *             a runtime exception if the request cannot complete
-     */
-    public IPage<IMObject> get(String[] shortNames, String instanceName, String clazz, 
-            boolean activeOnly, PagingCriteria pagingCriteria, 
-            String sortProperty, boolean ascending);
+            boolean activeOnly, int firstRow, int numOfRows);
     
     /**
      * Return an object with the specified uid for the nominated clazz and null 
@@ -201,133 +159,16 @@ public interface IMObjectDAO {
      *            the name of the query
      * @param param
      *            a map of param name and param value.
-     * @param pagingCriteria                                      
-     *            the paging criteria, which holds the first row and 
-     *            the number of rows to include on the returned page.
-     * @param sortProperty
-     *            if specified defines the property to sort on. It must be a 
-     *            property on that is accessible on the specified class.
-     * @param ascending
-     *            if  the sort order is ascending.                                                                 
+     * @param firstRow
+     *            the first row to retrieve
+     * @param numOfRows
+     *            the maximum number of rows to return            
      * @return IPage<IMObject>
      *            the results and associated context information
      * @throws IMObjectDAOException
      *            if there is an error processing the request                                   
      */
     public IPage<IMObject> getByNamedQuery(String name, Map<String, Object> params,
-            PagingCriteria pagingCriteria, String sortProperty, boolean ascending);
-
-    /**
-     * Retrieve a list of acts satisfying the following criteria
-     * 
-     * @param ref
-     *            the reference of the entity to search for {mandatory}
-     * @param pConceptName
-     *            the participaton concept name (optional)            
-     * @param entityName
-     *            the act entityName, which can be wildcarded (optional}
-     * @param aConceptName
-     *            the act concept name, which can be wildcarded  (optional)
-     * @param startTimeFrom
-     *            the activity from  start time for the act(optional)
-     * @param startTimeThru
-     *            the activity thru from  start time for the act(optional)
-     * @param endTimeFrom
-     *            the activity from end time for the act (optional)
-     * @param endTimeThru
-     *            the activity thru end time for the act (optional)
-     * @param status
-     *            a particular act status
-     * @param activeOnly 
-     *            only areturn acts that are active
-     * @param pagingCriteria                                      
-     *            the paging criteria, which holds the first row and 
-     *            the number of rows to include on the returned page.
-     * @param sortProperty
-     *            if specified defines the property to sort on. It must be a 
-     *            property on that is accessible on the specified class.
-     * @param ascending
-     *            if  the sort order is ascending.                                                                 
-     * @return IPage<IMObject>
-     *            the results and associated context information
-     * @param EntityDAOException
-     *            if there is a problem executing the dao request                                                                                  
-     */
-    public IPage<Act> getActs(IMObjectReference ref, String pConceptName, String entityName, 
-            String aConceptName, Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
-            Date endTimeThru, String status, boolean activeOnly, 
-            PagingCriteria pagingCriteria, String sortProperty, boolean ascending);
-
-    /**
-     * Retrieve a list of acts satisfying the following criteria
-     * 
-     * @param entityName
-     *            the act entityName, which can be wildcarded (optional}
-     * @param conceptName
-     *            the act concept name, which can be wildcarded  (optional)
-     * @param startTimeFrom
-     *            the activity from  start time for the act(optional)
-     * @param startTimeThru
-     *            the activity thru from  start time for the act(optional)
-     * @param endTimeFrom
-     *            the activity from end time for the act (optional)
-     * @param endTimeThru
-     *            the activity thru end time for the act (optional)
-     * @param status
-     *            a particular act status
-     * @param activeOnly 
-     *            only areturn acts that are active
-     * @param pagingCriteria                                      
-     *            the paging criteria, which holds the first row and 
-     *            the number of rows to include on the returned page.
-     * @param sortProperty
-     *            if specified defines the property to sort on. It must be a 
-     *            property on that is accessible on the specified class.
-     * @param ascending
-     *            if  the sort order is ascending.                                                                 
-     * @return IPage<IMObject>
-     *            the results and associated context information
-     * @param EntityDAOException
-     *            if there is a problem executing the dao request                                                                                  
-     */
-    public IPage<Act> getActs(String entityName, String conceptName, Date startTimeFrom, 
-            Date startTimeThru, Date endTimeFrom, Date endTimeThru, 
-            String status, boolean activeOnly, PagingCriteria pagingCriteria, 
-            String sortProperty, boolean ascending);
-
-    /**
-     * Return a list of participations satisfying the following criteria
-     * 
-     * @param ref
-     *            the reference of the entity to search for {mandatory}
-     * @param conceptName
-     *            the participation concept name, which can be wildcarded  (optional)
-     * @param startTimeFrom 
-     *            the participation from start time for the act(optional)
-     * @param startTimeThru 
-     *            the participation thru start time for the act(optional)
-     * @param endTimeFrom
-     *            the participation from end time for the act (optional)
-     * @param endTimeThru
-     *            the participation thru end time for the act (optional)
-     * @param activeOnly 
-     *            only return participations that are active
-     * @param pagingCriteria                                      
-     *            the paging criteria, which holds the first row and 
-     *            the number of rows to include on the returned page.
-     * @param sortProperty
-     *            if specified defines the property to sort on. It must be a 
-     *            property on that is accessible on the specified class.
-     * @param ascending
-     *            if  the sort order is ascending.                                                                 
-     * @return IPage<IMObject>
-     *            the results and associated context information
-     * @param EntityDAOException
-     *            if there is a problem executing the dao request                                                                                  
-     */
-    public IPage<Participation> getParticipations(IMObjectReference ref, String conceptName, 
-            Date startTimeFrom, Date startTimeThru, Date endTimeFrom, 
-            Date endTimeThru, boolean activeOnly, PagingCriteria pagingCriteria, 
-            String sortProperty, boolean ascending);
+            int firstRow, int numOfRows);
 }
 

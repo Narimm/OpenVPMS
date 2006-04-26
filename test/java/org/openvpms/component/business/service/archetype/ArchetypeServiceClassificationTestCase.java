@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // log4j
@@ -77,8 +78,9 @@ public class ArchetypeServiceClassificationTestCase extends
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor("contact.phoneNumber");
         NodeDescriptor ndesc = adesc.getNodeDescriptor("purposes");
         
-        List<IMObject> purposes = service.get(
-                new String[]{"classification.contactPurpose"}, true, null, null).getRows();
+        List<IMObject> purposes = ArchetypeQueryHelper.get(service,
+                new String[]{"classification.contactPurpose"}, true, 
+                0, ArchetypeQuery.ALL_ROWS).getRows();
         int acount = purposes.size(); 
         
         ndesc.addChildToCollection(contact, purposes.get(0));
@@ -94,18 +96,21 @@ public class ArchetypeServiceClassificationTestCase extends
             throw exception;
         }
         
-        contact = (Contact)service.getById(contact.getArchetypeId(), contact.getUid());
+        contact = (Contact)ArchetypeQueryHelper.getByUid(service, 
+                contact.getArchetypeId(), contact.getUid());
         assertTrue(contact != null);
         assertTrue(contact.getClassifications().size() == 1);
         
         // remove a contact and save all
         contact.removeClassification(contact.getClassifications().iterator().next());
         service.save(contact);
-        contact = (Contact)service.getById(contact.getArchetypeId(), contact.getUid());
+        contact = (Contact)ArchetypeQueryHelper.getByUid(service,
+                contact.getArchetypeId(), contact.getUid());
         assertTrue(contact != null);
         assertTrue(contact.getClassifications().size() == 0);
-        purposes = service.get(new String[]{"classification.contactPurpose"}, 
-                true, null, null).getRows();
+        purposes = ArchetypeQueryHelper.get(service,
+                new String[]{"classification.contactPurpose"}, true, 
+                0, ArchetypeQuery.ALL_ROWS).getRows();
         assertTrue(acount == purposes.size()); 
         
     }

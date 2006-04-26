@@ -40,7 +40,9 @@ import org.openvpms.component.business.domain.im.datatypes.property.NamedPropert
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.util.StringUtilities;
 
 /**
@@ -118,9 +120,9 @@ public class ArchetypeRangeAssertion {
                 
                 try {
                     ArchetypeId aid = adesc.getType();
-                    List<IMObject> objects = archetypeService.get(aid.getRmName(), 
-                            aid.getEntityName(), aid.getConcept(), 
-                            type.defaultValue, true, null, null).getRows();
+                List<IMObject> objects = ArchetypeQueryHelper.get(archetypeService,
+                        aid.getRmName(), aid.getEntityName(), aid.getConcept(),
+                        type.defaultValue, true, 0, ArchetypeQuery.ALL_ROWS).getRows();
                     
                     // if can not find a matching entity
                     if (objects.size() == 0) {

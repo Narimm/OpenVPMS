@@ -155,7 +155,7 @@ public class ArchetypeDataLoader {
      *            the file where the data is stored is passed in as the first
      *            argument
      */
-    private static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         ArchetypeDataLoader loader = new ArchetypeDataLoader(args);
         loader.load();
     }

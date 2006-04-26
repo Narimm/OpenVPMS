@@ -34,7 +34,6 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
 
 /**
  * A helper class, which is used to wrap frequently used queries
@@ -259,4 +258,81 @@ public class ArchetypeQueryHelper {
         
         return (IPage)service.get(query);
     }
+
+    /**
+     * Uses the specified criteria to return zero, one or more matching . 
+     * entities. This is a very generic query which will constrain the 
+     * result set to one or more of the supplied values.
+     * <p>
+     * Each of the parameters can denote an exact match or a partial match. If
+     * a partial match is required then the last character of the value must be
+     * a '*'. In every other case the search will look for an exact match.
+     * <p>
+     * All the values are optional. In the case where all the values are null
+     * then all the entities will be returned. In the case where two or more 
+     * values are specified (i.e. rmName and entityName) then only entities 
+     * satisfying both conditions will be returned.
+     * 
+     * @param service
+     *            a reference to the archetype service
+     * @param rmName
+     *            the reference model name (must be complete name)
+     * @param entityName
+     *            the name of the entity (partial or complete)
+     * @param concept
+     *            the concept name (partial or complete)
+     * @param instanceName
+     *            the particular instance name
+     * @param activeOnly
+     *            whether to retrieve only the active objects            
+     * @param firstRow 
+     *            the first row to retrieve
+     * @param numOfRows
+     *            the num of rows to retrieve            
+     * @return IPage<IMObject>
+     * @param ArchetypeServiceException
+     *            if there is a problem executing the service request                                                                                  
+     */
+    public static IPage<IMObject> get(IArchetypeService service, String rmName, 
+            String entityName, String conceptName, String instanceName, 
+            boolean activeOnly, int firstRow, int numOfRows) {
+        ArchetypeQuery query = new ArchetypeQuery(rmName, entityName, conceptName, 
+                false, activeOnly)
+                .setFirstRow(firstRow)
+                .setNumOfRows(numOfRows);
+    
+        // add the instance name constraint, if specified
+        if (!StringUtils.isEmpty(instanceName)) {
+            query.add(new NodeConstraint("name", instanceName));
+        }
+
+        return service.get(query);
+    }
+    
+    /**
+     * Retrieve a list of IMObjects that match one or more of the supplied
+     * short names. The short names are specified as an array of strings.
+     * <p>
+     * The short names must be valid short names without wild card characters.
+     * 
+     * @param service
+     *            a reference to the archetype service
+     * @param shortNames
+     *            an array of short names
+     * @param firstRow 
+     *            the first row to retrieve
+     * @param numOfRows
+     *            the num of rows to retrieve            
+     * @return IPage<IMObject>
+     * @throws ArchetypeServiceException
+     *            a runtime exception                         
+     */
+    public static IPage<IMObject> get(IArchetypeService service, String[] shortNames, 
+            boolean activeOnly, int firstRow, int numOfRows) {
+        ArchetypeQuery query = new ArchetypeQuery(shortNames, false, activeOnly) 
+                .setFirstRow(firstRow)
+                .setNumOfRows(numOfRows);
+        return service.get(query);
+    }
+    
 }

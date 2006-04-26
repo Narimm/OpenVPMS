@@ -34,6 +34,7 @@ import org.springframework.dao.DataAccessException;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * This is the user details services, that is used by the acegi security
@@ -68,7 +69,8 @@ public class HibernateUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException, DataAccessException {
         List<IMObject> user = dao.get("system", "security",
-                "user", username, User.class.getName(), true, null, null, true).getRows();
+                "user", username, User.class.getName(), true, 0, 
+                ArchetypeQuery.ALL_ROWS).getRows();
         if (user.size() == 0) {
             throw new UsernameNotFoundException("User: " + username + 
                     " is invalid.");

@@ -26,6 +26,7 @@ import java.util.List;
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * This is a helper class for the archetype service.
@@ -72,7 +73,9 @@ public class ArchetypeServiceHelper {
         if (ndesc.containsAssertionType("candidateChildren")) {
             children = ndesc.getCandidateChildren(context);
         } else if (ndesc.containsAssertionType("archetypeRange")) {
-            children = service.get(ndesc.getArchetypeRange(), true, null, null).getRows();
+            children = ArchetypeQueryHelper.get(service,
+                    ndesc.getArchetypeRange(), true, 0, ArchetypeQuery.ALL_ROWS)
+                    .getRows();
         }
         
         return children;

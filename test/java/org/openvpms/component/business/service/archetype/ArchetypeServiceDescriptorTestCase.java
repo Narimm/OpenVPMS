@@ -20,9 +20,7 @@ package org.openvpms.component.business.service.archetype;
 
 // spring-context
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
@@ -40,6 +38,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ActionTypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
 
 /** 
  * Test the persistence side of the archetype service
@@ -167,10 +167,9 @@ public class ArchetypeServiceDescriptorTestCase extends
         assertTrue(obj instanceof ArchetypeDescriptor);
         assertTrue(((ArchetypeDescriptor)obj).getNodeDescriptors().size() == 1);
         
-        Map<String, Object>params = new HashMap<String, Object>();
-        params.put("name", desc.getName());
-        List<IMObject> objs = service.getByNamedQuery(
-                "archetypeDescriptor.getByName", params, null).getRows();
+        ArchetypeQuery query = new ArchetypeQuery("descriptor.archetype", false, true)
+            .add(new NodeConstraint("type", desc.getName()));
+        List<IMObject> objs = service.get(query).getRows();
         assertTrue(objs.size() > 0);
     }
     
@@ -204,7 +203,8 @@ public class ArchetypeServiceDescriptorTestCase extends
        
         // retrieve the cloned and saved object and ensure that the values
         // are correct
-        ArchetypeDescriptor obj = (ArchetypeDescriptor)service.getById(copy.getArchetypeId(), copy.getUid());
+        ArchetypeDescriptor obj = (ArchetypeDescriptor)ArchetypeQueryHelper
+            .getByUid(service, copy.getArchetypeId(), copy.getUid());
         assertTrue(obj != null);
         assertTrue(obj.getNodeDescriptors().size() == 1);
         assertTrue(copy.getName().equals(obj.getName()));
@@ -217,7 +217,8 @@ public class ArchetypeServiceDescriptorTestCase extends
         service.save(copy2);
         
          // retrieve the object again and check the info
-        obj = (ArchetypeDescriptor)service.getById(copy2.getArchetypeId(), copy2.getUid());
+        obj = (ArchetypeDescriptor)ArchetypeQueryHelper.getByUid(service,
+                copy2.getArchetypeId(), copy2.getUid());
         assertTrue(obj != null);
         assertTrue(obj.getNodeDescriptors().size() == 0);
         assertTrue(copy2.getName().equals(obj.getName()));
@@ -229,14 +230,13 @@ public class ArchetypeServiceDescriptorTestCase extends
      */
     public void testLoadingArchetypesFromXML()
     throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        
         //deleteAllArchetypeDescriptors();
         for (ArchetypeDescriptor desc : service.getArchetypeDescriptors()) {
             try {
-                params.put("name", desc.getName());
-                List<IMObject> results = service.getByNamedQuery(
-                        "archetypeDescriptor.getByName", params, null).getRows();
+                ArchetypeQuery query = new ArchetypeQuery("descriptor.archetype", 
+                        false, true)
+                        .add(new NodeConstraint("type", desc.getName()));
+                List<IMObject> results = service.get(query).getRows();
                 // only add if the entry does not exist
                 if (results == null || results.size() == 0) {
                     service.save(desc);

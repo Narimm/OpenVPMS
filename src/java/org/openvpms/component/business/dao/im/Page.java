@@ -19,11 +19,12 @@
 
 package org.openvpms.component.business.dao.im;
 
+// java core
 import java.io.Serializable;
 import java.util.List;
 
+// openvpms-framework
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.search.PagingCriteria;
 
 /**
  * This object is used to support pagination, where a subset of the query 
@@ -41,9 +42,14 @@ public class Page<T> implements Serializable, IPage<T> {
     private static final long serialVersionUID = 1L;
     
     /**
-     * The paging criteria
+     * The first row in the page
      */
-    private PagingCriteria pagingCriteria;
+    private int firstRow;
+    
+    /**
+     * The number of rows that were requested
+     */
+    private int numOfRows;
     
     /**
      * The total number of rows, which is must be equal or greater than 
@@ -68,22 +74,19 @@ public class Page<T> implements Serializable, IPage<T> {
      * 
      * @param rows
      *            the rows that are part of this  page
-     * @param pagingCriteria
-     *            the paging criteria
+     * @param firstRow
+     *            the first row to return            
+     * @param numOfRows
+     *            the number of rows requested, which may not always be equal
+     *            to the number of tows in the list.              
      * @param totalNumOfRows
-     *            the total number of rows if no pagination was used                                     
+     *            the total number of rows in the result set.                                     
      */
-    public Page(List<T> rows, PagingCriteria pagingCriteria, int totalNumOfRows) {
+    public Page(List<T> rows, int firstRow, int numOfRows, int totalNumOfRows) {
         this.rows = rows;
-        this.pagingCriteria = pagingCriteria;
+        this.firstRow = firstRow;
+        this.numOfRows = numOfRows;
         this.totalNumOfRows = totalNumOfRows;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openvpms.component.system.common.search.IPage#ggetPagingCriteria()
-     */
-    public PagingCriteria getPagingCriteria() {
-        return pagingCriteria;
     }
 
     /* (non-Javadoc)
@@ -101,13 +104,6 @@ public class Page<T> implements Serializable, IPage<T> {
     }
 
     /**
-     * @param pagingCriteria The paging criteria to set.
-     */
-    public void setPagingCriteria(PagingCriteria pagingCriteria) {
-        this.pagingCriteria = pagingCriteria;
-    }
-
-    /**
      * @param rows The rows to set.
      */
     public void setRows(List<T> rows) {
@@ -119,5 +115,33 @@ public class Page<T> implements Serializable, IPage<T> {
      */
     public void setTotalNumOfRows(int totalNumOfRows) {
         this.totalNumOfRows = totalNumOfRows;
+    }
+
+    /**
+     * @return Returns the firstRow.
+     */
+    public int getFirstRow() {
+        return firstRow;
+    }
+
+    /**
+     * @param firstRow The firstRow to set.
+     */
+    public void setFirstRow(int firstRow) {
+        this.firstRow = firstRow;
+    }
+
+    /**
+     * @return Returns the numOfRows.
+     */
+    public int getNumOfRows() {
+        return numOfRows;
+    }
+
+    /**
+     * @param numOfRows The numOfRows to set.
+     */
+    public void setNumOfRows(int numOfRows) {
+        this.numOfRows = numOfRows;
     }
 }

@@ -42,6 +42,7 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -317,7 +318,8 @@ public class LookupLoader {
         params.put("value", value);
         
         List<IMObject> result = archetypeService.getByNamedQuery(
-                "lookup.getLookupForConceptAndValue", params, null).getRows();
+                "lookup.getLookupForConceptAndValue", params, 0,
+                ArchetypeQuery.ALL_ROWS).getRows();
         
         return (Lookup)(result.size() > 0 ? result.get(0) : null);
     }
@@ -346,7 +348,8 @@ public class LookupLoader {
                 .toString());
         
         List<IMObject> result = archetypeService.getByNamedQuery(
-                "lookupRelationship.getTargetLookups", params, null).getRows();
+                "lookupRelationship.getTargetLookups", params, 0,
+                ArchetypeQuery.ALL_ROWS).getRows();
         for (IMObject imobj : result) {
             if (target.equals((Lookup)imobj)) {
                 return true;

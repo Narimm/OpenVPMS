@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * This implementation reads the archetype descriptors from the databases and
@@ -97,7 +98,8 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
      */
     private void loadAssertionTypeDescriptors() {
         List<IMObject> atypes = dao.get("system", "descriptor", "assertionType", 
-                null, AssertionTypeDescriptor.class.getName(), true, null, null, true).getRows();
+                null, AssertionTypeDescriptor.class.getName(), true, 0,
+                ArchetypeQuery.ALL_ROWS).getRows();
         for (IMObject imobj : atypes) {
             if (!(imobj instanceof AssertionTypeDescriptor)) {
                 logger.warn("Invalid assertion type object: Found object of type "
@@ -122,8 +124,8 @@ public class ArchetypeDescriptorCacheDB extends BaseArchetypeDescriptorCache
      */
     private void loadArchetypeDescriptors() {
         processArchetypeDescriptors(dao.get("system", "descriptor", 
-                null, null, ArchetypeDescriptor.class.getName(), true, null, 
-                null, true).getRows());
+                null, null, ArchetypeDescriptor.class.getName(), true, 0,
+                ArchetypeQuery.ALL_ROWS).getRows());
     }
 
     /**
