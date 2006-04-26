@@ -16,7 +16,7 @@
  *  $Id: ActWorkspace.java 748 2006-04-11 04:09:07Z tanderson $
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.supplier;
 
 import java.util.List;
 
@@ -92,20 +92,20 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     @Override
     public Component getSummary() {
-        return CustomerSummary.getSummary((Party) getObject());
+        return SupplierSummary.getSummary((Party) getObject());
     }
 
     /**
      * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current customer has changed.
+     * returns true if the current supplier has changed.
      *
      * @return <code>true</code> if the workspace should be refreshed, otherwise
      *         <code>false</code>
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party customer = Context.getInstance().getCustomer();
-        return (customer != getObject());
+        Party supplier = Context.getInstance().getSupplier();
+        return (supplier != getObject());
     }
 
     /**
@@ -114,24 +114,24 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        Party customer = Context.getInstance().getCustomer();
-        setObject(customer);
-        if (customer != null) {
-            layoutWorkspace(customer, container);
-            initQuery(customer);
+        Party supplier = Context.getInstance().getSupplier();
+        setObject(supplier);
+        if (supplier != null) {
+            layoutWorkspace(supplier, container);
+            initQuery(supplier);
         }
     }
 
     /**
-     * Invoked when a customer is selected.
+     * Invoked when a supplier is selected.
      *
-     * @param customer the selected customer
+     * @param supplier the selected supplier
      */
     @Override
-    protected void onSelected(IMObject customer) {
-        super.onSelected(customer);
-        Party party = (Party) customer;
-        Context.getInstance().setCustomer(party);
+    protected void onSelected(IMObject supplier) {
+        super.onSelected(supplier);
+        Party party = (Party) supplier;
+        Context.getInstance().setSupplier(party);
         if (_workspace == null) {
             layoutWorkspace(party, getComponent());
         }
@@ -173,11 +173,11 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * Lays out the workspace.
      *
-     * @param customer  the customer
+     * @param supplier  the supplier
      * @param container the container
      */
-    protected void layoutWorkspace(Party customer, Component container) {
-        _query = createQuery(customer);
+    protected void layoutWorkspace(Party supplier, Component container) {
+        _query = createQuery(supplier);
         _acts = new Browser(_query, null, createTableModel());
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
@@ -218,10 +218,10 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
+     * @param supplier the supplier to query acts for
      * @return a new query
      */
-    protected abstract ActQuery createQuery(Party customer);
+    protected abstract ActQuery createQuery(Party supplier);
 
     /**
      * Creates a new table model to display acts.
@@ -235,10 +235,10 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * Perform an initial query, selecting the first available act.
      *
-     * @param customer the customer
+     * @param supplier the supplier
      */
-    private void initQuery(Party customer) {
-        _query.setEntity(customer);
+    private void initQuery(Party supplier) {
+        _query.setEntity(supplier);
         _acts.query();
         selectFirst();
     }

@@ -11,25 +11,24 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
-
+package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Row;
 
+import org.openvpms.web.app.supplier.ActCRUDWindow;
 
 /**
- * CRUD window for payments.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class PaymentCRUDWindow extends ActCRUDWindow {
 
+public class PaymentCRUDWindow extends ActCRUDWindow {
 
     /**
      * Create a new <code>ActCRUDWindow</code>.
@@ -73,5 +72,4 @@ public class PaymentCRUDWindow extends ActCRUDWindow {
             buttons.add(getCreateButton());
         }
     }
-
 }

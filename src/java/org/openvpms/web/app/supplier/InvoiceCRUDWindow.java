@@ -11,35 +11,39 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
-
+package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Row;
 
+import org.openvpms.web.app.supplier.ActCRUDWindow;
+
 
 /**
- * CRUD window for payments.
+ * Suppier Invoice 
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class PaymentCRUDWindow extends ActCRUDWindow {
 
+public class InvoiceCRUDWindow extends ActCRUDWindow {
 
     /**
-     * Create a new <code>ActCRUDWindow</code>.
+     * Create a new <code>InvoiceCRUDWindow</code>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param type         display name for the types of objects that this may
+     *                     create
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
      */
-    public PaymentCRUDWindow(String type, String[] shortNames) {
-        super(type, shortNames);
+    public InvoiceCRUDWindow(String type, String refModelName,
+                             String entityName, String conceptName) {
+        super(type, refModelName, entityName, conceptName);
     }
 
     /**
