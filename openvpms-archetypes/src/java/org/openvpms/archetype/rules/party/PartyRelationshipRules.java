@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.rules;
+package org.openvpms.archetype.rules.party;
 
 import java.util.Date;
 
