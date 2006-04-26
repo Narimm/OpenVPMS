@@ -14,7 +14,7 @@
         </parameter>
         <java:condition>party.getEntityRelationships().size() > 0</java:condition>
         <java:consequence>
-            org.openvpms.rules.PartyRelationshipRules.checkPatientRelationships(service, party);
+            org.openvpms.archetype.rules.PartyRelationshipRules.checkPatientRelationships(service, party);
         </java:consequence>
     </rule>
 
