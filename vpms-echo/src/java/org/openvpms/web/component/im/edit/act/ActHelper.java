@@ -29,8 +29,8 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -52,14 +52,38 @@ public class ActHelper {
      * @param customer the customer
      * @return the account balance for <code>customer</code>
      */
-    public static BigDecimal getAccountBalance(Party customer) {
+    public static BigDecimal getCustomerAccountBalance(Party customer) {
         String[] statuses = {"Posted"};
         String[] shortNames = {"act.customerAccountCharges*",
                                "act.customerAccountPayment",
                                "act.customerAccountRefund"};
-        ArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
         ActResultSet set = new ActResultSet(customer.getObjectReference(),
+                                            archetypes, null, null, statuses,
+                                            50, null);
+        BigDecimal balance = BigDecimal.ZERO;
+        while (set.hasNext()) {
+            IPage<Act> acts = set.next();
+            balance = ActHelper.sum(balance, acts.getRows(), "amount");
+        }
+        return balance;
+    }
+
+    /**
+     * Returns an account balance for a supplier.
+     *
+     * @param customer the supplier
+     * @return the account balance for <code>supplier</code>
+     */
+    public static BigDecimal getSupplierAccountBalance(Party supplier) {
+        String[] statuses = {"Posted"};
+        String[] shortNames = {"act.supplierAccountCharges*",
+                               "act.supplierAccountPayment",
+                               "act.supplierAccountRefund"};
+        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+                shortNames, true, true);
+        ActResultSet set = new ActResultSet(supplier.getObjectReference(),
                                             archetypes, null, null, statuses,
                                             50, null);
         BigDecimal balance = BigDecimal.ZERO;

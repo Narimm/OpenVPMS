@@ -37,9 +37,9 @@ public class SupplierSubsystem extends AbstractSubsystem {
         super("supplier");
         addWorkspace(new InformationWorkspace());
         addWorkspace(new DummyWorkspace("supplier", "document"));
-        addWorkspace(new DummyWorkspace("supplier", "order"));
-        addWorkspace(new DummyWorkspace("supplier", "charge"));
-        addWorkspace(new DummyWorkspace("supplier", "payment"));
-        addWorkspace(new DummyWorkspace("supplier", "account"));
+        addWorkspace(new OrderWorkspace());
+        addWorkspace(new InvoiceWorkspace());
+        addWorkspace(new PaymentWorkspace());
+        addWorkspace(new AccountWorkspace());
     }
 }

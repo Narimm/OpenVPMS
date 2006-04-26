@@ -11,12 +11,12 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.supplier;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -33,9 +33,10 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
+import org.openvpms.web.app.supplier.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -48,14 +49,13 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
-
 /**
- * CRUD window for estimation acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class EstimationCRUDWindow extends ActCRUDWindow {
+
+public class OrderCRUDWindow extends ActCRUDWindow {
 
     /**
      * The copy button.
@@ -78,38 +78,38 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
     private static final String INVOICE_ID = "invoice";
 
     /**
-     * Estimation short name.
+     * order short name.
      */
-    private static final String ESTIMATION_TYPE = "act.customerEstimation";
+    private static final String ORDER_TYPE = "act.supplierOrder";
 
     /**
      * Estimation item short name.
      */
-    private static final String ESTIMATION_ITEM_TYPE = "act.customerEstimationItem";
+    private static final String ORDER_ITEM_TYPE = "act.supplierOrderItem";
 
     /**
      * Estimation item relationship short name.
      */
-    private static final String ESTIMATION_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerEstimationItem";
+    private static final String ORDER_ITEM_RELATIONSHIP_TYPE
+            = "actRelationship.supplierOrderItem";
 
     /**
      * Invoice act short name.
      */
     private static final String INVOICE_TYPE
-            = "act.customerAccountChargesInvoice";
+            = "act.supplierAccountChargesInvoice";
 
     /**
      * Invoice act item short name.
      */
     private static final String INVOICE_ITEM_TYPE
-            = "act.customerAccountInvoiceItem";
+            = "act.supplierAccountInvoiceItem";
 
     /**
      * Invoice act item relationship short name.
      */
     private static final String INVOICE_ITEM_RELATIONSHIP_TYPE
-            = "actRelationship.customerAccountInvoiceItem";
+            = "actRelationship.supplierAccountInvoiceItem";
 
 
     /**
@@ -121,7 +121,7 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      */
-    public EstimationCRUDWindow(String type, String refModelName,
+    public OrderCRUDWindow(String type, String refModelName,
                                 String entityName, String conceptName) {
         super(type, refModelName, entityName, conceptName);
     }
@@ -201,8 +201,8 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
      */
     protected void onInvoice() {
         final Act act = (Act) getObject();
-        String title = Messages.get("customer.estimation.invoice.title");
-        String message = Messages.get("customer.estimation.invoice.message");
+        String title = Messages.get("supplier.order.invoice.title");
+        String message = Messages.get("supplier.order.invoice.message");
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -213,27 +213,27 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
     }
 
     /**
-     * Invoice out an estimation to the customer.
+     * Invoice out an order to the supplier.
      *
-     * @param estimation the estimation
+     * @param order the order
      */
-    private void invoice(Act estimation) {
+    private void invoice(Act order) {
         try {
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
-            Act invoice = (Act) copier.copy(estimation);
+            Act invoice = (Act) copier.copy(order);
             invoice.setStatus(INPROGRESS_STATUS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
             calcAmount(invoice);
             SaveHelper.save(invoice);
 
-            if (!estimation.getStatus().equals(POSTED_STATUS)) {
-                estimation.setStatus(POSTED_STATUS);
-                SaveHelper.save(estimation);
-                setObject(estimation);
+            if (!order.getStatus().equals(POSTED_STATUS)) {
+                order.setStatus(POSTED_STATUS);
+                SaveHelper.save(order);
+                setObject(order);
                 CRUDWindowListener listener = getListener();
                 if (listener != null) {
-                    listener.saved(estimation, false);
+                    listener.saved(order, false);
                 }
             }
         } catch (ArchetypeServiceException exception) {
@@ -273,9 +273,9 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
          * Map of invoice types to their corresponding credit types.
          */
         private static final String[][] TYPE_MAP = {
-                {ESTIMATION_TYPE, INVOICE_TYPE},
-                {ESTIMATION_ITEM_TYPE, INVOICE_ITEM_TYPE},
-                {ESTIMATION_ITEM_RELATIONSHIP_TYPE, INVOICE_ITEM_RELATIONSHIP_TYPE},
+                {ORDER_TYPE, INVOICE_TYPE},
+                {ORDER_ITEM_TYPE, INVOICE_ITEM_TYPE},
+                {ORDER_ITEM_RELATIONSHIP_TYPE, INVOICE_ITEM_RELATIONSHIP_TYPE},
         };
 
         /**
@@ -314,9 +314,9 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
                 || object instanceof Participation) {
                 String shortName = object.getArchetypeId().getShortName();
                 for (String[] map : TYPE_MAP) {
-                    String estimationType = map[0];
+                    String orderType = map[0];
                     String invoiceType = map[1];
-                    if (estimationType.equals(shortName)) {
+                    if (orderType.equals(shortName)) {
                         shortName = invoiceType;
                         break;
                     }
@@ -333,4 +333,5 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
             return result;
         }
     }
+
 }

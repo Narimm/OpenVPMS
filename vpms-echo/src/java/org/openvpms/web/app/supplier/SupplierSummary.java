@@ -11,12 +11,12 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.supplier;
 
 import java.math.BigDecimal;
 
@@ -29,27 +29,25 @@ import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
 
-
 /**
- * Renders customer summary information.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class CustomerSummary {
 
+public class SupplierSummary {
     /**
-     * Returns summary information for a customer.
+     * Returns summary information for a supplier.
      *
-     * @param customer the customer. May be <code>null</code>
+     * @param supplier the customer. May be <code>null</code>
      * @return a summary component, or <code>null</code> if there is no summary
      */
-    public static Component getSummary(Party customer) {
+    public static Component getSummary(Party supplier) {
         Component result = null;
-        if (customer != null) {
-            Label title = LabelFactory.create("customer.account.balance");
+        if (supplier != null) {
+            Label title = LabelFactory.create("supplier.account.balance");
             Label balance = LabelFactory.create();
-            BigDecimal value = ActHelper.getCustomerAccountBalance(customer);
+            BigDecimal value = ActHelper.getSupplierAccountBalance(supplier);
             balance.setText(NumberFormatter.format(value));
             result = RowFactory.create("CellSpacing", title, balance);
         }

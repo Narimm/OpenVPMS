@@ -115,22 +115,24 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * @return a new query
      */
     protected Query getQuery(Query query) {
-        IMObjectReference ref = (IMObjectReference) _patient.getValue();
-        if (ref != null) {
-            IMObject patient = IMObjectHelper.getObject(ref);
-            if (patient != null) {
-                String species = (String) IMObjectHelper.getValue(patient,
-                                                                  "species");
-                if (species != null) {
-/*
-                    CollectionNodeConstraint constraint
-                            = new CollectionNodeConstraint(
-                            "classifications", "classification.species", true, true);
-                    constraint.setJoinType(JoinType.LeftOuterJoin);
-                    constraint.add(new NodeConstraint("name", RelationalOp.EQ,
-                                                      species));
-                    query.setConstraints(constraint);
-*/
+        if (_patient != null) {
+            IMObjectReference ref = (IMObjectReference) _patient.getValue();
+            if (ref != null) {
+                IMObject patient = IMObjectHelper.getObject(ref);
+                if (patient != null) {
+                    String species = (String) IMObjectHelper.getValue(patient,
+                                                                      "species");
+                    if (species != null) {
+    /*
+                        CollectionNodeConstraint constraint
+                                = new CollectionNodeConstraint(
+                                "classifications", "classification.species", true, true);
+                        constraint.setJoinType(JoinType.LeftOuterJoin);
+                        constraint.add(new NodeConstraint("name", RelationalOp.EQ,
+                                                          species));
+                        query.setConstraints(constraint);
+    */
+                    }
                 }
             }
         }

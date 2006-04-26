@@ -16,7 +16,7 @@
  *  $Id: ActCRUDWindow.java 767 2006-04-18 06:53:24Z tanderson $
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -135,14 +135,14 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     @Override
     protected void onCreated(IMObject object) {
         Act act = (Act) object;
-        Party customer = Context.getInstance().getCustomer();
-        if (customer != null) {
+        Party supplier = Context.getInstance().getSupplier();
+        if (supplier != null) {
             try {
                 IArchetypeService service
                         = ServiceHelper.getArchetypeService();
                 Participation participation
-                        = (Participation) service.create("participation.customer");
-                participation.setEntity(new IMObjectReference(customer));
+                        = (Participation) service.create("participation.supplier");
+                participation.setEntity(new IMObjectReference(supplier));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);
             } catch (ArchetypeServiceException exception) {
@@ -164,8 +164,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
             if (canEdit(act)) {
                 super.onEdit();
             } else {
-                showStatusError(act, "customer.act.noedit.title",
-                                "customer.act.noedit.message");
+                showStatusError(act, "supplier.act.noedit.title",
+                                "supplier.act.noedit.message");
             }
         }
     }
@@ -179,8 +179,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
         if (canDelete(act)) {
             super.onDelete();
         } else {
-            showStatusError(act, "customer.act.nodelete.title",
-                            "customer.act.nodelete.message");
+            showStatusError(act, "supplier.act.nodelete.title",
+                            "supplier.act.nodelete.message");
         }
     }
 
@@ -189,8 +189,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
      */
     protected void onPrint() {
         String name = getArchetypeDescriptor().getDisplayName();
-        String title = Messages.get("customer.act.print.title", name);
-        String message = Messages.get("customer.act.print.message", name);
+        String title = Messages.get("supplier.act.print.title", name);
+        String message = Messages.get("supplier.act.print.message", name);
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {

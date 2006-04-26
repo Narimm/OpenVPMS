@@ -56,7 +56,7 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
             Party customer = Context.getInstance().getCustomer();
             if (customer != null) {
                 BigDecimal diff = ActHelper.sum(parent, "amount");
-                BigDecimal current = ActHelper.getAccountBalance(customer);
+                BigDecimal current = ActHelper.getCustomerAccountBalance(customer);
                 BigDecimal balance = current.subtract(diff);
                 Property amount = getProperty("amount");
                 amount.setValue(balance);
