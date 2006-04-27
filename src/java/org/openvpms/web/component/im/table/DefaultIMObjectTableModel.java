@@ -24,6 +24,10 @@ import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeProperty;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 
@@ -133,23 +137,39 @@ public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
     }
 
     /**
-     * Returns the node name associated with a column.
+     * Returns the sort criteria.
      *
-     * @param column the column
-     * @return the name of the node associated with the column, or
-     *         <code>null</code>
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria
      */
-    public String getNode(int column) {
-        String node = null;
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        SortConstraint[] result;
         switch (column) {
+            case ARCHETYPE_INDEX:
+                SortConstraint refModelName = new ArchetypeSortConstraint(
+                        ArchetypeProperty.ReferenceModelName, ascending);
+                SortConstraint entityName = new ArchetypeSortConstraint(
+                        ArchetypeProperty.EntityName, ascending);
+                SortConstraint conceptName = new ArchetypeSortConstraint(
+                        ArchetypeProperty.ConceptName, ascending);
+                result = new SortConstraint[]{refModelName, entityName,
+                                              conceptName};
+                break;
             case NAME_INDEX:
-                node = "name";
+                SortConstraint name = new NodeSortConstraint("name", ascending);
+                result = new SortConstraint[]{name};
                 break;
             case DESCRIPTION_INDEX:
-                node = "description";
+                SortConstraint description = new NodeSortConstraint(
+                        "description", ascending);
+                result = new SortConstraint[]{description};
                 break;
+            default:
+                throw new IllegalArgumentException("Illegal column=" + column);
         }
-        return node;
+        return result;
     }
 
 }

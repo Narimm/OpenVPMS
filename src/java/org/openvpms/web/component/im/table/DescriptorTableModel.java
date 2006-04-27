@@ -29,6 +29,8 @@ import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -129,24 +131,27 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
     }
 
     /**
-     * Returns the node name associated with a column.
+     * Returns the sort criteria.
      *
-     * @param column the column
-     * @return the name of the node associated with the column, or
-     *         <code>null</code>
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria
      */
     @Override
-    public String getNode(int column) {
-        String node = null;
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        SortConstraint[] result;
         TableColumn col = getColumn(column);
         if (col instanceof DescriptorTableColumn) {
             NodeDescriptor descriptor
                     = ((DescriptorTableColumn) col).getDescriptor();
-            node = descriptor.getName();
+            result = new SortConstraint[] {
+                new NodeSortConstraint(descriptor.getName(), ascending)
+            };
         } else {
-            node = super.getNode(column);
+            result = super.getSortConstraints(column, ascending);
         }
-        return node;
+        return result;
     }
 
     /**
