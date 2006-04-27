@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.query;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
@@ -40,19 +41,19 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     private final IConstraint _constraints;
 
     /**
-     * The sort order. May be <code>null</code>.
+     * The sort criteria. May be <code>null</code>.
      */
-    private SortOrder _order;
+    private SortConstraint[] _sort;
 
 
     /**
      * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
      *
-     * @param rows  the maximum no. of rows per page
-     * @param order the sort criteria. May be <code>null</code>
+     * @param rows the maximum no. of rows per page
+     * @param sort the sort criteria. May be <code>null</code>
      */
-    public AbstractArchetypeServiceResultSet(int rows, SortOrder order) {
-        this(null, rows, order);
+    public AbstractArchetypeServiceResultSet(int rows, SortConstraint[] sort) {
+        this(null, rows, sort);
     }
 
     /**
@@ -60,34 +61,23 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *
      * @param constraints query constraints. May be <code>null</code>
      * @param rows        the maximum no. of rows per page
-     * @param order       the sort criteria. May be <code>null</code>
+     * @param sort        the sort criteria. May be <code>null</code>
      */
     public AbstractArchetypeServiceResultSet(IConstraint constraints,
-                                             int rows, SortOrder order) {
+                                             int rows, SortConstraint[] sort) {
         super(rows);
         _constraints = constraints;
-        _order = order;
+        setSortConstraint(sort);
     }
 
     /**
      * Sort the set. This resets the iterator.
      *
-     * @param node      the node to sort on
-     * @param ascending if <code>true</code> sort the column ascending order;
-     *                  otherwise sort it in <code>descebding</code> order
+     * @param sort the sort criteria
      */
-    public void sort(String node, boolean ascending) {
-        _order = new SortOrder(node, ascending);
+    public void sort(SortConstraint[] sort) {
+        setSortConstraint(sort);
         reset();
-    }
-
-    /**
-     * Returns the node the set was sorted on.
-     *
-     * @return the sort node, or <code>null</code> if the set is unsorted
-     */
-    public String getSortNode() {
-        return (_order != null) ? _order.getNode() : null;
     }
 
     /**
@@ -97,25 +87,25 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *         <code>false</code> if it is sorted descending
      */
     public boolean isSortedAscending() {
-        return (_order == null) || _order.isAscending();
+        return (_sort.length == 0 || _sort[0].isAscending());
     }
 
     /**
      * Returns the sort criteria.
      *
-     * @return the sort criteria
+     * @return the sort criteria. Never null
      */
-    public SortOrder getSortOrder() {
-        return _order;
+    public SortConstraint[] getSortConstraints() {
+        return _sort;
     }
 
     /**
      * Sets the sort criteria.
      *
-     * @param order the sort criteria
+     * @param sort the sort criteria. May be <code>null</code>
      */
-    protected void setSortOrder(SortOrder order) {
-        _order = order;
+    protected void setSortConstraint(SortConstraint[] sort) {
+        _sort = (sort != null) ? sort : new SortConstraint[0];
     }
 
     /**

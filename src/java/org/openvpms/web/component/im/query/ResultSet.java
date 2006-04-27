@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.query;
 import java.util.ListIterator;
 
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
@@ -39,11 +40,9 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param node      the node to sort on
-     * @param ascending if <code>true</code> sort the set in ascending order;
-     *                  otherwise sort it in <code>descebding</code> order
+     * @param sort the sort criteria
      */
-    void sort(String node, boolean ascending);
+    void sort(SortConstraint[] sort);
 
     /**
      * Returns the specified page.
@@ -76,19 +75,11 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     int getRows();
 
     /**
-     * Returns the node the set was sorted on.
-     *
-     * @return the sort node, or <code>null</code> if the set is unsorted
-     */
-    String getSortNode();
-
-    /**
      * Determines if the node is sorted ascending or descending.
      *
      * @return <code>true</code> if the node is sorted ascending;
      *         <code>false</code> if it is sorted descending
      */
     boolean isSortedAscending();
-
 
 }

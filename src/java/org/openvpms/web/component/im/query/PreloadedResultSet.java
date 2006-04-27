@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.FunctorException;
 import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.comparators.ComparatorChain;
 import org.apache.commons.collections.comparators.TransformingComparator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,8 +37,12 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
@@ -63,11 +68,6 @@ public class PreloadedResultSet<T extends IMObject>
     private final List<T> _objects;
 
     /**
-     * The sort node.
-     */
-    private String _node;
-
-    /**
      * Determines if the set is sorted ascending or descending.
      */
     private boolean _sortAscending = true;
@@ -89,27 +89,27 @@ public class PreloadedResultSet<T extends IMObject>
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param node      the node to sort on
-     * @param ascending if <code>true</code> sort the set in ascending order;
-     *                  otherwise sort it in <code>descebding</code> order
+     * @param sort the sort criteria
      */
-    public void sort(String node, boolean ascending) {
+    public void sort(SortConstraint[] sort) {
         if (!_objects.isEmpty()) {
-            Comparator<Object> comparator = getComparator(node, ascending);
+            ComparatorChain comparator = new ComparatorChain();
+            for (SortConstraint constraint : sort) {
+                if (constraint instanceof NodeSortConstraint) {
+                    Comparator node
+                            = getComparator((NodeSortConstraint) constraint);
+                    comparator.addComparator(node);
+                } else if (constraint instanceof ArchetypeSortConstraint) {
+                    Comparator type =
+                            getComparator((ArchetypeSortConstraint) constraint);
+                    comparator.addComparator(type);
+                    break;
+                }
+                _sortAscending = constraint.isAscending();
+            }
             Collections.sort(_objects, comparator);
-            _node = node;
-            _sortAscending = ascending;
         }
         reset();
-    }
-
-    /**
-     * Returns the node the set was sorted on.
-     *
-     * @return the sort node, or <code>null</code> if the set is unsorted
-     */
-    public String getSortNode() {
-        return _node;
     }
 
     /**
@@ -146,21 +146,43 @@ public class PreloadedResultSet<T extends IMObject>
     /**
      * Returns a new comparator.
      *
-     * @param node      the node to sort on
-     * @param ascending if <code>true</code> sort the node in ascending order;
-     *                  otherwise sort it in <code>descebding</code> order
+     * @param sort the sort criteria
+     * @return a new comparator
      */
-    protected Comparator<Object> getComparator(String node, boolean ascending) {
+    protected Comparator<Object> getComparator(NodeSortConstraint sort) {
+        Comparator comparator = getComparator(sort.isAscending());
+        Transformer transformer = new NodeTransformer(
+                sort.getNodeName(), ServiceHelper.getArchetypeService());
+        return new TransformingComparator(transformer, comparator);
+    }
+
+    /**
+     * Returns a new comparator for an archetype property.
+     *
+     * @param sort the sort criteria
+     */
+    protected Comparator<Object> getComparator(ArchetypeSortConstraint sort) {
+        Comparator comparator = getComparator(sort.isAscending());
+        Transformer transformer = new ArchetypeTransformer(
+                sort.getProperty());
+        return new TransformingComparator(transformer, comparator);
+    }
+
+    /**
+     * Returns a new comparator.
+     *
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in descending order
+     */
+    protected Comparator getComparator(boolean ascending) {
         Comparator comparator = ComparatorUtils.naturalComparator();
 
         // handle nulls.
         comparator = ComparatorUtils.nullLowComparator(comparator);
-        if (!ascending) {
+        if (ascending) {
             comparator = ComparatorUtils.reversedComparator(comparator);
         }
-        Transformer transformer = new NodeTransformer(
-                node, ServiceHelper.getArchetypeService());
-        return new TransformingComparator(transformer, comparator);
+        return comparator;
     }
 
     private class NodeTransformer implements Transformer {
@@ -234,4 +256,52 @@ public class PreloadedResultSet<T extends IMObject>
         }
 
     }
+
+    private class ArchetypeTransformer implements Transformer {
+
+        /**
+         * The archetype property to return.
+         */
+        private final ArchetypeProperty _property;
+
+        /**
+         * Construct a new <code>ArchetypeTransformer</code>.
+         *
+         * @param property the property to return
+         */
+        public ArchetypeTransformer(ArchetypeProperty property) {
+            _property = property;
+        }
+
+        /**
+         * Transforms the input object (leaving it unchanged) into some output
+         * object.
+         *
+         * @param input the object to be transformed, should be left unchanged
+         * @return a transformed object
+         * @throws ClassCastException       (runtime) if the input is the wrong
+         *                                  class
+         * @throws IllegalArgumentException (runtime) if the input is invalid
+         * @throws FunctorException         (runtime) if the transform cannot be
+         *                                  completed
+         */
+        public Object transform(Object input) {
+            Object result = null;
+            IMObject object = (IMObject) input;
+            switch (_property) {
+                case ReferenceModelName:
+                    result = object.getArchetypeId().getRmName();
+                    break;
+                case EntityName:
+                    result = object.getArchetypeId().getEntityName();
+                    break;
+                case ConceptName:
+                    result = object.getArchetypeId().getConcept();
+                    break;
+            }
+            return result;
+        }
+    }
+
+
 }

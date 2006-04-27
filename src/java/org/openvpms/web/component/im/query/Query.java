@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
@@ -42,13 +43,11 @@ public interface Query {
     /**
      * Performs the query.
      *
-     * @param rows      the maxiomum no. of rows per page
-     * @param node      the node to sort on. May be <code>null</code>
-     * @param ascending if <code>true</code> sort the rows in ascending order;
-     *                  otherwise sort them in <code>descebding</code> order
+     * @param rows the maxiomum no. of rows per page
+     * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
-    ResultSet query(int rows, String node, boolean ascending);
+    ResultSet query(int rows, SortConstraint[] sort);
 
     /**
      * Determines if the query should be run automatically.

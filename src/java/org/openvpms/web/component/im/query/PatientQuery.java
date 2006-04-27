@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -108,18 +109,16 @@ public class PatientQuery extends AbstractQuery {
     /**
      * Performs the query.
      *
-     * @param rows      the maxiomum no. of rows per page
-     * @param node      the node to sort on. May be <code>null</code>
-     * @param ascending if <code>true</code> sort the rows inascending order;
-     *                  otherwise sort them in <code>descebding</code> order
+     * @param rows the maxiomum no. of rows per page
+     * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
     @Override
-    public ResultSet query(int rows, String node, boolean ascending) {
+    public ResultSet query(int rows, SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
         ResultSet result;
         if (_allPatients.isSelected()) {
-            result = super.query(rows, node, ascending);
+            result = super.query(rows, sort);
         } else {
             List<IMObject> objects = null;
             if (_customer != null) {
@@ -129,6 +128,9 @@ public class PatientQuery extends AbstractQuery {
                 objects = Collections.emptyList();
             }
             result = new PreloadedResultSet<IMObject>(objects, rows);
+            if (sort != null) {
+                result.sort(sort);
+            }
         }
         return result;
     }
