@@ -44,7 +44,7 @@ public class PartyRelationshipRules {
     
 
     /**
-     * Check the ownership records for a Patient and make sure they are valid 
+     * Check the ownership and location records for a Patient and make sure they are valid 
      * and only one is active.
      * 
      * @param service
