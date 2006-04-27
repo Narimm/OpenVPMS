@@ -29,12 +29,12 @@
 			</assertion>
 		</node>
 		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.customerAccountPaymentItem" >
+			filter="actRelationship.supplierAccountPaymentItem" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="actRelationship.customerAccountPaymentItem" />
+							value="actRelationship.supplierAccountPaymentItem" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
