@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
@@ -53,43 +54,45 @@ public class ActHelper {
      * @return the account balance for <code>customer</code>
      */
     public static BigDecimal getCustomerAccountBalance(Party customer) {
-        String[] statuses = {"Posted"};
         String[] shortNames = {"act.customerAccountCharges*",
-                               "act.customerAccountPayment",
-                               "act.customerAccountRefund"};
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
-                shortNames, true, true);
-        ActResultSet set = new ActResultSet(customer.getObjectReference(),
-                                            archetypes, null, null, statuses,
-                                            50, null);
-        BigDecimal balance = BigDecimal.ZERO;
-        while (set.hasNext()) {
-            IPage<Act> acts = set.next();
-            balance = ActHelper.sum(balance, acts.getRows(), "amount");
-        }
-        return balance;
+                               "act.customerAccountPayment"};
+        return getAccountBalance(customer.getObjectReference(),
+                                 "participation.customer", shortNames);
     }
 
     /**
      * Returns an account balance for a supplier.
      *
-     * @param customer the supplier
+     * @param supplier the supplier
      * @return the account balance for <code>supplier</code>
      */
     public static BigDecimal getSupplierAccountBalance(Party supplier) {
-        String[] statuses = {"Posted"};
         String[] shortNames = {"act.supplierAccountCharges*",
-                               "act.supplierAccountPayment",
-                               "act.supplierAccountRefund"};
+                               "act.supplierAccountPayment"};
+        return getAccountBalance(supplier.getObjectReference(),
+                                 "participation.supplier", shortNames);
+    }
+
+    /**
+     * Returns an account balance for any entity.
+     *
+     * @param entity        the entity
+     * @param participation the participation short name
+     * @param shortNames    the act short names
+     */
+    public static BigDecimal getAccountBalance(IMObjectReference entity,
+                                               String participation,
+                                               String[] shortNames) {
+        String[] statuses = {"Posted"};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
-        ActResultSet set = new ActResultSet(supplier.getObjectReference(),
+        ActResultSet set = new ActResultSet(entity, participation,
                                             archetypes, null, null, statuses,
                                             50, null);
         BigDecimal balance = BigDecimal.ZERO;
         while (set.hasNext()) {
             IPage<Act> acts = set.next();
-            balance = ActHelper.sum(balance, acts.getRows(), "amount");
+            balance = sum(balance, acts.getRows(), "amount");
         }
         return balance;
     }
@@ -135,35 +138,64 @@ public class ActHelper {
 
         BigDecimal result = initial;
         for (Act act : acts) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(act, service);
-            NodeDescriptor decscriptor = archetype.getNodeDescriptor(node);
-            if (decscriptor != null) {
-                NodeDescriptor creditDesc
-                        = archetype.getNodeDescriptor("credit");
-                Boolean credit = Boolean.FALSE;
-                if (creditDesc != null) {
-                    credit = (Boolean) creditDesc.getValue(act);
+            BigDecimal amount = getAmount(act, node, service);
+            result = result.add(amount);
+        }
+        return result;
+    }
+
+    /**
+     * Returns an amount, taking into account any credit node.
+     *
+     * @param act  the act
+     * @param node the amount node
+     * @return the amount corresponding to <code>node</code>
+     */
+    public static BigDecimal getAmount(Act act, String node) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        return getAmount(act, node, service);
+    }
+
+    /**
+     * Returns an amount, taking into account any credit node.
+     *
+     * @param act     the act
+     * @param node    the amount node
+     * @param service the archetype service
+     * @return the amount corresponding to <code>node</code>
+     */
+    private static BigDecimal getAmount(Act act, String node,
+                                        IArchetypeService service) {
+        BigDecimal result = BigDecimal.ZERO;
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(act, service);
+        NodeDescriptor decscriptor = archetype.getNodeDescriptor(node);
+        if (decscriptor != null) {
+            NodeDescriptor creditDesc
+                    = archetype.getNodeDescriptor("credit");
+            Boolean credit = Boolean.FALSE;
+            if (creditDesc != null) {
+                credit = (Boolean) creditDesc.getValue(act);
+            }
+            Number number = (Number) decscriptor.getValue(act);
+            if (number != null) {
+                BigDecimal value;
+                if (number instanceof BigDecimal) {
+                    value = (BigDecimal) number;
+                } else if (number instanceof Double
+                           || number instanceof Float) {
+                    value = new BigDecimal(number.doubleValue());
+                } else {
+                    value = new BigDecimal(number.longValue());
                 }
-                Number number = (Number) decscriptor.getValue(act);
-                if (number != null) {
-                    BigDecimal value;
-                    if (number instanceof BigDecimal) {
-                        value = (BigDecimal) number;
-                    } else if (number instanceof Double
-                               || number instanceof Float) {
-                        value = new BigDecimal(number.doubleValue());
-                    } else {
-                        value = new BigDecimal(number.longValue());
-                    }
-                    if (Boolean.TRUE.equals(credit)) {
-                        result = result.subtract(value);
-                    } else {
-                        result = result.add(value);
-                    }
+                if (Boolean.TRUE.equals(credit)) {
+                    result = result.subtract(value);
+                } else {
+                    result = result.add(value);
                 }
             }
         }
+
         return result;
     }
 }

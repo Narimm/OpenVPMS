@@ -53,7 +53,8 @@ import org.openvpms.web.component.util.GridFactory;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerEstimationItem</em> or <em>act.customerAccountInvoiceItem</em>.
+ * <em>act.customerEstimationItem</em>, <em>act.customerAccountInvoiceItem</em>,
+ * or <em>act.supplierOrderItem</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$

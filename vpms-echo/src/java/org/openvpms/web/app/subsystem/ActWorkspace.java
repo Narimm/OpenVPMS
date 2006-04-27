@@ -16,7 +16,7 @@
  *  $Id: ActWorkspace.java 748 2006-04-11 04:09:07Z tanderson $
  */
 
-package org.openvpms.web.app.supplier;
+package org.openvpms.web.app.subsystem;
 
 import java.util.List;
 
@@ -27,9 +27,6 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
@@ -85,61 +82,6 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     }
 
     /**
-     * Renders the workspace summary.
-     *
-     * @return the component representing the workspace summary, or
-     *         <code>null</code> if there is no summary
-     */
-    @Override
-    public Component getSummary() {
-        return SupplierSummary.getSummary((Party) getObject());
-    }
-
-    /**
-     * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current supplier has changed.
-     *
-     * @return <code>true</code> if the workspace should be refreshed, otherwise
-     *         <code>false</code>
-     */
-    @Override
-    protected boolean refreshWorkspace() {
-        Party supplier = Context.getInstance().getSupplier();
-        return (supplier != getObject());
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        Party supplier = Context.getInstance().getSupplier();
-        setObject(supplier);
-        if (supplier != null) {
-            layoutWorkspace(supplier, container);
-            initQuery(supplier);
-        }
-    }
-
-    /**
-     * Invoked when a supplier is selected.
-     *
-     * @param supplier the selected supplier
-     */
-    @Override
-    protected void onSelected(IMObject supplier) {
-        super.onSelected(supplier);
-        Party party = (Party) supplier;
-        Context.getInstance().setSupplier(party);
-        if (_workspace == null) {
-            layoutWorkspace(party, getComponent());
-        }
-        initQuery(party);
-        firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
      * Invoked when the object has been saved.
      *
      * @param object the object
@@ -173,11 +115,11 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * Lays out the workspace.
      *
-     * @param supplier  the supplier
+     * @param party     the party
      * @param container the container
      */
-    protected void layoutWorkspace(Party supplier, Component container) {
-        _query = createQuery(supplier);
+    protected void layoutWorkspace(Party party, Component container) {
+        _query = createQuery(party);
         _acts = new Browser(_query, null, createTableModel());
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
@@ -218,10 +160,10 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * Creates a new query.
      *
-     * @param supplier the supplier to query acts for
+     * @param party the party to query acts for
      * @return a new query
      */
-    protected abstract ActQuery createQuery(Party supplier);
+    protected abstract ActQuery createQuery(Party party);
 
     /**
      * Creates a new table model to display acts.
@@ -235,12 +177,21 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * Perform an initial query, selecting the first available act.
      *
-     * @param supplier the supplier
+     * @param party the party
      */
-    private void initQuery(Party supplier) {
-        _query.setEntity(supplier);
+    protected void initQuery(Party party) {
+        _query.setEntity(party);
         _acts.query();
         selectFirst();
+    }
+
+    /**
+     * Returns the workspace.
+     *
+     * @return the workspace. May be <code>null</code>
+     */
+    protected SplitPane getWorkspace() {
+        return _workspace;
     }
 
     /**

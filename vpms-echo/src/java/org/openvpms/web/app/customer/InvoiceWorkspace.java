@@ -29,9 +29,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActTableModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -42,7 +42,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceWorkspace extends ActWorkspace {
+public class InvoiceWorkspace extends CustomerActWorkspace {
 
     /**
      * Construct a new <code>InvoiceWorkspace</code>.
@@ -75,8 +75,8 @@ public class InvoiceWorkspace extends ActWorkspace {
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         ILookupService lookup = ServiceHelper.getLookupService();
         List<Lookup> lookups = lookup.get(descriptor);
-        return new ActQuery(customer, "act", "customerAccountCharges*",
-                            lookups, "Posted");
+        return new ActQuery(customer, "participation.customer", "act",
+                            "customerAccountCharges*", lookups, "Posted");
     }
 
     /**

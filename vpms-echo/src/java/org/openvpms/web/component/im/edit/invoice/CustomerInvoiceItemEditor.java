@@ -43,7 +43,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class InvoiceItemEditor extends ActItemEditor {
+public class CustomerInvoiceItemEditor extends ActItemEditor {
 
     /**
      * Node filter, used to disable properties when a product template is
@@ -60,7 +60,7 @@ public class InvoiceItemEditor extends ActItemEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    protected InvoiceItemEditor(Act act, Act parent, LayoutContext context) {
+    protected CustomerInvoiceItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
     }
 
@@ -89,7 +89,7 @@ public class InvoiceItemEditor extends ActItemEditor {
                                "act.customerAccountCreditItem",
                                "act.customerAccountCounterItem")
                 && parent instanceof Act) {
-            result = new InvoiceItemEditor((Act) object, (Act) parent, context);
+            result = new CustomerInvoiceItemEditor((Act) object, (Act) parent, context);
         }
         return result;
     }

@@ -27,15 +27,15 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Account workspace.
+ * Customer account workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AccountWorkspace extends ActWorkspace {
+public class AccountWorkspace extends CustomerActWorkspace {
 
     /**
-     * Construct a new <code>InvoiceWorkspace</code>.
+     * Construct a new <code>AccountWorkspace</code>.
      */
     public AccountWorkspace() {
         super("customer", "account", "party", "party", "customer*");
@@ -63,7 +63,8 @@ public class AccountWorkspace extends ActWorkspace {
                                "act.customerAccountRefund"};
         String[] statuses = {"Posted"};
 
-        return new ActQuery(customer, shortNames, statuses);
+        return new ActQuery(customer, "participation.customer", shortNames,
+                            statuses);
     }
 
     /**

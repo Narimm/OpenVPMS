@@ -32,8 +32,8 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -279,7 +279,7 @@ public abstract class AbstractIMObjectEditor
                 IArchetypeService service = ServiceHelper.getArchetypeService();
                 service.remove(object);
                 deleted = true;
-            } catch (ArchetypeServiceException exception) {
+            } catch (OpenVPMSException exception) {
                 ErrorDialog.show(exception);
             }
         }

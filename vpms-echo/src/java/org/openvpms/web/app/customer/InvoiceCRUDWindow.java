@@ -28,7 +28,7 @@ import nextapp.echo2.app.Row;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class InvoiceCRUDWindow extends ActCRUDWindow {
+public class InvoiceCRUDWindow extends CustomerActCRUDWindow {
 
     /**
      * Create a new <code>InvoiceCRUDWindow</code>.

@@ -35,18 +35,18 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -55,7 +55,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EstimationCRUDWindow extends ActCRUDWindow {
+public class EstimationCRUDWindow extends CustomerActCRUDWindow {
 
     /**
      * The copy button.
@@ -189,9 +189,7 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
             if (listener != null) {
                 listener.saved(act, false);
             }
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
-        } catch (DescriptorException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
     }
@@ -236,9 +234,7 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
                     listener.saved(estimation, false);
                 }
             }
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
-        } catch (DescriptorException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
     }
@@ -250,20 +246,10 @@ public class EstimationCRUDWindow extends ActCRUDWindow {
      * @todo - workaround for OVPMS-211
      */
     private void calcAmount(Act act) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
         ArchetypeDescriptor invoiceDesc
                 = DescriptorHelper.getArchetypeDescriptor(INVOICE_TYPE);
-        ArchetypeDescriptor itemDesc
-                = DescriptorHelper.getArchetypeDescriptor(INVOICE_ITEM_TYPE);
-        NodeDescriptor itemTotalDesc = itemDesc.getNodeDescriptor("total");
         NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
-        BigDecimal total = new BigDecimal("0.0");
-        for (ActRelationship relationship : act.getSourceActRelationships()) {
-            Act item = (Act) ArchetypeQueryHelper.getByObjectReference(service,
-                    relationship.getTarget());
-            BigDecimal value = (BigDecimal) itemTotalDesc.getValue(item);
-            total = total.add(value);
-        }
+        BigDecimal total = ActHelper.sum(act, "total");
         totalDesc.setValue(act, total);
     }
 

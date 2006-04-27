@@ -16,7 +16,7 @@
  *  $Id: ActCRUDWindow.java 767 2006-04-18 06:53:24Z tanderson $
  */
 
-package org.openvpms.web.app.supplier;
+package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
@@ -26,20 +26,13 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -128,31 +121,6 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     }
 
     /**
-     * Invoked when a new object has been created.
-     *
-     * @param object the new object
-     */
-    @Override
-    protected void onCreated(IMObject object) {
-        Act act = (Act) object;
-        Party supplier = Context.getInstance().getSupplier();
-        if (supplier != null) {
-            try {
-                IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
-                Participation participation
-                        = (Participation) service.create("participation.supplier");
-                participation.setEntity(new IMObjectReference(supplier));
-                participation.setAct(new IMObjectReference(act));
-                act.addParticipation(participation);
-            } catch (ArchetypeServiceException exception) {
-                ErrorDialog.show(exception);
-            }
-        }
-        super.onCreated(object);
-    }
-
-    /**
      * Invoked when the edit button is pressed. This popups up an {@link
      * EditDialog}.
      */
@@ -164,8 +132,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
             if (canEdit(act)) {
                 super.onEdit();
             } else {
-                showStatusError(act, "supplier.act.noedit.title",
-                                "supplier.act.noedit.message");
+                showStatusError(act, "customer.act.noedit.title",
+                                "customer.act.noedit.message");
             }
         }
     }
@@ -179,8 +147,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
         if (canDelete(act)) {
             super.onDelete();
         } else {
-            showStatusError(act, "supplier.act.nodelete.title",
-                            "supplier.act.nodelete.message");
+            showStatusError(act, "customer.act.nodelete.title",
+                            "customer.act.nodelete.message");
         }
     }
 
@@ -189,8 +157,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
      */
     protected void onPrint() {
         String name = getArchetypeDescriptor().getDisplayName();
-        String title = Messages.get("supplier.act.print.title", name);
-        String message = Messages.get("supplier.act.print.message", name);
+        String title = Messages.get("customer.act.print.title", name);
+        String message = Messages.get("customer.act.print.message", name);
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {

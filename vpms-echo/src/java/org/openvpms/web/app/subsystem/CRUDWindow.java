@@ -31,8 +31,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -494,7 +494,7 @@ public class CRUDWindow {
                     object.setActive(false);
                     service.save(object);
                     onSaved(object, false);
-                } catch (ArchetypeServiceException exception) {
+                } catch (OpenVPMSException exception) {
                     ErrorDialog.show(exception);
                 }
             }
@@ -518,7 +518,7 @@ public class CRUDWindow {
                 try {
                     service.remove(object);
                     onDeleted(object);
-                } catch (ArchetypeServiceException exception) {
+                } catch (OpenVPMSException exception) {
                     ErrorDialog.show(exception);
                 }
             }

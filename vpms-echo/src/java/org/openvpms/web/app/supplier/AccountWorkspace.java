@@ -19,27 +19,26 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.supplier.ActWorkspace;
-import org.openvpms.web.app.supplier.AccountCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.resource.util.Messages;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
-public class AccountWorkspace extends ActWorkspace {
+/**
+ * Supplier account workspace.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class AccountWorkspace extends SupplierActWorkspace {
 
     /**
-     * Construct a new <code>InvoiceWorkspace</code>.
+     * Construct a new <code>AccountWorkspace</code>.
      */
     public AccountWorkspace() {
-        super("customer", "account", "party", "party", "customer*");
+        super("supplier", "account", "party", "party", "supplier*");
     }
 
     /**
@@ -48,23 +47,23 @@ public class AccountWorkspace extends ActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow createCRUDWindow() {
-        String type = Messages.get("customer.account.createtype");
-        return new AccountCRUDWindow(type, "common", "act", "customerAccount*");
+        String type = Messages.get("supplier.account.createtype");
+        return new AccountCRUDWindow(type, "common", "act", "supplierAccount*");
     }
 
     /**
      * Creates a new query.
      *
-     * @param customer the customer to query acts for
+     * @param party the party to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party customer) {
-        String[] shortNames = {"act.customerAccountCharges*",
-                               "act.customerAccountPayment",
-                               "act.customerAccountRefund"};
+    protected ActQuery createQuery(Party party) {
+        String[] shortNames = {"act.supplierAccountCharges*",
+                               "act.supplierAccountPayment",
+                               "act.supplierAccountRefund"};
         String[] statuses = {"Posted"};
-
-        return new ActQuery(customer, shortNames, statuses);
+        return new ActQuery(party, "participation.supplier", shortNames,
+                            statuses);
     }
 
     /**

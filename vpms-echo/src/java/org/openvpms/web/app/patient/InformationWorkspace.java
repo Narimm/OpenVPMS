@@ -30,6 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -103,7 +104,7 @@ public class InformationWorkspace extends CRUDWorkspace {
                             ArchetypeQueryHelper.getByObjectReference(
                                     service, customer.getObjectReference());
                     context.setCustomer(customer);
-                } catch (ArchetypeServiceException exception) {
+                } catch (OpenVPMSException exception) {
                     ErrorDialog.show(exception);
                 }
             }
@@ -145,7 +146,7 @@ public class InformationWorkspace extends CRUDWorkspace {
                 ErrorDialog.show("Failed to create relationship of type="
                                  + shortName);
             }
-        } catch (ArchetypeServiceException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
     }

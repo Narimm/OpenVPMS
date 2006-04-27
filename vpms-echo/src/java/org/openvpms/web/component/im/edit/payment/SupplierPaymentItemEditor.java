@@ -16,42 +16,53 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
+package org.openvpms.web.component.im.edit.payment;
 
 import java.math.BigDecimal;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
- * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountChargesInvoice</em>,
- * <em>act.customerAccountChargesCredit</em>
- * <em>act.customerAccountChargesCounter</em>,
- * <em>act.supplierAccountChargesInvoice</em> or
- * <em>act.supplierAccountChargesCredit</em>.
+ * An editor for {@link Act}s which have an archetype in
+ * <em>act.supplierAccountPayment*</em>,
+ * and <em>act.supplierAccountRefund*</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class InvoiceEditor extends ActEditor {
+public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
 
     /**
-     * Construct a new <code>ActEditor</code>.
+     * Construct a new <code>SupplierPaymentItemEditor</code>.
      *
      * @param act     the act to edit
-     * @param parent  the parent object. May be <code>null</code>
+     * @param parent  the parent act
      * @param context the layout context
      */
-    protected InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
+    protected SupplierPaymentItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        if (act.isNew() &&
+            IMObjectHelper.isA(act, "act.supplierAccountPayment*")) {
+            // Default the amount to the outstanding balance
+            Party supplier = Context.getInstance().getSupplier();
+            if (supplier != null) {
+                BigDecimal diff = ActHelper.sum(parent, "amount");
+                BigDecimal current = ActHelper.getSupplierAccountBalance(supplier);
+                BigDecimal balance = current.subtract(diff);
+                Property amount = getProperty("amount");
+                amount.setValue(balance);
+            }
+        }
     }
 
     /**
@@ -67,25 +78,15 @@ public class InvoiceEditor extends ActEditor {
                                         LayoutContext context) {
         IMObjectEditor result = null;
         if (IMObjectHelper.isA(object,
-                               "act.customerAccountChargesInvoice",
-                               "act.customerAccountChargesCredit",
-                               "act.customerAccountChargesCounter",
-                               "act.supplierAccountChargesInvoice",
-                               "act.supplierAccountChargesCredit")) {
-            result = new InvoiceEditor((Act) object, parent, context);
+                               "act.supplierAccountPayment*",
+                               "act.supplierAccountRefund*")
+            && !IMObjectHelper.isA(object,
+                                   "act.supplierAccountPayment",
+                                   "act.supplierAccountRefund")
+            && parent instanceof Act) {
+            result = new SupplierPaymentItemEditor((Act) object, (Act) parent, context);
         }
         return result;
-    }
-
-    /**
-     * Update totals when an act item changes.
-     *
-     * @todo - workaround for OVPMS-211
-     */
-    protected void updateTotals() {
-        Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
-        amount.setValue(value);
     }
 
 }

@@ -18,10 +18,9 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -48,9 +47,7 @@ public class SaveHelper {
             try {
                 service.save(object);
                 saved = true;
-            } catch (ArchetypeServiceException exception) {
-                ErrorDialog.show(exception);
-            } catch (DescriptorException exception) {
+            } catch (OpenVPMSException exception) {
                 ErrorDialog.show(exception);
             }
         }

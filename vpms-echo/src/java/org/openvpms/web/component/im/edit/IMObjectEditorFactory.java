@@ -22,10 +22,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
+import org.openvpms.web.component.im.edit.invoice.CustomerInvoiceItemEditor;
 import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
-import org.openvpms.web.component.im.edit.invoice.InvoiceItemEditor;
+import org.openvpms.web.component.im.edit.invoice.SupplierInvoiceItemEditor;
+import org.openvpms.web.component.im.edit.order.OrderEditor;
+import org.openvpms.web.component.im.edit.order.OrderItemEditor;
+import org.openvpms.web.component.im.edit.payment.CustomerPaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.PaymentEditor;
-import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
+import org.openvpms.web.component.im.edit.payment.SupplierPaymentItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -77,13 +81,25 @@ public class IMObjectEditorFactory {
             result = InvoiceEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = InvoiceItemEditor.create(object, parent, context);
+            result = CustomerInvoiceItemEditor.create(object, parent, context);
         }
         if (result == null) {
             result = PaymentEditor.create(object, parent, context);
         }
         if (result == null) {
-            result = PaymentItemEditor.create(object, parent, context);
+            result = CustomerPaymentItemEditor.create(object, parent, context);
+        }
+        if (result == null) {
+            result = OrderEditor.create(object, parent, context);
+        }
+        if (result == null) {
+            result = OrderItemEditor.create(object, parent, context);
+        }
+        if (result == null) {
+            result = SupplierInvoiceItemEditor.create(object, parent, context);
+        }
+        if (result == null) {
+            result = SupplierPaymentItemEditor.create(object, parent, context);
         }
         if (result == null) {
             result = DefaultParticipationEditor.create(object, parent, context);

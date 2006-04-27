@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.app.supplier.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -38,13 +37,13 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * Supplier Invoice Workspace
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Supplier invoice workspace.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
+public class InvoiceWorkspace extends SupplierActWorkspace {
 
-public class InvoiceWorkspace extends ActWorkspace {
     /**
      * Construct a new <code>InvoiceWorkspace</code>.
      */
@@ -76,8 +75,8 @@ public class InvoiceWorkspace extends ActWorkspace {
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         ILookupService lookup = ServiceHelper.getLookupService();
         List<Lookup> lookups = lookup.get(descriptor);
-        return new ActQuery(customer, "act", "supplierAccountCharges*",
-                            lookups, "Posted");
+        return new ActQuery(customer, "participation.supplier", "act",
+                            "supplierAccountCharges*", lookups, "Posted");
     }
 
     /**

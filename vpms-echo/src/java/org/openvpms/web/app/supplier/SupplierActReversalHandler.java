@@ -19,22 +19,18 @@
 package org.openvpms.web.app.supplier;
 
 import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
-import org.openvpms.web.component.im.util.IMObjectCopier;
+import org.openvpms.web.component.im.edit.act.AbstractActReversalHandler;
+import org.openvpms.web.component.im.util.IMObjectCopyHandler;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
-public class ActReversalHandler extends AbstractIMObjectCopyHandler {
+/**
+ * {@link IMObjectCopyHandler} that creates reversals for supplier acts.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class SupplierActReversalHandler extends AbstractActReversalHandler {
 
     /**
      * Invoice act short name.
@@ -160,12 +156,6 @@ public class ActReversalHandler extends AbstractIMObjectCopyHandler {
     private static final String REFUND_EFT_TYPE = "act.supplierAccountRefundEFT";
 
     /**
-     * Determines if the act is a debit or a credit.
-     */
-    private final boolean _debit;
-
-
-    /**
      * Map of debit types to their corresponding credit types.
      */
     private static final String[][] TYPE_MAP = {
@@ -185,54 +175,13 @@ public class ActReversalHandler extends AbstractIMObjectCopyHandler {
 
 
     /**
-     * Construct a new <code>ActReversalHandler</code>.
+     * Construct a new <code>SupplierActReversalHandler</code>.
      *
      * @param act the act to reverse
      */
-    public ActReversalHandler(Act act) {
-        _debit = !IMObjectHelper.isA(act, CREDIT_TYPE, REFUND_TYPE);
-    }
-
-    /**
-     * Determines how {@link IMObjectCopier} should treat an object.
-     *
-     * @param object  the source object
-     * @param service the archetype service
-     * @return <code>object</code> if the object shouldn't be copied,
-     *         <code>null</code> if it should be replaced with
-     *         <code>null</code>, or a new instance if the object should be
-     *         copied
-     */
-    public IMObject getObject(IMObject object, IArchetypeService service) {
-        IMObject result;
-        if (object instanceof Act || object instanceof ActRelationship
-            || object instanceof Participation) {
-            String shortName = object.getArchetypeId().getShortName();
-            for (String[] map : TYPE_MAP) {
-                String debitType = map[0];
-                String creditType = map[1];
-                if (_debit) {
-                    if (debitType.equals(shortName)) {
-                        shortName = creditType;
-                        break;
-                    }
-                } else {
-                    if (creditType.equals(shortName)) {
-                        shortName = debitType;
-                        break;
-                    }
-                }
-            }
-            result = service.create(shortName);
-            if (result == null) {
-                throw new ArchetypeServiceException(
-                        ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
-                        new String[]{shortName});
-            }
-        } else {
-            result = object;
-        }
-        return result;
+    public SupplierActReversalHandler(Act act) {
+        super(!IMObjectHelper.isA(act, CREDIT_TYPE, REFUND_TYPE),
+              TYPE_MAP);
     }
 
 }

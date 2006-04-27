@@ -21,21 +21,20 @@ package org.openvpms.web.app.supplier;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.app.supplier.ActWorkspace;
-import org.openvpms.web.app.supplier.PaymentCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.resource.util.Messages;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
-public class PaymentWorkspace extends ActWorkspace {
+/**
+ * Supplier payment workspace.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class PaymentWorkspace extends SupplierActWorkspace {
 
     /**
      * Payment and refund shortnames supported by the workspace.
@@ -48,7 +47,7 @@ public class PaymentWorkspace extends ActWorkspace {
      * Construct a new <code>InvoiceWorkspace</code>.
      */
     public PaymentWorkspace() {
-        super("customer", "payment", "party", "party", "supplier*");
+        super("supplier", "payment", "party", "party", "supplier*");
     }
 
     /**
@@ -69,7 +68,8 @@ public class PaymentWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         String[] statuses = {"In Progress", "On Hold"};
-        return new ActQuery(customer, SHORT_NAMES, statuses);
+        return new ActQuery(customer, "participation.supplier", SHORT_NAMES,
+                            statuses);
     }
 
     /**
