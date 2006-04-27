@@ -26,8 +26,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -132,8 +130,7 @@ public abstract class ActCRUDWindow extends CRUDWindow {
             if (canEdit(act)) {
                 super.onEdit();
             } else {
-                showStatusError(act, "customer.act.noedit.title",
-                                "customer.act.noedit.message");
+                showStatusError(act, "act.noedit.title", "act.noedit.message");
             }
         }
     }
@@ -147,8 +144,7 @@ public abstract class ActCRUDWindow extends CRUDWindow {
         if (canDelete(act)) {
             super.onDelete();
         } else {
-            showStatusError(act, "customer.act.nodelete.title",
-                            "customer.act.nodelete.message");
+            showStatusError(act, "act.nodelete.title", "act.nodelete.message");
         }
     }
 
@@ -157,8 +153,8 @@ public abstract class ActCRUDWindow extends CRUDWindow {
      */
     protected void onPrint() {
         String name = getArchetypeDescriptor().getDisplayName();
-        String title = Messages.get("customer.act.print.title", name);
-        String message = Messages.get("customer.act.print.message", name);
+        String title = Messages.get("act.print.title", name);
+        String message = Messages.get("act.print.message", name);
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
