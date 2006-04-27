@@ -24,6 +24,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
@@ -56,19 +57,20 @@ public interface IMObjectTableModel extends TableModel {
     TableColumnModel getColumnModel();
 
     /**
-     * Returns the node name associated with a column.
+     * Returns the sort criteria.
      *
-     * @param column the column
-     * @return the name of the node associated with the column, or
-     *         <code>null</code>
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order;
+     *                  otherwise sort in <code>descending</code> order
+     * @return the sort criteria
      */
-    String getNode(int column);
+    SortConstraint[] getSortConstraints(int column, boolean ascending);
 
     /**
      * Determines if selection should be enabled.
      *
      * @return <code>true</code> if selection should be enabled; otherwise
-     * <code>false</code>
+     *         <code>false</code>
      */
     boolean getEnableSelection();
 

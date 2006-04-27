@@ -19,18 +19,17 @@
 package org.openvpms.web.component.im.table;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.table.AbstractTableModel;
-import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.PageableTableModel;
 import org.openvpms.web.component.table.SortableTableModel;
@@ -88,8 +87,7 @@ public class PagedIMObjectTableModel
      */
     public void setResultSet(ResultSet set) {
         _set = set;
-        String node = set.getSortNode();
-        _sortColumn = (node != null) ? getNodeColumn(node) : -1;
+        _sortColumn = -1;
         setPage(0);
     }
 
@@ -233,14 +231,10 @@ public class PagedIMObjectTableModel
      *                  otherwise sort it in <code>descebding</code> order
      */
     public void sort(int column, boolean ascending) {
-        String node = getNode(column);
-        if (node != null) {
-            _sortColumn = column;
-            _set.sort(node, ascending);
-            setPage(0);
-        } else {
-            _sortColumn = -1;
-        }
+        SortConstraint[] criteria = getSortConstraints(column, ascending);
+        _sortColumn = column;
+        _set.sort(criteria);
+        setPage(0);
     }
 
     /**
@@ -263,14 +257,15 @@ public class PagedIMObjectTableModel
     }
 
     /**
-     * Returns the node name associated with a column.
+     * Returns the sort criteria.
      *
-     * @param column the column
-     * @return the name of the node associated with the column, or
-     *         <code>null</code>
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria
      */
-    public String getNode(int column) {
-        return _model.getNode(column);
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        return _model.getSortConstraints(column, ascending);
     }
 
     /**
@@ -281,27 +276,6 @@ public class PagedIMObjectTableModel
      */
     public boolean getEnableSelection() {
         return _model.getEnableSelection();
-    }
-
-    /**
-     * Returns the column associated witha node.
-     *
-     * @param node the node
-     * @return the column associated with <code>node</code> or <code>-1</code>
-     *         ifthe node isn't associated with any column
-     */
-    protected int getNodeColumn(String node) {
-        int result = -1;
-        Iterator iterator = _model.getColumnModel().getColumns();
-        while (iterator.hasNext()) {
-            TableColumn column = (TableColumn) iterator.next();
-            String modelNode = _model.getNode(column.getModelIndex());
-            if (node.equals(modelNode)) {
-                result = column.getModelIndex();
-                break;
-            }
-        }
-        return result;
     }
 
     /**

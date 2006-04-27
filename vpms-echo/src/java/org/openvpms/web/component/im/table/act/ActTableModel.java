@@ -27,12 +27,12 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
@@ -52,14 +52,9 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     private static final int DATE_INDEX = NEXT_INDEX;
 
     /**
-     * Type column index.
-     */
-    private static final int TYPE_INDEX = DATE_INDEX + 1;
-
-    /**
      * Status column index.
      */
-    private static final int STATUS_INDEX = TYPE_INDEX + 1;
+    private static final int STATUS_INDEX = DATE_INDEX + 1;
 
     /**
      * Amount column index.
@@ -86,30 +81,37 @@ public class ActTableModel extends DefaultIMObjectTableModel {
     }
 
     /**
-     * Returns the node name associated with a column.
+     * Returns the sort criteria.
      *
-     * @param column the column
-     * @return the name of the node associated with the column, or
-     *         <code>null</code>
+     * @param column    the primary sort column
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria
      */
     @Override
-    public String getNode(int column) {
-        String node = null;
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        SortConstraint[] result;
         switch (column) {
             case DATE_INDEX:
-                node = "startTime";
+                result = new SortConstraint[]{
+                        new NodeSortConstraint("startTime", ascending)
+                };
                 break;
             case STATUS_INDEX:
-                node = "status";
+                result = new SortConstraint[]{
+                        new NodeSortConstraint("status", ascending)
+                };
                 break;
             case AMOUNT_INDEX:
-                node = "credit";
+                result = new SortConstraint[]{
+                        new NodeSortConstraint("credit", ascending)
+                };
                 break;
             default:
-                node = super.getNode(column);
+                result = super.getSortConstraints(column, ascending);
                 break;
         }
-        return node;
+        return result;
     }
 
     /**
@@ -124,7 +126,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
                                                         boolean showAmount) {
         TableColumnModel model = new DefaultTableColumnModel();
         model.addColumn(createTableColumn(DATE_INDEX, "table.act.date"));
-        model.addColumn(createTableColumn(TYPE_INDEX, "table.act.type"));
+        model.addColumn(createTableColumn(ARCHETYPE_INDEX, "table.act.type"));
         if (showStatus) {
             model.addColumn(createTableColumn(STATUS_INDEX,
                                               "table.act.status"));
@@ -152,9 +154,6 @@ public class ActTableModel extends DefaultIMObjectTableModel {
         switch (column) {
             case DATE_INDEX:
                 result = act.getActivityStartTime();
-                break;
-            case TYPE_INDEX:
-                result = DescriptorHelper.getArchetypeDescriptor(act).getDisplayName();
                 break;
             case STATUS_INDEX:
                 result = act.getStatus();
@@ -189,34 +188,12 @@ public class ActTableModel extends DefaultIMObjectTableModel {
      * @return the stringified amount
      */
     private Label getAmount(Act act) {
-        String result = "";
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(act);
-        BigDecimal amount;
-        Boolean credit;
-
-        // @todo workaround for OVPMS-228
-        Object value = IMObjectHelper.getValue(act, archetype, "amount");
-        if (value instanceof BigDecimal) {
-            amount = (BigDecimal) value;
-        } else if (value instanceof String) {
-            amount = new BigDecimal((String) value);
-        } else {
-            amount = BigDecimal.ZERO;
-        }
-
-        credit = (Boolean) IMObjectHelper.getValue(act, archetype, "credit");
-        if (amount != null) {
-            if (Boolean.TRUE.equals(credit)) {
-                amount = amount.negate();
-            }
-            result = NumberFormatter.format(amount);
-        }
+        BigDecimal amount = ActHelper.getAmount(act, "amount");
+        String result = NumberFormatter.format(amount);
         Label label = LabelFactory.create();
         label.setText(result);
         TableLayoutData layout = new TableLayoutData();
-        Alignment right = new Alignment(Alignment.RIGHT,
-                                        Alignment.DEFAULT);
+        Alignment right = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
         layout.setAlignment(right);
         label.setLayoutData(layout);
         return label;
