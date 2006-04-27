@@ -298,7 +298,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * @return the index of the first row
      */
     protected int getFirstRow(IPage<T> page) {
-        return page.getPagingCriteria().getFirstRow();
+        return page.getFirstRow();
     }
 
     /**
@@ -333,7 +333,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      */
     protected IPage<T> get(int page) {
         int row = page * _rowsPerPage;
-        if (_page == null || _page.getPagingCriteria().getFirstRow() != row) {
+        if (_page == null || _page.getFirstRow() != row) {
             _page = getPage(row, _rowsPerPage);
             if (_page != null && _page.getRows().isEmpty()) {
                 _page = null;

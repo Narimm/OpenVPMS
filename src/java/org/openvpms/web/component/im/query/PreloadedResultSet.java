@@ -43,7 +43,6 @@ import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.component.system.common.search.PagingCriteria;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -139,8 +138,7 @@ public class PreloadedResultSet<T extends IMObject>
             to = firstRow + maxRows;
         }
         List<T> rows = new ArrayList<T>(_objects.subList(firstRow, to));
-        return new Page<T>(rows, new PagingCriteria(firstRow, maxRows),
-                           _objects.size());
+        return new Page<T>(rows, firstRow, maxRows, _objects.size());
     }
 
     /**
