@@ -31,10 +31,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -56,7 +57,7 @@ public abstract class AbstractQuery implements Query {
     /**
      * The archetypes to query.
      */
-    private final ArchetypeConstraint _archetypes;
+    private final BaseArchetypeConstraint _archetypes;
 
     /**
      * Archetype short names to matches on.
@@ -183,29 +184,22 @@ public abstract class AbstractQuery implements Query {
     /**
      * Performs the query.
      *
-     * @param rows      the maxiomum no. of rows per page
-     * @param node      the node to sort on. May be <code>null</code>
-     * @param ascending if <code>true</code> sort the rows in ascending order;
-     *                  otherwise sort them in <code>descebding</code> order
+     * @param rows the maxiomum no. of rows per page
+     * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
-    public ResultSet query(int rows, String node, boolean ascending) {
+    public ResultSet query(int rows, SortConstraint[] sort) {
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
 
-        ArchetypeConstraint archetypes;
+        BaseArchetypeConstraint archetypes;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             archetypes = _archetypes;
             archetypes.setActiveOnly(activeOnly);
         } else {
             archetypes = new ArchetypeShortNameConstraint(type, true,
                                                           activeOnly);
-        }
-
-        SortOrder sort = null;
-        if (node != null) {
-            sort = new SortOrder(node, ascending);
         }
 
         return new DefaultResultSet(archetypes, name, _constraints, sort, rows);
@@ -253,10 +247,10 @@ public abstract class AbstractQuery implements Query {
      *
      * @return the archetype constraint
      */
-    public ArchetypeConstraint getArchetypeConstraint() {
+    public BaseArchetypeConstraint getArchetypeConstraint() {
         return _archetypes;
     }
-    
+
     /**
      * Returns the archetype reference model name.
      *

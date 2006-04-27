@@ -28,6 +28,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
@@ -55,9 +56,9 @@ public class Browser {
     private final Query _query;
 
     /**
-     * The node to sort on. May be <code>null</code>
+     * The sort criteria. May be <code>null</code>
      */
-    private String _node;
+    private SortConstraint[] _sort;
 
     /**
      * The browser component.
@@ -121,10 +122,10 @@ public class Browser {
      * specified query.
      *
      * @param query the query
-     * @param node  the node to sort on. May be <code>null</code>
+     * @param sort  the sort criteria. May be <code>null</code>
      */
-    public Browser(Query query, String node) {
-        this(query, node, new DefaultIMObjectTableModel());
+    public Browser(Query query, SortConstraint[] sort) {
+        this(query, sort, new DefaultIMObjectTableModel());
     }
 
     /**
@@ -132,12 +133,12 @@ public class Browser {
      * specified query, displaying them in the table.
      *
      * @param query the query
-     * @param node  the node to sort on. May be <code>null</code>
+     * @param sort  the sort criteria. May be <code>null</code>
      * @param model the table model
      */
-    public Browser(Query query, String node, IMObjectTableModel model) {
+    public Browser(Query query, SortConstraint[] sort, IMObjectTableModel model) {
         _query = query;
-        _node = node;
+        _sort = sort;
         _query.addQueryListener(new QueryListener() {
             public void query() {
                 onQuery();
@@ -201,7 +202,7 @@ public class Browser {
     public void query() {
         getComponent();  // ensure the component is rendered.
 
-        ResultSet set = _query.query(ROWS, _node, true);
+        ResultSet set = _query.query(ROWS, _sort);
         if (_table == null) {
             _table = new PagedIMObjectTable(_model);
             _table.getTable().addActionListener(new ActionListener() {

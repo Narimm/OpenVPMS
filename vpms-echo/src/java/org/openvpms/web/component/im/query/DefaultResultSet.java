@@ -28,15 +28,16 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeConstraint;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
@@ -53,7 +54,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
     /**
      * The archetypes to query.
      */
-    private final ArchetypeConstraint _archetypes;
+    private final BaseArchetypeConstraint _archetypes;
 
     /**
      * The instance name.
@@ -73,41 +74,16 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
      * @param instanceName the instance name
      * @param constraints  additional query constraints. May be
      *                     <code<null</code>
-     * @param order        the sort criteria. May be <code>null</code>
+     * @param sort         the sort criteria. May be <code>null</code>
      * @param rows         the maximum no. of rows per page
      */
-    public DefaultResultSet(ArchetypeConstraint archetypes, String instanceName,
-                            IConstraint constraints, SortOrder order, int rows) {
-        super(constraints, rows, order);
-        try {
-            // @todo workaround for OVPMS-278
-            _archetypes = (ArchetypeConstraint) archetypes.clone();
-        } catch (CloneNotSupportedException exception) {
-            throw new IllegalArgumentException(exception);
-        }
-
+    public DefaultResultSet(BaseArchetypeConstraint archetypes,
+                            String instanceName, IConstraint constraints,
+                            SortConstraint[] sort, int rows) {
+        super(constraints, rows, sort);
+        _archetypes = archetypes;
         _instanceName = instanceName;
-        if (order != null && !isValidSortNode(order.getNode())) {
-            setSortOrder(null);
-        }
-
         reset();
-    }
-
-    /**
-     * Sort the set. This resets the iterator.
-     *
-     * @param node      the node to sort on
-     * @param ascending if <code>true</code> sort the column ascending order;
-     *                  otherwise sort it in <code>descebding</code> order
-     */
-    public void sort(String node, boolean ascending) {
-        if (isValidSortNode(node)) {
-            super.sort(node, ascending);
-        } else {
-            setSortOrder(null);
-            reset();
-        }
     }
 
     /**
@@ -130,10 +106,13 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
             if (constraints != null) {
                 query.add(constraints);
             }
+            for (SortConstraint sort : getSortConstraints()) {
+                query.add(sort);
+            }
             query.setFirstRow(firstRow);
             query.setNumOfRows(maxRows);
             result = service.get(query);
-        } catch (ArchetypeServiceException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
         return result;

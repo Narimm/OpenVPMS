@@ -42,8 +42,9 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -67,6 +68,11 @@ public class ActQuery extends AbstractQuery {
      * The id of the entity to search for.
      */
     private IMObjectReference _entityId;
+
+    /**
+     * The entity participation short name;
+     */
+    private final String _participation;
 
     /**
      * Determines if acts should be filtered on type.
@@ -134,29 +140,34 @@ public class ActQuery extends AbstractQuery {
      * Construct a new <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participation the entity participation short name
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param statusLookups the act status lookups
      */
-    public ActQuery(Entity entity, String entityName, String conceptName,
+    public ActQuery(Entity entity, String participation,
+                    String entityName, String conceptName,
                     List<Lookup> statusLookups) {
-        this(entity, entityName, conceptName, statusLookups, null);
+        this(entity, participation, entityName, conceptName, statusLookups,
+             null);
     }
 
     /**
      * Construct a new <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participation the entity participation short name
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <code>null</code>
      */
-    public ActQuery(Entity entity, String entityName, String conceptName,
-                    List<Lookup> statusLookups,
+    public ActQuery(Entity entity, String participation, String entityName,
+                    String conceptName, List<Lookup> statusLookups,
                     String excludeStatus) {
         super(null, entityName, conceptName);
         setEntity(entity);
+        _participation = participation;
         _excludeStatus = excludeStatus;
         if (_excludeStatus != null) {
             _statusLookups = new ArrayList<Lookup>(statusLookups);
@@ -178,15 +189,17 @@ public class ActQuery extends AbstractQuery {
      * Construct a new <code>ActQuery</code> to query acts for a specific
      * status.
      *
-     * @param entity      the entity to search for
-     * @param entityName  the act entity name
-     * @param conceptName the act concept name
-     * @param status      the act status
+     * @param entity        the entity to search for
+     * @param participation the entity participation short name
+     * @param entityName    the act entity name
+     * @param conceptName   the act concept name
+     * @param status        the act status
      */
-    public ActQuery(Entity entity, String entityName, String conceptName,
-                    String status) {
+    public ActQuery(Entity entity, String participation, String entityName,
+                    String conceptName, String status) {
         super(null, entityName, conceptName);
         setEntity(entity);
+        _participation = participation;
         _statuses = new String[]{status};
         _statusLookups = null;
         _excludeStatus = null;
@@ -196,14 +209,17 @@ public class ActQuery extends AbstractQuery {
     /**
      * Construct a new  <code>ActQuery</code>.
      *
-     * @param entity     the entity to search for
-     * @param shortNames the act short names
-     * @param statuses   the act statuses to search on. May be
-     *                   <code>empty</code>
+     * @param entity        the entity to search for
+     * @param participation the entity participation short name
+     * @param shortNames    the act short names
+     * @param statuses      the act statuses to search on. May be
+     *                      <code>empty</code>
      */
-    public ActQuery(Entity entity, String[] shortNames, String[] statuses) {
+    public ActQuery(Entity entity, String participation, String[] shortNames,
+                    String[] statuses) {
         super(shortNames);
         setEntity(entity);
+        _participation = participation;
         _statuses = statuses;
         _statusLookups = null;
         _excludeStatus = null;
@@ -232,18 +248,16 @@ public class ActQuery extends AbstractQuery {
     /**
      * Performs the query.
      *
-     * @param rows      the maxiomum no. of rows per page
-     * @param node      the node to sort on. May be <code>null</code>
-     * @param ascending if <code>true</code> sort the rows in ascending order;
-     *                  otherwise sort them in <code>descebding</code> order
+     * @param rows the maxiomum no. of rows per page
+     * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
     @Override
-    public ResultSet query(int rows, String node, boolean ascending) {
+    public ResultSet query(int rows, SortConstraint[] sort) {
         ResultSet<Act> result = null;
 
         if (_entityId != null) {
-            ArchetypeConstraint archetypes;
+            BaseArchetypeConstraint archetypes;
             String type = getShortName();
 
             if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
@@ -258,10 +272,6 @@ public class ActQuery extends AbstractQuery {
 
             Date startFrom = getStartFrom();
             Date startTo = getStartTo();
-            SortOrder order = null;
-            if (node != null) {
-                order = new SortOrder(node, ascending);
-            }
             String[] statuses;
             boolean exclude = false;
             if (_excludeStatus != null) {
@@ -270,9 +280,9 @@ public class ActQuery extends AbstractQuery {
             } else {
                 statuses = _statuses;
             }
-            result = new ActResultSet(_entityId, archetypes, startFrom,
-                                      startTo, statuses, exclude, rows,
-                                      order);
+            result = new ActResultSet(_entityId, _participation, archetypes,
+                                      startFrom, startTo, statuses, exclude,
+                                      rows, sort);
         }
         return result;
     }
