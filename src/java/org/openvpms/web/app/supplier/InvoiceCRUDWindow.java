@@ -20,17 +20,14 @@ package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Row;
 
-import org.openvpms.web.app.supplier.ActCRUDWindow;
-
 
 /**
- * Suppier Invoice 
+ * CRUD window for supplier invoices.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-
-public class InvoiceCRUDWindow extends ActCRUDWindow {
+public class InvoiceCRUDWindow extends SupplierActCRUDWindow {
 
     /**
      * Create a new <code>InvoiceCRUDWindow</code>.

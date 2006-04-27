@@ -25,11 +25,8 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.app.supplier.ActCRUDWindow;
-import org.openvpms.web.app.supplier.ActReversalHandler;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -37,13 +34,14 @@ import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
-public class AccountCRUDWindow extends ActCRUDWindow {
+/**
+ * CRUD window for supplier accounts.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class AccountCRUDWindow extends SupplierActCRUDWindow {
 
     /**
      * The reverse button.
@@ -178,15 +176,13 @@ public class AccountCRUDWindow extends ActCRUDWindow {
     private void reverse(Act act) {
         try {
             IMObjectCopier copier
-                    = new IMObjectCopier(new ActReversalHandler(act));
+                    = new IMObjectCopier(new SupplierActReversalHandler(act));
             Act reversal = (Act) copier.copy(act);
             reversal.setStatus(INPROGRESS_STATUS);
             reversal.setActivityStartTime(new Date());
             setPrintStatus(reversal, false);
             SaveHelper.save(reversal);
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
-        } catch (DescriptorException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
     }

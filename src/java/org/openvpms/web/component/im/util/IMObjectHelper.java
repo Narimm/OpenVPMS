@@ -28,8 +28,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -64,7 +64,7 @@ public class IMObjectHelper {
                 try {
                     result = ArchetypeQueryHelper.getByObjectReference(
                             service, reference);
-                } catch (ArchetypeServiceException error) {
+                } catch (OpenVPMSException error) {
                     _log.error(error, error);
                 }
             }
@@ -90,7 +90,7 @@ public class IMObjectHelper {
     /**
      * Determines if an object is one of a set of archetypes.
      *
-     * @param object the object. May be <code>null</code>
+     * @param object     the object. May be <code>null</code>
      * @param shortNames the archetype short names. May contain wildcards
      * @return <code>true</code> if object is one of <code>shortNames</code>
      */

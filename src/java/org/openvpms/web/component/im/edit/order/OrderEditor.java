@@ -16,52 +16,39 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.payment;
+package org.openvpms.web.component.im.edit.order;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
- * An editor for {@link Act}s which have an archetype in
- * <em>act.customerAccountPayment*</em>, and <em>act.customerAccountRefund*</em>
+ * An editor for {@link Act}s which have an archetype of
+ * <em>act.supplierOrder</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class PaymentItemEditor extends AbstractIMObjectEditor {
+public class OrderEditor extends ActEditor {
 
     /**
-     * Construct a new <code>PaymentItemEdtor</code>.
+     * Construct a new <code>ActEditor</code>.
      *
      * @param act     the act to edit
-     * @param parent  the parent act
+     * @param parent  the parent object. May be <code>null</code>
      * @param context the layout context
      */
-    protected PaymentItemEditor(Act act, Act parent, LayoutContext context) {
+    protected OrderEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        if (act.isNew() &&
-            IMObjectHelper.isA(act, "act.customerAccountPayment*")) {
-            // Default the amount to the outstanding balance
-            Party customer = Context.getInstance().getCustomer();
-            if (customer != null) {
-                BigDecimal diff = ActHelper.sum(parent, "amount");
-                BigDecimal current = ActHelper.getCustomerAccountBalance(customer);
-                BigDecimal balance = current.subtract(diff);
-                Property amount = getProperty("amount");
-                amount.setValue(balance);
-            }
-        }
     }
 
     /**
@@ -76,16 +63,23 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
     public static IMObjectEditor create(IMObject object, IMObject parent,
                                         LayoutContext context) {
         IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object,
-                               "act.customerAccountPayment*",
-                               "act.customerAccountRefund*")
-            && !IMObjectHelper.isA(object,
-                                   "act.customerAccountPayment",
-                                   "act.customerAccountRefund")
-            && parent instanceof Act) {
-            result = new PaymentItemEditor((Act) object, (Act) parent, context);
+        if (IMObjectHelper.isA(object, "act.supplierOrder")) {
+            result = new OrderEditor((Act) object, parent, context);
         }
         return result;
+    }
+
+    /**
+     * Update totals when an act item changes.
+     *
+     * @todo - workaround for OVPMS-211
+     */
+    protected void updateTotals() {
+        Property total = getProperty("total");
+
+        Set<Act> acts = getEditor().getActs();
+        BigDecimal value = ActHelper.sum(acts, "total");
+        total.setValue(value);
     }
 
 }

@@ -34,8 +34,8 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PaymentWorkspace extends ActWorkspace {
-
+public class PaymentWorkspace extends CustomerActWorkspace {
+    
     /**
      * Payment and refund shortnames supported by the workspace.
      */
@@ -68,7 +68,8 @@ public class PaymentWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         String[] statuses = {"In Progress", "On Hold"};
-        return new ActQuery(customer, SHORT_NAMES, statuses);
+        return new ActQuery(customer, "participation.customer", SHORT_NAMES,
+                            statuses);
     }
 
     /**

@@ -24,22 +24,24 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.im.edit.act.ActHelper;
+
 
 /**
+ * Renders supplier summary information.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-
 public class SupplierSummary {
+
     /**
      * Returns summary information for a supplier.
      *
-     * @param supplier the customer. May be <code>null</code>
+     * @param supplier the supplier. May be <code>null</code>
      * @return a summary component, or <code>null</code> if there is no summary
      */
     public static Component getSummary(Party supplier) {

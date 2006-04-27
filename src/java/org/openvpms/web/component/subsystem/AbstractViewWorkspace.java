@@ -29,8 +29,10 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -126,7 +128,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
             List<String> shortNames = service.getArchetypeShortNames(
                     _refModelName, _entityName, _conceptName, true);
             result = shortNames.contains(shortName);
-        } catch (ArchetypeServiceException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
         return result;
@@ -232,7 +234,8 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
                                     String conceptName) {
         Query query = QueryFactory.create(refModelName, entityName,
                                           conceptName);
-        return new Browser(query, "name");
+        SortConstraint[] sort = {new NodeSortConstraint("name", true)};
+        return new Browser(query, sort);
     }
 
     /**

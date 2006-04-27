@@ -154,10 +154,14 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
             || name.equals("amount")) {
             // @todo - workaround for OVPMS-211
 
-            if (IMObjectHelper.isA(parent, "act.customerAccountPayment*",
+            if ((IMObjectHelper.isA(parent, "act.customerAccountPayment*",
                                    "act.customerAccountRefund*")
                 && !(IMObjectHelper.isA(parent, "act.customerAccountPayment",
-                                        "Act.customerAccountRefund"))) {
+                                        "act.customerAccountRefund")))
+            || (IMObjectHelper.isA(parent, "act.supplierAccountPayment*",
+                                  "supplierAccountRefund*")
+                && !(IMObjectHelper.isA(parent, "act.supplierAccountPayment",
+                                        "act.supplierAccountRefund")))) {
                 // need to exclude act item amounts
                 return component;
             }

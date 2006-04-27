@@ -27,7 +27,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
@@ -36,7 +35,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.app.supplier.ActCRUDWindow;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -49,13 +48,14 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
-public class OrderCRUDWindow extends ActCRUDWindow {
+/**
+ * CRUD window for supplier orders.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
+public class OrderCRUDWindow extends SupplierActCRUDWindow {
 
     /**
      * The copy button.
@@ -122,7 +122,7 @@ public class OrderCRUDWindow extends ActCRUDWindow {
      * @param conceptName  the archetype concept name
      */
     public OrderCRUDWindow(String type, String refModelName,
-                                String entityName, String conceptName) {
+                           String entityName, String conceptName) {
         super(type, refModelName, entityName, conceptName);
     }
 
@@ -189,9 +189,7 @@ public class OrderCRUDWindow extends ActCRUDWindow {
             if (listener != null) {
                 listener.saved(act, false);
             }
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
-        } catch (DescriptorException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
     }
@@ -236,9 +234,7 @@ public class OrderCRUDWindow extends ActCRUDWindow {
                     listener.saved(order, false);
                 }
             }
-        } catch (ArchetypeServiceException exception) {
-            ErrorDialog.show(exception);
-        } catch (DescriptorException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
     }
@@ -260,7 +256,7 @@ public class OrderCRUDWindow extends ActCRUDWindow {
         BigDecimal total = new BigDecimal("0.0");
         for (ActRelationship relationship : act.getSourceActRelationships()) {
             Act item = (Act) ArchetypeQueryHelper.getByObjectReference(service,
-                    relationship.getTarget());
+                                                                       relationship.getTarget());
             BigDecimal value = (BigDecimal) itemTotalDesc.getValue(item);
             total = total.add(value);
         }

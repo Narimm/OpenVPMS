@@ -35,8 +35,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -159,7 +159,7 @@ public final class DescriptorHelper {
         try {
             names = service.getArchetypeShortNames(refModelName,
                                                    entityName, conceptName, true);
-        } catch (ArchetypeServiceException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
         return names.toArray(new String[0]);
@@ -188,7 +188,7 @@ public final class DescriptorHelper {
                     }
                 }
             }
-        } catch (ArchetypeServiceException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
         return result.toArray(new String[0]);

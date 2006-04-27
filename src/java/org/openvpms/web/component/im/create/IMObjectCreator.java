@@ -24,8 +24,8 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
@@ -59,7 +59,7 @@ public final class IMObjectCreator {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         try {
             result = service.create(shortName);
-        } catch (ArchetypeServiceException exception) {
+        } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
         }
         return result;
