@@ -22,6 +22,14 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.system.common.query.AndConstraint;
+import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
+import org.openvpms.component.system.common.query.ArchetypeProperty;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
@@ -31,7 +39,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
- * Participation editor for patients. This updates {@link Context#setPatient}
+ * Participation editor for products. This updates {@link Context#setProduct}
  * when a patient is selected.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -40,7 +48,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class ProductParticipationEditor extends AbstractParticipationEditor {
 
     /**
-     * The patient used to contrain searches to a particular species. Nay be
+     * The patient used to constrain searches to a particular species. Nay be
      * <code>null</code>
      */
     private Property _patient;
@@ -123,19 +131,46 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
                     String species = (String) IMObjectHelper.getValue(patient,
                                                                       "species");
                     if (species != null) {
-    /*
-                        CollectionNodeConstraint constraint
-                                = new CollectionNodeConstraint(
-                                "classifications", "classification.species", true, true);
-                        constraint.setJoinType(JoinType.LeftOuterJoin);
-                        constraint.add(new NodeConstraint("name", RelationalOp.EQ,
-                                                          species));
+                        IConstraint constraint = getSpeciesConstraint(species);
                         query.setConstraints(constraint);
-    */
                     }
                 }
             }
         }
         return query;
+    }
+
+    /**
+     * Return a query contraint that restricts products to those that
+     * are associated with a particular species, or have no species
+     * classification.
+     *
+     * @param species the species to resttict products to
+     * @return a new constraint
+     */
+    private IConstraint getSpeciesConstraint(String species) {
+        IConstraint noClassification = new ArchetypeNodeConstraint(
+                ArchetypeProperty.ConceptName, RelationalOp.IsNULL);
+
+        IConstraint hasSpeciesClassification = new ArchetypeNodeConstraint(
+                ArchetypeProperty.ConceptName, RelationalOp.EQ, "species");
+
+        IConstraint isSpecies = new NodeConstraint("name", RelationalOp.EQ,
+                                                   species);
+        IConstraint isTargetSpecies = new AndConstraint()
+                .add(hasSpeciesClassification).add(isSpecies);
+
+        IConstraint hasNoSpeciesClassification = new ArchetypeNodeConstraint(
+                ArchetypeProperty.ConceptName, RelationalOp.NE, "species");
+
+        // @todo active should be true. Workaround for OBF-20
+        CollectionNodeConstraint constraint =
+                new CollectionNodeConstraint("classifications", false);
+        constraint.setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin);
+        constraint.add(new OrConstraint()
+                .add(noClassification)
+                .add(isTargetSpecies)
+                .add(hasNoSpeciesClassification));
+        return constraint;
     }
 }
