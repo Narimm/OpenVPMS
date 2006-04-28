@@ -27,7 +27,7 @@ import org.openvpms.web.component.app.Context;
 
 
 /**
- * Act workspace.
+ * Supplier act workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-04-11 14:09:07 +1000 (Tue, 11 Apr 2006) $
@@ -47,6 +47,21 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
                                 String refModelName, String entityName,
                                 String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(IMObject object) {
+        super.setObject(object);
+        Party party = (Party) object;
+        Context.getInstance().setSupplier(party);
+        layoutWorkspace(party, getRootComponent());
+        initQuery(party);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**
@@ -78,30 +93,12 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
      *
      * @param container the container
      */
+    @Override
     protected void doLayout(Component container) {
         Party supplier = Context.getInstance().getSupplier();
-        setObject(supplier);
-        if (supplier != null) {
-            layoutWorkspace(supplier, container);
-            initQuery(supplier);
+        if (supplier != getObject()) {
+            setObject(supplier);
         }
-    }
-
-    /**
-     * Invoked when a supplier is selected.
-     *
-     * @param supplier the selected supplier
-     */
-    @Override
-    protected void onSelected(IMObject supplier) {
-        super.onSelected(supplier);
-        Party party = (Party) supplier;
-        Context.getInstance().setSupplier(party);
-        if (getWorkspace() == null) {
-            layoutWorkspace(party, getComponent());
-        }
-        initQuery(party);
-        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
 }

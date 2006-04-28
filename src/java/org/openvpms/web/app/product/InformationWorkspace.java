@@ -18,10 +18,13 @@
 
 package org.openvpms.web.app.product;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.party.Party;
 
 
 /**
@@ -40,37 +43,28 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Invoked when an object is selected.
+     * Sets the current object.
      *
-     * @param object the selected object
+     * @param object the object. May be <code>null</code>
      */
     @Override
-    protected void onSelected(IMObject object) {
-        super.onSelected(object);
+    public void setObject(IMObject object) {
+        super.setObject(object);
         Context.getInstance().setProduct((Product) object);
     }
 
     /**
-     * Invoked when the object has been saved.
+     * Lays out the component.
      *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
+     * @param container the container
      */
     @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        super.onSaved(object, isNew);
-        Context.getInstance().setProduct((Product) object);
-    }
-
-    /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    @Override
-    protected void onDeleted(IMObject object) {
-        super.onDeleted(object);
-        Context.getInstance().setProduct(null);
+    protected void doLayout(Component container) {
+        super.doLayout(container);
+        Product product = Context.getInstance().getProduct();
+        if (product != getObject()) {
+            setObject(product);
+        }
     }
 
 }
