@@ -136,7 +136,8 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
      * @param column    the primary sort column
      * @param ascending if <code>true</code> sort in ascending order; otherwise
      *                  sort in <code>descending</code> order
-     * @return the sort criteria
+     * @return the sort criteria, or <code>null</code> if the column isn't
+     *         sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -145,9 +146,14 @@ public class DescriptorTableModel extends DefaultIMObjectTableModel {
         if (col instanceof DescriptorTableColumn) {
             NodeDescriptor descriptor
                     = ((DescriptorTableColumn) col).getDescriptor();
-            result = new SortConstraint[] {
-                new NodeSortConstraint(descriptor.getName(), ascending)
-            };
+            if (descriptor.getPath().lastIndexOf("/") <= 0) {
+                // can only sort on top level nodes
+                result = new SortConstraint[] {
+                    new NodeSortConstraint(descriptor.getName(), ascending)
+                };
+            } else {
+                result = null;
+            }
         } else {
             result = super.getSortConstraints(column, ascending);
         }

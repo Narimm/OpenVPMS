@@ -73,7 +73,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Sort the set. This resets the iterator.
      *
-     * @param sort the sort criteria
+     * @param sort the sort criteria. May be <code>null</code>
      */
     public void sort(SortConstraint[] sort) {
         setSortConstraint(sort);

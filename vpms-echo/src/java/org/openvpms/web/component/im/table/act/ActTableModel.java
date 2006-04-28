@@ -86,7 +86,8 @@ public class ActTableModel extends DefaultIMObjectTableModel {
      * @param column    the primary sort column
      * @param ascending if <code>true</code> sort in ascending order; otherwise
      *                  sort in <code>descending</code> order
-     * @return the sort criteria
+     * @return the sort criteria, or <code>null</code> if the column isn't
+     *         sortable
      */
     @Override
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -103,9 +104,7 @@ public class ActTableModel extends DefaultIMObjectTableModel {
                 };
                 break;
             case AMOUNT_INDEX:
-                result = new SortConstraint[]{
-                        new NodeSortConstraint("credit", ascending)
-                };
+                result = null; // can only sort on top level nodes
                 break;
             default:
                 result = super.getSortConstraints(column, ascending);

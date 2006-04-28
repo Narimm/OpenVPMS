@@ -88,10 +88,10 @@ public class PreloadedResultSet<T extends IMObject>
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria
+     * @param sort the sort criteria. May be <code>null</code>
      */
     public void sort(SortConstraint[] sort) {
-        if (!_objects.isEmpty()) {
+        if (sort != null && !_objects.isEmpty()) {
             ComparatorChain comparator = new ComparatorChain();
             for (SortConstraint constraint : sort) {
                 if (constraint instanceof NodeSortConstraint) {
@@ -236,6 +236,10 @@ public class PreloadedResultSet<T extends IMObject>
             if (descriptor != null) {
                 try {
                     result = _descriptor.getValue(object);
+                    if (!(result instanceof Comparable)) {
+                        // not comparable so null to avoid class cast exceptions
+                        result = null;
+                    }
                 } catch (DescriptorException exception) {
                     _log.error(exception);
                 }
@@ -244,10 +248,10 @@ public class PreloadedResultSet<T extends IMObject>
         }
 
         private NodeDescriptor getDescriptor(IMObject object) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(object, _service);
-            if (archetype != _archetype && archetype != null) {
-                _archetype = archetype;
+            if (_archetype == null
+                || !_archetype.getType().equals(object.getArchetypeId())) {
+                _archetype = DescriptorHelper.getArchetypeDescriptor(object,
+                                                                     _service);
                 _descriptor = _archetype.getNodeDescriptor(_node);
             }
             return _descriptor;

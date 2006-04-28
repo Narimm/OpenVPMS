@@ -142,7 +142,8 @@ public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
      * @param column    the primary sort column
      * @param ascending if <code>true</code> sort in ascending order; otherwise
      *                  sort in <code>descending</code> order
-     * @return the sort criteria
+     * @return the sort criteria, or <code>null</code> if the column isn't
+     *         sortable
      */
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         SortConstraint[] result;

@@ -60,9 +60,10 @@ public interface IMObjectTableModel extends TableModel {
      * Returns the sort criteria.
      *
      * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order;
-     *                  otherwise sort in <code>descending</code> order
-     * @return the sort criteria
+     * @param ascending if <code>true</code> sort in ascending order; otherwise
+     *                  sort in <code>descending</code> order
+     * @return the sort criteria, or <code>null</code> if the column isn't
+     *         sortable
      */
     SortConstraint[] getSortConstraints(int column, boolean ascending);
 

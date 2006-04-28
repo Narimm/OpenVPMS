@@ -40,7 +40,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     /**
      * Sorts the set. This resets the iterator.
      *
-     * @param sort the sort criteria
+     * @param sort the sort criteria. May be <code>null</code>
      */
     void sort(SortConstraint[] sort);
 
