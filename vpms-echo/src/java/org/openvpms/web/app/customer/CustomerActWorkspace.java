@@ -50,6 +50,21 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
     }
 
     /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(IMObject object) {
+        super.setObject(object);
+        Party party = (Party) object;
+        Context.getInstance().setCustomer(party);
+        layoutWorkspace(party, getRootComponent());
+        initQuery(party);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
      * Renders the workspace summary.
      *
      * @return the component representing the workspace summary, or
@@ -80,28 +95,9 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
      */
     protected void doLayout(Component container) {
         Party customer = Context.getInstance().getCustomer();
-        setObject(customer);
-        if (customer != null) {
-            layoutWorkspace(customer, container);
-            initQuery(customer);
+        if (customer != getObject()) {
+            setObject(customer);
         }
-    }
-
-    /**
-     * Invoked when a customer is selected.
-     *
-     * @param customer the selected customer
-     */
-    @Override
-    protected void onSelected(IMObject customer) {
-        super.onSelected(customer);
-        Party party = (Party) customer;
-        Context.getInstance().setCustomer(party);
-        if (getWorkspace() == null) {
-            layoutWorkspace(party, getComponent());
-        }
-        initQuery(party);
-        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
 }

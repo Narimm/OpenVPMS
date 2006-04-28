@@ -40,37 +40,14 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Invoked when an object is selected.
+     * Sets the current object.
      *
-     * @param object the selected object
+     * @param object the object. May be <code>null</code>
      */
     @Override
-    protected void onSelected(IMObject object) {
-        super.onSelected(object);
+    public void setObject(IMObject object) {
+        super.setObject(object);
         Context.getInstance().setSupplier((Party) object);
-    }
-
-    /**
-     * Invoked when the object has been saved.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        super.onSaved(object, isNew);
-        Context.getInstance().setSupplier((Party) object);
-    }
-
-    /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    @Override
-    protected void onDeleted(IMObject object) {
-        super.onDeleted(object);
-        Context.getInstance().setSupplier(null);
     }
 
 }

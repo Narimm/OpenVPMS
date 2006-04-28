@@ -133,6 +133,9 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
         GroupBox actsBox = GroupBoxFactory.create(_acts.getComponent());
 
         _window = createCRUDWindow();
+        if (_workspace != null) {
+            container.remove(_workspace);
+        }
         _workspace = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
                                              "ActWorkspace.Layout", actsBox,
                                              _window.getComponent());
@@ -147,7 +150,6 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
                 onDeleted(object);
             }
         });
-
     }
 
     /**

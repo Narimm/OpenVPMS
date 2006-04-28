@@ -21,6 +21,8 @@ package org.openvpms.web.app.patient;
 import java.util.Date;
 import java.util.Set;
 
+import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -28,7 +30,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
@@ -59,6 +60,17 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(IMObject object) {
+        super.setObject(object);
+        Context.getInstance().setPatient((Party) object);
+    }
+
+    /**
      * Determines if the workspace should be refreshed. This implementation
      * returns true if the current customer has changed.
      *
@@ -72,14 +84,17 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Invoked when an object is selected.
+     * Lays out the component.
      *
-     * @param object the selected object
+     * @param container the container
      */
     @Override
-    protected void onSelected(IMObject object) {
-        super.onSelected(object);
-        Context.getInstance().setPatient((Party) object);
+    protected void doLayout(Component container) {
+        super.doLayout(container);
+        Party patient = Context.getInstance().getPatient();
+        if (patient != getObject()) {
+            setObject(patient);
+        }
     }
 
     /**
@@ -90,8 +105,8 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
+        super.onSaved(object, isNew);
         Party patient = (Party) object;
-        Context.getInstance().setPatient(patient);
         Context context = Context.getInstance();
         Party customer = context.getCustomer();
         IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -109,17 +124,6 @@ public class InformationWorkspace extends CRUDWorkspace {
                 }
             }
         }
-    }
-
-    /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    @Override
-    protected void onDeleted(IMObject object) {
-        super.onDeleted(object);
-        Context.getInstance().setPatient(null);
     }
 
     /**
