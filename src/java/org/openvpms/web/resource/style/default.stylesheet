@@ -312,7 +312,23 @@
 
     <style name="Palette.ListLabel" type="nextapp.echo2.app.Label"/>
 
-    <style name="Table.Header.Button" type="nextapp.echo2.app.Button">
+    <style name="Table.Header" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="textAlignment">
+                <alignment horizontal="left"/>
+            </property>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="8px 1px"/>
+                        <property name="background" value="#afafef"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Table.Header" type="nextapp.echo2.app.Button">
         <properties>
             <property name="textAlignment">
                 <alignment horizontal="left"/>

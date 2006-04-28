@@ -46,10 +46,19 @@ public interface SortableTableModel extends TableModel {
     int getSortColumn();
 
     /**
+     * Determines if a column is sortable.
+     *
+     * @param column the column
+     * @return <code>true</code> if the column is sortable; otherwise
+     *         <code>false</code>
+     */
+    boolean isSortable(int column);
+
+    /**
      * Determines if the sort column is sorted ascending or descending.
      *
      * @return <code>true</code> if the column is sorted ascending;
-     * <code>false</code> if it is sorted descending
+     *         <code>false</code> if it is sorted descending
      */
     boolean isSortedAscending();
 

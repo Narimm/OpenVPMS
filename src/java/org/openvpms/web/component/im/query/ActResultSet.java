@@ -36,6 +36,7 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -49,9 +50,25 @@ import org.openvpms.web.spring.ServiceHelper;
 public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
 
     /**
-     * The archetype query.
+     * The act archetype criteria.
      */
-    private final ArchetypeQuery _query;
+    private final BaseArchetypeConstraint _archetypes;
+
+    /**
+     * The status criteria. May be <code>null</code>.
+     */
+    private final IConstraint _statuses;
+
+    /**
+     * The start-time criteria. May be <code>null</code>.
+     */
+    private final NodeConstraint _startTime;
+
+    /**
+     * The entity participations criteria.
+     */
+    private final CollectionNodeConstraint _participations;
+
 
 
     /**
@@ -94,7 +111,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
                         String[] statuses, boolean exclude, int rows,
                         SortConstraint[] sort) {
         super(rows, sort);
-        _query = new ArchetypeQuery(archetypes);
+        _archetypes = archetypes;
 
         if (statuses.length > 1) {
             IConstraintContainer constraint;
@@ -109,25 +126,27 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             for (String status : statuses) {
                 constraint.add(new NodeConstraint("status", op, status));
             }
-            _query.add(constraint);
+            _statuses = constraint;
         } else if (statuses.length == 1) {
             RelationalOp op = RelationalOp.EQ;
             if (exclude) {
                 op = RelationalOp.NE;
             }
-            _query.add(new NodeConstraint("status", op, statuses[0]));
+            _statuses = new NodeConstraint("status", op, statuses[0]);
+        } else {
+            _statuses = null;
         }
 
         if (from != null && to != null) {
-            _query.add(new NodeConstraint("startTime", RelationalOp.BTW, from,
-                                          to));
+            _startTime = new NodeConstraint("startTime", RelationalOp.BTW, from,
+                                          to);
+        } else {
+            _startTime = null;
         }
 
-        CollectionNodeConstraint participations = new CollectionNodeConstraint(
+        _participations = new CollectionNodeConstraint(
                 "participants", participation, true, true)
                 .add(new ObjectRefNodeConstraint("entity", entityId));
-
-        _query.add(participations);
     }
 
     /**
@@ -141,21 +160,25 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     protected IPage<Act> getPage(int firstRow, int maxRows) {
         IPage<Act> result = null;
         try {
-            _query.setFirstRow(firstRow);
-            _query.setNumOfRows(maxRows);
+            ArchetypeQuery query = new ArchetypeQuery(_archetypes);
+            query.setFirstRow(firstRow);
+            query.setNumOfRows(maxRows);
 
+            if (_statuses != null) {
+                query.add(_statuses);
+            }
+            if (_startTime != null) {
+                query.add(_startTime);
+            }
+            query.add(_participations);
             for (SortConstraint sort : getSortConstraints()) {
-                _query.add(sort);
+                query.add(sort);
             }
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            IPage<IMObject> page = service.get(_query);
+            IPage<IMObject> page = service.get(query);
             result = convert(page);
         } catch (OpenVPMSException exception) {
             ErrorDialog.show(exception);
-        } finally {
-            for (SortConstraint sort : getSortConstraints()) {
-                _query.remove(sort);
-            }
         }
         return result;
     }

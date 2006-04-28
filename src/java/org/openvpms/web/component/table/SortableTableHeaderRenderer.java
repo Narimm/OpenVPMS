@@ -21,11 +21,14 @@ package org.openvpms.web.component.table;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ImageReference;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.table.TableCellRenderer;
+
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
@@ -60,9 +63,9 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
             = new ResourceImageReference(UP_ARROW_PATH);
 
     /**
-     * Default button style.
+     * Default style.
      */
-    private static final String STYLE = "Table.Header.Button";
+    private static final String STYLE = "Table.Header";
 
     /**
      * Down arrow image.
@@ -72,7 +75,7 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
 
     /**
      * Construct a new <code>SortableTableHeaderRenderer</code>, with the
-     * default button style.
+     * default style.
      */
     public SortableTableHeaderRenderer() {
         this(STYLE);
@@ -81,7 +84,7 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
     /**
      * Construct a new <code>SortableTableHeaderRenderer</code>.
      *
-     * @param style the button style.
+     * @param style the style name.
      */
     public SortableTableHeaderRenderer(String style) {
         _style = style;
@@ -102,8 +105,16 @@ public class SortableTableHeaderRenderer implements TableCellRenderer {
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
         SortableTableModel model = (SortableTableModel) table.getModel();
-        String label = (String) value;
-        return getSortButton(label, column, model);
+        String text = (String) value;
+        Component result = null;
+        if (model.isSortable(column)) {
+            result = getSortButton(text, column, model);
+        } else {
+            Label label = LabelFactory.create(null, _style);
+            label.setText(text);
+            result = label;
+        }
+        return result;
     }
 
     /**

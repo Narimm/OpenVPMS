@@ -247,6 +247,18 @@ public class PagedIMObjectTableModel
     }
 
     /**
+     * Determines if a column is sortable.
+     *
+     * @param column the column
+     * @return <code>true</code> if the column is sortable; otherwise
+     *         <code>false</code>
+     */
+    public boolean isSortable(int column) {
+        SortConstraint[] sort = _model.getSortConstraints(column, true);
+        return (sort != null);
+    }
+
+    /**
      * Determines if the sort column is sorted ascending or descending.
      *
      * @return <code>true</code> if the column is sorted ascending;

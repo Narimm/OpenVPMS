@@ -85,6 +85,11 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     private final String _type;
 
+    /**
+     * The root component.
+     */
+    private SplitPane _root;
+
 
     /**
      * Construct a new <code>AbstractViewWorkspace</code>.
@@ -160,16 +165,25 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      */
     @Override
     protected Component doLayout() {
-        SplitPane layout = SplitPaneFactory.create(
+        _root = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL,
                 "AbstractViewWorkspace.Layout");
         Component heading = super.doLayout();
         Component selector = _selector.getComponent();
 
         Column top = ColumnFactory.create(heading, selector);
-        layout.add(top);
-        doLayout(layout);
-        return layout;
+        _root.add(top);
+        doLayout(_root);
+        return _root;
+    }
+
+    /**
+     * Returns the root split pane.
+     *
+     * @return the root split pane
+     */
+    protected SplitPane getRootComponent() {
+        return _root;
     }
 
     /**
