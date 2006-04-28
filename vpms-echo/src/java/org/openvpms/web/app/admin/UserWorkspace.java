@@ -33,7 +33,7 @@ public class UserWorkspace extends CRUDWorkspace {
      * Construct a new <code>ClassificationWorkspace</code>.
      */
     public UserWorkspace() {
-        super("admin", "user", "system", "security", "*");
+        super("admin", "user", "system", "security", "user");
     }
 
 }
