@@ -39,8 +39,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
- * Participation editor for products. This updates {@link Context#setProduct}
- * when a patient is selected.
+ * Participation editor for products.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -64,11 +63,6 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
     protected ProductParticipationEditor(Participation participation,
                                          Act parent, LayoutContext context) {
         super(participation, parent, context);
-
-        if (participation.isNew() && participation.getEntity() == null) {
-            IMObject product = Context.getInstance().getProduct();
-            getObjectReferenceEditor().setObject(product);
-        }
     }
 
     /**
