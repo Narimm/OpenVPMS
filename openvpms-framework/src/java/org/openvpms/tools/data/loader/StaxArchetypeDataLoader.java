@@ -260,6 +260,11 @@ public class StaxArchetypeDataLoader {
                 if (reader.getLocalName().equals("data")) {
                     try {
                         hasReference = attributesContainReferences(reader);
+                        if ((firstParse && hasReference) ||
+                            (!firstParse && !hasReference)) {
+                            continue;
+                        }
+
                         if (stack.size() > 0) {
                             current = processElement(stack.peek(), reader,
                                     firstParse, hasReference);
@@ -424,6 +429,7 @@ public class StaxArchetypeDataLoader {
                             ndesc.setValue(object, attValue);
                         }
                     } catch (Exception exception) {
+                        exception.printStackTrace();
                         logger.error("\n[ERR: Trying to set attr " + attName
                                 + " with value " + attValue + "]\n"
                                 + exception + "\n" + formatElement(reader));
