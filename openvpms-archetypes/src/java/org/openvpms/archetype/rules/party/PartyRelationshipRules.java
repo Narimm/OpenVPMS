@@ -56,7 +56,7 @@ public class PartyRelationshipRules {
     
     public static void checkPatientRelationships(IArchetypeService service, Party party) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Executing PartyRelationship.checkOwnership");
+            logger.debug("Executing PartyRelationship.checkPatientRelationships");
         }
         EntityRelationship currentActive = null;
         
