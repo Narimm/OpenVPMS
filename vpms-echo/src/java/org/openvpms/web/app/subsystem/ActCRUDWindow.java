@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: ActCRUDWindow.java 767 2006-04-18 06:53:24Z tanderson $
+ *  $Id$
  */
 
 package org.openvpms.web.app.subsystem;
@@ -37,7 +37,7 @@ import org.openvpms.web.resource.util.Messages;
  * CRUD Window for acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-04-18 16:53:24 +1000 (Tue, 18 Apr 2006) $
+ * @version $LastChangedDate$
  */
 public abstract class ActCRUDWindow extends CRUDWindow {
 

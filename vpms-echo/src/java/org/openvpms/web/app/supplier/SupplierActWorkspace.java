@@ -13,7 +13,7 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: SupplierActWorkspace.java 748 2006-04-11 04:09:07Z tanderson $
+ *  $Id$
  */
 
 package org.openvpms.web.app.supplier;
@@ -30,7 +30,7 @@ import org.openvpms.web.component.app.Context;
  * Supplier act workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-04-11 14:09:07 +1000 (Tue, 11 Apr 2006) $
+ * @version $LastChangedDate$
  */
 public abstract class SupplierActWorkspace extends ActWorkspace {
 
