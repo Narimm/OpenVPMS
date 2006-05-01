@@ -40,7 +40,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinT
 import org.apache.log4j.Logger;
 
 /**
- * Test that generic query builder
+ * Test that generic query builder 
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -206,9 +206,12 @@ public class QueryBuilderTestCase extends
     public void testOVPMS245()
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeShortNameConstraint("product.product", false, true))
-                    .add(new CollectionNodeConstraint("classifications", true)
+                new ArchetypeShortNameConstraint("product.product", false, false))
+                    .add(new CollectionNodeConstraint("classifications", false)
                             .setJoinType(JoinType.LeftOuterJoin)
+                            .add(new OrConstraint()
+                                .add(new NodeConstraint("active", RelationalOp.EQ, new Boolean(true)))
+                                .add(new NodeConstraint("active", RelationalOp.IsNULL)))
                             .add(new OrConstraint()
                                 .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.IsNULL))
                                 .add(new AndConstraint()

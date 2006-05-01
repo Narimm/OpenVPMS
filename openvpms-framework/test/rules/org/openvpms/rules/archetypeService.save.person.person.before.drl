@@ -1,0 +1,34 @@
+<rule-set name="archetypeService.save.person.person.before"
+    xmlns="http://drools.org/rules"    
+    xmlns:java="http://drools.org/semantics/java"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:schemaLocation="http://drools.org/rules rules.xsd
+    				   http://drools.org/semantics/java java.xsd">
+    				   
+    <rule name="Print If Name is Not Null">
+        <parameter identifier="person">
+        	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
+        </parameter>
+        <parameter identifier="service">
+        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+        </parameter>
+        <java:condition>person.getName() != null</java:condition>
+        <java:consequence>
+            org.openvpms.component.business.service.ruleengine.PartyPersonRules.onSaveMessage(service, person);
+        </java:consequence>
+    </rule>
+
+    <rule name="Set Active End Date for Person Entity Relationship">
+        <parameter identifier="person">
+        	<java:class>org.openvpms.component.business.domain.im.party.Party</java:class>
+        </parameter>
+        <parameter identifier="service">
+        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+        </parameter>
+        <java:condition>person.getEntityRelationships().size() > 0</java:condition>
+        <java:consequence>
+            org.openvpms.component.business.service.ruleengine.PartyPersonRules.setActiveEndDates(service, person);
+        </java:consequence>
+    </rule>
+
+</rule-set> 

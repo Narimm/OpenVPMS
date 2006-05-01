@@ -1,0 +1,18 @@
+<rule-set name="archetypeService.save.person.person.after"
+    xmlns="http://drools.org/rules"    
+    xmlns:java="http://drools.org/semantics/java"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:schemaLocation="http://drools.org/rules rules.xsd
+    				   http://drools.org/semantics/java java.xsd">
+    				   
+    <rule name="Always Print">
+        <parameter identifier="imobject">
+        	<class>org.openvpms.component.business.domain.im.common.IMObject</class>
+        </parameter>
+        <java:condition>true</java:condition>
+        <java:consequence>
+            System.out.println( "We have completed the save." );
+        </java:consequence>
+    </rule>
+
+</rule-set> 

@@ -27,16 +27,16 @@
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" />
+    <property name="linkId" access="property" type="string" length="100" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"
-        type="string" />
+        type="string" length="100" />
       <property name="rmName" access="property" column="arch_rm_name"
-        type="string" />
+        type="string" length="100" />
       <property name="concept" access="property" column="arch_concept_name"
-        type="string" index="classification_concept_idx" />
+        type="string" length="100" index="classification_concept_idx" />
       <property name="entityName" access="property"
-        column="arch_entity_name" type="string" />
+        column="arch_entity_name" type="string" length="100" />
       <property name="version" access="property" column="arch_version"
         type="string" />
     </component>

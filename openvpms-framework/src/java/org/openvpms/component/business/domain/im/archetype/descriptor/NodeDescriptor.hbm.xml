@@ -28,15 +28,15 @@
       <generator class="increment" />
     </id>
     <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" />
+    <property name="linkId" access="property" type="string" length="100" />
     <property name="name" access="property" column="name" type="string"
       not-null="true" />
     <property name="active" access="property" column="active" type="boolean" />
     <property name="displayName" access="property" column="display_name"
-      type="string" />
-    <property name="type" access="property" column="type" type="string"
+      type="string"/>
+    <property name="type" access="property" column="type" type="string" 
       not-null="true" />
-    <property name="path" access="property" column="path" type="string"
+    <property name="path" access="property" column="path" type="string" 
       not-null="true" />
     <property name="baseName" access="property" column="base_name"
       type="string" />
