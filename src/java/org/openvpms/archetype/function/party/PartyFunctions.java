@@ -66,16 +66,23 @@ public class PartyFunctions {
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
             return null;
         }
+        
         StringBuffer result = new StringBuffer();
 
         Party party = (Party) pointer.getValue();
         for (Contact contact : party.getContacts()) {
-            String description = getContactDescription(contact);
-            if (description != null) {
-                if (result.length() != 0) {
-                    result.append(", ");
+            String shortName = contact.getArchetypeId().getShortName();
+            ArchetypeDescriptor archetype
+                    = _service.getArchetypeDescriptor(shortName);
+            Boolean preferred = new Boolean(getValue(contact,"preferred",archetype));
+            if (preferred) {
+                String description = getContactDescription(contact,archetype);
+                if (description != null) {
+                    if (result.length() != 0) {
+                        result.append(", ");
+                    }
+                    result.append(description);
                 }
-                result.append(description);
             }
         }
         return result.toString();
@@ -87,10 +94,7 @@ public class PartyFunctions {
      * @param contact the contact
      * @return the description of <code>object</code>. May be <code>null</code>
      */
-    private static String getContactDescription(Contact contact) {
-        String shortName = contact.getArchetypeId().getShortName();
-        ArchetypeDescriptor archetype
-                = _service.getArchetypeDescriptor(shortName);
+    private static String getContactDescription(Contact contact, ArchetypeDescriptor archetype) {
 
         StringBuffer result = new StringBuffer();
         String description = getValue(contact, "description", archetype);

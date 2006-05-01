@@ -56,6 +56,8 @@
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>			
+			<node name="preferred" path="/details/attributes/preferred"
+				type="java.lang.Boolean" defaultValue="false()" />
 		</node>
 		<node name="startDate" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1" hidden="true" defaultValue="java.util.Date.new()"/>
