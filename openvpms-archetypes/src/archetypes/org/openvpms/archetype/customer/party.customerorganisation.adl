@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" minCardinality="1" displayName="Company Name"/>
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/name, ' ')" />
+			derivedValue="concat(/name, ' ',party:contacts())" />
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
