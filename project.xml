@@ -467,10 +467,10 @@
       <url>http://jakarta.apache.org/hivemind</url>
     </dependency>
     <dependency>
-        <groupId>oro</groupId>
-        <artifactId>oro</artifactId>
-        <version>2.0.8</version>
-        <url>http://jakarta.apache.org</url>
+      <groupId>oro</groupId>
+      <artifactId>oro</artifactId>
+      <version>2.0.8</version>
+      <url>http://jakarta.apache.org</url>
     </dependency>
   </dependencies>
 
@@ -504,6 +504,19 @@
           <directory>${basedir}/src/java</directory>
           <includes>
             <include>**/*.properties</include>
+          </includes>
+        </resource>
+        <resource>
+          <directory>${basedir}/test/archetypes</directory>
+          <includes>
+            <include>**/*.adl</include>
+            <include>**/*.xml</include>
+          </includes>
+        </resource>
+        <resource>
+          <directory>${basedir}/test/rules</directory>
+          <includes>
+            <include>**/*.drl</include>
           </includes>
         </resource>
       </resources>
@@ -541,19 +554,6 @@
         <directory>${basedir}/src/conf/ehcache</directory>
         <includes>
           <include>ehcache.xml</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>${basedir}/src/archetypes</directory>
-        <includes>
-          <include>**/*.adl</include>
-          <include>**/*.xml</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>${basedir}/src/rules</directory>
-        <includes>
-          <include>**/*.drl</include>
         </includes>
       </resource>
     </resources>

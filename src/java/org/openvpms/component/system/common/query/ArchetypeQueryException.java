@@ -62,7 +62,7 @@ public class ArchetypeQueryException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.archetype.query."
+            .getMessages("org.openvpms.component.system.common.query."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**

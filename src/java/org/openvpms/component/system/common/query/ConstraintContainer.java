@@ -70,7 +70,7 @@ public abstract class ConstraintContainer implements IConstraintContainer {
      * @see org.openvpms.component.system.common.query.IConstraintContainer#remove(org.openvpms.component.system.common.query.IConstraint)
      */
     public IConstraintContainer remove(IConstraint constraint) {
-        constraints.add(constraint);
+        constraints.remove(constraint);
         return this;
     }
 

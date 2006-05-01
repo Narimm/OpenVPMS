@@ -26,18 +26,18 @@
       <column name="act_relationship_id" index="act_relationship_id_idx" />
       <generator class="increment" />
     </id>
-    <property name="linkId" access="property" type="string" />
+    <property name="linkId" access="property" type="string" length="100" />
     <component name="archetypeId">
       <property name="namespace" access="property" column="arch_namespace"
-        type="string" />
+        type="string" length="100" />
       <property name="rmName" access="property" column="arch_rm_name"
-        type="string" />
+        type="string" length="100" />
       <property name="concept" access="property" column="arch_concept_name"
-        type="string" />
+        type="string" length="100" />
       <property name="entityName" access="property" column="arch_entity_name"
-        type="string" />
+        type="string" length="100" />
       <property name="version" access="property" column="arch_version"
-        type="string" />
+        type="string" length="100" />
     </component>
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
@@ -51,7 +51,7 @@
         <property name="qualifiedName" access="property" type="string"
           column="source_archetype_id" />
       </component>
-      <property name="linkId" access="field" type="string"
+      <property name="linkId" access="field" type="string" length="100"
         column="source_linkId" index="act_relationship_source_linkId_idx"/>
     </component>
     <component name="target">
@@ -59,7 +59,7 @@
         <property name="qualifiedName" access="property" type="string"
           column="target_archetype_id" />
       </component>
-      <property name="linkId" access="field" type="string"
+      <property name="linkId" access="field" type="string" length="100"
         column="target_linkId" index="act_relationship_target_linkId_idx"/>
     </component>
     <property name="details" column="details" length="5000"
