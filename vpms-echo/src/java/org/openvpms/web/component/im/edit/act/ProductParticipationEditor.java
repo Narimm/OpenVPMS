@@ -30,9 +30,8 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -47,8 +46,8 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class ProductParticipationEditor extends AbstractParticipationEditor {
 
     /**
-     * The patient used to constrain searches to a particular species. Nay be
-     * <code>null</code>
+     * The patient, used to constrain searches to a particular species. Nay be
+     * <code>null</code>.
      */
     private Property _patient;
 
@@ -88,8 +87,14 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         return result;
     }
 
-    public void setPatient(Property entity) {
-        _patient = entity;
+    /**
+     * Sets the patient, used to constrain product searches to a set of
+     * species.
+     *
+     * @param patient the patient. May be <code>null</code>
+     */
+    public void setPatient(Property patient) {
+        _patient = patient;
     }
 
     /**
@@ -99,9 +104,9 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected ObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new ObjectReferenceEditor(property, getLayoutContext()) {
+        return new IMObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
             protected Query createQuery() {
@@ -135,9 +140,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
     }
 
     /**
-     * Return a query contraint that restricts products to those that
-     * are associated with a particular species, or have no species
-     * classification.
+     * Return a query contraint that restricts products to those that are
+     * associated with a particular species, or have no species classification.
      *
      * @param species the species to resttict products to
      * @return a new constraint
@@ -159,12 +163,17 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
 
         // @todo active should be true. Workaround for OBF-20
         CollectionNodeConstraint constraint =
-                new CollectionNodeConstraint("classifications", false);
+                new CollectionNodeConstraint("species", false);
         constraint.setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin);
         constraint.add(new OrConstraint()
                 .add(noClassification)
                 .add(isTargetSpecies)
                 .add(hasNoSpeciesClassification));
+/*
+        constraint.add(new OrConstraint()
+                .add(new NodeConstraint("active", RelationalOp.EQ, true))
+                .add(new NodeConstraint("active", RelationalOp.IsNULL)));
+*/
         return constraint;
     }
 }
