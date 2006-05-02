@@ -222,7 +222,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a component to edit the property
      */
     protected Component getObjectReferenceEditor(Property property) {
-        ObjectReferenceEditor editor = new ObjectReferenceEditor(
+        IMObjectReferenceEditor editor = new IMObjectReferenceEditor(
                 property, getLayoutContext());
         return editor.getComponent();
     }

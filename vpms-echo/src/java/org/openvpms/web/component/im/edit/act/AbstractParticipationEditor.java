@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -44,7 +44,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     /**
      * The entity editor.
      */
-    private ObjectReferenceEditor _editor;
+    private IMObjectReferenceEditor _editor;
 
 
     /**
@@ -67,7 +67,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      * @return the participation entity property
      */
     public Property getEntity() {
-        return getProperty("entity");
+        return _editor.getProperty();
     }
 
     /**
@@ -93,9 +93,9 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      * @param property the reference property
      * @return a new object reference editor
      */
-    protected ObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new ObjectReferenceEditor(property, getLayoutContext());
+        return new IMObjectReferenceEditor(property, getLayoutContext());
     }
 
     /**
@@ -103,7 +103,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      *
      * @return the object reference editor
      */
-    protected ObjectReferenceEditor getObjectReferenceEditor() {
+    protected IMObjectReferenceEditor getObjectReferenceEditor() {
         return _editor;
     }
 

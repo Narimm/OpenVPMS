@@ -49,7 +49,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ObjectReferenceEditor {
+public class IMObjectReferenceEditor {
 
     /**
      * The reference property.
@@ -63,31 +63,31 @@ public class ObjectReferenceEditor {
 
 
     /**
-     * Construct a new <code>ObjectReferenceEditor</code>.
+     * Construct a new <code>IMObjectReferenceEditor</code>.
      *
      * @param property   the reference property
      * @param context    the layout context
      */
-    public ObjectReferenceEditor(Property property, LayoutContext context) {
+    public IMObjectReferenceEditor(Property property, LayoutContext context) {
         this(property, false, context);
     }
 
     /**
-     * Construct a new <code>ObjectReferenceEditor</code>.
+     * Construct a new <code>IMObjectReferenceEditor</code>.
      *
      * @param property   the reference property
      * @param readOnly   if <code>true</code> the reference cannot be edited
      * @param context    the layout context
      */
-    public ObjectReferenceEditor(Property property, boolean readOnly,
-                                 LayoutContext context) {
+    public IMObjectReferenceEditor(Property property, boolean readOnly,
+                                   LayoutContext context) {
         _property = property;
 
         if (readOnly) {
             _selector = new Selector(Selector.ButtonStyle.HIDE);
         } else {
             _selector = new Selector(Selector.ButtonStyle.RIGHT);
-            FocusSet set = new FocusSet("ObjectReferenceEditor");
+            FocusSet set = new FocusSet("IMObjectReferenceEditor");
             set.add(_selector.getSelect());
             context.getFocusTree().add(set);
             _selector.getSelect().addActionListener(new ActionListener() {
@@ -117,15 +117,6 @@ public class ObjectReferenceEditor {
     }
 
     /**
-     * Returns the display name.
-     *
-     * @return the display name
-     */
-    public String getDisplayName() {
-        return _property.getDescriptor().getDisplayName();
-    }
-
-    /**
      * Returns the component.
      *
      * @return the component
@@ -141,6 +132,15 @@ public class ObjectReferenceEditor {
      */
     public NodeDescriptor getDescriptor() {
         return _property.getDescriptor();
+    }
+
+    /**
+     * Returns the reference property.
+     *
+     * @return the reference property
+     */
+    public Property getProperty() {
+        return _property;
     }
 
     /**

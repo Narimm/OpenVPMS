@@ -95,7 +95,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         for (NodeDescriptor descriptor : descriptors) {
             Property property = properties.get(descriptor);
             Component component = factory.create(property, object);
-            add(grid, descriptor.getDisplayName(), component, context);
+            add(grid, property, component, context);
         }
 
         container.add(grid);
