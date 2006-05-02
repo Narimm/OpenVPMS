@@ -22,6 +22,7 @@
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" path="/name" type="java.lang.String" minCardinality="1" derived="true"
 			derivedValue="/details/attributes/species" />
+		<node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="/name" />
