@@ -150,6 +150,10 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         IConstraint noClassification = new ArchetypeNodeConstraint(
                 ArchetypeProperty.ConceptName, RelationalOp.IsNULL);
 
+        IConstraint isActive = new OrConstraint()
+                .add(new NodeConstraint("active", RelationalOp.EQ, true))
+                .add(new NodeConstraint("active", RelationalOp.IsNULL));
+
         IConstraint hasSpeciesClassification = new ArchetypeNodeConstraint(
                 ArchetypeProperty.ConceptName, RelationalOp.EQ, "species");
 
@@ -161,19 +165,15 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         IConstraint hasNoSpeciesClassification = new ArchetypeNodeConstraint(
                 ArchetypeProperty.ConceptName, RelationalOp.NE, "species");
 
-        // @todo active should be true. Workaround for OBF-20
-        CollectionNodeConstraint constraint =
-                new CollectionNodeConstraint("species", false);
+        // @todo revisit on completion of OBF-40
+        CollectionNodeConstraint constraint
+                = new CollectionNodeConstraint("species", false);
         constraint.setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin);
+        constraint.add(isActive);
         constraint.add(new OrConstraint()
                 .add(noClassification)
                 .add(isTargetSpecies)
                 .add(hasNoSpeciesClassification));
-/*
-        constraint.add(new OrConstraint()
-                .add(new NodeConstraint("active", RelationalOp.EQ, true))
-                .add(new NodeConstraint("active", RelationalOp.IsNULL)));
-*/
         return constraint;
     }
 }
