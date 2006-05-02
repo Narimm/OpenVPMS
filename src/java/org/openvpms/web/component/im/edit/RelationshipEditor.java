@@ -58,12 +58,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     /**
      * Editor for the source of the relationship.
      */
-    private ObjectReferenceEditor _source;
+    private IMObjectReferenceEditor _source;
 
     /**
      * Editor for the target of the relationship.
      */
-    private ObjectReferenceEditor _target;
+    private IMObjectReferenceEditor _target;
 
 
     /**
@@ -145,7 +145,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param readOnly     determines if the node is read-only
      * @param context      the layout context
      */
-    protected ObjectReferenceEditor getEditor(EntityRelationship relationship,
+    protected IMObjectReferenceEditor getEditor(EntityRelationship relationship,
                                               NodeDescriptor descriptor,
                                               boolean readOnly,
                                               LayoutContext context) {
@@ -268,10 +268,8 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
                                       PropertySet properties, Component container,
                                       LayoutContext context) {
             Grid grid = GridFactory.create(4);
-            add(grid, _source.getDisplayName(), _source.getComponent(),
-                context);
-            add(grid, _target.getDisplayName(), _target.getComponent(),
-                context);
+            add(grid, _source.getProperty(), _source.getComponent(), context);
+            add(grid, _target.getProperty(), _target.getComponent(),context);
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
@@ -281,7 +279,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     /**
      * Editor for a source/target entity in a relationship.
      */
-    private class Entity extends ObjectReferenceEditor {
+    private class Entity extends IMObjectReferenceEditor {
 
         /**
          * Construct a new <code>Entity</code>.

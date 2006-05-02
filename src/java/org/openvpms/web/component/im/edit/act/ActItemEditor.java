@@ -64,8 +64,8 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Participant editors.
      */
-    private List<IMObjectEditor> _participants
-            = new ArrayList<IMObjectEditor>();
+    private List<AbstractParticipationEditor> _participants
+            = new ArrayList<AbstractParticipationEditor>();
 
     /**
      * The product editor.
@@ -306,8 +306,8 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                                       Component container,
                                       LayoutContext context) {
             Grid grid = GridFactory.create(4);
-            for (IMObjectEditor editor : _participants) {
-                add(grid, editor.getDisplayName(), editor.getComponent(),
+            for (AbstractParticipationEditor editor : _participants) {
+                add(grid, editor.getEntity(), editor.getComponent(),
                     context);
             }
             doGridLayout(object, descriptors, properties, grid, context);

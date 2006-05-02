@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.ObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
@@ -87,9 +87,9 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
      * @return a new object reference editor
      */
     @Override
-    protected ObjectReferenceEditor createObjectReferenceEditor(
+    protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new ObjectReferenceEditor(property, getLayoutContext()) {
+        return new IMObjectReferenceEditor(property, getLayoutContext()) {
             @Override
             protected void onSelected(IMObject object) {
                 super.onSelected(object);

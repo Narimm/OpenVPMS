@@ -171,7 +171,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
                 Component inset = ColumnFactory.create("Inset", child);
                 model.insertTab(model.size(), button, inset);
-                setTabIndex(child, context);
+                setTabIndex(child);
             }
             TabbedPane pane = new TabbedPane();
             pane.setModel(model);
@@ -239,7 +239,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             labels[i] = descriptor.getDisplayName();
             Property property = properties.get(descriptor);
             Component component = createComponent(property, object, context);
-            setTabIndex(component, context);
+            setTabIndex(component);
             if (component instanceof SelectField) {
                 // workaround for render bug in firefox. See OVPMS-239 
                 component = RowFactory.create(component);
@@ -281,7 +281,22 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void add(Component container, String name, Component component,
                        LayoutContext context) {
         add(container, name, component);
-        setTabIndex(component, context);
+        setTabIndex(component);
+    }
+
+    /**
+     * Helper to add a property to a container, setting its tab index.
+     *
+     * @param container the container
+     * @param property  the property
+     * @param component the component representing the property
+     * @param context   the layout context
+     */
+    protected void add(Component container, Property property,
+                       Component component, LayoutContext context) {
+        add(container, property.getDescriptor().getDisplayName(), component,
+            context);
+        addFocusable(property, component);
     }
 
     /**
@@ -298,7 +313,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                         LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
         Component component = factory.create(property, parent);
-        _components.put(property, component);
+        addFocusable(property, component);
         return component;
     }
 
@@ -312,16 +327,16 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         for (Map.Entry<Property, Component> entry :
                 _components.entrySet()) {
             Component child = entry.getValue();
-            if (child instanceof TextComponent || child instanceof CheckBox
-                || child instanceof DateField
-                || child instanceof AbstractButton) {
+            if (isFocusable(child)) {
                 if (child.isEnabled() && child.isFocusTraversalParticipant()) {
                     Property property = entry.getKey();
+                    boolean required = property.getDescriptor().isRequired();
                     try {
                         Object value = property.getValue();
-                        if (value == null
-                            || (value instanceof String
-                                && StringUtils.isEmpty((String) value))) {
+                        if (required && (value == null
+                                         || (value instanceof String
+                                             && StringUtils.isEmpty((String) value))))
+                        {
                             // null field. Set focus on it in preference to
                             // others
                             focusable = child;
@@ -350,12 +365,67 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      * participant.
      *
      * @param component the component
-     * @param context   the layout context
      */
-    protected void setTabIndex(Component component, LayoutContext context) {
+    protected void setTabIndex(Component component) {
         if (component.isFocusTraversalParticipant()) {
             _focusSet.add(component);
         }
     }
 
+    /**
+     * Registers a focusable property, if it has a focusable component.
+     *
+     * @param property  the property
+     * @param component the component representing the property
+     */
+    private void addFocusable(Property property, Component component) {
+        Component focusable = getFocusable(component);
+        if (focusable != null) {
+            _components.put(property, focusable);
+        }
+    }
+
+    /**
+     * Returns the first component that may have focus set.
+     *
+     * @param component the component
+     * @return the first child component that may have focus set, or
+     *         <code>null</code> if none may have focus set
+     */
+    private Component getFocusable(Component component) {
+        Component result = null;
+        if (isFocusable(component)) {
+            if (component.isEnabled()
+                && component.isFocusTraversalParticipant()) {
+                if (component instanceof DateField) {
+                    result = ((DateField) component).getTextField();
+                } else {
+                    result = component;
+                }
+            }
+        } else if (component.getComponentCount() != 0) {
+            for (Component child : component.getComponents()) {
+                result = getFocusable(child);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a component is one that may receive focus.
+     *
+     * @param component the component
+     * @return <code>true</code> if the component is a focusable component;
+     *         otherwise <code>false</code>
+     */
+    private boolean isFocusable(Component component) {
+        return (component instanceof TextComponent
+                || component instanceof CheckBox
+                || component instanceof SelectField
+                || component instanceof DateField
+                || component instanceof AbstractButton);
+    }
 }
