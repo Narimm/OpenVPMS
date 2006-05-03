@@ -31,13 +31,22 @@ import nextapp.echo2.app.ContentPane;
 public class ContentPaneFactory extends ComponentFactory {
 
     /**
+     * Creates a new content pane.
+     *
+     * @return a new content pane
+     */
+    public static ContentPane create() {
+        return new ContentPane();
+    }
+
+    /**
      * Create a new content pane, with a specific style.
      *
      * @param style the style to use
      * @return a new content pane.
      */
     public static ContentPane create(String style) {
-        ContentPane pane = new ContentPane();
+        ContentPane pane = create();
         pane.setStyleName(style);
         return pane;
     }
@@ -52,6 +61,18 @@ public class ContentPaneFactory extends ComponentFactory {
     public static ContentPane create(String style, Component child) {
         ContentPane pane = create(style);
         pane.add(child);
+        return pane;
+    }
+
+    /**
+     * Create a new content pane, containing a set of components.
+     *
+     * @param components the components to add
+     * @return a new content pane
+     */
+    public static ContentPane create(Component ... components) {
+        ContentPane pane = create();
+        add(pane, components);
         return pane;
     }
 

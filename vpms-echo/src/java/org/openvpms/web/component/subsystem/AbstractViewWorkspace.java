@@ -33,12 +33,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.Selector;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -134,7 +134,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
                     _refModelName, _entityName, _conceptName, true);
             result = shortNames.contains(shortName);
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            ErrorHelper.show(exception);
         }
         return result;
     }

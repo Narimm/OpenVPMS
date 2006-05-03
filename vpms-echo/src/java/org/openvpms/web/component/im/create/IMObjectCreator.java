@@ -29,6 +29,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -60,7 +61,8 @@ public final class IMObjectCreator {
         try {
             result = service.create(shortName);
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            String title = Messages.get("imobject.create.failed", shortName);
+            ErrorHelper.show(title, exception);
         }
         return result;
     }
@@ -82,10 +84,11 @@ public final class IMObjectCreator {
         List<String> shortNames = service.getArchetypeShortNames(
                 refModelName, entityName, conceptName, true);
         if (shortNames.isEmpty()) {
-            ErrorDialog.show("Cannot create object",
-                             "No archetypes matches reference model="
-                             + refModelName + ", entity=" + entityName
-                             + ", concept=" + conceptName);
+            String title = Messages.get("imobject.create.failed.title");
+            String message = Messages.get("imobject.noarchetype",
+                                          refModelName, entityName,
+                                          conceptName);
+            ErrorHelper.show(title, message);
         } else {
             create(type, shortNames, listener);
         }
@@ -113,13 +116,12 @@ public final class IMObjectCreator {
     public static void create(String type, String[] shortNames,
                               final IMObjectCreatorListener listener) {
         if (shortNames.length == 0) {
-            ErrorDialog.show("Cannot create object of type " + type
-                             + " Empty list of short-names supplied");
+            ErrorHelper.show("imobject.create.noshortnames", type);
         } else if (shortNames.length > 1) {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(shortNames, false);
-            String title = Messages.get("imobject.new.title", type);
-            String message = Messages.get("imobject.new.message", type);
+            String title = Messages.get("imobject.create.title", type);
+            String message = Messages.get("imobject.create.message", type);
             final SelectionDialog dialog
                     = new SelectionDialog(title, message, model);
             dialog.addWindowPaneListener(new WindowPaneListener() {

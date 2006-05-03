@@ -37,7 +37,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -56,10 +55,12 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -415,11 +416,15 @@ public class CollectionEditor implements Saveable {
                 if (object != null) {
                     edit(object);
                 } else {
-                    ErrorDialog.show("Failed to create object of type "
-                                     + _shortname);
+                    String title = Messages.get("imobject.create.failed.title");
+                    String message = Messages.get("imobject.create.failed",
+                                                  _shortname);
+                    ErrorHelper.show(title, message);
                 }
             } catch (OpenVPMSException exception) {
-                ErrorDialog.show(exception);
+                String message = Messages.get("imobject.create.failed",
+                                              _shortname);
+                ErrorHelper.show(message, exception);
             }
         }
     }

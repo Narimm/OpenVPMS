@@ -136,6 +136,7 @@ public class LoginDialog extends PopupDialog {
         String password = _password.getText();
 
         if (authenticate(username, password)) {
+            close();
             OpenVPMSApp.getInstance().setContent(new ApplicationContentPane());
             _log.debug(username + " successfully logged in to OpenVPMS");
         } else {
