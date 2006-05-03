@@ -77,6 +77,11 @@ import com.martiansoftware.jsap.Switch;
  */
 public class StaxArchetypeDataLoader {
     /**
+     * The default name of the application context file
+     */
+    private final static String DEFAULT_APP_CONTEXT_FNAME = "application-context.xml";
+    
+    /**
      * Define a logger for this class
      */
     private Logger logger;
@@ -146,13 +151,18 @@ public class StaxArchetypeDataLoader {
      *            the command line
      */
     public StaxArchetypeDataLoader(String[] args) throws Exception {
-        // init
-        init();
-
+        // set up the command line options and the logger 
+        createOptions();
+        createLogger();
+        
+        // process the configuration 
         config = jsap.parse(args);
         if (!config.success()) {
             displayUsage();
         }
+        // init
+        init();
+
     }
 
     /**
@@ -613,18 +623,16 @@ public class StaxArchetypeDataLoader {
      * Initialise and start the spring container
      */
     private void init() throws Exception {
-        context = new ClassPathXmlApplicationContext(
-                "org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml");
+        String contextFile = StringUtils.isEmpty(config.getString("context")) ?
+                DEFAULT_APP_CONTEXT_FNAME : config.getString("context"); 
+
+        logger.info("Using  application context [" + contextFile + "]");
+        context = new ClassPathXmlApplicationContext(contextFile);
         archetypeService = (IArchetypeService) context
                 .getBean("archetypeService");
 
         linkIdCache = (Cache)context.getBean("linkIdCache");
         idCache = (Cache)context.getBean("idCache");
-        
-        // set up the options for the command line and creater the logger
-        createOptions();
-        createLogger();
-        
     }
 
     /**
@@ -651,6 +659,9 @@ public class StaxArchetypeDataLoader {
      *             let the caller handle the error
      */
     private void createOptions() throws Exception {
+        jsap.registerParameter(new FlaggedOption("context").setShortFlag('c')
+                .setLongFlag("context").setHelp(
+                        "Application context for the data loader. Defaults to archetype-data-loader-appcontext.xml in classpath"));
         jsap.registerParameter(new FlaggedOption("dir").setShortFlag('d')
                 .setLongFlag("dir").setHelp(
                         "Directory where data files reside."));
