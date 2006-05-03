@@ -26,7 +26,7 @@
   <bean id="cacheManager" 
     class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
     <property name="configLocation">
-      <value>classpath:org/openvpms/tools/data/loader/ehcache.xml</value>
+      <value>classpath:ehcache.xml</value>
     </property>
   </bean>
     
