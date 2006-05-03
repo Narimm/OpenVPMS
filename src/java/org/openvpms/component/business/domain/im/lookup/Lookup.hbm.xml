@@ -46,9 +46,9 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="value" access="property" column="value" type="string"
-      index="lookup_concept_value_idx" />
+      length="100" index="lookup_concept_value_idx" />
     <property name="code" access="property" column="code" type="string"
-      index="lookup_concept_code_idx" />
+      length="100" index="lookup_concept_code_idx" />
     <property name="details" access="property" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
   </class>
