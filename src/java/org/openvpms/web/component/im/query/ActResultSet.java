@@ -20,6 +20,9 @@ package org.openvpms.web.component.im.query;
 
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -29,6 +32,7 @@ import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IConstraintContainer;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -36,8 +40,6 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -69,6 +71,10 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      */
     private final CollectionNodeConstraint _participations;
 
+    /**
+     * The logger.
+     */
+    private static final Log _log = LogFactory.getLog(ActResultSet.class);
 
 
     /**
@@ -139,7 +145,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
 
         if (from != null && to != null) {
             _startTime = new NodeConstraint("startTime", RelationalOp.BTW, from,
-                                          to);
+                                            to);
         } else {
             _startTime = null;
         }
@@ -178,7 +184,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             IPage<IMObject> page = service.get(query);
             result = convert(page);
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            _log.error(exception, exception);
         }
         return result;
     }

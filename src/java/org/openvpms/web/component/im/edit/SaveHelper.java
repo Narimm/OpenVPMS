@@ -21,7 +21,9 @@ package org.openvpms.web.component.im.edit;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -48,7 +50,10 @@ public class SaveHelper {
                 service.save(object);
                 saved = true;
             } catch (OpenVPMSException exception) {
-                ErrorDialog.show(exception);
+                String title = Messages.get(
+                        "imobject.save.failed",
+                        DescriptorHelper.getDisplayName(object));
+                ErrorHelper.show(title, exception);
             }
         }
         return saved;

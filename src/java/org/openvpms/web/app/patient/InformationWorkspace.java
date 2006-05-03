@@ -35,7 +35,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -120,7 +122,7 @@ public class InformationWorkspace extends CRUDWorkspace {
                                     service, customer.getObjectReference());
                     context.setCustomer(customer);
                 } catch (OpenVPMSException exception) {
-                    ErrorDialog.show(exception);
+                    ErrorHelper.show(exception);
                 }
             }
         }
@@ -147,11 +149,11 @@ public class InformationWorkspace extends CRUDWorkspace {
                 patient.addEntityRelationship(relationship);
                 service.save(patient);
             } else {
-                ErrorDialog.show("Failed to create relationship of type="
-                                 + shortName);
+                String msg = Messages.get("imobject.create.failed", shortName);
+                ErrorHelper.show(msg);
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            ErrorHelper.show(exception);
         }
     }
 

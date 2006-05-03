@@ -28,8 +28,8 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -183,7 +183,8 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow {
             setPrintStatus(reversal, false);
             SaveHelper.save(reversal);
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            String title = Messages.get("supplier.account.reverse.failed");
+            ErrorHelper.show(title, exception);
         }
     }
 

@@ -38,7 +38,6 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -113,7 +112,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
             query.setNumOfRows(maxRows);
             result = service.get(query);
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            _log.error(exception, exception);
         }
         return result;
     }

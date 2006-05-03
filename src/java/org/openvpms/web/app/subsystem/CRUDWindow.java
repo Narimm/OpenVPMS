@@ -45,6 +45,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -385,7 +386,7 @@ public class CRUDWindow {
                 object = ArchetypeQueryHelper.getByObjectReference(
                         service, object.getObjectReference());
                 if (object == null) {
-                    ErrorDialog.show(_type + " has been deleted");
+                    ErrorDialog.show("imobject.noexist", _type);
                 } else {
                     edit(object);
                 }
@@ -404,8 +405,10 @@ public class CRUDWindow {
                 if (object.isActive()) {
                     confirmDeactivate(object);
                 } else {
-                    ErrorDialog.show("Delete",
-                                     "Cannot delete deactivated instance");
+                    String message = Messages.get(
+                            "imobject.delete.deactivate",
+                            getArchetypeDescriptor().getDisplayName());
+                    ErrorDialog.show(message);
                 }
             } else {
                 confirmDelete(object);
@@ -495,7 +498,7 @@ public class CRUDWindow {
                     service.save(object);
                     onSaved(object, false);
                 } catch (OpenVPMSException exception) {
-                    ErrorDialog.show(exception);
+                    ErrorHelper.show(exception);
                 }
             }
         });
@@ -519,7 +522,8 @@ public class CRUDWindow {
                     service.remove(object);
                     onDeleted(object);
                 } catch (OpenVPMSException exception) {
-                    ErrorDialog.show(exception);
+                    String title = Messages.get("imobject.delete.failed.title");
+                    ErrorHelper.show(title, exception);
                 }
             }
         });

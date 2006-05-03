@@ -28,6 +28,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -62,10 +64,14 @@ public class ValidationHelper {
             List<ValidationError> errors = exception.getErrors();
             if (!errors.isEmpty()) {
                 ValidationError error = errors.get(0);
-                ErrorDialog.show("Error: " + error.getNodeName(),
-                        error.getErrorMessage());
+                String node = error.getNodeName();
+                String title = DescriptorHelper.getDisplayName(object, node);
+                if (title == null) {
+                    title = node;
+                }
+                ErrorDialog.show(title, error.getErrorMessage());
             } else {
-                ErrorDialog.show("Error", exception.getMessage());
+                ErrorHelper.show(exception);
             }
             _log.error(exception.getMessage(), exception);
         }

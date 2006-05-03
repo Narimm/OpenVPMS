@@ -28,6 +28,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -83,7 +84,7 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);
             } catch (OpenVPMSException exception) {
-                ErrorDialog.show(exception);
+                ErrorHelper.show(exception);
             }
         }
         super.onCreated(object);

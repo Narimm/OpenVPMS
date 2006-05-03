@@ -27,7 +27,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
@@ -38,12 +37,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -190,7 +189,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
                 listener.saved(act, false);
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            String title = Messages.get("customer.estimation.copy.failed");
+            ErrorHelper.show(title, exception);
         }
     }
 
@@ -235,7 +235,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
                 }
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            String title = Messages.get("customer.estimation.invoice.failed");
+            ErrorHelper.show(title, exception);
         }
     }
 

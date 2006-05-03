@@ -38,11 +38,11 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
 import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -190,7 +190,8 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
                 listener.saved(act, false);
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            String title = Messages.get("supplier.order.copy.failed");
+            ErrorHelper.show(title, exception);
         }
     }
 
@@ -235,7 +236,8 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
                 }
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            String title = Messages.get("supplier.order.invoice.failed");
+            ErrorHelper.show(title, exception);
         }
     }
 

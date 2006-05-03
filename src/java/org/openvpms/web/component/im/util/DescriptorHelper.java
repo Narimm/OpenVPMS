@@ -37,7 +37,6 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyList
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
 
 
@@ -160,7 +159,7 @@ public final class DescriptorHelper {
             names = service.getArchetypeShortNames(refModelName,
                                                    entityName, conceptName, true);
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            ErrorHelper.show(exception);
         }
         return names.toArray(new String[0]);
     }
@@ -189,7 +188,7 @@ public final class DescriptorHelper {
                 }
             }
         } catch (OpenVPMSException exception) {
-            ErrorDialog.show(exception);
+            ErrorHelper.show(exception);
         }
         return result.toArray(new String[0]);
     }
@@ -215,6 +214,25 @@ public final class DescriptorHelper {
     public static String getDisplayName(IMObject object) {
         ArchetypeDescriptor descriptor = getArchetypeDescriptor(object);
         return (descriptor != null) ? descriptor.getDisplayName() : null;
+    }
+
+    /**
+     * Returns the display name for a node
+     *
+     * @param object the object
+     * @param node   the node
+     * @return a display name for the node, or <code>null</code> if none eixsts
+     */
+    public static String getDisplayName(IMObject object, String node) {
+        String result = null;
+        ArchetypeDescriptor archetype = getArchetypeDescriptor(object);
+        if (archetype != null) {
+            NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+            if (descriptor != null) {
+                result = descriptor.getDisplayName();
+            }
+        }
+        return result;
     }
 
     /**
