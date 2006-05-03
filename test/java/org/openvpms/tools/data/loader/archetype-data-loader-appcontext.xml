@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+  "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+  <!--  Property configuration -->
+  <bean id="props"
+    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="locations">
+      <list>
+        <value>classpath:hibernate.properties</value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  The MySQL DataSource -->
+  <bean id="mySQLDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="driverClassName"
+      value="${hibernate.connection.driver_class}" />
+    <property name="url" value="${hibernate.connection.url}" />
+    <property name="username" value="${hibernate.connection.username}" />
+    <property name="password" value="${hibernate.connection.password}" />
+  </bean>
+
+  <!-- Configure CacheManager from specified config location -->
+  <bean id="cacheManager" 
+    class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+    <property name="configLocation">
+      <value>classpath:org/openvpms/tools/data/loader/ehcache.xml</value>
+    </property>
+  </bean>
+    
+  <bean id="linkIdCache" 
+    class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+    <property name="cacheManager"><ref local="cacheManager"/></property>
+    <property name="diskPersistent"><value>true</value></property>
+    <property name="cacheName"><value>linkIdCache</value></property>
+    <property name="maxElementsInMemory"><value>40000</value></property>
+    <property name="overflowToDisk"><value>true</value></property>
+    <property name="eternal"><value>false</value></property>
+    <property name="timeToLive"><value>600</value></property>
+    <property name="timeToIdle"><value>500</value></property>
+  </bean>  
+    
+  <bean id="idCache" 
+    class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+    <property name="cacheManager"><ref local="cacheManager"/></property>
+    <property name="cacheName"><value>idCache</value></property>
+    <property name="diskPersistent"><value>true</value></property>
+    <property name="maxElementsInMemory"><value>40000</value></property>
+    <property name="overflowToDisk"><value>true</value></property>
+    <property name="eternal"><value>false</value></property>
+    <property name="timeToLive"><value>600</value></property>
+    <property name="timeToIdle"><value>500</value></property>
+  </bean>  
+  
+  <!--  Entity Interceptor Bean for Hibernate -->
+  <bean id="entityInterceptor"
+    class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
+  </bean>
+
+  <!--  Hibernate session factory -->
+  <bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+    <property name="dataSource">
+      <ref local="mySQLDataSource" />
+    </property>
+    <property name="entityInterceptor">
+      <ref local="entityInterceptor" />
+    </property>
+    <property name="hibernateProperties">
+      <props>
+        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+        <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+        <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+        <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+        <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
+        <prop key="hibernate.c3p0.max_statements">
+          ${hibernate.c3p0.max_statements}
+        </prop>
+      </props>
+    </property>
+    <property name="mappingResources">
+      <list>
+        <value>
+          /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Act.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/EntityIdentity.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/EntityRelationship.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/common/Participation.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/party/Contact.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/AssertionTypeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/NodeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/security/SecurityRole.hbm.xml
+        </value>
+        <value>
+          /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
+        </value>
+      </list>
+    </property>
+  </bean>
+
+  <!--  The IMObject DAO bean -->
+  <bean id="imObjectDao"
+    class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+
+  <!--  The Lookup DAO bean -->
+  <bean id="lookupDao"
+    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+
+  <!--  The AuditRecord DAO bean -->
+  <bean id="auditDao"
+    class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+  </bean>
+
+  <!--  The Archetype Descriptor Cache -->
+  <bean id="archetypeDescriptorCache"
+    class="org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheDB">
+    <constructor-arg index="0" ref="imObjectDao" />
+  </bean>
+
+  <!--  The Archetype Service -->
+  <bean id="archetypeService"
+    class="org.openvpms.component.business.service.archetype.ArchetypeService">
+    <constructor-arg index="0">
+      <ref local="archetypeDescriptorCache" />
+    </constructor-arg>
+    <property name="dao">
+      <ref local="imObjectDao" />
+    </property>
+    <property name="entityInterceptor">
+      <ref local="entityInterceptor" />
+    </property>
+  </bean>
+
+  <!--  The Lookup Service -->
+  <bean id="lookupService"
+    class="org.openvpms.component.business.service.lookup.LookupService">
+    <constructor-arg index="0">
+      <ref bean="archetypeService" />
+    </constructor-arg>
+    <constructor-arg index="1">
+      <ref bean="lookupDao" />
+    </constructor-arg>
+  </bean>
+  
+  <!--  The JXPathHelper class, which allows the user to register JXPath extension functions -->
+  <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+    <constructor-arg index="0">
+      <props>
+      </props>
+    </constructor-arg>
+  </bean>
+  
+</beans>
