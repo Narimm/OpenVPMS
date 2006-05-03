@@ -170,7 +170,7 @@
       <type>jar</type>
       <url>http://www.jdom.org/</url>
     </dependency>
-        <dependency>
+    <dependency>
       <groupId>stax</groupId>
       <artifactId>stax-api</artifactId>
       <version>1.0</version>
@@ -452,10 +452,10 @@
       <url>http://ognl.org</url>
     </dependency>
     <dependency>
-        <groupId>oro</groupId>
-        <artifactId>oro</artifactId>
-        <version>2.0.8</version>
-        <url>http://jakarta.apache.org</url>
+      <groupId>oro</groupId>
+      <artifactId>oro</artifactId>
+      <version>2.0.8</version>
+      <url>http://jakarta.apache.org</url>
     </dependency>
     <dependency>
       <groupId>org.openvpms</groupId>
@@ -477,16 +477,21 @@
           <include>**/*.xml</include>
         </includes>
       </resource>
-	  <resource>
+      <resource>
         <directory>${basedir}/src/rules</directory>
         <includes>
           <include>**/*.drl</include>
         </includes>
-	  </resource>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/conf/appcontext</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
     </resources>
   </build>
 
-  <reports>
-  </reports>
+  <reports></reports>
 </project>
 
