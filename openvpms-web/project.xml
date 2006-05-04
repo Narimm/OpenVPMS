@@ -26,10 +26,10 @@
 
     <repository>
         <connection>
-            scm:svn:svn://svn.openvpms.org/openvpms/trunk/${pom.artifactId}
+            scm:svn:svn://svn.openvpms.org/openvpms/vpms/trunk
         </connection>
         <developerConnection>
-            scm:svn:svn://svn.openvpms.org/openvpms/trunk/${pom.artifactId}
+            scm:svn:svn://svn.openvpms.org/openvpms/vpms/trunk
         </developerConnection>
         <url>http://svn.openvpms.org</url>
     </repository>
