@@ -31,6 +31,8 @@ import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -50,6 +52,7 @@ import org.openvpms.web.component.util.ContentPaneFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -138,7 +141,7 @@ public class MainPane extends SplitPane implements ContextChangeListener {
      */
     public MainPane() {
         super(ORIENTATION_HORIZONTAL);
-        setStyleName(STYLE);
+        setStyleName(Styles.getStyle(SplitPane.class, STYLE));
 
         _summaryRefresher = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
@@ -149,6 +152,10 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         OpenVPMSApp.getInstance().setContextChangeListener(this);
 
         _menu = RowFactory.create(BUTTON_ROW_STYLE);
+        SplitPaneLayoutData layout = new SplitPaneLayoutData();
+        layout.setAlignment(new Alignment(Alignment.CENTER,
+                                          Alignment.DEFAULT));
+        _menu.setLayoutData(layout);
         _subMenu = ColumnFactory.create(BUTTON_COLUMN_STYLE);
         _leftMenu = ColumnFactory.create(LEFT_MENU_STYLE, _subMenu);
         _subsystem = ContentPaneFactory.create(WORKSPACE_STYLE);

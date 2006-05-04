@@ -46,7 +46,7 @@ public final class ButtonFactory extends ComponentFactory {
      */
     public static Button create() {
         Button button = new Button();
-        setDefaults(button);
+        setDefaultStyle(button);
         return button;
     }
 
@@ -69,7 +69,7 @@ public final class ButtonFactory extends ComponentFactory {
                 button = new Button(getString(TYPE, key, false));
             }
 
-            setDefaults(button);
+            setDefaultStyle(button);
         } else {
             button = create();
         }

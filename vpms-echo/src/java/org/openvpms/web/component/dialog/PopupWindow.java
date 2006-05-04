@@ -19,14 +19,15 @@
 package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
 
-import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.focus.FocusTree;
+import org.openvpms.web.component.util.ButtonRow;
+import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -61,17 +62,20 @@ public abstract class PopupWindow extends WindowPane {
      * Construct a new <code>PopupWindow</code>
      *
      * @param title   the window title
-     * @param style   the window style
+     * @param style   the window style. May be <code>null</code>
      * @param tabTree the tab tree. May be <code>null</code>
      */
     public PopupWindow(String title, String style, FocusTree tabTree) {
         super(title, null, null);
-        setStyleName(style);
+        if (style != null) {
+            style = Styles.getStyle(WindowPane.class, style);
+            setStyleName(style);
+        }
 
         _row = new ButtonRow(tabTree);
 
-        _layout = new SplitPane(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                                new Extent(32));     // @todo - stylehseet
+        _layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                                          "PopupWindow.Layout");
         _layout.add(_row);
         add(_layout);
     }

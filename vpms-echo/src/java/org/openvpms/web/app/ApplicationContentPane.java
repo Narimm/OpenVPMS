@@ -26,7 +26,7 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 
 
 /**
- * Content pane that displays the {@link TitlePane} and {@link MainPane}.  
+ * Content pane that displays the {@link TitlePane} and {@link MainPane}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -54,7 +54,6 @@ public class ApplicationContentPane extends ContentPane {
     }
 
     protected void doLayout() {
-        ComponentFactory.setDefaults(this);
         SplitPane layout = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL, LAYOUT_STYLE);
         layout.add(new TitlePane());

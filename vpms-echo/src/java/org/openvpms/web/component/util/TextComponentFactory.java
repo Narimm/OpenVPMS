@@ -30,7 +30,6 @@ import org.openvpms.web.component.bound.BoundFormattedField;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -48,7 +47,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField create() {
         TextField text = new TextField();
-        text.setStyleName(Styles.DEFAULT);
+        setDefaultStyle(text);
         return text;
     }
 
@@ -73,7 +72,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField create(Property property, int columns) {
         TextField text = new BoundTextField(property, columns);
-        text.setStyleName(Styles.DEFAULT);
+        setDefaultStyle(text);
         return text;
     }
 
@@ -87,7 +86,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField create(Property property, int columns, Format format) {
         TextField text = new BoundFormattedField(property, columns, format);
-        text.setStyleName(Styles.DEFAULT);
+        setDefaultStyle(text);
         return text;
     }
 
@@ -98,7 +97,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextArea createTextArea() {
         TextArea text = new TextArea();
-        text.setStyleName(Styles.DEFAULT);
+        setDefaultStyle(text);
         return text;
     }
 
@@ -111,7 +110,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextArea createTextArea(Property property, int columns) {
         TextArea text = new BoundTextArea(property, columns);
-        text.setStyleName(Styles.DEFAULT);
+        setDefaultStyle(text);
         return text;
     }
 
@@ -122,7 +121,7 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextField createPassword() {
         TextField password = new PasswordField();
-        setDefaults(password);
+        setDefaultStyle(password);
         return password;
     }
 }

@@ -26,6 +26,7 @@ import nextapp.echo2.app.list.ListModel;
 
 import org.openvpms.web.component.bound.BoundSelectField;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -43,7 +44,7 @@ public final class SelectFieldFactory extends ComponentFactory {
      */
     public static SelectField create(ListModel model) {
         SelectField select = new SelectField(model);
-        setDefaults(select);
+        setDefaultStyle(select);
         if (model.size() > 0) {
             // default to the first element
             select.setSelectedIndex(0);
@@ -59,7 +60,7 @@ public final class SelectFieldFactory extends ComponentFactory {
      */
     public static SelectField create(Property property, ListModel model) {
         SelectField select = new BoundSelectField(property, model);
-        setDefaults(select);
+        setDefaultStyle(select);
         return select;
     }
 

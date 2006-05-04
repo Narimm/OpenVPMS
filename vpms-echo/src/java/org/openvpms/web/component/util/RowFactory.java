@@ -59,7 +59,7 @@ public final class RowFactory extends ComponentFactory {
      */
     public static Row create(String style, Component ... components) {
         Row row = create(components);
-        row.setStyleName(style);
+        setStyle(row, style);
         return row;
     }
 

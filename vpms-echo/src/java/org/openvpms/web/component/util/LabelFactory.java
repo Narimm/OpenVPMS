@@ -43,7 +43,7 @@ public final class LabelFactory extends ComponentFactory {
      */
     public static Label create() {
         Label label = new Label();
-        setDefaults(label);
+        setDefaultStyle(label);
         return label;
     }
 

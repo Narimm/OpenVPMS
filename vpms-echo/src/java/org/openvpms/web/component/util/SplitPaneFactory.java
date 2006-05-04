@@ -21,6 +21,8 @@ package org.openvpms.web.component.util;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 
+import org.openvpms.web.resource.util.Styles;
+
 
 /**
  * Factory for {@link SplitPane}s.
@@ -48,7 +50,7 @@ public final class SplitPaneFactory extends ComponentFactory {
      */
     public static SplitPane create(String style) {
         SplitPane pane = new SplitPane();
-        pane.setStyleName(style);
+        setStyle(pane, style);
         return pane;
     }
 
@@ -75,7 +77,7 @@ public final class SplitPaneFactory extends ComponentFactory {
      */
     public static SplitPane create(int orientation, String style, Component ... components) {
         SplitPane pane = create(orientation);
-        pane.setStyleName(style);
+        setStyle(pane, style);
         add(pane, components);
         return pane;
     }

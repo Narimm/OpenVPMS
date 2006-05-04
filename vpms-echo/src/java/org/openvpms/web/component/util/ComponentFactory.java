@@ -33,12 +33,24 @@ import org.openvpms.web.resource.util.Styles;
 public class ComponentFactory {
 
     /**
-     * Helper to set defaults for a component.
+     * Helper to set the default style for a component.
      *
      * @param component the component to populate
      */
-    public static void setDefaults(Component component) {
-        component.setStyleName(Styles.DEFAULT);
+    protected static void setDefaultStyle(Component component) {
+        setStyle(component, Styles.DEFAULT);
+    }
+
+    /**
+     * Sets the style name, adjusting it to the resolution of the client
+     * browser, where a style for that resolution exists.
+     *
+     * @param component the component
+     * @param style the style name
+     */
+    protected static void setStyle(Component component, String style) {
+        style = Styles.getStyle(component.getClass(), style);
+        component.setStyleName(style);
     }
 
     /**
