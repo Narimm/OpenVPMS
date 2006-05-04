@@ -40,7 +40,7 @@ import org.openvpms.web.resource.util.Messages;
  * Enter description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public class LoginDialog extends PopupDialog {
 
