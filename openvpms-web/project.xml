@@ -11,9 +11,9 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>0.3-dev</currentVersion>
+    <currentVersion>0.3</currentVersion>
     <package>org.openvpms</package>
-    <shortDescription>OpenVPMS Echo2 demo</shortDescription>
+    <shortDescription>VPMS Web Application</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
     <issueTrackingUrl>
         http://jira.openvpms.org/jira/secure/Dashboard.jspa
