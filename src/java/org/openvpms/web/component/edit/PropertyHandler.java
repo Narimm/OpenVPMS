@@ -35,7 +35,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public abstract class PropertyHandler implements Validator {
 

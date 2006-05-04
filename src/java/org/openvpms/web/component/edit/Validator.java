@@ -27,7 +27,7 @@ import org.openvpms.component.business.service.archetype.ValidationError;
  * General validation interface..
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public interface Validator {
 

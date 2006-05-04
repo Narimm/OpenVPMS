@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationContext;
  * <code>ApplicationInstance</code> for integrating Echo with Spring.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public abstract class SpringApplicationInstance extends ApplicationInstance {
 

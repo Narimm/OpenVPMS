@@ -25,7 +25,7 @@ import nextapp.echo2.app.ContentPane;
  * Login pane. This simply pops up an {@link LoginDialog}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public class LoginPane extends ContentPane {
 

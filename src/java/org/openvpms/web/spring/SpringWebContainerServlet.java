@@ -27,7 +27,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * <code>WebContainerServlet</code> for integrating Echo with Spring.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public class SpringWebContainerServlet extends WebContainerServlet {
 

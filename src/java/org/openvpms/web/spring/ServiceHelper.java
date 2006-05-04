@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
  * Helper for accessing services managed by Spring.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $Revision$ $Date$
+ * @version $LastChangedDate$
  */
 public final class ServiceHelper {
 
