@@ -67,11 +67,12 @@ public class DateFieldFactory extends ComponentFactory {
      * @return the date field
      */
     private static DateField init(DateField date) {
-        setDefaults(date.getDateChooser());
+        setDefaultStyle(date.getDateChooser());
         DateFormat edit = DateFormatter.getFormat(true);
         DateFormat view = DateFormatter.getFormat(false);
         DateFormat format = new DelegatingDateFormat(edit, view);
         date.setDateFormat(format);
+        setDefaultStyle(date.getTextField());
         return date;
     }
 

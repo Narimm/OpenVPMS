@@ -39,7 +39,7 @@ public final class TableFactory extends ComponentFactory {
      */
     public static Table create(int columns, int rows) {
         Table table = new Table(columns, rows);
-        setDefaults(table);
+        setDefaultStyle(table);
         return table;
     }
 
@@ -51,7 +51,7 @@ public final class TableFactory extends ComponentFactory {
      */
     public static Table create(TableModel model) {
         Table table = new Table(model);
-        setDefaults(table);
+        setDefaultStyle(table);
         return table;
     }
 

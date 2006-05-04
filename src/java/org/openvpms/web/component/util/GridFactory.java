@@ -38,7 +38,7 @@ public final class GridFactory extends ComponentFactory {
      */
     public static Grid create(int columns) {
         Grid grid = new Grid(columns);
-        setDefaults(grid);
+        setDefaultStyle(grid);
         return grid;
     }
 
