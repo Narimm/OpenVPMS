@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
@@ -121,12 +122,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
             } else if (shortName.equals(PRODUCT_SHORTNAME)) {
                 addProductEditor(act);
             } else if (!shortName.equals(AUTHOR_SHORTNAME)) {
-                Participation participant = IMObjectHelper.getObject(
-                        shortName, act.getParticipations());
-                if (participant == null) {
-                    participant = (Participation) IMObjectCreator.create(
-                            shortName);
-                }
+                Participation participant = getParticipation(shortName, act);
                 addEditor(participant, act);
             }
         }
@@ -281,6 +277,9 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
         if (participant == null) {
             participant = (Participation) IMObjectCreator.create(
                     shortName);
+            CollectionProperty participants
+                    = (CollectionProperty) getProperty(PARTICIPANTS);
+            participants.add(participant);
         }
         return participant;
     }
