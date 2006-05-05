@@ -18,28 +18,22 @@
 
 package org.openvpms.web.app.admin;
 
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
 /**
- * Administration subsystem.
+ * Archetype authority workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AdminSubsystem extends AbstractSubsystem {
+public class AuthorityWorkspace extends CRUDWorkspace {
 
     /**
-     * Construct a new <code>AdminSubsystem</code>.
+     * Construct a new <code>ClassificationWorkspace</code>.
      */
-    public AdminSubsystem() {
-        super("admin");
-        addWorkspace(new OrganisationWorkspace());
-        addWorkspace(new UserWorkspace());
-        addWorkspace(new RoleWorkspace());
-        addWorkspace(new AuthorityWorkspace());
-        addWorkspace(new LookupWorkspace());
-        addWorkspace(new ClassificationWorkspace());
-        addWorkspace(new ArchetypeWorkspace());
+    public AuthorityWorkspace() {
+        super("admin", "authority", "system", "security", "archetypeAuthority");
     }
+
 }
