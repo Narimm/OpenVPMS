@@ -185,7 +185,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="classification.insurance" />
+							value="classification.customerInsurance" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

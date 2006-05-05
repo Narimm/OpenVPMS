@@ -198,13 +198,32 @@
     </constructor-arg>
   </bean>
   
-  <!--  The JXPathHelper class, which allows the user to register JXPath extension functions -->
-  <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
-    <constructor-arg index="0">
-      <props>
-        <prop key="party">org.openvpms.archetype.function.party.PartyFunctions</prop>
-      </props>
-    </constructor-arg>
-  </bean>
-  
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper"
+          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg index="0">
+            <props>
+                <prop key="openvpms">
+                    org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions</prop>
+                <prop key="party">
+                    org.openvpms.archetype.function.party.PartyFunctions</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+
+    <!--  The Archetype Service Functions Bean -->
+    <bean id="archetypeServiceFunctions"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  The Party Functions Bean -->
+    <bean id="partyFunctions"
+          class="org.openvpms.archetype.function.party.PartyFunctions">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean> 
 </beans>
