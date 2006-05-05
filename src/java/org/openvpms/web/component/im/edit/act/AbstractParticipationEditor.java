@@ -28,7 +28,6 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -57,8 +56,12 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     public AbstractParticipationEditor(Participation participation, Act parent,
                                        LayoutContext context) {
         super(participation, parent, context);
-        Property property = getProperty("entity");
-        _editor = createObjectReferenceEditor(property);
+        Property entity = getProperty("entity");
+        _editor = createObjectReferenceEditor(entity);
+        Property act = getProperty("act");
+        if (act.getValue() == null) {
+            act.setValue(new IMObjectReference(parent));
+        }
     }
 
     /**
@@ -68,23 +71,6 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
      */
     public Property getEntity() {
         return _editor.getProperty();
-    }
-
-    /**
-     * Save the object.
-     *
-     * @return <code>true</code> if the save was successful
-     */
-    @Override
-    protected boolean saveObject() {
-        Participation participation = (Participation) getObject();
-        Act act = (Act) getParent();
-        if (participation.getAct() == null) {
-            participation.setAct(new IMObjectReference(act));
-            act.addParticipation(participation);
-            return SaveHelper.save(act);
-        }
-        return true;
     }
 
     /**
