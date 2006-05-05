@@ -478,4 +478,6 @@
 	<data archetype="lookup.creditcard" creditcard="Mastercard" floorLimit="500.00" />
 	<data archetype="lookup.creditcard" creditcard="American Express" floorLimit="500.00" />
 	<data archetype="lookup.creditcard" creditcard="Diners" floorLimit="500.00" />
+	<data archetype="lookup.customerAccountType" accountType="Normal" />
+	<data archetype="lookup.supplierAccountType" accountType="Normal" />
 </archetype>
