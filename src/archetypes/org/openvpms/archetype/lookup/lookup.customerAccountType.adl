@@ -25,7 +25,7 @@
 		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
 			<node name="creditLimit" path="/details/attributes/creditLimit" type="java.math.BigDecimal" minCardinality="0" defaultValue="'0.0'"/>
 			<node name="paymentTerms" path="/details/attributes/paymentTerms" type="java.lang.Integer" minCardinality="0" />
-			<node name="paymentUom" displayName="Payment Terms Units" path="/details/attributes/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'Days'" >
+			<node name="paymentUom" displayName="Payment Terms Units" path="/details/attributes/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="days" value="days" />

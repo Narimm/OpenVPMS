@@ -16,14 +16,6 @@
  *  $$Id$$
 -->
 <archetype>
-	<data archetype="classification.customerAccountType" name="Normal" />
-	<data archetype="classification.customerAccountType" name="Valued" />
-	<data archetype="classification.customerAccountType" name="Cash Only" />
-	<data archetype="classification.customerAccountType" name="Bad Debtor" />
-	<data archetype="classification.customerAccountType" name="Pensioner" />
-	<data archetype="classification.customerAccountType" name="Monthly" />
-	<data archetype="classification.supplierAccountType" name="Normal" />
-	<data archetype="classification.supplierAccountType" name="Special" />
 	<data archetype="classification.contactPurpose" name="Home" />
 	<data archetype="classification.contactPurpose" name="Work" />
 	<data archetype="classification.contactPurpose" name="Postal" />
@@ -34,8 +26,8 @@
 	<data archetype="classification.customerType" name="Large Animal" />
 	<data archetype="classification.customerType" name="Stud" />
 	<data archetype="classification.customerType" name="Farm" />
-	<data archetype="classification.insurance" name="PetsFirst" />
-	<data archetype="classification.insurance" name="VetPlan" />
+	<data archetype="classification.customerInsurance" name="PetsFirst" />
+	<data archetype="classification.customerInsurance" name="VetPlan" />
 	<data archetype="classification.paymentType" name="Cash" />
 	<data archetype="classification.paymentType" name="Cheque" />
 	<data archetype="classification.paymentType" name="Credit" />
