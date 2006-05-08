@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 import org.apache.commons.logging.Log;
@@ -152,6 +153,49 @@ public class IMObjectHelper {
             return descriptor.getValue(object);
         }
         return null;
+    }
+
+    /**
+     * Returns a numeric value from an object, given the value's node descriptor
+     * name.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the value corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static BigDecimal getNumber(IMObject object, String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object);
+        return getNumber(object, archetype, node);
+    }
+
+    /**
+     * Returns a numeric value from an object, given the value's node descriptor
+     * name.
+     *
+     * @param object    the object
+     * @param archetype the archetype descriptor
+     * @param node      the node name
+     * @return the value corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static BigDecimal getNumber(IMObject object,
+                                       ArchetypeDescriptor archetype,
+                                       String node) {
+        BigDecimal result = null;
+        Object value = getValue(object, archetype, node);
+        if (value instanceof BigDecimal) {
+            result = (BigDecimal) value;
+        } else if (value instanceof Number) {
+            Number number = (Number) value;
+            if (number instanceof Float || number instanceof Double) {
+                result = new BigDecimal(number.doubleValue());
+            } else {
+                result = new BigDecimal(number.longValue());
+            }
+        }
+        return result;
     }
 
     /**

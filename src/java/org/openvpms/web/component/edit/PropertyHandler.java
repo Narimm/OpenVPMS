@@ -80,6 +80,11 @@ public abstract class PropertyHandler implements Validator {
      *         list if valid
      */
     public List<ValidationError> validate(Object value) {
+        try {
+            value = convert(value);
+        } catch (ValidationException exception) {
+            return exception.getErrors();
+        }
         List<ValidationError> errors = new ArrayList<ValidationError>();
 
         if (value != null) {

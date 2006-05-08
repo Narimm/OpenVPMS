@@ -19,7 +19,6 @@
 package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.component.edit.PropertyHandler;
 
 
 /**

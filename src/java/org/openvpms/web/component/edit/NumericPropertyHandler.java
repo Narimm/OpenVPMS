@@ -18,15 +18,13 @@
 
 package org.openvpms.web.component.edit;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 
 
 /**
@@ -36,6 +34,13 @@ import org.openvpms.component.business.service.archetype.ValidationException;
  * @version $LastChangedDate$
  */
 public class NumericPropertyHandler extends PropertyHandler {
+
+    /**
+     * The type converter.
+     */
+    private static final OpenVPMSTypeConverter CONVERTER
+            = new OpenVPMSTypeConverter();
+
 
     /**
      * Construct a new <code>NumericPropertyHandler</code>.
@@ -48,6 +53,16 @@ public class NumericPropertyHandler extends PropertyHandler {
 
     /**
      * Convert the object to the required type.
+     * <p/>
+     * Notes:
+     * <ul>
+     *   <li>conversion from one numeric type to another may result
+     *      in loss of precision, without error</li>
+     *   <li>conversion from a string to an integer type will produce a
+     *       ValidationException if the string contains a decimal point.</li>
+     * </ul>
+     * The inconsistency is tolerable in that all user input is via strings
+     * and implici conversion is not desired. 
      *
      * @param object the object to convert. May be <code>null</code>
      * @return the converted object, or <code>object</code> if no conversion is
@@ -56,48 +71,14 @@ public class NumericPropertyHandler extends PropertyHandler {
      */
     protected Object convert(Object object) throws ValidationException {
         Object result = null;
-        if (object instanceof String) {
-            String value = (String) object;
-            if (!StringUtils.isEmpty(value)) {
-                result = convert(value);
-            }
-        } else {
-            // @todo - should convert numerics to target type, if they
-            // don't match. Can leave for now as the inputs will always
-            // be a string.
-            result = object;
-        }
-        return result;
-    }
-
-    /**
-     * Convert a string to the required type.
-     *
-     * @param value the value to convert.
-     * @return the converted object
-     * @throws ValidationException if the object is invalid
-     */
-    private Object convert(String value) {
-        Object result = null;
         try {
-            Class type = getType();
-            Constructor constructor = type.getConstructor(String.class);
-            result = constructor.newInstance(value);
+            Class type = getDescriptor().getClazz();
+            result = CONVERTER.convert(object, type);
         } catch (Throwable exception) {
             throwValidationException("Invalid number", exception);
         }
-        return result;
-    }
 
-    /**
-     * Returns the type of the property.
-     *
-     * @return the type of the property
-     * @throws ClassNotFoundException if the class can't be found
-     */
-    private Class getType() throws ClassNotFoundException {
-        String name = getDescriptor().getType();
-        return Thread.currentThread().getContextClassLoader().loadClass(name);
+        return result;
     }
 
     /**
