@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -166,33 +165,20 @@ public class ActHelper {
      */
     private static BigDecimal getAmount(Act act, String node,
                                         IArchetypeService service) {
-        BigDecimal result = BigDecimal.ZERO;
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(act, service);
-        NodeDescriptor decscriptor = archetype.getNodeDescriptor(node);
-        if (decscriptor != null) {
-            NodeDescriptor creditDesc
-                    = archetype.getNodeDescriptor("credit");
-            Boolean credit = Boolean.FALSE;
-            if (creditDesc != null) {
-                credit = (Boolean) creditDesc.getValue(act);
+        BigDecimal result = BigDecimal.ZERO;
+        BigDecimal value = IMObjectHelper.getNumber(act, archetype, node);
+        if (value != null) {
+            Boolean credit = (Boolean) IMObjectHelper.getValue(
+                    act, archetype, "credit");
+            if (credit == null) {
+                credit = Boolean.FALSE;
             }
-            Number number = (Number) decscriptor.getValue(act);
-            if (number != null) {
-                BigDecimal value;
-                if (number instanceof BigDecimal) {
-                    value = (BigDecimal) number;
-                } else if (number instanceof Double
-                           || number instanceof Float) {
-                    value = new BigDecimal(number.doubleValue());
-                } else {
-                    value = new BigDecimal(number.longValue());
-                }
-                if (Boolean.TRUE.equals(credit)) {
-                    result = result.subtract(value);
-                } else {
-                    result = result.add(value);
-                }
+            if (Boolean.TRUE.equals(credit)) {
+                result = result.subtract(value);
+            } else {
+                result = result.add(value);
             }
         }
 

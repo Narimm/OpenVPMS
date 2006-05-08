@@ -255,19 +255,10 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
                         copy, context);
                 editor.setProduct(product);
 
-                Object includeQty = IMObjectHelper.getValue(relationship,
-                                                          "includeQty");
-                if (includeQty != null) {
-                    if (includeQty instanceof Long){
-                        long longvalue = (Long)includeQty;
-                        BigDecimal quantity = new BigDecimal(longvalue);
-                        editor.setQuantity((BigDecimal) quantity);
-                    }
-                    else if (includeQty instanceof Double){
-                        Double doublevalue = (Double)includeQty;
-                        BigDecimal quantity = new BigDecimal(doublevalue);
-                        editor.setQuantity((BigDecimal) quantity);
-                    }           
+                BigDecimal quantity = IMObjectHelper.getNumber(relationship,
+                                                               "includeQty");
+                if (quantity != null) {
+                    editor.setQuantity(quantity);
                 }
 
                 // create a new act relationship linking the copied act with
