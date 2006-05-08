@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>0.3</currentVersion>
+    <currentVersion>0.4-SNAPSHOT</currentVersion>
     <package>org.openvpms</package>
     <shortDescription>VPMS Web Application</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
@@ -661,8 +661,20 @@
     <build>
         <nagEmailAddress>buildman@openvpms.org</nagEmailAddress>
         <sourceDirectory>src/java</sourceDirectory>
-        <unitTestSourceDirectory>test/java</unitTestSourceDirectory>
-        <unitTest/>
+        <unitTestSourceDirectory>src/test/java</unitTestSourceDirectory>
+        <unitTest>
+            <includes>
+                <include>**/*TestCase.java</include>
+            </includes>
+            <resources>
+              <resource>
+                <directory>${basedir}/src/test/conf</directory>
+                <includes>
+                  <include>**/*.*</include>
+                </includes>
+              </resource>
+            </resources>
+          </unitTest>
         <resources>
             <resource>
                 <directory>${basedir}/src/java</directory>
