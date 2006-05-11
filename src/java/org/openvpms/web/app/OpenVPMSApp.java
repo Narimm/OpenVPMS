@@ -19,13 +19,14 @@
 package org.openvpms.web.app;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Command;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
+import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 
-import org.openvpms.web.app.login.LoginPane;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.resource.util.Styles;
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -56,7 +57,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
         _window = new Window();
         _window.setTitle("OpenVPMS");
-        _window.setContent(new LoginPane());
+        _window.setContent(new ApplicationContentPane());
         return _window;
     }
 
@@ -92,9 +93,10 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     public void logout() {
         getDefaultWindow().removeAll();
-        setContent(new LoginPane());
-        setContextChangeListener(null);
         clearContext();
+        setContextChangeListener(null);
+        Command redirect = new BrowserRedirectCommand("logout.jsp");
+        enqueueCommand(redirect);
     }
 
     /**
