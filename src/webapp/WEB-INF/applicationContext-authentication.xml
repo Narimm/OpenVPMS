@@ -34,7 +34,7 @@
             <ref bean="authenticationManager"/>
         </property>
         <property name="authenticationFailureUrl">
-            <value>/login.jsp?login_error=1</value>
+            <value>/login</value>
         </property>
         <property name="defaultTargetUrl">
             <value>/app</value>
@@ -81,7 +81,7 @@
             <value>
                 CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
                 PATTERN_TYPE_APACHE_ANT
-                /*.jsp*=IS_AUTHENTICATED_FULLY,IS_AUTHENTICATED_ANONYMOUSLY
+                /login*=IS_AUTHENTICATED_FULLY,IS_AUTHENTICATED_ANONYMOUSLY
                 /**=IS_AUTHENTICATED_FULLY
             </value>
         </property>
@@ -112,7 +112,7 @@
     <bean id="authenticationProcessingFilterEntryPoint"
           class="org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint">
         <property name="loginFormUrl">
-            <value>/login.jsp</value>
+            <value>/login</value>
         </property>
         <property name="forceHttps">
             <value>false</value>

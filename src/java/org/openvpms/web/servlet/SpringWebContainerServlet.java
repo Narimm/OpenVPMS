@@ -16,12 +16,17 @@
  *  $Id$
  */
 
-package org.openvpms.web.spring;
+package org.openvpms.web.servlet;
+
+import javax.servlet.ServletException;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import org.openvpms.web.spring.SpringApplicationInstance;
 
 /**
  * <code>WebContainerServlet</code> for integrating Echo with Spring.
@@ -41,6 +46,21 @@ public class SpringWebContainerServlet extends WebContainerServlet {
      */
     private String _name;
 
+
+    /**
+     * Initialises the servlet.
+     *
+     * @throws ServletException if the serlvet can't be initialised
+     */
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        _name = getInitParameter("app-name");
+        if (StringUtils.isEmpty(_name)) {
+            throw new ServletException("init-param not specified: app-name");
+        }
+    }
+
     /**
      * Creates a new <code>ApplicationInstance</code> for a visitor to an
      * application.
@@ -52,22 +72,6 @@ public class SpringWebContainerServlet extends WebContainerServlet {
         if (_context == null) {
             _context = WebApplicationContextUtils.getWebApplicationContext(
                     getServletContext());
-
-            String[] names = _context.getBeanNamesForType(
-                    SpringApplicationInstance.class);
-            if (names == null || names.length == 0) {
-                throw new IllegalStateException(
-                        "A bean of type "
-                        + SpringApplicationInstance.class.getName()
-                        + "must be registered in the application context.");
-            }
-            if (names.length > 1) {
-                throw new IllegalStateException(
-                        "Multiple beans of type "
-                        + SpringApplicationInstance.class.getName()
-                        + "registered in the application context.");
-            }
-            _name = names[0];
         }
         result = (SpringApplicationInstance) _context.getBean(_name);
         result.setApplicationContext(_context);

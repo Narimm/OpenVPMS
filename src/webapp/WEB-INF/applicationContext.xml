@@ -418,7 +418,10 @@
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
     <!-- ================================================================== -->
-    <bean id="app" class="org.openvpms.web.app.OpenVPMSApp"
+    <bean id="loginApp" class="org.openvpms.web.app.login.LoginApp"
+          singleton="false"/>
+
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
           singleton="false"/>
 
 </beans>

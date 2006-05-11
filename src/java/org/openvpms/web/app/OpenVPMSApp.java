@@ -95,7 +95,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         getDefaultWindow().removeAll();
         clearContext();
         setContextChangeListener(null);
-        Command redirect = new BrowserRedirectCommand("logout.jsp");
+        Command redirect = new BrowserRedirectCommand("logout");
         enqueueCommand(redirect);
     }
 

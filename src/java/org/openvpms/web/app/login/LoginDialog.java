@@ -18,40 +18,25 @@
 
 package org.openvpms.web.app.login;
 
-import java.util.List;
-
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Command;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.web.app.ApplicationContentPane;
-import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
+
 
 /**
- * Enter description here.
+ * Login dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -98,11 +83,6 @@ public class LoginDialog extends PopupDialog {
      */
     private static final String PASSWORD_KEY = "password";
 
-    /**
-     * The logger.
-     */
-    private static final Log _log = LogFactory.getLog(LoginPane.class);
-
 
     /**
      * Construct a new <code>LoginDialog</code>.
@@ -112,7 +92,6 @@ public class LoginDialog extends PopupDialog {
         setClosable(false);
 
         _username = TextComponentFactory.create();
-        _username.setText("guest");
         _password = TextComponentFactory.createPassword();
 
         _username.addActionListener(new ActionListener() {
@@ -137,8 +116,6 @@ public class LoginDialog extends PopupDialog {
         getLayout().add(grid);
 
         setFocus(_username);
-
-        show();
     }
 
     /**
@@ -149,56 +126,9 @@ public class LoginDialog extends PopupDialog {
         String username = _username.getText();
         String password = _password.getText();
 
-        if (authenticate(username, password)) {
-            close();
-            OpenVPMSApp.getInstance().setContent(new ApplicationContentPane());
-            _log.debug(username +" successfully logged in to OpenVPMS");
-        } else {
-            _log.debug(username + " attempted to log in to OpenVPMS but failed.");
-        }
-    }
-
-    /**
-     * Authenticate a user.
-     *
-     * @param username the user's nane
-     * @param password the user's password
-     * @return <code>true</code> if username and password are valid; otherwise
-     *         <code>false</code>
-     */
-    protected boolean authenticate(String username, String password) {
-        // disallow empty user name, or user name with wildcards
-        if (StringUtils.isEmpty(username)
-            || username.contains("*")) {
-            return false;
-        }
-        // disallow passwords with wildcards
-        if (!StringUtils.isEmpty(password) && password.contains("*")) {
-            return false;
-        }
-
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery(
-                "system", "security", "user", true, true);
-        query.add(new NodeConstraint("name", username));
-        query.add(new NodeConstraint("password", password));
-
-        try {
-            IPage<IMObject> page = service.get(query);
-            List<IMObject> rows = page.getRows();
-            if (rows.size() != 1) {
-                return false;
-            }
-            User user = (User) rows.get(0);
-            UsernamePasswordAuthenticationToken token
-                    = new UsernamePasswordAuthenticationToken(
-                    user.getName(), user.getPassword(), user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(token);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-            return false;
-        }
-        return true;
+        // @todo need to encode
+        Command redirect = new BrowserRedirectCommand("j_acegi_security_check?j_username=" + username + "&j_password=" + password);
+        ApplicationInstance.getActive().enqueueCommand(redirect);
     }
 
     /**

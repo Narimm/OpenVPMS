@@ -28,6 +28,8 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContextHolder;
 
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -68,9 +70,11 @@ public class TitlePane extends ContentPane {
         setStyleName(STYLE);
 
         Label logo = LabelFactory.create(new ResourceImageReference(PATH));
+        Authentication auth
+                = SecurityContextHolder.getContext().getAuthentication();
 
         Label label = LabelFactory.create();
-        label.setText(Messages.get("label.welcome", " Guest"));
+        label.setText(Messages.get("label.welcome", auth.getName()));
         Button logout = ButtonFactory.create("logout", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 OpenVPMSApp.getInstance().logout();

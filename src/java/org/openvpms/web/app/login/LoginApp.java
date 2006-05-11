@@ -18,17 +18,21 @@
 
 package org.openvpms.web.app.login;
 
-import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
+
+import org.openvpms.web.spring.SpringApplicationInstance;
+import org.openvpms.web.component.util.ContentPaneFactory;
+import org.openvpms.web.resource.util.Styles;
 
 
 /**
- * Enter description here.
+ * Login application.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LoginApp extends ApplicationInstance {
+public class LoginApp extends SpringApplicationInstance {
 
     /**
      * Invoked to initialize the application, returning the default window. The
@@ -37,8 +41,12 @@ public class LoginApp extends ApplicationInstance {
      * @return the default window of the application
      */
     public Window init() {
+        setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
         Window window = new Window();
-        window.add(new LoginPane());
+        window.setTitle("OpenVPMS");
+        ContentPane pane = ContentPaneFactory.create("LoginPane");
+        pane.add(new LoginDialog());
+        window.setContent(pane);
         return window;
     }
 }

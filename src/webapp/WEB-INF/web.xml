@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2.3.dtd">
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
     <display-name>OpenVPMS</display-name>
     <description>OpenVPMS</description>
-
-    <!-- echo2 configuration -->
-    <servlet>
-        <servlet-name>SpringWebContainerServlet</servlet-name>
-        <servlet-class>org.openvpms.web.spring.SpringWebContainerServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>SpringWebContainerServlet</servlet-name>
-        <url-pattern>/app</url-pattern>
-    </servlet-mapping>
 
     <!-- Acegi/Spring config -->
     <context-param>
@@ -65,8 +55,42 @@
         <listener-class>org.acegisecurity.ui.session.HttpSessionEventPublisher</listener-class>
     </listener>
 
-    <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
-    </welcome-file-list>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <init-param>
+            <param-name>app-name</param-name>
+            <param-value>loginApp</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AppServlet</servlet-name>
+        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <init-param>
+            <param-name>app-name</param-name>
+            <param-value>openVPMSApp</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>org.openvpms.web.servlet.LogoutServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AppServlet</servlet-name>
+        <url-pattern>/app</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
 
 </web-app>
