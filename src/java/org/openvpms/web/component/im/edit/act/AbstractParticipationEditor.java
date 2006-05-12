@@ -56,6 +56,9 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     public AbstractParticipationEditor(Participation participation, Act parent,
                                        LayoutContext context) {
         super(participation, parent, context);
+        if (parent == null) {
+            throw new IllegalArgumentException("Argument 'parent' is null");
+        }
         Property entity = getProperty("entity");
         _editor = createObjectReferenceEditor(entity);
         Property act = getProperty("act");

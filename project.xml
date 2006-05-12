@@ -706,9 +706,9 @@
                 </includes>
             </resource>
             <resource>
-                <directory>${basedir}/src/conf/query</directory>
+                <directory>${basedir}/src/conf</directory>
                 <includes>
-                    <include>queryfactory.properties</include>
+                    <include>*.properties</include>
                 </includes>
             </resource>
             <resource>

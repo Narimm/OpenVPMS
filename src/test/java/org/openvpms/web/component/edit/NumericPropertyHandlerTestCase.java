@@ -20,14 +20,13 @@ package org.openvpms.web.component.edit;
 
 import java.math.BigDecimal;
 
-import nextapp.echo2.app.ApplicationInstance;
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.test.AbstractAppTest;
+
+import junit.framework.Assert;
 
 
 /**
@@ -37,7 +36,7 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
  * @version $LastChangedDate$
  */
 public class NumericPropertyHandlerTestCase
-        extends AbstractDependencyInjectionSpringContextTests {
+        extends AbstractAppTest {
 
     /**
      * Integer node.
@@ -151,16 +150,6 @@ public class NumericPropertyHandlerTestCase
     }
 
     /**
-     * Returns the location of the spring config files.
-     *
-     * @return an array of config locations
-     */
-    protected String[] getConfigLocations() {
-        return new String[]{"applicationContext.xml"};
-    }
-
-
-    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -169,16 +158,12 @@ public class NumericPropertyHandlerTestCase
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        OpenVPMSApp app = (OpenVPMSApp) applicationContext.getBean("app");
-        app.setApplicationContext(applicationContext);
-        ApplicationInstance.setActive(app);
-
         // get the node descriptors
         _intNode = getDescriptor("classification.appointmentType", "noSlots");
-        assertEquals(Integer.class, _intNode.getClazz());
+        Assert.assertEquals(Integer.class, _intNode.getClazz());
 
         _decNode = getDescriptor("productPrice.fixedPrice", "price");
-        assertEquals(BigDecimal.class, _decNode.getClazz());
+        Assert.assertEquals(BigDecimal.class, _decNode.getClazz());
     }
 
     /**

@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -37,8 +36,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.supplierAccountInvoiceItem</em>, or
- * <em>act.supplierAccountCreditItem</em>.
+ * <em>act.supplierAccountInvoiceItem</em>, or <em>act.supplierAccountCreditItem</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -60,9 +58,14 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    protected SupplierInvoiceItemEditor(Act act, Act parent,
-                                        LayoutContext context) {
+    public SupplierInvoiceItemEditor(Act act, Act parent,
+                                     LayoutContext context) {
         super(act, parent, context);
+        if (!IMObjectHelper.isA(act, "act.supplierAccountInvoiceItem",
+                                "act.supplierAccountCreditItem")) {
+            throw new IllegalArgumentException("Invalid act type:"
+                                               + act.getArchetypeId().getShortName());
+        }
     }
 
     /**
@@ -72,27 +75,6 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
      */
     public void setQuantity(BigDecimal quantity) {
         getProperty("quantity").setValue(quantity);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent act
-     * @param context the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object, "act.supplierAccountInvoiceItem",
-                               "act.supplierAccountCreditItem")
-                && parent instanceof Act) {
-            result = new SupplierInvoiceItemEditor((Act) object, (Act) parent,
-                                                   context);
-        }
-        return result;
     }
 
     /**

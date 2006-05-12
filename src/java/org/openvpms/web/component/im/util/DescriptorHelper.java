@@ -167,6 +167,16 @@ public final class DescriptorHelper {
     /**
      * Returns primary archetype short names matching the specified criteria.
      *
+     * @param shortName the short name. May contain wildcards
+     * @return a list of short names matching the criteria
+     */
+    public static String[] getShortNames(String shortName) {
+        return getShortNames(new String[]{shortName});
+    }
+
+    /**
+     * Returns primary archetype short names matching the specified criteria.
+     *
      * @param shortNames the short names. May contain wildcards
      * @return a list of short names matching the criteria
      */

@@ -48,7 +48,8 @@ public class CustomerPaymentItemEditor extends AbstractIMObjectEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    protected CustomerPaymentItemEditor(Act act, Act parent, LayoutContext context) {
+    public CustomerPaymentItemEditor(Act act, Act parent,
+                                     LayoutContext context) {
         super(act, parent, context);
         if (act.isNew() &&
             IMObjectHelper.isA(act, "act.customerAccountPayment*")) {

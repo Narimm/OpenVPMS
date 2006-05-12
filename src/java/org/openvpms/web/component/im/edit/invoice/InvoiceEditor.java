@@ -23,20 +23,16 @@ import java.math.BigDecimal;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountChargesInvoice</em>,
- * <em>act.customerAccountChargesCredit</em>
- * <em>act.customerAccountChargesCounter</em>,
- * <em>act.supplierAccountChargesInvoice</em> or
- * <em>act.supplierAccountChargesCredit</em>.
+ * <em>act.customerAccountChargesInvoice</em>, <em>act.customerAccountChargesCredit</em>
+ * <em>act.customerAccountChargesCounter</em>, <em>act.supplierAccountChargesInvoice</em>
+ * or <em>act.supplierAccountChargesCredit</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -50,31 +46,8 @@ public class InvoiceEditor extends ActEditor {
      * @param parent  the parent object. May be <code>null</code>
      * @param context the layout context
      */
-    protected InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
+    public InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object,
-                               "act.customerAccountChargesInvoice",
-                               "act.customerAccountChargesCredit",
-                               "act.customerAccountChargesCounter",
-                               "act.supplierAccountChargesInvoice",
-                               "act.supplierAccountChargesCredit")) {
-            result = new InvoiceEditor((Act) object, parent, context);
-        }
-        return result;
     }
 
     /**
