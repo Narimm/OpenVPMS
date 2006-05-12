@@ -27,7 +27,7 @@
 		<node name="completeDate" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
 		<node name="reason" path="/reason" type="java.lang.String"	/>
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
-			filter="participation.customer" hidden="true" />
+			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
 		<node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 

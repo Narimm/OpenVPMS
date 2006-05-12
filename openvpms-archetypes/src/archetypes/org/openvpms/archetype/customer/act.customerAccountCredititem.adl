@@ -25,29 +25,15 @@
         <node name="description" type="java.lang.String"
             path="/description" hidden="true" derived="true"
             derivedValue="' '" />
-        <node name="participants" path="/participations" parentChild="true"
-            type="java.util.HashSet" baseName="Participation" minCardinality="2" maxCardinality="*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="participation.patient" />
-                        <property name="minCardinality" value="1"/> 
-                        <property name="maxCardinality" value="1"/> 
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="participation.product" />
-                        <property name="minCardinality" value="1"/> 
-                        <property name="maxCardinality" value="1"/> 
-                    </propertyMap>
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="participation.author" />
-                        <property name="minCardinality" value="0"/> 
-                        <property name="maxCardinality" value="1"/> 
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+        <node name="patient" path="/participations" type="java.util.HashSet"
+              minCardinality="1" maxCardinality="1"
+              filter="participation.patient"/>
+        <node name="product" path="/participations" type="java.util.HashSet"
+              minCardinality="1" maxCardinality="1"
+              filter="participation.product"/>
+        <node name="author" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
         <node name="details" path="/details" hidden="true"
             type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
             minCardinality="1" maxCardinality="1">

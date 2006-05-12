@@ -45,6 +45,12 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
+        <node name="customer" path="/participations" type="java.util.HashSet"
+              minCardinality="1" maxCardinality="1"
+              filter="participation.customer" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
 		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
 			filter="actRelationship.customerAccountPaymentItem" >
 			<assertion name="archetypeRange">
@@ -52,22 +58,6 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="actRelationship.customerAccountPaymentItem" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		<node name="participants" path="/participations" parentChild="true"
-			type="java.util.HashSet" baseName="Participation" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="participation.customer" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="participation.author" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
