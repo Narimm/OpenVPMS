@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -60,8 +59,14 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    protected CustomerInvoiceItemEditor(Act act, Act parent, LayoutContext context) {
+    public CustomerInvoiceItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        if (!IMObjectHelper.isA(act, "act.customerAccountInvoiceItem",
+                                "act.customerAccountCreditItem",
+                                "act.customerAccountCounterItem")) {
+            throw new IllegalArgumentException("Invalid act type:"
+                                               + act.getArchetypeId().getShortName());
+        }
     }
 
     /**
@@ -71,27 +76,6 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      */
     public void setQuantity(BigDecimal quantity) {
         getProperty("quantity").setValue(quantity);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent act
-     * @param context the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object, "act.customerAccountInvoiceItem",
-                               "act.customerAccountCreditItem",
-                               "act.customerAccountCounterItem")
-                && parent instanceof Act) {
-            result = new CustomerInvoiceItemEditor((Act) object, (Act) parent, context);
-        }
-        return result;
     }
 
     /**

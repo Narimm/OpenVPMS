@@ -16,7 +16,9 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.patient;
+
+import nextapp.echo2.app.Row;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -32,35 +34,21 @@ import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
- * CRUD Window for customer acts.
+ * CRUD Window for patient record acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
+public class PatientRecordCRUDWindow extends ActCRUDWindow {
 
     /**
-     * Create a new <code>CustomerActCRUDWindow</code>.
-     *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public CustomerActCRUDWindow(String type, String refModelName,
-                                 String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
-    }
-
-    /**
-     * Create a new <code>CustomerActCRUDWindow</code>.
+     * Create a new <code>PatientRecordCRUDWindow</code>.
      *
      * @param type       display name for the types of objects that this may
      *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public CustomerActCRUDWindow(String type, String[] shortNames) {
+    public PatientRecordCRUDWindow(String type, String[] shortNames) {
         super(type, shortNames);
     }
 
@@ -72,14 +60,14 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
     @Override
     protected void onCreated(IMObject object) {
         Act act = (Act) object;
-        Party customer = Context.getInstance().getCustomer();
-        if (customer != null) {
+        Party patient = Context.getInstance().getPatient();
+        if (patient != null) {
             try {
                 IArchetypeService service
                         = ServiceHelper.getArchetypeService();
                 Participation participation
-                        = (Participation) service.create("participation.customer");
-                participation.setEntity(new IMObjectReference(customer));
+                        = (Participation) service.create("participation.patient");
+                participation.setEntity(new IMObjectReference(patient));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);
             } catch (OpenVPMSException exception) {
@@ -87,6 +75,38 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
             }
         }
         super.onCreated(object);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(Row buttons) {
+        buttons.add(getEditButton());
+        buttons.add(getCreateButton());
+        buttons.add(getDeleteButton());
+        buttons.add(getPrintButton());
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param enable determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(boolean enable) {
+        Row buttons = getButtons();
+        buttons.removeAll();
+        if (enable) {
+            buttons.add(getEditButton());
+            buttons.add(getCreateButton());
+            buttons.add(getDeleteButton());
+            buttons.add(getPrintButton());
+        } else {
+            buttons.add(getCreateButton());
+        }
     }
 
 }

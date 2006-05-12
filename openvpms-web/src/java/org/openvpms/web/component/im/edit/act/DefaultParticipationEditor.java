@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -39,31 +38,10 @@ public class DefaultParticipationEditor extends AbstractParticipationEditor {
      * @param parent        the parent object
      * @param context       the layout context. May be <code>null</code>
      */
-    protected DefaultParticipationEditor(Participation participation,
-                                         Act parent,
-                                         LayoutContext context) {
+    public DefaultParticipationEditor(Participation participation,
+                                      Act parent,
+                                      LayoutContext context) {
         super(participation, parent, context);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. Nay be <code>null</code>
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static DefaultParticipationEditor create(IMObject object,
-                                                    IMObject parent,
-                                                    LayoutContext context) {
-        DefaultParticipationEditor result = null;
-        if (object instanceof Participation
-            && parent instanceof Act) {
-            result = new DefaultParticipationEditor((Participation) object,
-                                                    (Act) parent, context);
-        }
-        return result;
     }
 
 }

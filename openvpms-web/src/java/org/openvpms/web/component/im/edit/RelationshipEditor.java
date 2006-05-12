@@ -73,7 +73,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param parent       the parent object
      * @param context      the layout context
      */
-    protected RelationshipEditor(EntityRelationship relationship,
+    public RelationshipEditor(EntityRelationship relationship,
                                  IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
         IMObject source;

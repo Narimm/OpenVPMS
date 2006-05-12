@@ -146,7 +146,7 @@
     </bean>
 
     <!-- The app -->
-    <bean id="app" class="org.openvpms.web.app.OpenVPMSApp"
+    <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
           singleton="false"/>
 
 

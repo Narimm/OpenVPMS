@@ -18,20 +18,12 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 
 
@@ -60,14 +52,15 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 public final class QueryFactory {
 
     /**
-     * Query property
+     * Query implementations.
      */
-    private static Map<String, Class> _queries;
+    private static ArchetypeHandlers _queries;
 
     /**
      * The logger.
      */
     private static final Log _log = LogFactory.getLog(QueryFactory.class);
+
 
     /**
      * Prevent construction.
@@ -153,142 +146,31 @@ public final class QueryFactory {
     }
 
     /**
-     * Returns an {@link Query} implementation that can query a set of short
-     * names
+     * Returns a query class that can query the supplied short names.
      *
-     * @param shortNames the short names
-     * @return a query implemenation that supports <code>shortNames</code> or
-     *         <code>DefaultQuery</code> if there is no such implementation
+     * @param shortNames the archetype short names
+     * @return a query class that can query <code>shortNames</code>
      */
     private static Class getQueryClass(String[] shortNames) {
-        Map<String, Class> queries = getQueries();
-        Set<String> wildcards = queries.keySet();
-        String match = null;
-        int bestDotCount = -1; // more dots in a short name, the more specific
-        int bestWildCardCount = -1; // less wildcards, the more specific
-        for (String wildcard : wildcards) {
-            boolean found = true;
-            for (String shortName : shortNames) {
-                if (!DescriptorHelper.matches(shortName, wildcard)) {
-                    found = false;
-                    break;
-                }
-            }
-            if (found) {
-                if (match == null) {
-                    match = wildcard;
-                    bestDotCount = StringUtils.countMatches(wildcard, ".");
-                    bestWildCardCount = StringUtils.countMatches(wildcard, "*");
-                } else {
-                    int dotCount = StringUtils.countMatches(wildcard, ".");
-                    int wildcardCount = StringUtils.countMatches(wildcard, "*");
-                    if (dotCount > bestDotCount ||
-                        (dotCount == bestDotCount
-                         && wildcardCount < bestWildCardCount)) {
-                        match = wildcard;
-                    }
-                }
-            }
+        Class result = getQueries().getHandler(shortNames);
+        if (result == null) {
+            result = DefaultQuery.class;
         }
-        return (match != null) ? queries.get(match) : DefaultQuery.class;
+        return result;
     }
 
     /**
-     * Returns the map of short names to {@link Query} classes, loading them
-     * from the <em>queryfactory.properties</em> resources if necessary.
+     * Returns the query implementations.
      *
-     * @return the map of short names to {@link Query} classes
+     * @return the editors
      */
-    private synchronized static Map<String, Class> getQueries() {
+    private static synchronized ArchetypeHandlers getQueries() {
         if (_queries == null) {
-            _queries = new HashMap<String, Class>();
-
-            Set<URL> paths = getPaths();
-
-            for (URL path : paths) {
-                try {
-                    Properties properties = new Properties();
-                    properties.load(path.openStream());
-                    Enumeration names = properties.propertyNames();
-                    while (names.hasMoreElements()) {
-                        String name = (String) names.nextElement();
-                        String className = properties.getProperty(name);
-                        if (_queries.get(name) != null) {
-                            _log.warn("Duplicate sbort name=" + name
-                                      + " from " + path + ": ignoring");
-                        } else {
-                            Class clazz = getClass(className);
-                            if (clazz != null) {
-                                _queries.put(name, clazz);
-                            }
-                        }
-                    }
-                } catch (IOException exception) {
-                    _log.error(exception, exception);
-                }
-            }
+            _queries = new ArchetypeHandlers("QueryFactory.properties",
+                                             Query.class);
         }
         return _queries;
     }
 
-    /**
-     * Returns the paths of the <em>queryfactory.properties</em> resources.
-     *
-     * @return the paths <em>queryfactory.properties</em> resources.
-     */
-    private static Set<URL> getPaths() {
-        Set<URL> paths = new HashSet<URL>();
-        for (ClassLoader loader : getClassLoaders()) {
-            if (loader != null) {
-                try {
-                    Enumeration<URL> urls
-                            = loader.getResources("queryfactory.properties");
-                    while (urls.hasMoreElements()) {
-                        paths.add(urls.nextElement());
-                    }
-                } catch (IOException exception) {
-                    _log.error(exception, exception);
-                }
-            }
-        }
-        return paths;
-    }
 
-    /**
-     * Loads a class.
-     *
-     * @param name the class name
-     * @return the class, or <code>null</code> if it can't be found
-     */
-    private static Class getClass(String name) {
-        for (ClassLoader loader : getClassLoaders()) {
-            if (loader != null) {
-                try {
-                    Class clazz = loader.loadClass(name);
-                    if (Query.class.isAssignableFrom(clazz)) {
-                        return clazz;
-                    }
-                } catch (ClassNotFoundException ignore) {
-                }
-            }
-        }
-        _log.error("Failed to load class: " + name);
-        return null;
-    }
-
-    /**
-     * Returns a list of classloaders to locate for resources with. The list
-     * will contain the context class loader and this class' loader, or this
-     * class' loader if the context class loader is null or the same.
-     *
-     * @return a list of classloaders to locate for resources with
-     */
-    private static ClassLoader[] getClassLoaders() {
-        ClassLoader context = Thread.currentThread().getContextClassLoader();
-        ClassLoader clazz = QueryFactory.class.getClassLoader();
-        if (context != null && context != clazz) {
-            return new ClassLoader[]{context, clazz};
-        }
-        return new ClassLoader[]{clazz};
-    }
 }

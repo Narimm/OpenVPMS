@@ -59,9 +59,14 @@ public class OrderItemEditor extends ActItemEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    protected OrderItemEditor(Act act, Act parent,
+    public OrderItemEditor(Act act, Act parent,
                               LayoutContext context) {
         super(act, parent, context);
+        if (!IMObjectHelper.isA(act, "act.supplierOrderItem")) {
+            throw new IllegalArgumentException(
+                    "Invalid act type: "
+                    + act.getArchetypeId().getShortName());
+        }
     }
 
     /**
@@ -71,26 +76,6 @@ public class OrderItemEditor extends ActItemEditor {
      */
     public void setQuantity(BigDecimal quantity) {
         getProperty("qty").setValue(quantity);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent act
-     * @param context the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object, "act.supplierOrderItem")
-            && parent instanceof Act) {
-            result = new OrderItemEditor((Act) object, (Act) parent,
-                                         context);
-        }
-        return result;
     }
 
     /**

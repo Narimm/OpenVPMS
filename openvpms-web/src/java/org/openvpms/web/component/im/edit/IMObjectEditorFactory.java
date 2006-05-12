@@ -18,19 +18,14 @@
 
 package org.openvpms.web.component.im.edit;
 
+import java.lang.reflect.Constructor;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
-import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
-import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
-import org.openvpms.web.component.im.edit.invoice.CustomerInvoiceItemEditor;
-import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
-import org.openvpms.web.component.im.edit.invoice.SupplierInvoiceItemEditor;
-import org.openvpms.web.component.im.edit.order.OrderEditor;
-import org.openvpms.web.component.im.edit.order.OrderItemEditor;
-import org.openvpms.web.component.im.edit.payment.CustomerPaymentItemEditor;
-import org.openvpms.web.component.im.edit.payment.PaymentEditor;
-import org.openvpms.web.component.im.edit.payment.SupplierPaymentItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
 
 /**
@@ -40,6 +35,17 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @version $LastChangedDate$
  */
 public class IMObjectEditorFactory {
+
+    /**
+     * Editor implementations.
+     */
+    private static ArchetypeHandlers _editors;
+
+    /**
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(IMObjectEditorFactory.class);
 
     /**
      * Prevent construction.
@@ -69,44 +75,76 @@ public class IMObjectEditorFactory {
      */
     public static IMObjectEditor create(IMObject object, IMObject parent,
                                         LayoutContext context) {
-        IMObjectEditor result;
-        result = RelationshipEditor.create(object, parent, context);
-        if (result == null) {
-            result = EstimationEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = EstimationItemEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = InvoiceEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = CustomerInvoiceItemEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = PaymentEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = CustomerPaymentItemEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = OrderEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = OrderItemEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = SupplierInvoiceItemEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = SupplierPaymentItemEditor.create(object, parent, context);
-        }
-        if (result == null) {
-            result = DefaultParticipationEditor.create(object, parent, context);
+        IMObjectEditor result = null;
+
+        String shortName = object.getArchetypeId().getShortName();
+        Class clazz = getEditors().getHandler(shortName);
+        if (clazz != null) {
+            Constructor ctor = getConstructor(clazz, object, parent, context);
+            if (ctor != null) {
+                try {
+                    result = (IMObjectEditor) ctor.newInstance(object, parent,
+                                                               context);
+                } catch (Throwable throwable) {
+                    _log.error(throwable, throwable);
+                }
+            } else {
+                _log.error("No valid constructor found for class: "
+                           + clazz.getName());
+            }
         }
         if (result == null) {
             result = new DefaultIMObjectEditor(object, parent, context);
         }
         return result;
     }
+
+    /**
+     * Returns the editors.
+     *
+     * @return the editors
+     */
+    private static synchronized ArchetypeHandlers getEditors() {
+        if (_editors == null) {
+            _editors = new ArchetypeHandlers("IMObjectEditorFactory.properties",
+                                             IMObjectEditor.class);
+        }
+        return _editors;
+    }
+
+    /**
+     * Returns a constructor to construct a new editor.
+     *
+     * @param type    the editor type
+     * @param object  the object to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>
+     * @return a constructor to construct the editor, or <code>null</code> if
+     *         none can be found
+     */
+    private static Constructor getConstructor(Class type, IMObject object,
+                                              IMObject parent, LayoutContext context) {
+        Constructor[] ctors = type.getConstructors();
+
+        for (Constructor ctor : ctors) {
+            // check parameters
+            Class[] ctorTypes = ctor.getParameterTypes();
+            if (ctorTypes.length == 3) {
+                Class ctorObj = ctorTypes[0];
+                Class ctorParent = ctorTypes[1];
+                Class ctorLayout = ctorTypes[2];
+
+                if (ctorObj.isAssignableFrom(object.getClass())
+                    && ((parent != null && ctorParent.isAssignableFrom(parent.getClass()))
+                        || (parent == null && IMObject.class.isAssignableFrom(ctorParent)))
+                    && ((context != null && ctorLayout.isAssignableFrom(context.getClass()))
+                        || (context == null && LayoutContext.class.isAssignableFrom(ctorLayout))))
+                {
+                    return ctor;
+                }
+            }
+        }
+        return null;
+    }
+
 }

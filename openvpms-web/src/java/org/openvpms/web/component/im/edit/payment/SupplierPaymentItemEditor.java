@@ -21,12 +21,10 @@ package org.openvpms.web.component.im.edit.payment;
 import java.math.BigDecimal;
 
 import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -34,8 +32,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype in
- * <em>act.supplierAccountPayment*</em>,
- * and <em>act.supplierAccountRefund*</em>.
+ * <em>act.supplierAccountPayment*</em>, and <em>act.supplierAccountRefund*</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
@@ -49,8 +46,19 @@ public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    protected SupplierPaymentItemEditor(Act act, Act parent, LayoutContext context) {
+    public SupplierPaymentItemEditor(Act act, Act parent,
+                                     LayoutContext context) {
         super(act, parent, context);
+        if (!IMObjectHelper.isA(act,
+                                "act.supplierAccountPayment*",
+                                "act.supplierAccountRefund*")
+            || IMObjectHelper.isA(act,
+                                  "act.supplierAccountPayment",
+                                  "act.supplierAccountRefund")) {
+            throw new IllegalArgumentException(
+                    "Invalid act type: " + act.getArchetypeId().getShortName());
+        }
+
         if (act.isNew() &&
             IMObjectHelper.isA(act, "act.supplierAccountPayment*")) {
             // Default the amount to the outstanding balance
@@ -63,30 +71,6 @@ public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
                 amount.setValue(balance);
             }
         }
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (IMObjectHelper.isA(object,
-                               "act.supplierAccountPayment*",
-                               "act.supplierAccountRefund*")
-            && !IMObjectHelper.isA(object,
-                                   "act.supplierAccountPayment",
-                                   "act.supplierAccountRefund")
-            && parent instanceof Act) {
-            result = new SupplierPaymentItemEditor((Act) object, (Act) parent, context);
-        }
-        return result;
     }
 
 }

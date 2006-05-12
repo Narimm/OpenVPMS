@@ -254,9 +254,9 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @return the editor
      */
     private IMObjectEditor addEditor(Participation participant, Act act) {
-        final AbstractParticipationEditor editor =
-                DefaultParticipationEditor.create(
-                        participant, act, getLayoutContext());
+        final AbstractParticipationEditor editor
+                = new DefaultParticipationEditor(
+                participant, act, getLayoutContext());
         getModifiableSet().add(editor);
         _participants.add(editor);
         return editor;

@@ -21,16 +21,13 @@ package org.openvpms.web.component.im.edit.estimation;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -43,46 +40,19 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 public class EstimationEditor extends ActEditor {
 
     /**
-     * Construct a new <code>ActEditor</code>.
+     * Construct a new <code>EstimationEditor</code>.
      *
-     * @param act        the act to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param context    the layout context
+     * @param act     the act to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context
      */
-    protected EstimationEditor(Act act, IMObject parent,
-                               LayoutContext context) {
+    public EstimationEditor(Act act, IMObject parent,
+                            LayoutContext context) {
         super(act, parent, context);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object     the object to edit
-     * @param parent     the parent object. May be <code>null</code>
-     * @param context    the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (object instanceof Act) {
-            ArchetypeDescriptor archetype
-                    = DescriptorHelper.getArchetypeDescriptor(object);
-            if (archetype != null) {
-                NodeDescriptor items = archetype.getNodeDescriptor("items");
-                if (items != null) {
-                    String[] range = items.getArchetypeRange();
-                    if (range.length == 1
-                        && range[0].equals("actRelationship.customerEstimationItem"))
-                    {
-                        result = new EstimationEditor((Act) object, parent,
-                                                      context);
-                    }
-                }
-            }
+        if (!IMObjectHelper.isA(act, "act.customerEstimation")) {
+            throw new IllegalArgumentException(
+                    "Invalid act type:" + act.getArchetypeId().getShortName());
         }
-        return result;
     }
 
     /**

@@ -88,14 +88,16 @@ public final class Styles {
         ApplicationInstance app = ApplicationInstance.getActive();
         ContainerContext context = (ContainerContext) app.getContextProperty(
                 ContainerContext.CONTEXT_PROPERTY_NAME);
-        ClientProperties properties = context.getClientProperties();
-        int width = properties.getInt(ClientProperties.SCREEN_WIDTH, -1);
-        if (width != -1) {
-            for (Width w : WIDTHS) {
-                if (width <= w.width) {
-                    String name = style + w.styleSuffix;
-                    if (app.getStyle(component, name) != null) {
-                        result = name;
+        if (context != null) {
+            ClientProperties properties = context.getClientProperties();
+            int width = properties.getInt(ClientProperties.SCREEN_WIDTH, -1);
+            if (width != -1) {
+                for (Width w : WIDTHS) {
+                    if (width <= w.width) {
+                        String name = style + w.styleSuffix;
+                        if (app.getStyle(component, name) != null) {
+                            result = name;
+                        }
                     }
                 }
             }
