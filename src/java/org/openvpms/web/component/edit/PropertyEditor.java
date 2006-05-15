@@ -20,25 +20,17 @@ package org.openvpms.web.component.edit;
 
 
 /**
- * Interface to track the saved status of an object.
+ * Property editor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Saveable {
+public interface PropertyEditor extends Editor {
 
     /**
-     * Save any edits.
+     * Returns the property being edited.
      *
-     * @return <code>true</code> if the save was successful
+     * @return the property being edited
      */
-    boolean save();
-
-    /**
-     * Determines if any edits have been saved.
-     *
-     * @return <code>true</code> if edits have been saved.
-     */
-    boolean isSaved();
-
+    Property getProperty();
 }

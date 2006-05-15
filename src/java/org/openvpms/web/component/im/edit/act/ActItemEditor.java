@@ -19,37 +19,28 @@
 package org.openvpms.web.component.im.edit.act;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.text.TextComponent;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.GridFactory;
 
 
 /**
@@ -63,45 +54,9 @@ import org.openvpms.web.component.util.GridFactory;
 public abstract class ActItemEditor extends AbstractIMObjectEditor {
 
     /**
-     * Participant editors.
-     */
-    private List<AbstractParticipationEditor> _participants
-            = new ArrayList<AbstractParticipationEditor>();
-
-    /**
-     * The product editor.
-     */
-    private ProductParticipationEditor _productEditor;
-
-    /**
-     * The patient editor.
-     */
-    private PatientParticipationEditor _patientEditor;
-
-    /**
      * Current node filter. May be <code>null</code>
      */
     private NodeFilter _filter;
-
-    /**
-     * Patient participation short name.
-     */
-    private static final String PATIENT_SHORTNAME = "participation.patient";
-
-    /**
-     * Product participation short name.
-     */
-    private static final String PRODUCT_SHORTNAME = "participation.product";
-
-    /**
-     * Author participation short name.
-     */
-    private static final String AUTHOR_SHORTNAME = "participation.author";
-
-    /**
-     * Participants node descriptor name.
-     */
-    private static final String PARTICIPANTS = "participants";
 
 
     /**
@@ -113,22 +68,6 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      */
     public ActItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-
-        NodeDescriptor participants = getDescriptor(PARTICIPANTS);
-
-        for (String shortName : participants.getArchetypeRange()) {
-            if (shortName.equals(PATIENT_SHORTNAME)) {
-                addPatientEditor(act);
-            } else if (shortName.equals(PRODUCT_SHORTNAME)) {
-                addProductEditor(act);
-            } else if (!shortName.equals(AUTHOR_SHORTNAME)) {
-                Participation participant = getParticipation(shortName, act);
-                addEditor(participant, act);
-            }
-        }
-        if (_patientEditor != null && _productEditor != null) {
-            _productEditor.setPatient(_patientEditor.getEntity());
-        }
     }
 
     /**
@@ -138,7 +77,13 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      *         no product
      */
     public IMObjectReference getProduct() {
-        return (IMObjectReference) _productEditor.getEntity().getValue();
+        Editor product = getEditor("product");
+        if (product instanceof ProductParticipationEditor) {
+            ProductParticipationEditor editor
+                    = (ProductParticipationEditor) product;
+            return (IMObjectReference) editor.getEntity().getValue();
+        }
+        return null;
     }
 
     /**
@@ -147,8 +92,11 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @param product a reference to the product.
      */
     public void setProduct(IMObjectReference product) {
-        Property entity = _productEditor.getEntity();
-        entity.setValue(product);
+        ProductParticipationEditor editor = getProductEditor();
+        if (editor != null) {
+            Property entity = editor.getEntity();
+            entity.setValue(product);
+        }
     }
 
     /**
@@ -175,6 +123,32 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      */
     protected ProductPrice getPrice(String shortName, Product product) {
         return IMObjectHelper.getObject(shortName, product.getProductPrices());
+    }
+
+    /**
+     * Returns the product editor.
+     *
+     * @return the product editor, or <code>null</code> if none exists
+     */
+    protected ProductParticipationEditor getProductEditor() {
+        Editor product = getEditor("product");
+        if (product instanceof ProductParticipationEditor) {
+            return (ProductParticipationEditor) product;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the patient editor.
+     *
+     * @return the patient editor, or <code>null</code>  if none exists
+     */
+    protected PatientParticipationEditor getPatientEditor() {
+        Editor product = getEditor("patient");
+        if (product instanceof PatientParticipationEditor) {
+            return (PatientParticipationEditor) product;
+        }
+        return null;
     }
 
     /**
@@ -207,81 +181,22 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Add a patient editor.
-     *
-     * @param act the act
+     * Invoked when layout has completed.
      */
-    private void addPatientEditor(Act act) {
-        Participation participant = getParticipation(PATIENT_SHORTNAME, act);
-        final PatientParticipationEditor editor
-                = PatientParticipationEditor.create(
-                participant, act, getLayoutContext());
-        getModifiableSet().add(editor);
-        _patientEditor = editor;
-        _participants.add(editor);
-    }
-
-    /**
-     * Add a product editor.
-     *
-     * @param act the act
-     */
-    private void addProductEditor(Act act) {
-        final Participation participant
-                = getParticipation(PRODUCT_SHORTNAME, act);
-        if (participant.isNew()) {
-            productModified(participant);
+    protected void onLayoutCompleted() {
+        final ProductParticipationEditor product = getProductEditor();
+        PatientParticipationEditor patient = getPatientEditor();
+        if (product != null) {
+            final Participation participant = product.getParticipation();
+            product.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    productModified(participant);
+                }
+            });
         }
-        final ProductParticipationEditor editor
-                = ProductParticipationEditor.create(
-                participant, act, getLayoutContext());
-        getModifiableSet().add(editor);
-        _participants.add(editor);
-        _productEditor = editor;
-
-        editor.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                productModified(participant);
-            }
-        });
-    }
-
-    /**
-     * Add an editor for a participant.
-     *
-     * @param participant the participant
-     * @param act         the parent act
-     * @return the editor
-     */
-    private IMObjectEditor addEditor(Participation participant, Act act) {
-        final AbstractParticipationEditor editor
-                = new DefaultParticipationEditor(
-                participant, act, getLayoutContext());
-        getModifiableSet().add(editor);
-        _participants.add(editor);
-        return editor;
-    }
-
-    /**
-     * Returns a participation instance for the supplied shortname, creating one
-     * if needed.
-     *
-     * @param shortName the partcipant short name
-     * @param act       the act
-     * @return a participation from the act, or a new participation if none is
-     *         present
-     */
-    private Participation getParticipation(String shortName, Act act) {
-        Participation participant = IMObjectHelper.getObject(
-                shortName, act.getParticipations());
-        if (participant == null) {
-            participant = (Participation) IMObjectCreator.create(
-                    shortName);
-            CollectionProperty participants
-                    = (CollectionProperty) getProperty(PARTICIPANTS);
-            participants.add(participant);
+        if (product != null && patient != null) {
+            product.setPatient(patient.getEntity());
         }
-        return participant;
     }
 
     /**
@@ -290,44 +205,22 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     private class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
-         * Lays out child components in a 2x2 grid.
+         * Apply the layout strategy.
+         * <p/>
+         * This renders an object in a <code>Component</code>, using a factory
+         * to create the child components.
          *
-         * @param object      the parent object
-         * @param descriptors the property descriptors
-         * @param properties  the properties
-         * @param container   the container to use
-         * @param context     the layout context
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param context    the layout context
+         * @return the component containing the rendered <code>object</code>
          */
         @Override
-        protected void doSimpleLayout(IMObject object,
-                                      List<NodeDescriptor> descriptors,
-                                      PropertySet properties,
-                                      Component container,
-                                      LayoutContext context) {
-            Grid grid = GridFactory.create(4);
-            for (AbstractParticipationEditor editor : _participants) {
-                add(grid, editor.getEntity(), editor.getComponent(),
-                    context);
-            }
-            doGridLayout(object, descriptors, properties, grid, context);
-            container.add(grid);
-        }
-
-        /**
-         * Returns a node filter to filter nodes. This implementation filters
-         * the "participants" node.
-         *
-         * @param context the context
-         * @return a node filter to filter nodes
-         */
-        @Override
-        protected NodeFilter getNodeFilter(LayoutContext context) {
-            NodeFilter filter = new NamedNodeFilter(PARTICIPANTS);
-            ChainedNodeFilter chain = getNodeFilter(context, filter);
-            if (_filter != null) {
-                chain.add(_filter);
-            }
-            return chain;
+        public Component apply(IMObject object, PropertySet properties,
+                               LayoutContext context) {
+            Component component = super.apply(object, properties, context);
+            onLayoutCompleted();
+            return component;
         }
 
         /**

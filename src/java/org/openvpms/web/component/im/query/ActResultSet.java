@@ -69,7 +69,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     /**
      * The entity participations criteria.
      */
-    private final CollectionNodeConstraint _participations;
+    private final CollectionNodeConstraint _participation;
 
     /**
      * The logger.
@@ -81,6 +81,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      * Construct a new <code>ActResultSet</code>.
      *
      * @param entityId      the id of the entity to search for
+     * @param participant   the participant node name
      * @param participation the participation short name
      * @param archetypes    the act archetype constraint
      * @param from          the act start-from date. May be <code>null</code>
@@ -90,17 +91,19 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      * @param sort          the sort criteria. May be <code>null</code>
      */
     public ActResultSet(IMObjectReference entityId,
+                        String participant,
                         String participation,
                         BaseArchetypeConstraint archetypes, Date from, Date to,
                         String[] statuses, int rows, SortConstraint[] sort) {
-        this(entityId, participation, archetypes, from, to, statuses, false,
-             rows, sort);
+        this(entityId, participant, participation, archetypes, from, to,
+             statuses, false, rows, sort);
     }
 
     /**
      * Construct a new <code>ActResultSet</code>.
      *
      * @param entityId      the id of the entity to search for
+     * @param participant   the participant node name
      * @param participation the participation short name
      * @param archetypes    the act archetype constraint
      * @param from          the act start-from date. May be <code>null</code>
@@ -112,6 +115,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      * @param sort          the sort criteria. May be <code>null</code>
      */
     public ActResultSet(IMObjectReference entityId,
+                        String participant,
                         String participation,
                         BaseArchetypeConstraint archetypes, Date from, Date to,
                         String[] statuses, boolean exclude, int rows,
@@ -150,8 +154,8 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             _startTime = null;
         }
 
-        _participations = new CollectionNodeConstraint(
-                "participants", participation, true, true)
+        _participation = new CollectionNodeConstraint(
+                participant, participation, true, true)
                 .add(new ObjectRefNodeConstraint("entity", entityId));
     }
 
@@ -176,7 +180,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             if (_startTime != null) {
                 query.add(_startTime);
             }
-            query.add(_participations);
+            query.add(_participation);
             for (SortConstraint sort : getSortConstraints()) {
                 query.add(sort);
             }

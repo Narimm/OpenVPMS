@@ -59,32 +59,14 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      * @param parent        the parent object
      * @param context       the layout context. May be <code>null</code>
      */
-    protected ProductParticipationEditor(Participation participation,
-                                         Act parent, LayoutContext context) {
+    public ProductParticipationEditor(Participation participation,
+                                      Act parent, LayoutContext context) {
         super(participation, parent, context);
-    }
-
-    /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static ProductParticipationEditor create(
-            IMObject object, IMObject parent, LayoutContext context) {
-        ProductParticipationEditor result = null;
-        if (object instanceof Participation
-            && parent instanceof Act) {
-            Participation participation = (Participation) object;
-            if (IMObjectHelper.isA(participation, "participation.product")) {
-                result = new ProductParticipationEditor(
-                        participation, (Act) parent, context);
-            }
+        if (!IMObjectHelper.isA(participation, "participation.product")) {
+            throw new IllegalArgumentException(
+                    "Invalid participation type:"
+                    + participation.getArchetypeId().getShortName());
         }
-        return result;
     }
 
     /**

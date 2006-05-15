@@ -19,18 +19,20 @@
 package org.openvpms.web.component.edit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
 /**
- * Collection of {@link Modifiable} instances.
+ * Collection of {@link Editor} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ModifiableSet implements Modifiable {
+public class Editors implements Modifiable {
 
     /**
      * Caches the modified status.
@@ -44,34 +46,57 @@ public class ModifiableSet implements Modifiable {
 
 
     /**
-     * The set of modifiable objects.
+     * The set of editors.
      */
-    private final Set<Modifiable> _set = new HashSet<Modifiable>();
+    private final Set<Modifiable> _editors = new HashSet<Modifiable>();
+
+    /**
+     * The set of editors associated with properyies, keyed on property name.
+     */
+    private final Map<String, Editor> _propertyEditors
+            = new HashMap<String, Editor>();
 
 
     /**
-     * Construct a new <code>ModifiableSet</code>.
-     *
-     * @param properties the object's properties
+     * Construct a new <code>Editors</code>.
      */
-    public ModifiableSet(PropertySet properties) {
-        for (Property property : properties.getProperties()) {
-            add(property);
+    public Editors() {
+    }
+
+    /**
+     * Adds an editor.
+     *
+     * @param editor the editor to add
+     */
+    public void add(Editor editor) {
+        if (editor instanceof PropertyEditor) {
+            PropertyEditor p = (PropertyEditor) editor;
+            add(p, p.getProperty());
+        } else {
+            addEditor(editor);
         }
     }
 
     /**
-     * Adds a modifiable object.
+     * Adds an editor, associating it with a property.
      *
-     * @param modifiable the object to add
+     * @param editor the editor to add
+     * @param property the property
      */
-    public void add(Modifiable modifiable) {
-        _set.add(modifiable);
-        modifiable.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                notifyListeners(modifiable);
-            }
-        });
+    public void add(Editor editor, Property property) {
+        addEditor(editor);
+       _propertyEditors.put(property.getDescriptor().getName(), editor);
+    }
+
+    /**
+     * Returns a property editor, given its name.
+     *
+     * @param name the property name
+     * @return the property editor associated with <code>name</code>, or
+     *         <code>null</code> if none exists
+     */
+    public Editor getEditor(String name) {
+        return _propertyEditors.get(name);
     }
 
     /**
@@ -81,7 +106,7 @@ public class ModifiableSet implements Modifiable {
      */
     public List<Saveable> getModifiedSaveable() {
         List<Saveable> result = new ArrayList<Saveable>();
-        for (Modifiable modifiable : _set) {
+        for (Modifiable modifiable : _editors) {
             if ((modifiable instanceof Saveable)
                 && modifiable.isModified()) {
                 result.add((Saveable) modifiable);
@@ -97,7 +122,7 @@ public class ModifiableSet implements Modifiable {
      */
     public boolean isModified() {
         if (!_modified) {
-            for (Modifiable modifiable : _set) {
+            for (Modifiable modifiable : _editors) {
                 if (modifiable.isModified()) {
                     _modified = true;
                     return _modified;
@@ -112,7 +137,7 @@ public class ModifiableSet implements Modifiable {
      */
     public void clearModified() {
         _modified = false;
-        for (Modifiable modifiable : _set) {
+        for (Modifiable modifiable : _editors) {
             modifiable.clearModified();
         }
     }
@@ -152,12 +177,26 @@ public class ModifiableSet implements Modifiable {
      *         <code>false</code>
      */
     public boolean isValid() {
-        for (Modifiable modifiable : _set) {
+        for (Modifiable modifiable : _editors) {
             if (!modifiable.isValid()) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Adds an editor.
+     *
+     * @param editor the editor to add
+     */
+    private void addEditor(Editor editor) {
+        _editors.add(editor);
+        editor.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                notifyListeners(modifiable);
+            }
+        });
     }
 
 }

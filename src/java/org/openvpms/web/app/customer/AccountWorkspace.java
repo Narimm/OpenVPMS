@@ -63,8 +63,8 @@ public class AccountWorkspace extends CustomerActWorkspace {
                                "act.customerAccountRefund"};
         String[] statuses = {"Posted"};
 
-        return new ActQuery(customer, "participation.customer", shortNames,
-                            statuses);
+        return new ActQuery(customer, "customer", "participation.customer",
+                            shortNames, statuses);
     }
 
     /**

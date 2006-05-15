@@ -176,6 +176,27 @@ public class IMObjectProperty implements Property, CollectionProperty {
     }
 
     /**
+     * Returns the minimum cardinality.
+     *
+     * @return the minimum cardinality
+     */
+    public int getMinCardinality() {
+        return _descriptor.getMinCardinality();
+    }
+
+    /**
+     * Returns the maximum cardinality.
+     *
+     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     */
+    public int getMaxCardinality() {
+        if (_descriptor.getMaxCardinality() == NodeDescriptor.UNBOUNDED) {
+            return -1;
+        }
+        return _descriptor.getMaxCardinality();
+    }
+
+    /**
      * Determines if the underlying object has been modified.
      *
      * @return <code>true</code> if this has been modified; otherwise

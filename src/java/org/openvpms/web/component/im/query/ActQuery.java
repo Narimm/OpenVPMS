@@ -70,6 +70,11 @@ public class ActQuery extends AbstractQuery {
     private IMObjectReference _entityId;
 
     /**
+     * The participant short name.
+     */
+    private final String _participant;
+
+    /**
      * The entity participation short name;
      */
     private final String _participation;
@@ -140,33 +145,36 @@ public class ActQuery extends AbstractQuery {
      * Construct a new <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param statusLookups the act status lookups
      */
-    public ActQuery(Entity entity, String participation,
+    public ActQuery(Entity entity, String participant, String participation,
                     String entityName, String conceptName,
                     List<Lookup> statusLookups) {
-        this(entity, participation, entityName, conceptName, statusLookups,
-             null);
+        this(entity, participant, participation, entityName, conceptName,
+             statusLookups, null);
     }
 
     /**
      * Construct a new <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <code>null</code>
      */
-    public ActQuery(Entity entity, String participation, String entityName,
-                    String conceptName, List<Lookup> statusLookups,
-                    String excludeStatus) {
+    public ActQuery(Entity entity, String participant, String participation,
+                    String entityName, String conceptName,
+                    List<Lookup> statusLookups, String excludeStatus) {
         super(null, entityName, conceptName);
         setEntity(entity);
+        _participant = participant;
         _participation = participation;
         _excludeStatus = excludeStatus;
         if (_excludeStatus != null) {
@@ -190,15 +198,17 @@ public class ActQuery extends AbstractQuery {
      * status.
      *
      * @param entity        the entity to search for
+     * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param status        the act status
      */
-    public ActQuery(Entity entity, String participation, String entityName,
-                    String conceptName, String status) {
+    public ActQuery(Entity entity, String participant, String participation,
+                    String entityName, String conceptName, String status) {
         super(null, entityName, conceptName);
         setEntity(entity);
+        _participant = participant;
         _participation = participation;
         _statuses = new String[]{status};
         _statusLookups = null;
@@ -210,15 +220,17 @@ public class ActQuery extends AbstractQuery {
      * Construct a new  <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participant   the partcipant node name
      * @param participation the entity participation short name
      * @param shortNames    the act short names
      * @param statuses      the act statuses to search on. May be
      *                      <code>empty</code>
      */
-    public ActQuery(Entity entity, String participation, String[] shortNames,
-                    String[] statuses) {
+    public ActQuery(Entity entity, String participant, String participation,
+                    String[] shortNames, String[] statuses) {
         super(shortNames);
         setEntity(entity);
+        _participant = participant;
         _participation = participation;
         _statuses = statuses;
         _statusLookups = null;
@@ -280,9 +292,9 @@ public class ActQuery extends AbstractQuery {
             } else {
                 statuses = _statuses;
             }
-            result = new ActResultSet(_entityId, _participation, archetypes,
-                                      startFrom, startTo, statuses, exclude,
-                                      rows, sort);
+            result = new ActResultSet(_entityId, _participant, _participation,
+                                      archetypes, startFrom, startTo, statuses,
+                                      exclude, rows, sort);
         }
         return result;
     }

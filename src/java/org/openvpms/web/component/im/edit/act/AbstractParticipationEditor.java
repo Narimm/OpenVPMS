@@ -68,6 +68,15 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     }
 
     /**
+     * Returns the participation.
+     * 
+     * @return the participation
+     */
+    public Participation getParticipation() {
+        return (Participation) getObject();
+    }
+
+    /**
      * Returns the participation entity property.
      *
      * @return the participation entity property

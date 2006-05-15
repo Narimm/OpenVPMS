@@ -18,27 +18,22 @@
 
 package org.openvpms.web.component.edit;
 
+import nextapp.echo2.app.Component;
+
 
 /**
- * Interface to track the saved status of an object.
+ * Object editor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Saveable {
+public interface Editor extends Modifiable {
 
     /**
-     * Save any edits.
+     * Returns the edit component.
      *
-     * @return <code>true</code> if the save was successful
+     * @return the edit component
      */
-    boolean save();
-
-    /**
-     * Determines if any edits have been saved.
-     *
-     * @return <code>true</code> if edits have been saved.
-     */
-    boolean isSaved();
+    Component getComponent();
 
 }

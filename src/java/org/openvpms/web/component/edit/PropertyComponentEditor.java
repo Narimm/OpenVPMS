@@ -18,27 +18,41 @@
 
 package org.openvpms.web.component.edit;
 
+import nextapp.echo2.app.Component;
+
 
 /**
- * Interface to track the saved status of an object.
+ * Simple property editor, associated with a component.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Saveable {
+public class PropertyComponentEditor extends AbstractPropertyEditor {
 
     /**
-     * Save any edits.
-     *
-     * @return <code>true</code> if the save was successful
+     * The edit component.
      */
-    boolean save();
+    private final Component _component;
+
 
     /**
-     * Determines if any edits have been saved.
+     * Construct a new <code>PropertyComponentEditor</code>.
      *
-     * @return <code>true</code> if edits have been saved.
+     * @param property  the property being edited
+     * @param component the edit component
      */
-    boolean isSaved();
+    public PropertyComponentEditor(Property property, Component component) {
+        super(property);
+        _component = component;
+    }
+
+    /**
+     * Returns the edit component.
+     *
+     * @return the edit component
+     */
+    public Component getComponent() {
+        return _component;
+    }
 
 }

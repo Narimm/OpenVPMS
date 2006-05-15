@@ -62,8 +62,8 @@ public class AccountWorkspace extends SupplierActWorkspace {
                                "act.supplierAccountPayment",
                                "act.supplierAccountRefund"};
         String[] statuses = {"Posted"};
-        return new ActQuery(party, "participation.supplier", shortNames,
-                            statuses);
+        return new ActQuery(party, "supplier", "participation.supplier",
+                            shortNames, statuses);
     }
 
     /**
