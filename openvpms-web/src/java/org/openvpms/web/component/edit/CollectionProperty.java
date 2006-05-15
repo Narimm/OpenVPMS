@@ -49,4 +49,18 @@ public interface CollectionProperty extends Property {
      * @return the collection
      */
     Collection getValues();
+
+    /**
+     * Returns the minimum cardinality.
+     *
+     * @return the minimum cardinality
+     */
+    int getMinCardinality();
+
+    /**
+     * Returns the maximum cardinality.
+     *
+     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     */
+    int getMaxCardinality();
 }

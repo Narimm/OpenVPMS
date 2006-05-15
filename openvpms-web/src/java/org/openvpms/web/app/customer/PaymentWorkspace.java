@@ -68,8 +68,8 @@ public class PaymentWorkspace extends CustomerActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         String[] statuses = {"In Progress", "On Hold"};
-        return new ActQuery(customer, "participation.customer", SHORT_NAMES,
-                            statuses);
+        return new ActQuery(customer, "customer", "participation.customer",
+                            SHORT_NAMES, statuses);
     }
 
     /**

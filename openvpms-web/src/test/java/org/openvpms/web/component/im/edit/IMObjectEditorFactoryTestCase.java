@@ -21,6 +21,8 @@ package org.openvpms.web.component.im.edit;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
+import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
 import org.openvpms.web.component.im.edit.invoice.CustomerInvoiceItemEditor;
@@ -74,14 +76,33 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that a {@link DefaultParticipationEditor} is returned for
-     * <em>participation.*</em>
+     * <em>participation.customer and participation.author</em>
      */
     public void testCreateDefaultParticipationEditor() {
-        String[] shortNames = DescriptorHelper.getShortNames("participation.*");
+        String[] shortNames = {"participation.customer",
+                               "participation.author"};
         for (String shortName : shortNames) {
             checkCreate(shortName, "act.customerEstimationItem",
                         DefaultParticipationEditor.class);
         }
+    }
+
+    /**
+     * Verifies that a {@link PatientParticipationEditor} is returned for
+     * <em>participation.patient</em>
+     */
+    public void testCreatePatientParticipationEditor() {
+            checkCreate("participation.patient", "act.customerEstimationItem",
+                        PatientParticipationEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link ProductParticipationEditor} is returned for
+     * <em>participation.product</em>
+     */
+    public void testCreateProductParticipationEditor() {
+            checkCreate("participation.product", "act.customerEstimationItem",
+                        ProductParticipationEditor.class);
     }
 
     /**

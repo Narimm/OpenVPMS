@@ -60,7 +60,7 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
                 updateTotals();
             }
         });
-        getModifiableSet().add(_editor);
+        getEditors().add(_editor);
     }
 
     /**

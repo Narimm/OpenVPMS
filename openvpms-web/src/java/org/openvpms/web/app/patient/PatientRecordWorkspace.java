@@ -79,8 +79,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
         String[] shortNames = {"act.patientClinicalEpisode"};
         String[] statuses = {};
 
-        return new ActQuery(party, "participation.patient", shortNames,
-                            statuses);
+        return new ActQuery(party, "patient", "participation.patient",
+                            shortNames, statuses);
     }
 
     /**

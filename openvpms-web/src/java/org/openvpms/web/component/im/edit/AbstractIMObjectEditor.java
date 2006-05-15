@@ -34,9 +34,10 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.ModifiableSet;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.edit.Saveable;
@@ -87,9 +88,9 @@ public abstract class AbstractIMObjectEditor
     private IMObjectView _viewer;
 
     /**
-     * The change tracker.
+     * The child editors.
      */
-    private ModifiableSet _modifiable;
+    private Editors _editors = new Editors();
 
     /**
      * The object properties.
@@ -163,9 +164,7 @@ public abstract class AbstractIMObjectEditor
 
         _archetype = DescriptorHelper.getArchetypeDescriptor(object);
         _properties = new PropertySet(object, _archetype);
-        _modifiable = new ModifiableSet(_properties);
-        IMObjectComponentFactory factory
-                = new ComponentFactory(_context, _modifiable);
+        IMObjectComponentFactory factory = new ComponentFactory(_context);
         _context.setComponentFactory(factory);
 
         _layoutFactory = new DefaultLayoutStrategyFactory();
@@ -174,7 +173,7 @@ public abstract class AbstractIMObjectEditor
                 updateDerivedFields(modifiable);
             }
         };
-        _modifiable.addModifiableListener(_derivedFieldRefresher);
+        _editors.addModifiableListener(_derivedFieldRefresher);
     }
 
     /**
@@ -303,14 +302,14 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object has been changed
      */
     public boolean isModified() {
-        return _modifiable.isModified() || getObject().isNew();
+        return _editors.isModified() || getObject().isNew();
     }
 
     /**
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        _modifiable.clearModified();
+        _editors.clearModified();
     }
 
     /**
@@ -319,7 +318,7 @@ public abstract class AbstractIMObjectEditor
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
-        _modifiable.addModifiableListener(listener);
+        _editors.addModifiableListener(listener);
     }
 
     /**
@@ -328,7 +327,7 @@ public abstract class AbstractIMObjectEditor
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        _modifiable.removeModifiableListener(listener);
+        _editors.removeModifiableListener(listener);
     }
 
     /**
@@ -338,7 +337,7 @@ public abstract class AbstractIMObjectEditor
      *         <code>false</code>
      */
     public boolean isValid() {
-        return _modifiable.isValid();
+        return _editors.isValid();
     }
 
     /**
@@ -423,7 +422,7 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the save was successful
      */
     protected boolean saveChildren() {
-        for (Saveable saveable : _modifiable.getModifiedSaveable()) {
+        for (Saveable saveable : _editors.getModifiedSaveable()) {
             if (!saveable.save()) {
                 return false;
             }
@@ -442,12 +441,12 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Returns the modifiable set.
+     * Returns the child editors.
      *
-     * @return the modifiable set
+     * @return the child editors
      */
-    protected ModifiableSet getModifiableSet() {
-        return _modifiable;
+    protected Editors getEditors() {
+        return _editors;
     }
 
     /**
@@ -548,7 +547,7 @@ public abstract class AbstractIMObjectEditor
 
     protected void updateDerivedFields(Modifiable modified) {
         if (modified instanceof Property) {
-            _modifiable.removeModifiableListener(_derivedFieldRefresher);
+            _editors.removeModifiableListener(_derivedFieldRefresher);
             IArchetypeService service = ServiceHelper.getArchetypeService();
             service.deriveValues(getObject());
 
@@ -558,7 +557,7 @@ public abstract class AbstractIMObjectEditor
                     property.refresh();
                 }
             }
-            _modifiable.addModifiableListener(_derivedFieldRefresher);
+            _editors.addModifiableListener(_derivedFieldRefresher);
         }
     }
 
@@ -609,18 +608,28 @@ public abstract class AbstractIMObjectEditor
         return _properties.get(name);
     }
 
+    /**
+     * Helper to return an editor associated with a property, given the property
+     * name.
+     *
+     * @param name the property name
+     * @return the editor corresponding to <code>name</code> or
+     *         </code>null</code> if none exists
+     */
+    protected Editor getEditor(String name) {
+        return _editors.getEditor(name);
+    }
+
 
     private class ComponentFactory extends NodeEditorFactory {
 
         /**
          * Construct a new <code>ComponentFactory</code>.
          *
-         * @param context    the layout context
-         * @param modifiable the modification tracker
+         * @param context the layout context
          */
-        public ComponentFactory(LayoutContext context,
-                                ModifiableSet modifiable) {
-            super(context, modifiable);
+        public ComponentFactory(LayoutContext context) {
+            super(_editors, context);
         }
 
         /**
@@ -631,17 +640,17 @@ public abstract class AbstractIMObjectEditor
          * @return a component to edit the property
          */
         @Override
-        protected Component getSelectEditor(Property property,
-                                            IMObject context) {
-            Component editor = super.getSelectEditor(property, context);
-            SelectField lookup = (SelectField) editor;
+        protected Editor getSelectEditor(Property property,
+                                         IMObject context) {
+            Editor editor = super.getSelectEditor(property, context);
+            SelectField lookup = (SelectField) editor.getComponent();
             lookup.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     refreshLookups((SelectField) event.getSource());
                 }
             });
             _lookups.add(lookup);
-            return lookup;
+            return editor;
         }
     }
 }

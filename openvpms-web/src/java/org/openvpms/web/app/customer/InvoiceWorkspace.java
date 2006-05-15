@@ -75,8 +75,9 @@ public class InvoiceWorkspace extends CustomerActWorkspace {
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         ILookupService lookup = ServiceHelper.getLookupService();
         List<Lookup> lookups = lookup.get(descriptor);
-        return new ActQuery(customer, "participation.customer", "act",
-                            "customerAccountCharges*", lookups, "Posted");
+        return new ActQuery(customer, "customer", "participation.customer",
+                            "act", "customerAccountCharges*", lookups,
+                            "Posted");
     }
 
     /**

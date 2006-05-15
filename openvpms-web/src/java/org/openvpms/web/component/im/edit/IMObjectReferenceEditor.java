@@ -30,15 +30,16 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -49,12 +50,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectReferenceEditor {
-
-    /**
-     * The reference property.
-     */
-    private Property _property;
+public class IMObjectReferenceEditor extends AbstractPropertyEditor {
 
     /**
      * The selector.
@@ -65,8 +61,8 @@ public class IMObjectReferenceEditor {
     /**
      * Construct a new <code>IMObjectReferenceEditor</code>.
      *
-     * @param property   the reference property
-     * @param context    the layout context
+     * @param property the reference property
+     * @param context  the layout context
      */
     public IMObjectReferenceEditor(Property property, LayoutContext context) {
         this(property, false, context);
@@ -75,14 +71,13 @@ public class IMObjectReferenceEditor {
     /**
      * Construct a new <code>IMObjectReferenceEditor</code>.
      *
-     * @param property   the reference property
-     * @param readOnly   if <code>true</code> the reference cannot be edited
-     * @param context    the layout context
+     * @param property the reference property
+     * @param readOnly if <code>true</code> the reference cannot be edited
+     * @param context  the layout context
      */
     public IMObjectReferenceEditor(Property property, boolean readOnly,
                                    LayoutContext context) {
-        _property = property;
-
+        super(property);
         if (readOnly) {
             _selector = new Selector(Selector.ButtonStyle.HIDE);
         } else {
@@ -97,7 +92,7 @@ public class IMObjectReferenceEditor {
             });
         }
         _selector.setFormat(Selector.Format.NAME);
-        IMObjectReference reference = (IMObjectReference) _property.getValue();
+        IMObjectReference reference = (IMObjectReference) property.getValue();
         if (reference != null) {
             NodeDescriptor descriptor = property.getDescriptor();
             _selector.setObject(getObject(reference, descriptor));
@@ -112,7 +107,7 @@ public class IMObjectReferenceEditor {
     public void setObject(IMObject object) {
         IMObjectReference reference
                 = (object != null) ? new IMObjectReference(object) : null;
-        _property.setValue(reference);
+        getProperty().setValue(reference);
         _selector.setObject(object);
     }
 
@@ -131,16 +126,7 @@ public class IMObjectReferenceEditor {
      * @return the object reference's descriptor
      */
     public NodeDescriptor getDescriptor() {
-        return _property.getDescriptor();
-    }
-
-    /**
-     * Returns the reference property.
-     *
-     * @return the reference property
-     */
-    public Property getProperty() {
-        return _property;
+        return getProperty().getDescriptor();
     }
 
     /**
@@ -181,7 +167,7 @@ public class IMObjectReferenceEditor {
         final Browser browser = new Browser(query);
 
         String title = Messages.get("imobject.select.title",
-                                    _property.getDescriptor().getDisplayName());
+                                    getDescriptor().getDisplayName());
         final BrowserDialog popup = new BrowserDialog(title, browser);
 
         popup.addWindowPaneListener(new WindowPaneListener() {

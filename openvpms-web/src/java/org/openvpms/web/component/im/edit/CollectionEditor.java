@@ -32,6 +32,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.apache.commons.lang.StringUtils;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -41,6 +42,8 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
@@ -55,6 +58,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -71,7 +75,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @version $LastChangedDate$
  * @see IMObjectEditor
  */
-public class CollectionEditor implements Saveable {
+public class CollectionEditor implements PropertyEditor, Saveable {
 
     /**
      * The collection.
@@ -173,6 +177,15 @@ public class CollectionEditor implements Saveable {
                 onComponentChange(event);
             }
         };
+    }
+
+    /**
+     * Returns the property being edited.
+     *
+     * @return the property being edited
+     */
+    public Property getProperty() {
+        return _collection;
     }
 
     /**
@@ -303,7 +316,34 @@ public class CollectionEditor implements Saveable {
      */
     protected void doLayout() {
         _component = ColumnFactory.create(COLUMN_STYLE);
+        NodeDescriptor descriptor = getDescriptor();
+        String[] range = getArchetypeRange();
+        range = DescriptorHelper.getShortNames(range); // expand any wildcards
 
+/*
+        if (_collection.getMinCardinality() == 1
+            && _collection.getMaxCardinality() == 1 && range.length == 1) {
+            // Handles the special case of a collection of a single archetype.
+            // This can be edited in-line.
+            _shortname = range[0];
+            Object[] values = _collection.getValues().toArray();
+            IMObject object;
+            if (values.length > 0) {
+                object = (IMObject) values[0];
+            } else {
+                object = IMObjectCreator.create(_shortname);
+                if (object != null) {
+                    _collection.add(object);
+                }
+            }
+            if (object != null) {
+                IMObjectComponentFactory factory
+                        = _context.getComponentFactory();
+                Component editor = factory.create(object, _object, descriptor);
+                _component.add(editor);
+            }
+        } else {
+*/
         Button create = ButtonFactory.create("add", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
@@ -330,7 +370,6 @@ public class CollectionEditor implements Saveable {
 
         Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
-        String[] range = getArchetypeRange();
         if (range.length == 1) {
             _shortname = range[0];
         } else if (range.length > 1) {
@@ -391,7 +430,11 @@ public class CollectionEditor implements Saveable {
      * @return the range of archetypes that this may create
      */
     protected String[] getArchetypeRange() {
-        return getDescriptor().getArchetypeRange();
+        NodeDescriptor descriptor = getDescriptor();
+        if (!StringUtils.isEmpty(descriptor.getFilter())) {
+            return new String[]{descriptor.getFilter()};
+        }
+        return descriptor.getArchetypeRange();
     }
 
     /**

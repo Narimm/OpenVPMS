@@ -20,11 +20,10 @@ package org.openvpms.web.component.im.edit;
 
 import java.beans.PropertyChangeListener;
 
-import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.focus.FocusGroup;
 
 
@@ -34,7 +33,7 @@ import org.openvpms.web.component.focus.FocusGroup;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectEditor extends Saveable {
+public interface IMObjectEditor extends Editor, Saveable {
 
     /**
      * Property name for event indicating that the component has changed.
@@ -95,13 +94,6 @@ public interface IMObjectEditor extends Saveable {
      * @return <code>true</code> if editing was cancelled
      */
     boolean isCancelled();
-
-    /**
-     * Returns the rendered object.
-     *
-     * @return the rendered object
-     */
-    Component getComponent();
 
     /**
      * Returns the focus group.

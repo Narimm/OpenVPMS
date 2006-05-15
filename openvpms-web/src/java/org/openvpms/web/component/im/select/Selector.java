@@ -18,9 +18,13 @@
 
 package org.openvpms.web.component.im.select;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.layout.RowLayoutData;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -40,12 +44,18 @@ public class Selector {
     /**
      * Determines the layout of the 'select' button.
      */
-    public enum ButtonStyle {LEFT, RIGHT, HIDE};
+    public enum ButtonStyle {
+        LEFT, RIGHT, HIDE}
+
+    ;
 
     /**
      * Determines how the object is displayed.
      */
-    public enum Format {NAME, DESCRIPTION, SUMMARY};
+    public enum Format {
+        NAME, DESCRIPTION, SUMMARY}
+
+    ;
 
     /**
      * The 'select' button.
@@ -75,7 +85,7 @@ public class Selector {
     /**
      * The component.
      */
-    private Component _component;
+    private Row _component;
 
 
     /**
@@ -170,13 +180,21 @@ public class Selector {
      *
      * @param container the container
      */
-    protected void doLayout(Component container) {
+    protected void doLayout(Row container) {
         container.add(getSummary());
         container.add(getDeactivated());
         if (_buttonStyle == ButtonStyle.LEFT) {
             container.add(getButton(), 0);
         } else if (_buttonStyle == ButtonStyle.RIGHT) {
-            container.add(getButton());
+            Button button = getButton();
+            RowLayoutData layout = new RowLayoutData();
+            Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+            layout.setAlignment(align);
+            layout.setWidth(new Extent(100, Extent.PERCENT));
+            button.setLayoutData(layout);
+            Row wrapper = RowFactory.create(button);
+            wrapper.setLayoutData(layout);
+            container.add(wrapper);
         }
     }
 

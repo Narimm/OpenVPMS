@@ -55,7 +55,7 @@ public class ActHelper {
     public static BigDecimal getCustomerAccountBalance(Party customer) {
         String[] shortNames = {"act.customerAccountCharges*",
                                "act.customerAccountPayment"};
-        return getAccountBalance(customer.getObjectReference(),
+        return getAccountBalance(customer.getObjectReference(), "customer",
                                  "participation.customer", shortNames);
     }
 
@@ -68,7 +68,7 @@ public class ActHelper {
     public static BigDecimal getSupplierAccountBalance(Party supplier) {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment"};
-        return getAccountBalance(supplier.getObjectReference(),
+        return getAccountBalance(supplier.getObjectReference(), "supplier",
                                  "participation.supplier", shortNames);
     }
 
@@ -76,16 +76,18 @@ public class ActHelper {
      * Returns an account balance for any entity.
      *
      * @param entity        the entity
+     * @param participant   the participant node name
      * @param participation the participation short name
      * @param shortNames    the act short names
      */
     public static BigDecimal getAccountBalance(IMObjectReference entity,
+                                               String participant,
                                                String participation,
                                                String[] shortNames) {
         String[] statuses = {"Posted"};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
-        ActResultSet set = new ActResultSet(entity, participation,
+        ActResultSet set = new ActResultSet(entity, participant,  participation,
                                             archetypes, null, null, statuses,
                                             50, null);
         BigDecimal balance = BigDecimal.ZERO;
