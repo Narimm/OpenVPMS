@@ -27,10 +27,10 @@
             derivedValue="' '" />
         <node name="patient" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.patient" hidden="true"/>
+              filter="participation.patient"/>
         <node name="product" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.product" hidden="true"/>
+              filter="participation.product"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
