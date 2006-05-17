@@ -34,10 +34,11 @@ import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -164,7 +165,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      */
     protected void onSelect() {
         Query query = createQuery();
-        final Browser browser = new Browser(query);
+        final Browser browser = new TableBrowser(query);
 
         String title = Messages.get("imobject.select.title",
                                     getDescriptor().getDisplayName());

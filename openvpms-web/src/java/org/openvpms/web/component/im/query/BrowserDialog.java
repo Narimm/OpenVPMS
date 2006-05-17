@@ -26,7 +26,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
 
 
 /**
- * Displays an {@link Browser} in a popup dialog.
+ * Displays an {@link TableBrowser} in a popup dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$

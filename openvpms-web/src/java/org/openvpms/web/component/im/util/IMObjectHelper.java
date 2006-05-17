@@ -156,6 +156,42 @@ public class IMObjectHelper {
     }
 
     /**
+     * Returns a string value from an object, given the value's node descriptor
+     * name.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @return the value corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static String getString(IMObject object, String node) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object);
+        return getString(object, archetype, node);
+    }
+
+    /**
+     * Returns a string value from an object, given the value's node descriptor
+     * name.
+     *
+     * @param object    the object
+     * @param archetype the archetype descriptor
+     * @param node      the node name
+     * @return the value corresponding to <code>node</code>. May be
+     *         <code>null</code>
+     */
+    public static String getString(IMObject object,
+                                       ArchetypeDescriptor archetype,
+                                       String node) {
+        String result = null;
+        Object value = getValue(object, archetype, node);
+        if (value != null) {
+            result = value.toString();
+        }
+        return result;
+    }
+
+    /**
      * Returns a numeric value from an object, given the value's node descriptor
      * name.
      *

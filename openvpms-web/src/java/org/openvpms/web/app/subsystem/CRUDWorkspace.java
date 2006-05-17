@@ -23,8 +23,8 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.resource.util.Messages;
 

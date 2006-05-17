@@ -163,14 +163,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 Property property = properties.get(nodeDesc);
                 Component child = createComponent(property, object, context);
 
-                DefaultTabModel.TabButton button
-                        = model.new TabButton(nodeDesc.getDisplayName(), null);
-                button.setFocusTraversalParticipant(false);
                 // @todo - button doesn't respond to keypress, so don't focus
                 // on it.
-
                 Component inset = ColumnFactory.create("Inset", child);
-                model.insertTab(model.size(), button, inset);
+                model.addTab(nodeDesc.getDisplayName(), inset);
                 setTabIndex(child);
             }
             TabbedPane pane = new TabbedPane();
