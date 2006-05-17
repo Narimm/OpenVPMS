@@ -318,32 +318,8 @@ public class CollectionEditor implements PropertyEditor, Saveable {
         _component = ColumnFactory.create(COLUMN_STYLE);
         NodeDescriptor descriptor = getDescriptor();
         String[] range = getArchetypeRange();
-        range = DescriptorHelper.getShortNames(range); // expand any wildcards
+        range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
 
-/*
-        if (_collection.getMinCardinality() == 1
-            && _collection.getMaxCardinality() == 1 && range.length == 1) {
-            // Handles the special case of a collection of a single archetype.
-            // This can be edited in-line.
-            _shortname = range[0];
-            Object[] values = _collection.getValues().toArray();
-            IMObject object;
-            if (values.length > 0) {
-                object = (IMObject) values[0];
-            } else {
-                object = IMObjectCreator.create(_shortname);
-                if (object != null) {
-                    _collection.add(object);
-                }
-            }
-            if (object != null) {
-                IMObjectComponentFactory factory
-                        = _context.getComponentFactory();
-                Component editor = factory.create(object, _object, descriptor);
-                _component.add(editor);
-            }
-        } else {
-*/
         Button create = ButtonFactory.create("add", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();

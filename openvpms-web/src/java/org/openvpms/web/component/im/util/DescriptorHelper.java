@@ -18,9 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,7 +86,7 @@ public final class DescriptorHelper {
      */
     public static ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
         return getArchetypeDescriptor(object,
-                                      ServiceHelper.getArchetypeService());
+                ServiceHelper.getArchetypeService());
     }
 
     /**
@@ -121,9 +119,9 @@ public final class DescriptorHelper {
 
         if (_log.isDebugEnabled()) {
             _log.debug("Returning archetypeDescriptor="
-                       + (descriptor == null ? null : descriptor.getName())
-                       + " for archId=" + archId
-                       + " and object=" + object.getClass().getName());
+                    + (descriptor == null ? null : descriptor.getName())
+                    + " for archId=" + archId
+                    + " and object=" + object.getClass().getName());
         }
 
         return descriptor;
@@ -157,7 +155,7 @@ public final class DescriptorHelper {
         List<String> names = Collections.emptyList();
         try {
             names = service.getArchetypeShortNames(refModelName,
-                                                   entityName, conceptName, true);
+                    entityName, conceptName, true);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -181,21 +179,23 @@ public final class DescriptorHelper {
      * @return a list of short names matching the criteria
      */
     public static String[] getShortNames(String[] shortNames) {
+        return getShortNames(shortNames, true);
+    }
+
+    /**
+     * Returns archetype short names matching the specified criteria.
+     *
+     * @param shortNames  the shortNames. May contain wildcards
+     * @param primaryOnly if <code>true</code> only include primary archetypes
+     * @return a list of short names matching the criteria
+     */
+    public static String[] getShortNames(String[] shortNames, boolean primaryOnly) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<String> result = new ArrayList<String>();
+        Set<String> result = new HashSet<String>();
         try {
-            // @todo workaround of OVPMS-262
-            List<ArchetypeDescriptor> archetypes
-                    = service.getArchetypeDescriptors();
             for (String shortName : shortNames) {
-                shortName = shortName.replace(".", "\\.").replace("*", ".*");
-                for (ArchetypeDescriptor archetype : archetypes) {
-                    String name = archetype.getShortName();
-                    if (archetype.isPrimary()
-                        && name.matches(shortName) && !result.contains(name)) {
-                        result.add(name);
-                    }
-                }
+                List<String> matches = service.getArchetypeShortNames(shortName, primaryOnly);
+                result.addAll(matches);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -320,8 +320,7 @@ public final class DescriptorHelper {
         NamedProperty property
                 = getArchetypeProperty(descriptor, shortName, "maxCardinality");
         if (property != null) {
-            if (NodeDescriptor.UNBOUNDED_AS_STRING.equals(property.getValue()))
-            {
+            if (NodeDescriptor.UNBOUNDED_AS_STRING.equals(property.getValue())) {
                 result = NodeDescriptor.UNBOUNDED;
             } else {
                 result = Integer.parseInt(property.getValue().toString());
