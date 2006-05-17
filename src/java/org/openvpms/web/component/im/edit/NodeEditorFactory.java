@@ -254,7 +254,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                     range = DescriptorHelper.getShortNames(filter);
                 } else {
                     range = DescriptorHelper.getShortNames(
-                            descriptor.getArchetypeRange());
+                            descriptor.getArchetypeRange(), false);
                 }
                 if (range.length == 1) {
                     Object[] values = property.getValues().toArray();
