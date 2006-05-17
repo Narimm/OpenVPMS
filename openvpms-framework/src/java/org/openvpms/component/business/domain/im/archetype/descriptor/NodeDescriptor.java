@@ -857,6 +857,31 @@ public class NodeDescriptor extends Descriptor {
         
         return value;
     }
+    
+    /**
+     * This will return the value of this node given the specified {@link Context}.
+     * 
+     * @param context
+     *            the context to use
+     * @return Object
+     *            the returned object           
+     */
+    public Object getValue(JXPathContext context) {
+        Object value = null;
+        if (context != null) {
+            if (isDerived()) {
+                value = context.getValue(getDerivedValue());
+            } else {
+                if (isCollection()) {
+                    value = getChildren((IMObject)context.getContextBean());
+                } else {
+                    value = context.getValue(getPath());
+                }
+            }
+        }
+        
+        return value;
+    }
 
     /**
      * Check whether this node is a boolean type.

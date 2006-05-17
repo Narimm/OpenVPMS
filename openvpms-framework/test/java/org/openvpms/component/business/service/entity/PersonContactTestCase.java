@@ -22,10 +22,12 @@ package org.openvpms.component.business.service.entity;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.ValidationException;
 
 /**
  * Test the entity service
@@ -70,7 +72,7 @@ public class PersonContactTestCase extends
      */
     public void testValidPersonContactCreation() 
     throws Exception {
-        Party person = createPerson("Mr", "John", "Dillon");
+        Party person = createPerson("person.person", "Mr", "John", "Dillon");
         Contact contact = createLocationContact();
         person.addContact(contact);
         service.save(person);
@@ -87,8 +89,8 @@ public class PersonContactTestCase extends
      */
     public void testContactRelationship()
     throws Exception {
-        Party person1 = createPerson("Mr", "John", "Dimantaris");
-        Party person2 = createPerson("Ms", "Jenny", "Love");
+        Party person1 = createPerson("person.person", "Mr", "John", "Dimantaris");
+        Party person2 = createPerson("person.person", "Ms", "Jenny", "Love");
         
         Contact contact1 = createLocationContact();
         Contact contact2 = createLocationContact();
@@ -134,7 +136,7 @@ public class PersonContactTestCase extends
      */
     public void testContactLifecycle() 
     throws Exception {
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("person.person", "Mr", "Jim", "Alateras");
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
@@ -156,7 +158,33 @@ public class PersonContactTestCase extends
         assertTrue(person.getContacts().size() == 2);
     }
     
-    
+    /**
+     * Test for OBF-49
+     */
+    public void testOBF049()
+    throws Exception {
+        Party person = (Party)createPerson("person.obf49", "Mr", "Jim", "Alateras");
+        try {
+            service.validateObject(person);
+            fail("This should not have validated");
+        } catch (ValidationException exception) {
+            // ingore
+        }
+        
+        // add classification
+        person.addClassification(createClassification("classification.staff"));
+        person.addClassification(createClassification("classification.patient"));
+        service.validateObject(person);
+        
+        // add another classification
+        try {
+            person.addClassification(createClassification("classification.patient"));
+            service.validateObject(person);
+            fail("This should not have validated");
+        } catch (ValidationException exception) {
+            // ingore
+        }
+    }
     
     /**
      * Create a valid location contact
@@ -177,6 +205,8 @@ public class PersonContactTestCase extends
     /**
      * Create a person
      * 
+     * @param shortName
+     *            the type   
      * @param title
      *            the person's title
      * @param firstName
@@ -185,8 +215,8 @@ public class PersonContactTestCase extends
      *            the person's last name            
      * @return Person                  
      */
-    public Party createPerson(String title, String firstName, String lastName) {
-        Party person = (Party)service.create("person.person");
+    private Party createPerson(String shortName, String title, String firstName, String lastName) {
+        Party person = (Party)service.create(shortName);
         person.getDetails().setAttribute("lastName", lastName);
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
@@ -202,6 +232,17 @@ public class PersonContactTestCase extends
         super.onSetUp();
         
         this.service = (ArchetypeService)applicationContext.getBean("archetypeService");
+    }
+    
+    /**
+     * Create a classification of the specified type and name
+     */
+    private Classification createClassification(String shortName) {
+        Classification classification = (Classification)service.create(shortName);
+        classification.setName(shortName);
+        classification.setDescription(shortName);
+        
+        return classification;
     }
 
 }
