@@ -35,6 +35,7 @@
 	<goal name="data:load" description="Load the Archetyped Data Using STAX">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+	    <attainGoal name="test:test-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
 	        failonerror="true"
@@ -52,6 +53,7 @@
 	<goal name="archetype:load" description="Load the Archetypes from a directory">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+	    <attainGoal name="test:test-resources"/>
 		<ant:java
         	classname="org.openvpms.tools.archetype.loader.ArchetypeLoader"
 	        failonerror="true"

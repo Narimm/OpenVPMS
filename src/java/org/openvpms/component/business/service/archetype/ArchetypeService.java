@@ -527,7 +527,7 @@ public class ArchetypeService implements IArchetypeService {
             NodeDescriptor node = (NodeDescriptor) iter.next();
             Object value = null;
             try {
-                value = context.getValue(node.getPath());
+                value = node.getValue(context);
             } catch (Exception ignore) {
                 // ignore since context.setLenient doesn't
                 // seem to be working.
@@ -536,10 +536,9 @@ public class ArchetypeService implements IArchetypeService {
             }
 
             // first check whether the value for this node is derived and if it
-            // is then derive the value
+            // is then set the derived value
             if (node.isDerived()) {
                 try {
-                    value = context.getValue(node.getDerivedValue());
                     context.getPointer(node.getPath()).setValue(value);
                 } catch (Exception exception) {
                     value = null;
@@ -797,7 +796,6 @@ public class ArchetypeService implements IArchetypeService {
                         try {
                             defValue = convertValue(defValue, node.getClazz());
                         } catch (Exception exception) {
-logger.error("def clazz:" + defValue.getClass() + " node clazz:" + node.getClazz());                            
                             throw new ArchetypeServiceException(
                                     ArchetypeServiceException.ErrorCode.InvalidDefaultValue,
                                     new Object[]{node.getDefaultValue(), node.getName()},
