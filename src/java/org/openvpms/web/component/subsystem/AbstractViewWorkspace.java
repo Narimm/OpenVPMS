@@ -33,10 +33,11 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -249,7 +250,7 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
         Query query = QueryFactory.create(refModelName, entityName,
                                           conceptName);
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
-        return new Browser(query, sort);
+        return new TableBrowser(query, sort);
     }
 
     /**

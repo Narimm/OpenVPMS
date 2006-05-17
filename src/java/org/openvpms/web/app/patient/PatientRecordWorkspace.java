@@ -26,6 +26,10 @@ import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.TreeBrowser;
+import org.openvpms.web.component.im.tree.ActTreeNodeFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -93,5 +97,16 @@ public class PatientRecordWorkspace extends ActWorkspace {
         if (patient != getObject()) {
             setObject(patient);
         }
+    }
+
+    /**
+     * Creates a new browser to query and display acts.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    @Override
+    protected Browser createBrowser(Query query) {
+        return new TreeBrowser(query, null, new ActTreeNodeFactory());
     }
 }

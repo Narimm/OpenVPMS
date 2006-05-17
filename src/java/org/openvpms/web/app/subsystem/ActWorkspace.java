@@ -29,7 +29,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
@@ -120,7 +122,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void layoutWorkspace(Party party, Component container) {
         _query = createQuery(party);
-        _acts = new Browser(_query, null, createTableModel());
+        _acts = createBrowser(_query);
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
                 selectFirst();
@@ -166,6 +168,16 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return a new query
      */
     protected abstract ActQuery createQuery(Party party);
+
+    /**
+     * Creates a new browser to query and display acts.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    protected Browser createBrowser(Query query) {
+        return new TableBrowser(query, null, createTableModel());
+    }
 
     /**
      * Creates a new table model to display acts.

@@ -39,10 +39,11 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -162,7 +163,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     protected void onSelect(final Entity entity) {
         NodeDescriptor descriptor = entity.getDescriptor();
         Query query = QueryFactory.create(descriptor.getArchetypeRange());
-        final Browser browser = new Browser(query);
+        final Browser browser = new TableBrowser(query);
         String title = Messages.get("imobject.select.title",
                                     descriptor.getDisplayName());
         final BrowserDialog popup = new BrowserDialog(title, browser, true);

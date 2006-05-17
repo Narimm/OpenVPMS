@@ -18,12 +18,11 @@
 
 package org.openvpms.web.component.im.select;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.layout.RowLayoutData;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -47,15 +46,11 @@ public class Selector {
     public enum ButtonStyle {
         LEFT, RIGHT, HIDE}
 
-    ;
-
     /**
      * Determines how the object is displayed.
      */
     public enum Format {
         NAME, DESCRIPTION, SUMMARY}
-
-    ;
 
     /**
      * The 'select' button.
@@ -140,10 +135,10 @@ public class Selector {
                 value = Messages.get("imobject.name", object.getName());
             } else if (_format == Format.DESCRIPTION) {
                 value = Messages.get("imobject.description",
-                                     object.getDescription());
+                        object.getDescription());
             } else if (_format == Format.SUMMARY) {
                 value = Messages.get("imobject.summary", object.getName(),
-                                     object.getDescription());
+                        object.getDescription());
             }
 
             _summary.setText(value);
@@ -181,20 +176,24 @@ public class Selector {
      * @param container the container
      */
     protected void doLayout(Row container) {
-        container.add(getSummary());
-        container.add(getDeactivated());
-        if (_buttonStyle == ButtonStyle.LEFT) {
-            container.add(getButton(), 0);
-        } else if (_buttonStyle == ButtonStyle.RIGHT) {
-            Button button = getButton();
+        if (_buttonStyle == ButtonStyle.RIGHT) {
+            // button on the right. The 'wrapper' forces the summary+deactivated
+            // labels to take up as much space as possible, ensuring that the
+            // button is displayed hard on the right.
+            // Seems more successful than using aligments
+            Row wrapper = RowFactory.create(getSummary(), getDeactivated());
             RowLayoutData layout = new RowLayoutData();
-            Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
-            layout.setAlignment(align);
             layout.setWidth(new Extent(100, Extent.PERCENT));
-            button.setLayoutData(layout);
-            Row wrapper = RowFactory.create(button);
             wrapper.setLayoutData(layout);
+            Button button = getButton();
             container.add(wrapper);
+            container.add(button);
+        } else {
+            container.add(getSummary());
+            container.add(getDeactivated());
+            if (_buttonStyle == ButtonStyle.LEFT) {
+                container.add(getButton(), 0);
+            }
         }
     }
 
