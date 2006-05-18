@@ -61,6 +61,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
         }
         Property entity = getProperty("entity");
         _editor = createObjectReferenceEditor(entity);
+        getEditors().add(_editor, entity);
         Property act = getProperty("act");
         if (act.getValue() == null) {
             act.setValue(new IMObjectReference(parent));
@@ -94,15 +95,6 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
         return new IMObjectReferenceEditor(property, getLayoutContext());
-    }
-
-    /**
-     * Returns the object reference editor.
-     *
-     * @return the object reference editor
-     */
-    protected IMObjectReferenceEditor getObjectReferenceEditor() {
-        return _editor;
     }
 
     /**
