@@ -47,7 +47,7 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context the layout context.
      */
     public ReadOnlyComponentFactory(LayoutContext context) {
-        super(context);
+        super(context, new DefaultLayoutStrategyFactory());
     }
 
     /**

@@ -18,19 +18,18 @@
 
 package org.openvpms.web.component.im.view;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
-
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -48,7 +47,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * @param context the layout context.
      */
     public TableComponentFactory(LayoutContext context) {
-        super(context);
+        super(context, new TableLayoutStrategyFactory());
     }
 
     /**
@@ -73,7 +72,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
         label.setText(value);
         TableLayoutData layout = new TableLayoutData();
         Alignment right = new Alignment(Alignment.RIGHT,
-                                        Alignment.DEFAULT);
+                Alignment.DEFAULT);
         layout.setAlignment(right);
         label.setLayoutData(layout);
         return label;
@@ -109,7 +108,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
         }
         if (value != null) {
             return NumberFormatter.format(value, property.getDescriptor(),
-                                          false);
+                    false);
         }
         return null;
     }

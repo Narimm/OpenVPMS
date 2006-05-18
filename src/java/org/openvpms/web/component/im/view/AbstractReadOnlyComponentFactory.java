@@ -20,13 +20,15 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -39,14 +41,22 @@ import org.openvpms.web.component.util.LabelFactory;
 public abstract class AbstractReadOnlyComponentFactory
         extends AbstractIMObjectComponentFactory {
 
+    /**
+     * The layout strategy factory.
+     */
+    private final IMObjectLayoutStrategyFactory _strategies;
+
 
     /**
      * Construct a new <code>AbstractReadOnlyComponentFactory</code>.
      *
-     * @param context the layout context.
+     * @param context    the layout context
+     * @param strategies the layout strategy factory
      */
-    public AbstractReadOnlyComponentFactory(LayoutContext context) {
+    public AbstractReadOnlyComponentFactory(
+            LayoutContext context, IMObjectLayoutStrategyFactory strategies) {
         super(context);
+        _strategies = strategies;
     }
 
     /**
@@ -98,7 +108,9 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     public Component create(IMObject object, IMObject context,
                             NodeDescriptor descriptor) {
-        IMObjectViewer viewer = new IMObjectViewer(object);
+        IMObjectLayoutStrategy strategy = _strategies.create(object);
+        IMObjectViewer viewer
+                = new IMObjectViewer(object, strategy, getLayoutContext());
         return viewer.getComponent();
     }
 
@@ -160,7 +172,29 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     protected Component getCollectionViewer(CollectionProperty property,
                                             IMObject parent) {
-        return new CollectionViewer(property, parent);
+        Component result = null;
+        if (property.getMinCardinality() == 1
+                && property.getMaxCardinality() == 1) {
+            // handle the special case of a collection of one element.
+            // This can be viewed inline
+            NodeDescriptor descriptor = property.getDescriptor();
+            String[] shortNames = DescriptorHelper.getShortNames(descriptor);
+            if (shortNames.length == 1) {
+                Object[] values = property.getValues().toArray();
+                IMObject value;
+                if (values.length > 0) {
+                    value = (IMObject) values[0];
+                    result = create(value, parent, descriptor);
+                } else {
+                    // nothing to display, so return an empty label
+                    result = LabelFactory.create();
+                }
+            }
+        }
+        if (result == null) {
+            result = new CollectionViewer(property, parent);
+        }
+        return result;
     }
 
 }

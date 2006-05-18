@@ -18,28 +18,17 @@
 
 package org.openvpms.web.component.im.layout;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import echopointng.DateField;
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.*;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.StringUtils;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusSet;
@@ -52,6 +41,10 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -111,14 +104,14 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      */
     protected void doLayout(IMObject object, PropertySet properties,
                             Component container, LayoutContext context) {
-        ArchetypeDescriptor descriptor
+        ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(object);
-        List<NodeDescriptor> simple;
-        List<NodeDescriptor> complex;
+        List<NodeDescriptor> simple = getSimpleNodes(archetype);
+        List<NodeDescriptor> complex = getComplexNodes(archetype);
 
         NodeFilter filter = getNodeFilter(context);
-        simple = filter(object, descriptor.getSimpleNodeDescriptors(), filter);
-        complex = filter(object, descriptor.getComplexNodeDescriptors(), filter);
+        simple = filter(object, simple, filter);
+        complex = filter(object, complex, filter);
 
         doSimpleLayout(object, simple, properties, container, context);
         doComplexLayout(object, complex, properties, container, context);
@@ -174,6 +167,30 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             pane.setSelectedIndex(0);
             container.add(pane);
         }
+    }
+
+    /**
+     * Returns the 'simple' nodes.
+     *
+     * @param archetype the archetype
+     * @return the simple nodes
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor#getSimpleNodeDescriptors()
+     */
+    protected List<NodeDescriptor> getSimpleNodes(
+            ArchetypeDescriptor archetype) {
+        return archetype.getSimpleNodeDescriptors();
+    }
+
+    /**
+     * Returns the 'complex' nodes.
+     *
+     * @param archetype the archetype
+     * @return the complex nodes
+     * @see org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor#getComplexNodeDescriptors()
+     */
+    protected List<NodeDescriptor> getComplexNodes(
+            ArchetypeDescriptor archetype) {
+        return archetype.getComplexNodeDescriptors();
     }
 
     /**
@@ -291,7 +308,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void add(Component container, Property property,
                        Component component, LayoutContext context) {
         add(container, property.getDescriptor().getDisplayName(), component,
-            context);
+                context);
         addFocusable(property, component);
     }
 
@@ -330,9 +347,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                     try {
                         Object value = property.getValue();
                         if (required && (value == null
-                                         || (value instanceof String
-                                             && StringUtils.isEmpty((String) value))))
-                        {
+                                || (value instanceof String
+                                && StringUtils.isEmpty((String) value)))) {
                             // null field. Set focus on it in preference to
                             // others
                             focusable = child;
@@ -342,7 +358,8 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                 focusable = child;
                             }
                         }
-                    } catch (DescriptorException ignore) {
+                    } catch (OpenVPMSException ignore) {
+                        // no-op
                     }
                 }
             }
@@ -392,7 +409,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         Component result = null;
         if (isFocusable(component)) {
             if (component.isEnabled()
-                && component.isFocusTraversalParticipant()) {
+                    && component.isFocusTraversalParticipant()) {
                 if (component instanceof DateField) {
                     result = ((DateField) component).getTextField();
                 } else {
