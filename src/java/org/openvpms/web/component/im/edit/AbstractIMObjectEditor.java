@@ -313,7 +313,7 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Add a listener to be notified when a this changes.
+     * Adds a listener to be notified when this changes.
      *
      * @param listener the listener to add
      */
@@ -322,7 +322,7 @@ public abstract class AbstractIMObjectEditor
     }
 
     /**
-     * Remove a listener.
+     * Removes a listener.
      *
      * @param listener the listener to remove
      */

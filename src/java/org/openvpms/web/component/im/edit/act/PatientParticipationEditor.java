@@ -46,17 +46,17 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
      * @param context       the layout context. May be <code>null</code>
      */
     public PatientParticipationEditor(Participation participation,
-                                         Act parent,
-                                         LayoutContext context) {
+                                      Act parent,
+                                      LayoutContext context) {
         super(participation, parent, context);
         if (!IMObjectHelper.isA(participation, "participation.patient")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
-                    + participation.getArchetypeId().getShortName());
+                            + participation.getArchetypeId().getShortName());
         }
         if (participation.isNew() && participation.getEntity() == null) {
             IMObject patient = Context.getInstance().getPatient();
-            getObjectReferenceEditor().setObject(patient);
+            getEntity().setValue(patient);
         }
     }
 
