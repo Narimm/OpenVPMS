@@ -18,28 +18,14 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.text.Format;
-import java.util.List;
-
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.*;
 import nextapp.echo2.app.list.ListModel;
-import org.apache.commons.lang.StringUtils;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.bound.BoundPalette;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.edit.Editors;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertyComponentEditor;
-import org.openvpms.web.component.edit.PropertyEditor;
+import org.openvpms.web.component.edit.*;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
@@ -50,12 +36,11 @@ import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.palette.Palette;
-import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
+import org.openvpms.web.component.util.*;
 import org.openvpms.web.spring.ServiceHelper;
+
+import java.text.Format;
+import java.util.List;
 
 
 /**
@@ -119,7 +104,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 editor = getDateEditor(property);
             } else if (descriptor.isCollection()) {
                 editor = getCollectionEditor((CollectionProperty) property,
-                                             context);
+                        context);
             } else if (descriptor.isObjectReference()) {
                 editor = getObjectReferenceEditor(property);
             }
@@ -160,7 +145,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected IMObjectEditor getObjectEditor(IMObject object,
                                              IMObject context) {
         return IMObjectEditorFactory.create(object, context,
-                                            getLayoutContext());
+                getLayoutContext());
     }
 
     /**
@@ -175,7 +160,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         boolean edit = !descriptor.isReadOnly() || descriptor.isDerived();
         Format format = NumberFormatter.getFormat(descriptor, edit);
         TextField text = TextComponentFactory.create(property, maxColumns,
-                                                     format);
+                format);
         if (!edit) {
             Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
             text.setAlignment(align);
@@ -204,7 +189,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      */
     protected Editor getSelectEditor(Property property, IMObject context) {
         ListModel model = new LookupListModel(context, property.getDescriptor(),
-                                              getLookupService());
+                getLookupService());
         SelectField field = SelectFieldFactory.create(property, model);
         field.setCellRenderer(new LookupListCellRenderer());
         return createPropertyEditor(property, field);
@@ -245,17 +230,10 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.isParentChild()) {
             if (descriptor.getMinCardinality() == 1
-                && descriptor.getMaxCardinality() == 1) {
+                    && descriptor.getMaxCardinality() == 1) {
                 // handle the special case of a collection of one element.
                 // This can be edited inline
-                String filter = descriptor.getFilter();
-                String[] range;
-                if (!StringUtils.isEmpty(filter)) {
-                    range = DescriptorHelper.getShortNames(filter);
-                } else {
-                    range = DescriptorHelper.getShortNames(
-                            descriptor.getArchetypeRange(), false);
-                }
+                String[] range = DescriptorHelper.getShortNames(descriptor);
                 if (range.length == 1) {
                     Object[] values = property.getValues().toArray();
                     IMObject value;
@@ -275,7 +253,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             }
             if (editor == null) {
                 editor = new CollectionEditor(property, object,
-                                              getLayoutContext());
+                        getLayoutContext());
                 _editors.add(editor);
             }
         } else {

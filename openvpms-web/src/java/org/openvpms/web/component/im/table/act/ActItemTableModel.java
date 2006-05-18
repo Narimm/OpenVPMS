@@ -18,29 +18,19 @@
 
 package org.openvpms.web.component.im.table.act;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.LabelFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -91,8 +81,8 @@ public class ActItemTableModel extends DescriptorTableModel {
         } else if (!archetypes.isEmpty()) {
             ArchetypeDescriptor archetype = archetypes.get(0);
             columns = addColumns(new DefaultTableColumnModel(),
-                                 archetype.getAllNodeDescriptors(),
-                                 context);
+                    archetype.getAllNodeDescriptors(),
+                    context);
         } else {
             throw new IllegalArgumentException(
                     "Argument 'shortNames' doesn't refer to a valid archetype");
@@ -131,62 +121,7 @@ public class ActItemTableModel extends DescriptorTableModel {
     }
 
     /**
-     * Returns the value found at the given coordinate within the table.
-     *
-     * @param object the object
-     * @param column
-     * @param row    the table row
-     */
-    @Override
-    protected Object getValue(IMObject object, int column, int row) {
-        Object result = null;
-        TableColumn c = getColumn(column);
-        if (c instanceof ParticipantTableColumn) {
-            ParticipantTableColumn col = (ParticipantTableColumn) c;
-            NodeDescriptor descriptor = col.getDescriptor();
-            IMObject child = getByShortName(col.getShortName(),
-                                            descriptor.getChildren(object));
-            if (child != null) {
-                ArchetypeDescriptor archetype
-                        = DescriptorHelper.getArchetypeDescriptor(child);
-                NodeDescriptor entity = archetype.getNodeDescriptor("entity");
-                Property property = new IMObjectProperty(child, entity);
-                result = getFactory().create(property, child);
-            } else {
-                Label label = LabelFactory.create();
-                label.setText("No " + col.getHeaderValue());
-                result = label;
-            }
-        } else {
-            result = super.getValue(object, column, row);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the first object that has a matching short name.
-     *
-     * @param shortName the short name to matches on
-     * @param objects   the objects to search
-     * @return the first object with a short name the same as
-     *         <code>shortName</code> or <code>null</code> if none exists
-     */
-    private IMObject getByShortName(String shortName, List<IMObject> objects) {
-        IMObject result = null;
-        for (IMObject object : objects) {
-            if (IMObjectHelper.isA(object, shortName)) {
-                result = object;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Adds columns to a column model. Any "participant" descriptor is treated
-     * specicially: the participants archetypes referred to by the descriptor
-     * are displayed first (except "participation.author" which is never
-     * displayed).
+     * Adds columns to a column model.
      *
      * @param columns     the column model
      * @param descriptors the column descriptors
@@ -198,33 +133,9 @@ public class ActItemTableModel extends DescriptorTableModel {
             List<NodeDescriptor> descriptors,
             LayoutContext context) {
 
-        NodeDescriptor participants = null;
-        for (NodeDescriptor decscriptor : descriptors) {
-            if (decscriptor.getName().equals("participants")) {
-                participants = decscriptor;
-                break;
-            }
-        }
-        List<NodeDescriptor> nodes;
-        if (participants == null) {
-            nodes = FilterHelper.filter(null, context.getDefaultNodeFilter(),
-                                        descriptors);
-        } else {
-            ChainedNodeFilter filter = new ChainedNodeFilter();
-            filter.add(context.getDefaultNodeFilter());
-            filter.add(new NamedNodeFilter("participants"));
-            nodes = FilterHelper.filter(null, filter, descriptors);
-            String[] range = participants.getArchetypeRange();
-            for (int i = 0; i < range.length; ++i) {
-                String shortName = range[i];
-                if (!shortName.equals("participation.author")) {
-                    TableColumn column = new ParticipantTableColumn(
-                            shortName, participants, NEXT_INDEX + i);
-                    columns.addColumn(column);
-                }
-            }
-        }
-        DescriptorTableModel.create(nodes, columns);
+        descriptors = FilterHelper.filter(null, context.getDefaultNodeFilter(),
+                descriptors);
+        DescriptorTableModel.create(descriptors, columns);
         return columns;
     }
 
@@ -247,62 +158,6 @@ public class ActItemTableModel extends DescriptorTableModel {
             }
         }
         return result;
-    }
-
-
-    /**
-     * Helper to associate a participant short name with a column.
-     */
-    private static class ParticipantTableColumn extends DescriptorTableColumn {
-
-        /**
-         * The participant archetype short name.
-         */
-        private final String _shortName;
-
-        /**
-         * The participant archetype display name.
-         */
-        private final String _displayName;
-
-
-        /**
-         * Creates a <code>ParticipantTableColumn</code> with the specified
-         * model index, undefined width, and undefined cell and header
-         * renderers.
-         *
-         * @param shortName  the participant archetype short name
-         * @param modelIndex the column index of model data visualized by this
-         *                   column
-         */
-        public ParticipantTableColumn(String shortName,
-                                      NodeDescriptor descriptor,
-                                      int modelIndex) {
-            super(modelIndex, descriptor);
-            _shortName = shortName;
-            _displayName = DescriptorHelper.getDisplayName(shortName);
-        }
-
-        /**
-         * Returns the header value for this column.  The header value is the
-         * object that will be provided to the header renderer to produce a
-         * component that will be used as the table header for this column.
-         *
-         * @return the header value for this column
-         */
-        @Override
-        public Object getHeaderValue() {
-            return _displayName;
-        }
-
-        /**
-         * Returns the participant's archetype short name.
-         *
-         * @return the participant's archetype short name
-         */
-        public String getShortName() {
-            return _shortName;
-        }
     }
 
 }

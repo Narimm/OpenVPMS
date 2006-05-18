@@ -16,20 +16,24 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.view;
-
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
-
-
 /**
- * Default implementation of the {@link IMObjectLayoutStrategyFactory}
- * interface.
+ * Add description here.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
+package org.openvpms.web.component.im.view;
+
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
+
+/**
+ * Implementation of the {@link org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory}
+ * for objects displayed in tables.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-04-11 04:09:07Z $
+ */
+public class TableLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
 
     /**
      * Layout strategy implementations.
@@ -44,7 +48,7 @@ public class DefaultLayoutStrategyFactory extends AbstractLayoutStrategyFactory 
     protected ArchetypeHandlers getStrategies() {
         synchronized (getClass()) {
             if (_strategies == null) {
-                _strategies = load("DefaultLayoutStrategyFactory.properties");
+                _strategies = load("TableLayoutStrategyFactory.properties");
             }
         }
         return _strategies;

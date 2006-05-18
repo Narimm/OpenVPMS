@@ -46,7 +46,7 @@ import org.openvpms.web.component.edit.Property;
 
 
 /**
- * Act layout strategy. Hides the items and participants nodes.
+ * Act layout strategy. Hides the items node.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -74,7 +74,6 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     public ActLayoutStrategy(CollectionEditor editor) {
         _editor = editor;
     }
-
 
     /**
      * Lays out each child component in a group box
@@ -125,14 +124,14 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
      * Returns a node filter to filter nodes. This implementation filters the
-     * "items" and "participants" nodes.
+     * "items" node.
      *
      * @param context the context
      * @return a node filter to filter nodes
      */
     @Override
     protected NodeFilter getNodeFilter(LayoutContext context) {
-        NodeFilter filter = new NamedNodeFilter("items", "participants");
+        NodeFilter filter = new NamedNodeFilter("items");
         return getNodeFilter(context, filter);
     }
 

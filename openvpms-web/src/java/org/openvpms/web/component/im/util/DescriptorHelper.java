@@ -18,11 +18,9 @@
 
 package org.openvpms.web.component.im.util;
 
-import java.util.*;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
@@ -36,6 +34,8 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.*;
 
 
 /**
@@ -141,6 +141,26 @@ public final class DescriptorHelper {
     }
 
     /**
+     * Returns archetype short names from a descriptor.
+     * This expands any wildcards. If the {@link NodeDescriptor#getFilter} is non-null, matching shortnames are
+     * returned, otherwise matching short names from {@link NodeDescriptor#getArchetypeRange()} are returned.
+     *
+     * @param descriptor the node descriptor
+     * @return a list of short names
+     */
+    public static String[] getShortNames(NodeDescriptor descriptor) {
+        String filter = descriptor.getFilter();
+        String[] names;
+        if (!StringUtils.isEmpty(filter)) {
+            names = DescriptorHelper.getShortNames(filter, false);
+        } else {
+            names = DescriptorHelper.getShortNames(
+                    descriptor.getArchetypeRange(), false);
+        }
+        return names;
+    }
+
+    /**
      * Returns archetype short names matching the specified criteria.
      *
      * @param refModelName the archetype reference model name
@@ -169,7 +189,18 @@ public final class DescriptorHelper {
      * @return a list of short names matching the criteria
      */
     public static String[] getShortNames(String shortName) {
-        return getShortNames(new String[]{shortName});
+        return getShortNames(new String[]{shortName}, true);
+    }
+
+    /**
+     * Returns archetype short names matching the specified criteria.
+     *
+     * @param shortName   the short name. May contain wildcards
+     * @param primaryOnly if <code>true</code> only include primary archetypes
+     * @return a list of short names matching the criteria
+     */
+    public static String[] getShortNames(String shortName, boolean primaryOnly) {
+        return getShortNames(new String[]{shortName}, primaryOnly);
     }
 
     /**
@@ -320,7 +351,8 @@ public final class DescriptorHelper {
         NamedProperty property
                 = getArchetypeProperty(descriptor, shortName, "maxCardinality");
         if (property != null) {
-            if (NodeDescriptor.UNBOUNDED_AS_STRING.equals(property.getValue())) {
+            if (NodeDescriptor.UNBOUNDED_AS_STRING.equals(property.getValue()))
+            {
                 result = NodeDescriptor.UNBOUNDED;
             } else {
                 result = Integer.parseInt(property.getValue().toString());
@@ -365,9 +397,8 @@ public final class DescriptorHelper {
         if (assertionDesc != null) {
             PropertyList archetypes
                     = (PropertyList) assertionDesc.getProperty("archetypes");
-            NamedProperty[] list = archetypes.getPropertiesAsArray();
-            for (int i = 0; i < list.length; ++i) {
-                PropertyMap archetype = (PropertyMap) list[i];
+            for (NamedProperty prop : archetypes.getPropertiesAsArray()) {
+                PropertyMap archetype = (PropertyMap) prop;
                 NamedProperty name = archetype.getProperties().get("shortName");
                 if (name.getValue().equals(shortName)) {
                     result = archetype;
