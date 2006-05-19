@@ -50,6 +50,9 @@ public abstract class AbstractIMObjectComponentFactory
      * @param context the layout context.
      */
     public AbstractIMObjectComponentFactory(LayoutContext context) {
+        if (context == null) {
+            throw new IllegalArgumentException("Argument 'context' is null");
+        }
         _context = context;
     }
 

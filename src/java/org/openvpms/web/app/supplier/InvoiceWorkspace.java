@@ -30,7 +30,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
@@ -101,6 +101,6 @@ public class InvoiceWorkspace extends SupplierActWorkspace {
      * @return a new table model.
      */
     protected IMObjectTableModel createTableModel() {
-        return new ActTableModel(true, true);
+        return new ActAmountTableModel(true, true);
     }
 }

@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -185,7 +185,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return a new table model.
      */
     protected IMObjectTableModel createTableModel() {
-        return new ActTableModel();
+        return new ActAmountTableModel();
     }
 
     /**

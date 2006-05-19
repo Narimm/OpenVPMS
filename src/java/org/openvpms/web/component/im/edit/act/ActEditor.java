@@ -53,20 +53,22 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
     protected ActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
         CollectionProperty items = (CollectionProperty) getProperty("items");
-        _editor = new ActRelationshipCollectionEditor(items, act,
-                                                      getLayoutContext());
-        _editor.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateTotals();
-            }
-        });
-        getEditors().add(_editor);
+        if (items != null) {
+            _editor = new ActRelationshipCollectionEditor(items, act,
+                    getLayoutContext());
+            _editor.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    updateTotals();
+                }
+            });
+            getEditors().add(_editor);
+        }
     }
 
     /**
      * Returns the act collection editor.
      *
-     * @return the act colleciton editor
+     * @return the act collection editor. May be <code>null</code>
      */
     protected ActRelationshipCollectionEditor getEditor() {
         return _editor;
@@ -85,7 +87,7 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
     /**
      * Update totals when an act item changes.
      *
-     * @todo - workaround for OVPMS-211
+     * todo - workaround for OVPMS-211
      */
     protected abstract void updateTotals();
 

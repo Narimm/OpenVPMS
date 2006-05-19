@@ -46,7 +46,7 @@ public class BoundFormattedField extends TextField {
      * Construct a new <code>BoundFormattedField</code>.
      *
      * @param property the property to bind
-     * @param columns  the no. of columns to display
+     * @param columns  the no. of columns to display.
      * @param format   the formatter
      */
     public BoundFormattedField(Property property, int columns,

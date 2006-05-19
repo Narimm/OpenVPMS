@@ -16,24 +16,20 @@
  *  $Id$
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
-package org.openvpms.web.component.im.view;
+package org.openvpms.web.component.im.view.layout;
 
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
+
 /**
- * Implementation of the {@link org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory}
- * for objects displayed in tables.
+ * Default implementation of the {@link IMObjectLayoutStrategyFactory}
+ * interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-04-11 04:09:07Z $
+ * @version $LastChangedDate$
  */
-public class TableLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
+public class DefaultLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
 
     /**
      * Layout strategy implementations.
@@ -48,7 +44,7 @@ public class TableLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
     protected ArchetypeHandlers getStrategies() {
         synchronized (getClass()) {
             if (_strategies == null) {
-                _strategies = load("TableLayoutStrategyFactory.properties");
+                _strategies = load("DefaultLayoutStrategyFactory.properties");
             }
         }
         return _strategies;

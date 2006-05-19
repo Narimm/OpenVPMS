@@ -316,7 +316,6 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      */
     protected void doLayout() {
         _component = ColumnFactory.create(COLUMN_STYLE);
-        NodeDescriptor descriptor = getDescriptor();
         String[] range = getArchetypeRange();
         range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
 

@@ -18,14 +18,14 @@
 
 package org.openvpms.web.component.edit;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collection;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -58,12 +58,9 @@ public class PropertySet {
      */
     public PropertySet(IMObject object, ArchetypeDescriptor archetype) {
         for (NodeDescriptor descriptor : archetype.getAllNodeDescriptors()) {
-            if (!descriptor.isHidden()) {
-                Property property = new IMObjectProperty(object, descriptor);
-                _properties.put(descriptor.getName(), property);
-            }
+            Property property = new IMObjectProperty(object, descriptor);
+            _properties.put(descriptor.getName(), property);
         }
-
     }
 
     /**

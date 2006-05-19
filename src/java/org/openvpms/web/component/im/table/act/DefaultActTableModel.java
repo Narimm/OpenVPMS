@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -34,21 +36,21 @@ import java.util.List;
 
 
 /**
- * Table model for {@link Act}s of archetype <em>"act.customerEstimationItem"</em>.
+ * Default table model for displaying {@link Act}s.
+ * Any "items" nodes are filtered.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActItemTableModel extends DescriptorTableModel {
+public class DefaultActTableModel extends DescriptorTableModel {
 
     /**
-     * Construct a <code>ActItemTableModel</code>.
+     * Construct a <code>DefaultActTableModel</code>.
      *
      * @param shortNames the act archetype short names
      * @param context    the layout context
      */
-    public ActItemTableModel(String[] shortNames,
-                             LayoutContext context) {
+    public DefaultActTableModel(String[] shortNames, LayoutContext context) {
         super(createColumnModel(shortNames, context), context);
     }
 
@@ -133,8 +135,9 @@ public class ActItemTableModel extends DescriptorTableModel {
             List<NodeDescriptor> descriptors,
             LayoutContext context) {
 
-        descriptors = FilterHelper.filter(null, context.getDefaultNodeFilter(),
-                descriptors);
+        NodeFilter filter = FilterHelper.chain(new NamedNodeFilter("items"),
+                context.getDefaultNodeFilter());
+        descriptors = FilterHelper.filter(null, filter, descriptors);
         DescriptorTableModel.create(descriptors, columns);
         return columns;
     }

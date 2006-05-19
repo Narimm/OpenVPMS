@@ -19,11 +19,12 @@
 package org.openvpms.web.component.im.view;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 
 
 /**
@@ -47,7 +48,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      */
     public IMObjectViewer(IMObject object) {
         this(object, new DefaultLayoutStrategyFactory().create(object),
-             null);
+                null);
     }
 
     /**
@@ -58,7 +59,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      */
     public IMObjectViewer(IMObject object, LayoutContext context) {
         this(object, new DefaultLayoutStrategyFactory().create(object),
-             context);
+                context);
     }
 
     /**
@@ -71,13 +72,14 @@ public class IMObjectViewer extends AbstractIMObjectView {
     public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout,
                           LayoutContext context) {
         super(object, new PropertySet(object), layout);
-        IMObjectComponentFactory factory = new ReadOnlyComponentFactory(context);
         if (context == null) {
-            _context = new DefaultLayoutContext(factory);
+            _context = new DefaultLayoutContext();
         } else {
             _context = new DefaultLayoutContext(context);
-            _context.setComponentFactory(factory);
         }
+        IMObjectComponentFactory factory
+                = new ReadOnlyComponentFactory(_context);
+        _context.setComponentFactory(factory);
     }
 
     /**

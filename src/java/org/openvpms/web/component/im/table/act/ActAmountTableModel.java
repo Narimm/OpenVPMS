@@ -39,12 +39,12 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Table model for {@link Act}s.
+ * Table model for {@link Act}s containing amount fields.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActTableModel extends DefaultIMObjectTableModel {
+public class ActAmountTableModel extends DefaultIMObjectTableModel {
 
     /**
      * Date column index.
@@ -63,20 +63,20 @@ public class ActTableModel extends DefaultIMObjectTableModel {
 
 
     /**
-     * Construct a new <code>ActTableModel</code>.
+     * Construct a new <code>ActAmountTableModel</code>.
      */
-    public ActTableModel() {
+    public ActAmountTableModel() {
         this(true, false);
     }
 
     /**
-     * Construct a new <code>ActTableModel</code>.
+     * Construct a new <code>ActAmountTableModel</code>.
      *
      * @param showStatus determines if the status colunn should be displayed
      * @param showAmount determines if the credit/debit amount should be
      *                   displayed
      */
-    public ActTableModel(boolean showStatus, boolean showAmount) {
+    public ActAmountTableModel(boolean showStatus, boolean showAmount) {
         super(createColumnModel(showStatus, showAmount));
     }
 

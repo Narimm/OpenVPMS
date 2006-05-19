@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -73,7 +73,7 @@ public class AccountWorkspace extends SupplierActWorkspace {
      */
     @Override
     protected IMObjectTableModel createTableModel() {
-        return new ActTableModel(false, true);
+        return new ActAmountTableModel(false, true);
     }
 
 }

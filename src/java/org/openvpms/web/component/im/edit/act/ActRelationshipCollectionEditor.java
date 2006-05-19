@@ -44,7 +44,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActItemTableModel;
+import org.openvpms.web.component.im.table.act.DefaultActTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -170,7 +170,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
     protected IMObjectTableModel createTableModel(LayoutContext context) {
         DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
         readOnly.setComponentFactory(new TableComponentFactory(context));
-        return new ActItemTableModel(getArchetypeRange(), readOnly);
+        return new DefaultActTableModel(getArchetypeRange(), readOnly);
     }
 
     /**

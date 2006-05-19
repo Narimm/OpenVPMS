@@ -173,8 +173,7 @@ public abstract class AbstractReadOnlyComponentFactory
     protected Component getCollectionViewer(CollectionProperty property,
                                             IMObject parent) {
         Component result = null;
-        if (property.getMinCardinality() == 1
-                && property.getMaxCardinality() == 1) {
+        if (property.getMaxCardinality() == 1) {
             // handle the special case of a collection of one element.
             // This can be viewed inline
             NodeDescriptor descriptor = property.getDescriptor();

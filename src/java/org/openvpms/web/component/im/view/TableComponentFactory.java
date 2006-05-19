@@ -24,6 +24,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
