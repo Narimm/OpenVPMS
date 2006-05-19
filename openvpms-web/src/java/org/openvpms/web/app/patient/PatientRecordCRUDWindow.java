@@ -78,6 +78,19 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
     }
 
     /**
+     * Determines if an act can be edited.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act can be edited, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean canEdit(Act act) {
+        // @todo fix when statuses are sorted out
+        return true;
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row

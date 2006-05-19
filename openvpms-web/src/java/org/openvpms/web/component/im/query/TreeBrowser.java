@@ -18,18 +18,17 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import echopointng.Tree;
-import echopointng.tree.DefaultMutableTreeNode;
-import echopointng.tree.MutableTreeNode;
+import echopointng.tree.*;
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.tree.IMObjectTreeNode;
 import org.openvpms.web.component.im.tree.IMObjectTreeNodeFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -72,7 +71,17 @@ public class TreeBrowser extends AbstractBrowser {
      *         selected.
      */
     public IMObject getSelected() {
-        return null;
+        IMObject result = null;
+        if (_tree != null) {
+            TreePath path = _tree.getSelectionPath();
+            if (path != null) {
+                Object last = path.getLastPathComponent();
+                if (last instanceof IMObjectTreeNode) {
+                    result = ((IMObjectTreeNode) last).getObject();
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -97,7 +106,7 @@ public class TreeBrowser extends AbstractBrowser {
      */
     public void query() {
         Component component = getComponent();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
 
         ResultSet<IMObject> set = doQuery();
         while (set.hasNext()) {
@@ -107,11 +116,29 @@ public class TreeBrowser extends AbstractBrowser {
                 root.add(child);
             }
         }
-        if (_tree != null) {
-            component.remove(_tree);
+        if (_tree == null) {
+            _tree = new Tree(root);
+            _tree.setShowsRootHandles(false);
+            _tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            _tree.addTreeSelectionListener(new TreeSelectionListener() {
+                public void valueChanged(TreeSelectionEvent event) {
+                    onSelected();
+                }
+            });
+            component.add(_tree);
+        } else {
+            _tree.setModel(new DefaultTreeModel(root));
         }
-        _tree = new Tree(root);
-        component.add(_tree);
+    }
+
+    /**
+     * Invoked when a node is selected. Notifies any registered listeners.
+     */
+    protected void onSelected() {
+        IMObject selected = getSelected();
+        if (selected != null) {
+            notifySelected(selected);
+        }
     }
 
 }

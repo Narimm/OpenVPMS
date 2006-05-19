@@ -60,6 +60,7 @@ public class TextComponentFactory extends ComponentFactory {
     public static TextField create(int columns) {
         TextField text = create();
         text.setWidth(new Extent(columns, Extent.EX));
+        setDefaultStyle(text);
         return text;
     }
 

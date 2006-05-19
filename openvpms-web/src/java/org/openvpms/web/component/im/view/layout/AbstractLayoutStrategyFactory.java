@@ -22,7 +22,7 @@
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-package org.openvpms.web.component.im.view;
+package org.openvpms.web.component.im.view.layout;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

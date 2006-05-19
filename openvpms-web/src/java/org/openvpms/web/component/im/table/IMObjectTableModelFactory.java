@@ -18,12 +18,16 @@
 
 package org.openvpms.web.component.im.table;
 
-import java.util.List;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.apache.commons.beanutils.ConstructorUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -35,23 +39,92 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 public class IMObjectTableModelFactory {
 
     /**
-     * Create a new {@link IMObjectTableModel} given a node descriptor.
-     *
-     * @param descriptor the node descriptor
-     * @param context    the layout context
-     * @return a new table model
+     * Table model implementations.
      */
-    public static IMObjectTableModel create(NodeDescriptor descriptor,
+    private static ArchetypeHandlers _models;
+
+    /**
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(IMObjectTableModelFactory.class);
+
+    /**
+     * Prevent construction.
+     */
+    private IMObjectTableModelFactory() {
+    }
+
+    /**
+     * Creates a new table model.
+     *
+     * @param collection the collection node descriptor
+     * @param context    the layout context
+     * @return a new tabke model
+     */
+    public static IMObjectTableModel create(NodeDescriptor collection,
                                             LayoutContext context) {
-        DefaultIMObjectTableModel result;
-        List<ArchetypeDescriptor> archetypes;
-        archetypes = DescriptorHelper.getArchetypeDescriptors(
-                descriptor.getArchetypeRange());
-        if (EntityRelationshipTableModel.canHandle(archetypes)) {
-            result = new EntityRelationshipTableModel(context);
-        } else {
+        IMObjectTableModel result = null;
+
+        String[] shortNames = DescriptorHelper.getShortNames(collection);
+        Set<Class> matches = new HashSet<Class>();
+        for (String shortName : shortNames) {
+            Class clazz = getTableModels().getHandler(shortName);
+            if (clazz != null) {
+                matches.add(clazz);
+            }
+        }
+        if (matches.size() == 1) {
+            Class clazz = matches.toArray(new Class[0])[0];
+            result = construct(clazz, shortNames, context);
+        }
+
+        if (result == null) {
             result = new DefaultIMObjectTableModel();
         }
+
         return result;
     }
+
+    /**
+     * Helper to create a new table model.
+     *
+     * @param clazz      the table model implementation
+     * @param shortNames the archetype short names
+     * @param context    the layout context
+     * @return a new table model, or <code>null</code> if there is no valid
+     *         constructor
+     */
+    private static IMObjectTableModel construct(Class clazz,
+                                                String[] shortNames,
+                                                LayoutContext context) {
+        Object[][] methodParams = {{shortNames, context}, {context}, {}};
+
+        for (Object[] params : methodParams) {
+            try {
+                return (IMObjectTableModel) ConstructorUtils.invokeConstructor(
+                        clazz, params);
+            } catch (NoSuchMethodException ignore) {
+                // no-op
+            } catch (Throwable exception) {
+                _log.error(exception, exception);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the table models.
+     *
+     * @return the table models
+     */
+    private static synchronized ArchetypeHandlers getTableModels() {
+        if (_models == null) {
+            _models = new ArchetypeHandlers(
+                    "IMObjectTableModelFactory.properties",
+                    IMObjectTableModel.class);
+        }
+        return _models;
+    }
+
 }

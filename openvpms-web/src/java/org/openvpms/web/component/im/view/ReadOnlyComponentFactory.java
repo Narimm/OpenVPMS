@@ -28,6 +28,7 @@ import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.TextComponentFactory;

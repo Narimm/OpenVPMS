@@ -51,7 +51,7 @@ import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
-import org.openvpms.web.component.im.view.DefaultLayoutStrategyFactory;
+import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.resource.util.Messages;

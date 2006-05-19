@@ -20,11 +20,12 @@ package org.openvpms.web.component.im.tree;
 
 import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.MutableTreeNode;
-
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.util.Set;
 
 
 /**
@@ -42,15 +43,18 @@ public class ActTreeNodeFactory implements IMObjectTreeNodeFactory {
      * @return a new tree node representing <code>object</code>
      */
     public MutableTreeNode create(IMObject object) {
-        String value = IMObjectHelper.getString(object, "description");
-        DefaultMutableTreeNode node
-                = new DefaultMutableTreeNode(value);
+        DefaultMutableTreeNode node = new IMObjectTreeNode(object);
         if (object instanceof Act) {
             Act act = (Act) object;
-            for (ActRelationship source : act.getSourceActRelationships()) {
-                IMObject child = IMObjectHelper.getObject(source.getSource());
-                if (child != null) {
-                    node.add(create(child));
+            Set<ActRelationship> acts = act.getSourceActRelationships();
+            if (!acts.isEmpty()) {
+                node.setAllowsChildren(true);
+                for (ActRelationship relationship : acts) {
+                    IMObject child = IMObjectHelper.getObject(
+                            relationship.getTarget());
+                    if (child != null) {
+                        node.add(create(child));
+                    }
                 }
             }
         }

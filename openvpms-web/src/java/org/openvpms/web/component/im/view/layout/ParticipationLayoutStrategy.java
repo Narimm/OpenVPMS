@@ -18,69 +18,46 @@
 
 package org.openvpms.web.component.im.view.layout;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
- * Participation layout strategy. This filters out the "act" node.
+ * Participation layout strategy. This displays the "entity" node.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ParticipationLayoutStrategy extends AbstractLayoutStrategy {
+public class ParticipationLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
-     * Returns the 'simple' nodes. This includes the "entity" node, if present.
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a <code>Component</code>, using a factory to
+     * create the child components.
      *
-     * @param archetype the archetype
-     * @return the simple nodes
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param context    the layout context
+     * @return the component containing the rendered <code>object</code>
      */
-    @Override
-    protected List<NodeDescriptor> getSimpleNodes(ArchetypeDescriptor archetype) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        for (NodeDescriptor node : archetype.getAllNodeDescriptors()) {
-            if (!node.isComplexNode() || node.getName().equals("entity")) {
-                result.add(node);
-            }
+    public Component apply(IMObject object, PropertySet properties,
+                           LayoutContext context) {
+        Property property = properties.get("entity");
+        Component component;
+        if (property != null) {
+            IMObjectComponentFactory factory = context.getComponentFactory();
+            component = factory.create(property, object);
+        } else {
+            component = LabelFactory.create();
         }
-        return result;
+        return component;
     }
 
-    /**
-     * Returns the 'complex' nodes. This excludes the "entity" node.
-     *
-     * @param archetype the archetype
-     * @return the complex nodes
-     */
-    @Override
-    protected List<NodeDescriptor> getComplexNodes(ArchetypeDescriptor archetype) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        for (NodeDescriptor node : super.getComplexNodes(archetype)) {
-            if (!node.getName().equals("entity")) {
-                result.add(node);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a node filter to filter nodes. This implementation filters
-     * the "act" node.
-     *
-     * @param context the context
-     * @return a node filter to filter nodes
-     */
-    @Override
-    protected NodeFilter getNodeFilter(LayoutContext context) {
-        NodeFilter filter = new NamedNodeFilter("act");
-        return getNodeFilter(context, filter);
-    }
 }

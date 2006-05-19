@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.query.PreloadedResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
-import org.openvpms.web.component.im.table.act.ActItemTableModel;
+import org.openvpms.web.component.im.table.act.DefaultActTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.spring.ServiceHelper;
@@ -83,7 +83,7 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, PropertySet properties, LayoutContext context) {
-        IMObjectTableModel model = new ActItemTableModel(_shortNames, context);
+        IMObjectTableModel model = new DefaultActTableModel(_shortNames, context);
         Act act = (Act) object;
         List<IMObject> acts = getActs(act);
         ResultSet set = new PreloadedResultSet<IMObject>(acts, 25);
