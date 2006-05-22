@@ -62,6 +62,17 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
     }
 
     /**
+     * Returns a component to display a string property.
+     *
+     * @param property the boolean property
+     * @return a component to display the property
+     */
+    @Override
+    protected Component getString(Property property) {
+        return getLabel(property);
+    }
+
+    /**
      * Returns a component to display a numeric property.
      *
      * @param property the numeric property
