@@ -75,7 +75,7 @@ public abstract class AbstractReadOnlyComponentFactory
         } else if (descriptor.isBoolean()) {
             result = getBoolean(property);
         } else if (descriptor.isString()) {
-            result = getTextComponent(property);
+            result = getString(property);
         } else if (descriptor.isNumeric()) {
             result = getNumber(property);
         } else if (descriptor.isDate()) {
@@ -126,10 +126,20 @@ public abstract class AbstractReadOnlyComponentFactory
      * Returns a component to display a boolean property.
      *
      * @param property the boolean property
-     * @return a componnet to display the property
+     * @return a component to display the property
      */
     protected Component getBoolean(Property property) {
         return getCheckBox(property);
+    }
+
+    /**
+     * Returns a component to display a string property.
+     *
+     * @param property the boolean property
+     * @return a component to display the property
+     */
+    protected Component getString(Property property) {
+        return getTextComponent(property);
     }
 
     /**
