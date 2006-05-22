@@ -32,6 +32,8 @@
 	<data archetype="lookup.paymentStatus" status="In Progress" />
 	<data archetype="lookup.paymentStatus" status="On Hold" />
 	<data archetype="lookup.paymentStatus" status="Posted" />
+	<data archetype="lookup.episodeStatus" status="In Progress" />
+	<data archetype="lookup.episodeStatus" status="Completed" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST1" type="country.state" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST2" type="country.state" />
 	<data archetype="lookup.relationship" source="id:C1" target="id:ST3" type="country.state" />
@@ -53,7 +55,8 @@
 	<data archetype="lookup.uom" uom="Mls" />
 	<data archetype="lookup.uom" uom="Tube" />
 	<data archetype="lookup.uom" uom="Packet" />
-	<data id="Canine" archetype="lookup.species" species="Canine" />
+    <data archetype="lookup.weightUom" uom="Kg"/>
+    <data id="Canine" archetype="lookup.species" species="Canine" />
 	<data id="Feline" archetype="lookup.species" species="Feline" />
 	<data id="Equine" archetype="lookup.species" species="Equine" />
 	<data id="Bovine" archetype="lookup.species" species="Bovine" />
