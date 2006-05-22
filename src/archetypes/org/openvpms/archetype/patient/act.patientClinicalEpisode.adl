@@ -20,19 +20,19 @@
 		type="org.openvpms.component.business.domain.im.common.Act" displayName="Clinical Episode" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Episode', '')" />
+			derivedValue="'Episode'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
 			derivedValue="concat(/activityStartTime,' - ',/activityEndTime,' : ', /reason)" />
 		<node name="startDate" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="completeDate" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
-		<node name="reason" path="/reason" type="java.lang.String"	/>
+		<node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
 		<node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.clinician" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1">
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
 				<property name="concept" value="episodeStatus" />
