@@ -19,6 +19,7 @@
 package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Row;
+import org.openvpms.web.app.subsystem.ShortNameList;
 
 
 /**
@@ -40,7 +41,7 @@ public class InvoiceCRUDWindow extends SupplierActCRUDWindow {
      */
     public InvoiceCRUDWindow(String type, String refModelName,
                              String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
+        super(type, new ShortNameList(refModelName, entityName, conceptName));
     }
 
     /**

@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
@@ -42,25 +43,11 @@ public abstract class SupplierActCRUDWindow extends ActCRUDWindow {
     /**
      * Create a new <code>CustomerActCRUDWindow</code>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public SupplierActCRUDWindow(String type, String refModelName,
-                                 String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
-    }
-
-    /**
-     * Create a new <code>CustomerActCRUDWindow</code>.
-     *
      * @param type       display name for the types of objects that this may
      *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public SupplierActCRUDWindow(String type, String[] shortNames) {
+    public SupplierActCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
     }
 

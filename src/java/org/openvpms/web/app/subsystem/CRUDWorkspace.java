@@ -55,8 +55,9 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
                          String refModelName, String entityName,
                          String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
-        _window = new CRUDWindow(getType(), refModelName, entityName,
-                                 conceptName);
+        ShortNames shortNames = new ShortNameList(refModelName, entityName,
+                                 conceptName); 
+        _window = new CRUDWindow(getType(), shortNames);
     }
 
     /**

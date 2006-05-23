@@ -18,31 +18,21 @@
 
 package org.openvpms.web.component.im.query;
 
-import echopointng.Tree;
-import echopointng.tree.*;
-import nextapp.echo2.app.Component;
+import echopointng.tree.DefaultMutableTreeNode;
+import echopointng.tree.MutableTreeNode;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.tree.IMObjectTreeNode;
 import org.openvpms.web.component.im.tree.IMObjectTreeNodeFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
- * Enter description here.
+ * Browser that displays objects in a tree.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class TreeBrowser extends AbstractBrowser {
-
-    /**
-     * The tree.
-     */
-    private Tree _tree;
+public class TreeBrowser<T extends IMObject> extends AbstractTreeBrowser<T> {
 
     /**
      * The tree node factory.
@@ -58,87 +48,29 @@ public class TreeBrowser extends AbstractBrowser {
      * @param sort    the sort criteria. May be <code>null</code>
      * @param factory factory for tree nodes
      */
-    public TreeBrowser(Query query, SortConstraint[] sort,
+    public TreeBrowser(Query<T> query, SortConstraint[] sort,
                        IMObjectTreeNodeFactory factory) {
         super(query, sort);
         _factory = factory;
     }
 
     /**
-     * Returns the selected object.
+     * Creates a tree from a result set.
      *
-     * @return the selected object, or <code>null</code> if none has been
-     *         selected.
+     * @param set the result set
+     * @return the root of the tree
      */
-    public IMObject getSelected() {
-        IMObject result = null;
-        if (_tree != null) {
-            TreePath path = _tree.getSelectionPath();
-            if (path != null) {
-                Object last = path.getLastPathComponent();
-                if (last instanceof IMObjectTreeNode) {
-                    result = ((IMObjectTreeNode) last).getObject();
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Select an object.
-     *
-     * @param object the object to select
-     */
-    public void setSelected(IMObject object) {
-    }
-
-    /**
-     * Returns the objects matching the query.
-     *
-     * @return the objects matcing the query.
-     */
-    public List<IMObject> getObjects() {
-        return new ArrayList<IMObject>();
-    }
-
-    /**
-     * Query using the specified criteria, and populate the table with matches.
-     */
-    public void query() {
-        Component component = getComponent();
+    protected MutableTreeNode createTree(ResultSet<T> set) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
 
-        ResultSet<IMObject> set = doQuery();
         while (set.hasNext()) {
-            IPage<IMObject> page = set.next();
+            IPage<T> page = set.next();
             for (IMObject object : page.getRows()) {
                 MutableTreeNode child = _factory.create(object);
                 root.add(child);
             }
         }
-        if (_tree == null) {
-            _tree = new Tree(root);
-            _tree.setShowsRootHandles(false);
-            _tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-            _tree.addTreeSelectionListener(new TreeSelectionListener() {
-                public void valueChanged(TreeSelectionEvent event) {
-                    onSelected();
-                }
-            });
-            component.add(_tree);
-        } else {
-            _tree.setModel(new DefaultTreeModel(root));
-        }
-    }
-
-    /**
-     * Invoked when a node is selected. Notifies any registered listeners.
-     */
-    protected void onSelected() {
-        IMObject selected = getSelected();
-        if (selected != null) {
-            notifySelected(selected);
-        }
+        return root;
     }
 
 }

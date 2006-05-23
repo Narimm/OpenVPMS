@@ -35,12 +35,13 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectTreeNode extends DefaultMutableTreeNode {
+public class IMObjectTreeNode<T extends IMObject>
+        extends DefaultMutableTreeNode {
 
     /**
      * The object associated with the node.
      */
-    private final IMObject _object;
+    private final T _object;
 
 
     /**
@@ -48,7 +49,7 @@ public class IMObjectTreeNode extends DefaultMutableTreeNode {
      *
      * @param object the object to associate with the node
      */
-    public IMObjectTreeNode(IMObject object) {
+    public IMObjectTreeNode(T object) {
         _object = object;
         String description = IMObjectHelper.getString(object, "description");
         setUserObject(description);
@@ -59,7 +60,7 @@ public class IMObjectTreeNode extends DefaultMutableTreeNode {
      *
      * @return the object
      */
-    public IMObject getObject() {
+    public T getObject() {
         return _object;
     }
 

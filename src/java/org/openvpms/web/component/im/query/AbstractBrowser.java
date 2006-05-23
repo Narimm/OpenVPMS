@@ -40,12 +40,13 @@ import org.openvpms.web.component.util.ColumnFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractBrowser implements Browser {
+public abstract class AbstractBrowser<T extends IMObject>
+        implements Browser<T> {
 
     /**
      * The query object.
      */
-    private final Query _query;
+    private final Query<T> _query;
 
     /**
      * The sort criteria. May be <code>null</code>
@@ -91,7 +92,7 @@ public abstract class AbstractBrowser implements Browser {
      * @param query the query
      * @param sort  the sort criteria. May be <code>null</code>
      */
-    public AbstractBrowser(Query query, SortConstraint[] sort) {
+    public AbstractBrowser(Query<T> query, SortConstraint[] sort) {
         _query = query;
         _sort = sort;
         _query.addQueryListener(new QueryListener() {
@@ -149,7 +150,7 @@ public abstract class AbstractBrowser implements Browser {
      *
      * @return the query result set
      */
-    protected ResultSet doQuery() {
+    protected ResultSet<T> doQuery() {
         return _query.query(ROWS, _sort);
     }
 

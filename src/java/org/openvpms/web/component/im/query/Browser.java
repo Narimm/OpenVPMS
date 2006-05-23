@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Browser {
+public interface Browser<T extends IMObject> {
     /**
      * Returns the query component.
      *
@@ -52,14 +52,14 @@ public interface Browser {
      *
      * @param object the object to select
      */
-    void setSelected(IMObject object);
+    void setSelected(T object);
 
     /**
      * Returns the objects matching the query.
      *
      * @return the objects matcing the query.
      */
-    List<IMObject> getObjects();
+    List<T> getObjects();
 
     /**
      * Adds a listener to receive notification of selection and query actions.

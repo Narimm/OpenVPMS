@@ -63,14 +63,14 @@
             <property name="separatorPosition" value="75px"/>
             <property name="background" value="#339933"/>
             <property name="font">
-                <font size="9pt" />
+                <font size="9pt"/>
             </property>
         </properties>
     </style>
 
     <style name="ApplicationContentPane.Layout-1024x768"
-            base-name="ApplicationContentPane.Layout"
-            type="nextapp.echo2.app.SplitPane">
+           base-name="ApplicationContentPane.Layout"
+           type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="font">
                 <font size="8pt"/>
@@ -79,8 +79,8 @@
     </style>
 
     <style name="ApplicationContentPane.Layout-800x600"
-            base-name="ApplicationContentPane.Layout-1024x768"
-            type="nextapp.echo2.app.SplitPane">
+           base-name="ApplicationContentPane.Layout-1024x768"
+           type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="font">
                 <font size="6pt"/>
@@ -149,7 +149,7 @@
         <properties>
             <property name="background" value="#ffffff"/>
             <property name="font">
-                <font bold="true" />
+                <font bold="true"/>
             </property>
         </properties>
     </style>
@@ -189,7 +189,7 @@
             <property name="rolloverForeground" value="#000000"/>
             <property name="rolloverBackground" value="#99cc66"/>
             <property name="font">
-                <font bold="true" />
+                <font bold="true"/>
             </property>
         </properties>
     </style>
@@ -290,7 +290,7 @@
     </style>
 
     <style name="EditDialog-1024x768" base-name="EditDialog"
-        type="nextapp.echo2.app.WindowPane">
+           type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="700px"/>
             <property name="height" value="525px"/>
@@ -301,7 +301,7 @@
     </style>
 
     <style name="EditDialog-800x600" base-name="EditDialog-1024x768"
-        type="nextapp.echo2.app.WindowPane">
+           type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="680px"/>
             <property name="height" value="380px"/>
@@ -326,7 +326,7 @@
     </style>
 
     <style name="BrowserDialog-1024x768" base-name="BrowserDialog"
-        type="nextapp.echo2.app.WindowPane">
+           type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="700px"/>
             <property name="height" value="525px"/>
@@ -337,7 +337,7 @@
     </style>
 
     <style name="BrowserDialog-800x600" base-name="BrowserDialog-1024x768"
-        type="nextapp.echo2.app.WindowPane">
+           type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="680px"/>
             <property name="height" value="380px"/>
@@ -588,10 +588,14 @@
     </style>
 
     <style name="PopupWindow" base-name="default"
-        type="nextapp.echo2.app.WindowPane">
+           type="nextapp.echo2.app.WindowPane">
     </style>
 
-    <style name="PopupWindow.Layout" type="nextapp.echo2.app.SplitPane">
+    <style name="PopupWindow.Layout" type="nextapp.echo2.app.SplitPane"
+           base-name="SplitPane.Dialog">
+    </style>
+
+    <style name="SplitPane.Dialog" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
             <property name="separatorPosition" value="32px"/>

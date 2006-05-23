@@ -36,16 +36,28 @@ import org.openvpms.web.spring.ServiceHelper;
 public class SaveHelper {
 
     /**
-     * Save an object.
+     * Saves an object.
      *
      * @param object the object to save
      * @return <code>true</code> if the object was saved; otherwise
      *         <code>false</code>
      */
     public static boolean save(IMObject object) {
-        boolean saved = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        if (ValidationHelper.isValid(object)) {
+        return save(object, service);
+    }
+
+    /**
+     * Saves an object.
+     *
+     * @param object  the object to save
+     * @param service the archetype service
+     * @return <code>true</code> if the object was saved; otherwise
+     *         <code>false</code>
+     */
+    public static boolean save(IMObject object, IArchetypeService service) {
+        boolean saved = false;
+        if (ValidationHelper.isValid(object, service)) {
             try {
                 service.save(object);
                 saved = true;

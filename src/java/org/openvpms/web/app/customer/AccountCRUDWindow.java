@@ -18,21 +18,21 @@
 
 package org.openvpms.web.app.customer;
 
-import java.util.Date;
-
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
 
 
 /**
@@ -85,7 +85,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
      */
     public AccountCRUDWindow(String type, String refModelName,
                              String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
+        super(type, new ShortNameList(refModelName, entityName, conceptName));
     }
 
     /**
@@ -152,7 +152,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
             dialog.show();
         } else {
             showStatusError(act, "customer.account.noreverse.title",
-                            "customer.account.noreverse.message");
+                    "customer.account.noreverse.message");
         }
     }
 
@@ -183,8 +183,8 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
             setPrintStatus(reversal, false);
             SaveHelper.save(reversal);
         } catch (OpenVPMSException exception) {
-           String title = Messages.get("customer.account.reverse.failed",
-                                       getArchetypeDescriptor().getDisplayName());
+            String title = Messages.get("customer.account.reverse.failed",
+                    getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
     }

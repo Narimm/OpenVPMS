@@ -71,25 +71,11 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     /**
      * Create a new <code>ActCRUDWindow</code>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public ActCRUDWindow(String type, String refModelName, String entityName,
-                         String conceptName) {
-        super(type, refModelName, entityName, conceptName);
-    }
-
-    /**
-     * Create a new <code>ActCRUDWindow</code>.
-     *
      * @param type       display name for the types of objects that this may
      *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public ActCRUDWindow(String type, String[] shortNames) {
+    public ActCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
     }
 

@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.app.subsystem.ShortNameList;
 
 
 /**
@@ -75,7 +76,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow {
 
 
     /**
-     * Create a new <code>EstimationCRUDWindow</code>.
+     * Create a new <code>AccountCRUDWindow</code>.
      *
      * @param type         display name for the types of objects that this may
      *                     create
@@ -85,7 +86,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow {
      */
     public AccountCRUDWindow(String type, String refModelName,
                              String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
+        super(type, new ShortNameList(refModelName, entityName, conceptName));
     }
 
     /**

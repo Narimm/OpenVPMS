@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActCopyHandler;
@@ -122,7 +123,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
      */
     public EstimationCRUDWindow(String type, String refModelName,
                                 String entityName, String conceptName) {
-        super(type, refModelName, entityName, conceptName);
+        super(type, new ShortNameList(refModelName, entityName, conceptName));
     }
 
     /**

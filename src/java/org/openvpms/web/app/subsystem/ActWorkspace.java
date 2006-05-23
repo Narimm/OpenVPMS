@@ -18,25 +18,19 @@
 
 package org.openvpms.web.app.subsystem;
 
-import java.util.List;
-
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.query.*;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+
+import java.util.List;
 
 
 /**
@@ -60,7 +54,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * The act browser.
      */
-    private Browser _acts;
+    private Browser<Act> _acts;
 
     /**
      * The CRUD window.
@@ -91,7 +85,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected void onSaved(IMObject object, boolean isNew) {
         _acts.query();
-        _acts.setSelected(object);
+        _acts.setSelected((Act) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -121,26 +115,17 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void layoutWorkspace(Party party, Component container) {
-        _query = createQuery(party);
-        _acts = createBrowser(_query);
-        _acts.addQueryListener(new QueryBrowserListener() {
-            public void query() {
-                selectFirst();
-            }
+        setQuery(createQuery(party));
+        setBrowser(createBrowser(_query));
 
-            public void selected(IMObject object) {
-                actSelected((Act) object);
-            }
-        });
-        GroupBox actsBox = GroupBoxFactory.create(_acts.getComponent());
-
+        Component acts = getActs(_acts);
         _window = createCRUDWindow();
         if (_workspace != null) {
             container.remove(_workspace);
         }
         _workspace = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                             "ActWorkspace.Layout", actsBox,
-                                             _window.getComponent());
+                "ActWorkspace.Layout", acts,
+                _window.getComponent());
         container.add(_workspace);
 
         _window.setListener(new CRUDWindowListener() {
@@ -152,6 +137,17 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
                 onDeleted(object);
             }
         });
+    }
+
+    /**
+     * Returns a component representing the acts.
+     * This implementation returns the acts displayed in a group box.
+     *
+     * @param acts the act browser
+     * @return a component representing the acts
+     */
+    protected Component getActs(Browser acts) {
+        return GroupBoxFactory.create(_acts.getComponent());
     }
 
     /**
@@ -175,7 +171,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param query the query
      * @return a new browser
      */
-    protected Browser createBrowser(Query query) {
+    protected Browser<Act> createBrowser(Query<Act> query) {
         return new TableBrowser(query, null, createTableModel());
     }
 
@@ -186,6 +182,55 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected IMObjectTableModel createTableModel() {
         return new ActAmountTableModel();
+    }
+
+    /**
+     * Registers a new query.
+     *
+     * @param query the new query
+     */
+    protected void setQuery(ActQuery query) {
+        _query = query;
+    }
+
+    /**
+     * Returns the query.
+     *
+     * @return the query
+     */
+    protected Query<Act> getQuery() {
+        return _query;
+    }
+
+    /**
+     * Registers a new browser.
+     *
+     * @param browser the new browser
+     */
+    protected void setBrowser(Browser<Act> browser) {
+        _acts = browser;
+        _acts.addQueryListener(new QueryBrowserListener() {
+            public void query() {
+                selectFirst();
+            }
+
+            public void selected(IMObject object) {
+                actSelected((Act) object);
+            }
+        });
+        if (_workspace != null) {
+            _workspace.remove(0);
+            _workspace.add(getActs(_acts), 0);
+        }
+    }
+
+    /**
+     * Returns the browser.
+     *
+     * @return the browser
+     */
+    protected Browser<Act> getBrowser() {
+        return _acts;
     }
 
     /**
@@ -212,9 +257,9 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * Selects the first available act, if any.
      */
     private void selectFirst() {
-        List<IMObject> objects = _acts.getObjects();
+        List<Act> objects = _acts.getObjects();
         if (!objects.isEmpty()) {
-            IMObject current = objects.get(0);
+            Act current = objects.get(0);
             _acts.setSelected(current);
             _window.setObject(current);
         } else {

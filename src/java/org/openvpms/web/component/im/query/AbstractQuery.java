@@ -36,6 +36,7 @@ import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -52,7 +53,7 @@ import org.openvpms.web.component.util.TextComponentFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractQuery implements Query {
+public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
 
     /**
      * The archetypes to query.
@@ -188,7 +189,7 @@ public abstract class AbstractQuery implements Query {
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
-    public ResultSet query(int rows, SortConstraint[] sort) {
+    public ResultSet<T> query(int rows, SortConstraint[] sort) {
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
@@ -202,7 +203,8 @@ public abstract class AbstractQuery implements Query {
                                                           activeOnly);
         }
 
-        return new DefaultResultSet(archetypes, name, _constraints, sort, rows);
+        return new DefaultResultSet<T>(archetypes, name, _constraints, sort,
+                rows);
     }
 
     /**
