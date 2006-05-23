@@ -420,8 +420,10 @@ public class IMObject implements Serializable, Cloneable {
     public String toString() {
         return new ToStringBuilder(this)
             .append("uid", uid)
-            .append("archetypeId", archetypeId)
+            .append("archetypeId", archetypeId.getQualifiedName())
             .append("linkId", linkId)
+            .append("version", version)
+            .append("name", name)
             .toString();
     }
 }
