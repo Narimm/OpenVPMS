@@ -27,9 +27,12 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
 
 import org.openvpms.web.component.bound.BoundFormattedField;
+import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
 import org.openvpms.web.component.edit.Property;
+
+import echopointng.RichTextArea;
 
 
 /**
@@ -111,6 +114,19 @@ public class TextComponentFactory extends ComponentFactory {
      */
     public static TextArea createTextArea(Property property, int columns) {
         TextArea text = new BoundTextArea(property, columns);
+        setDefaultStyle(text);
+        return text;
+    }
+
+    /**
+     * Create a new bound text area.
+     *
+     * @param property the property to bind
+     * @param columns  the no. of columns to display
+     * @return a new bound text field
+     */
+    public static RichTextArea createRichTextArea(Property property, int columns) {
+        RichTextArea text = new BoundRichTextArea(property, columns);
         setDefaultStyle(text);
         return text;
     }
