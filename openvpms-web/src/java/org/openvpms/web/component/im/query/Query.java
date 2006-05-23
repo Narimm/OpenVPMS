@@ -31,7 +31,7 @@ import org.openvpms.component.system.common.query.SortConstraint;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface Query {
+public interface Query<T extends IMObject> {
 
     /**
      * Returns the query component.
@@ -47,7 +47,7 @@ public interface Query {
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
-    ResultSet query(int rows, SortConstraint[] sort);
+    ResultSet<T> query(int rows, SortConstraint[] sort);
 
     /**
      * Determines if the query should be run automatically.

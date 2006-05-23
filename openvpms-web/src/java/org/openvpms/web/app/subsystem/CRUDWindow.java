@@ -26,7 +26,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -65,7 +64,7 @@ public class CRUDWindow {
     /**
      * Short names of archetypes that this may create.
      */
-    private final String[] _shortNames;
+    private final ShortNames _shortNames;
 
     /**
      * Localised type display name (e.g, Customer, Product).
@@ -141,27 +140,11 @@ public class CRUDWindow {
     /**
      * Create a new <code>CRUDWindow</code>.
      *
-     * @param type         display name for the types of objects that this may
-     *                     create
-     * @param refModelName the archetype reference model name
-     * @param entityName   the archetype entity name
-     * @param conceptName  the archetype concept name
-     */
-    public CRUDWindow(String type, String refModelName, String entityName,
-                      String conceptName) {
-        _type = type;
-        _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
-                                                     conceptName);
-    }
-
-    /**
-     * Create a new <code>CRUDWindow</code>.
-     *
      * @param type       display name for the types of objects that this may
      *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param shortNames the short names of archetypes that this may create.
      */
-    public CRUDWindow(String type, String[] shortNames) {
+    public CRUDWindow(String type, ShortNames shortNames) {
         _type = type;
         _shortNames = shortNames;
     }
@@ -243,13 +226,7 @@ public class CRUDWindow {
      * Invoked when the 'new' button is pressed.
      */
     public void onCreate() {
-        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
-            public void created(IMObject object) {
-                onCreated(object);
-            }
-        };
-
-        IMObjectCreator.create(_type, _shortNames, listener);
+        onCreate(_type, _shortNames);
     }
 
     /**
@@ -359,6 +336,22 @@ public class CRUDWindow {
             _buttons.remove(_edit);
             _buttons.remove(_delete);
         }
+    }
+
+    /**
+     * Invoked when the 'new' button is pressed.
+     *
+     * @param type localised type display name
+     * @param shortNames the short names
+     */
+    protected void onCreate(String type, ShortNames shortNames) {
+        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
+            public void created(IMObject object) {
+                onCreated(object);
+            }
+        };
+
+        IMObjectCreator.create(type, shortNames.getShortNames(), listener);
     }
 
     /**

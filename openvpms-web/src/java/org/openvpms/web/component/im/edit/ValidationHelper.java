@@ -18,11 +18,8 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
@@ -31,6 +28,8 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.List;
 
 
 /**
@@ -48,15 +47,27 @@ public class ValidationHelper {
 
 
     /**
-     * Validate an object.
+     * Validates an object.
      *
      * @param object the object to validate
      * @return <code>true</code> if the object is valid; otherwise
      *         <code>false</code>
      */
     public static boolean isValid(IMObject object) {
-        boolean valid = false;
         IArchetypeService service = ServiceHelper.getArchetypeService();
+        return isValid(object, service);
+    }
+
+    /**
+     * Validates an object.
+     *
+     * @param object  the object to validate
+     * @param service the archetype service
+     * @return <code>true</code> if the object is valid; otherwise
+     *         <code>false</code>
+     */
+    public static boolean isValid(IMObject object, IArchetypeService service) {
+        boolean valid = false;
         try {
             service.validateObject(object);
             valid = true;
@@ -77,5 +88,4 @@ public class ValidationHelper {
         }
         return valid;
     }
-
 }

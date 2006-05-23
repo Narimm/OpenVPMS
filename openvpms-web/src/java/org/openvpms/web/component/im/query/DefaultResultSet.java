@@ -48,7 +48,8 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject> {
+public class DefaultResultSet<T extends IMObject>
+        extends AbstractArchetypeServiceResultSet<T> {
 
     /**
      * The archetypes to query.
@@ -93,7 +94,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
      * @return the page corresponding to <code>firstRow</code>, or
      *         <code>null</code> if none exists
      */
-    protected IPage<IMObject> getPage(int firstRow, int maxRows) {
+    protected IPage<T> getPage(int firstRow, int maxRows) {
         IPage<IMObject> result = null;
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -114,7 +115,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
         } catch (OpenVPMSException exception) {
             _log.error(exception, exception);
         }
-        return result;
+        return convert(result);
     }
 
     /**
@@ -127,7 +128,7 @@ public class DefaultResultSet extends AbstractArchetypeServiceResultSet<IMObject
     private boolean isValidSortNode(String node) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         List<ArchetypeDescriptor> archetypes = getArchetypes(service);
-        NodeDescriptor descriptor = null;
+        NodeDescriptor descriptor;
 
         for (ArchetypeDescriptor archetype : archetypes) {
             descriptor = archetype.getNodeDescriptor(node);

@@ -20,6 +20,7 @@ package org.openvpms.web.app.customer;
 
 
 import nextapp.echo2.app.Row;
+import org.openvpms.web.app.subsystem.ShortNameList;
 
 
 /**
@@ -38,7 +39,7 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow {
      * @param shortNames the short names of archetypes that this may create
      */
     public PaymentCRUDWindow(String type, String[] shortNames) {
-        super(type, shortNames);
+        super(type, new ShortNameList(shortNames));
     }
 
     /**

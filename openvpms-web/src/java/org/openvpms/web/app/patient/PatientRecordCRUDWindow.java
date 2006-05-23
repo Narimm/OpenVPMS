@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
@@ -48,8 +49,24 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
      *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public PatientRecordCRUDWindow(String type, String[] shortNames) {
+    public PatientRecordCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
+    }
+
+    /**
+     * Invoked when the 'new' button is pressed.
+     *
+     * @param type       localised type display name
+     * @param shortNames the short names
+     */
+    @Override
+    protected void onCreate(String type, ShortNames shortNames) {
+        String[] names = shortNames.getShortNames();
+        if (names.length == 0) {
+                
+        } else {
+            super.onCreate(type, shortNames);
+        }
     }
 
     /**
