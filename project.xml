@@ -169,13 +169,6 @@
       <url>http://stax.codehaus.org/</url>
     </dependency>
     <dependency>
-      <groupId>stax-utils</groupId>
-      <artifactId>stax-utils</artifactId>
-      <version>snapshot-20040917</version>
-      <type>jar</type>
-      <url>http://java.net/</url>
-    </dependency>
-    <dependency>
       <groupId>stax</groupId>
       <artifactId>stax</artifactId>
       <version>1.1.2-dev</version>
