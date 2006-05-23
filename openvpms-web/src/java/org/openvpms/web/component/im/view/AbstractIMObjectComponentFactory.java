@@ -114,8 +114,11 @@ public abstract class AbstractIMObjectComponentFactory
     protected TextComponent getTextComponent(Property property, int columns) {
         TextComponent result;
         NodeDescriptor descriptor = property.getDescriptor();
-        if (descriptor.isLarge()) {
-            result = TextComponentFactory.createTextArea(property, columns);
+        if (descriptor.getMaxLength() > 255) {
+            if (descriptor.getMaxLength() < 500)
+                result = TextComponentFactory.createTextArea(property, columns);
+            else
+                result = TextComponentFactory.createRichTextArea(property, columns);
         } else {
             result = TextComponentFactory.create(property, columns);
         }

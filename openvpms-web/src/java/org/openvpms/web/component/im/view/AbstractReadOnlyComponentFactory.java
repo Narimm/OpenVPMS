@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.view;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -30,6 +31,8 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
+
+import echopointng.RichTextArea;
 
 
 /**
@@ -76,6 +79,10 @@ public abstract class AbstractReadOnlyComponentFactory
             result = getBoolean(property);
         } else if (descriptor.isString()) {
             result = getString(property);
+            if (result instanceof RichTextArea)
+            {
+                ((RichTextArea)result).setEditable(enable);
+            }
         } else if (descriptor.isNumeric()) {
             result = getNumber(property);
         } else if (descriptor.isDate()) {
