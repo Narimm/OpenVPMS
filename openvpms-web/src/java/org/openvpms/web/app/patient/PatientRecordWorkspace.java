@@ -29,6 +29,9 @@ import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -36,6 +39,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.query.*;
 import org.openvpms.web.component.im.tree.ActTreeNodeFactory;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -219,10 +223,11 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
+        SortConstraint[] sort = {new NodeSortConstraint("startDate", false)};
         if (_visitView) {
-            return new TreeBrowser<Act>(query, null, new ActTreeNodeFactory());
+            return new TreeBrowser<Act>(query, sort, new ActTreeNodeFactory());
         }
-        return new ProblemTreeBrowser(query, null);
+        return new ProblemTreeBrowser(query, sort);
     }
 
     /**
@@ -296,14 +301,16 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     private void addActRelationship(String type, Act parent, Act child) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        ActRelationship relationship = (ActRelationship) service.create(type);
-        if (relationship != null) {
-            relationship.setSource(parent.getObjectReference());
-            relationship.setTarget(child.getObjectReference());
-            if (SaveHelper.save(relationship, service)) {
+        try {
+            ActRelationship relationship = (ActRelationship) service.create(type);
+            if (relationship != null) {
+                relationship.setSource(parent.getObjectReference());
+                relationship.setTarget(child.getObjectReference());
                 parent.addActRelationship(relationship);
-                SaveHelper.save(relationship, service);
+                SaveHelper.save(parent, service);
             }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 
