@@ -81,10 +81,10 @@ public class ValidationHelper {
                     title = node;
                 }
                 ErrorDialog.show(title, error.getErrorMessage());
+                _log.debug(exception.getMessage(), exception);
             } else {
                 ErrorHelper.show(exception);
             }
-            _log.error(exception.getMessage(), exception);
         }
         return valid;
     }
