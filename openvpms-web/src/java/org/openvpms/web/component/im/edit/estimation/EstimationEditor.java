@@ -18,9 +18,6 @@
 
 package org.openvpms.web.component.im.edit.estimation;
 
-import java.math.BigDecimal;
-import java.util.Set;
-
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
@@ -28,6 +25,9 @@ import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -57,14 +57,13 @@ public class EstimationEditor extends ActEditor {
 
     /**
      * Update totals when an act item changes.
-     *
-     * @todo - workaround for OVPMS-211
      */
     protected void updateTotals() {
+        // @todo - workaround for OVPMS-211
         Property highTotal = getProperty("highTotal");
         Property lowTotal = getProperty("lowTotal");
 
-        Set<Act> acts = getEditor().getActs();
+        List<Act> acts = getEditor().getActs();
         BigDecimal low = ActHelper.sum(acts, "lowTotal");
         BigDecimal high = ActHelper.sum(acts, "highTotal");
         lowTotal.setValue(low);

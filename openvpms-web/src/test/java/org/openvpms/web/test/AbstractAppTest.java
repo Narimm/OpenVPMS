@@ -54,5 +54,6 @@ public abstract class AbstractAppTest
         OpenVPMSApp app = (OpenVPMSApp) applicationContext.getBean("openVPMSApp");
         app.setApplicationContext(applicationContext);
         ApplicationInstance.setActive(app);
+        app.doInit();
     }
 }

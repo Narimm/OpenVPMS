@@ -74,7 +74,8 @@ public class TitlePane extends ContentPane {
                 = SecurityContextHolder.getContext().getAuthentication();
 
         Label label = LabelFactory.create();
-        label.setText(Messages.get("label.welcome", auth.getName()));
+        String name = (auth != null) ? auth.getName() : "";
+        label.setText(Messages.get("label.welcome", name));
         Button logout = ButtonFactory.create("logout", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 OpenVPMSApp.getInstance().logout();

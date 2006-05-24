@@ -35,15 +35,15 @@
 
 package org.openvpms.web.component.edit;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.web.component.dialog.ErrorDialog;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -82,7 +82,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
     /**
      * The property handler.
      */
-    protected PropertyHandler _handler;
+    private PropertyHandler _handler;
 
 
     /**
@@ -253,7 +253,30 @@ public class IMObjectProperty implements Property, CollectionProperty {
      */
     public boolean isValid() {
         if (_valid == null) {
-            _valid = getHandler().isValid(getValue());
+            PropertyHandler handler = getHandler();
+            if (_descriptor.isCollection()) {
+                Collection values = getValues();
+                int size = values.size();
+                int minSize = getMinCardinality();
+                int maxSize = getMaxCardinality();
+                if ((minSize != -1 && size < minSize)
+                        || (maxSize != -1 && size > maxSize)) {
+                    _valid = false;
+                } else {
+                    if (size == 0) {
+                        _valid = true;
+                    } else {
+                        for (Object value : getValues()) {
+                            _valid = handler.isValid(value);
+                            if (!_valid) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                _valid = handler.isValid(getValue());
+            }
         }
         return _valid;
     }
@@ -309,7 +332,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
         if (_descriptor.isReadOnly() || _descriptor.isDerived()) {
             throw new UnsupportedOperationException(
                     "Attenpt to modify read-only property: "
-                    + getDescriptor().getDisplayName());
+                            + getDescriptor().getDisplayName());
         }
     }
 }

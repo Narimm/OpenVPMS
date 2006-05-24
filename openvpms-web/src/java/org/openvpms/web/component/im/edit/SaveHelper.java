@@ -71,4 +71,25 @@ public class SaveHelper {
         return saved;
     }
 
+    /**
+     * Removes an object.
+     *
+     * @param object  the object to remove
+     * @param service the archetype service
+     * @return <code>true</code> if the object was removed; otherwise
+     *         <code>false</code>
+     */
+    public static boolean remove(IMObject object, IArchetypeService service) {
+        boolean removed = false;
+        try {
+            service.remove(object);
+            removed = true;
+        } catch (OpenVPMSException exception) {
+            String title = Messages.get("imobject.delete.failed",
+                    DescriptorHelper.getDisplayName(object));
+            ErrorHelper.show(title, exception);
+        }
+        return removed;
+    }
+
 }
