@@ -37,7 +37,11 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.query.*;
+import org.openvpms.web.component.im.query.AbstractTreeBrowser;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.TreeBrowser;
 import org.openvpms.web.component.im.tree.ActTreeNodeFactory;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -45,6 +49,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.ArrayList;
@@ -156,6 +161,22 @@ public class PatientRecordWorkspace extends ActWorkspace {
     }
 
     /**
+     * Creates the workspace split pane.
+     *
+     * @param browser the act browser
+     * @param window  the CRUD window
+     * @return a new workspace split pane
+     */
+    @Override
+    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
+        SplitPane pane = super.createWorkspace(browser, window);
+        String style = Styles.getStyle(SplitPane.class,
+                "PatientRecordWorkspace.Layout");
+        pane.setStyleName(style);
+        return pane;
+    }
+
+    /**
      * Creates a new CRUD window for viewing and editing acts.
      *
      * @return a new CRUD window
@@ -223,11 +244,24 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     protected Browser<Act> createBrowser(Query<Act> query) {
-        SortConstraint[] sort = {new NodeSortConstraint("startDate", false)};
+        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         if (_visitView) {
             return new TreeBrowser<Act>(query, sort, new ActTreeNodeFactory());
         }
         return new ProblemTreeBrowser(query, sort);
+    }
+
+    /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(IMObject object) {
+        super.onDeleted(object);
+        _clinicalEpisode = null;
+        _clinicalEvent = null;
+        _clinicalProblem = null;
     }
 
     /**

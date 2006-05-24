@@ -660,7 +660,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>0.7-20060517.085125</version>
+            <version>0.7-20060523.101037</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
