@@ -24,6 +24,8 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
@@ -41,11 +43,11 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 
 /**
@@ -77,6 +79,12 @@ public class ActRelationshipCollectionPropertyEditor
      * The set of removed objects.
      */
     private final Set<IMObject> _removed = new HashSet<IMObject>();
+
+    /**
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(ActRelationshipCollectionPropertyEditor.class);
 
 
     /**
@@ -206,22 +214,28 @@ public class ActRelationshipCollectionPropertyEditor
                 ActRelationship relationship = (ActRelationship) object;
                 Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
                         service, relationship.getTarget());
-                _acts.put(item, relationship);
+                if (item != null) {
+                    _acts.put(item, relationship);
+                } else {
+                    _log.warn("Target act=" + relationship.getTarget()
+                            + " no longer exists. Referred to by relationship="
+                            + relationship);
+                }
             }
         }
         return _acts;
     }
 
     /**
-      * Flags an object for removal when the collection is saved.
-      *
-      * @param object the object to remove
-      */
-     protected void queueRemove(IMObject object) {
+     * Flags an object for removal when the collection is saved.
+     *
+     * @param object the object to remove
+     */
+    protected void queueRemove(IMObject object) {
         removeEdited(object);
-         if (!object.isNew()) {
-             _removed.add(object);
-         }
-     }
+        if (!object.isNew()) {
+            _removed.add(object);
+        }
+    }
 
 }
