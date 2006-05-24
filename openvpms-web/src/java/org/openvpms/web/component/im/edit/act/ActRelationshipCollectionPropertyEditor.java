@@ -37,6 +37,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -185,19 +186,31 @@ public class ActRelationshipCollectionPropertyEditor
      */
     @Override
     protected boolean doSave() {
+        boolean saved = true;
         if (super.doSave()) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             IMObject[] removed = _removed.toArray(new IMObject[0]);
+            boolean deleted;
             for (IMObject object : removed) {
-                if (SaveHelper.remove(object, service)) {
+                IMObjectEditor editor = getEditor(object);
+                if (editor != null) {
+                    deleted = editor.delete();
+                    if (deleted) {
+                        setEditor(object, null);
+                    }
+                } else {
+                    deleted = SaveHelper.remove(object, service);
+                }
+                if (deleted) {
                     _removed.remove(object);
                     setSaved(true);
                 } else {
-                    return false;
+                    saved = false;
+                    break;
                 }
             }
         }
-        return true;
+        return saved;
     }
 
     /**

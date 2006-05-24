@@ -34,8 +34,10 @@ import org.openvpms.web.spring.ServiceHelper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -45,7 +47,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AbstractCollectionPropertyEditor
+public abstract class AbstractCollectionPropertyEditor
         implements CollectionPropertyEditor {
 
     /**
@@ -57,6 +59,14 @@ public class AbstractCollectionPropertyEditor
      * The set of edited objects.
      */
     private final Set<IMObject> _edited = new HashSet<IMObject>();
+
+    /**
+     * The editors. Where present, these will be responsible for saving/removing
+     * the associated object.
+     */
+    private Map<IMObject, IMObjectEditor> _editors
+            = new HashMap<IMObject, IMObjectEditor>();
+
 
     /**
      * Indicates if any object has been saved.
@@ -110,6 +120,31 @@ public class AbstractCollectionPropertyEditor
         }
         addEdited(object);
         return added;
+    }
+
+    /**
+     * Associates an object in the collection with an editor. The editor
+     * will be responsible for saving/removing it.
+     *
+     * @param object the object
+     * @param editor the editor. Use <code>null</code> to remove an association
+     */
+    public void setEditor(IMObject object, IMObjectEditor editor) {
+        if (editor == null) {
+            _editors.remove(object);
+        } else {
+            _editors.put(object, editor);
+        }
+    }
+
+    /**
+     * Returns the editor associated with an object in the collection.
+     *
+     * @param object the object
+     * @return the associated editor, or <code>null</code> if none is found
+     */
+    public IMObjectEditor getEditor(IMObject object) {
+        return _editors.get(object);
     }
 
     /**
@@ -206,15 +241,22 @@ public class AbstractCollectionPropertyEditor
     protected boolean doSave() {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         IMObject[] edited = _edited.toArray(new IMObject[0]);
+        boolean saved = false;
         for (IMObject object : edited) {
-            if (SaveHelper.save(object, service)) {
+            IMObjectEditor editor = getEditor(object);
+            if (editor != null) {
+                saved = editor.save();
+            } else {
+                saved = SaveHelper.save(object, service);
+            }
+            if (saved) {
                 _edited.remove(object);
                 _saved = true;
             } else {
-                return false;
+                break;
             }
         }
-        return true;
+        return saved;
     }
 
     /**
