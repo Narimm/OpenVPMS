@@ -28,7 +28,13 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.*;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.ModifiableListeners;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertyEditor;
+import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.FilterHelper;
@@ -71,7 +77,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     private final CollectionPropertyEditor _collection;
 
     /**
-     * The object to edit.
+     * The parent object.
      */
     private final IMObject _object;
 
@@ -134,8 +140,8 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     /**
      * Construct a new <code>CollectionEditor</code>.
      *
-     * @param editor the collection property editor
-     * @param object the object being edited
+     * @param editor  the collection property editor
+     * @param object  the object being edited
      * @param context the layout context
      */
     protected CollectionEditor(CollectionPropertyEditor editor,
@@ -461,8 +467,10 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @param object the object to edit
      */
     protected void edit(final IMObject object) {
+        FocusTree focus = _context.getFocusTree();
+        int focusIndex = focus.size();
         if (_editor != null) {
-            FocusTree focus = _context.getFocusTree();
+            focusIndex = focus.indexOf(_editor.getFocusGroup());
             focus.remove(_editor.getFocusGroup());
 
             _editor.removePropertyChangeListener(
@@ -473,9 +481,10 @@ public class CollectionEditor implements PropertyEditor, Saveable {
             _editBox = new GroupBox();
             _component.add(_editBox);
         }
-        _editor = createEditor(object, _context);
+        _editor = getEditor(object);
         _editBox.add(_editor.getComponent());
         _editBox.setTitle(_editor.getTitle());
+        focus.add(focusIndex, _editor.getFocusGroup());
         _editor.addPropertyChangeListener(
                 IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
                 _componentListener);
@@ -484,6 +493,21 @@ public class CollectionEditor implements PropertyEditor, Saveable {
                 _listeners.notifyListeners(CollectionEditor.this);
             }
         });
+    }
+
+    /**
+     * Returns an editor for an object, creating one if it doesn't exist.
+     *
+     * @param object the object to edit
+     * @return an editor for the object
+     */
+    protected IMObjectEditor getEditor(IMObject object) {
+        IMObjectEditor editor = _collection.getEditor(object);
+        if (editor == null) {
+            editor = createEditor(object, _context);
+            _collection.setEditor(object, editor);
+        }
+        return editor;
     }
 
     /**
@@ -512,13 +536,12 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * Remove the editor.
      */
     private void removeEditor() {
-        FocusTree tabTree = _context.getFocusTree();
-        tabTree.remove(_editor.getFocusGroup());
+        FocusTree focus = _context.getFocusTree();
+        focus.remove(_editor.getFocusGroup());
         _editBox.remove(_editor.getComponent());
         _component.remove(_editBox);
         _editor = null;
         _editBox = null;
-
     }
 
     /**

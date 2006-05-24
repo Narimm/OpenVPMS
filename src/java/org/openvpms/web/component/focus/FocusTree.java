@@ -153,6 +153,15 @@ public class FocusTree extends AbstractFocusGroup {
         }
     }
 
+    /**
+     * Returns the number of immediate children in the tree.
+     *
+     * @return the number of immediate children in the tree
+     */
+    public int size() {
+        return _groups.size();
+    }
+
     public void dump(PrintStream stream) {
         for (FocusGroup group : _groups) {
             dump(group, 0, stream);

@@ -70,6 +70,23 @@ public interface CollectionPropertyEditor extends Saveable {
     void remove(IMObject object);
 
     /**
+     * Associates an object in the collection with an editor. The editor
+     * will be responsible for saving/removing it.
+     *
+     * @param object the object
+     * @param editor the editor
+     */
+    void setEditor(IMObject object, IMObjectEditor editor);
+
+    /**
+     * Returns the editor associated with an object in the collection.
+     *
+     * @param object the object
+     * @return the associated editor, or <code>null</code> if none is found
+     */
+    IMObjectEditor getEditor(IMObject object);
+
+    /**
      * Determines if the collection has been modified.
      *
      * @return <code>true</code> if the collection has been modified
