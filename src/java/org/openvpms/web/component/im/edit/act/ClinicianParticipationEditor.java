@@ -25,13 +25,16 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -63,6 +66,10 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
         }
+        if (participation.isNew() && participation.getEntity() == null) {
+            IMObject clinician = Context.getInstance().getClinician();
+            getEditor().setObject(clinician);
+        }
     }
 
     /*
@@ -81,6 +88,12 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                 Query query = super.createQuery();
                 addConstraints(query);
                 return query;
+            }
+            @Override
+            protected void onSelected(IMObject object) {
+                super.onSelected(object);
+                User user = (User) object;
+                Context.getInstance().setClinician(user);
             }
         };
     }

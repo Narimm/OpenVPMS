@@ -19,12 +19,12 @@
 package org.openvpms.web.component.app;
 
 import org.apache.commons.lang.StringUtils;
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 
 
@@ -60,6 +60,16 @@ public class Context {
      * The current product.
      */
     private Product _product;
+
+    /**
+     * The current till.
+     */
+    private Party _till;
+
+    /**
+     * The current clinician.
+     */
+    private User _clinician;
 
 
     /**
@@ -162,6 +172,44 @@ public class Context {
      */
     public Product getProduct() {
         return _product;
+    }
+
+    /**
+     * Sets the current till.
+     *
+     * @param till the current till.
+     */
+    public void setTill(Party till) {
+        _till = till;
+    }
+
+    /**
+     * Returns the current till.
+     *
+     * @return the current till, or <code>null</code> if there is no current
+     *         till
+     */
+    public Party getTill() {
+        return _till;
+    }
+
+    /**
+     * Sets the current clinician.
+     *
+     * @param clinician the current clinician.
+     */
+    public void setClinician(User clinician) {
+        _clinician = clinician;
+    }
+
+    /**
+     * Returns the current clinician.
+     *
+     * @return the current clinician, or <code>null</code> if there is no current
+     *         clinician
+     */
+    public User getClinician() {
+        return _clinician;
     }
 
     /**
