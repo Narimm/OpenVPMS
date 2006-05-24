@@ -87,6 +87,15 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     }
 
     /**
+     * Returns the editor.
+     *
+     * @return the editor
+     */
+    protected IMObjectReferenceEditor getEditor() {
+        return _editor;
+    }
+    
+    /**
      * Creates a new object reference editor.
      *
      * @param property the reference property
