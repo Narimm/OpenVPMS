@@ -118,14 +118,11 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
         setQuery(createQuery(party));
         setBrowser(createBrowser(_query));
 
-        Component acts = getActs(_acts);
         _window = createCRUDWindow();
         if (_workspace != null) {
             container.remove(_workspace);
         }
-        _workspace = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                "ActWorkspace.Layout", acts,
-                _window.getComponent());
+        _workspace = createWorkspace(_acts, _window);
         container.add(_workspace);
 
         _window.setListener(new CRUDWindowListener() {
@@ -149,6 +146,21 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     protected Component getActs(Browser acts) {
         return GroupBoxFactory.create(_acts.getComponent());
     }
+
+    /**
+     * Creates the workspace split pane.
+     *
+     * @param browser the act browser
+     * @param window the CRUD window
+     * @return a new workspace split pane
+     */
+    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
+        Component acts = getActs(browser);
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                "ActWorkspace.Layout", acts,
+                window.getComponent());
+    }
+
 
     /**
      * Creates a new CRUD window for viewing and editing acts.
