@@ -56,7 +56,7 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
         }
         if (participation.isNew() && participation.getEntity() == null) {
             IMObject patient = Context.getInstance().getPatient();
-            getEntity().setValue(patient);
+            getEditor().setObject(patient);
         }
     }
 
