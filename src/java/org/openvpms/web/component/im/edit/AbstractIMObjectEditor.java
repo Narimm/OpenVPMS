@@ -411,7 +411,7 @@ public abstract class AbstractIMObjectEditor
     protected boolean doSave() {
         boolean saved = false;
         if (saveObject()) {
-            saved = saveObject();
+            saved = saveChildren();
         }
         return saved;
     }
