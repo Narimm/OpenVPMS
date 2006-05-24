@@ -16,14 +16,14 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.patientClinicalWeight.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Clinical Note" >
+	<archetype name="openvpms-common-act.patientWeight.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Patient Weight" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Clinical Note'" />
+			derivedValue="'Patient Weight'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="' '" />
-		<node name="startDate" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+			derivedValue="concat(/details/attributes/weight, ' ', /details/attributes/units)" />
+		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.customer" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 

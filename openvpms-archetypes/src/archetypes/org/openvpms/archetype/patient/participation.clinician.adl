@@ -29,7 +29,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="security.userClinician" />
+							value="security.user" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

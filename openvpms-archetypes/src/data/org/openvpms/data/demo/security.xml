@@ -10,4 +10,8 @@
   <data archetype="security.user" name="admin" password="admin">
     <data collection="roles" archetype="security.role" childId="id:ROLE1" />
   </data>
+  <data archetype="security.user" name="vet" password="vet">
+    <data collection="roles" archetype="security.role" childId="id:ROLE1" />
+    <data collection="classifications" archetype="classification.userType" childId="id:Clinician" />    
+  </data>
 </archetype>
