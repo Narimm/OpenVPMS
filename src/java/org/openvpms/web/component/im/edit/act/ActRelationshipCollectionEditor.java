@@ -18,39 +18,26 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.edit.CollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.DefaultActTableModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
-import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.spring.ServiceHelper;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -59,18 +46,7 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class ActRelationshipCollectionEditor extends CollectionEditor
-        implements Saveable {
-
-    /**
-     * The set of acts being edited, and their associated relationships.
-     */
-    private Map<Act, ActRelationship> _acts;
-
-    /**
-     * The relationship short name.
-     */
-    private final String _relationshipType;
+public class ActRelationshipCollectionEditor extends CollectionEditor {
 
 
     /**
@@ -82,10 +58,8 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
      */
     public ActRelationshipCollectionEditor(CollectionProperty property,
                                            Act act, LayoutContext context) {
-        super(property, act, context);
-        // @todo - no support for multiple relationship archetypes
-        NodeDescriptor descriptor = property.getDescriptor();
-        _relationshipType = descriptor.getArchetypeRange()[0];
+        super(new ActRelationshipCollectionPropertyEditor(property, act),
+                act, context);
     }
 
     /**
@@ -93,117 +67,46 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
      *
      * @return the set of acts being edited.
      */
-    public Set<Act> getActs() {
-        return _acts.keySet();
+    public List<Act> getActs() {
+        ActRelationshipCollectionPropertyEditor collection = getEditor();
+        List<Act> result = new ArrayList<Act>();
+        for (IMObject object : collection.getObjects()) {
+            result.add((Act) object);
+        }
+        return result;
     }
 
     /**
-     * Save any edits.
+     * Returns the collection property editor.
      *
-     * @param editor the editor managing the object to save
-     * @return <code>true</code> if the save was successful
+     * @return the collection property editor
+     */
+    protected ActRelationshipCollectionPropertyEditor getEditor() {
+        return (ActRelationshipCollectionPropertyEditor)
+                getCollectionPropertyEditor();
+    }
+
+    /**
+     * Adds the object being edited to the collection, if it doesn't exist.
+     *
+     * @param editor the editor
+     * @return <code>true</code> if the object was added, otherwise
+     *         <code>false</code>
      */
     @Override
-    protected boolean save(IMObjectEditor editor) {
+    protected boolean addEdited(IMObjectEditor editor) {
+        boolean result = false;
         Act act = (Act) editor.getObject();
-        boolean saved = false;
         if (editor instanceof ActItemEditor
-            && hasProductTemplate((ActItemEditor) editor)) {
+                && hasProductTemplate((ActItemEditor) editor)) {
             IMObjectReference product = ((ActItemEditor) editor).getProduct();
             if (IMObjectHelper.isA(product, "product.template")) {
-                saved = expandTemplate(act, product);
+                result = expandTemplate(act, product);
             }
         } else {
-            if (editor.save()) {
-                ActRelationship relationship = _acts.get(act);
-                if (relationship.isNew()) {
-                    saved = saveRelationship(relationship, act);
-                } else {
-                    saved = true;
-                }
-            }
+            result = super.addEdited(editor);
         }
-        return saved;
-    }
-
-    /**
-     * Returns the list of objects to display in the table.
-     *
-     * @return the list objects to display.
-     */
-    @Override
-    protected List<IMObject> getObjects() {
-        if (_acts == null) {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            List<IMObject> relationships = super.getObjects();
-            _acts = new LinkedHashMap<Act, ActRelationship>();
-            for (IMObject object : relationships) {
-                ActRelationship relationship = (ActRelationship) object;
-                Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
-                        service, relationship.getTarget());
-                _acts.put(item, relationship);
-            }
-        }
-        return new ArrayList<IMObject>(_acts.keySet());
-    }
-
-    /**
-     * Returns the range of archetypes that this may create.
-     *
-     * @return the range of archetypes that this may create
-     */
-    @Override
-    protected String[] getArchetypeRange() {
-        ArchetypeDescriptor relationship
-                = DescriptorHelper.getArchetypeDescriptor(_relationshipType);
-        NodeDescriptor target = relationship.getNodeDescriptor("target");
-        return target.getArchetypeRange();
-    }
-
-    /**
-     * Create a new table model.
-     *
-     * @param context the layout context
-     * @return a new table model
-     */
-    @Override
-    protected IMObjectTableModel createTableModel(LayoutContext context) {
-        DefaultLayoutContext readOnly = new DefaultLayoutContext(context);
-        readOnly.setComponentFactory(new TableComponentFactory(context));
-        return new DefaultActTableModel(getArchetypeRange(), readOnly);
-    }
-
-    /**
-     * Edit an object.
-     *
-     * @param object the object to edit
-     */
-    @Override
-    protected void edit(final IMObject object) {
-        if (object.isNew()) {
-            // Create a relationship for new acts.
-            Act act = (Act) object;
-
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            ActRelationship relationship = (ActRelationship) service.create(
-                    _relationshipType);
-            _acts.put(act, relationship);
-            super.edit(act);
-        } else {
-            super.edit(object);
-        }
-    }
-
-    /**
-     * Remove an object from the collection.
-     *
-     * @param object the object to remove
-     */
-    @Override
-    protected void removeFromCollection(IMObject object) {
-        Act act = (Act) object;
-        ActRelationship relationship = _acts.remove(act);
-        getCollection().remove(relationship);
+        return result;
     }
 
     /**
@@ -230,16 +133,17 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
      *
      * @param act         the act
      * @param templateRef a reference to the template
+     * @return <code>true</code> if the template was expanded; otherwise
+     *         <code>false</code>
      */
     protected boolean expandTemplate(Act act, IMObjectReference templateRef) {
-        boolean saved = false;
-        IArchetypeService service = ServiceHelper.getArchetypeService();
+        boolean result = false;
         IMObject template = IMObjectHelper.getObject(templateRef);
         if (template != null) {
-            // need to remove the relationship as a new relationship is
+            // need to remove the existing act as a new relationship is
             // created for each child act
-            ActRelationship actRelationship = _acts.remove(act);
-            String shortName = actRelationship.getArchetypeId().getShortName();
+            ActRelationshipCollectionPropertyEditor collection = getEditor();
+            collection.remove(act);
 
             IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
             Collection values = IMObjectHelper.getValues(template, "includes");
@@ -256,42 +160,15 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
                 editor.setProduct(product);
 
                 BigDecimal quantity = IMObjectHelper.getNumber(relationship,
-                                                               "includeQty");
+                        "includeQty");
                 if (quantity != null) {
                     editor.setQuantity(quantity);
                 }
-
-                // create a new act relationship linking the copied act with
-                // the parent act
-                ActRelationship relationshipCopy
-                        = (ActRelationship) service.create(shortName);
-                if (saveRelationship(relationshipCopy, copy)) {
-                    // register and save the act
-                    _acts.put(copy, relationshipCopy);
-                    saved = editor.save();
-                }
+                collection.add(copy);
+                result = true;
             }
         }
-        return saved;
-    }
-
-    /**
-     * Save an act relationsip.
-     *
-     * @param relationship the act relationship
-     * @param act          the child act
-     * @return <code>true</code> if the save was successful
-     */
-    private boolean saveRelationship(ActRelationship relationship, Act act) {
-        boolean saved = false;
-        Act parent = (Act) getObject();
-        relationship.setSource(parent.getObjectReference());
-        relationship.setTarget(act.getObjectReference());
-        if (SaveHelper.save(relationship)) {
-            getCollection().add(relationship);
-            saved = true;
-        }
-        return saved;
+        return result;
     }
 
     /**
@@ -322,7 +199,7 @@ public class ActRelationshipCollectionEditor extends CollectionEditor
             if (object instanceof Participation) {
                 Participation participant = (Participation) object;
                 if (IMObjectHelper.isA(participant.getEntity(),
-                                       "product.template")) {
+                        "product.template")) {
                     result = null;
                 } else {
                     result = super.getObject(object, service);

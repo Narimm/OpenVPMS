@@ -149,7 +149,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
                 onViewChanged(false);
             }
         });
-        Row row = RowFactory.create("CellSpacing", visits, problems);
+        Row row = RowFactory.create("ControlRow", visits, problems);
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 "SplitPane.Dialog", row, box);

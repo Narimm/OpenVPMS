@@ -18,9 +18,6 @@
 
 package org.openvpms.web.component.im.edit.order;
 
-import java.math.BigDecimal;
-import java.util.Set;
-
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
@@ -28,6 +25,9 @@ import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -56,13 +56,12 @@ public class OrderEditor extends ActEditor {
 
     /**
      * Update totals when an act item changes.
-     *
-     * @todo - workaround for OVPMS-211
      */
     protected void updateTotals() {
         Property total = getProperty("total");
+        // @todo - workaround for OVPMS-211
 
-        Set<Act> acts = getEditor().getActs();
+        List<Act> acts = getEditor().getActs();
         BigDecimal value = ActHelper.sum(acts, "total");
         total.setValue(value);
     }

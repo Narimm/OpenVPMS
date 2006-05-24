@@ -410,7 +410,7 @@ public abstract class AbstractIMObjectEditor
      */
     protected boolean doSave() {
         boolean saved = false;
-        if (saveChildren()) {
+        if (saveObject()) {
             saved = saveObject();
         }
         return saved;

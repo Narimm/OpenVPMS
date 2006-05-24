@@ -18,13 +18,10 @@
 
 package org.openvpms.web.component.im.util;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -33,6 +30,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.spring.ServiceHelper;
+
+import java.math.BigDecimal;
+import java.util.Collection;
 
 
 /**
@@ -118,9 +118,41 @@ public class IMObjectHelper {
     public static boolean isA(IMObjectReference reference, String shortName) {
         if (reference != null) {
             return DescriptorHelper.matches(reference.getArchetypeId(),
-                                            shortName);
+                    shortName);
         }
         return false;
+    }
+
+    /**
+     * Sets a value on an object.
+     *
+     * @param object the object
+     * @param node   the node name
+     * @param value  the object value
+     * @throws DescriptorException if the value can't be set
+     */
+    public static void setValue(IMObject object, String node, Object value) {
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(object);
+        setValue(object, archetype, node, value);
+    }
+
+    /**
+     * Sets a value on an object.
+     *
+     * @param object    the object
+     * @param archetype the archetype descriptor
+     * @param node      the node name
+     * @param value     the object value
+     * @throws DescriptorException if the value can't be set
+     */
+    public static void setValue(IMObject object,
+                                ArchetypeDescriptor archetype, String node,
+                                Object value) {
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
+        if (descriptor != null) {
+            descriptor.setValue(object, value);
+        }
     }
 
     /**
@@ -181,8 +213,8 @@ public class IMObjectHelper {
      *         <code>null</code>
      */
     public static String getString(IMObject object,
-                                       ArchetypeDescriptor archetype,
-                                       String node) {
+                                   ArchetypeDescriptor archetype,
+                                   String node) {
         String result = null;
         Object value = getValue(object, archetype, node);
         if (value != null) {

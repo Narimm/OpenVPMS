@@ -1,0 +1,247 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+/**
+ * Add description here.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+package org.openvpms.web.component.im.edit;
+
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+
+/**
+ * Abstract implementation of the {@link CollectionPropertyEditor} interface.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public class AbstractCollectionPropertyEditor
+        implements CollectionPropertyEditor {
+
+    /**
+     * The property being edited.
+     */
+    private final CollectionProperty _property;
+
+    /**
+     * The set of edited objects.
+     */
+    private final Set<IMObject> _edited = new HashSet<IMObject>();
+
+    /**
+     * Indicates if any object has been saved.
+     */
+    private boolean _saved;
+
+
+    /**
+     * Construct a new <code>AbstractCollectionPropertyEditor</code>.
+     *
+     * @param property the collection property
+     */
+    public AbstractCollectionPropertyEditor(CollectionProperty property) {
+        _property = property;
+    }
+
+    /**
+     * Returns the collection property.
+     *
+     * @return the property
+     */
+    public CollectionProperty getProperty() {
+        return _property;
+    }
+
+    /**
+     * Returns the range of archetypes that the collection may contain.
+     *
+     * @return the range of archetypes
+     */
+    public String[] getArchetypeRange() {
+        NodeDescriptor descriptor = _property.getDescriptor();
+        if (!StringUtils.isEmpty(descriptor.getFilter())) {
+            return new String[]{descriptor.getFilter()};
+        }
+        return descriptor.getArchetypeRange();
+    }
+
+    /**
+     * Adds an object to the collection, if it doesn't exist.
+     *
+     * @param object the object to add
+     * @return <code>true</code> if the object was added, otherwise
+     *         <code>false</code>
+     */
+    public boolean add(IMObject object) {
+        boolean added = false;
+        if (!_property.getValues().contains(object)) {
+            _property.add(object);
+            added = true;
+        }
+        addEdited(object);
+        return added;
+    }
+
+    /**
+     * Removes an object from the collection.
+     *
+     * @param object the object to remove
+     */
+    public void remove(IMObject object) {
+        _property.remove(object);
+        removeEdited(object);
+    }
+
+    /**
+     * Determines if the collection has been modified.
+     *
+     * @return <code>true</code> if the collection has been modified
+     */
+    public boolean isModified() {
+        return _property.isModified() || !_edited.isEmpty();
+    }
+
+    /**
+     * Clears the modified status of the object.
+     */
+    public void clearModified() {
+        _property.clearModified();
+    }
+
+    /**
+     * Determines if the collection is valid.
+     *
+     * @return <code>true</code> if the collection is valid; otherwise
+     *         <code>false</code>
+     */
+    public boolean isValid() {
+        boolean valid = _property.isValid();
+        if (valid) {
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            for (IMObject object : _edited) {
+                valid = ValidationHelper.isValid(object, service);
+                if (!valid) {
+                    break;
+                }
+            }
+        }
+        return valid;
+    }
+
+    /**
+     * Saves any edits.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    public boolean save() {
+        boolean saved = doSave();
+        if (saved) {
+            clearModified();
+        }
+        return saved;
+    }
+
+    /**
+     * Determines if any edits have been saved.
+     *
+     * @return <code>true</code> if edits have been saved.
+     */
+    public boolean isSaved() {
+        return _saved;
+    }
+
+    /**
+     * Returns the objects in the collection.
+     *
+     * @return the objects in the collection
+     */
+    public List<IMObject> getObjects() {
+        List<IMObject> objects = Collections.emptyList();
+        Collection values = _property.getValues();
+        int size = values.size();
+        if (size != 0) {
+            objects = new ArrayList<IMObject>();
+            for (Object value : values) {
+                objects.add((IMObject) value);
+            }
+        }
+        return objects;
+    }
+
+    /**
+     * Saves the collection.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    protected boolean doSave() {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        IMObject[] edited = _edited.toArray(new IMObject[0]);
+        for (IMObject object : edited) {
+            if (SaveHelper.save(object, service)) {
+                _edited.remove(object);
+                _saved = true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Sets the saved state.
+     *
+     * @param saved if <code>true</code> indicates that this has been saved
+     */
+    protected void setSaved(boolean saved) {
+        _saved = saved;
+    }
+
+    /**
+     * Adds an object to the set of objects to save when the collection is
+     * saved.
+     *
+     * @param object the edited object
+     */
+    protected void addEdited(IMObject object) {
+        _edited.add(object);
+    }
+
+    /**
+     * Removes an object from the the set of objects to save.
+     *
+     * @param object the object to remove
+     */
+    protected void removeEdited(IMObject object) {
+        _edited.remove(object);
+    }
+}

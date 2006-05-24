@@ -18,13 +18,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -32,19 +25,10 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.apache.commons.lang.StringUtils;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.ModifiableListeners;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertyEditor;
-import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.*;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.FilterHelper;
@@ -67,6 +51,10 @@ import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
 
 /**
  * Editor for a collection of {@link IMObject}s.
@@ -80,7 +68,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     /**
      * The collection.
      */
-    private final CollectionProperty _collection;
+    private final CollectionPropertyEditor _collection;
 
     /**
      * The object to edit.
@@ -106,16 +94,6 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * The archetype short name used to create a new object.
      */
     private String _shortname;
-
-    /**
-     * Tracks the modified status of the collection.
-     */
-    private boolean _modified;
-
-    /**
-     * Indicates if any object has been saved.
-     */
-    private boolean _saved;
 
     /**
      * The current editor.
@@ -156,13 +134,13 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     /**
      * Construct a new <code>CollectionEditor</code>.
      *
-     * @param property the collection property
-     * @param object   the object being edited
-     * @param context  the layout context
+     * @param editor the collection property editor
+     * @param object the object being edited
+     * @param context the layout context
      */
-    public CollectionEditor(CollectionProperty property,
-                            IMObject object, LayoutContext context) {
-        _collection = property;
+    protected CollectionEditor(CollectionPropertyEditor editor,
+                               IMObject object, LayoutContext context) {
+        _collection = editor;
         _object = object;
         _context = new DefaultLayoutContext(context);
 
@@ -177,6 +155,19 @@ public class CollectionEditor implements PropertyEditor, Saveable {
                 onComponentChange(event);
             }
         };
+
+    }
+
+    /**
+     * Construct a new <code>CollectionEditor</code>.
+     *
+     * @param property the collection property
+     * @param object   the object being edited
+     * @param context  the layout context
+     */
+    public CollectionEditor(CollectionProperty property,
+                            IMObject object, LayoutContext context) {
+        this(new DefaultCollectionPropertyEditor(property), object, context);
     }
 
     /**
@@ -185,7 +176,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @return the property being edited
      */
     public Property getProperty() {
-        return _collection;
+        return _collection.getProperty();
     }
 
     /**
@@ -215,16 +206,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @return the collection property
      */
     public CollectionProperty getCollection() {
-        return _collection;
-    }
-
-    /**
-     * Returns the collection descriptor.
-     *
-     * @return the collection descriptor
-     */
-    public NodeDescriptor getDescriptor() {
-        return _collection.getDescriptor();
+        return _collection.getProperty();
     }
 
     /**
@@ -233,17 +215,18 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @return <code>true</code> if the object has been modified
      */
     public boolean isModified() {
-        if (!_modified && _editor != null) {
-            _modified = _editor.isModified();
+        boolean modified = _collection.isModified();
+        if (!modified && _editor != null) {
+            modified = _editor.isModified();
         }
-        return _modified;
+        return modified;
     }
 
     /**
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        _modified = false;
+        _collection.clearModified();
         if (_editor != null) {
             _editor.clearModified();
         }
@@ -281,7 +264,6 @@ public class CollectionEditor implements PropertyEditor, Saveable {
             if (saved) {
                 clearModified();
             }
-            _saved |= saved;
         }
         return saved;
     }
@@ -292,7 +274,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @return <code>true</code> if edits have been saved.
      */
     public boolean isSaved() {
-        return _saved;
+        return _collection.isSaved();
     }
 
     /**
@@ -302,11 +284,9 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      *         <code>false</code>
      */
     public boolean isValid() {
-        boolean valid;
-        if (_editor != null) {
-            valid = _editor.isValid();
-        } else {
-            valid = true;
+        boolean valid = false;
+        if (addCurrentEdits()) {
+            valid = _collection.isValid();
         }
         return valid;
     }
@@ -316,7 +296,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      */
     protected void doLayout() {
         _component = ColumnFactory.create(COLUMN_STYLE);
-        String[] range = getArchetypeRange();
+        String[] range = _collection.getArchetypeRange();
         range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
 
         Button create = ButtonFactory.create("add", new ActionListener() {
@@ -382,34 +362,12 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     }
 
     /**
-     * Returns the list of objects to display in the table.
+     * Returns the collection property editor.
      *
-     * @return the list objects to display.
+     * @return the collection property editor
      */
-    protected List<IMObject> getObjects() {
-        List<IMObject> objects = Collections.emptyList();
-        Collection values = _collection.getValues();
-        int size = values.size();
-        if (size != 0) {
-            objects = new ArrayList<IMObject>();
-            for (Object value : values) {
-                objects.add((IMObject) value);
-            }
-        }
-        return objects;
-    }
-
-    /**
-     * Returns the range of archetypes that this may create.
-     *
-     * @return the range of archetypes that this may create
-     */
-    protected String[] getArchetypeRange() {
-        NodeDescriptor descriptor = getDescriptor();
-        if (!StringUtils.isEmpty(descriptor.getFilter())) {
-            return new String[]{descriptor.getFilter()};
-        }
-        return descriptor.getArchetypeRange();
+    protected CollectionPropertyEditor getCollectionPropertyEditor() {
+        return _collection;
     }
 
     /**
@@ -419,7 +377,9 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @return a new table model
      */
     protected IMObjectTableModel createTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(getDescriptor(), context);
+        CollectionProperty property = getCollection();
+        return IMObjectTableModelFactory.create(property.getDescriptor(),
+                context);
     }
 
     /**
@@ -427,7 +387,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * selected archetype, and displays it in an editor.
      */
     protected void onNew() {
-        if (saveCurrentEdits() && _shortname != null) {
+        if (addCurrentEdits() && _shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             try {
                 IMObject object = service.create(_shortname);
@@ -436,12 +396,12 @@ public class CollectionEditor implements PropertyEditor, Saveable {
                 } else {
                     String title = Messages.get("imobject.create.failed.title");
                     String message = Messages.get("imobject.create.failed",
-                                                  _shortname);
+                            _shortname);
                     ErrorHelper.show(title, message);
                 }
             } catch (OpenVPMSException exception) {
                 String message = Messages.get("imobject.create.failed",
-                                              _shortname);
+                        _shortname);
                 ErrorHelper.show(message, exception);
             }
         }
@@ -473,21 +433,11 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @param object the object to delete
      */
     protected void delete(IMObject object) {
-        removeFromCollection(object);
+        _collection.remove(object);
         populateTable();
-        _modified = true;
         if (_editor != null && _editor.getObject() == object) {
             removeEditor();
         }
-    }
-
-    /**
-     * Remove an object from the collection.
-     *
-     * @param object the object to remove
-     */
-    protected void removeFromCollection(IMObject object) {
-        _collection.remove(object);
     }
 
     /**
@@ -496,16 +446,12 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     protected void onEdit() {
         IMObject object = _table.getTable().getSelected();
         if (object != null) {
-            if (_editor != null && _editor.isModified()) {
-                // need to save any edits after getting the selected object
+            if (addCurrentEdits()) {
+                // need to add any edits after getting the selected object
                 // as this may change the order within the table
-                if (!saveCurrentEdits()) {
-                    return;
-                }
-                // reselect it
                 _table.getTable().setSelected(object);
+                edit(object);
             }
-            edit(object);
         }
     }
 
@@ -553,22 +499,13 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     }
 
     /**
-     * Save any edits.
+     * Adds the object being edited to the collection, if it doesn't exist.
      *
-     * @param editor the editor managing the object to save
-     * @return <code>true</code> if the save was successful
+     * @param editor the editor
      */
-    protected boolean save(IMObjectEditor editor) {
-        boolean saved = false;
+    protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
-        boolean isNew = object.isNew();
-        if (_editor.save()) {
-            if (isNew) {
-                _collection.add(object);
-            }
-            saved = true;
-        }
-        return saved;
+        return _collection.add(object);
     }
 
     /**
@@ -585,33 +522,48 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     }
 
     /**
-     * Save any current edits. If there are edits to save, the table will be
-     * repopulated and the edited object reselected.
+     * Saves any current edits.
      *
-     * @return <code>true</code> if the save was successful; otherwise
+     * @return <code>true</code> if edits were saved successfully, otherwise
      *         <code>false</code>
      */
     private boolean saveCurrentEdits() {
-        boolean result = false;
-        if (_editor != null && _editor.isModified()) {
-            if (save(_editor)) {
-                result = true;
-                populateTable();
-                IMObject object = _editor.getObject();
-                _table.getTable().setSelected(object);
-                _listeners.notifyListeners(this);
-            }
-        } else {
-            result = true;
+        boolean saved = false;
+        if (addCurrentEdits()) {
+            saved = _collection.save();
         }
-        return result;
+        return saved;
+    }
+
+    /**
+     * Adds any current edits. If there are edits to add and they are valid,
+     * the table will be repopulated and the edited object reselected.
+     *
+     * @return <code>true</code> if the edits were added,
+     *         otherwise <code>false</code>
+     */
+    private boolean addCurrentEdits() {
+        boolean added = true;
+        if (_editor != null && _editor.isModified()) {
+            if (!_editor.isValid()) {
+                added = false;
+            } else {
+                if (addEdited(_editor)) {
+                    populateTable();
+                    IMObject object = _editor.getObject();
+                    _table.getTable().setSelected(object);
+                    _listeners.notifyListeners(this);
+                }
+            }
+        }
+        return added;
     }
 
     /**
      * Populates the table.
      */
     private void populateTable() {
-        List<IMObject> objects = getObjects();
+        List<IMObject> objects = _collection.getObjects();
         ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
         _table.setResultSet(set);
     }
