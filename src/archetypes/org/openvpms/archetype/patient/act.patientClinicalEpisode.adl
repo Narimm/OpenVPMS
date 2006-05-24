@@ -23,8 +23,8 @@
 			derivedValue="'Episode'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
 			derivedValue="concat(/activityStartTime,' - ',/activityEndTime,' : ', /reason)" />
-		<node name="startDate" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="completeDate" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
+		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node name="completeTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
 		<node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
@@ -39,7 +39,7 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
-		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+		<node displayName="Events" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

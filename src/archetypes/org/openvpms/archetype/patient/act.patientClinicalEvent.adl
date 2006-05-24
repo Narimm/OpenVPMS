@@ -23,7 +23,7 @@
 			derivedValue="'Event'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
 			derivedValue="concat(/activityStartTime,' : ', /reason)" />
-		<node name="startDate" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
@@ -31,7 +31,7 @@
         <node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.clinician" />
-		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

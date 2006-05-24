@@ -45,6 +45,9 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
+        <node name="till" path="/participations" type="java.util.HashSet"
+              minCardinality="1" maxCardinality="1"
+              filter="participation.till" />
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
