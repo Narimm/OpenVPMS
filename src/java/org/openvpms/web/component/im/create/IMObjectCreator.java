@@ -18,20 +18,18 @@
 
 package org.openvpms.web.component.im.create;
 
-import java.util.List;
-
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.List;
 
 
 /**
@@ -60,6 +58,13 @@ public final class IMObjectCreator {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         try {
             result = service.create(shortName);
+            if (result == null) {
+                String title = Messages.get("imobject.create.failed.title");
+                String message = Messages.get("imobject.create.noarchetype",
+                        shortName);
+                ErrorHelper.show(title, message);
+
+            }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("imobject.create.failed", shortName);
             ErrorHelper.show(title, exception);
@@ -86,8 +91,8 @@ public final class IMObjectCreator {
         if (shortNames.isEmpty()) {
             String title = Messages.get("imobject.create.failed.title");
             String message = Messages.get("imobject.noarchetype",
-                                          refModelName, entityName,
-                                          conceptName);
+                    refModelName, entityName,
+                    conceptName);
             ErrorHelper.show(title, message);
         } else {
             create(type, shortNames, listener);

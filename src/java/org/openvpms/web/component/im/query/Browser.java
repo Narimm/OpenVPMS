@@ -45,7 +45,7 @@ public interface Browser<T extends IMObject> {
      * @return the selected object, or <code>null</code> if none has been
      *         selected.
      */
-    IMObject getSelected();
+    T getSelected();
 
     /**
      * Select an object.

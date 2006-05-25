@@ -19,11 +19,19 @@
 package org.openvpms.web.component.im.query;
 
 import echopointng.Tree;
-import echopointng.tree.*;
+import echopointng.tree.DefaultTreeModel;
+import echopointng.tree.MutableTreeNode;
+import echopointng.tree.TreeNode;
+import echopointng.tree.TreePath;
+import echopointng.tree.TreeSelectionEvent;
+import echopointng.tree.TreeSelectionListener;
+import echopointng.tree.TreeSelectionModel;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.tree.IMObjectTreeNode;
+import org.openvpms.web.component.im.tree.TreeBuilder;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -38,7 +46,12 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractTreeBrowser<T extends IMObject>
-        extends AbstractBrowser<T> {
+        extends AbstractBrowser<T> implements TreeBrowser<T> {
+
+    /**
+     * The tree builder.
+     */
+    private final TreeBuilder<T> _builder;
 
     /**
      * The tree.
@@ -50,11 +63,14 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
      * Construct a new <code>AbstractTreeBrowser</code> that queries IMObjects
      * using the specified query.
      *
-     * @param query the query
-     * @param sort  the sort criteria. May be <code>null</code>
+     * @param query   the query
+     * @param sort    the sort criteria. May be <code>null</code>
+     * @param builder the tree builder
      */
-    public AbstractTreeBrowser(Query<T> query, SortConstraint[] sort) {
+    public AbstractTreeBrowser(Query<T> query, SortConstraint[] sort,
+                               TreeBuilder<T> builder) {
         super(query, sort);
+        _builder = builder;
     }
 
     /**
@@ -87,6 +103,12 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
             MutableTreeNode root = (MutableTreeNode) _tree.getModel().getRoot();
             TreePath path = getPath(object, root);
             if (path != null) {
+                if (path.getPathCount() >= 2) {
+                    // expand all nodes related to the object
+                    Object[] subPath = new Object[2];
+                    System.arraycopy(path.getPath(), 0, subPath, 0, 2);
+                    _tree.toggleAllNodes(new TreePath(subPath), true);
+                }
                 _tree.setSelectionPath(path);
             }
         }
@@ -162,7 +184,16 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
      * @param set the result set
      * @return the root of the tree
      */
-    protected abstract MutableTreeNode createTree(ResultSet<T> set);
+    protected MutableTreeNode createTree(ResultSet<T> set) {
+        _builder.create();
+        while (set.hasNext()) {
+            IPage<T> page = set.next();
+            for (T object : page.getRows()) {
+                _builder.add(object);
+            }
+        }
+        return _builder.getTree();
+    }
 
     /**
      * Invoked when a node is selected. Notifies any registered listeners.

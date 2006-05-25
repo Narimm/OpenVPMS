@@ -18,12 +18,10 @@
 
 package org.openvpms.web.app.patient;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -36,20 +34,16 @@ import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.query.AbstractTreeBrowser;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.TreeBrowser;
-import org.openvpms.web.component.im.tree.ActTreeNodeFactory;
+import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.resource.util.Styles;
 import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.ArrayList;
@@ -65,25 +59,9 @@ import java.util.List;
 public class PatientRecordWorkspace extends ActWorkspace {
 
     /**
-     * The current clinical episode.
+     * The selected act.
      */
-    private Act _clinicalEpisode;
-
-    /**
-     * The current clinical event;
-     */
-    private Act _clinicalEvent;
-
-    /**
-     * The current clinical problem;
-     */
-    private Act _clinicalProblem;
-
-    /**
-     * Flag to denote the current view. If <code>true</code>, in 'visit'
-     * view, otherwise in 'problem' view.
-     */
-    private boolean _visitView = true;
+    private Act _selected;
 
     /**
      * Clinical episode act short name.
@@ -136,28 +114,13 @@ public class PatientRecordWorkspace extends ActWorkspace {
 
     /**
      * Returns a component representing the acts.
-     * This implementation returns the acts displayed in a group box.
      *
      * @param acts the act browser
      * @return a component representing the acts
      */
     @Override
     protected Component getActs(Browser acts) {
-        Component box = super.getActs(acts);
-        Button visits = ButtonFactory.create("visit", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onViewChanged(true);
-            }
-        });
-        Button problems = ButtonFactory.create("problem", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onViewChanged(false);
-            }
-        });
-        Row row = RowFactory.create("ControlRow", visits, problems);
-        return SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "SplitPane.Dialog", row, box);
+        return acts.getComponent();
     }
 
     /**
@@ -169,11 +132,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
-        SplitPane pane = super.createWorkspace(browser, window);
-        String style = Styles.getStyle(SplitPane.class,
-                "PatientRecordWorkspace.Layout");
-        pane.setStyleName(style);
-        return pane;
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                "PatientRecordWorkspace.Layout", browser.getComponent(),
+                window.getComponent());
     }
 
     /**
@@ -187,6 +148,17 @@ public class PatientRecordWorkspace extends ActWorkspace {
     }
 
     /**
+     * Invoked when an act is selected.
+     *
+     * @param act the act
+     */
+    @Override
+    protected void actSelected(Act act) {
+        super.actSelected(act);
+        _selected = act;
+    }
+
+    /**
      * Invoked when the object has been saved.
      *
      * @param object the object
@@ -196,32 +168,57 @@ public class PatientRecordWorkspace extends ActWorkspace {
     protected void onSaved(IMObject object, boolean isNew) {
         if (isNew) {
             if (IMObjectHelper.isA(object, CLINICAL_EVENT)) {
-                if (_clinicalEpisode != null) {
-                    addActRelationship(RELATIONSHIP_CLINICAL_EPISODE_EVENT,
-                            _clinicalEpisode, (Act) object);
-                }
+                addActRelationship((Act) object, CLINICAL_EPISODE,
+                        RELATIONSHIP_CLINICAL_EPISODE_EVENT);
             } else if (IMObjectHelper.isA(object, CLINICAL_PROBLEM)) {
-                if (_clinicalEvent != null) {
-                    addActRelationship(RELATIONSHIP_CLINICAL_EVENT_ITEM,
-                            _clinicalEvent, (Act) object);
-                }
+                addActRelationship((Act) object, CLINICAL_EVENT,
+                        RELATIONSHIP_CLINICAL_EVENT_ITEM);
             }
         }
         super.onSaved(object, isNew);
     }
 
     /**
-     * Creates a new query.
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(IMObject object) {
+        super.onDeleted(object);
+        _selected = null;
+    }
+
+
+    /**
+     * Creates a new query for visits view.
      *
      * @param party the party to query acts for
      * @return a new query
      */
     protected ActQuery createQuery(Party party) {
-        String[] shortNames = {CLINICAL_EPISODE};
-        String[] statuses = {};
+        String[] shortNames = {};
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+                RELATIONSHIP_CLINICAL_EVENT_ITEM);
+        if (archetype != null) {
+            NodeDescriptor target = archetype.getNodeDescriptor("target");
+            if (target != null) {
+                shortNames = DescriptorHelper.getShortNames(target);
+            }
+        }
+        return createQuery(party, shortNames);
+    }
 
-        return new ActQuery(party, "patient", "participation.patient",
-                shortNames, statuses);
+    /**
+     * Creates a new browser to query and display acts.
+     *
+     * @param query the query
+     * @return a new browser
+     */
+    @Override
+    protected Browser<Act> createBrowser(Query<Act> query) {
+        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
+        return new RecordBrowser(query, createProblemsQuery(), sort);
     }
 
     /**
@@ -237,114 +234,80 @@ public class PatientRecordWorkspace extends ActWorkspace {
     }
 
     /**
-     * Creates a new browser to query and display acts.
+     * Creates a new query, for the problems view.
      *
-     * @param query the query
-     * @return a new browser
+     * @return a new query
      */
-    @Override
-    protected Browser<Act> createBrowser(Query<Act> query) {
-        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        if (_visitView) {
-            return new TreeBrowser<Act>(query, sort, new ActTreeNodeFactory());
-        }
-        return new ProblemTreeBrowser(query, sort);
+    private ActQuery createProblemsQuery() {
+        Party patient = (Party) getObject();
+        String[] shortNames = {CLINICAL_PROBLEM};
+        return createQuery(patient, shortNames);
     }
 
     /**
-     * Invoked when the object has been deleted.
+     * Creates a new query.
      *
-     * @param object the object
+     * @param patient    the patient to query acts for
+     * @param shortNames the act short names
+     * @return a new query
      */
-    @Override
-    protected void onDeleted(IMObject object) {
-        super.onDeleted(object);
-        _clinicalEpisode = null;
-        _clinicalEvent = null;
-        _clinicalProblem = null;
+    private ActQuery createQuery(Party patient, String[] shortNames) {
+        String[] statuses = {};
+        return new ActQuery(patient, "patient", "participation.patient",
+                shortNames, statuses);
     }
 
     /**
-     * Invoked when an act is selected.
+     * Returns the act with the specified short name, recursively navigating to
+     * the parent until either one is found, or there are no more parent acts.
      *
-     * @param act the act
+     * @param act       the act
+     * @param shortName the archetype shortname
+     * @return the act or a parent, or <code>null</code> if none was found
      */
-    @Override
-    protected void actSelected(Act act) {
-        super.actSelected(act);
-        if (IMObjectHelper.isA(act, CLINICAL_EPISODE)) {
-            _clinicalEpisode = act;
-            _clinicalEvent = null;
-            _clinicalProblem = null;
-        } else if (IMObjectHelper.isA(act, CLINICAL_EVENT)) {
-            _clinicalEpisode = getParent(act, CLINICAL_EPISODE);
-            _clinicalEvent = act;
-            _clinicalProblem = null;
-        } else if (IMObjectHelper.isA(act, CLINICAL_PROBLEM)) {
-            _clinicalProblem = act;
-            _clinicalEvent =
-                    getParent(_clinicalProblem, CLINICAL_EVENT);
-            _clinicalEpisode
-                    = getParent(_clinicalEvent, CLINICAL_EPISODE);
-        } else {
-            _clinicalEpisode = null;
-            _clinicalEvent = null;
-            _clinicalProblem = null;
-        }
-    }
-
-    /**
-     * Invoked to change the current view.
-     *
-     * @param visit if <code>true</code> indicates to show the 'visit' view,
-     *              otherwise indicates to show the 'problem' view
-     */
-    private void onViewChanged(boolean visit) {
-        if (visit != _visitView) {
-            _visitView = visit;
-            setBrowser(createBrowser(getQuery()));
-            initQuery((Party) getObject());
-        }
-    }
-
-    /**
-     * Returns the parent of act.
-     *
-     * @param act       the act. May be <code>null</code>
-     * @param shortName the parent's archetype shortname
-     * @return the act parent, or <code>null</code> if none was found
-     */
-    private Act getParent(Act act, String shortName) {
+    private Act getAct(Act act, String shortName) {
+        Act result = null;
         if (act != null) {
-            AbstractTreeBrowser<Act> browser
-                    = (AbstractTreeBrowser<Act>) getBrowser();
-            Act parent = browser.getParent(act);
-            if (IMObjectHelper.isA(parent, shortName)) {
-                return parent;
+            if (IMObjectHelper.isA(act, shortName)) {
+                result = act;
+            } else {
+                RecordBrowser browser = (RecordBrowser) getBrowser();
+                Act parent = browser.getParent(act);
+                result = getAct(parent, shortName);
             }
         }
-        return null;
+        return result;
     }
 
     /**
      * Adds a relationship between two acts.
      *
-     * @param type   the relationship type
-     * @param parent the parent act
-     * @param child  the child act
+     * @param act              the act
+     * @param parentType       the type of the parent act
+     * @param relationshipType the type of the relationship to addd
      */
-    private void addActRelationship(String type, Act parent, Act child) {
+    private void addActRelationship(Act act, String parentType,
+                                    String relationshipType) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        try {
-            ActRelationship relationship = (ActRelationship) service.create(type);
-            if (relationship != null) {
-                relationship.setSource(parent.getObjectReference());
-                relationship.setTarget(child.getObjectReference());
-                parent.addActRelationship(relationship);
-                SaveHelper.save(parent, service);
+        Act parent = getAct(_selected, parentType);
+        if (parent != null) {
+            try {
+                ActRelationship relationship
+                        = (ActRelationship) IMObjectCreator.create(
+                        relationshipType);
+                if (relationship != null) {
+                    relationship.setSource(parent.getObjectReference());
+                    relationship.setTarget(act.getObjectReference());
+                    parent.addActRelationship(relationship);
+                    SaveHelper.save(parent, service);
+                }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
             }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+        } else {
+            String name = DescriptorHelper.getDisplayName(act);
+            String message = Messages.get("patient.record.create.noparent");
+            ErrorHelper.show(message, name);
         }
     }
 
@@ -356,28 +319,27 @@ public class PatientRecordWorkspace extends ActWorkspace {
          * @return the archetype short names
          */
         public String[] getShortNames() {
-            String[] shortNames;
-
-            if (_visitView) {
-                List<String> names = new ArrayList<String>();
-                if (_clinicalProblem != null) {
-                }
-                if (_clinicalEvent != null) {
-                    names.add(CLINICAL_PROBLEM);
-                }
-                if (_clinicalEpisode != null) {
-                    names.add(CLINICAL_EVENT);
-                }
-                names.add(CLINICAL_EPISODE);
-                shortNames = names.toArray(new String[0]);
-            } else {
-                if (_clinicalEvent != null) {
-                    shortNames = new String[]{CLINICAL_PROBLEM};
-                } else {
-                    shortNames = new String[0];
-                }
+            RecordBrowser browser = (RecordBrowser) getBrowser();
+            Act act = browser.getSelected();
+            boolean isProblem = false;
+            boolean isEvent = false;
+            boolean isEpisode = false;
+            List<String> names = new ArrayList<String>();
+            if (IMObjectHelper.isA(act, CLINICAL_PROBLEM)) {
+                isProblem = true;
+            } else if (IMObjectHelper.isA(act, CLINICAL_EVENT)) {
+                isEvent = true;
+            } else if (IMObjectHelper.isA(act, CLINICAL_EPISODE)) {
+                isEpisode = true;
             }
-            return shortNames;
+            if (isProblem || isEvent || isEpisode) {
+                names.add(CLINICAL_EVENT);
+                names.add(CLINICAL_EPISODE);
+            }
+            if (isProblem || isEvent) {
+                names.add(0, CLINICAL_PROBLEM);
+            }
+            return names.toArray(new String[0]);
         }
     }
 }
