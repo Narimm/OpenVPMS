@@ -127,7 +127,11 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
             while (chilren.hasMoreElements()) {
                 Object child = chilren.nextElement();
                 if (child instanceof IMObjectTreeNode) {
-                    result.add(((IMObjectTreeNode<T>) child).getObject());
+                    IMObjectTreeNode<T> node = (IMObjectTreeNode<T>) child;
+                    T object = node.getObject();
+                    if (object != null) {
+                        result.add(object);
+                    }
                 }
             }
         }
@@ -185,7 +189,7 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
      * @return the root of the tree
      */
     protected MutableTreeNode createTree(ResultSet<T> set) {
-        _builder.create();
+        _builder.create(set.getSortConstraints());
         while (set.hasNext()) {
             IPage<T> page = set.next();
             for (T object : page.getRows()) {
@@ -214,7 +218,7 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
     protected TreePath getPath(IMObject object, MutableTreeNode node) {
         if (node instanceof IMObjectTreeNode) {
             IMObjectTreeNode objNode = (IMObjectTreeNode) node;
-            if (objNode.getObject().equals(object)) {
+            if (object.equals(objNode.getObject())) {
                 List<TreeNode> nodes = new LinkedList<TreeNode>();
                 TreeNode treeNode = node;
                 while (treeNode != null) {

@@ -82,4 +82,11 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      */
     boolean isSortedAscending();
 
+    /**
+     * Returns the sort criteria.
+     *
+     * @return the sort criteria. Never null
+     */
+    SortConstraint[] getSortConstraints();
+
 }

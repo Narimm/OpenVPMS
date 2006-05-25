@@ -19,6 +19,8 @@
 package org.openvpms.web.component.im.tree;
 
 import echopointng.tree.MutableTreeNode;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 
 /**
@@ -27,12 +29,14 @@ import echopointng.tree.MutableTreeNode;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface TreeBuilder<T> {
+public interface TreeBuilder<T extends IMObject> {
 
     /**
      * Start a new tree.
+     *
+     * @param sort node sort criteria. May be <code>null</code>
      */
-    void create();
+    void create(SortConstraint[] sort);
 
     /**
      * Adds a node into the tree.
