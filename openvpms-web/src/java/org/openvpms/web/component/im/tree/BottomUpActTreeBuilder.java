@@ -29,6 +29,7 @@ import echopointng.tree.MutableTreeNode;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.HashMap;
@@ -48,18 +49,27 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
     /**
      * The root node.
      */
-    private DefaultMutableTreeNode _root;
+    private IMObjectTreeNode<Act> _root;
+
+    /**
+     * Node sort criteria. May be <code>null</code>.
+     */
+    private SortConstraint[] _sort;
 
     /**
      * The set of known acts, and their corresponding nodes.
      */
     private Map<IMObjectReference, IMObjectTreeNode> _acts;
 
+
     /**
      * Start a new tree.
+     *
+     * @param sort node sort criteria. May be <code>null</code>
      */
-    public void create() {
-        _root = new DefaultMutableTreeNode();
+    public void create(SortConstraint[] sort) {
+        _root = new IMObjectTreeNode<Act>(null, sort);
+        _sort = sort;
         _acts = new HashMap<IMObjectReference, IMObjectTreeNode>();
     }
 
@@ -119,7 +129,7 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
         if (parentNode == null) {
             parentNode = root;
         }
-        IMObjectTreeNode<Act> child = new IMObjectTreeNode<Act>(act);
+        IMObjectTreeNode<Act> child = new IMObjectTreeNode<Act>(act, _sort);
         parentNode.setAllowsChildren(true);
         parentNode.add(child);
         _acts.put(act.getObjectReference(), child);

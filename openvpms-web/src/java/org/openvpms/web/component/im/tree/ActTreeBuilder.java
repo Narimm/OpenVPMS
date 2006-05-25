@@ -22,6 +22,7 @@ import echopointng.tree.DefaultMutableTreeNode;
 import echopointng.tree.MutableTreeNode;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.Set;
@@ -38,14 +39,22 @@ public class ActTreeBuilder implements TreeBuilder<Act> {
     /**
      * The root node.
      */
-    private DefaultMutableTreeNode _root;
+    private IMObjectTreeNode<Act> _root;
+
+    /**
+     * Node sort criteria. May be <code>null</code>.
+     */
+    private SortConstraint[] _sort;
 
 
     /**
      * Start a new tree.
+     *
+     * @param sort node sort criteria. May be <code>null</code>
      */
-    public void create() {
-        _root = new DefaultMutableTreeNode();
+    public void create(SortConstraint[] sort) {
+        _root = new IMObjectTreeNode<Act>(null, sort);
+        _sort = sort;
     }
 
     /**
@@ -75,7 +84,7 @@ public class ActTreeBuilder implements TreeBuilder<Act> {
      * @param root the root node
      */
     protected void addTopDown(Act act, DefaultMutableTreeNode root) {
-        DefaultMutableTreeNode node = new IMObjectTreeNode<Act>(act);
+        DefaultMutableTreeNode node = new IMObjectTreeNode<Act>(act, _sort);
         root.setAllowsChildren(true);
         root.add(node);
         Set<ActRelationship> acts = act.getSourceActRelationships();
