@@ -18,26 +18,34 @@
 
 package org.openvpms.web.component.im.tree;
 
-import echopointng.tree.TreeNode;
 import echopointng.tree.MutableTreeNode;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Factory for {@link TreeNode}s,
+ * Tree builder.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectTreeNodeFactory {
+public interface TreeBuilder<T> {
 
     /**
-     * Creates a new tree node for an object.
-     *
-     * @param object the object
-     * @return a new tree node representing <code>object</code>
+     * Start a new tree.
      */
-    MutableTreeNode create(IMObject object);
+    void create();
+
+    /**
+     * Adds a node into the tree.
+     *
+     * @param object the object to add
+     */
+    void add(T object);
+
+    /**
+     * Returns the created tree.
+     *
+     * @return the created tree
+     */
+    MutableTreeNode getTree();
 
 }

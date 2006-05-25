@@ -16,32 +16,33 @@
  *  $Id$
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.tree.TreeBuilder;
 
 
 /**
- * Browser that displays objects in a tree.
+ * Default implementation of the {@link TreeBrowser} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate$
  */
-public interface TreeBrowser<T extends IMObject> extends Browser<T> {
+public class DefaultTreeBrowser<T extends IMObject>
+        extends AbstractTreeBrowser<T> {
 
     /**
-     * Returns the parent of an object.
+     * Construct a new <code>TreeBrowser</code> that queries IMObjects using the
+     * specified query.
      *
-     * @param object the object
-     * @return the parent of object, or <code>null</code> if the object has
-     *         no parent
+     * @param query   the query
+     * @param sort    the sort criteria. May be <code>null</code>
+     * @param builder the tree builder
      */
-    T getParent(T object);
+    public DefaultTreeBrowser(Query<T> query, SortConstraint[] sort,
+                              TreeBuilder<T> builder) {
+        super(query, sort, builder);
+    }
 
 }
