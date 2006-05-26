@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.domain.im.archetype.descriptor;
+package org.openvpms.tools.data.loader;
 
 // commons-resources
 import org.apache.commons.resources.Messages;
@@ -26,13 +26,12 @@ import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * This is the base exception thrown by the objects of type
- * {@link IArchetypeService} 
+ * This is the base exception thrown by the archetype loader
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class DescriptorException extends OpenVPMSException {
+public class ArchetypeDataLoaderException extends OpenVPMSException {
 
     /**
      * Generated SUID
@@ -43,18 +42,16 @@ public class DescriptorException extends OpenVPMSException {
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        InvalidType,
-        UnsupportedOperation,
-        FailedToAddChildElement,
-        FailedToRemoveChildElement,
-        NullContextForSetValue,
-        FailedToSetValue,
-        CannotSetValueForReadOnlyNode,
-        CannotAddNodeDescriptor,
-        FailedToGetChildren,
-        CannotCastToCollection,
-        DuplicateNodeDescriptor,
-        FailedToCoerceValue
+        NoArchetypeDefined,
+        FailedToSetAtribute,
+        InvalidAttribute,
+        ParentNotACollection,
+        NoArchetypeId,
+        NoParentForChild,
+        NoCollectionAttribute,
+        ErrorInStartElement,
+        FailedToValidate,
+        FailedToSave
     }
 
     /**
@@ -67,7 +64,7 @@ public class DescriptorException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.domain.im.archetype.descriptor."
+            .getMessages("org.openvpms.tools.data.loader."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -77,7 +74,7 @@ public class DescriptorException extends OpenVPMSException {
      * @param errorCode
      *            the error code
      */
-    public DescriptorException(ErrorCode errorCode) {
+    public ArchetypeDataLoaderException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -92,7 +89,7 @@ public class DescriptorException extends OpenVPMSException {
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public DescriptorException(ErrorCode errorCode, Object[] params) {
+    public ArchetypeDataLoaderException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -106,7 +103,7 @@ public class DescriptorException extends OpenVPMSException {
      * @param cause
      *            the root exception
      */
-    public DescriptorException(ErrorCode errorCode, Throwable cause) {
+    public ArchetypeDataLoaderException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -123,7 +120,7 @@ public class DescriptorException extends OpenVPMSException {
      * @param cause
      *            the root exception
      */
-    public DescriptorException(ErrorCode errorCode, Object[] params,
+    public ArchetypeDataLoaderException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

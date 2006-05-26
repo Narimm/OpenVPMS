@@ -1503,10 +1503,18 @@ public class NodeDescriptor extends Descriptor {
         }
         
         if (constructor != null) {
-            return constructor.newInstance(new Object[] {value});
-        } else {
+            value = constructor.newInstance(new Object[] {value});
+        }
+        
+        // if the value has been coerced then return the new value
+        // otherwise throw an exception
+        if (value.getClass() == getClazz()) {
             return value;
         }
+        
+        throw new DescriptorException(
+                DescriptorException.ErrorCode.FailedToCoerceValue,
+                new Object[] {value.getClass().getName(), getClazz().getName()});
     }
     
     /**
