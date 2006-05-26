@@ -484,6 +484,11 @@
 
     <style name="Palette.ListLabel" type="nextapp.echo2.app.Label"/>
 
+
+    <!-- =================================================================== -->
+    <!--  Table                                                              -->
+    <!-- =================================================================== -->
+
     <style name="Table.Header" type="nextapp.echo2.app.Label">
         <properties>
             <property name="textAlignment">
@@ -542,6 +547,11 @@
         </properties>
     </style>
 
+
+    <!-- =================================================================== -->
+    <!--  Navigation                                                         -->
+    <!-- =================================================================== -->
+
     <style name="navigation.first" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -594,6 +604,11 @@
         </properties>
     </style>
 
+
+    <!-- =================================================================== -->
+    <!--  Popup window                                                       -->
+    <!-- =================================================================== -->
+
     <style name="PopupWindow" base-name="default"
            type="nextapp.echo2.app.WindowPane">
     </style>
@@ -609,6 +624,92 @@
         </properties>
     </style>
 
+
+    <!-- =================================================================== -->
+    <!--  Tree                                                               -->
+    <!-- =================================================================== -->
+
+    <style name="default" type="org.openvpms.web.component.tree.StyleableTreeCellRenderer">
+        <properties>
+            <property name="selectedForeground" value="#ffffff"/>
+            <property name="selectedBackground" value="#000000"/>
+        </properties>
+    </style>
+
+    <style name="default" type="org.openvpms.web.component.tree.StyleableTreeIcons">
+        <properties>
+            <property name="plus"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_plus.gif"/>
+            </property>
+            <property name="plusbottom"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_plusbottom.gif"/>
+            </property>
+            <property name="minus"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_minus.gif"/>
+            </property>
+            <property name="minusbottom"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_minusbottom.gif"/>
+            </property>
+            <property name="folder"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_folder.gif"/>
+            </property>
+            <property name="folderopen"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_folderopen.gif"/>
+            </property>
+            <property name="join"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_join.gif"/>
+            </property>
+            <property name="joinbottom"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_joinbottom.gif"/>
+            </property>
+            <property name="joinonline"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_joinonline.gif"/>
+            </property>
+            <property name="leaf"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_leaf.gif"/>
+            </property>
+            <property name="line"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_line.gif"/>
+            </property>
+            <property name="empty"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_empty.gif"/>
+            </property>
+            <property name="root"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_root.gif"/>
+            </property>
+            <property name="rootopen"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/echopointng/resource/images/tree/tree_rootopen.gif"/>
+            </property>
+        </properties>
+    </style>
 
     <!-- =================================================================== -->
     <!--  Window pane defaults                                               -->
