@@ -44,17 +44,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-19 07:20:38Z $
  */
-public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
-
-    /**
-     * The root node.
-     */
-    private IMObjectTreeNode<Act> _root;
-
-    /**
-     * Node sort criteria. May be <code>null</code>.
-     */
-    private SortConstraint[] _sort;
+public class BottomUpActTreeBuilder extends AbstractTreeBuilder<Act> {
 
     /**
      * The set of known acts, and their corresponding nodes.
@@ -67,9 +57,9 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
      *
      * @param sort node sort criteria. May be <code>null</code>
      */
+    @Override
     public void create(SortConstraint[] sort) {
-        _root = new IMObjectTreeNode<Act>(null, sort);
-        _sort = sort;
+        super.create(sort);
         _acts = new HashMap<IMObjectReference, IMObjectTreeNode>();
     }
 
@@ -79,7 +69,7 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
      * @param object the object to add
      */
     public void add(Act object) {
-        addBottomUp(object, _root);
+        addBottomUp(object, getRoot(), true);
     }
 
     /**
@@ -87,11 +77,10 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
      *
      * @return the created tree
      */
+    @Override
     public MutableTreeNode getTree() {
-        MutableTreeNode result = _root;
-        _root = null;
         _acts.clear();
-        return result;
+        return super.getTree();
     }
 
     /**
@@ -99,10 +88,12 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
      *
      * @param act  the act
      * @param root the root node
+     * @param leaf if <code>true</code> create a leaf node
      * @return the new node
      */
-    protected DefaultMutableTreeNode addBottomUp(Act act,
-                                                 DefaultMutableTreeNode root) {
+    protected IMObjectTreeNode addBottomUp(Act act,
+                                           DefaultMutableTreeNode root,
+                                           boolean leaf) {
         DefaultMutableTreeNode parentNode = null;
         Set<ActRelationship> relationships = act.getTargetActRelationships();
         if (!relationships.isEmpty()) {
@@ -122,14 +113,14 @@ public class BottomUpActTreeBuilder implements TreeBuilder<Act> {
                 if (parent == null) {
                     parentNode = root;
                 } else {
-                    parentNode = addBottomUp(parent, root);
+                    parentNode = addBottomUp(parent, root, false);
                 }
             }
         }
         if (parentNode == null) {
             parentNode = root;
         }
-        IMObjectTreeNode<Act> child = new IMObjectTreeNode<Act>(act, _sort);
+        IMObjectTreeNode<Act> child = create(act, leaf);
         parentNode.setAllowsChildren(true);
         parentNode.add(child);
         _acts.put(act.getObjectReference(), child);

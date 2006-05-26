@@ -29,7 +29,6 @@ import echopointng.tree.MutableTreeNode;
 import org.apache.commons.collections.Transformer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 
 
@@ -85,9 +84,7 @@ public class IMObjectTreeNode<T extends IMObject>
         _object = object;
         _sort = sort;
         if (_object != null) {
-            String description = IMObjectHelper.getString(
-                    object, "description");
-            setUserObject(description);
+            setUserObject(object.getDescription());
         }
     }
 

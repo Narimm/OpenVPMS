@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.tree.IMObjectTreeNode;
 import org.openvpms.web.component.im.tree.TreeBuilder;
+import org.openvpms.web.component.tree.DefaultTree;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -148,7 +149,7 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
         ResultSet<T> set = doQuery();
         MutableTreeNode root = createTree(set);
         if (_tree == null) {
-            _tree = new Tree(root);
+            _tree = new DefaultTree(root);
             _tree.setShowsRootHandles(false);
             _tree.getSelectionModel().setSelectionMode(
                     TreeSelectionModel.SINGLE_TREE_SELECTION);

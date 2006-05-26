@@ -19,10 +19,8 @@
 package org.openvpms.web.component.im.tree;
 
 import echopointng.tree.DefaultMutableTreeNode;
-import echopointng.tree.MutableTreeNode;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.Set;
@@ -34,28 +32,8 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActTreeBuilder implements TreeBuilder<Act> {
+public class ActTreeBuilder extends AbstractTreeBuilder<Act> {
 
-    /**
-     * The root node.
-     */
-    private IMObjectTreeNode<Act> _root;
-
-    /**
-     * Node sort criteria. May be <code>null</code>.
-     */
-    private SortConstraint[] _sort;
-
-
-    /**
-     * Start a new tree.
-     *
-     * @param sort node sort criteria. May be <code>null</code>
-     */
-    public void create(SortConstraint[] sort) {
-        _root = new IMObjectTreeNode<Act>(null, sort);
-        _sort = sort;
-    }
 
     /**
      * Adds a node into the tree.
@@ -63,18 +41,7 @@ public class ActTreeBuilder implements TreeBuilder<Act> {
      * @param object the object to add
      */
     public void add(Act object) {
-        addTopDown(object, _root);
-    }
-
-    /**
-     * Returns the created tree.
-     *
-     * @return the created tree
-     */
-    public MutableTreeNode getTree() {
-        MutableTreeNode result = _root;
-        _root = null;
-        return result;
+        addTopDown(object, getRoot());
     }
 
     /**
@@ -84,10 +51,11 @@ public class ActTreeBuilder implements TreeBuilder<Act> {
      * @param root the root node
      */
     protected void addTopDown(Act act, DefaultMutableTreeNode root) {
-        DefaultMutableTreeNode node = new IMObjectTreeNode<Act>(act, _sort);
         root.setAllowsChildren(true);
-        root.add(node);
         Set<ActRelationship> acts = act.getSourceActRelationships();
+        boolean leaf = acts.isEmpty();
+        IMObjectTreeNode node = create(act, leaf);
+        root.add(node);
         if (!acts.isEmpty()) {
             for (ActRelationship relationship : acts) {
                 Act child = (Act) IMObjectHelper.getObject(
