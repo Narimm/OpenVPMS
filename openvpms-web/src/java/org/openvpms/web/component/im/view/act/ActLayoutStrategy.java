@@ -29,7 +29,7 @@ import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.edit.CollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -56,7 +56,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The act item editor. May be <code>null</code>.
      */
-    private final CollectionEditor _editor;
+    private final IMObjectCollectionEditor _editor;
 
 
     /**
@@ -71,7 +71,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param editor the act items editor. May be <code>null</code>.
      */
-    public ActLayoutStrategy(CollectionEditor editor) {
+    public ActLayoutStrategy(IMObjectCollectionEditor editor) {
         _editor = editor;
     }
 
