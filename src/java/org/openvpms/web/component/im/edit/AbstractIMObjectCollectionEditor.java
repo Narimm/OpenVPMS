@@ -33,8 +33,6 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertyEditor;
-import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.FilterHelper;
@@ -69,7 +67,8 @@ import java.util.List;
  * @version $LastChangedDate$
  * @see IMObjectEditor
  */
-public class CollectionEditor implements PropertyEditor, Saveable {
+public abstract class AbstractIMObjectCollectionEditor
+        implements IMObjectCollectionEditor {
 
     /**
      * The collection.
@@ -138,14 +137,15 @@ public class CollectionEditor implements PropertyEditor, Saveable {
 
 
     /**
-     * Construct a new <code>CollectionEditor</code>.
+     * Construct a new <code>AbstractIMObjectCollectionEditor</code>.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
      * @param context the layout context
      */
-    protected CollectionEditor(CollectionPropertyEditor editor,
-                               IMObject object, LayoutContext context) {
+    protected AbstractIMObjectCollectionEditor(CollectionPropertyEditor editor,
+                                               IMObject object,
+                                               LayoutContext context) {
         _collection = editor;
         _object = object;
         _context = new DefaultLayoutContext(context);
@@ -165,14 +165,15 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     }
 
     /**
-     * Construct a new <code>CollectionEditor</code>.
+     * Construct a new <code>AbstractIMObjectCollectionEditor</code>.
      *
      * @param property the collection property
      * @param object   the object being edited
      * @param context  the layout context
      */
-    public CollectionEditor(CollectionProperty property,
-                            IMObject object, LayoutContext context) {
+    public AbstractIMObjectCollectionEditor(CollectionProperty property,
+                                            IMObject object,
+                                            LayoutContext context) {
         this(new DefaultCollectionPropertyEditor(property), object, context);
     }
 
@@ -302,6 +303,30 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      */
     protected void doLayout() {
         _component = ColumnFactory.create(COLUMN_STYLE);
+        FocusSet focus = new FocusSet("CollectionEditor");
+        _context.getFocusTree().add(focus);
+        Row row = createControls(focus);
+        _component.add(row);
+
+        _table = new PagedIMObjectTable(createTableModel(_context));
+        _table.getTable().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onEdit();
+            }
+        });
+
+        populateTable();
+
+        focus.add(_table);
+        _component.add(_table);
+    }
+
+    /**
+     * Creates the row of controls.
+     *
+     * @return the row of controls
+     */
+    protected Row createControls(FocusSet focus) {
         String[] range = _collection.getArchetypeRange();
         range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
 
@@ -323,12 +348,9 @@ public class CollectionEditor implements PropertyEditor, Saveable {
             }
         });
 
-        FocusSet focus = new FocusSet("CollectionEditor");
         focus.add(create);
         focus.add(cancel);
         focus.add(delete);
-        _context.getFocusTree().add(focus);
-
         Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
 
         if (range.length == 1) {
@@ -351,20 +373,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
             row.add(archetypeNames);
             focus.add(archetypeNames);
         }
-
-        _component.add(row);
-
-        _table = new PagedIMObjectTable(createTableModel(_context));
-        _table.getTable().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onEdit();
-            }
-        });
-
-        populateTable();
-
-        focus.add(_table);
-        _component.add(_table);
+        return row;
     }
 
     /**
@@ -383,8 +392,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
      * @return a new table model
      */
     protected IMObjectTableModel createTableModel(LayoutContext context) {
-        CollectionProperty property = getCollection();
-        return IMObjectTableModelFactory.create(property.getDescriptor(),
+        return IMObjectTableModelFactory.create(getProperty().getDescriptor(),
                 context);
     }
 
@@ -490,7 +498,7 @@ public class CollectionEditor implements PropertyEditor, Saveable {
                 _componentListener);
         _editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                _listeners.notifyListeners(CollectionEditor.this);
+                _listeners.notifyListeners(AbstractIMObjectCollectionEditor.this);
             }
         });
     }
@@ -530,6 +538,15 @@ public class CollectionEditor implements PropertyEditor, Saveable {
     protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
         return _collection.add(object);
+    }
+
+    /**
+     * Populates the table.
+     */
+    protected void populateTable() {
+        List<IMObject> objects = _collection.getObjects();
+        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
+        _table.setResultSet(set);
     }
 
     /**
@@ -580,15 +597,6 @@ public class CollectionEditor implements PropertyEditor, Saveable {
             }
         }
         return added;
-    }
-
-    /**
-     * Populates the table.
-     */
-    private void populateTable() {
-        List<IMObject> objects = _collection.getObjects();
-        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
-        _table.setResultSet(set);
     }
 
     /**

@@ -13,48 +13,54 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: EntityRelationshipEditor.java 894 2006-05-17 01:10:40Z tanderson $
  */
 
-package org.openvpms.web.component.im.edit;
+package org.openvpms.web.component.im.relationship;
 
-import java.util.List;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.create.IMObjectCreatorListener;
+import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.create.IMObjectCreatorListener;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.TableBrowser;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.resource.util.Messages;
+import java.util.List;
 
 
 /**
  * An editor for {@link EntityRelationship}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-17 01:10:40Z $
  */
-public class RelationshipEditor extends AbstractIMObjectEditor {
+public class EntityRelationshipEditor extends AbstractIMObjectEditor {
 
     /**
      * Editor for the source of the relationship.
@@ -68,14 +74,14 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Construct a new <code>RelationshipEditor</code>.
+     * Construct a new <code>EntityRelationshipEditor</code>.
      *
      * @param relationship the relationship
      * @param parent       the parent object
      * @param context      the layout context
      */
-    public RelationshipEditor(EntityRelationship relationship,
-                                 IMObject parent, LayoutContext context) {
+    public EntityRelationshipEditor(EntityRelationship relationship,
+                                    IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
         IMObject source;
         IMObject target;
@@ -110,25 +116,6 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Create a new editor for an object, if it can be edited by this class.
-     *
-     * @param object  the object to edit
-     * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context
-     * @return a new editor for <code>object</code>, or <code>null</code> if it
-     *         cannot be edited by this
-     */
-    public static IMObjectEditor create(IMObject object, IMObject parent,
-                                        LayoutContext context) {
-        IMObjectEditor result = null;
-        if (object instanceof EntityRelationship) {
-            result = new RelationshipEditor((EntityRelationship) object, parent,
-                                            context);
-        }
-        return result;
-    }
-
-    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -147,9 +134,9 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
      * @param context      the layout context
      */
     protected IMObjectReferenceEditor getEditor(EntityRelationship relationship,
-                                              NodeDescriptor descriptor,
-                                              boolean readOnly,
-                                              LayoutContext context) {
+                                                NodeDescriptor descriptor,
+                                                boolean readOnly,
+                                                LayoutContext context) {
 
         Property property = getProperty(descriptor.getName());
         return new Entity(property, readOnly, context);
@@ -266,11 +253,12 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         @Override
         protected void doSimpleLayout(IMObject object,
                                       List<NodeDescriptor> descriptors,
-                                      PropertySet properties, Component container,
+                                      PropertySet properties,
+                                      Component container,
                                       LayoutContext context) {
             Grid grid = GridFactory.create(4);
             add(grid, _source.getProperty(), _source.getComponent(), context);
-            add(grid, _target.getProperty(), _target.getComponent(),context);
+            add(grid, _target.getProperty(), _target.getComponent(), context);
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
@@ -300,7 +288,7 @@ public class RelationshipEditor extends AbstractIMObjectEditor {
         @Override
         protected void onSelect() {
             // override default behaviour to enable creation of objects.
-            RelationshipEditor.this.onSelect(this);
+            EntityRelationshipEditor.this.onSelect(this);
         }
 
     }

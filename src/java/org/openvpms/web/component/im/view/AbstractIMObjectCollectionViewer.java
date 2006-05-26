@@ -24,6 +24,7 @@ import java.util.List;
 
 import echopointng.GroupBox;
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -40,6 +41,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.util.ColumnFactory;
 
 
 /**
@@ -48,7 +50,8 @@ import org.openvpms.web.component.im.table.PagedIMObjectTable;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class CollectionViewer extends Column {
+public class AbstractIMObjectCollectionViewer
+        implements IMObjectCollectionViewer {
 
     /**
      * The object that owns the collection to view.
@@ -61,9 +64,14 @@ public class CollectionViewer extends Column {
     private PagedIMObjectTable _table;
 
     /**
-     * The collection node descriptor.
+     * The collection property.
      */
-    private final NodeDescriptor _descriptor;
+    private final CollectionProperty _property;
+
+    /**
+     * The component.
+     */
+    private Component _component;
 
     /**
      * The layout context.
@@ -82,14 +90,13 @@ public class CollectionViewer extends Column {
 
 
     /**
-     * Construct a new <code>CollectionViewer</code>.
+     * Construct a new <code>AbstractIMObjectCollectionViewer</code>.
      *
      * @param property the collection to view
      * @param parent   the parent object
      */
-    public CollectionViewer(CollectionProperty property, IMObject parent) {
-        setStyleName("WideCellSpacing");
-
+    public AbstractIMObjectCollectionViewer(CollectionProperty property,
+                                            IMObject parent) {
         _context = new DefaultLayoutContext();
 
         // filter out the uid (aka "id") field
@@ -99,30 +106,46 @@ public class CollectionViewer extends Column {
         _context.setNodeFilter(filter);
 
         _object = parent;
-        _descriptor = property.getDescriptor();
-        doLayout();
+        _property = property;
+    }
+
+    /**
+     * Returns the collection property.
+     *
+     * @return the collection property
+     */
+    public CollectionProperty getProperty() {
+        return _property;
+    }
+
+    /**
+     * Returns the parent object.
+     *
+     * @return the parent object
+     */
+    public IMObject getObject() {
+        return _object;
+    }
+
+    /**
+     * Returns the view component.
+     *
+     * @return the view component
+     */
+    public Component getComponent() {
+        if (_component == null) {
+            _component = doLayout();
+        }
+        return _component;
     }
 
     /**
      * Lays out the component.
      */
-    protected void doLayout() {
-        IMObjectTableModel model
-                = IMObjectTableModelFactory.create(_descriptor, _context);
-
-        Collection values = (Collection) _descriptor.getValue(_object);
-        List<IMObject> objects = new ArrayList<IMObject>();
-        for (Object value : values) {
-            objects.add((IMObject) value);
-        }
-        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
-        _table = new PagedIMObjectTable(model, set);
-        _table.getTable().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onBrowse();
-            }
-        });
-        add(_table);
+    protected Component doLayout() {
+        Column column = ColumnFactory.create("WideCellSpacing", getTable());
+        populateTable();
+        return column;
     }
 
     /**
@@ -146,12 +169,65 @@ public class CollectionViewer extends Column {
         } else {
             _box.removeAll();
             // workaround for a bug in EPNG
-            remove(_box);
+            _component.remove(_box);
         }
-        add(_box);
+        _component.add(_box);
         IMObjectViewer viewer = new IMObjectViewer(object, _context);
         _box.setTitle(viewer.getTitle());
         _box.add(viewer.getComponent());
+    }
+
+    /**
+     * Returns the objects to display.
+     *
+     * @return the objects to display
+     */
+    protected List<IMObject> getObjects() {
+        Collection values = _property.getValues();
+        List<IMObject> objects = new ArrayList<IMObject>();
+        for (Object value : values) {
+            objects.add((IMObject) value);
+        }
+        return objects;
+    }
+
+    /**
+     * Returns the table, creating it if it doesn't exist.
+     *
+     * @return the table
+     */
+    protected PagedIMObjectTable getTable() {
+        if (_table == null) {
+            _table = createTable();
+        }
+        return _table;
+    }
+
+    /**
+     * Creates a new table to display the collection.
+     *
+     * @return a new table
+     */
+    protected PagedIMObjectTable createTable() {
+        NodeDescriptor descriptor = _property.getDescriptor();
+        IMObjectTableModel model
+                = IMObjectTableModelFactory.create(descriptor, _context);
+        PagedIMObjectTable table = new PagedIMObjectTable(model);
+        table.getTable().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onBrowse();
+            }
+        });
+        return table;
+    }
+
+    /**
+     * Populates the table.
+     */
+    protected void populateTable() {
+        List<IMObject> objects = getObjects();
+        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
+        _table.setResultSet(set);
     }
 
 }

@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.edit.CollectionEditor;
+import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -46,7 +46,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class ActRelationshipCollectionEditor extends CollectionEditor {
+public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionEditor {
 
 
     /**

@@ -252,8 +252,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 }
             }
             if (editor == null) {
-                editor = new CollectionEditor(property, object,
-                        getLayoutContext());
+                editor = IMObjectCollectionEditorFactory.create(
+                        property, object, getLayoutContext());
                 _editors.add(editor);
             }
         } else {

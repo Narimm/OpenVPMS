@@ -18,12 +18,6 @@
 
 package org.openvpms.web.component.im.view;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -32,7 +26,13 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+
 import echopointng.RichTextArea;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 
 
 /**
@@ -79,16 +79,16 @@ public abstract class AbstractReadOnlyComponentFactory
             result = getBoolean(property);
         } else if (descriptor.isString()) {
             result = getString(property);
-            if (result instanceof RichTextArea)
-            {
-                ((RichTextArea)result).setEditable(enable);
+            if (result instanceof RichTextArea) {
+                ((RichTextArea) result).setEditable(enable);
             }
         } else if (descriptor.isNumeric()) {
             result = getNumber(property);
         } else if (descriptor.isDate()) {
             result = getDate(property);
         } else if (descriptor.isCollection()) {
-            result = getCollectionViewer((CollectionProperty) property, context);
+            result = getCollectionViewer((CollectionProperty) property,
+                                         context);
             // need to enable this otherwise table selection is disabled
             enable = true;
         } else if (descriptor.isObjectReference()) {
@@ -208,7 +208,9 @@ public abstract class AbstractReadOnlyComponentFactory
             }
         }
         if (result == null) {
-            result = new CollectionViewer(property, parent);
+            IMObjectCollectionViewer viewer
+                    = IMObjectCollectionViewerFactory.create(property, parent);
+            result = viewer.getComponent();
         }
         return result;
     }

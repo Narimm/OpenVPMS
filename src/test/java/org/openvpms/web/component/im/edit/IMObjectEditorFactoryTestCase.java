@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.edit.order.OrderItemEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.PaymentEditor;
 import org.openvpms.web.component.im.edit.payment.SupplierPaymentItemEditor;
+import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
@@ -63,14 +64,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link RelationshipEditor} is returned for
+     * Verifies that a {@link EntityRelationshipEditor} is returned for
      * <em>entityRelationship.*</em> short names.
      */
     public void testCreateRelationshipEditor() {
         String[] shortNames
                 = DescriptorHelper.getShortNames("entityRelationship.*");
         for (String shortName : shortNames) {
-            checkCreate(shortName, RelationshipEditor.class);
+            checkCreate(shortName, EntityRelationshipEditor.class);
         }
     }
 
