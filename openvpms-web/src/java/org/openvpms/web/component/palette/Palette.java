@@ -18,7 +18,9 @@
 
 package org.openvpms.web.component.palette;
 
-import java.util.List;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -32,9 +34,7 @@ import nextapp.echo2.app.list.ListCellRenderer;
 import nextapp.echo2.app.list.ListSelectionModel;
 import org.apache.commons.collections.ListUtils;
 
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import java.util.List;
 
 
 /**
@@ -142,9 +142,11 @@ public class Palette extends Row {
         });
         Label available = LabelFactory.create("available", "Palette.ListLabel");
         Label selected = LabelFactory.create("selected", "Palette.ListLabel");
-        Column left = ColumnFactory.create("Palette.ListColumn", available, _unselectedList);
+        Column left = ColumnFactory.create("Palette.ListColumn", available,
+                                           _unselectedList);
         Column middle = ColumnFactory.create("ControlColumn", _add, _remove);
-        Column right = ColumnFactory.create("Palette.ListColumn", selected, _selectedList);
+        Column right = ColumnFactory.create("Palette.ListColumn", selected,
+                                            _selectedList);
         add(left);
         add(middle);
         add(right);
@@ -194,6 +196,11 @@ public class Palette extends Row {
         Object[] values = from.getSelectedValues();
         DefaultListModel toModel = (DefaultListModel) to.getModel();
         DefaultListModel fromModel = (DefaultListModel) from.getModel();
+
+        for (int index : from.getSelectedIndices()) {
+            // @todo workaround for OVPMS-303
+            from.setSelectedIndex(index, false);
+        }
         for (Object value : values) {
             toModel.add(value);
             fromModel.remove(value);
