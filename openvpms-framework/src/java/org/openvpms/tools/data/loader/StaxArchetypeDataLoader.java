@@ -64,7 +64,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.tools.archetype.loader.ArchetypeLoader;
 
 // jsap library
@@ -272,7 +271,8 @@ public class StaxArchetypeDataLoader {
                     logger.info("\n[START PROCESSING element=" 
                             + reader.getLocalName() 
                             + " parent=" + (stack.size() == 0 
-                            ? "none" : stack.peek().getArchetypeIdAsString()) 
+                            ? "none" : (stack.peek() == null) ? "unknown" :
+                                stack.peek().getArchetypeIdAsString()) 
                             + "]\n" + formatElement(reader));
                 }
                 
@@ -282,16 +282,19 @@ public class StaxArchetypeDataLoader {
                         if (!hasReference) {
                             // process the element
                             if (stack.size() > 0) {
-                                current = processElement(stack.peek(), reader);
+                                if (stack.peek() != null) {
+                                    current = processElement(stack.peek(), reader);
+                                }
                             } else {
                                 current = processElement(null, reader);
                             }
                         }
+                        
                         stack.push(current);
                     } catch (Exception exception) {
-                        logger.error("\n[ERR: Exception in started element]\n" 
-                                + formatElement(reader) + "\n",
-                                exception);
+                        throw new ArchetypeDataLoaderException(
+                                ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement,
+                                new Object[] {formatElement(reader)}, exception);
                     }
                 }
                 break;
@@ -304,7 +307,7 @@ public class StaxArchetypeDataLoader {
                 if (stack.size() > 0) {
                     current = stack.pop();
                     try {
-                        if ((stack.size() == 0) && (current != null)) {
+                        if (stack.size() == 0) {
                             elemData.append("</archetype>");
                             if (hasReference) {
                                 // if this element has a reference then we 
@@ -313,8 +316,10 @@ public class StaxArchetypeDataLoader {
                                 unprocessedElementCache.put(
                                         new Element(new Long(++sequenceId),
                                                 elemData.toString()));
-                                logger.info("\n[CACHED FOR SECOND PARSE]\n" 
+                                if (verbose) {
+                                    logger.info("\n[CACHED FOR SECOND PARSE]\n" 
                                         + elemData.toString());
+                                }
                             } else {
                                 validateOrSave(current);
                             }
@@ -322,16 +327,13 @@ public class StaxArchetypeDataLoader {
                             hasReference = false;
                         }
                     } catch (ValidationException validation) {
-                        logger.error("\n[ERR: Failed to process element. "
-                                + "Validation errors follow].");
-                        for (ValidationError error : validation.getErrors()) {
-                            logger.error(error.toString());
-                        }
-                        logger.error(current.toString());
+                        throw new ArchetypeDataLoaderException(
+                                ArchetypeDataLoaderException.ErrorCode.FailedToValidate,
+                                new Object[] {current.toString()}, validation);
                     } catch (Exception exception) {
-                        logger.error("\n[ERR: Error trying to save object" + "]\n"
-                                + exception);
-                        exception.printStackTrace();
+                        throw new ArchetypeDataLoaderException(
+                                ArchetypeDataLoaderException.ErrorCode.FailedToSave,
+                                new Object[] {current.toString()}, exception);
                     }
                 } 
                 
@@ -355,7 +357,8 @@ public class StaxArchetypeDataLoader {
      *             propagate all exceptions to client
      */
     private void processUnprocessedElementCache() throws Exception {
-        logger.info("\n[PROCESSING ALL ELEMENTS WITH REFERENCES]\n");
+        logger.info("\n[PROCESSING " + unprocessedElementCache.getSize() + 
+                " ELEMENTS WITH REFERENCES]\n");
 
         List keys = unprocessedElementCache.getKeys();
         XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -392,9 +395,9 @@ public class StaxArchetypeDataLoader {
                                 }
                                 stack.push(current);
                             } catch (Exception exception) {
-                                logger.error("\n[ERR: Exception in started element]\n" 
-                                        + formatElement(reader) + "\n",
-                                        exception);
+                                throw new ArchetypeDataLoaderException(
+                                        ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement,
+                                        new Object[] {formatElement(reader)}, exception);
                             }
                         }
                         break;
@@ -407,16 +410,13 @@ public class StaxArchetypeDataLoader {
                                     validateOrSave(current);
                                 }
                             } catch (ValidationException validation) {
-                                logger.error("\n[ERR: Failed to process element. "
-                                        + "Validation errors follow].");
-                                for (ValidationError error : validation.getErrors()) {
-                                    logger.error(error.toString());
-                                }
-                                logger.error(current.toString());
+                                throw new ArchetypeDataLoaderException(
+                                        ArchetypeDataLoaderException.ErrorCode.FailedToValidate,
+                                        new Object[] {current.toString()}, validation);
                             } catch (Exception exception) {
-                                logger.error("\n[ERR: Error trying to save object" + "]\n"
-                                        + exception);
-                                exception.printStackTrace();
+                                throw new ArchetypeDataLoaderException(
+                                        ArchetypeDataLoaderException.ErrorCode.FailedToSave,
+                                        new Object[] {current.toString()}, exception);
                             }
                         } 
                         
@@ -461,17 +461,17 @@ public class StaxArchetypeDataLoader {
             // display an error.
             String shortName = reader.getAttributeValue(null, "archetype");
             if (StringUtils.isEmpty(shortName)) {
-                logger.error("\n[ERR: No archetype attribute defined" + "]\n"
-                        + formatElement(reader));
-                return object;
+                throw new ArchetypeDataLoaderException(
+                        ArchetypeDataLoaderException.ErrorCode.NoArchetypeDefined,
+                        new Object[] {shortName, formatElement(reader)});
             }
 
             ArchetypeDescriptor adesc = archetypeService
                     .getArchetypeDescriptor(shortName);
             if (adesc == null) {
-                logger.error("\n[ERR: No archetype defined for  " + shortName
-                        + "]\n" + formatElement(reader));
-                return object;
+                throw new ArchetypeDataLoaderException(
+                        ArchetypeDataLoaderException.ErrorCode.NoArchetypeDefined,
+                        new Object[] {shortName, formatElement(reader)});
             }
 
             // if a childId node is defined then we can skip the create object
@@ -498,10 +498,9 @@ public class StaxArchetypeDataLoader {
     
                     NodeDescriptor ndesc = adesc.getNodeDescriptor(attName);
                     if (ndesc == null) {
-                        logger.error("\n[ERR: Invalid Attribute " + attName + "]\n"
-                                + formatElement(reader));
-                        valid = false;
-                        break;
+                        throw new ArchetypeDataLoaderException(
+                                ArchetypeDataLoaderException.ErrorCode.InvalidAttribute,
+                                new Object[] {attName, formatElement(reader)});
                     }
     
                     try {
@@ -511,12 +510,10 @@ public class StaxArchetypeDataLoader {
                             ndesc.setValue(object, attValue);
                         }
                     } catch (Exception exception) {
-                        exception.printStackTrace();
-                        logger.error("\n[ERR: Trying to set attr " + attName
-                                + " with value " + attValue + "]\n"
-                                + exception + "\n" + formatElement(reader));
-                        valid = false;
-                        break;
+                        throw new ArchetypeDataLoaderException(
+                                ArchetypeDataLoaderException.ErrorCode.FailedToSetAtribute,
+                                new Object[] {attName, attValue, formatElement(reader)},
+                                exception);
                     }
                 }
             } else {
@@ -528,32 +525,31 @@ public class StaxArchetypeDataLoader {
             // then we may need to set up a parent child relationship.
             String collectionNode = reader.getAttributeValue(null, "collection");
             if ((parent != null) && (StringUtils.isEmpty(collectionNode))) {
-                logger.error("\n[ERR: No collection attribute for child node"
-                        + "]\n" + formatElement(reader));
-                valid = false;
+                throw new ArchetypeDataLoaderException(
+                        ArchetypeDataLoaderException.ErrorCode.NoCollectionAttribute,
+                        new Object[] {formatElement(reader)});
             }
             
             if ((valid) && (!StringUtils.isEmpty(collectionNode))) {
                 if (parent == null) {
-                    logger.error("\n[ERR: No parent for child element "
-                        + "]\n" + formatElement(reader));
+                    throw new ArchetypeDataLoaderException(
+                            ArchetypeDataLoaderException.ErrorCode.NoParentForChild,
+                            new Object[] {formatElement(reader)});
                 } else {
                     ArchetypeDescriptor padesc= archetypeService
                         .getArchetypeDescriptor(parent.getArchetypeId());
                     if (padesc == null) {
-                        logger.error("\n[ERR: No archetypeId for parent "
-                                + "]\n" + parent.toString());
-                        valid = false;
+                        throw new ArchetypeDataLoaderException(
+                                ArchetypeDataLoaderException.ErrorCode.NoArchetypeId,
+                                new Object[] {parent.toString()});
                     } else {
                         NodeDescriptor ndesc = padesc.getNodeDescriptor(collectionNode);
                         if (ndesc.isCollection()) {
                             ndesc.addChildToCollection(parent, object);
                         } else {
-                            logger.error("\n[ERR: Failed to process child element "
-                                + "since the parent is not a collection"
-                                + "]\n"
-                                + formatElement(reader));
-                            valid = false;
+                            throw new ArchetypeDataLoaderException(
+                                    ArchetypeDataLoaderException.ErrorCode.ParentNotACollection,
+                                    new Object[] {formatElement(reader)});
                         }
                     }
                 }

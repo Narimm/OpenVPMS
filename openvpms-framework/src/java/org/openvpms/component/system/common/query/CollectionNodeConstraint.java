@@ -85,6 +85,17 @@ public class CollectionNodeConstraint implements IConstraintContainer {
     }
     
     /**
+     * Constructor to initialize the node name. It implies that activeOnly is
+     * false
+     * 
+     * @param nodeName
+     *            the node name
+     */
+    public CollectionNodeConstraint(String nodeName) {
+        this(nodeName, false);
+    }
+    
+    /**
      * Construct a constraint on a collection node with the specified
      * constraint
      * 

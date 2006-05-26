@@ -19,7 +19,7 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-// java core
+// java core 
 import java.io.InputStreamReader;
 import java.util.Hashtable;
 

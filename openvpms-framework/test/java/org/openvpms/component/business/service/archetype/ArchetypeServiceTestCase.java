@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // java-core
+import java.math.BigDecimal;
 import java.util.Hashtable;
 
 // commons-lang
@@ -26,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDeriveValueException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -219,6 +221,34 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
             // this is expected
         }
     }
+    
+    /**
+     * Test that we can only set the value of a node if it is of the same type
+     * or if the supplied value can be co-erced into the same type
+     */
+    public void testOBF49()
+    throws Exception {
+        IMObject margin = service.create("productPrice.margin");
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(margin.getArchetypeId());
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
+        assertTrue(ndesc != null);
+        
+        // set with incorrect type
+        try {
+            ndesc.setValue(margin, new Integer(10));
+            fail("We should not be allowed to set a node of type BigDecimal with type Integer");
+        } catch (DescriptorException exception) {
+            if (exception.getErrorCode() != DescriptorException.ErrorCode.FailedToSetValue) {
+                fail("We should not be getting the exception " + exception.getErrorCode());
+            }
+        }
+        
+        // set with correct type
+        ndesc.setValue(margin, new BigDecimal(10));
+        assertTrue(ndesc.getValue(margin) instanceof BigDecimal);
+    }
+    
     
     /* (non-Javadoc)
      * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()

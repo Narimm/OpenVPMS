@@ -442,7 +442,7 @@ public class JXPathTestCase extends BaseTestCase {
         NodeDescriptor ndesc = adesc.getNodeDescriptor("margin");
         
         IMObject object = service.create("productPrice.margin");
-        ndesc.setValue(object, new Float("12.35"));
+        ndesc.setValue(object, new BigDecimal("12.35"));
         assertTrue(ndesc.getValue(object) != null);
     }
     
