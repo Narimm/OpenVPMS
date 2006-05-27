@@ -51,7 +51,9 @@ public class ArchetypeDataLoaderException extends OpenVPMSException {
         NoCollectionAttribute,
         ErrorInStartElement,
         FailedToValidate,
-        FailedToSave
+        FailedToSave,
+        NullReference,
+        ReferenceNotFound
     }
 
     /**
