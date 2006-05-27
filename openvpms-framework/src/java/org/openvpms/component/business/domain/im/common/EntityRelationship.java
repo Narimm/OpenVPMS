@@ -22,6 +22,7 @@ package org.openvpms.component.business.domain.im.common;
 import java.util.Date;
 
 // openvpms-framework
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
@@ -250,5 +251,19 @@ public class EntityRelationship extends IMObject {
      */
     public void setTarget(IMObjectReference target) {
         this.target = target;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .appendSuper(null)
+            .append("source", source)
+            .append("target", target)
+            .append("sequence", sequence)
+            .append("identity", identity)
+            .toString();
     }
 }

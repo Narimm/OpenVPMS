@@ -22,10 +22,8 @@ package org.openvpms.tools.data.loader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -114,7 +112,7 @@ public class StaxArchetypeDataLoader {
     /**
      * A sequence id generator
      */
-    private long sequenceId;
+    private int sequenceId;
 
     /**
      * A reference to the idCache
@@ -314,11 +312,11 @@ public class StaxArchetypeDataLoader {
                                 // need to stick it in the unprocessed element
                                 // cache and process it in a second parse.
                                 unprocessedElementCache.put(
-                                        new Element(new Long(++sequenceId),
+                                        new Element(new Integer(sequenceId++),
                                                 elemData.toString()));
                                 if (verbose) {
-                                    logger.info("\n[CACHED FOR SECOND PARSE]\n" 
-                                        + elemData.toString());
+                                    logger.info("\n[CACHED FOR SECOND PARSE SEQ:" +
+                                        sequenceId + "]\n" + elemData.toString());
                                 }
                             } else {
                                 validateOrSave(current);
@@ -357,16 +355,18 @@ public class StaxArchetypeDataLoader {
      *             propagate all exceptions to client
      */
     private void processUnprocessedElementCache() throws Exception {
-        logger.info("\n[PROCESSING " + unprocessedElementCache.getSize() + 
-                " ELEMENTS WITH REFERENCES]\n");
+        logger.info("\n[PROCESSING " + sequenceId + " ELEMENTS WITH REFERENCES]\n");
 
-        List keys = unprocessedElementCache.getKeys();
         XMLInputFactory factory = XMLInputFactory.newInstance();
         Stack<IMObject> stack = new Stack<IMObject>();
-        for (Object key : keys) {
+        for (int index = 0; index < sequenceId; index++) {
             // remove the element from the cache
-            Element elem = unprocessedElementCache.get((Serializable)key);
-            unprocessedElementCache.remove((Serializable)key);
+            Integer key = new Integer(index);
+            Element elem = unprocessedElementCache.get(key);
+            unprocessedElementCache.remove(key);
+            if (elem == null) {
+                continue;
+            }
             
             // create an xml stream reader form the string
             XMLStreamReader reader = factory.createXMLStreamReader(
@@ -630,7 +630,18 @@ public class StaxArchetypeDataLoader {
             NodeDescriptor ndesc, boolean validateOnly) 
         throws Exception {
         String ref = attValue.substring("id:".length());
-        IMObjectReference imref = (IMObjectReference)idCache.get(ref).getValue();
+        if (StringUtils.isEmpty(ref)) {
+            throw new ArchetypeDataLoaderException(
+                    ArchetypeDataLoaderException.ErrorCode.NullReference);
+        }
+        Element element = idCache.get(ref);
+        if (element == null) {
+            throw new ArchetypeDataLoaderException(
+                    ArchetypeDataLoaderException.ErrorCode.ReferenceNotFound,
+                    new Object[] {ref});
+        }
+        
+        IMObjectReference imref = (IMObjectReference)element.getValue();
         Object imobj = null;
         if (ndesc.isObjectReference()) {
             imobj = imref;
@@ -651,7 +662,7 @@ public class StaxArchetypeDataLoader {
     }
     
     /**
-     * Retrieve thr object give nthe specified reference
+     * Retrieve thr object given the specified reference
      * 
      * @param id
      *            the id in the link cache
@@ -664,7 +675,19 @@ public class StaxArchetypeDataLoader {
     private IMObject getObjectForId(String id, boolean validateOnly) 
     throws Exception {
         String ref = id.substring("id:".length());
-        IMObjectReference imref = (IMObjectReference)idCache.get(ref).getValue();
+        if (StringUtils.isEmpty(ref)) {
+            throw new ArchetypeDataLoaderException(
+                    ArchetypeDataLoaderException.ErrorCode.NullReference);
+        }
+        
+        Element element = idCache.get(ref);
+        if (element == null) {
+            throw new ArchetypeDataLoaderException(
+                    ArchetypeDataLoaderException.ErrorCode.ReferenceNotFound,
+                    new Object[] {ref});
+        }
+        
+        IMObjectReference imref = (IMObjectReference)element.getValue();
         IMObject imobj = null;
         
         if (validateOnly) {
@@ -674,7 +697,6 @@ public class StaxArchetypeDataLoader {
         } else {
             imobj = ArchetypeQueryHelper.getByObjectReference(
                     archetypeService, imref);
-            
         }
 
         return imobj;
