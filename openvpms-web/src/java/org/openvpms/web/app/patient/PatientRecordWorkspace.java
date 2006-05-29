@@ -18,24 +18,13 @@
 
 package org.openvpms.web.app.patient;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
@@ -46,8 +35,23 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
+
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 
 /**
@@ -62,6 +66,11 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * The selected act.
      */
     private Act _selected;
+
+    /**
+     * Clinical event item short names.
+     */
+    private String[] _clinicalEventItems = {};
 
     /**
      * Clinical episode act short name.
@@ -85,7 +94,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
             = "actRelationship.patientClinicalEpisodeEvent";
 
     /**
-     * Clinical event item  act relationship short name,
+     * Clinical event item act relationship short name,
      */
     private static final String RELATIONSHIP_CLINICAL_EVENT_ITEM
             = "actRelationship.patientClinicalEventItem";
@@ -96,6 +105,15 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     public PatientRecordWorkspace() {
         super("patient", "record", "party", "party", "patient*");
+
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+                RELATIONSHIP_CLINICAL_EVENT_ITEM);
+        if (archetype != null) {
+            NodeDescriptor target = archetype.getNodeDescriptor("target");
+            if (target != null) {
+                _clinicalEventItems = DescriptorHelper.getShortNames(target);
+            }
+        }
     }
 
     /**
@@ -110,6 +128,19 @@ public class PatientRecordWorkspace extends ActWorkspace {
         Context.getInstance().setPatient(party);
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
+    }
+
+    /**
+     * Determines if the workspace should be refreshed. This implementation
+     * returns true if the current patient has changed.
+     *
+     * @return <code>true</code> if the workspace should be refreshed, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        Party patient = Context.getInstance().getPatient();
+        return (patient != getObject());
     }
 
     /**
@@ -133,8 +164,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
     @Override
     protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                "PatientRecordWorkspace.Layout", browser.getComponent(),
-                window.getComponent());
+                                       "PatientRecordWorkspace.Layout",
+                                       browser.getComponent(),
+                                       window.getComponent());
     }
 
     /**
@@ -166,13 +198,16 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
+        // need current epsiode
+        // need current event. Most recent if not
         if (isNew) {
+            // @todo add relationship to current problem and event in problem view
             if (IMObjectHelper.isA(object, CLINICAL_EVENT)) {
                 addActRelationship((Act) object, CLINICAL_EPISODE,
-                        RELATIONSHIP_CLINICAL_EPISODE_EVENT);
-            } else if (IMObjectHelper.isA(object, CLINICAL_PROBLEM)) {
+                                   RELATIONSHIP_CLINICAL_EPISODE_EVENT);
+            } else if (IMObjectHelper.isA(object, _clinicalEventItems)) {
                 addActRelationship((Act) object, CLINICAL_EVENT,
-                        RELATIONSHIP_CLINICAL_EVENT_ITEM);
+                                   RELATIONSHIP_CLINICAL_EVENT_ITEM);
             }
         }
         super.onSaved(object, isNew);
@@ -191,22 +226,13 @@ public class PatientRecordWorkspace extends ActWorkspace {
 
 
     /**
-     * Creates a new query for visits view.
+     * Creates a new query for the visits view.
      *
      * @param party the party to query acts for
      * @return a new query
      */
     protected ActQuery createQuery(Party party) {
-        String[] shortNames = {};
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
-                RELATIONSHIP_CLINICAL_EVENT_ITEM);
-        if (archetype != null) {
-            NodeDescriptor target = archetype.getNodeDescriptor("target");
-            if (target != null) {
-                shortNames = DescriptorHelper.getShortNames(target);
-            }
-        }
-        return createQuery(party, shortNames);
+        return createQuery(party, _clinicalEventItems);
     }
 
     /**
@@ -254,29 +280,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
     private ActQuery createQuery(Party patient, String[] shortNames) {
         String[] statuses = {};
         return new ActQuery(patient, "patient", "participation.patient",
-                shortNames, statuses);
-    }
-
-    /**
-     * Returns the act with the specified short name, recursively navigating to
-     * the parent until either one is found, or there are no more parent acts.
-     *
-     * @param act       the act
-     * @param shortName the archetype shortname
-     * @return the act or a parent, or <code>null</code> if none was found
-     */
-    private Act getAct(Act act, String shortName) {
-        Act result = null;
-        if (act != null) {
-            if (IMObjectHelper.isA(act, shortName)) {
-                result = act;
-            } else {
-                RecordBrowser browser = (RecordBrowser) getBrowser();
-                Act parent = browser.getParent(act);
-                result = getAct(parent, shortName);
-            }
-        }
-        return result;
+                            shortNames, statuses);
     }
 
     /**
@@ -289,7 +293,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
     private void addActRelationship(Act act, String parentType,
                                     String relationshipType) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        Act parent = getAct(_selected, parentType);
+        Act parent = ActHelper.getAct(_selected, parentType);
         if (parent != null) {
             try {
                 ActRelationship relationship
@@ -319,26 +323,25 @@ public class PatientRecordWorkspace extends ActWorkspace {
          * @return the archetype short names
          */
         public String[] getShortNames() {
-            RecordBrowser browser = (RecordBrowser) getBrowser();
-            Act act = browser.getSelected();
-            boolean isProblem = false;
+            Act act = _selected;
+            boolean isEventItem = false;
             boolean isEvent = false;
             boolean isEpisode = false;
             List<String> names = new ArrayList<String>();
-            if (IMObjectHelper.isA(act, CLINICAL_PROBLEM)) {
-                isProblem = true;
+            if (IMObjectHelper.isA(act, _clinicalEventItems)) {
+                isEventItem = true;
             } else if (IMObjectHelper.isA(act, CLINICAL_EVENT)) {
                 isEvent = true;
             } else if (IMObjectHelper.isA(act, CLINICAL_EPISODE)) {
                 isEpisode = true;
             }
-            names.add(CLINICAL_EPISODE);
-            if (isProblem || isEvent || isEpisode) {
+            if (isEventItem || isEvent) {
+                names.addAll(Arrays.asList(_clinicalEventItems));
+            }
+            if (isEventItem || isEvent || isEpisode) {
                 names.add(CLINICAL_EVENT);
             }
-            if (isProblem || isEvent) {
-                names.add(0, CLINICAL_PROBLEM);
-            }
+            names.add(CLINICAL_EPISODE);
             return names.toArray(new String[0]);
         }
     }

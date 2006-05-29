@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import org.openvpms.web.component.im.query.ActResultSet;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
@@ -32,10 +32,11 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.spring.ServiceHelper;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -87,7 +88,7 @@ public class ActHelper {
         String[] statuses = {"Posted"};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
-        ActResultSet set = new ActResultSet(entity, participant,  participation,
+        ActResultSet set = new ActResultSet(entity, participant, participation,
                                             archetypes, null, null, statuses,
                                             50, null);
         BigDecimal balance = BigDecimal.ZERO;
@@ -155,6 +156,33 @@ public class ActHelper {
     public static BigDecimal getAmount(Act act, String node) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         return getAmount(act, node, service);
+    }
+
+    /**
+     * Returns an act or one of its parents that has a particular short name.
+     *
+     * @param act       the act
+     * @param shortName the archetype shortname
+     * @return the act or a parent, or <code>null</code> if none was found
+     */
+    public static Act getAct(Act act, String shortName) {
+        Act result = null;
+        if (act != null) {
+            if (IMObjectHelper.isA(act, shortName)) {
+                result = act;
+            } else {
+                for (ActRelationship relationship :
+                        act.getTargetActRelationships()) {
+                    Act source = (Act) IMObjectHelper.getObject(
+                            relationship.getSource());
+                    result = getAct(source, shortName);
+                    if (result != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**
