@@ -332,9 +332,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
             } else if (IMObjectHelper.isA(act, CLINICAL_EPISODE)) {
                 isEpisode = true;
             }
+            names.add(CLINICAL_EPISODE);
             if (isProblem || isEvent || isEpisode) {
                 names.add(CLINICAL_EVENT);
-                names.add(CLINICAL_EPISODE);
             }
             if (isProblem || isEvent) {
                 names.add(0, CLINICAL_PROBLEM);
