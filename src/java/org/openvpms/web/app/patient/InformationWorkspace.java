@@ -18,10 +18,11 @@
 
 package org.openvpms.web.app.patient;
 
-import java.util.Date;
-import java.util.Set;
-
-import nextapp.echo2.app.Component;
+import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -32,12 +33,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.resource.util.Messages;
+
+import nextapp.echo2.app.Component;
+
+import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -74,7 +74,7 @@ public class InformationWorkspace extends CRUDWorkspace {
 
     /**
      * Determines if the workspace should be refreshed. This implementation
-     * returns true if the current customer has changed.
+     * returns true if the current patient has changed.
      *
      * @return <code>true</code> if the workspace should be refreshed, otherwise
      *         <code>false</code>
@@ -178,7 +178,7 @@ public class InformationWorkspace extends CRUDWorkspace {
             ArchetypeId id = relationship.getArchetypeId();
             if (id.getShortName().equals(shortName)) {
                 if (source.equals(relationship.getSource())
-                    && target.equals(relationship.getTarget())) {
+                        && target.equals(relationship.getTarget())) {
                     result = true;
                     break;
                 }

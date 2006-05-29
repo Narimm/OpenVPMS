@@ -143,17 +143,6 @@ public class RecordBrowser implements Browser<Act> {
     }
 
     /**
-     * Returns the parent of an object.
-     *
-     * @param object the object
-     * @return the parent of object, or <code>null</code> if the object has
-     *         no parent
-     */
-    public Act getParent(Act object) {
-        return getCurrent().getParent(object);
-    }
-
-    /**
      * Returns the selected browser.
      *
      * @return the selected browser

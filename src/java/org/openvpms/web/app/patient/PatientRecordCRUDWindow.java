@@ -31,7 +31,9 @@ import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -63,7 +65,8 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
     protected void onCreate(String type, ShortNames shortNames) {
         String[] names = shortNames.getShortNames();
         if (names.length == 0) {
-                
+            // haven't got a current episode for the view
+            ErrorDialog.show(Messages.get("patient.record.create.noepisode"));
         } else {
             super.onCreate(type, shortNames);
         }
@@ -99,7 +102,7 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
      *
      * @param act the act
      * @return <code>true</code> if the act can be edited, otherwise
-     *         <code>false</code>
+     *        <code>false</code>
      */
     @Override
     protected boolean canEdit(Act act) {
