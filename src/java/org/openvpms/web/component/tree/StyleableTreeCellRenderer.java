@@ -25,6 +25,8 @@
 package org.openvpms.web.component.tree;
 
 import echopointng.tree.DefaultTreeCellRenderer;
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Style;
 
 
 /**
@@ -44,6 +46,40 @@ public class StyleableTreeCellRenderer extends DefaultTreeCellRenderer {
         setSelectedBackground(null);
         setSelectedForeground(null);
         setSelectedFont(null);
+    }
+
+    /**
+     * Sets the name of the name to use.
+     * This sets the {@link #setFont}, {@link #setSelectedBackground},
+     * {@link #setSelectedForeground} and {@link #setSelectedFont} with any
+     * values specified in the stylesheet.
+     *
+     * @param name the new name name
+     */
+    @Override
+    public void setStyleName(String name) {
+        super.setStyleName(name);
+        ApplicationInstance app = ApplicationInstance.getActive();
+        Style style = app.getStyle(StyleableTreeCellRenderer.class, name);
+        if (style != null) {
+            update(style, PROPERTY_FONT);
+            update(style, PROPERTY_SELECTED_BACKGROUND);
+            update(style, PROPERTY_SELECTED_FOREGROUND);
+            update(style, PROPERTY_SELECTED_FONT);
+        }
+    }
+
+    /**
+     * Updates a property from the stylesheet, if one is specified.
+     *
+     * @param style    the style
+     * @param property the property
+     */
+    private void update(Style style, String property) {
+        Object value = style.getProperty(property);
+        if (value != null) {
+            setProperty(property, value);
+        }
     }
 
 }
