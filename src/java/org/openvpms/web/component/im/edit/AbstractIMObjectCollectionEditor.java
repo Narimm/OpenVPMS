@@ -38,6 +38,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -395,6 +396,8 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return a new table model
      */
     protected IMObjectTableModel createTableModel(LayoutContext context) {
+        context = new DefaultLayoutContext(context);
+        context.setComponentFactory(new TableComponentFactory(context));
         return IMObjectTableModelFactory.create(_collection.getArchetypeRange(),
                                                 context);
     }
