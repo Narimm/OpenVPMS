@@ -18,16 +18,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import echopointng.GroupBox;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -54,6 +44,18 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import echopointng.GroupBox;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -328,7 +330,8 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected Row createControls(FocusSet focus) {
         String[] range = _collection.getArchetypeRange();
-        range = DescriptorHelper.getShortNames(range, false); // expand any wildcards
+        range = DescriptorHelper.getShortNames(range,
+                                               false); // expand any wildcards
 
         Button create = ButtonFactory.create("add", new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -392,8 +395,8 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return a new table model
      */
     protected IMObjectTableModel createTableModel(LayoutContext context) {
-        return IMObjectTableModelFactory.create(getProperty().getDescriptor(),
-                context);
+        return IMObjectTableModelFactory.create(_collection.getArchetypeRange(),
+                                                context);
     }
 
     /**
@@ -410,12 +413,12 @@ public abstract class AbstractIMObjectCollectionEditor
                 } else {
                     String title = Messages.get("imobject.create.failed.title");
                     String message = Messages.get("imobject.create.failed",
-                            _shortname);
+                                                  _shortname);
                     ErrorHelper.show(title, message);
                 }
             } catch (OpenVPMSException exception) {
                 String message = Messages.get("imobject.create.failed",
-                        _shortname);
+                                              _shortname);
                 ErrorHelper.show(message, exception);
             }
         }
@@ -498,7 +501,8 @@ public abstract class AbstractIMObjectCollectionEditor
                 _componentListener);
         _editor.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
-                _listeners.notifyListeners(AbstractIMObjectCollectionEditor.this);
+                _listeners.notifyListeners(
+                        AbstractIMObjectCollectionEditor.this);
             }
         });
     }

@@ -18,13 +18,15 @@
 
 package org.openvpms.web.component.im.table;
 
-import org.apache.commons.beanutils.ConstructorUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 import org.openvpms.web.component.im.util.DescriptorHelper;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+
+import org.apache.commons.beanutils.ConstructorUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -64,9 +66,21 @@ public class IMObjectTableModelFactory {
      */
     public static IMObjectTableModel create(NodeDescriptor collection,
                                             LayoutContext context) {
+        String[] shortNames = DescriptorHelper.getShortNames(collection);
+        return create(shortNames, context);
+    }
+
+    /**
+     * Creates a new table model.
+     *
+     * @param shortNames the short names of the archetype the table must display
+     * @param context    the layout context
+     * @return a new tabke model
+     */
+    public static IMObjectTableModel create(String[] shortNames,
+                                            LayoutContext context) {
         IMObjectTableModel result = null;
 
-        String[] shortNames = DescriptorHelper.getShortNames(collection);
         Set<Class> matches = new HashSet<Class>();
         for (String shortName : shortNames) {
             Class clazz = getTableModels().getHandler(shortName);
