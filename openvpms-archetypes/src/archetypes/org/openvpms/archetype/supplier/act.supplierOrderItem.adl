@@ -35,8 +35,8 @@
             type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
             minCardinality="1" maxCardinality="1">
             <node name="qty" path="/details/attributes/qty" type="java.math.BigDecimal" defaultValue="1.0" minCardinality="1"/>
-            <node name="unitCost" path="/details/attributes/unitCost" type="java.math.BigDecimal" defaultValue="0.0" minCardinality="1"/>
-            <node name="total" path="/details/attributes/lowTotal" type="java.math.BigDecimal" 
+            <node name="unitCost" path="/details/attributes/unitCost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
+            <node name="total" path="/details/attributes/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
                 derived="true" derivedValue="/details/attributes/qty * /details/attributes/unitCost" minCardinality="1"/>
         </node>
     </archetype>
