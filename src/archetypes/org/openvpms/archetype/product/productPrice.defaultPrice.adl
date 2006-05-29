@@ -26,6 +26,6 @@
 			path="/description" hidden="true" minCardinality="1" derived="true"
 			derivedValue="concat('$ ',/price, ' each')" />
 		<node name="fixed" path="/fixed" type="java.lang.Boolean" readOnly="true" defaultValue="false()" />
-		<node name="price" path="/price" type="java.math.BigDecimal"  minCardinality="1"/>			
+		<node name="price" path="/price" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"  minCardinality="1"/>			
 	</archetype>
 </archetypes>
