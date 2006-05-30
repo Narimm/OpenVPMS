@@ -24,6 +24,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -165,7 +166,7 @@ public class ActHelper {
      * @param shortName the archetype shortname
      * @return the act or a parent, or <code>null</code> if none was found
      */
-    public static Act getAct(Act act, String shortName) {
+    public static Act getActOrParent(Act act, String shortName) {
         Act result = null;
         if (act != null) {
             if (IMObjectHelper.isA(act, shortName)) {
@@ -175,7 +176,7 @@ public class ActHelper {
                         act.getTargetActRelationships()) {
                     Act source = (Act) IMObjectHelper.getObject(
                             relationship.getSource());
-                    result = getAct(source, shortName);
+                    result = getActOrParent(source, shortName);
                     if (result != null) {
                         break;
                     }
@@ -184,6 +185,53 @@ public class ActHelper {
         }
         return result;
     }
+
+    /**
+     * Returns an act or one of its children that has a particular short name.
+     *
+     * @param act       the ct
+     * @param shortName the archetype shortname
+     * @return the act or a child, or <code>null</code> if none was found
+     */
+    public static Act getActOrChild(Act act, String shortName) {
+        Act result = null;
+        if (act != null) {
+            if (IMObjectHelper.isA(act, shortName)) {
+                result = act;
+            } else {
+                for (ActRelationship relationship :
+                        act.getSourceActRelationships()) {
+                    Act target = (Act) IMObjectHelper.getObject(
+                            relationship.getTarget());
+                    result = getActOrChild(target, shortName);
+                    if (result != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the valid short names for the target of an act relationship.
+     *
+     * @param relationshipType the relationship type
+     * @return the short names, or an empty list if the relationship or
+     *         target node doesn't exist
+     */
+    public static String[] getTargetShortNames(String relationshipType) {
+        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+                relationshipType);
+        if (archetype != null) {
+            NodeDescriptor target = archetype.getNodeDescriptor("target");
+            if (target != null) {
+                return DescriptorHelper.getShortNames(target);
+            }
+        }
+        return new String[0];
+    }
+
 
     /**
      * Returns an amount, taking into account any credit node.

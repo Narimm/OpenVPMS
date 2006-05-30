@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -27,6 +25,9 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -51,17 +52,33 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
      * @param context the layout context. May be <code>null</code>
      */
     protected ActEditor(Act act, IMObject parent, LayoutContext context) {
+        this(act, parent, true, context);
+    }
+
+    /**
+     * Construct a new <code>ActEditor</code>.
+     *
+     * @param act       the act to edit
+     * @param parent    the parent object. May be <code>null</code>
+     * @param editItems if <code>true</code> create an editor for any items node
+     * @param context   the layout context. May be <code>null</code>
+     */
+    protected ActEditor(Act act, IMObject parent, boolean editItems,
+                        LayoutContext context) {
         super(act, parent, context);
-        CollectionProperty items = (CollectionProperty) getProperty("items");
-        if (items != null) {
-            _editor = new ActRelationshipCollectionEditor(items, act,
-                    getLayoutContext());
-            _editor.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    updateTotals();
-                }
-            });
-            getEditors().add(_editor);
+        if (editItems) {
+            CollectionProperty items = (CollectionProperty) getProperty(
+                    "items");
+            if (items != null) {
+                _editor = new ActRelationshipCollectionEditor(items, act,
+                                                              getLayoutContext());
+                _editor.addModifiableListener(new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        updateTotals();
+                    }
+                });
+                getEditors().add(_editor);
+            }
         }
     }
 
@@ -81,12 +98,15 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new ActLayoutStrategy(_editor);
+        if (_editor != null) {
+            return new ActLayoutStrategy(_editor);
+        }
+        return new ActLayoutStrategy(false);
     }
 
     /**
      * Update totals when an act item changes.
-     *
+     * <p/>
      * todo - workaround for OVPMS-211
      */
     protected abstract void updateTotals();
