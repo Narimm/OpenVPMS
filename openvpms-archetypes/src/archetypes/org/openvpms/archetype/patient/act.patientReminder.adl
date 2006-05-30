@@ -17,10 +17,10 @@
 -->
 <archetypes>
 	<archetype name="openvpms-common-act.patientReminder.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Patient Reminder" >
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Reminder" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Patient Reminder'" />
+			derivedValue="'Reminder'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
 			derivedValue="concat('Due Date : ', /activityEndTime, ' Reminder Count : ', /details/attributes/reminderCount)" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
