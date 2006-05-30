@@ -16,39 +16,42 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.patientClinicalProblem.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Clinical Problem" >
+	<archetype name="openvpms-common-act.patientReminder.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Patient Reminder" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Clinical Note'" />
-		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true" 
-			derivedValue="/details/attributes/problem" />
+			derivedValue="'Patient Reminder'" />
+		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
+			derivedValue="concat('Due Date : ', /activityEndTime, ' Reminder Count : ', /details/attributes/reminderCount)" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
-		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
-			minCardinality="1" maxCardinality="1">
-			<node name="problem" path="/details/attributes/problem" type="java.lang.String" maxLength="50" />
-		</node>
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'Unresolved'">
+		<node name="reminderType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
+			filter="participation.reminderType" />
+		<node displayName="Due Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="Unresolved" value="Unresolved" />
-					<property name="Resolved" value="Resolved" />
+					<property name="In Progress" value="In Progress" />
+					<property name="Cancelled" value="Cancelled" />
+					<property name="Sent" value="Sent" />
+					<property name="Cleared" value="Cleared" />
 				</propertyList>
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
-		<node displayName="Resolved Date" name="endTime" path="/activityEndTime" type="java.util.Date" />
-        <node name="items" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
+		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
+			minCardinality="1" maxCardinality="1">
+			<node name="reminderCount" path="/details/attributes/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
+		</node>
+		<node displayName="Reminders" name="reminders" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
+			hidden="true" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
-						<property name="shortName"
-							value="actRelationship.patientClinicalProblemItem" />
+						<property name="shortName" value="actRelationship.patientReminderReminder" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

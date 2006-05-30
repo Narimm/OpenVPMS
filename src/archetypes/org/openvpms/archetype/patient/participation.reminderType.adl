@@ -16,43 +16,32 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-actRelationship.patientClinicalProblemItem.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.ActRelationship" displayName="Patient Clinical Problem Item Relationship" >
+	<archetype name="openvpms-common-participation.reminderType.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.common.Participation" displayName="Reminder Type" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="' '" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="' '" />
-		<node name="source" displayName="Event" path="/source"
+		<node name="activeStartTime" path="/activeStartTime"
+			type="java.util.Date" minCardinality="1"
+			hidden="true" defaultValue="java.util.Date.new()" />
+		<node displayName="Reminder Type" name="entity" path="/entity" minCardinality="1" maxCardinality="1"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="act.patientClinicalProblem" />
+							value="entity.reminderType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="target" displayName="Medical Record" path="/target"
+		<node name="act" path="/act" minCardinality="1" maxCardinality="1"
 			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
-						<property name="shortName" value="act.patientClinicalNote" />
-					</propertyMap>
-				</propertyList>
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName" value="act.patientReminder" />
-					</propertyMap>
-				</propertyList>
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName" value="act.patientAlert" />
+						<property name="shortName"
+							value="act.patientReminder" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

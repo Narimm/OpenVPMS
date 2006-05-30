@@ -16,31 +16,29 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.patientClinicalEvent.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Act" displayName="Clinical Event" >
+	<archetype name="openvpms-common-act.patientAlert.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Act" displayName="Patient Alert" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Event'" />
+			derivedValue="'Patient Alert'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat(/activityStartTime,' : ', /reason)" />
-		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+			derivedValue="concat(/details/attributes/alertType, 'End Date : ', /activityEndTime)" />
+		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
-        <node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
-        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
-			filter="participation.clinician" />
-		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
-			minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName" value="actRelationship.patientClinicalEventItem" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
+		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
+			minCardinality="1" maxCardinality="1">
+			<node name="alertType" path="/details/attributes/alertType" type="java.lang.String"
+				minCardinality="1" maxLength="15">
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="concept" value="alertType" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
 		</node>
+		<node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" />
 	</archetype>
 </archetypes>

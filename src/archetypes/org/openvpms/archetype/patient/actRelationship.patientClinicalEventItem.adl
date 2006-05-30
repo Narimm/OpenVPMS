@@ -50,6 +50,12 @@
 					<propertyMap name="archetype">
 						<property name="shortName" value="act.patientWeight" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="act.patientReminder" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName" value="act.patientAlert" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>

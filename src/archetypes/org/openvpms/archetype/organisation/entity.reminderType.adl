@@ -49,7 +49,8 @@
 			</assertion>
 		</node>
 		<node name="groups" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.reminderGroup">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
