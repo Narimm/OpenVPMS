@@ -18,35 +18,67 @@
 
 package org.openvpms.web.component.edit;
 
-import java.util.List;
-
 import org.openvpms.component.business.service.archetype.ValidationError;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
- * General validation interface..
+ * Validates an {@link Modifiable} heirarchy.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface Validator {
+public class Validator {
 
     /**
-     * Perform validation, returning a list of errors if the object is invalid.
-     *
-     * @param value the value to validate
-     * @return a list of error messages if the object is invalid; or an empty
-     *         list if valid
+     * Modifiable instances with their corresponding errors.
      */
-    List<ValidationError> validate(Object value);
+    private Map<Modifiable, List<ValidationError>> _errors
+            = new HashMap<Modifiable, List<ValidationError>>();
+
 
     /**
-     * Determines if the object is valid.
+     * Validates an object.
      *
-     * @param value the value to validate
+     * @param modifiable the object to validate
      * @return <code>true</code> if the object is valid; otherwise
-     *         <code>false</code>
+     * <code>false</code>
      */
-    boolean isValid(Object value);
+    public boolean validate(Modifiable modifiable) {
+        modifiable.validate(this);
+        return (_errors.get(modifiable) == null);
+    }
+
+    /**
+     * Adds
+     * @param modifiable
+     * @param errors
+     */
+    public void add(Modifiable modifiable, List<ValidationError> errors) {
+        if (!errors.isEmpty()) {
+            _errors.put(modifiable, errors);
+        }
+    }
+
+    public Collection<Modifiable> getInvalid() {
+        return _errors.keySet();
+    }
+
+    public List<ValidationError> getErrors(Modifiable modifiable) {
+        return _errors.get(modifiable);
+    }
+
+    /**
+     * Determines if the heirarchy is valid.
+     *
+     * @return <code>true</code> if the heirarchy is valid; otherwise <code>false</code>
+     */
+    public boolean isValid() {
+        return _errors.isEmpty();
+    }
 
 }

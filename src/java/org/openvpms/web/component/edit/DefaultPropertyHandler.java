@@ -20,7 +20,6 @@ package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.edit.PropertyHandler;
 
 
 /**
@@ -44,8 +43,11 @@ public class DefaultPropertyHandler extends PropertyHandler {
      * Transform an object to the required type, performing validation.
      *
      * @param object the object to convert
+     * @return the transformed object, or <code>object</code> if no
+     *         transformation is required
+     * @throws ValidationException if the object is invalid
      */
-    public Object convert(Object object) throws ValidationException {
+    public Object apply(Object object) throws ValidationException {
         return object;
     }
 

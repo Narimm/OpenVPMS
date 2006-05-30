@@ -18,18 +18,24 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.spring.ServiceHelper;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -67,25 +73,63 @@ public class ValidationHelper {
      *         <code>false</code>
      */
     public static boolean isValid(IMObject object, IArchetypeService service) {
-        boolean valid = false;
+        List<ValidationError> errors = validate(object, service);
+        return (errors == null);
+    }
+
+    /**
+     * Validates an object.
+     *
+     * @param object the object to validate
+     * @return a list of validation errors, or <code>null</code> if the object
+     *         is valid
+     */
+    public static List<ValidationError> validate(IMObject object,
+                                                 IArchetypeService service) {
+        List<ValidationError> errors = null;
         try {
             service.validateObject(object);
-            valid = true;
         } catch (ValidationException exception) {
-            List<ValidationError> errors = exception.getErrors();
+            _log.debug(exception, exception);
+            errors = exception.getErrors();
+            if (errors.isEmpty()) {
+                errors.add(new ValidationError(null, exception.getMessage()));
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+        return errors;
+    }
+
+    /**
+     * Display the first error from a validator.
+     *
+     * @param validator the validator
+     */
+    public static void showError(Validator validator) {
+        Collection<Modifiable> invalid = validator.getInvalid();
+        if (!invalid.isEmpty()) {
+            Modifiable modifiable = invalid.iterator().next();
+            List<ValidationError> errors
+                    = validator.getErrors(modifiable);
             if (!errors.isEmpty()) {
                 ValidationError error = errors.get(0);
                 String node = error.getNodeName();
-                String title = DescriptorHelper.getDisplayName(object, node);
-                if (title == null) {
-                    title = node;
+                IMObject parent = null;
+                if (modifiable instanceof IMObjectEditor) {
+                    parent = ((IMObjectEditor) modifiable).getObject();
+                } else if (modifiable instanceof IMObjectCollectionEditor) {
+                    parent = ((IMObjectCollectionEditor) modifiable).getObject();
                 }
-                ErrorDialog.show(title, error.getErrorMessage());
-                _log.debug(exception.getMessage(), exception);
-            } else {
-                ErrorHelper.show(exception);
+                if (parent != null) {
+                    String title = DescriptorHelper.getDisplayName(parent,
+                                                                   node);
+                    ErrorDialog.show(title, error.getErrorMessage());
+                } else {
+                    ErrorDialog.show(error.getErrorMessage());
+                }
             }
         }
-        return valid;
     }
+
 }

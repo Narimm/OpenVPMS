@@ -23,6 +23,7 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.ModifiableListeners;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.FilterHelper;
@@ -294,12 +295,25 @@ public abstract class AbstractIMObjectCollectionEditor
      *         <code>false</code>
      */
     public boolean isValid() {
+        Validator validator = new Validator();
+        return validator.validate(this);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
+     */
+    public boolean validate(Validator validator) {
         boolean valid = false;
-        if (addCurrentEdits()) {
-            valid = _collection.isValid();
+        if (addCurrentEdits(validator)) {
+           valid = _collection.validate(validator);
         }
         return valid;
     }
+
 
     /**
      * Lays out the component.
@@ -407,7 +421,7 @@ public abstract class AbstractIMObjectCollectionEditor
      * selected archetype, and displays it in an editor.
      */
     protected void onNew() {
-        if (addCurrentEdits() && _shortname != null) {
+        if (addCurrentEdits(new Validator()) && _shortname != null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             try {
                 IMObject object = service.create(_shortname);
@@ -466,7 +480,7 @@ public abstract class AbstractIMObjectCollectionEditor
     protected void onEdit() {
         IMObject object = _table.getTable().getSelected();
         if (object != null) {
-            if (addCurrentEdits()) {
+            if (addCurrentEdits(new Validator())) {
                 // need to add any edits after getting the selected object
                 // as this may change the order within the table
                 _table.getTable().setSelected(object);
@@ -576,7 +590,7 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     private boolean saveCurrentEdits() {
         boolean saved = false;
-        if (addCurrentEdits()) {
+        if (addCurrentEdits(new Validator())) {
             saved = _collection.save();
         }
         return saved;
@@ -589,10 +603,10 @@ public abstract class AbstractIMObjectCollectionEditor
      * @return <code>true</code> if the edits were added,
      *         otherwise <code>false</code>
      */
-    private boolean addCurrentEdits() {
+    private boolean addCurrentEdits(Validator validator) {
         boolean added = true;
         if (_editor != null && _editor.isModified()) {
-            if (!_editor.isValid()) {
+            if (!validator.validate(_editor)) {
                 added = false;
             } else {
                 if (addEdited(_editor)) {

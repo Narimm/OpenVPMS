@@ -26,6 +26,8 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Validator;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.List;
@@ -105,6 +107,15 @@ public interface CollectionPropertyEditor extends Saveable {
      *         <code>false</code>
      */
     boolean isValid();
+
+    /**
+     * Validates the object.
+     *
+     * @param validator thhe validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
+     */
+    boolean validate(Validator validator);
 
     /**
      * Returns the objects in the collection.
