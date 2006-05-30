@@ -186,8 +186,8 @@ public class ActRelationshipCollectionPropertyEditor
      */
     @Override
     protected boolean doSave() {
-        boolean saved = true;
-        if (super.doSave()) {
+        boolean saved = super.doSave();
+        if (saved) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             IMObject[] removed = _removed.toArray(new IMObject[0]);
             boolean deleted;

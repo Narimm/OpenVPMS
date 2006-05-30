@@ -18,13 +18,15 @@
 
 package org.openvpms.web.component.edit;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -52,51 +54,42 @@ public class NumericPropertyHandler extends PropertyHandler {
     }
 
     /**
-     * Convert the object to the required type.
+     * Transform an object to the required type, performing validation.
      * <p/>
      * Notes:
      * <ul>
-     *   <li>conversion from one numeric type to another may result
-     *      in loss of precision, without error</li>
-     *   <li>conversion from a string to an integer type will produce a
-     *       ValidationException if the string contains a decimal point.</li>
+     * <li>conversion from one numeric type to another may result
+     * in loss of precision, without error</li>
+     * <li>conversion from a string to an integer type will produce a
+     * ValidationException if the string contains a decimal point.</li>
      * </ul>
      * The inconsistency is tolerable in that all user input is via strings
-     * and implici conversion is not desired. 
+     * and implicit conversion is not desired.
      *
-     * @param object the object to convert. May be <code>null</code>
-     * @return the converted object, or <code>object</code> if no conversion is
-     *         required
+     * @param object the object to convert
+     * @return the transformed object, or <code>object</code> if no
+     *         transformation is required
      * @throws ValidationException if the object is invalid
      */
-    protected Object convert(Object object) throws ValidationException {
-        Object result = null;
+    public Object apply(Object object) throws ValidationException {
+        Object result;
         try {
             Class type = getDescriptor().getClazz();
             result = CONVERTER.convert(object, type);
         } catch (Throwable exception) {
-            throwValidationException("Invalid number", exception);
+            NodeDescriptor node = getDescriptor();
+            String message = Messages.get("node.error.invalidnumeric",
+                                          node.getDisplayName());
+            ValidationError error = new ValidationError(node.getName(),
+                                                        message);
+            List<ValidationError> errors = new ArrayList<ValidationError>();
+            errors.add(error);
+            ValidationException.ErrorCode code
+                    = ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
+            throw new ValidationException(errors, code, exception);
         }
 
         return result;
-    }
-
-    /**
-     * Helper to throw a validation exception.
-     *
-     * @param message the message
-     * @param cause   the cause. May be <code>null</code>
-     * @throws ValidationException
-     */
-    private void throwValidationException(String message, Throwable cause)
-            throws ValidationException {
-        ValidationError error = new ValidationError(
-                getDescriptor().getName(), message);
-        List<ValidationError> errors = new ArrayList<ValidationError>();
-        errors.add(error);
-        ValidationException.ErrorCode code
-                = ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
-        throw new ValidationException(errors, code, cause);
     }
 
 }

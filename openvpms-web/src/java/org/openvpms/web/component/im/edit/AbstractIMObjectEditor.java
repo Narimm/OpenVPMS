@@ -18,22 +18,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.List;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.edit.Modifiable;
@@ -41,6 +25,7 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.ExpandableLayoutStrategy;
@@ -51,11 +36,28 @@ import org.openvpms.web.component.im.list.LookupListModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
-import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
+import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -237,7 +239,9 @@ public abstract class AbstractIMObjectEditor
             return false;
         }
         boolean saved = false;
-        if (isValid()) {
+        Validator validator = new Validator();
+        validator.validate(this);
+        if (validator.isValid()) {
             if (!isModified()) {
                 saved = true;
             } else {
@@ -247,6 +251,8 @@ public abstract class AbstractIMObjectEditor
                     clearModified();
                 }
             }
+        } else {
+            ValidationHelper.showError(validator);
         }
         return saved;
     }
@@ -338,6 +344,15 @@ public abstract class AbstractIMObjectEditor
      */
     public boolean isValid() {
         return _editors.isValid();
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator thhe validator
+     */
+    public boolean validate(Validator validator) {
+        return validator.validate(_editors);
     }
 
     /**
@@ -553,7 +568,7 @@ public abstract class AbstractIMObjectEditor
 
             for (Property property : _properties.getProperties()) {
                 if (modified != property
-                    && property.getDescriptor().isDerived()) {
+                        && property.getDescriptor().isDerived()) {
                     property.refresh();
                 }
             }

@@ -57,8 +57,17 @@ public interface Modifiable {
      * Determines if the object is valid.
      *
      * @return <code>true</code> if the object is valid; otherwise
-     * <code>false</code>
+     *         <code>false</code>
      */
     boolean isValid();
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
+     */
+    boolean validate(Validator validator);
 
 }

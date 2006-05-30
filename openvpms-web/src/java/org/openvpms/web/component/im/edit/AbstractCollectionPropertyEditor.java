@@ -24,12 +24,16 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.spring.ServiceHelper;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.component.business.service.archetype.ValidationError;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -180,13 +184,31 @@ public abstract class AbstractCollectionPropertyEditor
      *         <code>false</code>
      */
     public boolean isValid() {
-        boolean valid = _property.isValid();
-        if (valid) {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            for (IMObject object : _edited) {
-                valid = ValidationHelper.isValid(object, service);
-                if (!valid) {
-                    break;
+        Validator validator = new Validator();
+        validator.validate(_property);
+        return validator.isValid();
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator thhe validator
+     */
+    public boolean validate(Validator validator) {
+        boolean valid = validator.validate(_property);
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        for (IMObject object : getObjects()) {
+            IMObjectEditor editor = getEditor(object);
+            if (editor != null) {
+                if (!validator.validate(editor)) {
+                    valid = false;
+                }
+            } else {
+                List<ValidationError> errors
+                        = ValidationHelper.validate(object, service);
+                if (errors != null) {
+                    validator.add(_property, errors);
+                    valid = false;
                 }
             }
         }
@@ -239,24 +261,28 @@ public abstract class AbstractCollectionPropertyEditor
      * @return <code>true</code> if the save was successful
      */
     protected boolean doSave() {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        IMObject[] edited = _edited.toArray(new IMObject[0]);
-        boolean saved = false;
-        for (IMObject object : edited) {
-            IMObjectEditor editor = getEditor(object);
-            if (editor != null) {
-                saved = editor.save();
-            } else {
-                saved = SaveHelper.save(object, service);
+        boolean result = false;
+        if (!_edited.isEmpty()) {
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            IMObject[] edited = _edited.toArray(new IMObject[0]);
+            for (IMObject object : edited) {
+                IMObjectEditor editor = getEditor(object);
+                if (editor != null) {
+                    result = editor.save();
+                } else {
+                    result = SaveHelper.save(object, service);
+                }
+                if (result) {
+                    _edited.remove(object);
+                    _saved = true;
+                } else {
+                    break;
+                }
             }
-            if (saved) {
-                _edited.remove(object);
-                _saved = true;
-            } else {
-                break;
-            }
+        } else {
+            result = true;
         }
-        return saved;
+        return result;
     }
 
     /**

@@ -177,12 +177,24 @@ public class Editors implements Modifiable {
      *         <code>false</code>
      */
     public boolean isValid() {
+        Validator validator = new Validator();
+        validate(validator);
+        return validator.isValid();
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator thhe validator
+     */
+    public boolean validate(Validator validator) {
+        boolean valid = true;
         for (Modifiable modifiable : _editors) {
-            if (!modifiable.isValid()) {
-                return false;
+            if (!validator.validate(modifiable)) {
+                valid = false;
             }
         }
-        return true;
+        return valid;
     }
 
     /**

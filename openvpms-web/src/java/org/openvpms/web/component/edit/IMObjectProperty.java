@@ -35,12 +35,17 @@
 
 package org.openvpms.web.component.edit;
 
+import org.openvpms.web.component.im.edit.ValidationHelper;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.dialog.ErrorDialog;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -70,9 +75,9 @@ public class IMObjectProperty implements Property, CollectionProperty {
     private boolean _dirty;
 
     /**
-     * Determines if the object is valid.
+     * Current validation errors.
      */
-    private Boolean _valid;
+    private List<ValidationError> _errors;
 
     /**
      * The listeners.
@@ -252,33 +257,54 @@ public class IMObjectProperty implements Property, CollectionProperty {
      *         <code>false</code>
      */
     public boolean isValid() {
-        if (_valid == null) {
-            PropertyHandler handler = getHandler();
-            if (_descriptor.isCollection()) {
+        Validator validator = new Validator();
+        return validator.validate(this);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator thhe validator
+     */
+    public boolean validate(Validator validator) {
+        if (_errors == null) {
+            int minSize = getMinCardinality();
+            if (minSize == 1 && getValue() == null) {
+                addError("node.error.required", _descriptor.getDisplayName());
+            } else if (_descriptor.isCollection()) {
                 Collection values = getValues();
                 int size = values.size();
-                int minSize = getMinCardinality();
                 int maxSize = getMaxCardinality();
-                if ((minSize != -1 && size < minSize)
-                        || (maxSize != -1 && size > maxSize)) {
-                    _valid = false;
-                } else {
-                    if (size == 0) {
-                        _valid = true;
-                    } else {
-                        for (Object value : getValues()) {
-                            _valid = handler.isValid(value);
-                            if (!_valid) {
-                                break;
-                            }
+                if (minSize != -1 && size < minSize) {
+                    addError("node.error.minSize", _descriptor.getDisplayName(),
+                             minSize);
+                } else if (maxSize != -1 && size > maxSize) {
+                    addError("node.error.maxSize", _descriptor.getDisplayName(),
+                             minSize);
+                } else if (size != 0) {
+                    IArchetypeService service
+                            = ServiceHelper.getArchetypeService();
+                    for (Object value : getValues()) {
+                        IMObject object = (IMObject) value;
+                        _errors = ValidationHelper.validate(object, service);
+                        if (_errors != null) {
+                            break;
                         }
                     }
                 }
             } else {
-                _valid = handler.isValid(getValue());
+                PropertyHandler handler = getHandler();
+                try {
+                    handler.apply(getValue());
+                } catch (ValidationException exception) {
+                    invalidate(exception);
+                }
             }
         }
-        return _valid;
+        if (_errors != null) {
+            validator.add(this, _errors);
+        }
+        return (_errors != null);
     }
 
     /**
@@ -287,7 +313,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
      */
     private void modified() {
         _dirty = true;
-        _valid = true;
+        _errors = null;
         refresh();
     }
 
@@ -297,17 +323,26 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * @param exception the reason for the failure
      */
     private void invalidate(ValidationException exception) {
-        _valid = false;
-        String title = "Error: " + _descriptor.getDisplayName();
-        String message;
-        List<ValidationError> errors = exception.getErrors();
-        if (!errors.isEmpty()) {
-            ValidationError error = errors.get(0);
-            message = error.getErrorMessage();
-        } else {
-            message = exception.getMessage();
+        _errors = exception.getErrors();
+        if (_errors.isEmpty()) {
+            ValidationError error = new ValidationError(_descriptor.getName(),
+                                                        exception.getMessage());
+            _errors.add(error);
         }
-        ErrorDialog.show(title, message);
+    }
+
+    /**
+     * Adds a validation error.
+     *
+     * @param message the key of the message
+     * @param args    an array of arguments to be inserted into the message
+     */
+    private void addError(String message, Object ... args) {
+        if (_errors == null) {
+            _errors = new ArrayList<ValidationError>();
+        }
+        message = Messages.get(message, args);
+        _errors.add(new ValidationError(_descriptor.getName(), message));
     }
 
     /**

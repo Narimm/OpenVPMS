@@ -18,15 +18,16 @@
 
 package org.openvpms.web.component.edit;
 
-import java.math.BigDecimal;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.test.AbstractAppTest;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.test.AbstractAppTest;
 
 import junit.framework.Assert;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -48,25 +49,6 @@ public class NumericPropertyHandlerTestCase
      */
     private NodeDescriptor _decNode;
 
-
-    /**
-     * Tests {@link PropertyHandler#isValid} for an integer node.
-     */
-    public void testIntegerIsValid() {
-        NumericPropertyHandler handler = new NumericPropertyHandler(_intNode);
-
-        // test string validity
-        assertFalse(handler.isValid("abc"));
-        assertTrue(handler.isValid("1"));
-        assertFalse(handler.isValid("1.0"));
-        // invalid as Integer throws NumberFormatException
-
-        // test numeric validity
-        assertTrue(handler.isValid(new Long(1)));
-        assertTrue(handler.isValid(new BigDecimal(1.0)));
-        assertTrue(handler.isValid(new Double(1.5)));
-        // valid as Double provides toInt()
-    }
 
     /**
      * Tests {@link PropertyHandler#apply} for an integer node.
@@ -99,24 +81,7 @@ public class NumericPropertyHandlerTestCase
     }
 
     /**
-     * Tests {@link PropertyHandler#isValid} for a BigDecimal node.
-     */
-    public void testDecimalIsValid() {
-        NumericPropertyHandler handler = new NumericPropertyHandler(_decNode);
-
-        // test string validity
-        assertFalse(handler.isValid("abc"));
-        assertTrue(handler.isValid("1"));
-        assertTrue(handler.isValid("1.0"));
-
-        // test numeric validity
-        assertTrue(handler.isValid(new Long(1)));
-        assertTrue(handler.isValid(new BigDecimal(1.0)));
-        assertTrue(handler.isValid(new Double(1.5)));
-    }
-
-    /**
-     * Tests {@link PropertyHandler#apply} for an integer node.
+     * Tests {@link PropertyHandler#apply} for a BigDecimal node.
      */
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");
