@@ -26,9 +26,8 @@ import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 /**
  * This class is used to by JXPath during the object construction phase. It 
@@ -87,6 +86,8 @@ public class JXPathGenericObjectCreationFactory extends AbstractFactory {
                 ptr.setValue(new Short((short)0));
             } else if (clazz == Byte.class) {
                 ptr.setValue(new Byte((byte)0));
+            } else if (clazz == Money.class) {
+                    ptr.setValue(new Money("0.0"));
             } else if (clazz == BigDecimal.class) {
                 ptr.setValue(BigDecimal.valueOf(0.0));
             } else {
