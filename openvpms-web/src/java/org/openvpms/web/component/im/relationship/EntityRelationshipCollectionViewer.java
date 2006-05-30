@@ -21,8 +21,6 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
 import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -30,9 +28,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -81,10 +77,9 @@ public class EntityRelationshipCollectionViewer
                 onHideInactiveChanged();
             }
         });
-        Row row = RowFactory.create("CellSpacing", getTable(), _hideInactive);
-        Column column = ColumnFactory.create("WideCellSpacing", row);
-        populateTable();
-        return column;
+        Component component = super.doLayout();
+        component.add(_hideInactive, 0);
+        return component;
     }
 
     /**
