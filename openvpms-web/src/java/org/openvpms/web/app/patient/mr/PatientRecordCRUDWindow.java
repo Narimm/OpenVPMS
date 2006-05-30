@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
 
@@ -65,8 +65,8 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
     protected void onCreate(String type, ShortNames shortNames) {
         String[] names = shortNames.getShortNames();
         if (names.length == 0) {
-            // haven't got a current episode for the view
-            ErrorDialog.show(Messages.get("patient.record.create.noepisode"));
+            // haven't got a current event for the view
+            ErrorDialog.show(Messages.get("patient.record.create.noevent"));
         } else {
             super.onCreate(type, shortNames);
         }

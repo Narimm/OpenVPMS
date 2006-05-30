@@ -58,12 +58,26 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      */
     private final IMObjectCollectionEditor _editor;
 
+    /**
+     * Determines if the items node should be displayed.
+     */
+    private final boolean _showItems;
+
 
     /**
      * Construct a new <code>ActLayoutStrategy</code>.
      */
     public ActLayoutStrategy() {
-        this(null);
+        this(true);
+    }
+
+    /**
+     * Construct a new <code>ActLayoutStrategy</code>
+     *
+     * @param showItems if <code>true</code>, show the items node
+     */
+    public ActLayoutStrategy(boolean showItems) {
+        this(null, showItems);
     }
 
     /**
@@ -72,7 +86,19 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @param editor the act items editor. May be <code>null</code>.
      */
     public ActLayoutStrategy(IMObjectCollectionEditor editor) {
+        this(editor, true);
+    }
+
+    /**
+     * Construct a new <code>ActLayoutStrategy</code>.
+     *
+     * @param editor the act items editor. May be <code>null</code>.
+     * @param showItems if <code>true</code>, show the items node
+     */
+    private ActLayoutStrategy(IMObjectCollectionEditor editor,
+                              boolean showItems) {
         _editor = editor;
+        _showItems = showItems;
     }
 
     /**
@@ -102,7 +128,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(object);
         NodeDescriptor items = archetype.getNodeDescriptor("items");
-        if (items != null) {
+        if (items != null && _showItems) {
             GroupBox box = new GroupBox();
             box.setTitle(items.getDisplayName());
 

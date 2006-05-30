@@ -13,11 +13,12 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: PatientRecordWorkspace.java 931 2006-05-29 03:43:35Z tanderson $
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.patient.mr;
 
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -35,8 +36,6 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -49,16 +48,12 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-
 
 /**
- * Patient medical reocrd workspace.
+ * Patient medical record workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-29 03:43:35Z $
  */
 public class PatientRecordWorkspace extends ActWorkspace {
 
@@ -72,48 +67,14 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     private String[] _clinicalEventItems = {};
 
-    /**
-     * Clinical episode act short name.
-     */
-    private static final String CLINICAL_EPISODE = "act.patientClinicalEpisode";
-
-    /**
-     * Clinical event act short name.
-     */
-    private static final String CLINICAL_EVENT = "act.patientClinicalEvent";
-
-    /**
-     * Clinical problem act short name.
-     */
-    private static final String CLINICAL_PROBLEM = "act.patientClinicalProblem";
-
-    /**
-     * Clinical episode event act relationship short name.
-     */
-    private static final String RELATIONSHIP_CLINICAL_EPISODE_EVENT
-            = "actRelationship.patientClinicalEpisodeEvent";
-
-    /**
-     * Clinical event item act relationship short name,
-     */
-    private static final String RELATIONSHIP_CLINICAL_EVENT_ITEM
-            = "actRelationship.patientClinicalEventItem";
-
 
     /**
      * Construct a new <code>PatientRecordWorkspace</code>.
      */
     public PatientRecordWorkspace() {
         super("patient", "record", "party", "party", "patient*");
-
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
+        _clinicalEventItems = ActHelper.getTargetShortNames(
                 RELATIONSHIP_CLINICAL_EVENT_ITEM);
-        if (archetype != null) {
-            NodeDescriptor target = archetype.getNodeDescriptor("target");
-            if (target != null) {
-                _clinicalEventItems = DescriptorHelper.getShortNames(target);
-            }
-        }
     }
 
     /**
@@ -141,42 +102,6 @@ public class PatientRecordWorkspace extends ActWorkspace {
     protected boolean refreshWorkspace() {
         Party patient = Context.getInstance().getPatient();
         return (patient != getObject());
-    }
-
-    /**
-     * Returns a component representing the acts.
-     *
-     * @param acts the act browser
-     * @return a component representing the acts
-     */
-    @Override
-    protected Component getActs(Browser acts) {
-        return acts.getComponent();
-    }
-
-    /**
-     * Creates the workspace split pane.
-     *
-     * @param browser the act browser
-     * @param window  the CRUD window
-     * @return a new workspace split pane
-     */
-    @Override
-    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                       "PatientRecordWorkspace.Layout",
-                                       browser.getComponent(),
-                                       window.getComponent());
-    }
-
-    /**
-     * Creates a new CRUD window for viewing and editing acts.
-     *
-     * @return a new CRUD window
-     */
-    protected CRUDWindow createCRUDWindow() {
-        String type = Messages.get("patient.record.createtype");
-        return new PatientRecordCRUDWindow(type, new ShortNameResolver());
     }
 
     /**
@@ -224,6 +149,53 @@ public class PatientRecordWorkspace extends ActWorkspace {
         _selected = null;
     }
 
+    /**
+     * Lays out the component.
+     *
+     * @param container the container
+     */
+    protected void doLayout(Component container) {
+        Party patient = Context.getInstance().getPatient();
+        if (patient != getObject()) {
+            setObject(patient);
+        }
+    }
+
+    /**
+     * Returns a component representing the acts.
+     *
+     * @param acts the act browser
+     * @return a component representing the acts
+     */
+    @Override
+    protected Component getActs(Browser acts) {
+        return acts.getComponent();
+    }
+
+    /**
+     * Creates the workspace split pane.
+     *
+     * @param browser the act browser
+     * @param window  the CRUD window
+     * @return a new workspace split pane
+     */
+    @Override
+    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                                       "PatientRecordWorkspace.Layout",
+                                       browser.getComponent(),
+                                       window.getComponent());
+    }
+
+    /**
+     * Creates a new CRUD window for viewing and editing acts.
+     *
+     * @return a new CRUD window
+     */
+    protected CRUDWindow createCRUDWindow() {
+        String type = Messages.get("patient.record.createtype");
+        return new PatientRecordCRUDWindow(type, new ShortNameResolver());
+    }
 
     /**
      * Creates a new query for the visits view.
@@ -245,18 +217,6 @@ public class PatientRecordWorkspace extends ActWorkspace {
     protected Browser<Act> createBrowser(Query<Act> query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         return new RecordBrowser(query, createProblemsQuery(), sort);
-    }
-
-    /**
-     * Lays out the component.
-     *
-     * @param container the container
-     */
-    protected void doLayout(Component container) {
-        Party patient = Context.getInstance().getPatient();
-        if (patient != getObject()) {
-            setObject(patient);
-        }
     }
 
     /**
@@ -288,12 +248,15 @@ public class PatientRecordWorkspace extends ActWorkspace {
      *
      * @param act              the act
      * @param parentType       the type of the parent act
-     * @param relationshipType the type of the relationship to addd
+     * @param relationshipType the type of the relationship to add
      */
     private void addActRelationship(Act act, String parentType,
                                     String relationshipType) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        Act parent = ActHelper.getAct(_selected, parentType);
+        Act parent = ActHelper.getActOrParent(_selected, parentType);
+        if (parent == null) {
+            parent = ActHelper.getActOrChild(_selected, parentType);
+        }
         if (parent != null) {
             try {
                 ActRelationship relationship
@@ -310,8 +273,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
             }
         } else {
             String name = DescriptorHelper.getDisplayName(act);
-            String message = Messages.get("patient.record.create.noparent");
-            ErrorHelper.show(message, name);
+            String message = Messages.get("patient.record.create.noparent",
+                                          name);
+            ErrorHelper.show(message);
         }
     }
 
@@ -323,26 +287,10 @@ public class PatientRecordWorkspace extends ActWorkspace {
          * @return the archetype short names
          */
         public String[] getShortNames() {
-            Act act = _selected;
-            boolean isEventItem = false;
-            boolean isEvent = false;
-            boolean isEpisode = false;
-            List<String> names = new ArrayList<String>();
-            if (IMObjectHelper.isA(act, _clinicalEventItems)) {
-                isEventItem = true;
-            } else if (IMObjectHelper.isA(act, CLINICAL_EVENT)) {
-                isEvent = true;
-            } else if (IMObjectHelper.isA(act, CLINICAL_EPISODE)) {
-                isEpisode = true;
-            }
-            if (isEventItem || isEvent) {
-                names.addAll(Arrays.asList(_clinicalEventItems));
-            }
-            if (isEventItem || isEvent || isEpisode) {
-                names.add(CLINICAL_EVENT);
-            }
-            names.add(CLINICAL_EPISODE);
-            return names.toArray(new String[0]);
+            RecordBrowser browser = (RecordBrowser) getBrowser();
+            RecordShortNames names = browser.getShortNames();
+            names.setAct(_selected);
+            return names.getShortNames();
         }
     }
 }

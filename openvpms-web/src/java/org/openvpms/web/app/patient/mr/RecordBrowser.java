@@ -16,19 +16,8 @@
  *  $Id$
  */
 
-/**
- * Add description here.
- *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
- */
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.extras.app.TabPane;
-import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultTreeBrowser;
 import org.openvpms.web.component.im.query.Query;
@@ -38,6 +27,13 @@ import org.openvpms.web.component.im.tree.ActTreeBuilder;
 import org.openvpms.web.component.im.tree.BottomUpActTreeBuilder;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.system.common.query.SortConstraint;
+
+import nextapp.echo2.app.Component;
+import nextapp.echo2.extras.app.TabPane;
+import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 
 import java.util.List;
 
@@ -77,9 +73,9 @@ public class RecordBrowser implements Browser<Act> {
     public RecordBrowser(Query<Act> visits, Query<Act> problems,
                          SortConstraint[] sort) {
         _visits = new DefaultTreeBrowser<Act>(visits, sort,
-                new BottomUpActTreeBuilder());
+                                              new BottomUpActTreeBuilder());
         _problems = new DefaultTreeBrowser<Act>(problems, sort,
-                new ActTreeBuilder());
+                                                new ActTreeBuilder());
     }
 
     /**
@@ -140,6 +136,19 @@ public class RecordBrowser implements Browser<Act> {
     public void query() {
         _visits.query();
         _problems.query();
+    }
+
+    /**
+     * Returns the short names of acts that may be created
+     * for the current browser.
+     *
+     * @return the short names
+     */
+    public RecordShortNames getShortNames() {
+        if (getCurrent() == _visits) {
+            return new VisitRecordShortNames();
+        }
+        return new ProblemRecordShortNames();
     }
 
     /**

@@ -146,8 +146,7 @@ public abstract class AbstractIMObjectEditor
 
 
     /**
-     * Construct a new <code>DefaultIMObjectEditor</code> for an object that
-     * belongs to a collection.
+     * Construct a new <code>AbstractIMObjectEditor</code>.
      *
      * @param object  the object to edit
      * @param parent  the parent object. May be <code>null</code>

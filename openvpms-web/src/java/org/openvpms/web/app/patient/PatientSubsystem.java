@@ -19,6 +19,7 @@
 package org.openvpms.web.app.patient;
 
 import org.openvpms.web.app.subsystem.DummyWorkspace;
+import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
