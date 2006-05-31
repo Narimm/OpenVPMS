@@ -948,6 +948,42 @@
     <!--  Text component defaults                                            -->
     <!-- =================================================================== -->
 
+    <style name="default" type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="background" value="#fffacd"/>
+            <!-- lemonchiffon -->
+            <property name="foreground" value="#000000"/>
+            <!-- black -->
+            <property name="border">
+                <border size="1px" style="inset" color="#f0e68c"/>
+                <!-- khaki -->
+            </property>
+            <property name="font">
+                <font size="9pt">
+                     <typeface name="Verdana"/>
+                </font>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="default-1024x768" base-name="default"
+           type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="font">
+                <font size="8pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-800x600" base-name="default-1024x768"
+           type="nextapp.echo2.app.TextArea">
+        <properties>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="default" type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="background" value="#fffacd"/>

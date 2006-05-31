@@ -37,9 +37,11 @@ public class BoundTextArea extends TextArea {
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
+     * @param rows TODO
      */
-    public BoundTextArea(Property property, int columns) {
+    public BoundTextArea(Property property, int columns, int rows) {
         setWidth(new Extent(columns, Extent.EX));
+        setHeight(new Extent(rows, Extent.EM));
         Binder binder = new TextComponentBinder(this, property);
         binder.setField();
     }

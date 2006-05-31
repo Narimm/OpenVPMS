@@ -110,10 +110,11 @@ public class TextComponentFactory extends ComponentFactory {
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
+     * @param rows TODO
      * @return a new bound text field
      */
-    public static TextArea createTextArea(Property property, int columns) {
-        TextArea text = new BoundTextArea(property, columns);
+    public static TextArea createTextArea(Property property, int columns, int rows) {
+        TextArea text = new BoundTextArea(property, columns, rows);
         setDefaultStyle(text);
         return text;
     }
