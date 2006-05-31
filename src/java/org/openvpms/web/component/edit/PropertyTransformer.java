@@ -23,20 +23,27 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 
 
 /**
- * Default property handler.
+ * PropertyTransformer is responsible for processing user input prior to it being
+ * set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultPropertyHandler extends PropertyHandler {
+public abstract class PropertyTransformer {
 
     /**
-     * Construct a new <code>DefaultPropertyHandler</code>.
+     * The node descriptor.
+     */
+    private final NodeDescriptor _descriptor;
+
+
+    /**
+     * Construct a new <code>PropertyTransformer</code>.
      *
      * @param descriptor the node descriptor.
      */
-    public DefaultPropertyHandler(NodeDescriptor descriptor) {
-        super(descriptor);
+    public PropertyTransformer(NodeDescriptor descriptor) {
+        _descriptor = descriptor;
     }
 
     /**
@@ -47,8 +54,15 @@ public class DefaultPropertyHandler extends PropertyHandler {
      *         transformation is required
      * @throws ValidationException if the object is invalid
      */
-    public Object apply(Object object) throws ValidationException {
-        return object;
+    public abstract Object apply(Object object) throws ValidationException;
+
+    /**
+     * Returns the node descriptor.
+     *
+     * @return the node descriptor
+     */
+    public NodeDescriptor getDescriptor() {
+        return _descriptor;
     }
 
 }

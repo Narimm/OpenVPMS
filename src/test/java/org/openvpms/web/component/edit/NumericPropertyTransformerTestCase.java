@@ -31,12 +31,12 @@ import java.math.BigDecimal;
 
 
 /**
- * {@link NumericPropertyHandler} test case.
+ * {@link NumericPropertyTransformer} test case.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class NumericPropertyHandlerTestCase
+public class NumericPropertyTransformerTestCase
         extends AbstractAppTest {
 
     /**
@@ -51,11 +51,11 @@ public class NumericPropertyHandlerTestCase
 
 
     /**
-     * Tests {@link PropertyHandler#apply} for an integer node.
+     * Tests {@link PropertyTransformer#apply} for an integer node.
      */
     public void testIntegerApply() {
         final Integer one = 1;
-        NumericPropertyHandler handler = new NumericPropertyHandler(_intNode);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(_intNode);
 
         // test string conversions
         try {
@@ -81,12 +81,12 @@ public class NumericPropertyHandlerTestCase
     }
 
     /**
-     * Tests {@link PropertyHandler#apply} for a BigDecimal node.
+     * Tests {@link PropertyTransformer#apply} for a BigDecimal node.
      */
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");
         final BigDecimal half = new BigDecimal("0.5");
-        NumericPropertyHandler handler = new NumericPropertyHandler(_decNode);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(_decNode);
 
         // test string conversions
         try {
