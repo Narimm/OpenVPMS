@@ -35,7 +35,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class NumericPropertyHandler extends PropertyHandler {
+public class NumericPropertyTransformer extends PropertyTransformer {
 
     /**
      * The type converter.
@@ -45,11 +45,11 @@ public class NumericPropertyHandler extends PropertyHandler {
 
 
     /**
-     * Construct a new <code>NumericPropertyHandler</code>.
+     * Construct a new <code>NumericPropertyTransformer</code>.
      *
      * @param descriptor the node descriptor.
      */
-    public NumericPropertyHandler(NodeDescriptor descriptor) {
+    public NumericPropertyTransformer(NodeDescriptor descriptor) {
         super(descriptor);
     }
 

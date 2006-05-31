@@ -19,28 +19,36 @@
 package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.ValidationException;
 
 
 /**
- * Factory for {@link PropertyHandler} instances.
+ * Default property handler.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PropertyHandlerFactory {
+public class DefaultPropertyTransformer extends PropertyTransformer {
 
     /**
-     * Create a new node validator.
+     * Construct a new <code>DefaultPropertyTransformer</code>.
      *
-     * @param descriptor the node descriptor
+     * @param descriptor the node descriptor.
      */
-    public static PropertyHandler create(NodeDescriptor descriptor) {
-        PropertyHandler result;
-        if (descriptor.isNumeric()) {
-            result = new NumericPropertyHandler(descriptor);
-        } else {
-            result = new DefaultPropertyHandler(descriptor);
-        }
-        return result;
+    public DefaultPropertyTransformer(NodeDescriptor descriptor) {
+        super(descriptor);
     }
+
+    /**
+     * Transform an object to the required type, performing validation.
+     *
+     * @param object the object to convert
+     * @return the transformed object, or <code>object</code> if no
+     *         transformation is required
+     * @throws ValidationException if the object is invalid
+     */
+    public Object apply(Object object) throws ValidationException {
+        return object;
+    }
+
 }

@@ -87,7 +87,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
     /**
      * The property handler.
      */
-    private PropertyHandler _handler;
+    private PropertyTransformer _transformer;
 
 
     /**
@@ -293,9 +293,9 @@ public class IMObjectProperty implements Property, CollectionProperty {
                     }
                 }
             } else {
-                PropertyHandler handler = getHandler();
+                PropertyTransformer transformer = getHandler();
                 try {
-                    handler.apply(getValue());
+                    transformer.apply(getValue());
                 } catch (ValidationException exception) {
                     invalidate(exception);
                 }
@@ -350,11 +350,11 @@ public class IMObjectProperty implements Property, CollectionProperty {
      *
      * @return the property handler
      */
-    private PropertyHandler getHandler() {
-        if (_handler == null) {
-            _handler = PropertyHandlerFactory.create(_descriptor);
+    private PropertyTransformer getHandler() {
+        if (_transformer == null) {
+            _transformer = PropertyTransformerFactory.create(_descriptor);
         }
-        return _handler;
+        return _transformer;
     }
 
     /**
