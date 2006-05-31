@@ -44,13 +44,9 @@
 					<propertyMap name="archetype">
 						<property name="shortName" value="act.patientClinicalNote" />
 					</propertyMap>
-				</propertyList>
-				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName" value="act.patientReminder" />
 					</propertyMap>
-				</propertyList>
-				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName" value="act.patientAlert" />
 					</propertyMap>
