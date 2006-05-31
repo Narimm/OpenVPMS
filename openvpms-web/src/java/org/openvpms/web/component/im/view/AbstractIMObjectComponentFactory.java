@@ -116,9 +116,9 @@ public abstract class AbstractIMObjectComponentFactory
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.getMaxLength() > 255) {
             if (descriptor.getMaxLength() < 500)
-                result = TextComponentFactory.createTextArea(property, columns);
+                result = TextComponentFactory.createTextArea(property, columns, 5);
             else
-                result = TextComponentFactory.createRichTextArea(property, columns);
+                result = TextComponentFactory.createTextArea(property, 100, 15);
         } else {
             result = TextComponentFactory.create(property, columns);
         }
