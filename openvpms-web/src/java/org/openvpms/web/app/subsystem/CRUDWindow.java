@@ -18,20 +18,6 @@
 
 package org.openvpms.web.app.subsystem;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -52,6 +38,22 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 
 /**
  * Generic CRUD window.
@@ -143,6 +145,8 @@ public class CRUDWindow {
      * @param type       display name for the types of objects that this may
      *                   create
      * @param shortNames the short names of archetypes that this may create.
+     *                   If <code>null</code> subclass must override
+     *                   {@link #getShortNames}
      */
     public CRUDWindow(String type, ShortNames shortNames) {
         _type = type;
@@ -226,7 +230,7 @@ public class CRUDWindow {
      * Invoked when the 'new' button is pressed.
      */
     public void onCreate() {
-        onCreate(_type, _shortNames);
+        onCreate(_type, getShortNames());
     }
 
     /**
@@ -239,13 +243,22 @@ public class CRUDWindow {
     }
 
     /**
+     * Returns the short names of the archetypes that this may create.
+     *
+     * @return the short names
+     */
+    protected ShortNames getShortNames() {
+        return _shortNames;
+    }
+
+    /**
      * Lays out the component.
      */
     protected void doLayout() {
         _buttons = RowFactory.create(ROW_STYLE);
         layoutButtons(_buttons);
         enableButtons(false);
-        _objectContainer = ColumnFactory.create("Inset");
+        _objectContainer = ColumnFactory.create();
         _component = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
                 STYLE, _buttons, _objectContainer);
@@ -341,7 +354,7 @@ public class CRUDWindow {
     /**
      * Invoked when the 'new' button is pressed.
      *
-     * @param type localised type display name
+     * @param type       localised type display name
      * @param shortNames the short names
      */
     protected void onCreate(String type, ShortNames shortNames) {
@@ -412,6 +425,18 @@ public class CRUDWindow {
     }
 
     /**
+     * Creates a new editor.
+     *
+     * @param object the object to edit.
+     * @param context
+     * @return a new editor
+     */
+    protected IMObjectEditor createEditor(IMObject object,
+                                          LayoutContext context) {
+        return IMObjectEditorFactory.create(object, context);
+    }
+
+    /**
      * Invoked when the editor is closed.
      *
      * @param editor the editor
@@ -441,6 +466,22 @@ public class CRUDWindow {
     }
 
     /**
+     * Deletes an object. Invokes {@link #onDeleted} if successful.
+     *
+     * @param object the object to delete
+     */
+    protected void delete(IMObject object) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        try {
+            service.remove(object);
+            onDeleted(object);
+        } catch (OpenVPMSException exception) {
+            String title = Messages.get("imobject.delete.failed.title");
+            ErrorHelper.show(title, exception);
+        }
+    }
+
+    /**
      * Invoked when the object has been deleted.
      *
      * @param object the object
@@ -459,9 +500,9 @@ public class CRUDWindow {
      */
     private void edit(IMObject object) {
         final boolean isNew = object.isNew();
+
         LayoutContext context = new DefaultLayoutContext(true);
-        final IMObjectEditor editor
-                = IMObjectEditorFactory.create(object, context);
+        final IMObjectEditor editor = createEditor(object, context);
         EditDialog dialog = new EditDialog(editor, context);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -481,7 +522,8 @@ public class CRUDWindow {
      */
     private void confirmDeactivate(final IMObject object) {
         String title = Messages.get("imobject.deactivate.title", _type);
-        String message = Messages.get("imobject.deactivate.message", object.getName());
+        String message = Messages.get("imobject.deactivate.message",
+                                      object.getName());
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -506,18 +548,12 @@ public class CRUDWindow {
      */
     private void confirmDelete(final IMObject object) {
         String title = Messages.get("imobject.delete.title", _type);
-        String message = Messages.get("imobject.delete.title", object.getName());
+        String message = Messages.get("imobject.delete.title",
+                                      object.getName());
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
         dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                try {
-                    service.remove(object);
-                    onDeleted(object);
-                } catch (OpenVPMSException exception) {
-                    String title = Messages.get("imobject.delete.failed.title");
-                    ErrorHelper.show(title, exception);
-                }
+                delete(object);
             }
         });
         dialog.show();

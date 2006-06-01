@@ -21,13 +21,17 @@ package org.openvpms.web.component.im.edit.act;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.create.IMObjectCreator;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 
 
 /**
@@ -110,5 +114,55 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
      * todo - workaround for OVPMS-211
      */
     protected abstract void updateTotals();
+
+    /**
+     * Helper to initialises a participation, if it exists and is empty.
+     *
+     * @param name   the participation name
+     * @param entity the participation entity
+     */
+    protected void initParticipation(String name, IMObject entity) {
+        Property property = getProperty(name);
+        if (property != null) {
+            Participation participant = getParticipation(property);
+            if (participant != null) {
+                if (participant.getAct() == null) {
+                    participant.setAct(getObject().getObjectReference());
+                }
+                if (entity != null && participant.getEntity() == null) {
+                    participant.setEntity(entity.getObjectReference());
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper to return a participation.
+     *
+     * @param property the participation property
+     * @return the participation
+     */
+    protected Participation getParticipation(Property property) {
+        Object value = null;
+        if (property instanceof CollectionProperty) {
+            CollectionProperty c = (CollectionProperty) property;
+            Object[] values = c.getValues().toArray();
+            if (values.length > 0) {
+                value = values[0];
+            } else {
+                String[] shortNames = DescriptorHelper.getShortNames(
+                        property.getDescriptor());
+                if (shortNames.length == 1) {
+                    value = IMObjectCreator.create(shortNames[0]);
+                    if (value != null) {
+                        c.add(value);
+                    }
+                }
+            }
+        } else {
+            value = property.getValue();
+        }
+        return (value instanceof Participation) ? (Participation) value : null;
+    }
 
 }

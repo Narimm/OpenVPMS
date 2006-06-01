@@ -24,15 +24,20 @@
  */
 package org.openvpms.web.component.im.tree;
 
-import echopointng.tree.DefaultMutableTreeNode;
-import echopointng.tree.MutableTreeNode;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import echopointng.tree.DefaultMutableTreeNode;
+import echopointng.tree.MutableTreeNode;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,10 +52,36 @@ import java.util.Set;
 public class BottomUpActTreeBuilder extends AbstractTreeBuilder<Act> {
 
     /**
+     * Parent act short names to exclude when building the tree.
+     */
+    private final Set<String> _parentExcludes;
+
+    /**
      * The set of known acts, and their corresponding nodes.
      */
     private Map<IMObjectReference, IMObjectTreeNode> _acts;
 
+    /**
+     * Create a new <code>BottomUpActTreeBuilder</code>.
+     */
+    public BottomUpActTreeBuilder() {
+        this(null);
+    }
+
+    /**
+     * Create a new <code>BottomUpActTreeBuilder</code>.
+     *
+     * @param parentExcludes parent act short names to exclude when building the
+     *                       tree. May be <code>null</code>
+     */
+    public BottomUpActTreeBuilder(String[] parentExcludes) {
+        if (parentExcludes != null && parentExcludes.length != 0) {
+            _parentExcludes = new HashSet<String>(
+                    Arrays.asList(parentExcludes));
+        } else {
+            _parentExcludes = null;
+        }
+    }
 
     /**
      * Start a new tree.
@@ -101,19 +132,21 @@ public class BottomUpActTreeBuilder extends AbstractTreeBuilder<Act> {
                     new ActRelationship[0]);
             for (ActRelationship relationship : acts) {
                 IMObjectReference source = relationship.getSource();
-                parentNode = _acts.get(source);
-                if (parentNode != null) {
-                    break;
-                }
-            }
-            if (parentNode == null) {
-                ActRelationship relationship = acts[0];
-                Act parent = (Act) IMObjectHelper.getObject(
-                        relationship.getSource());
-                if (parent == null) {
-                    parentNode = root;
-                } else {
-                    parentNode = addBottomUp(parent, root, false);
+                if (!excluded(source)) {
+                    parentNode = _acts.get(source);
+                    if (parentNode != null) {
+                        break;
+                    } else {
+                        Act parent = (Act) IMObjectHelper.getObject(source);
+                        if (parent == null) {
+                            parentNode = root;
+                        } else {
+                            parentNode = addBottomUp(parent, root, false);
+                        }
+                        if (parentNode != null) {
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -125,6 +158,21 @@ public class BottomUpActTreeBuilder extends AbstractTreeBuilder<Act> {
         parentNode.add(child);
         _acts.put(act.getObjectReference(), child);
         return child;
+    }
+
+    /**
+     * Determines if an act has been excluded.
+     *
+     * @param act the act reference
+     * @return <code>true</code> if the act is excluded; otherwise
+     *         <code>false</code>
+     */
+    private boolean excluded(IMObjectReference act) {
+        if (_parentExcludes != null) {
+            ArchetypeId id = act.getArchetypeId();
+            return _parentExcludes.contains(id.getShortName());
+        }
+        return false;
     }
 
 }

@@ -18,13 +18,27 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.ListIterator;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.list.LookupListCellRenderer;
+import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.CollectionHelper;
+import org.openvpms.web.component.util.DateFieldFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
+
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 import echopointng.DateField;
 import nextapp.echo2.app.CheckBox;
@@ -36,24 +50,13 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.ListIterator;
 
 
 /**
@@ -88,6 +91,11 @@ public class ActQuery extends AbstractQuery {
      * The status dropdown.
      */
     private SelectField _statusSelector;
+
+    /**
+     * Short names which are always queried on.
+     */
+    private String[] _requiredShortNames;
 
     /**
      * The statuses to query on.
@@ -258,6 +266,17 @@ public class ActQuery extends AbstractQuery {
     }
 
     /**
+     * Sets the short names which are required to be queried.
+     * These are short names that are always queried independent of the
+     * short name selector.
+     *
+     * @param shortNames the short names. May be <code>null</code>
+     */
+    public void setRequiredShortNames(String[] shortNames) {
+        _requiredShortNames = shortNames;
+    }
+
+    /**
      * Performs the query.
      *
      * @param rows the maxiomum no. of rows per page
@@ -275,11 +294,7 @@ public class ActQuery extends AbstractQuery {
             if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
                 archetypes = getArchetypeConstraint();
             } else {
-                ArchetypeDescriptor archetype
-                        = DescriptorHelper.getArchetypeDescriptor(type);
-                ArchetypeId id = new ArchetypeId(archetype.getName());
-                archetypes = new ArchetypeLongNameConstraint(
-                        null, id.getEntityName(), id.getConcept(), true, true);
+                archetypes = getArchetypeConstraint(type);
             }
 
             Date startFrom = getStartFrom();
@@ -295,6 +310,64 @@ public class ActQuery extends AbstractQuery {
             result = new ActResultSet(_entityId, _participant, _participation,
                                       archetypes, startFrom, startTo, statuses,
                                       exclude, rows, sort);
+        }
+        return result;
+    }
+
+
+    /**
+     * Returns the archetype constraint.
+     *
+     * @return the archetype constraint
+     */
+    @Override
+    public BaseArchetypeConstraint getArchetypeConstraint() {
+        BaseArchetypeConstraint result;
+        BaseArchetypeConstraint archetype = super.getArchetypeConstraint();
+        if (_requiredShortNames == null) {
+            result = archetype;
+        } else {
+            // need to add the required short names
+            String[] shortNames;
+            if (archetype instanceof ArchetypeLongNameConstraint) {
+                ArchetypeLongNameConstraint lnc
+                        = (ArchetypeLongNameConstraint) archetype;
+                shortNames = DescriptorHelper.getShortNames(
+                        lnc.getRmName(), lnc.getEntityName(),
+                        lnc.getConceptName());
+            } else {
+                ArchetypeShortNameConstraint snc
+                        = (ArchetypeShortNameConstraint) archetype;
+                shortNames = snc.getShortNames();
+            }
+            shortNames = CollectionHelper.concat(shortNames,
+                                                 _requiredShortNames);
+            result = new ArchetypeShortNameConstraint(
+                    shortNames, true, true);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the archetype constraint, containing a subset of the available
+     * short names. This includes the required short names plus a user specified
+     * short name.
+     *
+     * @param shortName the short name
+     */
+    protected BaseArchetypeConstraint getArchetypeConstraint(String shortName) {
+        BaseArchetypeConstraint result;
+        if (_requiredShortNames == null) {
+            ArchetypeDescriptor archetype
+                    = DescriptorHelper.getArchetypeDescriptor(shortName);
+            ArchetypeId id = new ArchetypeId(archetype.getName());
+            result = new ArchetypeLongNameConstraint(
+                    null, id.getEntityName(), id.getConcept(), true, true);
+        } else {
+            String[] shortNames = CollectionHelper.concat(_requiredShortNames,
+                                                          shortName);
+            result = new ArchetypeShortNameConstraint(
+                    shortNames, true, true);
         }
         return result;
     }
