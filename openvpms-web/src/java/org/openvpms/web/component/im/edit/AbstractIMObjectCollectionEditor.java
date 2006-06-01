@@ -44,6 +44,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -56,6 +57,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -506,7 +508,8 @@ public abstract class AbstractIMObjectCollectionEditor
                     _componentListener);
             _editBox.remove(_editor.getComponent());
         } else {
-            _editBox = new GroupBox();
+            _editBox = GroupBoxFactory.create();
+            _editBox.setInsets(new Insets(0));
             _component.add(_editBox);
         }
         _editor = getEditor(object);

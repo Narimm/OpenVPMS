@@ -25,6 +25,7 @@ import java.util.List;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -42,6 +43,7 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.GroupBoxFactory;
 
 
 /**
@@ -165,7 +167,8 @@ public class AbstractIMObjectCollectionViewer
      */
     protected void browse(IMObject object) {
         if (_box == null) {
-            _box = new GroupBox();
+            _box = GroupBoxFactory.create();
+            _box.setInsets(new Insets(0));
         } else {
             _box.removeAll();
             // workaround for a bug in EPNG
