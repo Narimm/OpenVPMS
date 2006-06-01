@@ -13,46 +13,102 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id$
+ *  $Id: PatientRecordCRUDWindow.java 942 2006-05-30 07:52:45Z tanderson $
  */
 
 package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.Row;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
+import org.openvpms.web.app.subsystem.ActCRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.resource.util.Messages;
+
+import nextapp.echo2.app.Row;
 
 
 /**
  * CRUD Window for patient record acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-30 07:52:45Z $
  */
-public class PatientRecordCRUDWindow extends ActCRUDWindow {
+public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
+
+    /**
+     * Clinical event item short names.
+     */
+    private final String[] _clinicalEventItems;
+
+    /**
+     * The short names that this may create.
+     */
+    private ShortNameResolver _shortNames;
+
+    /**
+     * The act used to determine the short names of the archetypes that
+     * may be created.
+     */
+    private Act _act;
+
 
     /**
      * Create a new <code>PatientRecordCRUDWindow</code>.
      *
-     * @param type       display name for the types of objects that this may
-     *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public PatientRecordCRUDWindow(String type, ShortNames shortNames) {
-        super(type, shortNames);
+    public PatientRecordCRUDWindow(RecordShortNames shortNames) {
+        super(Messages.get("patient.record.createtype"), null);
+        _clinicalEventItems = ActHelper.getTargetShortNames(
+                RELATIONSHIP_CLINICAL_EVENT_ITEM);
+        _shortNames = new ShortNameResolver(shortNames);
+    }
+
+    /**
+     * Sets the act used to determine the short names of the archetypes that
+     * may be created.
+     *
+     * @param act the act. May be <code>null</code>
+     */
+    public void setAct(Act act) {
+        _act = act;
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(IMObject object) {
+        super.setObject(object);
+        _act = (Act) object;
+    }
+
+    /**
+     * Returns the short names of the archetypes that this may create.
+     *
+     * @return the short names
+     */
+    @Override
+    protected ShortNames getShortNames() {
+        return _shortNames;
     }
 
     /**
@@ -86,7 +142,8 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
                 IArchetypeService service
                         = ServiceHelper.getArchetypeService();
                 Participation participation
-                        = (Participation) service.create("participation.patient");
+                        = (Participation) service.create(
+                        "participation.patient");
                 participation.setEntity(new IMObjectReference(patient));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);
@@ -102,7 +159,7 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
      *
      * @param act the act
      * @return <code>true</code> if the act can be edited, otherwise
-     *        <code>false</code>
+     *         <code>false</code>
      */
     @Override
     protected boolean canEdit(Act act) {
@@ -139,6 +196,79 @@ public class PatientRecordCRUDWindow extends ActCRUDWindow {
             buttons.add(getPrintButton());
         } else {
             buttons.add(getCreateButton());
+        }
+    }
+
+    /**
+     * Helper to return the short names of acts that may be added to
+     * <em>actRelationship.patientClinicalEventItem</em>.
+     *
+     * @return the short names
+     */
+    protected String[] getClinicalEventItemShortNames() {
+        return _clinicalEventItems;
+    }
+
+    /**
+     * Adds a relationship between two acts.
+     *
+     * @param act              the act
+     * @param parentType       the type of the parent act
+     * @param relationshipType the type of the relationship to add
+     */
+    protected void addActRelationship(Act act, String parentType,
+                                      String relationshipType) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        Act parent = ActHelper.getActOrParent(_act, parentType);
+        if (parent == null) {
+            parent = ActHelper.getActOrChild(_act, parentType);
+        }
+        if (parent != null) {
+            try {
+                ActRelationship relationship
+                        = (ActRelationship) IMObjectCreator.create(
+                        relationshipType);
+                if (relationship != null) {
+                    relationship.setSource(parent.getObjectReference());
+                    relationship.setTarget(act.getObjectReference());
+                    parent.addActRelationship(relationship);
+                    SaveHelper.save(parent, service);
+                }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        } else {
+            String name = DescriptorHelper.getDisplayName(act);
+            String message = Messages.get("patient.record.create.noparent",
+                                          name);
+            ErrorHelper.show(message);
+        }
+    }
+
+    private class ShortNameResolver implements ShortNames {
+
+        /**
+         * The short names to delegate to.
+         */
+        private RecordShortNames _shortNames;
+
+        /**
+         * Construct a new <code>ShortNameResolver</code>.
+         *
+         * @param shortNames the short names to delegate to
+         */
+        public ShortNameResolver(RecordShortNames shortNames) {
+            _shortNames = shortNames;
+        }
+
+        /**
+         * Returns the archetype short names.
+         *
+         * @return the archetype short names
+         */
+        public String[] getShortNames() {
+            _shortNames.setAct(_act);
+            return _shortNames.getShortNames();
         }
     }
 

@@ -117,23 +117,12 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     protected void layoutWorkspace(Party party, Component container) {
         setQuery(createQuery(party));
         setBrowser(createBrowser(_query));
-
-        _window = createCRUDWindow();
+        setCRUDWindow(createCRUDWindow());
         if (_workspace != null) {
             container.remove(_workspace);
         }
         _workspace = createWorkspace(_acts, _window);
         container.add(_workspace);
-
-        _window.setListener(new CRUDWindowListener() {
-            public void saved(IMObject object, boolean isNew) {
-                onSaved(object, isNew);
-            }
-
-            public void deleted(IMObject object) {
-                onDeleted(object);
-            }
-        });
     }
 
     /**
@@ -243,6 +232,37 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected Browser<Act> getBrowser() {
         return _acts;
+    }
+
+    /**
+     * Registers a new CRUD window.
+     *
+     * @param window the window
+     */
+    protected void setCRUDWindow(CRUDWindow window) {
+        _window = window;
+        _window.setListener(new CRUDWindowListener() {
+            public void saved(IMObject object, boolean isNew) {
+                onSaved(object, isNew);
+            }
+
+            public void deleted(IMObject object) {
+                onDeleted(object);
+            }
+        });
+        if (_workspace != null) {
+            _workspace.remove(1);
+            _workspace.add(_window.getComponent());
+        }
+    }
+
+    /**
+     * Returns the CRUD window.
+     *
+     * @return the CRUD window
+     */
+    protected CRUDWindow getCRUDWindow() {
+        return _window;
     }
 
     /**

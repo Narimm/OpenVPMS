@@ -32,10 +32,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @version $LastChangedDate$
  */
 public interface Browser<T extends IMObject> {
+
     /**
-     * Returns the query component.
+     * Returns the browser component.
      *
-     * @return the query component
+     * @return the browser component
      */
     Component getComponent();
 

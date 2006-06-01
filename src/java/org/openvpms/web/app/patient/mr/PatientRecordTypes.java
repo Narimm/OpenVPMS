@@ -54,4 +54,9 @@ public interface PatientRecordTypes {
     String RELATIONSHIP_CLINICAL_EVENT_ITEM
             = "actRelationship.patientClinicalEventItem";
 
+    /**
+     * Clinical problem item act relationship short name,
+     */
+    String RELATIONSHIP_CLINICAL_PROBLEM_ITEM
+            = "actRelationship.patientClinicalProblemItem";
 }

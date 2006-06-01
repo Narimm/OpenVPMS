@@ -25,16 +25,20 @@ import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TreeBrowser;
 import org.openvpms.web.component.im.tree.ActTreeBuilder;
 import org.openvpms.web.component.im.tree.BottomUpActTreeBuilder;
+import org.openvpms.web.component.im.tree.TreeBuilder;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
 
+import echopointng.TabbedPane;
+import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.extras.app.TabPane;
-import nextapp.echo2.extras.app.layout.TabPaneLayoutData;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 
@@ -49,7 +53,7 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * The tabbed pane.
      */
-    private TabPane _tab;
+    private TabbedPane _tab;
 
     /**
      * The visits browser.
@@ -60,6 +64,16 @@ public class RecordBrowser implements Browser<Act> {
      * The problems browser.
      */
     private TreeBrowser<Act> _problems;
+
+    /**
+     * The event listener.
+     */
+    private RecordBrowserListener _listener;
+
+    /**
+     * The selected tab.
+     */
+    private int _selected = 0;
 
 
     /**
@@ -72,8 +86,9 @@ public class RecordBrowser implements Browser<Act> {
      */
     public RecordBrowser(Query<Act> visits, Query<Act> problems,
                          SortConstraint[] sort) {
-        _visits = new DefaultTreeBrowser<Act>(visits, sort,
-                                              new BottomUpActTreeBuilder());
+        String[] excludes = {PatientRecordTypes.CLINICAL_PROBLEM};
+        TreeBuilder<Act> visitBuilder = new BottomUpActTreeBuilder(excludes);
+        _visits = new DefaultTreeBrowser<Act>(visits, sort, visitBuilder);
         _problems = new DefaultTreeBrowser<Act>(problems, sort,
                                                 new ActTreeBuilder());
     }
@@ -85,9 +100,21 @@ public class RecordBrowser implements Browser<Act> {
      */
     public Component getComponent() {
         if (_tab == null) {
-            _tab = new TabPane();
-            addTab("button.visit", _visits);
-            addTab("button.problem", _problems);
+            DefaultTabModel model = new DefaultTabModel();
+            addTab("button.visit", model, _visits);
+            addTab("button.problem", model, _problems);
+            _tab = TabbedPaneFactory.create(model);
+            _tab.setSelectedIndex(_selected);
+
+            _tab.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    int index = _tab.getSelectedIndex();
+                    if (index != _selected) {
+                        _selected = index;
+                        _listener.onViewChanged();
+                    }
+                }
+            });
         }
         return _tab;
     }
@@ -139,16 +166,21 @@ public class RecordBrowser implements Browser<Act> {
     }
 
     /**
-     * Returns the short names of acts that may be created
-     * for the current browser.
+     * Determines if the current view is 'visits'.
      *
-     * @return the short names
+     * @return <code>true</code> if the current view is visits view
      */
-    public RecordShortNames getShortNames() {
-        if (getCurrent() == _visits) {
-            return new VisitRecordShortNames();
-        }
-        return new ProblemRecordShortNames();
+    public boolean isVisit() {
+        return (getCurrent() == _visits);
+    }
+
+    /**
+     * Sets the browser listener.
+     *
+     * @param listener the listener. May be <code>null</code>
+     */
+    public void setListener(RecordBrowserListener listener) {
+        _listener = listener;
     }
 
     /**
@@ -157,22 +189,19 @@ public class RecordBrowser implements Browser<Act> {
      * @return the selected browser
      */
     private TreeBrowser<Act> getCurrent() {
-        int index = _tab.getActiveTabIndex();  // default == -1
-        return (index <= 0) ? _visits : _problems;
+        return (_selected == 0) ? _visits : _problems;
     }
 
     /**
      * Helper to add a browser to the tab pane.
      *
      * @param button  the button key
+     * @param model   the tab model
      * @param browser the browser to add
      */
-    private void addTab(String button, Browser browser) {
+    private void addTab(String button, DefaultTabModel model, Browser browser) {
         Component component = browser.getComponent();
         component = ColumnFactory.create("Inset", component);
-        TabPaneLayoutData layout = new TabPaneLayoutData();
-        layout.setTitle(Messages.get(button));
-        component.setLayoutData(layout);
-        _tab.add(component);
+        model.addTab(Messages.get(button), component);
     }
 }

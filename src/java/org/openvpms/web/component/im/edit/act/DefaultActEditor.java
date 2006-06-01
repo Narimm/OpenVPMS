@@ -24,15 +24,11 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.common.*;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
@@ -53,85 +49,7 @@ public class DefaultActEditor extends ActEditor {
     public DefaultActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
 
-  //      initParticipation("customer", Context.getInstance().getCustomer());
         initParticipation("patient", Context.getInstance().getPatient());
-    }
-
-    /**
-     * Initialises the customer participation, if the act has one.
-     */
-    protected void initCustomer() {
-        Property property = getProperty("customer");
-        if (property != null) {
-            Participation participant = getParticipation(property);
-            if (participant != null) {
-                IMObject customer = Context.getInstance().getCustomer();
-                if (customer == null) {
-                    Party patient = Context.getInstance().getPatient();
-                    if (patient != null) {
-                        // @todo - need to ensure the relationship is active
-                        EntityRelationship relationship
-                                = (EntityRelationship) IMObjectHelper.getObject(
-                                "entityRelationship.patientOwner",
-                                patient.getEntityRelationships());
-                        if (relationship != null) {
-                            IMObjectReference ref = relationship.getSource();
-
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Initialises a participation, if it exists and is empty.
-     *
-     * @param name   the participation name
-     * @param entity the participation entity
-     */
-    protected void initParticipation(String name, IMObject entity) {
-        Property property = getProperty(name);
-        if (property != null) {
-            Participation participant = getParticipation(property);
-            if (participant != null) {
-                if (participant.getAct() == null) {
-                    participant.setAct(getObject().getObjectReference());
-                }
-                if (entity != null && participant.getEntity() == null) {
-                    participant.setEntity(entity.getObjectReference());
-                }
-            }
-        }
-    }
-
-    /**
-     * Helper to return a participation.
-     *
-     * @param property the participation property
-     * @return the participation
-     */
-    protected Participation getParticipation(Property property) {
-        Object value = null;
-        if (property instanceof CollectionProperty) {
-            CollectionProperty c = (CollectionProperty) property;
-            Object[] values = c.getValues().toArray();
-            if (values.length > 0) {
-                value = values[0];
-            } else {
-                String[] shortNames = DescriptorHelper.getShortNames(
-                        property.getDescriptor());
-                if (shortNames.length == 1) {
-                    value = IMObjectCreator.create(shortNames[0]);
-                    if (value != null) {
-                        c.add(value);
-                    }
-                }
-            }
-        } else {
-            value = property.getValue();
-        }
-        return (value instanceof Participation) ? (Participation) value : null;
     }
 
     /**

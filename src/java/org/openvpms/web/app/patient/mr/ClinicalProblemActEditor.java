@@ -20,6 +20,7 @@ package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.app.Context;
 
 import org.openvpms.component.business.domain.im.common.Act;
 
@@ -27,8 +28,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 /**
  * An editor for {@link Act}s which have an archetype of
  * <em>act.patientClinicalProblem</em>.
- * This supresses the editing of items nodes when there is
- * a parent act.
+ * This prevents the editing of items nodes in 'visits view'.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -44,8 +44,24 @@ public class ClinicalProblemActEditor extends ActEditor {
      */
     public ClinicalProblemActEditor(Act act, Act parent,
                                     LayoutContext context) {
-        super(act, parent, (parent == null), context);
+        this(act, parent, (parent == null), context);
         // disable editing of the items node if there is a parent act.
+    }
+
+    /**
+     * Construct a new <code>ClinicalProblemActEditor</code>.
+     *
+     * @param act     the act to edit
+     * @param parent  the parent act. May be <code>null</code>
+     * @param editItems if <code>true</code> create an editor for any items node
+     * @param context the layout context. May be <code>null</code>.
+     */
+    public ClinicalProblemActEditor(Act act, Act parent, boolean editItems,
+                                    LayoutContext context) {
+        super(act, parent, editItems, context);
+        // disable editing of the items node if there is a parent act.
+
+        initParticipation("patient", Context.getInstance().getPatient());
     }
 
     /**

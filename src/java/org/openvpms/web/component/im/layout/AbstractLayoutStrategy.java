@@ -18,17 +18,6 @@
 
 package org.openvpms.web.component.im.layout;
 
-import echopointng.DateField;
-import echopointng.TabbedPane;
-import echopointng.tabbedpane.DefaultTabModel;
-import nextapp.echo2.app.*;
-import nextapp.echo2.app.button.AbstractButton;
-import nextapp.echo2.app.text.TextComponent;
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.focus.FocusSet;
@@ -41,6 +30,26 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.TabbedPaneFactory;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import echopointng.DateField;
+import echopointng.TabbedPane;
+import echopointng.tabbedpane.DefaultTabModel;
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.button.AbstractButton;
+import nextapp.echo2.app.text.TextComponent;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -162,8 +171,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                 model.addTab(nodeDesc.getDisplayName(), inset);
                 setTabIndex(child);
             }
-            TabbedPane pane = new TabbedPane();
-            pane.setModel(model);
+            TabbedPane pane = TabbedPaneFactory.create(model);
             pane.setSelectedIndex(0);
             container.add(pane);
         }
@@ -308,7 +316,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     protected void add(Component container, Property property,
                        Component component, LayoutContext context) {
         add(container, property.getDescriptor().getDisplayName(), component,
-                context);
+            context);
         addFocusable(property, component);
     }
 

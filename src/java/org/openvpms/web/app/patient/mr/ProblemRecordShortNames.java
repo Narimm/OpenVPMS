@@ -21,12 +21,9 @@ package org.openvpms.web.app.patient.mr;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.CollectionHelper;
 
 import org.openvpms.component.business.domain.im.common.Act;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -43,16 +40,16 @@ public class ProblemRecordShortNames implements RecordShortNames {
     private Act _act;
 
     /**
-     * Clinical event item short names.
+     * Problem event item short names.
      */
-    private String[] _clinicalEventItems;
+    private String[] _problemEventItems;
 
     /**
      * Construct a new <code>VisitRecordShortNames</code>.
      */
     public ProblemRecordShortNames() {
-        _clinicalEventItems = ActHelper.getTargetShortNames(
-                RELATIONSHIP_CLINICAL_EVENT_ITEM);
+        _problemEventItems = ActHelper.getTargetShortNames(
+                RELATIONSHIP_CLINICAL_PROBLEM_ITEM);
     }
 
 
@@ -71,28 +68,41 @@ public class ProblemRecordShortNames implements RecordShortNames {
      * @return the archetype short names
      */
     public String[] getShortNames() {
-        boolean isEventItem = false;
+        boolean isProblemItem = false;
+        boolean isProblem = false;
         boolean isEvent = false;
         boolean isEpisode = false;
-        List<String> names = new ArrayList<String>();
-        if (IMObjectHelper.isA(_act, _clinicalEventItems)) {
-            isEventItem = true;
+        String[] result = {};
+        if (IMObjectHelper.isA(_act, _problemEventItems)) {
+            isProblemItem = true;
+        } else if (IMObjectHelper.isA(_act, CLINICAL_PROBLEM)) {
+            isProblem = true;
         } else if (IMObjectHelper.isA(_act, CLINICAL_EVENT)) {
             isEvent = true;
         } else if (IMObjectHelper.isA(_act, CLINICAL_EPISODE)) {
             isEpisode = true;
         }
         if (isEpisode) {
-            // check to see if there is a child event to add items to
+            // check to see if there is a child event to add problems to
             Act event = ActHelper.getActOrChild(_act, CLINICAL_EVENT);
             if (event != null) {
                 isEvent = true;
             }
         }
-        if (isEvent || isEventItem) {
-            names.addAll(Arrays.asList(_clinicalEventItems));
+        if (isEvent) {
+            // check to see if there is a child problem to add problem items to
+            Act problem = ActHelper.getActOrChild(_act, CLINICAL_PROBLEM);
+            if (problem != null) {
+                isProblem = true;
+            }
         }
-        return names.toArray(new String[0]);
+        if (isEvent || isProblem || isProblemItem) {
+            result = new String[]{CLINICAL_PROBLEM};
+            if (isProblem || isProblemItem) {
+                result = CollectionHelper.concat(result, _problemEventItems);
+            }
+        }
+        return result;
     }
 
 }
