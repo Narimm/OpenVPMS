@@ -176,6 +176,17 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
     }
 
     /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(IMObject object) {
+        _act = null;
+        super.onDeleted(object);
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -221,7 +232,7 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
      * Adds a relationship between two acts.
      *
      * @param parent the parent act
-     * @param child the child act
+     * @param child  the child act
      */
     protected void addActRelationship(Act parent, Act child,
                                       String relationshipType) {

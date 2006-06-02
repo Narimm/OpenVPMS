@@ -18,8 +18,15 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.web.component.im.tree.IMObjectTreeNode;
+import org.openvpms.web.component.im.tree.TreeBuilder;
+import org.openvpms.web.component.tree.DefaultTree;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.SortConstraint;
+
 import echopointng.Tree;
-import echopointng.tree.DefaultTreeModel;
 import echopointng.tree.MutableTreeNode;
 import echopointng.tree.TreeNode;
 import echopointng.tree.TreePath;
@@ -27,12 +34,6 @@ import echopointng.tree.TreeSelectionEvent;
 import echopointng.tree.TreeSelectionListener;
 import echopointng.tree.TreeSelectionModel;
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.tree.IMObjectTreeNode;
-import org.openvpms.web.component.im.tree.TreeBuilder;
-import org.openvpms.web.component.tree.DefaultTree;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -148,20 +149,19 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
 
         ResultSet<T> set = doQuery();
         MutableTreeNode root = createTree(set);
-        if (_tree == null) {
-            _tree = new DefaultTree(root);
-            _tree.setShowsRootHandles(false);
-            _tree.getSelectionModel().setSelectionMode(
-                    TreeSelectionModel.SINGLE_TREE_SELECTION);
-            _tree.addTreeSelectionListener(new TreeSelectionListener() {
-                public void valueChanged(TreeSelectionEvent event) {
-                    onSelected();
-                }
-            });
-            component.add(_tree);
-        } else {
-            _tree.setModel(new DefaultTreeModel(root));
+        if (_tree != null) {
+            component.remove(_tree);
         }
+        _tree = new DefaultTree(root);
+        _tree.setShowsRootHandles(false);
+        _tree.getSelectionModel().setSelectionMode(
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
+        _tree.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent event) {
+                onSelected();
+            }
+        });
+        component.add(_tree);
     }
 
     /**
