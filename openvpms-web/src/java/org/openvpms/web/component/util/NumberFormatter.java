@@ -18,12 +18,13 @@
 
 package org.openvpms.web.component.util;
 
+import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -83,10 +84,11 @@ public class NumberFormatter {
     public static NumberFormat getFormat(NodeDescriptor descriptor,
                                          boolean edit) {
         NumberFormat format;
-        if (descriptor.isMoney()
-            || descriptor.getClazz().isAssignableFrom(Float.class)
-            || descriptor.getClazz().isAssignableFrom(Double.class)
-            || descriptor.getClazz().isAssignableFrom(BigDecimal.class)) {
+        if (descriptor.isMoney()) {
+            format = (edit) ? DECIMAL_EDIT : NumberFormat.getCurrencyInstance();
+        } else if (descriptor.getClazz().isAssignableFrom(Float.class)
+                || descriptor.getClazz().isAssignableFrom(Double.class)
+                || descriptor.getClazz().isAssignableFrom(BigDecimal.class)) {
             format = (edit) ? DECIMAL_EDIT : DECIMAL_VIEW;
         } else {
             format = (edit) ? INTEGER_EDIT : INTEGER_VIEW;
@@ -103,7 +105,7 @@ public class NumberFormatter {
     public static String format(Number value) {
         NumberFormat format;
         if (value instanceof Long || value instanceof Integer ||
-            value instanceof Short || value instanceof Byte) {
+                value instanceof Short || value instanceof Byte) {
             format = INTEGER_VIEW;
         } else {
             format = DECIMAL_VIEW;
