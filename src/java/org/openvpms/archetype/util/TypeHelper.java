@@ -89,7 +89,18 @@ public class TypeHelper {
      * @param shortName the short name
      */
     public static boolean matches(ArchetypeId id, String shortName) {
-        String regexp = StringUtilities.toRegEx(shortName);
-        return id.getShortName().matches(regexp);
+        return matches(id.getShortName(), shortName);
     }
+
+    /**
+     * Determines if a short name matches a wildcard.
+     *
+     * @param shortName the short name
+     * @param wildcard  the wildcard
+     */
+    public static boolean matches(String shortName, String wildcard) {
+        String regexp = StringUtilities.toRegEx(wildcard);
+        return shortName.matches(regexp);
+    }
+
 }

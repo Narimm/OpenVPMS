@@ -91,7 +91,7 @@ public class TypeHelperTestCase extends ArchetypeServiceTest {
     /**
      * Tests the {@link TypeHelper#matches(ArchetypeId, String)} method.
      */
-    public void testMatches() {
+    public void testMatchesId() {
         IMObject object = create("party.customerperson");
         assertNotNull(object);
         ArchetypeId id = object.getArchetypeId();
@@ -103,5 +103,22 @@ public class TypeHelperTestCase extends ArchetypeServiceTest {
         assertTrue(TypeHelper.matches(id, "party.*"));
         assertTrue(TypeHelper.matches(id, "party.customer*"));
         assertFalse(TypeHelper.matches(id, "party.patient*"));
+    }
+
+    /**
+     * Tests the {@link TypeHelper#matches(String, String)} method.
+     */
+    public void testMatches() {
+        assertTrue(TypeHelper.matches("party.customerperson",
+                                      "party.customerperson"));
+        assertFalse(TypeHelper.matches("party.customerperson",
+                                       "party.patientpet"));
+
+        // test wildcards
+        assertTrue(TypeHelper.matches("party.customerperson", "party.*"));
+        assertTrue(TypeHelper.matches("party.customerperson",
+                                      "party.customer*"));
+        assertFalse(TypeHelper.matches("party.customerperson",
+                                       "party.patient*"));
     }
 }
