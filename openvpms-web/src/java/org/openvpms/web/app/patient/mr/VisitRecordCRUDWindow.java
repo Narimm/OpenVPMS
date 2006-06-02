@@ -81,14 +81,4 @@ public class VisitRecordCRUDWindow extends PatientRecordCRUDWindow {
         super.onSaved(object, isNew);
     }
 
-    /**
-     * Deletes an object. Invokes {@link #onDeleted} if successful.
-     *
-     * @param object the object to delete
-     */
-    @Override
-    protected void delete(IMObject object) {
-        super.delete(object);
-    }
-
 }

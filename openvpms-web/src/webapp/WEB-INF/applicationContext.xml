@@ -279,14 +279,26 @@
 
     <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
     <bean id="ruleSource"
-          class="org.openvpms.component.business.service.ruleengine.DirectoryRuleSource">
+          class="org.openvpms.archetype.rules.ResourceRuleSource">
+        <property name="ruleResources">
+            <list>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEpisode.after.drl
+                </value>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEvent.after.drl
+                </value>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
+                </value>
+            </list>
+        </property>
         <property name="ruleRuntime">
             <ref local="ruleRuntime"/>
         </property>
         <property name="ruleAdministrator">
             <ref local="ruleAdministrator"/>
         </property>
-        <property name="directory" value="org/openvpms/archetype/rules"/>
     </bean>
 
     <!-- Jsr94Template -->
@@ -298,7 +310,7 @@
 
     <!--  The DroolsRuleEngine interceptor -->
     <bean id="ruleEngineInterceptor"
-          class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngineInterceptor">
+          class="org.openvpms.archetype.rules.RuleEngineInterceptor">
         <constructor-arg index="0">
             <ref local="ruleSource"/>
         </constructor-arg>
@@ -331,6 +343,7 @@
         <property name="patterns">
             <list>
                 <value>.*save</value>
+                <value>.*remove</value>
             </list>
         </property>
     </bean>
