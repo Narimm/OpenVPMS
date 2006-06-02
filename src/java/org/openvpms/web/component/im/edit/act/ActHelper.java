@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.archetype.util.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -168,7 +169,7 @@ public class ActHelper {
     public static Act getActOrParent(Act act, String shortName) {
         Act result = null;
         if (act != null) {
-            if (IMObjectHelper.isA(act, shortName)) {
+            if (TypeHelper.isA(act, shortName)) {
                 result = act;
             } else {
                 for (ActRelationship relationship :
@@ -195,7 +196,7 @@ public class ActHelper {
     public static Act getActOrChild(Act act, String shortName) {
         Act result = null;
         if (act != null) {
-            if (IMObjectHelper.isA(act, shortName)) {
+            if (TypeHelper.isA(act, shortName)) {
                 result = act;
             } else {
                 for (ActRelationship relationship :

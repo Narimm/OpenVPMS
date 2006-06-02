@@ -18,13 +18,14 @@
 
 package org.openvpms.web.component.im.edit.estimation;
 
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,7 +50,7 @@ public class EstimationEditor extends ActEditor {
     public EstimationEditor(Act act, IMObject parent,
                             LayoutContext context) {
         super(act, parent, context);
-        if (!IMObjectHelper.isA(act, "act.customerEstimation")) {
+        if (!TypeHelper.isA(act, "act.customerEstimation")) {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }

@@ -18,17 +18,8 @@
 
 package org.openvpms.web.component.im.view.act;
 
-import java.util.List;
-
-import echopointng.GroupBox;
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.text.TextComponent;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -37,12 +28,22 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.edit.Property;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+
+import echopointng.GroupBox;
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.text.TextComponent;
+
+import java.util.List;
 
 
 /**
@@ -92,7 +93,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Construct a new <code>ActLayoutStrategy</code>.
      *
-     * @param editor the act items editor. May be <code>null</code>.
+     * @param editor    the act items editor. May be <code>null</code>.
      * @param showItems if <code>true</code>, show the items node
      */
     private ActLayoutStrategy(IMObjectCollectionEditor editor,
@@ -170,22 +171,22 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @return a component to display <code>property</code>
      */
     @Override
-    protected Component createComponent(Property property, IMObject parent, 
+    protected Component createComponent(Property property, IMObject parent,
                                         LayoutContext context) {
         Component component = super.createComponent(property, parent,
                                                     context);
         String name = property.getDescriptor().getName();
         if (name.equals("lowTotal") || name.equals("highTotal")
-            || name.equals("amount")) {
+                || name.equals("amount")) {
             // @todo - workaround for OVPMS-211
 
-            if ((IMObjectHelper.isA(parent, "act.customerAccountPayment*",
-                                   "act.customerAccountRefund*")
-                && !(IMObjectHelper.isA(parent, "act.customerAccountPayment",
+            if ((TypeHelper.isA(parent, "act.customerAccountPayment*",
+                                "act.customerAccountRefund*")
+                    && !(TypeHelper.isA(parent, "act.customerAccountPayment",
                                         "act.customerAccountRefund")))
-            || (IMObjectHelper.isA(parent, "act.supplierAccountPayment*",
-                                  "supplierAccountRefund*")
-                && !(IMObjectHelper.isA(parent, "act.supplierAccountPayment",
+                    || (TypeHelper.isA(parent, "act.supplierAccountPayment*",
+                                       "supplierAccountRefund*")
+                    && !(TypeHelper.isA(parent, "act.supplierAccountPayment",
                                         "act.supplierAccountRefund")))) {
                 // need to exclude act item amounts
                 return component;

@@ -18,13 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.ActRelationship;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -33,6 +26,15 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -46,7 +48,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionEditor {
+public class ActRelationshipCollectionEditor
+        extends AbstractIMObjectCollectionEditor {
 
 
     /**
@@ -59,7 +62,7 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
     public ActRelationshipCollectionEditor(CollectionProperty property,
                                            Act act, LayoutContext context) {
         super(new ActRelationshipCollectionPropertyEditor(property, act),
-                act, context);
+              act, context);
     }
 
     /**
@@ -100,7 +103,7 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
         if (editor instanceof ActItemEditor
                 && hasProductTemplate((ActItemEditor) editor)) {
             IMObjectReference product = ((ActItemEditor) editor).getProduct();
-            if (IMObjectHelper.isA(product, "product.template")) {
+            if (TypeHelper.isA(product, "product.template")) {
                 result = expandTemplate(act, product);
             }
         } else {
@@ -121,7 +124,7 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
                 "participation.product", act.getParticipations());
         if (participant != null) {
             IMObjectReference ref = participant.getEntity();
-            if (IMObjectHelper.isA(ref, "product.template")) {
+            if (TypeHelper.isA(ref, "product.template")) {
                 return ref;
             }
         }
@@ -145,7 +148,8 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
             ActRelationshipCollectionPropertyEditor collection = getEditor();
             collection.remove(act);
 
-            IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
+            IMObjectCopier copier = new IMObjectCopier(
+                    new ActItemCopyHandler());
             Collection values = IMObjectHelper.getValues(template, "includes");
             for (Object value : values) {
                 EntityRelationship relationship = (EntityRelationship) value;
@@ -154,13 +158,14 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
                 // copy the act, and associate the product
                 Act copy = (Act) copier.copy(act);
                 LayoutContext context = new DefaultLayoutContext();
-                context.setComponentFactory(new ReadOnlyComponentFactory(context));
+                context.setComponentFactory(
+                        new ReadOnlyComponentFactory(context));
                 ActItemEditor editor = (ActItemEditor) createEditor(
                         copy, context);
                 editor.setProduct(product);
 
                 BigDecimal quantity = IMObjectHelper.getNumber(relationship,
-                        "includeQty");
+                                                               "includeQty");
                 if (quantity != null) {
                     editor.setQuantity(quantity);
                 }
@@ -179,7 +184,7 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
      */
     private boolean hasProductTemplate(ActItemEditor editor) {
         IMObjectReference product = editor.getProduct();
-        return IMObjectHelper.isA(product, "product.template");
+        return TypeHelper.isA(product, "product.template");
     }
 
     private class ActItemCopyHandler extends ActCopyHandler {
@@ -198,8 +203,8 @@ public class ActRelationshipCollectionEditor extends AbstractIMObjectCollectionE
             IMObject result;
             if (object instanceof Participation) {
                 Participation participant = (Participation) object;
-                if (IMObjectHelper.isA(participant.getEntity(),
-                        "product.template")) {
+                if (TypeHelper.isA(participant.getEntity(),
+                                   "product.template")) {
                     result = null;
                 } else {
                     result = super.getObject(object, service);

@@ -18,10 +18,11 @@
 
 package org.openvpms.web.app.supplier;
 
-import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.web.component.im.edit.act.AbstractActReversalHandler;
 import org.openvpms.web.component.im.util.IMObjectCopyHandler;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.im.common.Act;
 
 
 /**
@@ -180,8 +181,7 @@ public class SupplierActReversalHandler extends AbstractActReversalHandler {
      * @param act the act to reverse
      */
     public SupplierActReversalHandler(Act act) {
-        super(!IMObjectHelper.isA(act, CREDIT_TYPE, REFUND_TYPE),
-              TYPE_MAP);
+        super(!TypeHelper.isA(act, CREDIT_TYPE, REFUND_TYPE), TYPE_MAP);
     }
 
 }

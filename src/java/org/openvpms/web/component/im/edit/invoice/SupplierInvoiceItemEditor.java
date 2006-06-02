@@ -26,6 +26,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.archetype.util.TypeHelper;
+
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -61,7 +63,7 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
     public SupplierInvoiceItemEditor(Act act, Act parent,
                                      LayoutContext context) {
         super(act, parent, context);
-        if (!IMObjectHelper.isA(act, "act.supplierAccountInvoiceItem",
+        if (!TypeHelper.isA(act, "act.supplierAccountInvoiceItem",
                                 "act.supplierAccountCreditItem")) {
             throw new IllegalArgumentException("Invalid act type:"
                                                + act.getArchetypeId().getShortName());
@@ -87,7 +89,7 @@ public class SupplierInvoiceItemEditor extends ActItemEditor {
         IMObject object = IMObjectHelper.getObject(entity);
         if (object instanceof Product) {
             Product product = (Product) object;
-            if (IMObjectHelper.isA(product, "product.template")) {
+            if (TypeHelper.isA(product, "product.template")) {
                 if (getFilter() != TEMPLATE_FILTER) {
                     changeLayout(TEMPLATE_FILTER);
                 }

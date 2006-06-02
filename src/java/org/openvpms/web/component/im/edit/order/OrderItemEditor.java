@@ -18,21 +18,22 @@
 
 package org.openvpms.web.component.im.edit.order;
 
-import java.math.BigDecimal;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -59,13 +60,12 @@ public class OrderItemEditor extends ActItemEditor {
      * @param parent  the parent act
      * @param context the layout context
      */
-    public OrderItemEditor(Act act, Act parent,
-                              LayoutContext context) {
+    public OrderItemEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
-        if (!IMObjectHelper.isA(act, "act.supplierOrderItem")) {
+        if (!TypeHelper.isA(act, "act.supplierOrderItem")) {
             throw new IllegalArgumentException(
                     "Invalid act type: "
-                    + act.getArchetypeId().getShortName());
+                            + act.getArchetypeId().getShortName());
         }
     }
 
@@ -88,7 +88,7 @@ public class OrderItemEditor extends ActItemEditor {
         IMObject object = IMObjectHelper.getObject(entity);
         if (object instanceof Product) {
             Product product = (Product) object;
-            if (IMObjectHelper.isA(product, "product.template")) {
+            if (TypeHelper.isA(product, "product.template")) {
                 if (getFilter() != TEMPLATE_FILTER) {
                     changeLayout(TEMPLATE_FILTER);
                 }

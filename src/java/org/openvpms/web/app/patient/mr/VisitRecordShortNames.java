@@ -20,8 +20,8 @@ package org.openvpms.web.app.patient.mr;
 
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 
 import java.util.ArrayList;
@@ -75,11 +75,11 @@ public class VisitRecordShortNames implements RecordShortNames {
         boolean isEvent = false;
         boolean isEpisode = false;
         List<String> names = new ArrayList<String>();
-        if (IMObjectHelper.isA(_act, _clinicalEventItems)) {
+        if (TypeHelper.isA(_act, _clinicalEventItems)) {
             isEventItem = true;
-        } else if (IMObjectHelper.isA(_act, CLINICAL_EVENT)) {
+        } else if (TypeHelper.isA(_act, CLINICAL_EVENT)) {
             isEvent = true;
-        } else if (IMObjectHelper.isA(_act, CLINICAL_EPISODE)) {
+        } else if (TypeHelper.isA(_act, CLINICAL_EPISODE)) {
             isEpisode = true;
         }
         if (isEventItem || isEvent) {

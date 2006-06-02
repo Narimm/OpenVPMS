@@ -20,9 +20,9 @@ package org.openvpms.web.app.patient.mr;
 
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.CollectionHelper;
 
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 
 
@@ -73,13 +73,13 @@ public class ProblemRecordShortNames implements RecordShortNames {
         boolean isEvent = false;
         boolean isEpisode = false;
         String[] result = {};
-        if (IMObjectHelper.isA(_act, _problemEventItems)) {
+        if (TypeHelper.isA(_act, _problemEventItems)) {
             isProblemItem = true;
-        } else if (IMObjectHelper.isA(_act, CLINICAL_PROBLEM)) {
+        } else if (TypeHelper.isA(_act, CLINICAL_PROBLEM)) {
             isProblem = true;
-        } else if (IMObjectHelper.isA(_act, CLINICAL_EVENT)) {
+        } else if (TypeHelper.isA(_act, CLINICAL_EVENT)) {
             isEvent = true;
-        } else if (IMObjectHelper.isA(_act, CLINICAL_EPISODE)) {
+        } else if (TypeHelper.isA(_act, CLINICAL_EPISODE)) {
             isEpisode = true;
         }
         if (isEpisode) {

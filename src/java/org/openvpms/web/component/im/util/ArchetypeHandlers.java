@@ -18,6 +18,12 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.archetype.util.TypeHelper;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -26,10 +32,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -70,14 +72,15 @@ public class ArchetypeHandlers {
                 while (shortNames.hasMoreElements()) {
                     String shortName = (String) shortNames.nextElement();
                     String className = properties.getProperty(shortName);
-                    String[] matches = DescriptorHelper.getShortNames(shortName);
+                    String[] matches = DescriptorHelper.getShortNames(
+                            shortName);
                     if (matches.length == 0) {
                         _log.warn("No archetypes found matching short name="
-                                  + shortName + ", loaded from path=" + path);
+                                + shortName + ", loaded from path=" + path);
                     } else {
                         if (_handlers.get(shortName) != null) {
                             _log.warn("Duplicate sbort name=" + shortName
-                                      + " from " + path + ": ignoring");
+                                    + " from " + path + ": ignoring");
                         } else {
                             Class clazz = getClass(className, type, path);
                             if (clazz != null) {
@@ -116,7 +119,7 @@ public class ArchetypeHandlers {
         for (String wildcard : wildcards) {
             boolean found = true;
             for (String shortName : shortNames) {
-                if (!DescriptorHelper.matches(shortName, wildcard)) {
+                if (!TypeHelper.matches(shortName, wildcard)) {
                     found = false;
                     break;
                 }
@@ -130,8 +133,8 @@ public class ArchetypeHandlers {
                     int dotCount = StringUtils.countMatches(wildcard, ".");
                     int wildcardCount = StringUtils.countMatches(wildcard, "*");
                     if (dotCount > bestDotCount ||
-                        (dotCount == bestDotCount
-                         && wildcardCount < bestWildCardCount)) {
+                            (dotCount == bestDotCount
+                                    && wildcardCount < bestWildCardCount)) {
                         match = wildcard;
                     }
                 }
@@ -179,12 +182,13 @@ public class ArchetypeHandlers {
                         return clazz;
                     } else {
                         _log.error("Failed to load class: " + name
-                                   + ", specified in " + path
-                                   + ": does not extend" + type.getName());
+                                + ", specified in " + path
+                                + ": does not extend" + type.getName());
                         return null;
 
                     }
                 } catch (ClassNotFoundException ignore) {
+                    // no-op
                 }
             }
         }
