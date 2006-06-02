@@ -153,6 +153,7 @@ public abstract class AbstractCollectionPropertyEditor
 
     /**
      * Removes an object from the collection.
+     * This removes any associated editor.
      *
      * @param object the object to remove
      */
@@ -306,10 +307,12 @@ public abstract class AbstractCollectionPropertyEditor
 
     /**
      * Removes an object from the the set of objects to save.
+     * This removes any associated editor.
      *
      * @param object the object to remove
      */
     protected void removeEdited(IMObject object) {
         _edited.remove(object);
+        _editors.remove(object);
     }
 }
