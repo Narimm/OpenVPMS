@@ -41,6 +41,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import nextapp.echo2.app.Row;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -66,6 +68,12 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
      * may be created.
      */
     private Act _act;
+
+    /**
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(PatientRecordCRUDWindow.class);
 
 
     /**
@@ -212,31 +220,47 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
     /**
      * Adds a relationship between two acts.
      *
+     * @param parent the parent act
+     * @param child the child act
+     */
+    protected void addActRelationship(Act parent, Act child,
+                                      String relationshipType) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        try {
+            ActRelationship relationship
+                    = (ActRelationship) IMObjectCreator.create(
+                    relationshipType);
+            if (relationship != null) {
+                relationship.setSource(parent.getObjectReference());
+                relationship.setTarget(child.getObjectReference());
+                parent.addActRelationship(relationship);
+                SaveHelper.save(parent, service);
+                child.addActRelationship(relationship);
+                // no need to save. Propagated by parent. SaveHelper.save(child, service);
+            } else {
+                _log.error("No act relation defined with shortname="
+                        + relationshipType);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Adds a relationship between two acts.
+     *
      * @param act              the act
      * @param parentType       the type of the parent act
      * @param relationshipType the type of the relationship to add
      */
     protected void addActRelationship(Act act, String parentType,
                                       String relationshipType) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
         Act parent = ActHelper.getActOrParent(_act, parentType);
         if (parent == null) {
             parent = ActHelper.getActOrChild(_act, parentType);
         }
         if (parent != null) {
-            try {
-                ActRelationship relationship
-                        = (ActRelationship) IMObjectCreator.create(
-                        relationshipType);
-                if (relationship != null) {
-                    relationship.setSource(parent.getObjectReference());
-                    relationship.setTarget(act.getObjectReference());
-                    parent.addActRelationship(relationship);
-                    SaveHelper.save(parent, service);
-                }
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            addActRelationship(parent, act, relationshipType);
         } else {
             String name = DescriptorHelper.getDisplayName(act);
             String message = Messages.get("patient.record.create.noparent",
