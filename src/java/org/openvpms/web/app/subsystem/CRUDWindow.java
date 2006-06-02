@@ -392,7 +392,7 @@ public class CRUDWindow {
                 object = ArchetypeQueryHelper.getByObjectReference(
                         service, object.getObjectReference());
                 if (object == null) {
-                    ErrorDialog.show("imobject.noexist", _type);
+                    ErrorDialog.show(Messages.get("imobject.noexist"), _type);
                 } else {
                     edit(object);
                 }
