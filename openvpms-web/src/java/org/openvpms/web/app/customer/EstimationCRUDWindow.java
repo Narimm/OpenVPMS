@@ -18,23 +18,6 @@
 
 package org.openvpms.web.app.customer;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -47,6 +30,25 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -203,11 +205,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         String title = Messages.get("customer.estimation.invoice.title");
         String message = Messages.get("customer.estimation.invoice.message");
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                invoice(act);
-            }
-        });
+        dialog.addActionListener(ConfirmationDialog.OK_ID,
+                                 new ActionListener() {
+                                     public void actionPerformed(
+                                             ActionEvent event) {
+                                         invoice(act);
+                                     }
+                                 });
         dialog.show();
     }
 
@@ -245,14 +249,15 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
      * Calculate the act total.
      *
      * @param act the act
-     * @todo - workaround for OVPMS-211
      */
     private void calcAmount(Act act) {
+        // todo - workaround for OVPMS-211
         ArchetypeDescriptor invoiceDesc
                 = DescriptorHelper.getArchetypeDescriptor(INVOICE_TYPE);
         NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
         BigDecimal total = ActHelper.sum(act, "total");
-        totalDesc.setValue(act, total);
+        // @todo - workaround for OBF-55
+        totalDesc.setValue(act, new Money(total.toString()));
     }
 
     private static class InvoiceHandler extends AbstractIMObjectCopyHandler {
@@ -299,7 +304,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         public IMObject getObject(IMObject object, IArchetypeService service) {
             IMObject result;
             if (object instanceof Act || object instanceof ActRelationship
-                || object instanceof Participation) {
+                    || object instanceof Participation) {
                 String shortName = object.getArchetypeId().getShortName();
                 for (String[] map : TYPE_MAP) {
                     String estimationType = map[0];

@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -256,14 +257,15 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
                 = DescriptorHelper.getArchetypeDescriptor(INVOICE_ITEM_TYPE);
         NodeDescriptor itemTotalDesc = itemDesc.getNodeDescriptor("total");
         NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
-        BigDecimal total = new BigDecimal("0.0");
+        BigDecimal total = BigDecimal.ZERO;
         for (ActRelationship relationship : act.getSourceActRelationships()) {
             Act item = (Act) ArchetypeQueryHelper.getByObjectReference(service,
                                                                        relationship.getTarget());
             BigDecimal value = (BigDecimal) itemTotalDesc.getValue(item);
             total = total.add(value);
         }
-        totalDesc.setValue(act, total);
+        // @todo - workaround for OBF-55
+        totalDesc.setValue(act, new Money(total.toString()));
     }
 
     private static class InvoiceHandler extends AbstractIMObjectCopyHandler {
