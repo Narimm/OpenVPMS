@@ -104,7 +104,7 @@ public class ActRelationshipCollectionEditor
                 && hasProductTemplate((ActItemEditor) editor)) {
             IMObjectReference product = ((ActItemEditor) editor).getProduct();
             if (TypeHelper.isA(product, "product.template")) {
-                result = expandTemplate(act, product);
+                result = expandTemplate((ActItemEditor) editor, act, product);
             }
         } else {
             result = super.addEdited(editor);
@@ -134,34 +134,37 @@ public class ActRelationshipCollectionEditor
     /**
      * Copies an act item for each product referred to in its template.
      *
+     * @param editor      the editor
      * @param act         the act
      * @param templateRef a reference to the template
      * @return <code>true</code> if the template was expanded; otherwise
      *         <code>false</code>
      */
-    protected boolean expandTemplate(Act act, IMObjectReference templateRef) {
+    protected boolean expandTemplate(ActItemEditor editor, Act act,
+                                     IMObjectReference templateRef) {
         boolean result = false;
         IMObject template = IMObjectHelper.getObject(templateRef);
         if (template != null) {
-            // need to remove the existing act as a new relationship is
-            // created for each child act
             ActRelationshipCollectionPropertyEditor collection = getEditor();
-            collection.remove(act);
 
             IMObjectCopier copier = new IMObjectCopier(
                     new ActItemCopyHandler());
             Collection values = IMObjectHelper.getValues(template, "includes");
+            Act copy = act; // replace the existing act with the first
+                            // templated product
             for (Object value : values) {
                 EntityRelationship relationship = (EntityRelationship) value;
                 IMObjectReference product = relationship.getTarget();
 
-                // copy the act, and associate the product
-                Act copy = (Act) copier.copy(act);
-                LayoutContext context = new DefaultLayoutContext();
-                context.setComponentFactory(
-                        new ReadOnlyComponentFactory(context));
-                ActItemEditor editor = (ActItemEditor) createEditor(
-                        copy, context);
+                if (copy == null) {
+                    // copy the act, and associate the product
+                    copy = (Act) copier.copy(act);
+                    LayoutContext context = new DefaultLayoutContext();
+                    context.setComponentFactory(
+                            new ReadOnlyComponentFactory(context));
+                    editor = (ActItemEditor) createEditor(copy, context);
+
+                }
                 editor.setProduct(product);
 
                 BigDecimal quantity = IMObjectHelper.getNumber(relationship,
@@ -170,6 +173,8 @@ public class ActRelationshipCollectionEditor
                     editor.setQuantity(quantity);
                 }
                 collection.add(copy);
+                collection.setEditor(copy, editor);
+                copy = null;
                 result = true;
             }
         }

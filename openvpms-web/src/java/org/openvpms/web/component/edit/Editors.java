@@ -161,16 +161,6 @@ public class Editors implements Modifiable {
     }
 
     /**
-     * Invoked when a {@link Modifiable} changes. Forwards the event to any
-     * registered listener.
-     *
-     * @param modified the changed instance
-     */
-    protected void notifyListeners(Modifiable modified) {
-        _listeners.notifyListeners(modified);
-    }
-
-    /**
      * Determines if the object is valid.
      *
      * @return <code>true</code> if the object is valid; otherwise
@@ -195,6 +185,26 @@ public class Editors implements Modifiable {
             }
         }
         return valid;
+    }
+
+    /**
+     * Returns <code>true</code> if no editors are registered.
+     *
+     * @return <code>true</code> if no editors are registered, otherwise
+     * <code>false</code>
+     */
+    public boolean isEmpty() {
+        return _editors.isEmpty();
+    }
+
+    /**
+     * Invoked when a {@link Modifiable} changes. Forwards the event to any
+     * registered listener.
+     *
+     * @param modified the changed instance
+     */
+    protected void notifyListeners(Modifiable modified) {
+        _listeners.notifyListeners(modified);
     }
 
     /**

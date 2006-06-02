@@ -631,6 +631,11 @@ public abstract class AbstractIMObjectEditor
      *         </code>null</code> if none exists
      */
     protected Editor getEditor(String name) {
+        if (_editors.isEmpty()) {
+            // make sure the component has been laid out to ensure
+            // the editors are created
+            getComponent();
+        }
         return _editors.getEditor(name);
     }
 
