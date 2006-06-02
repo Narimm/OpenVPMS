@@ -20,10 +20,12 @@ package org.openvpms.web.app.patient.mr;
 
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.ActRelationship;
 
 
 /**
@@ -58,16 +60,26 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
         if (isNew) {
-            // problem view
             if (TypeHelper.isA(object, _clinicalProblemItems)) {
                 addActRelationship((Act) object, CLINICAL_PROBLEM,
                                    RELATIONSHIP_CLINICAL_PROBLEM_ITEM);
-                addActRelationship((Act) object, CLINICAL_EVENT,
-                                   RELATIONSHIP_CLINICAL_EVENT_ITEM);
-            } else
+            }
             if (TypeHelper.isA(object, getClinicalEventItemShortNames())) {
-                addActRelationship((Act) object, CLINICAL_EVENT,
+                Act act = (Act) object;
+                addActRelationship(act, CLINICAL_EVENT,
                                    RELATIONSHIP_CLINICAL_EVENT_ITEM);
+                // add relationships for child acts
+                for (ActRelationship relationship : 
+                        act.getSourceActRelationships()) {
+                    Act target = (Act) IMObjectHelper.getObject(
+                            relationship.getTarget());
+                    if (TypeHelper.isA(target,
+                                       getClinicalEventItemShortNames())) {
+                        addActRelationship(target, CLINICAL_EVENT,
+                                           RELATIONSHIP_CLINICAL_EVENT_ITEM);
+
+                    }
+                }
             }
         }
         super.onSaved(object, isNew);
