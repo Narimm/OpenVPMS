@@ -24,6 +24,13 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Query;
+
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -34,12 +41,6 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -61,7 +62,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                                         Act parent,
                                         LayoutContext context) {
         super(participation, parent, context);
-        if (!IMObjectHelper.isA(participation, "participation.clinician")) {
+        if (!TypeHelper.isA(participation, "participation.clinician")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
@@ -89,6 +90,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                 addConstraints(query);
                 return query;
             }
+
             @Override
             protected void onSelected(IMObject object) {
                 super.onSelected(object);
@@ -109,7 +111,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                 ArchetypeProperty.ConceptName, RelationalOp.EQ, "userType");
 
         IConstraint isClinician = new NodeConstraint("name", RelationalOp.EQ,
-                "Clinician");
+                                                     "Clinician");
         CollectionNodeConstraint constraint
                 = new CollectionNodeConstraint("classifications", true);
         constraint.add(hasClinicianClassification);

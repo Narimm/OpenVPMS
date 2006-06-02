@@ -277,50 +277,6 @@ public final class DescriptorHelper {
     }
 
     /**
-     * Determines if an archetype identifiers short name matches a (potentially
-     * wildcarded) short name.
-     *
-     * @param id        the archetype identifier
-     * @param shortName the short name to compare
-     * @return <code>true</code> if the short name matches; otherwise
-     *         <code>false</code>
-     */
-    public static boolean matches(ArchetypeId id, String shortName) {
-        return matches(id.getShortName(), shortName);
-    }
-
-    /**
-     * Determiens if a short name matches any of a list of (potentially
-     * wildcarded) short names.
-     *
-     * @param shortName  the short name
-     * @param shortNames the short names to check
-     * @return <code>true</code> if the short name matches; otherwise
-     *         <code>false</code>
-     */
-    public static boolean matches(String shortName, String[] shortNames) {
-        for (String other : shortNames) {
-            if (matches(shortName, other)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Determines if a short name matches a wildcarded short name.
-     *
-     * @param shortName the short name
-     * @param wildcard  the wildcarded short name
-     * @return <code>true</code> if the short names matches; otherwise
-     *         <code>false</code>
-     */
-    public static boolean matches(String shortName, String wildcard) {
-        String regexp = wildcard.replace(".", "\\.").replace("*", ".*");
-        return shortName.matches(regexp);
-    }
-
-    /**
      * Determines the minimum cardinality from an archetype range assertion.
      *
      * @param descriptor the node descriptor

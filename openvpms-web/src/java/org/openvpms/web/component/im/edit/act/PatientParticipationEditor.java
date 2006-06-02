@@ -18,15 +18,16 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 
 
 /**
@@ -49,7 +50,7 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
                                       Act parent,
                                       LayoutContext context) {
         super(participation, parent, context);
-        if (!IMObjectHelper.isA(participation, "participation.patient")) {
+        if (!TypeHelper.isA(participation, "participation.patient")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());

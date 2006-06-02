@@ -18,14 +18,15 @@
 
 package org.openvpms.web.component.app;
 
-import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -225,7 +226,7 @@ public class Context {
             if (object != null) {
                 for (String shortName : range) {
                     ArchetypeId id = object.getArchetypeId();
-                    if (DescriptorHelper.matches(id, shortName)) {
+                    if (TypeHelper.matches(id, shortName)) {
                         result = object;
                         break;
                     }
@@ -249,7 +250,8 @@ public class Context {
             if (object != null) {
                 ArchetypeId id = object.getArchetypeId();
                 if (id.equals(reference.getArchetypeId())
-                    && StringUtils.equals(reference.getLinkId(), object.getLinkId())) {
+                        && StringUtils.equals(reference.getLinkId(),
+                                              object.getLinkId())) {
                     result = object;
                     break;
                 }

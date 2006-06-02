@@ -20,8 +20,8 @@ package org.openvpms.web.app.patient.mr;
 
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
@@ -59,13 +59,13 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
     protected void onSaved(IMObject object, boolean isNew) {
         if (isNew) {
             // problem view
-            if (IMObjectHelper.isA(object, _clinicalProblemItems)) {
+            if (TypeHelper.isA(object, _clinicalProblemItems)) {
                 addActRelationship((Act) object, CLINICAL_PROBLEM,
                                    RELATIONSHIP_CLINICAL_PROBLEM_ITEM);
                 addActRelationship((Act) object, CLINICAL_EVENT,
                                    RELATIONSHIP_CLINICAL_EVENT_ITEM);
             } else
-            if (IMObjectHelper.isA(object, getClinicalEventItemShortNames())) {
+            if (TypeHelper.isA(object, getClinicalEventItemShortNames())) {
                 addActRelationship((Act) object, CLINICAL_EVENT,
                                    RELATIONSHIP_CLINICAL_EVENT_ITEM);
             }

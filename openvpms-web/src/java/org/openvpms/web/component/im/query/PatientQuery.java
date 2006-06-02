@@ -18,10 +18,18 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.LabelFactory;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
@@ -29,17 +37,10 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.LabelFactory;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -219,7 +220,7 @@ public class PatientQuery extends AbstractQuery {
         List<IMObject> result = new ArrayList<IMObject>();
         for (IMObject object : objects) {
             ArchetypeId id = object.getArchetypeId();
-            if (!DescriptorHelper.matches(id.getShortName(), shortName)) {
+            if (!TypeHelper.matches(id, shortName)) {
                 continue;
             }
             if (!StringUtils.isEmpty(name)) {
@@ -251,8 +252,8 @@ public class PatientQuery extends AbstractQuery {
         IMObjectReference source = new IMObjectReference(customer);
 
         for (EntityRelationship relationship : relationships) {
-            if (IMObjectHelper.isA(relationship,
-                                   "entityRelationship.patientOwner")) {
+            if (TypeHelper.isA(relationship,
+                               "entityRelationship.patientOwner")) {
                 if (source.equals(relationship.getSource())) {
                     IMObject object = IMObjectHelper.getObject(
                             relationship.getTarget());

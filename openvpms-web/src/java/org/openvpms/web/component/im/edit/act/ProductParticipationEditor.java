@@ -30,6 +30,8 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.archetype.util.TypeHelper;
+
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -62,7 +64,7 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
     public ProductParticipationEditor(Participation participation,
                                       Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!IMObjectHelper.isA(participation, "participation.product")) {
+        if (!TypeHelper.isA(participation, "participation.product")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                     + participation.getArchetypeId().getShortName());

@@ -28,6 +28,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.archetype.util.TypeHelper;
+
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -71,56 +73,6 @@ public class IMObjectHelper {
             }
         }
         return result;
-    }
-
-    /**
-     * Determines if an object is an instance of a particular archetype.
-     *
-     * @param object    the object. May be <code>null</code>
-     * @param shortName the archetype short name. May contain wildcards
-     * @return <code>true</code> if object is an instance of
-     *         <code>shortName</code>
-     */
-    public static boolean isA(IMObject object, String shortName) {
-        if (object != null) {
-            return DescriptorHelper.matches(object.getArchetypeId(), shortName);
-        }
-        return false;
-    }
-
-    /**
-     * Determines if an object is one of a set of archetypes.
-     *
-     * @param object     the object. May be <code>null</code>
-     * @param shortNames the archetype short names. May contain wildcards
-     * @return <code>true</code> if object is one of <code>shortNames</code>
-     */
-    public static boolean isA(IMObject object, String ... shortNames) {
-        if (object != null) {
-            for (String shortName : shortNames) {
-                if (isA(object, shortName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Determines if an object reference refers to an instance of a particular
-     * archetype.
-     *
-     * @param reference the object. May be <code>null</code>
-     * @param shortName the archetype short name. May contain wildcards
-     * @return <code>true</code> if the reference refers to an instance of
-     *         <code>shortName</code>
-     */
-    public static boolean isA(IMObjectReference reference, String shortName) {
-        if (reference != null) {
-            return DescriptorHelper.matches(reference.getArchetypeId(),
-                    shortName);
-        }
-        return false;
     }
 
     /**
@@ -298,7 +250,7 @@ public class IMObjectHelper {
             getObject(String shortName, Collection<T> objects) {
         T result = null;
         for (T object : objects) {
-            if (isA(object, shortName)) {
+            if (TypeHelper.isA(object, shortName)) {
                 result = object;
                 break;
             }

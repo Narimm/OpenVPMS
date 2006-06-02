@@ -18,16 +18,17 @@
 
 package org.openvpms.web.component.im.edit.payment;
 
-import java.math.BigDecimal;
-
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.party.Party;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -49,23 +50,22 @@ public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
     public SupplierPaymentItemEditor(Act act, Act parent,
                                      LayoutContext context) {
         super(act, parent, context);
-        if (!IMObjectHelper.isA(act,
-                                "act.supplierAccountPayment*",
-                                "act.supplierAccountRefund*")
-            || IMObjectHelper.isA(act,
-                                  "act.supplierAccountPayment",
+        if (!TypeHelper.isA(act, "act.supplierAccountPayment*",
+                            "act.supplierAccountRefund*")
+                || TypeHelper.isA(act, "act.supplierAccountPayment",
                                   "act.supplierAccountRefund")) {
             throw new IllegalArgumentException(
                     "Invalid act type: " + act.getArchetypeId().getShortName());
         }
 
         if (act.isNew() &&
-            IMObjectHelper.isA(act, "act.supplierAccountPayment*")) {
+                TypeHelper.isA(act, "act.supplierAccountPayment*")) {
             // Default the amount to the outstanding balance
             Party supplier = Context.getInstance().getSupplier();
             if (supplier != null) {
                 BigDecimal diff = ActHelper.sum(parent, "amount");
-                BigDecimal current = ActHelper.getSupplierAccountBalance(supplier);
+                BigDecimal current = ActHelper.getSupplierAccountBalance(
+                        supplier);
                 BigDecimal balance = current.subtract(diff);
                 Property amount = getProperty("amount");
                 amount.setValue(balance);

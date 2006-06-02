@@ -21,8 +21,8 @@ package org.openvpms.web.app.patient.mr;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
@@ -52,7 +52,7 @@ public class VisitRecordCRUDWindow extends PatientRecordCRUDWindow {
     @Override
     protected IMObjectEditor createEditor(IMObject object,
                                           LayoutContext context) {
-        if (IMObjectHelper.isA(object, CLINICAL_PROBLEM)) {
+        if (TypeHelper.isA(object, CLINICAL_PROBLEM)) {
             // don't permit editing items node in visit view
             return new ClinicalProblemActEditor((Act) object, null, false,
                                                 context);
@@ -69,11 +69,11 @@ public class VisitRecordCRUDWindow extends PatientRecordCRUDWindow {
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
         if (isNew) {
-            if (IMObjectHelper.isA(object, CLINICAL_EVENT)) {
+            if (TypeHelper.isA(object, CLINICAL_EVENT)) {
                 addActRelationship((Act) object, CLINICAL_EPISODE,
                                    RELATIONSHIP_CLINICAL_EPISODE_EVENT);
-            } else if (IMObjectHelper.isA(object,
-                                          getClinicalEventItemShortNames())) {
+            } else if (TypeHelper.isA(object,
+                                      getClinicalEventItemShortNames())) {
                 addActRelationship((Act) object, CLINICAL_EVENT,
                                    RELATIONSHIP_CLINICAL_EVENT_ITEM);
             }
