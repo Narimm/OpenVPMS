@@ -75,8 +75,8 @@ public abstract class AbstractIMObjectCopyHandler
      *         <code>false</code>
      */
     protected boolean isCopyable(NodeDescriptor node, boolean source) {
-        boolean result = !node.isHidden();
-        if (result && !source) {
+        boolean result = true;
+        if (!source) {
             result = (!node.isReadOnly() && !node.isDerived());
         }
         return result;
