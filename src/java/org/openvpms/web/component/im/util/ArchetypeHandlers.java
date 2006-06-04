@@ -73,7 +73,7 @@ public class ArchetypeHandlers {
                     String shortName = (String) shortNames.nextElement();
                     String className = properties.getProperty(shortName);
                     String[] matches = DescriptorHelper.getShortNames(
-                            shortName);
+                            shortName, false);
                     if (matches.length == 0) {
                         _log.warn("No archetypes found matching short name="
                                 + shortName + ", loaded from path=" + path);
