@@ -47,9 +47,9 @@
 				minCardinality="0" maxLength="30" />
 			<node name="initials" path="/details/attributes/initials" type="java.lang.String" maxLength="10" />
 			<node name="lastName" path="/details/attributes/lastName" type="java.lang.String"
-				minCardinality="1" maxLength="30" />
+				minCardinality="0" maxLength="30" />
 			<node name="accountType" path="/details/attributes/accountType" type="java.lang.String"
-				minCardinality="1" maxLength="15" defaultValue="'Normal'">
+				minCardinality="0" maxLength="15" defaultValue="'Normal'">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
 					<property name="concept" value="customerAccountType" />

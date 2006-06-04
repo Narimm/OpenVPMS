@@ -32,7 +32,7 @@
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.clinician" />
 		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
-			minCardinality="0" maxCardinality="*">
+			minCardinality="0" maxCardinality="*" hidden="true" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

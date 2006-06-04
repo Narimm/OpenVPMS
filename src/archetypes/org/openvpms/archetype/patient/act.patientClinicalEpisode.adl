@@ -39,7 +39,8 @@
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
-		<node displayName="Events" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+		<node displayName="Events" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
+			minCardinality="0" maxCardinality="*" hidden="true" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
