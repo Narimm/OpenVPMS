@@ -127,7 +127,7 @@ public class NumericPropertyTransformerTestCase
         _intNode = getDescriptor("classification.appointmentType", "noSlots");
         Assert.assertEquals(Integer.class, _intNode.getClazz());
 
-        _decNode = getDescriptor("productPrice.fixedPrice", "price");
+        _decNode = getDescriptor("act.patientWeight", "weight");
         Assert.assertEquals(BigDecimal.class, _decNode.getClazz());
     }
 
