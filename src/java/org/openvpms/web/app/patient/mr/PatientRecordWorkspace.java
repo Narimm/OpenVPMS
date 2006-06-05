@@ -143,7 +143,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party party) {
         ActQuery query = createQuery(party, _clinicalEventItems);
-        query.setRequiredShortNames(new String[]{CLINICAL_EVENT});
+        String[] required = {CLINICAL_EPISODE, CLINICAL_EVENT};
+        query.setRequiredShortNames(required);
         return query;
     }
 
