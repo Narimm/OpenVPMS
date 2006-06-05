@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.NoSuchElementException;
-
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+
+import java.util.NoSuchElementException;
 
 
 /**
@@ -47,16 +47,6 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      */
     private int _cursor;
 
-    /**
-     * The total no. of pages.
-     */
-    private int _pages;
-
-    /**
-     * The total no. of rows.
-     */
-    private int _rows;
-
 
     /**
      * Construct a new <code>AbstractResultSet</code>.
@@ -74,15 +64,14 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
         _page = null;
         _cursor = 0;
         _page = getPage(_cursor);
-        _pages = (_page != null) ? getPages(_page) : 0;
-        _rows = (_page != null) ? _page.getTotalNumOfRows() : 0;
     }
 
     /**
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page corresponding to <code>page</code>
+     * @return the page corresponding to <code>page</code>.
+     *         May be <code>null</code>
      */
     public IPage<T> getPage(int page) {
         IPage<T> result = get(page);
@@ -94,9 +83,13 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the total number of pages.
      *
      * @return the total no. of pages.
+     * @throws IllegalStateException if there is no current page
      */
     public int getPages() {
-        return _pages;
+        if (_page == null) {
+            throw new IllegalStateException("No current page");
+        }
+        return getPages(_page);
     }
 
     /**
@@ -113,9 +106,13 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * Returns the number of rows.
      *
      * @return the number of rows
+     * @throws IllegalStateException if there is no current page
      */
     public int getRows() {
-        return _rows;
+        if (_page == null) {
+            throw new IllegalStateException("No current page");
+        }
+        return _page.getTotalNumOfRows();
     }
 
     /**

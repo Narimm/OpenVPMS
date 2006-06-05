@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.ListIterator;
-
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+
+import java.util.ListIterator;
 
 
 /**
@@ -48,7 +48,8 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the specified page.
      *
      * @param page the page no.
-     * @return the page corresponding to <code>page</code>
+     * @return the page corresponding to <code>page</code>.
+     *         May be <code>null</code>
      */
     IPage<T> getPage(int page);
 
@@ -56,6 +57,7 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the total number of pages.
      *
      * @return the total no. of pages.
+     * @throws IllegalStateException if there is no current page
      */
     int getPages();
 
@@ -71,14 +73,16 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      * Returns the number of rows.
      *
      * @return the number of rows
+     * @throws IllegalStateException if there is no current page
      */
     int getRows();
 
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <code>true</code> if the node is sorted ascending;
-     *         <code>false</code> if it is sorted descending
+     * @return <code>true</code> if the node is sorted ascending or no sort
+     *         constraint was specified; <code>false</code> if it is sorted
+     *         descending
      */
     boolean isSortedAscending();
 
