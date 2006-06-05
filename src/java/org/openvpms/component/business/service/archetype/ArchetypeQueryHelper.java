@@ -24,14 +24,17 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
@@ -335,4 +338,77 @@ public class ArchetypeQueryHelper {
         return service.get(query);
     }
     
+    /**
+     * Helper class to return a {@link Page} of target {@link Lookup} instances
+     * give a reference source {@link Lookup} 
+     * <p>
+     * Note this will work if the archetype names in your system conform to the 
+     * strcuture indicated below. 
+     * <p>
+     * All lookups have an entity name of 'lookup' and all lookup relationships 
+     * have a short name of 'lookuprel.common'
+     * 
+     * @param service
+     *            a reference to the archetype service
+     * @param lookup
+     *           the source lookup
+     * @param firstRow
+     *            the first row to retriev
+     * @param numOfRows
+     *            the num of rows to retieve
+     * @return IPage<Lookup>
+     *            a page of lookup objects
+     * @throws ArchetypeServiceException
+     *            if the request cannot complete                                               
+     */
+    public static IPage<IMObject> getTagetLookups(IArchetypeService service, 
+            Lookup source, int firstRow, int numOfRows) {
+        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
+                "lookup.*", false, false))
+            .add(new CollectionNodeConstraint("target", new ArchetypeShortNameConstraint(
+                    "lookuprel.common", false, false))
+                    .add(new ObjectRefNodeConstraint("source", source.getObjectReference())))
+            .add(new NodeSortConstraint("name", true))
+            .setFirstRow(firstRow)
+            .setNumOfRows(numOfRows)
+            .setActiveOnly(true);
+        return service.get(query);
+    }
+
+    /**
+     * Helper class to return a {@link Page} of source {@link Lookup} instances
+     * give a reference target{@link Lookup} 
+     * <p>
+     * Note this will work if the archetype names in your system conform to the 
+     * strcuture indicated below. 
+     * <p>
+     * All lookups have an entity name of 'lookup' and all lookup relationships 
+     * have a short name of 'lookuprel.common'
+     * 
+     * @param service
+     *            a reference to the archetype service
+     * @param lookup
+     *           the target lookup
+     * @param firstRow
+     *            the first row to retriev
+     * @param numOfRows
+     *            the num of rows to retieve
+     * @return IPage<Lookup>
+     *            a page of lookup objects
+     * @throws ArchetypeServiceException
+     *            if the request cannot complete                                               
+     */
+    public static IPage<IMObject> getsourceLookups(IArchetypeService service, 
+            Lookup target, int firstRow, int numOfRows) {
+        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
+                "lookup.*", false, false))
+            .add(new CollectionNodeConstraint("source", new ArchetypeShortNameConstraint(
+                    "lookuprel.common", false, false))
+                    .add(new ObjectRefNodeConstraint("target", target.getObjectReference())))
+            .add(new NodeSortConstraint("name", true))
+            .setFirstRow(firstRow)
+            .setNumOfRows(numOfRows)
+            .setActiveOnly(true);
+        return service.get(query);
+    }
 }

@@ -24,6 +24,7 @@ import java.util.Date;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**

@@ -19,10 +19,7 @@
 
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
-// hibernate
-import java.util.Iterator;
-
-import org.hibernate.Query;
+//hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -101,18 +98,6 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             int lrcount1 = HibernateLookupUtil.getTableRowCount(session, "lookupRelationship");
             assertTrue(lcount1 == lcount + 5);
             assertTrue(lrcount1 == lrcount + 4);
-            
-            // now and retrieve the realtionships from the source side
-            Query query = session.getNamedQuery("lookupRelationship.getTargetLookups");
-            query.setParameter("uid", country.getUid());
-            query.setParameter("type", "country.state");
-            assertTrue(query.list().size() == 4);
-            
-            // now and retrieve the realtionships from the target side
-            query = session.getNamedQuery("lookupRelationship.getSourceLookups");
-            query.setParameter("uid", state1.getUid());
-            query.setParameter("type", "country.state");
-            assertTrue(query.list().size() == 1);
         } catch (Exception exception) {
             if (tx != null) {
                 tx.rollback();
@@ -149,15 +134,12 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             session.save(city1);
             session.save(city2);
             session.save(city3);
-            session.save(country);
             
             // create the relationship
-            LookupRelationship relationship = new LookupRelationship(country, city1);
-            session.save(relationship);
-            relationship = new LookupRelationship(country, city2);
-            session.save(relationship);
-            relationship = new LookupRelationship(country, city3);
-            session.save(relationship);
+            country.addLookupRelationship(new LookupRelationship(country, city1));
+            country.addLookupRelationship(new LookupRelationship(country, city2));
+            country.addLookupRelationship(new LookupRelationship(country, city3));
+            session.save(country);
             tx.commit();
 
             // ensure that the correct number of rows have been inserted
@@ -165,25 +147,24 @@ public class PersistentLookupRelationshipTestCase extends HibernateInfoModelTest
             int lrcount1 = HibernateLookupUtil.getTableRowCount(session, "lookupRelationship");
             assertTrue(lcount1 == lcount + 4);
             assertTrue(lrcount1 == lrcount + 3);
-            
+
             // now delete the entity and all its relationships
-            Lookup lookup = (Lookup)session.load(Lookup.class, country.getUid());
             tx = session.beginTransaction();
-            Query query = session.getNamedQuery("lookupRelationship.getAllRelationshipsWithId");
-            query.setParameter("id", country.getUid());
-            if (query.list().size() > 0) {
-                Iterator iter = query.iterate();
-                while (iter.hasNext()) {
-                    session.delete(iter.next());
-                }
+            Lookup lookup = (Lookup)session.load(Lookup.class, country.getUid());
+            
+            // iterate through all the relationships and remove them
+            LookupRelationship[] rels = (LookupRelationship[])lookup.getSourceLookupRelationships()
+                .toArray(new LookupRelationship[lookup.getSourceLookupRelationships().size()]);
+            for (LookupRelationship rel : rels) {
+                lookup.removeLookupRelationship(rel);
             }
-            session.delete(lookup);
+            session.save(lookup);
             tx.commit();
             
             // ensure that the correct number of rows have been deleted
             lcount1 = HibernateLookupUtil.getTableRowCount(session, "lookup");
             lrcount1 = HibernateLookupUtil.getTableRowCount(session, "lookupRelationship");
-            assertTrue(lcount1 == lcount + 3);
+            assertTrue(lcount1 == lcount + 4);
             assertTrue(lrcount1 == lrcount);
         } catch (Exception exception) {
             if (tx != null) {

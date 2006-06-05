@@ -37,6 +37,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.system.common.util.StringUtilities;
 
 /**
  * This is an abstract class which is used by some cache implementations.
@@ -103,9 +104,8 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
         List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
 
-        String modShortName = shortName.replace(".", "\\.").replace("*", ".*");
         for (String key : archetypesByShortName.keySet()) {
-            if (key.matches(modShortName)) {
+            if (StringUtilities.matches(key, shortName)) {
                 descriptors.add(archetypesByShortName.get(key));
             }
         }
@@ -119,10 +119,9 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName) {
         List<ArchetypeDescriptor> descriptors = new ArrayList<ArchetypeDescriptor>();
 
-        String modRmName = rmName.replace(".", "\\.").replace("*", ".*");
         for (String qName : archetypesById.keySet()) {
             ArchetypeDescriptor adesc = archetypesById.get(qName);
-            if (adesc.getType().getRmName().matches(modRmName)) {
+            if (StringUtilities.matches(adesc.getType().getRmName(), rmName)) {
                 descriptors.add(adesc);
             }
         }
@@ -151,31 +150,23 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
             String entityName, String conceptName, boolean primaryOnly) {
         List<String> shortNames = new ArrayList<String>();
         
-        // check out if there are any '*' specified
-        String trmName = (rmName == null) ? null : 
-            rmName.replace(".", "\\.").replace("*", ".*");
-        String tentityName = (entityName == null) ? null : 
-            entityName.replace(".", "\\.").replace("*", ".*");
-        String tconceptName = (conceptName == null) ? null : 
-            conceptName.replace(".", "\\.").replace("*", ".*");
-        
         for (ArchetypeDescriptor desc : archetypesByShortName.values()) {
             ArchetypeId archId = desc.getType();
             // do a check on rm name
-            if ((StringUtils.isEmpty(trmName) == false) && 
-                (archId.getRmName().matches(trmName) == false)) {
+            if ((StringUtils.isEmpty(rmName) == false) && 
+                (StringUtilities.matches(archId.getRmName(), rmName) == false)) {
                 continue;
             }
 
             // do the check on entity name
-            if ((StringUtils.isEmpty(tentityName) == false) && 
-                (archId.getEntityName().matches(tentityName) == false)) {
+            if ((StringUtils.isEmpty(entityName) == false) && 
+                (StringUtilities.matches(archId.getEntityName(), entityName) == false)) {
                 continue;
             }
 
             // do the check on concept name
-            if ((StringUtils.isEmpty(tconceptName) == false) && 
-                (archId.getConcept().matches(tconceptName) == false)) {
+            if ((StringUtils.isEmpty(conceptName) == false) && 
+                (StringUtilities.matches(archId.getConcept(), conceptName) == false)) {
                 continue;
             }
             
@@ -197,13 +188,9 @@ public abstract class BaseArchetypeDescriptorCache implements IArchetypeDescript
     public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly) {
         List<String> shortNames = new ArrayList<String>();
         
-        // check out if there are any '*' specified
-        String modShortName = (shortName == null) ? null : 
-            shortName.replace(".", "\\.").replace("*", ".*");
-        
         for (String archshortName : archetypesByShortName.keySet()) {
             ArchetypeDescriptor desc = archetypesByShortName.get(archshortName);
-            if (archshortName.matches(modShortName)) {
+            if (StringUtilities.matches(archshortName, shortName)) {
                 // are we requesting only primary
                 if ((primaryOnly) &&
                     (!desc.isPrimary())) {

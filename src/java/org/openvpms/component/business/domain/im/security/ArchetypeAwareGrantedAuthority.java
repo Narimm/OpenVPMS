@@ -25,9 +25,6 @@ import java.util.StringTokenizer;
 // acegi-security
 import org.acegisecurity.GrantedAuthority;
 
-// commons-lang
-import org.apache.commons.lang.StringUtils;
-
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 
@@ -121,15 +118,8 @@ public class ArchetypeAwareGrantedAuthority extends IMObject
         }
         
         serviceName = temp.nextToken();
-        method = StringUtils.replace(temp.nextToken(), "*", ".*");
-        
-        // the last token is the archetype short name, which can also be 
-        // a regular expression
+        method = temp.nextToken();
         archetypeShortName = tokens.nextToken();
-        if (archetypeShortName.contains("*")) {
-            archetypeShortName = StringUtils.replace(archetypeShortName, ".", "\\.");
-            archetypeShortName = StringUtils.replace(archetypeShortName, "*", ".*");
-        }
         
         // store the original str
         this.authority = str;

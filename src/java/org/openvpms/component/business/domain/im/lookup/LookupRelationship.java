@@ -20,10 +20,12 @@
 package org.openvpms.component.business.domain.im.lookup;
 
 // commons-lang
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * This class defines a relationship between 2 {@link Lookup} instances, namely
@@ -42,20 +44,20 @@ public class LookupRelationship extends IMObject {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The source lookup instance
+     * Reference to the source {@link Lookup} reference
      */
-    private Lookup source;
+    private IMObjectReference source;
     
     /**
-     * The target lookup instance
+     * Reference to the target {@link Lookup} reference
      */
-    private Lookup target;
-    
+    private IMObjectReference target;
+
     /**
-     * The generated relationship type
+     * Details holds dynamic attributes for a lookup
      */
-    private String type;
-    
+    private DynamicAttributeMap details = new DynamicAttributeMap();
+
     /**
      * Default constructor
      */
@@ -63,76 +65,59 @@ public class LookupRelationship extends IMObject {
     }
     
     /**
-     * Create a relationship between the source and target lookup instances
+     * Convenient constructor to set up a lookup relationship between a source
+     * and target lookup
      * 
      * @param source
-     *            the source of the lookup relationship
-     * @param target
-     *            the target of the lookup relationship
-     * @throws LookupRelationshipException                        
+     *            the source lookup
+     * @param taget 
+     *            the target lookup
      */
-    public LookupRelationship(Lookup source, Lookup target) {
-        if ((source == null) ||
-            (target == null)) {
-            throw new LookupRelationshipException(
-                    LookupRelationshipException.ErrorCode.NullTargetOrSource);
-        }
-        
-        if ((StringUtils.isEmpty(source.getArchetypeId().getConcept())) ||
-            (StringUtils.isEmpty(target.getArchetypeId().getConcept()))) {
-            throw new LookupRelationshipException(
-                    LookupRelationshipException.ErrorCode.NullConceptNames);
-        }
-        
-        this.source = source;
-        this.target = target;
-        this.type = 
-            new StringBuffer(source.getArchetypeId().getConcept())
-                .append(".")
-                .append(target.getArchetypeId().getConcept())
-                .toString();
+    public LookupRelationship(Lookup source, Lookup target ) {
+        this.source = source.getObjectReference();
+        this.target = target.getObjectReference();
     }
-
+    
     /**
      * @return Returns the source.
      */
-    public Lookup getSource() {
+    public IMObjectReference getSource() {
         return source;
     }
 
     /**
      * @return Returns the target.
      */
-    public Lookup getTarget() {
+    public IMObjectReference getTarget() {
         return target;
-    }
-
-    /**
-     * @return Returns the type.
-     */
-    public String getType() {
-        return type;
     }
 
     /**
      * @param source The source to set.
      */
-    public void setSource(Lookup source) {
+    public void setSource(IMObjectReference source) {
         this.source = source;
     }
 
     /**
      * @param target The target to set.
      */
-    public void setTarget(Lookup target) {
+    public void setTarget(IMObjectReference target) {
         this.target = target;
     }
 
     /**
-     * @param type The type to set.
+     * @return Returns the details.
      */
-    public void setType(String type) {
-        this.type = type;
+    public DynamicAttributeMap getDetails() {
+        return details;
+    }
+
+    /**
+     * @param details The details to set.
+     */
+    public void setDetails(DynamicAttributeMap details) {
+        this.details = details;
     }
 
     /* (non-Javadoc)
@@ -141,11 +126,25 @@ public class LookupRelationship extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         LookupRelationship copy = (LookupRelationship)super.clone();
-        copy.source = this.source;
-        copy.target = this.target;
-        copy.type = this.type;
+        copy.source = (IMObjectReference)this.source.clone();
+        copy.target = (IMObjectReference)this.target.clone();
+        
+        // details
+        copy.details = (DynamicAttributeMap)(this.details == null ?
+                null : this.details.clone());
         
         return copy;
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+        .appendSuper(null)
+        .append("source", source)
+        .append("target", target)
+        .toString();
+    }
 }

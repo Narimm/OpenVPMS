@@ -18,19 +18,25 @@
 
 package org.openvpms.component.system.common.jxpath;
 
+// java-core
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+// commons-beanutils
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
 import org.apache.commons.jxpath.JXPathTypeConversionException;
 import org.apache.commons.jxpath.NodeSet;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.jxpath.util.BasicTypeConverter;
+
+// openvpms-framework
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
 /**
  * Extends the functionality in {@link BasicTypeConverter} to support
@@ -46,6 +52,11 @@ public class OpenVPMSTypeConverter extends BasicTypeConverter {
      */
     public OpenVPMSTypeConverter() {
         super();
+        
+        // register additional converters
+        // TODO do it through injection so we remove the dependency
+        ConvertUtils.register(new MoneyConverter(), Money.class);
+        ConvertUtils.register(new UtilDateConverter(), Date.class);
     }
 
     /*

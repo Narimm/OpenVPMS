@@ -68,4 +68,22 @@ public class StringUtilities {
         return input.replace(".", "\\.").replace("*", ".*");
 
     }
+    
+    /**
+     * The '*' character denotes a wildcard character. This method will do a 
+     * regular expression match against the input string. It first converts any
+     * '*' characters to the equivalent '.*' regular expression before executing
+     * a regex match
+     * 
+     * @param str
+     *            the string that is matched
+     * @param expression
+     *            the expression to match, which can contain wild card
+     *            characters
+     * @return boolean
+     *            true if it matches                                  
+     */
+    public static boolean matches(String str, String expression) {
+        return str.matches(toRegEx(expression));
+    }
 }

@@ -552,7 +552,9 @@ public class ArchetypeService implements IArchetypeService {
             // check the cardinality
             int minCardinality = node.getMinCardinality();
             int maxCardinality = node.getMaxCardinality();
-            if ((minCardinality == 1) && (value == null)) {
+            if ((minCardinality == 1) && 
+                ((value == null) ||
+                 ((value instanceof String) && (StringUtils.isEmpty((String)value))))) {
                 errors.add(new ValidationError(node.getName(),
                         "value is required"));
 

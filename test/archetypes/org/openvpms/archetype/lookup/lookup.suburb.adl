@@ -15,5 +15,9 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat (/value, ' ', /details/attributes/postCode)" />
+        <node name="target" path="/targetLookupRelationships"
+			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*"/>
+        <node name="source" path="/sourceLookupRelationships"
+			type="java.util.HashSet" baseName="sourceLookupRelationship" minCardinality="0" maxCardinality="*"/>
 	</archetype>
 </archetypes>

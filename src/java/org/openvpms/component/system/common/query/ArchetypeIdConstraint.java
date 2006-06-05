@@ -107,7 +107,7 @@ public class ArchetypeIdConstraint extends BaseArchetypeConstraint {
     @Override
     public Object clone() throws CloneNotSupportedException {
         ArchetypeIdConstraint copy = (ArchetypeIdConstraint)super.clone();
-        copy.archetypeId = new ArchetypeId(this.archetypeId.toString());
+        copy.archetypeId = new ArchetypeId(this.archetypeId.getQualifiedName());
         
         return copy;
     }

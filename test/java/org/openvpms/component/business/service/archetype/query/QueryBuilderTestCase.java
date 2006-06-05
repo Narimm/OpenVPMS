@@ -24,6 +24,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.system.common.query.AndConstraint;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -183,6 +184,21 @@ public class QueryBuilderTestCase extends
                             new ArchetypeShortNameConstraint("contact.*", false, false))
                             .add(new ArchetypeSortConstraint(ArchetypeProperty.ConceptName, false)));
         builder.build(query).getQueryString();    
+    }
+    
+    /**
+     * Test target lookups
+     */
+    public void testTargetLookups()
+    throws Exception {
+        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeLongNameConstraint(
+                null, "lookup", null, false, false))
+            .add(new CollectionNodeConstraint("source"))
+            .add(new NodeSortConstraint("name", true))
+            .setFirstRow(0)
+            .setNumOfRows(-1);
+        
+        builder.build(query).getQueryString();
     }
     
     /**
