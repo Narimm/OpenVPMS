@@ -73,7 +73,7 @@ public abstract class ActEditor extends AbstractIMObjectEditor {
         if (editItems) {
             CollectionProperty items = (CollectionProperty) getProperty(
                     "items");
-            if (items != null) {
+            if (items != null && !items.getDescriptor().isHidden()) {
                 _editor = new ActRelationshipCollectionEditor(items, act,
                                                               getLayoutContext());
                 _editor.addModifiableListener(new ModifiableListener() {

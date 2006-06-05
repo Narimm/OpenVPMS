@@ -56,7 +56,7 @@ public class ActHelper {
      * @return the account balance for <code>customer</code>
      */
     public static BigDecimal getCustomerAccountBalance(Party customer) {
-        String[] shortNames = {"act.customerAccount*"};
+        String[] shortNames = DescriptorHelper.getShortNames("act.customerAccount*");
         return getAccountBalance(customer.getObjectReference(), "customer",
                                  "participation.customer", shortNames);
     }

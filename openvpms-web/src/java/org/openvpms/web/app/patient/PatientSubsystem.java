@@ -37,9 +37,9 @@ public class PatientSubsystem extends AbstractSubsystem {
     public PatientSubsystem() {
         super("patient");
         addWorkspace(new InformationWorkspace());
-        addWorkspace(new DummyWorkspace("patient", "document"));
         addWorkspace(new PatientRecordWorkspace());
-        addWorkspace(new DummyWorkspace("patient", "reminder"));
+        addWorkspace(new DummyWorkspace("patient", "document"));
         addWorkspace(new DummyWorkspace("patient", "investigation"));
+        addWorkspace(new DummyWorkspace("patient", "reminder"));
     }
 }
