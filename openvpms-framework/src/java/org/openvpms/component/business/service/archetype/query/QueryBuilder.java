@@ -53,6 +53,7 @@ import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.util.StringUtilities;
 /**
  * Thie builder is responsible for building the HQL from an 
  * {@link ArchetypeQuery} instance.
@@ -782,13 +783,6 @@ public class QueryBuilder {
             String concept, boolean primaryOnly) {
         DistinctTypesResultSet results = new DistinctTypesResultSet();
         
-        String modRmName = (rmName == null) ? null : 
-            rmName.replace(".", "\\.").replace("*", ".*");
-        String modEntityName = (entityName == null) ? null : 
-            entityName.replace(".", "\\.").replace("*", ".*");
-        String modConcept = (concept == null) ? null :
-            concept.replace(".", "\\.").replace("*", ".*");
-        
         // search through the cache for matching archetype descriptors
         for (ArchetypeDescriptor desc : service.getArchetypeDescriptors()) {
             ArchetypeId archId = desc.getType();
@@ -797,12 +791,12 @@ public class QueryBuilder {
                 continue;
             }
 
-            if (((StringUtils.isEmpty(modRmName)) ||
-                 (archId.getRmName().matches(modRmName))) &&
-                ((StringUtils.isEmpty(modEntityName)) || 
-                 (archId.getEntityName().matches(modEntityName))) &&
-                ((StringUtils.isEmpty(modConcept)) || 
-                 (archId.getConcept().matches(modConcept)))) {
+            if (((StringUtils.isEmpty(rmName)) ||
+                 (StringUtilities.matches(archId.getRmName(), rmName))) &&
+                ((StringUtils.isEmpty(entityName)) || 
+                 (StringUtilities.matches(archId.getEntityName(), entityName))) &&
+                ((StringUtils.isEmpty(concept)) || 
+                 (StringUtilities.matches(archId.getConcept(), concept)))) {
                 results.descriptors.add(desc);
                 if (StringUtils.isEmpty(results.type)) {
                     results.type = desc.getClassName();
@@ -842,9 +836,7 @@ public class QueryBuilder {
         // '.*' to perform the regular expression matches
         String[] modShortNames = new String[shortNames.length];
         for (int index = 0; index < shortNames.length; index++) {
-            modShortNames[index] = shortNames[index]
-                          .replace(".", "\\.")
-                          .replace("*", ".*");
+            modShortNames[index] = StringUtilities.toRegEx(shortNames[index]);
         }
         // adjust the reference model name
         for (String name : service.getArchetypeShortNames()) {

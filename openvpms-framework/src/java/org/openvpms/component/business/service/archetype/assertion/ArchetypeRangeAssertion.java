@@ -204,8 +204,8 @@ public class ArchetypeRangeAssertion {
                         }
                         
                         for (ArchetypeRangeInfo type : atypes) {
-                            if (imobj.getArchetypeId().getShortName().matches(
-                                    StringUtilities.toRegEx(type.shortName))) {
+                            if (StringUtilities.matches(imobj.getArchetypeId().getShortName(), 
+                                    type.shortName)) {
                                 type.count++;
                                 match = true;
                                 break;

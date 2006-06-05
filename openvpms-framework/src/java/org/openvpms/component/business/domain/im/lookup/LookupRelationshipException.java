@@ -40,7 +40,9 @@ public class LookupRelationshipException extends OpenVPMSException {
      */
     public enum ErrorCode {
         NullTargetOrSource,
-        NullConceptNames
+        NullConceptNames,
+        FailedToAddLookRelationship,
+        FailedToRemoveLookRelationship
     }
 
     /**

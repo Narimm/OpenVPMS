@@ -39,6 +39,22 @@ public class Money extends BigDecimal {
     private static final long serialVersionUID = 1L;
 
     /**
+     * default constructor
+     */
+    public Money() {
+        super(0.0);
+    }
+    
+    /**
+     * Construct from a {@link BigDecimal}
+     * 
+     * @param value
+     */
+    public Money(BigDecimal value) {
+        super(value.toString());
+    }
+    
+    /**
      * @param arg0
      * @param arg1
      * @param arg2

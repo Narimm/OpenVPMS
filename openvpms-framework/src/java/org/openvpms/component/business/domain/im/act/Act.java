@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.domain.im.common;
+package org.openvpms.component.business.domain.im.act;
 
 // java core
 import java.util.HashSet;
@@ -25,7 +25,11 @@ import java.util.Set;
 import java.util.Date;
 
 // openvpms-framework
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.EntityException;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
@@ -431,4 +435,25 @@ public class Act extends IMObject {
         
         return copy;
     }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .appendSuper(null)
+            .append("mood", mood)
+            .append("title", title)
+            .append("activityStartTime", activityStartTime)
+            .append("activityEndTime", activityEndTime)
+            .append("reason", reason)
+            .append("repeatNumber", repeatNumber)
+            .append("status", status)
+            .append("participations", participations)
+            .append("sourceActRelationships", sourceActRelationships)
+            .append("targetActRelationships", targetActRelationships)
+            .toString();
+    }
+
 }

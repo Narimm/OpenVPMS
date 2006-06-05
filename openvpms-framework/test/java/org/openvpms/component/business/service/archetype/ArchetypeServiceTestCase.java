@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 
 // openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDeriveValueException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -235,14 +234,8 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         assertTrue(ndesc != null);
         
         // set with incorrect type
-        try {
-            ndesc.setValue(margin, new Integer(10));
-            fail("We should not be allowed to set a node of type BigDecimal with type Integer");
-        } catch (DescriptorException exception) {
-            if (exception.getErrorCode() != DescriptorException.ErrorCode.FailedToSetValue) {
-                fail("We should not be getting the exception " + exception.getErrorCode());
-            }
-        }
+        ndesc.setValue(margin, new Integer(10));
+        assertTrue(ndesc.getValue(margin) instanceof BigDecimal);
         
         // set with correct type
         ndesc.setValue(margin, new BigDecimal(10));

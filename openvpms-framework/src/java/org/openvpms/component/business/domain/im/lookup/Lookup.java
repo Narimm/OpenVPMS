@@ -19,9 +19,16 @@
 
 package org.openvpms.component.business.domain.im.lookup;
 
+// java lang
+import java.util.HashSet;
+import java.util.Set;
+
+// commons-lang
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+// openvpms-common
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
@@ -54,6 +61,23 @@ public class Lookup extends IMObject {
      */
     private String code;
     
+    /**
+     * Is this the default lookup for a particular domain
+     */
+    private boolean defaultLookup;
+    
+    /**
+     * Holds all the {@link LookupRelationship}s that this lookup is a source off.
+     */
+    private Set<LookupRelationship> sourceLookupRelationships =
+        new HashSet<LookupRelationship>();
+    
+    /**
+     * Holds all the {@link LookupRelationship}s that this lookup is a target off.
+     */
+    private Set<LookupRelationship> targetLookupRelationships =
+        new HashSet<LookupRelationship>();
+
     /**
      * Details holds dynamic attributes for a lookup
      */
@@ -126,6 +150,149 @@ public class Lookup extends IMObject {
         this.code = code;
     }
 
+    /**
+     * @return Returns the defaultLookup.
+     */
+    public boolean isDefaultLookup() {
+        return defaultLookup;
+    }
+
+    /**
+     * @param defaultLookup The defaultLookup to set.
+     */
+    public void setDefaultLookup(boolean defaultLookup) {
+        this.defaultLookup = defaultLookup;
+    }
+    /**
+     * @return Returns the sourceLookupRelationships.
+     */
+    public Set<LookupRelationship> getSourceLookupRelationships() {
+        return sourceLookupRelationships;
+    }
+
+    /**
+     * @param sourceLookupRelationships The sourceLookupRelationships to set.
+     */
+    public void setSourceLookupRelationships(
+            Set<LookupRelationship> sourceLookupRelationships) {
+        this.sourceLookupRelationships = sourceLookupRelationships;
+    }
+
+    /**
+     * Add a source {@link LookupRelationship}.
+     * 
+     * @param source 
+     */
+    public void addSourceLookupRelationship(LookupRelationship source) {
+        this.sourceLookupRelationships.add(source);
+    }
+
+    /**
+     * Remove a source {@link LookupRelationship}.
+     * 
+     * @param source
+     */
+    public void removeSourceLookupRelationship(LookupRelationship source) {
+        this.sourceLookupRelationships.remove(source);
+    }
+
+    /**
+     * @return Returns the targetLookupRelationships.
+     */
+    public Set<LookupRelationship> getTargetLookupRelationships() {
+        return targetLookupRelationships;
+    }
+
+    /**
+     * Set this lookup to be a targt of an {@link LookupRelationship}.
+     * 
+     * @param targetLookupRelationships The targetLookupRelationships to set.
+     */
+    public void setTargetLookupRelationships(
+            Set<LookupRelationship> targetLookupRelationships) {
+        this.targetLookupRelationships = targetLookupRelationships;
+    }
+    
+    /**
+     * Add a target {@link LookupRelationship}.
+     * 
+     * @param target 
+     *            add a new target.
+     */
+    public void addTargetLookupRelationship(LookupRelationship target) {
+        this.targetLookupRelationships.add(target);
+    }
+
+    /**
+     * Remove a target {@link LookupRelationship}.
+     * 
+     * @param target
+     */
+    public void removeTargetLookupRelationship(LookupRelationship target) {
+        this.targetLookupRelationships.remove(target);
+    }
+
+    /**
+     * Add a relationship to this lookup. It will determine whether it is a 
+     * source or target relationship before adding it.
+     * 
+     * @param rel
+     *            the lookup relationship to add
+     * @throws LookupRelationshipException
+     *            if this relationship cannot be added to this lookup            
+     */
+    public void addLookupRelationship(LookupRelationship rel) {
+        if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
+            (rel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+            addSourceLookupRelationship(rel);
+        } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
+            (rel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+            addTargetLookupRelationship(rel);
+        } else {
+            throw new LookupRelationshipException(
+                    LookupRelationshipException.ErrorCode.FailedToAddLookRelationship,
+                    new Object[] { rel.getSource(), rel.getTarget()});
+        }
+    }
+
+    /**
+     * Remove a relationship to this lookup. It will determine whether it is a 
+     * source or target relationship before removing it.
+     * 
+     * @param rel
+     *            the lookup relationship to remove
+     * @throws LookupRelationshipException
+     *            if this relationship cannot be removed from this lookup            
+     */
+    public void removeLookupRelationship(LookupRelationship rel) {
+        if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
+            (rel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+            removeSourceLookupRelationship(rel);
+        } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
+            (rel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+            removeTargetLookupRelationship(rel);
+        } else {
+            throw new LookupRelationshipException(
+                    LookupRelationshipException.ErrorCode.FailedToRemoveLookRelationship,
+                    new Object[] { rel.getSource(), rel.getTarget()});
+        }
+    }
+    
+    /**
+     * Return all the lookup relationships. Do not use the returned set to 
+     * add and remove lookup relationships. Instead use {@link #addLookupRelationship(LookupRelationship)}
+     * and {@link #removeLookupRelationship(LookupRelationship)} repsectively.
+     * 
+     * @return Set<LookupRelationship>
+     */
+    public Set<LookupRelationship> getLookupRelationships() {
+        Set<LookupRelationship> relationships = 
+            new HashSet<LookupRelationship>(sourceLookupRelationships);
+        relationships.addAll(targetLookupRelationships);
+        
+        return relationships;
+    }
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#equals(java.lang.Object)
      */
@@ -169,6 +336,7 @@ public class Lookup extends IMObject {
             .append("uid", getUid())
             .append("value", value)
             .append("code", code)
+            .append("default", defaultLookup)
             .toString();
     }
 
@@ -182,6 +350,7 @@ public class Lookup extends IMObject {
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
         copy.value = this.value;
+        copy.defaultLookup = this.defaultLookup;
         
         return copy;
     }

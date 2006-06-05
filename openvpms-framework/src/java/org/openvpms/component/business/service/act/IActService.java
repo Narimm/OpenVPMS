@@ -19,7 +19,7 @@
 package org.openvpms.component.business.service.act;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**

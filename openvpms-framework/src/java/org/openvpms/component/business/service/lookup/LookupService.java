@@ -175,7 +175,7 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedtoCreateLookupRelationship,
-                    new Object[] { relationship.getType() }, exception);
+                    new Object[] { relationship }, exception);
         }
     }
 
@@ -190,7 +190,7 @@ public class LookupService implements ILookupService {
         } catch (LookupDAOException exception) {
             throw new LookupServiceException(
                     LookupServiceException.ErrorCode.FailedtoDeleteLookupRelationship,
-                    new Object[] { relationship.getType() }, exception);
+                    new Object[] { relationship }, exception);
         }
     }
 

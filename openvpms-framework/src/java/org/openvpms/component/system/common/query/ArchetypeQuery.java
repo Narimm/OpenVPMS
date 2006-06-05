@@ -211,8 +211,9 @@ public class ArchetypeQuery implements IConstraintContainer {
     /**
      * @param activeOnly The activeOnly to set.
      */
-    public void setActiveOnly(boolean activeOnly) {
+    public ArchetypeQuery setActiveOnly(boolean activeOnly) {
         this.activeOnly = activeOnly;
+        return this;
     }
 
     /**

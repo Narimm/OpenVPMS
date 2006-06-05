@@ -19,7 +19,6 @@
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +31,8 @@ import java.util.Map;
 // commons-lang
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.JXPathTypeConversionException;
+import org.apache.commons.jxpath.util.TypeConverter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
@@ -51,6 +52,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyList
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 
 /**
  * 
@@ -89,8 +91,16 @@ public class NodeDescriptor extends Descriptor {
      */
     public static final int UNBOUNDED = -1;
 
+    /**
+     * Representation of max cardinality as a string
+     */
     public static final String UNBOUNDED_AS_STRING = "*";
 
+    /**
+     * Type converter.
+     */
+    private static final TypeConverter CONVERTER = new OpenVPMSTypeConverter();
+    
     /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
@@ -154,6 +164,11 @@ public class NodeDescriptor extends Descriptor {
      * Indicates whether the descriptor is readOnly
      */
     private boolean isReadOnly = false;
+    
+    /**
+     * Indicates whether the node value represents an array
+     */
+    private boolean isArray = false;
 
     /**
      * The maximum cardinality, which defaults to 1
@@ -333,6 +348,7 @@ public class NodeDescriptor extends Descriptor {
         copy.index = this.index;
         copy.isDerived = this.isDerived;
         copy.isHidden = this.isHidden;
+        copy.isArray = this.isArray;
         copy.isParentChild = this.isParentChild;
         copy.maxCardinality = this.maxCardinality;
         copy.maxLength = this.maxLength;
@@ -1414,7 +1430,16 @@ public class NodeDescriptor extends Descriptor {
      *            The type to set.
      */
     public void setType(String type) {
-        this.type = type;
+        if (StringUtils.isEmpty(type)) {
+            this.type = null;
+        } else {
+            if (type.endsWith("[]")) {
+                this.isArray = true;
+                this.type = type.substring(0, type.indexOf("[]"));
+            } else {
+                this.type = type;
+            }
+        }
     }
 
     /**
@@ -1441,7 +1466,11 @@ public class NodeDescriptor extends Descriptor {
         }
 
         try {
-            JXPathHelper.newContext(context).setValue(getPath(), transform(value));
+            if (isArray) {
+                JXPathHelper.newContext(context).setValue(getPath(), value);
+            } else {
+                JXPathHelper.newContext(context).setValue(getPath(), transform(value));
+            }
         } catch (Exception exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToSetValue,
@@ -1458,6 +1487,7 @@ public class NodeDescriptor extends Descriptor {
     public String toString() {
         return new ToStringBuilder(this).append("name", getName()).append(
                 "displayName", displayName).append("isHidden", isHidden)
+                .append("isArray", isArray)
                 .append("isDerived", isDerived).append("derivedValue",
                         derivedValue).append("path", path).append("type", type)
                 .append("defaultValue", defaultValue).append("minCardinality",
@@ -1491,30 +1521,13 @@ public class NodeDescriptor extends Descriptor {
             return value;
         }
 
-        // attempt a conversion by searching for a constructor that takes a
-        // value of the incoming type. If none is found then just return the
-        // original value
-        
-        Class theClass = getClazz();
-        Constructor constructor = null;
         try {
-            constructor = theClass.getConstructor(new Class[]{value.getClass()});
-        } catch (NoSuchMethodException ignore) {
-        }
-        
-        if (constructor != null) {
-            value = constructor.newInstance(new Object[] {value});
-        }
-        
-        // if the value has been coerced then return the new value
-        // otherwise throw an exception
-        if (value.getClass() == getClazz()) {
-            return value;
-        }
-        
-        throw new DescriptorException(
+            return CONVERTER.convert(value, getClazz());
+        } catch (JXPathTypeConversionException exception) {
+            throw new DescriptorException(
                 DescriptorException.ErrorCode.FailedToCoerceValue,
                 new Object[] {value.getClass().getName(), getClazz().getName()});
+        }
     }
     
     /**

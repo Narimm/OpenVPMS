@@ -17,10 +17,11 @@
  */
 
 
-package org.openvpms.component.business.domain.im.common;
+package org.openvpms.component.business.domain.im.act;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
@@ -71,30 +72,6 @@ public class ActRelationship extends IMObject {
      */
     public ActRelationship() {
         // do nothing
-    }
-    
-    /**
-     * Constructs an instance of an act.
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param sequence
-     *            the associated sequence number
-     * @param sourceAct
-     *            the source act
-     * @param targetAct
-     *            the target act                                    
-     * @param details
-     *            dynamic details of the act relationship
-     */
-    public ActRelationship(ArchetypeId archetypeId, IMObjectReference sourceAct, 
-            IMObjectReference targetAct, int sequence, DynamicAttributeMap details) {
-        super(archetypeId);
-        this.sequence = sequence;
-        this.source = sourceAct;
-        this.target = targetAct;
-        this.details = details;
-        this.parentChildRelationship = false;
     }
     
     /**

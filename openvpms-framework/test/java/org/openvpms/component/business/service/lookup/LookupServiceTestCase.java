@@ -25,12 +25,16 @@ import java.util.List;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 // openvpms-framework
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 /**
  * 
@@ -39,6 +43,13 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
  */
 public class LookupServiceTestCase extends
         AbstractDependencyInjectionSpringContextTests {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(LookupServiceTestCase.class);
+    
     
     /**
      * Holds a reference to the lookup service
@@ -106,14 +117,31 @@ public class LookupServiceTestCase extends
     }
 
     /**
-     * Test the retrieval of lookups. This test assumes that the database is
-     * loaded with stuff
+     * Test the target lookup retrievals given a source
      */
-    public void testLookupRetrievalByString() {
-        List<Lookup> results = lookupService.getTargetLookups("state.suburb", "Victoria");
-        assertTrue(results.size() > 0);
-        results = lookupService.getSourceLookups("state.suburb", "Belgrave");
-        assertTrue(results.size() > 0);
+    public void testGetTargetLookups() {
+        // create the country and states and relationships
+        Lookup cty = createCountryLookup("Australia");
+        Lookup state1 = createStateLookup("Victoria");
+        archetypeService.save(state1);
+        Lookup state2 = createStateLookup("NSW");
+        archetypeService.save(state2);
+        Lookup state3 = createStateLookup("Tasmania");
+        archetypeService.save(state3);
+        cty.addLookupRelationship(createLookupRelationship(cty, state1));
+        cty.addLookupRelationship(createLookupRelationship(cty, state2));
+        cty.addLookupRelationship(createLookupRelationship(cty, state3));
+        archetypeService.save(cty);
+        
+        // retrieve all the lookups
+        IPage<IMObject> page = ArchetypeQueryHelper.getTagetLookups(archetypeService, 
+                cty, 0, -1);
+        assertTrue(page.getRows().size() == 3);
+
+        // retrueve all the source lookups
+        page = ArchetypeQueryHelper.getsourceLookups(archetypeService, state1, 0, 1);
+        assertTrue(page.getTotalNumOfRows() == 1);
+        assertTrue(page.getRows().iterator().next().getLinkId().equals(cty.getLinkId()));
     }
     
     /**
@@ -175,7 +203,7 @@ public class LookupServiceTestCase extends
     public void testOVPMS195()
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
-                new String[]{"lookup.relationship"}, true, true)
+                new String[]{"lookuprel.common"}, true, true)
                 .setFirstRow(0)
                 .setNumOfRows(ArchetypeQuery.ALL_ROWS);
         List<IMObject> objects = archetypeService.get(query).getRows();
@@ -199,4 +227,48 @@ public class LookupServiceTestCase extends
             "archetypeService");
     }
 
+    /**
+     * This will create a country lookup
+     * 
+     * @param name
+     *            the name of the country
+     * @return Lookup
+     */
+    private Lookup createCountryLookup(String name) {
+        Lookup country = (Lookup)archetypeService.create("lookup.country");
+        country.setValue(name);
+        
+        return country;
+    }
+    
+    /**
+     * This will create a state lookup
+     * 
+     * @param name
+     *            the name of the state
+     * @return Lookup            
+     */
+    private Lookup createStateLookup(String name) {
+        Lookup state = (Lookup)archetypeService.create("lookup.state");
+        state.setValue(name);
+        
+        return state;
+    }
+    
+    /**
+     * Create an lookup relationship
+     * 
+     * @param source
+     *            the source relationship
+     * @param target
+     *            the target relationship
+     * @return LookupRelationship                        
+     */
+     private LookupRelationship createLookupRelationship(Lookup source, Lookup target) {
+         LookupRelationship rel = (LookupRelationship)archetypeService.create("lookuprel.common");
+         rel.setSource(source.getObjectReference());
+         rel.setTarget(target.getObjectReference());
+         
+         return rel;
+     }
 }

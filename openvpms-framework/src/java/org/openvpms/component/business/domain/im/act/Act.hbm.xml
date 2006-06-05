@@ -20,7 +20,7 @@
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-  <class name="org.openvpms.component.business.domain.im.common.Act"
+  <class name="org.openvpms.component.business.domain.im.act.Act"
     table="acts">
     <id name="uid" type="long" unsaved-value="-1">
       <column name="act_id" index="act_id_idx" />
@@ -35,7 +35,8 @@
       <property name="rmName" access="property" column="arch_rm_name"
         type="string" length="100" />
       <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100" index="act_concept_idx,act_concept_start_time_idx" />
+        type="string" length="100"
+        index="act_concept_idx,act_concept_start_time_idx" />
       <property name="entityName" access="property" column="arch_entity_name"
         type="string" length="100" />
       <property name="version" access="property" column="arch_version"
@@ -59,13 +60,13 @@
       cascade="all,delete-orphan" inverse="true">
       <key column="source_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
-        class="org.openvpms.component.business.domain.im.common.ActRelationship" />
+        class="org.openvpms.component.business.domain.im.act.ActRelationship" />
     </set>
     <set name="targetActRelationships" access="property" lazy="false"
       cascade="all,delete-orphan" inverse="true">
       <key column="target_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
-        class="org.openvpms.component.business.domain.im.common.ActRelationship" />
+        class="org.openvpms.component.business.domain.im.act.ActRelationship" />
     </set>
     <set name="participations" access="property" lazy="false" inverse="true"
       cascade="all,delete-orphan">
@@ -73,11 +74,48 @@
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.Participation" />
     </set>
+
+    <!-- Mapping for the FinancialAct class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.act.FinancialAct"
+      table="financial_acts">
+      <key column="financial_act_id" />
+      <property name="quantity" access="property" column="quantity"
+        type="big_decimal" />
+      <property name="fixedAmount" access="property" column="fixed_amount"
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+      <property name="unitAmount" access="property" column="unit_amount"
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+      <property name="taxAmount" access="property" column="tax_amount"
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+      <property name="total" access="property" column="total"
+        type="org.openvpms.component.business.dao.hibernate.usertype.MoneyUserType" />
+      <property name="credit" access="property" column="credit" type="boolean" />
+      <property name="printed" access="property" column="printed"
+        type="boolean" />
+    </joined-subclass>
+
+    <!-- Mapping for the DocumentAct class -->
+    <joined-subclass
+      name="org.openvpms.component.business.domain.im.act.DocumentAct"
+      table="document_acts">
+      <key column="document_act_id" />
+      <property name="docVersion" access="property" column="doc_version"
+        type="string" />
+      <component name="docReference">
+        <component name="archetypeId" access="field">
+          <property name="qualifiedName" access="property" type="string"
+            column="docref_archetype_id" />
+        </component>
+        <property name="linkId" access="field" type="string" length="100"
+          column="docref_linkId" />
+      </component>
+    </joined-subclass>
   </class>
 
   <query name="act.getRowCount">
     <![CDATA[
-      select count(act) from org.openvpms.component.business.domain.im.common.Act as 
+      select count(act) from org.openvpms.component.business.domain.im.act.Act as 
       act
     ]]>
   </query>

@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 
 // openvpms-framework
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.system.common.query.IPage;
 
 /**
@@ -144,4 +145,25 @@ public class Page<T> implements Serializable, IPage<T> {
     public void setNumOfRows(int numOfRows) {
         this.numOfRows = numOfRows;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        ToStringBuilder str =  new ToStringBuilder(this)
+        .appendSuper(null)
+        .append("firstRow", firstRow)
+        .append("numOfRows", numOfRows)
+        .append("totalNumOfRows", totalNumOfRows);
+        
+        // now display the name of each entity in the row
+        int index = 0;
+        for (T obj : rows) {
+            str.append("obj-" + index++, obj.toString());
+        }
+        
+        return str.toString();
+    }
+    
 }

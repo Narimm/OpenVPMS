@@ -19,18 +19,29 @@
 
 package org.openvpms.component.business.service.security;
 
+// java-lang
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+// acegi
 import org.acegisecurity.Authentication;
 import org.acegisecurity.ConfigAttribute;
 import org.acegisecurity.ConfigAttributeDefinition;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.vote.AccessDecisionVoter;
+
+// aop-alliance interface
 import org.aopalliance.intercept.MethodInvocation;
+
+// commons-lang
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+// openvpms-framework
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.util.StringUtilities;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
 
 /**
@@ -44,6 +55,12 @@ import org.springframework.aop.framework.ReflectiveMethodInvocation;
  * @version  $LastChangedDate$
  */
 public class ArchetypeAwareVoter implements AccessDecisionVoter {
+    /**
+     * Define a logger for this class
+     */
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger
+            .getLogger(ArchetypeAwareVoter.class);
 
     private final static String archetypePrefix = "archetypeService";
 
@@ -131,28 +148,18 @@ public class ArchetypeAwareVoter implements AccessDecisionVoter {
         if (!service.equals(authority.getServiceName())) {
             return false;
         }
-
         // second toke is the method name
         String method = tokens.nextToken();
         String authMethod = authority.getMethod();
-        boolean methodMatch = false;
-        if (authMethod.contains("*")) {
-            methodMatch = method.matches(authMethod);
-        } else {
-            methodMatch = method.equals(authMethod);
-        }
-        
-        if (!methodMatch) {
-            return false;
-        }
-        
-        // now check the archetype id
         String authShortName = authority.getArchetypeShortName();
-        if (authShortName.contains("*")) {
-            return shortName.matches(authShortName);
-        } else {
-            return shortName.equals(authShortName);
+        if ((!StringUtils.isEmpty(authMethod)) &&
+            (!StringUtils.isEmpty(authShortName)) &&
+            (StringUtilities.matches(method, authMethod)) &&
+            (StringUtilities.matches(shortName, authShortName))) {
+                return true;
         }
+        
+        return false;
     }
     
     /**
