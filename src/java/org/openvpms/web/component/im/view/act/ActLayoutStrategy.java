@@ -129,7 +129,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(object);
         NodeDescriptor items = archetype.getNodeDescriptor("items");
-        if (items != null && _showItems) {
+        if (items != null && _showItems && !items.isHidden()) {
             GroupBox box = new GroupBox();
             box.setTitle(items.getDisplayName());
 
