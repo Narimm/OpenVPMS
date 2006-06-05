@@ -83,8 +83,9 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     /**
      * Determines if the node is sorted ascending or descending.
      *
-     * @return <code>true</code> if the node is sorted ascending;
-     *         <code>false</code> if it is sorted descending
+     * @return <code>true</code> if the node is sorted ascending or no sort
+     *         constraint was specified; <code>false</code> if it is sorted
+     *         descending
      */
     public boolean isSortedAscending() {
         return (_sort.length == 0 || _sort[0].isAscending());

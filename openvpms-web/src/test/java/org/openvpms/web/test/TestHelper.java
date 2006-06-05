@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.spring.ServiceHelper;
@@ -60,7 +61,9 @@ public class TestHelper {
     public static Party createCustomer() {
         Party party = (Party) create("party.customerperson");
         IMObjectHelper.setValue(party, "firstName", "foo");
-        IMObjectHelper.setValue(party, "lastName", "bar");
+        IMObjectHelper.setValue(party, "lastName", "xyz");
+        Contact contact = (Contact) create("contact.phoneNumber");
+        party.addContact(contact);
         return party;
     }
 
