@@ -25,7 +25,10 @@
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.test.TestHelper;
 
 
@@ -59,7 +62,10 @@ public class DefaultCollectionPropertyEditorTestCase
      * @return the parent object
      */
     protected IMObject createParent() {
-        return TestHelper.createCustomer();
+        Party party = (Party) TestHelper.create("party.customerperson");
+        IMObjectHelper.setValue(party, "firstName", "foo");
+        IMObjectHelper.setValue(party, "lastName", "xyz");
+        return party;
     }
 
     /**

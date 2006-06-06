@@ -18,9 +18,8 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.spring.ServiceHelper;
+
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
@@ -31,11 +30,20 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.LookupHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.spring.ServiceHelper;
 
-import java.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -86,7 +94,7 @@ public final class DescriptorHelper {
      */
     public static ArchetypeDescriptor getArchetypeDescriptor(IMObject object) {
         return getArchetypeDescriptor(object,
-                ServiceHelper.getArchetypeService());
+                                      ServiceHelper.getArchetypeService());
     }
 
     /**
@@ -175,7 +183,8 @@ public final class DescriptorHelper {
         List<String> names = Collections.emptyList();
         try {
             names = service.getArchetypeShortNames(refModelName,
-                    entityName, conceptName, true);
+                                                   entityName, conceptName,
+                                                   true);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
@@ -199,7 +208,8 @@ public final class DescriptorHelper {
      * @param primaryOnly if <code>true</code> only include primary archetypes
      * @return a list of short names matching the criteria
      */
-    public static String[] getShortNames(String shortName, boolean primaryOnly) {
+    public static String[] getShortNames(String shortName,
+                                         boolean primaryOnly) {
         return getShortNames(new String[]{shortName}, primaryOnly);
     }
 
@@ -220,12 +230,14 @@ public final class DescriptorHelper {
      * @param primaryOnly if <code>true</code> only include primary archetypes
      * @return a list of short names matching the criteria
      */
-    public static String[] getShortNames(String[] shortNames, boolean primaryOnly) {
+    public static String[] getShortNames(String[] shortNames,
+                                         boolean primaryOnly) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         Set<String> result = new HashSet<String>();
         try {
             for (String shortName : shortNames) {
-                List<String> matches = service.getArchetypeShortNames(shortName, primaryOnly);
+                List<String> matches = service.getArchetypeShortNames(shortName,
+                                                                      primaryOnly);
                 result.addAll(matches);
             }
         } catch (OpenVPMSException exception) {
@@ -315,6 +327,22 @@ public final class DescriptorHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Return a list of lookups for the specified descriptor.
+     *
+     * @param descriptor the node descriptor
+     * @return a list of lookups, or an empty list if an error occurs
+     */
+    public static List<Lookup> getLookups(NodeDescriptor descriptor) {
+        IArchetypeService service = ServiceHelper.getArchetypeService();
+        try {
+            return LookupHelper.get(service, descriptor);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+        return new ArrayList<Lookup>();
     }
 
     /**

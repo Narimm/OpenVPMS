@@ -24,7 +24,7 @@
  */
 package org.openvpms.web.test;
 
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;

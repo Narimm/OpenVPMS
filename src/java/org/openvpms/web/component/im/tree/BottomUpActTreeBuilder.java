@@ -27,8 +27,8 @@ package org.openvpms.web.component.im.tree;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.Act;
-import org.openvpms.component.business.domain.im.common.ActRelationship;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.SortConstraint;
 

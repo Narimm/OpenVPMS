@@ -28,7 +28,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;

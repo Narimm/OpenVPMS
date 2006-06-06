@@ -18,18 +18,17 @@
 
 package org.openvpms.web.app.customer;
 
-import java.util.List;
+import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.List;
 
 
 /**
@@ -55,7 +54,8 @@ public class EstimationWorkspace extends CustomerActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("customer.estimation.createtype");
-        return new EstimationCRUDWindow(type, "common", "act", "customerEstimation");
+        return new EstimationCRUDWindow(type, "common", "act",
+                                        "customerEstimation");
     }
 
     /**
@@ -66,10 +66,10 @@ public class EstimationWorkspace extends CustomerActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor("act.customerEstimation");
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.customerEstimation");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        ILookupService lookup = ServiceHelper.getLookupService();
-        List<Lookup> lookups = lookup.get(descriptor);
+        List<Lookup> lookups = DescriptorHelper.getLookups(descriptor);
         return new ActQuery(customer, "customer", "participation.customer",
                             "act", "customerEstimation", lookups);
     }

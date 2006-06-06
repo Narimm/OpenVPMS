@@ -79,10 +79,10 @@
                     /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/component/business/domain/im/common/Act.hbm.xml
+                    /org/openvpms/component/business/domain/im/act/Act.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml
+                    /org/openvpms/component/business/domain/im/act/ActRelationship.hbm.xml
                 </value>
                 <value>
                     /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
@@ -137,14 +137,6 @@
     <!--                           DAO DEFINITIONS                        = -->
     <!-- ================================================================== -->
 
-    <!--  The Lookup DAO bean -->
-    <bean id="lookupDao"
-          class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
-        <property name="sessionFactory">
-            <ref local="sessionFactory"/>
-        </property>
-    </bean>
-
     <!--  The IMObject DAO bean -->
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate">
@@ -183,17 +175,6 @@
         <property name="entityInterceptor">
             <ref local="entityInterceptor"/>
         </property>
-    </bean>
-
-    <!--  The Lookup Service -->
-    <bean id="lookupService"
-          class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg index="0">
-            <ref bean="archetypeService"/>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <ref bean="lookupDao"/>
-        </constructor-arg>
     </bean>
 
     <!--  The Audit Service -->

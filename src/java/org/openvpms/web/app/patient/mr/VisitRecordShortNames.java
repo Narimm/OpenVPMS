@@ -22,7 +22,7 @@ import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 
 import org.openvpms.archetype.util.TypeHelper;
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 
 import java.util.ArrayList;
 import java.util.Arrays;

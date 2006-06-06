@@ -30,7 +30,7 @@ import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import echopointng.TabbedPane;
