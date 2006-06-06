@@ -47,7 +47,10 @@ public class LookupHelperException extends OpenVPMSException {
         InvalidTargetValue,
         InvalidLookupAssertion,
         InvalidLookupType,
-        InvalidAssertion
+        InvalidAssertion,
+        LookupRelationshipArchetypeNotDefined,
+        InvalidLookupRelationshipArchetypeDefinition,
+        NoArchetypeRangeInLookupRelationship
     }
 
     /**

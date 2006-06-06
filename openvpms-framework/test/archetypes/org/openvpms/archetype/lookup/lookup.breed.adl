@@ -10,7 +10,17 @@
 			path="/description" hidden="true" derived="true"
 			derivedValue="/value" />
         <node name="target" path="/targetLookupRelationships"
-			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*"/>
+			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="lookupRelationship.speciesBreed" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
         <node name="source" path="/sourceLookupRelationships"
 			type="java.util.HashSet" baseName="sourceLookupRelationship" minCardinality="0" maxCardinality="*"/>
 	</archetype>

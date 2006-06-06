@@ -20,9 +20,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 // commons-lang
 import org.apache.commons.lang.StringUtils;
@@ -36,13 +34,10 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
@@ -349,150 +344,6 @@ public class ArchetypeQueryHelper {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, activeOnly) 
                 .setFirstRow(firstRow)
                 .setNumOfRows(numOfRows);
-        return service.get(query);
-    }
-    
-    /**
-     * Helper method that returns the lookups associated with the specified
-     * archetype short name
-     * 
-     * @param service
-     *            the archetype sevice
-     * @param shortName
-     *            the archetype short name
-     * @param value
-     *            the value of the node                        
-     * @return IPage<Lookup>       
-     * @throws ArchetypeServiceException
-     *            if the request cannot complete     
-     */
-    @SuppressWarnings("unchecked")
-    public static Lookup getLookup(IArchetypeService service, String shortName,
-            String value) {
-        Lookup lookup = null;
-        
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
-            .add(new NodeConstraint("name", value))
-            .setFirstRow(0)
-            .setNumOfRows(1);
-        IPage<IMObject> page = service.get(query);
-        if (page.getTotalNumOfRows() > 0) {
-            lookup = (Lookup)page.getRows().iterator().next();
-        }
-
-        // warn if there is more than one lookup with the same value
-        if (page.getTotalNumOfRows() > 1) {
-            logger.warn("There are " + page.getTotalNumOfRows() + 
-                    "lookups with shortName: " + shortName +
-                    " and value: " + value);
-        }
-        
-        return lookup;
-    }
-    
-    /**
-     * Helper method that returns a specific lookup given a short name and a
-     * value
-     * 
-     * @param service
-     *            the archetype sevice
-     * @param shortName
-     *            the archetype short name
-     * @param value
-     *            the value of the          
-     * @param firstRow
-     *            the first row to retriev
-     * @param numOfRows
-     *            the num of rows to retieve
-     * @return IPage<Lookup>       
-     * @throws ArchetypeServiceException
-     *            if the request cannot complete     
-     */
-    @SuppressWarnings("unchecked")
-    public static List<Lookup> getLookups(IArchetypeService service, String shortName,
-            int firstRow, int numOfRows) {
-        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
-            .setFirstRow(firstRow)
-            .setNumOfRows(numOfRows);
-        
-        return new ArrayList<Lookup>((List)service.get(query).getRows());
-    }
-    
-    /**
-     * Helper method to return a {@link Page} of target {@link Lookup} instances
-     * give a reference source {@link Lookup} 
-     * <p>
-     * Note this will work if the archetype names in your system conform to the 
-     * strcuture indicated below. 
-     * <p>
-     * All lookups have an entity name of 'lookup' and all lookup relationships 
-     * have a short name of 'lookuprel.common'
-     * 
-     * @param service
-     *            a reference to the archetype service
-     * @param lookup
-     *            the source lookup
-     * @param shortName
-     *            the achetype shortName of the target lookups                    
-     * @param firstRow
-     *            the first row to retriev
-     * @param numOfRows
-     *            the num of rows to retieve
-     * @return IPage<Lookup>
-     *            a page of lookup objects
-     * @throws ArchetypeServiceException
-     *            if the request cannot complete                                               
-     */
-    public static IPage<IMObject> getTagetLookups(IArchetypeService service, 
-            Lookup source, String shortName, int firstRow, int numOfRows) {
-        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
-                "lookup.*", false, false))
-            .add(new CollectionNodeConstraint("target", new ArchetypeShortNameConstraint(
-                    "lookuprel.common", false, false))
-                    .add(new ObjectRefNodeConstraint("source", source.getObjectReference())))
-            .add(new NodeSortConstraint("name", true))
-            .setFirstRow(firstRow)
-            .setNumOfRows(numOfRows)
-            .setActiveOnly(true);
-        return service.get(query);
-    }
-
-    /**
-     * Helper class to return a {@link Page} of source {@link Lookup} instances
-     * give a reference target{@link Lookup} 
-     * <p>
-     * Note this will work if the archetype names in your system conform to the 
-     * strcuture indicated below. 
-     * <p>
-     * All lookups have an entity name of 'lookup' and all lookup relationships 
-     * have a short name of 'lookuprel.common'
-     * 
-     * @param service
-     *            a reference to the archetype service
-     * @param lookup
-     *            the target lookup
-     * @param shortName
-     *            the archetypew short name of the source lookups           
-     * @param firstRow
-     *            the first row to retriev
-     * @param numOfRows
-     *            the num of rows to retieve
-     * @return IPage<Lookup>
-     *            a page of lookup objects
-     * @throws ArchetypeServiceException
-     *            if the request cannot complete                                               
-     */
-    public static IPage<IMObject> getSourceLookups(IArchetypeService service, 
-            Lookup target, String shortName, int firstRow, int numOfRows) {
-        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
-                shortName, false, false))
-            .add(new CollectionNodeConstraint("source", new ArchetypeShortNameConstraint(
-                    "lookuprel.common", false, false))
-                    .add(new ObjectRefNodeConstraint("target", target.getObjectReference())))
-            .add(new NodeSortConstraint("name", true))
-            .setFirstRow(firstRow)
-            .setNumOfRows(numOfRows)
-            .setActiveOnly(true);
         return service.get(query);
     }
 }

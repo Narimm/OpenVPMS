@@ -160,14 +160,6 @@
     </property>
   </bean>
 
-  <!--  The Lookup DAO bean -->
-  <bean id="lookupDao"
-    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
-
   <!--  The AuditRecord DAO bean -->
   <bean id="auditDao"
     class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
