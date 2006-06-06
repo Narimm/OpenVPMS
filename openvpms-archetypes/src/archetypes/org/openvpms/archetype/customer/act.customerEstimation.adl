@@ -17,7 +17,7 @@
 -->
 <archetypes>
     <archetype name="openvpms-common-act.customerEstimation.1.0" latest="true"
-               type="org.openvpms.component.business.domain.im.common.Act"
+               type="org.openvpms.component.business.domain.im.act.Act"
                displayName="Estimation">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
               hidden="true" readOnly="true"/>

@@ -3,6 +3,11 @@
          xmlns:maven="jelly:maven"
          xmlns:j="jelly:core">
 
+    <preGoal name="test:test">
+       <attainGoal name="generate-hibernate-properties"/>
+       <copy todir="${maven.test.dest}" file="${maven.hibernate.properties}"/>
+    </preGoal>
+
     <preGoal name="hibernate:schema-export">
         <attainGoal name="generate-hibernate-properties"/>
         <attainGoal name="extract-mapping-files"/>

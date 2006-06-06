@@ -18,7 +18,7 @@
 <archetypes>
 	<archetype name="openvpms-common-actRelationship.customerAccountPaymentItem.1.0"
 		latest="true"
-		type="org.openvpms.component.business.domain.im.common.ActRelationship" displayName="Customer Payment Item Relationship" >
+		type="org.openvpms.component.business.domain.im.act.ActRelationship" displayName="Customer Payment Item Relationship" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"

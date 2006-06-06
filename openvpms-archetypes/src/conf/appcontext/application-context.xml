@@ -92,10 +92,10 @@
           /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
         </value>
         <value>
-          /org/openvpms/component/business/domain/im/common/Act.hbm.xml
+          /org/openvpms/component/business/domain/im/act/Act.hbm.xml
         </value>
         <value>
-          /org/openvpms/component/business/domain/im/common/ActRelationship.hbm.xml
+          /org/openvpms/component/business/domain/im/act/ActRelationship.hbm.xml
         </value>
         <value>
           /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
@@ -157,14 +157,6 @@
     </property>
   </bean>
 
-  <!--  The Lookup DAO bean -->
-  <bean id="lookupDao"
-    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
-
   <!--  The AuditRecord DAO bean -->
   <bean id="auditDao"
     class="org.openvpms.component.business.dao.hibernate.im.audit.AuditDAOHibernate">
@@ -193,17 +185,6 @@
     </property>
   </bean>
 
-  <!--  The Lookup Service -->
-  <bean id="lookupService"
-    class="org.openvpms.component.business.service.lookup.LookupService">
-    <constructor-arg index="0">
-      <ref bean="archetypeService" />
-    </constructor-arg>
-    <constructor-arg index="1">
-      <ref bean="lookupDao" />
-    </constructor-arg>
-  </bean>
-  
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
           class="org.openvpms.component.system.common.jxpath.JXPathHelper">
