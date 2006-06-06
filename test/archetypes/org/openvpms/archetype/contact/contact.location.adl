@@ -11,8 +11,7 @@
 				type="java.lang.String">
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
-					<property name="source" value="lookup.state" />
-					<property name="target" value="lookup.suburb" />
+					<property name="relationship" value="lookupRelationship.stateSuburb" />
 					<property name="value"
 						value="/details/attributes/state" />
 					<errorMessage>An error message</errorMessage>
@@ -22,8 +21,7 @@
 				type="java.lang.String">
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
-					<property name="source" value="lookup.suburb" />
-					<property name="target" value="lookup.postCode" />
+					<property name="relationship" value="lookupRelationship.suburbPostcode" />
 					<property name="value"
 						value="/details/attributes/suburb" />
 					<errorMessage>An error message</errorMessage>
@@ -34,8 +32,7 @@
 				minCardinality="1">
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
-					<property name="source" value="lookup.country" />
-					<property name="target" value="lookup.state" />
+					<property name="relationship" value="lookupRelationship.countryState" />
 					<property name="value"
 						value="/details/attributes/country" />
 					<errorMessage>An error message</errorMessage>

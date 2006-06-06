@@ -239,7 +239,9 @@ public class ArchetypeDescriptorCacheFSTestCase extends BaseTestCase {
                 .get("recordCount2")).intValue());
 
         // test retrieval for anything that starts with person
-        assertTrue(cache.getArchetypeDescriptorsByRmName("lookup").size() == ((Integer) params
-                .get("recordCount3")).intValue());
+        assertTrue("Lookup Records should be " 
+                + cache.getArchetypeDescriptorsByRmName("lookup").size(),
+                cache.getArchetypeDescriptorsByRmName("lookup").size() == ((Integer) params
+                .get("recordCount3")).intValue()); 
     }
 }
