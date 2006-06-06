@@ -18,9 +18,6 @@
 
 package org.openvpms.component.business.service.security;
 
-// acegi security
-import org.acegisecurity.AccessDeniedException;
-
 //log4j
 import org.apache.log4j.Logger;
 
@@ -77,7 +74,11 @@ public abstract class SecurityServiceTests extends
         try {
             archetype.save(person);
             fail("The caller does not have the authority to call IArchetypeService.save");
-        } catch (AccessDeniedException exception) {
+        } catch (OpenVPMSAccessDeniedException exception) {
+            if (exception.getErrorCode() != OpenVPMSAccessDeniedException.ErrorCode.AccessDenied) {
+                fail("Incorrect error code was specified during the exception");
+            }
+            exception.printStackTrace();
             // this is the correct action
         }
     }

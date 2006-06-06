@@ -27,6 +27,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 // openvpms-framework
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -89,7 +90,7 @@ public class LookupServiceTestCase extends
     /**
      * Test that we can create an object through this service
      */
-    public void xtestLookupObjectCreation()
+    public void testLookupObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
             Lookup lookup = (Lookup)service.create("lookup.country");
@@ -124,16 +125,14 @@ public class LookupServiceTestCase extends
                 "lookupRelationship.countryState", cty, state3));
         service.save(cty);
         
-        // retrieve all the lookups
-        List<Lookup> page = LookupHelper.getTagetLookups(service, 
-                cty, new String[] {"lookup.state"}, "lookuprel.common");
+        // retrieve the 
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(cty.getArchetypeId());
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("target");
+        assertTrue(ndesc != null);
+        List<Lookup> page = LookupHelper.getTagetLookups(service, cty, 
+                new String[] {"lookup.state"});
         assertTrue(page.size() == 3);
-
-        // retrueve all the source lookups
-        page = LookupHelper.getSourceLookups(service, state1, new String[]{"lookup.country"}, 
-                "lookuprel.common");
-        assertTrue(page.size() == 1);
-        assertTrue(page.iterator().next().getLinkId().equals(cty.getLinkId()));
     }
     
     /**

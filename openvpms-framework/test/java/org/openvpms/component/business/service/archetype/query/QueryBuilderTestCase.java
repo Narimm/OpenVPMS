@@ -184,7 +184,7 @@ public class QueryBuilderTestCase extends
                             new ArchetypeShortNameConstraint("contact.*", false, false))
                             .add(new ArchetypeSortConstraint(ArchetypeProperty.ConceptName, false)));
         builder.build(query).getQueryString();    
-    }
+    } 
     
     /**
      * Test target lookups
@@ -193,7 +193,7 @@ public class QueryBuilderTestCase extends
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(new ArchetypeLongNameConstraint(
                 null, "lookup", null, false, false))
-            .add(new CollectionNodeConstraint("source"))
+            .add(new CollectionNodeConstraint("target"))
             .add(new NodeSortConstraint("name", true))
             .setFirstRow(0)
             .setNumOfRows(-1);

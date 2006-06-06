@@ -19,8 +19,7 @@
     postCode="3136" />
   <data id="17" archetype="lookup.suburb" suburb="Tecoma" postCode="3160" />
   <data id="18" archetype="lookup.postcode" postCode="3160" />
-  <data archetype="lookup.relationship" source="id:1" target="id:5"
-    type="country.state" />
+  <data archetype="lookupRelationship.countryState" source="id:1" target="id:5"/>
   <data archetype="classification.staff" name="Administrator"
     description="Administrator" />
   <data archetype="classification.staff" name="Manager" description="Manager" />
