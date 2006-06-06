@@ -20,7 +20,7 @@ package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.web.app.subsystem.ShortNames;
 
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**

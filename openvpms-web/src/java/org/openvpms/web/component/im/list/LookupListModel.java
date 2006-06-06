@@ -18,15 +18,21 @@
 
 package org.openvpms.web.component.im.list;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import nextapp.echo2.app.list.AbstractListModel;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.LookupHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import nextapp.echo2.app.list.AbstractListModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -72,10 +78,11 @@ public class LookupListModel extends AbstractListModel {
      */
     private NodeDescriptor _descriptor;
 
+
     /**
-     * The lookup service. May be <code>null</code>.
+     * The logger.
      */
-    private ILookupService _service;
+    private static final Log _log = LogFactory.getLog(LookupListModel.class);
 
 
     /**
@@ -94,13 +101,10 @@ public class LookupListModel extends AbstractListModel {
      *
      * @param object     the source object
      * @param descriptor the lookup node descriptor
-     * @param service    the lookup service
      */
-    public LookupListModel(IMObject object, NodeDescriptor descriptor,
-                           ILookupService service) {
+    public LookupListModel(IMObject object, NodeDescriptor descriptor) {
         _object = object;
         _descriptor = descriptor;
-        _service = service;
         _none = !descriptor.isRequired();
         _lookups = getLookups();
     }
@@ -154,7 +158,15 @@ public class LookupListModel extends AbstractListModel {
      * @return a list of lookups
      */
     protected List<Lookup> getLookups() {
-        return getLookups(_service.get(_descriptor, _object));
+        try {
+            IArchetypeService service = ServiceHelper.getArchetypeService();
+            List<Lookup> lookups = LookupHelper.get(service, _descriptor, 
+                                                    _object);
+            return getLookups(lookups);
+        } catch (OpenVPMSException exception) {
+            _log.error(exception, exception);
+            return new ArrayList<Lookup>();
+        }
     }
 
     /**

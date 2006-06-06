@@ -20,7 +20,7 @@ package org.openvpms.web.app.subsystem;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.*;

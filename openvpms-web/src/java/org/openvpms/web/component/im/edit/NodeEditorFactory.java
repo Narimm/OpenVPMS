@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.edit;
 
-import nextapp.echo2.app.*;
-import nextapp.echo2.app.list.ListModel;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.web.component.bound.BoundPalette;
-import org.openvpms.web.component.edit.*;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.edit.Editors;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertyComponentEditor;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
@@ -36,8 +35,23 @@ import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.palette.Palette;
-import org.openvpms.web.component.util.*;
+import org.openvpms.web.component.util.DateFieldFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.list.ListModel;
 
 import java.text.Format;
 import java.util.List;
@@ -55,11 +69,6 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * Collects the editors created by this factory.
      */
     private Editors _editors;
-
-    /**
-     * The lookup service.
-     */
-    private ILookupService _lookup;
 
     /**
      * Component factory for read-only/derived properties.
@@ -104,7 +113,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 editor = getDateEditor(property);
             } else if (descriptor.isCollection()) {
                 editor = getCollectionEditor((CollectionProperty) property,
-                        context);
+                                             context);
             } else if (descriptor.isObjectReference()) {
                 editor = getObjectReferenceEditor(property);
             }
@@ -145,7 +154,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
     protected IMObjectEditor getObjectEditor(IMObject object,
                                              IMObject context) {
         return IMObjectEditorFactory.create(object, context,
-                getLayoutContext());
+                                            getLayoutContext());
     }
 
     /**
@@ -160,7 +169,7 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         boolean edit = !descriptor.isReadOnly() || descriptor.isDerived();
         Format format = NumberFormatter.getFormat(descriptor, edit);
         TextField text = TextComponentFactory.create(property, maxColumns,
-                format);
+                                                     format);
         if (!edit) {
             Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
             text.setAlignment(align);
@@ -188,8 +197,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a new editor for <code>property</code>
      */
     protected Editor getSelectEditor(Property property, IMObject context) {
-        ListModel model = new LookupListModel(context, property.getDescriptor(),
-                getLookupService());
+        ListModel model = new LookupListModel(context,
+                                              property.getDescriptor());
         SelectField field = SelectFieldFactory.create(property, model);
         field.setCellRenderer(new LookupListCellRenderer());
         return createPropertyEditor(property, field);
@@ -290,18 +299,6 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
             _readOnly = new ReadOnlyComponentFactory(getLayoutContext());
         }
         return _readOnly;
-    }
-
-    /**
-     * Helper to return the lookup service.
-     *
-     * @return the lookup service
-     */
-    private ILookupService getLookupService() {
-        if (_lookup == null) {
-            _lookup = ServiceHelper.getLookupService();
-        }
-        return _lookup;
     }
 
     /**

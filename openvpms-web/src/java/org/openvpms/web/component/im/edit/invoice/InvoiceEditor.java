@@ -20,7 +20,7 @@ package org.openvpms.web.component.im.edit.invoice;
 
 import java.math.BigDecimal;
 
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
@@ -52,10 +52,9 @@ public class InvoiceEditor extends ActEditor {
 
     /**
      * Update totals when an act item changes.
-     *
-     * @todo - workaround for OVPMS-211
      */
     protected void updateTotals() {
+        // @todo - workaround for OVPMS-211
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
         amount.setValue(value);

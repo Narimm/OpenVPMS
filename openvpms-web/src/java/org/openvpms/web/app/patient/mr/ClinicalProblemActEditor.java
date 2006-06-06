@@ -22,7 +22,7 @@ import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.app.Context;
 
-import org.openvpms.component.business.domain.im.common.Act;
+import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
