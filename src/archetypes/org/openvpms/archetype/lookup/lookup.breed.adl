@@ -26,8 +26,8 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="/value" />
-		<node name="species" path="/lookupRelationships"
-			type="java.util.HashSet" baseName="LookupRelationship" minCardinality="0" maxCardinality="1">
+		<node name="target" path="/targetLookupRelationships"
+			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="1">
 			<assertion name="archetypeRange" filter="lookupRelationship.speciesBreed" >
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
