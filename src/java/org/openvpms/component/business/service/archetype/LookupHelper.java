@@ -195,7 +195,7 @@ public class LookupHelper  {
                     Lookup lookup = LookupHelper.getLookup(service, source, srcVal);
                     if (lookup != null) {
                         lookups = LookupHelper.getTagetLookups(service, lookup, 
-                                target, relationship);
+                                target);
                     }
                 } else if (type.equals("sourceLookup")) {
                     // constrained lookup specifying the source
@@ -218,7 +218,7 @@ public class LookupHelper  {
                     Lookup lookup = LookupHelper.getLookup(service, target, tarVal);
                     if (lookup != null) {
                         lookups = LookupHelper.getSourceLookups(service, lookup, 
-                                source, relationship);
+                                source);
                     }
                 } else {
                     // invalid lookup type throw an exception
@@ -373,10 +373,10 @@ public class LookupHelper  {
      * 
      * @param service
      *            a reference to the archetype service
-     * @param lookup
+     * @param source
      *            the source lookup
-     * @param relationship
-     *            the archetype shortName of the relationship                            
+     * @param target
+     *            the archetype shortNames of the target
      * @return List<Lookup>
      *            a list of lookup objects
      * @throws LookupHelperException
@@ -384,7 +384,7 @@ public class LookupHelper  {
      */
     @SuppressWarnings("unchecked")
     public static List<Lookup> getTagetLookups(IArchetypeService service, 
-            Lookup source, String[] target, String relationship) {
+            Lookup source, String[] target) {
         // now we need to look for the relationship archetype
         ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
                 target, false, false))
@@ -408,12 +408,10 @@ public class LookupHelper  {
      * 
      * @param service
      *            a reference to the archetype service
-     * @param lookup
+     * @param target
      *            the target lookup
      * @param source
-     *            the list of source lookups to search against
-     * @param relationship
-     *            the relationship type we are looking for                       
+     *            the list of shortnames for the source
      * @return List<Lookup>
      *            a list of lookup objects
      * @throws ArchetypeServiceException
@@ -421,7 +419,7 @@ public class LookupHelper  {
      */
     @SuppressWarnings("unchecked")
     public static List<Lookup> getSourceLookups(IArchetypeService service, 
-            Lookup target, String[] source, String relationship) {
+            Lookup target, String[] source) {
         ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
                 source, false, false))
             .add(new CollectionNodeConstraint("source", false)

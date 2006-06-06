@@ -580,7 +580,15 @@ public class QueryBuilder {
 
         // push the new type
         if (constraint.getArchetypeConstraint() instanceof ArchetypeConstraint) {
-            context.pushDistinctTypes(getDistinctTypes(ndesc.getArchetypeRange(),
+            String[] shortNames = ndesc.getArchetypeRange();
+            if ((shortNames == null) ||
+                (shortNames.length == 0)) {
+                throw new QueryBuilderException(
+                        QueryBuilderException.ErrorCode.NoArchetypeRangeAssertion,
+                        new Object[] {types.descriptors.iterator().next().getType().getShortName(),
+                              ndesc.getName()});  
+            }
+            context.pushDistinctTypes(getDistinctTypes(shortNames,
                     constraint.getArchetypeConstraint().isPrimaryOnly()),
                     getProperty(ndesc), constraint.getJoinType());
         } else {

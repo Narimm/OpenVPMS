@@ -222,7 +222,7 @@
 
   <!--  Configure the security advisor -->
   <bean id='securityAdvisor'
-    class='org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor'>
+    class='org.openvpms.component.business.service.security.OpenVPMSMethodSecurityInterceptor'>
     <property name='authenticationManager' ref='authenticationManager' />
     <property name='accessDecisionManager' ref='accessDecisionManager' />
     <property name='objectDefinitionSource'>

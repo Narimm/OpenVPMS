@@ -17,7 +17,7 @@
  */
 
 
-package org.openvpms.component.business.service.archetype.query;
+package org.openvpms.component.business.service.security;
 
 // commons-resources
 import org.apache.commons.resources.Messages;
@@ -26,12 +26,12 @@ import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
- * This exception is thrown by the query builders 
+ * This exception is thrown if there is a security exception
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class QueryBuilderException extends OpenVPMSException {
+public class OpenVPMSAccessDeniedException extends OpenVPMSException {
 
     /**
      * Generated SUID 
@@ -42,25 +42,7 @@ public class QueryBuilderException extends OpenVPMSException {
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        NullQuery,
-        InvalidShortName,
-        NoShortNamesSpeified,
-        InvalidLongNameSpecified,
-        MustSpecifyNodeName,
-        NoNodeDescriptorForName,
-        OperatorNotSupported,
-        CanOnlySortOnTopLevelNodes,
-        CannotQueryAcrossTypes,
-        NoNodeDescWithName,
-        NodeDescriptorsDoNotMatch,
-        ConstraintTypeNotSupported,
-        NoArchetypesForId,
-        InvalidObjectReferenceConstraint,
-        NoMatchingArchetypesForId,
-        NoMatchingArchetypesForShortName,
-        NoMatchingArchetypesForLongName    ,
-        MustSpecifyArchetypeProperty,
-        NoArchetypeRangeAssertion
+        AccessDenied
     }
 
     /**
@@ -73,7 +55,7 @@ public class QueryBuilderException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.archetype.query."
+            .getMessages("org.openvpms.component.business.service.security."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -83,7 +65,7 @@ public class QueryBuilderException extends OpenVPMSException {
      * @param errorCode
      *            the error code
      */
-    public QueryBuilderException(ErrorCode errorCode) {
+    public OpenVPMSAccessDeniedException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -98,7 +80,7 @@ public class QueryBuilderException extends OpenVPMSException {
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public QueryBuilderException(ErrorCode errorCode, Object[] params) {
+    public OpenVPMSAccessDeniedException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -112,7 +94,7 @@ public class QueryBuilderException extends OpenVPMSException {
      * @param cause
      *            the root exception
      */
-    public QueryBuilderException(ErrorCode errorCode, Throwable cause) {
+    public OpenVPMSAccessDeniedException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -129,7 +111,7 @@ public class QueryBuilderException extends OpenVPMSException {
      * @param cause
      *            the root exception
      */
-    public QueryBuilderException(ErrorCode errorCode, Object[] params,
+    public OpenVPMSAccessDeniedException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

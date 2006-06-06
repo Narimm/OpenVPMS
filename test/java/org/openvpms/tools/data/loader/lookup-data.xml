@@ -18,21 +18,21 @@
 <archetype>
 	<data id="CTY1" archetype="lookup.country" country="Australia" isoCode="AU"/>
 	<data id="ST1" archetype="lookup.state" state="Victoria" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST1" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST1" />
 	<data id="ST2" archetype="lookup.state" state="New South Wales" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST2" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST2" />
 	<data id="ST3" archetype="lookup.state" state="Western Australia" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST3" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST3" />
 	<data id="ST4" archetype="lookup.state" state="South Australia" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST4" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST4" />
 	<data id="ST5" archetype="lookup.state" state="Northern Territory" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST5" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST5" />
 	<data id="ST6" archetype="lookup.state" state="Tasmania" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST6" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data id="ST7" archetype="lookup.state" state="Australian Capital Territory" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST7" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data id="ST8" archetype="lookup.state" state="Queensland" />
-    <data archetype="lookuprel.common" source="id:CTY1" target="id:ST8" />
+    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
     <data id="Canine" archetype="lookup.species" species="Canine" />
 	<data id="Feline" archetype="lookup.species" species="Feline" />
 	<data id="Equine" archetype="lookup.species" species="Equine" />
@@ -49,25 +49,25 @@
 	<data id="Camilid" archetype="lookup.species" species="Camilid" />
 	<data id="Other" archetype="lookup.species" species="Other" />
 	<data id="B1" archetype="lookup.breed" breed="Abyssinian"  />
-	<data archetype="lookuprel.common" source="id:Feline" target="id:B1"  />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B1"  />
 	<data id="B2" archetype="lookup.breed" breed="Affenpinscher"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B2"   />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B2"   />
 	<data id="B3" archetype="lookup.breed" breed="Afghan Hound"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B3"  />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B3"  />
 	<data id="B4" archetype="lookup.breed" breed="Airedale Terrier"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B4"  />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B4"  />
 	<data id="B5" archetype="lookup.breed" breed="Akita"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B5"  />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B5"  />
 	<data id="B6" archetype="lookup.breed" breed="Alaskan Malamute"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B6"   />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B6"   />
 	<data id="B7" archetype="lookup.breed" breed="American Staffordshire Terrier"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B7"  />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B7"  />
 	<data id="B8" archetype="lookup.breed" breed="Anatolian Shepherd Dog"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B8"   />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B8"   />
 	<data id="B9" archetype="lookup.breed" breed="Arab"  />
-	<data archetype="lookuprel.common" source="id:Equine" target="id:B9"   />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Equine" target="id:B9"   />
 	<data id="B10" archetype="lookup.breed" breed="Australian Terrier"  />
-	<data archetype="lookuprel.common" source="id:Canine" target="id:B10"   />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B10"   />
 	<data id="B11" archetype="lookup.breed" breed="Balinese"  />
-	<data archetype="lookuprel.common" source="id:Feline" target="id:B11"  />
+	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B11"  />
 </archetype>
