@@ -33,7 +33,7 @@ public class LookupWorkspace extends CRUDWorkspace {
      * Construct a new <code>ClassificationWorkspace</code>.
      */
     public LookupWorkspace() {
-        super("admin", "lookup", "lookup", null, null);
+        super("admin", "lookup", "lookup", "lookup", null);
     }
 
 }
