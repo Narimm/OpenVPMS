@@ -25,7 +25,7 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="lookup.group" />
+							value="lookup.uomGroup" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
