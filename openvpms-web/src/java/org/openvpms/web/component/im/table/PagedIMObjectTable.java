@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.Column;
-
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.TableNavigator;
+
+import nextapp.echo2.app.Column;
 
 
 /**
@@ -59,7 +59,7 @@ public class PagedIMObjectTable extends Column {
      * Construct a new <code>PagedIMObjectTable</code>.
      *
      * @param model the model to render results
-     * @param set the result set
+     * @param set   the result set
      */
     public PagedIMObjectTable(IMObjectTableModel model, ResultSet set) {
         this(model);
@@ -75,7 +75,7 @@ public class PagedIMObjectTable extends Column {
         PagedIMObjectTableModel model
                 = (PagedIMObjectTableModel) _table.getModel();
         model.setResultSet(set);
-        if (model.getPages() > 1) {
+        if (set.hasNext() && set.getPages() > 1) {
             if (_navigator == null) {
                 _navigator = new TableNavigator(_table);
                 _navigator.setFocusTraversalIndex(
