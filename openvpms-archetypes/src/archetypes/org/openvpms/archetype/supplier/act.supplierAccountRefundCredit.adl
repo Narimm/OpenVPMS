@@ -33,7 +33,7 @@
 				minCardinality="1" maxLength="30">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="creditcard" />
+					<property name="source" value="lookup.creditcard" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

@@ -34,8 +34,9 @@
 			<node name="units" path="/details/attributes/units" type="java.lang.String"
 				minCardinality="1" maxLength="30">
 				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="concept" value="weightUom" />
+					<property name="type" value="targetLookup" />
+					<property name="relationship" value="lookupRelationship.uomGroup" />
+					<property name="value" value="'Weight'" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

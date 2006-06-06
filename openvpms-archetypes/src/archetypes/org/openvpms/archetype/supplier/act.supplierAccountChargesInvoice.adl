@@ -41,7 +41,7 @@
 			minCardinality="1">
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
-				<property name="concept" value="chargeStatus" />
+				<property name="source" value="lookup.chargeStatus" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>

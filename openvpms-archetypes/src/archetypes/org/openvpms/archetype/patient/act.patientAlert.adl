@@ -34,7 +34,7 @@
 				minCardinality="1" maxLength="15">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="alertType" />
+					<property name="source" value="lookup.alertType" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

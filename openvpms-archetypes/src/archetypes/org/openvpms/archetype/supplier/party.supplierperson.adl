@@ -49,7 +49,7 @@
 				minCardinality="1" maxLength="15" defaultValue="'Normal'">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="supplierAccountType" />
+					<property name="source" value="lookup.supplierAccountType" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
