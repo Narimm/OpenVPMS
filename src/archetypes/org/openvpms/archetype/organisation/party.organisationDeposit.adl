@@ -28,7 +28,7 @@
 			<node name="bank" path="/details/attributes/bank" type="java.lang.String" minCardinality="1">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="bank" />
+					<property name="source" value="lookup.bank" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

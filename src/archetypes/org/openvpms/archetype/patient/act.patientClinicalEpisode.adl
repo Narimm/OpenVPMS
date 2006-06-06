@@ -35,7 +35,7 @@
 		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
-				<property name="concept" value="episodeStatus" />
+				<property name="source" value="lookup.episodeStatus" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>

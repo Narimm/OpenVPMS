@@ -28,16 +28,15 @@
 				defaultValue="'Australia'" >
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="country" />
+					<property name="source" value="lookup.country" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>			
 			<node name="state" path="/details/attributes/state"	type="java.lang.String" minCardinality="0">
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
-					<property name="concept" value="country.state" />
-					<property name="source"
-						value="/details/attributes/country" />
+					<property name="relationship" value="lookupRelationship.countryState" />
+					<property name="value" value="/details/attributes/country" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

@@ -32,15 +32,15 @@
 				minCardinality="1" maxLength="15">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="species" />
+					<property name="source" value="lookup.species" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="breed" path="/details/attributes/breed" type="java.lang.String" maxLength="30" >
 				<assertion name="lookup">
 					<property name="type" value="targetLookup" />
-					<property name="concept" value="species.breed" />
-					<property name="source" value="/details/attributes/species" />
+					<property name="relationship" value="lookupRelationship.speciesBreed" />
+					<property name="value" value="/details/attributes/species" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
@@ -49,9 +49,9 @@
 			<node name="sex" path="/details/attributes/sex" type="java.lang.String">
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="male" value="male" />
-						<property name="female" value="female" />
-						<property name="unspecified" value="unspecified" />
+						<property name="Male" value="Male" />
+						<property name="Female" value="Female" />
+						<property name="Unspecified" value="Unspecified" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

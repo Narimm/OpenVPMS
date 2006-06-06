@@ -33,7 +33,7 @@
 				minCardinality="1" maxLength="15" >
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
-					<property name="concept" value="species" />
+					<property name="source" value="lookup.species" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
