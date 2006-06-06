@@ -20,13 +20,16 @@
 	<goal name="lookup:load" description="Load the Lookup Data from File">
     	<attainGoal name="java:compile"/>
 	    <attainGoal name="java:jar-resources"/>
+	    <attainGoal name="test:test-resources"/>
 		<ant:java
-        	classname="org.openvpms.tools.lookup.loader.LookupLoader"
+        	classname="org.openvpms.tools.data.loader.StaxArchetypeDataLoader"
 	        failonerror="true"
+	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
            		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
+           		<ant:pathelement path="${maven.build.dir}/test-classes"/>
             </ant:classpath>
         	<arg line="${openvpms.lookup.loader.cmdline}"/>
     	</ant:java>	

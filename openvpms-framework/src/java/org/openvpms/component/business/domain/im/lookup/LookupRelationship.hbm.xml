@@ -56,7 +56,7 @@
           column="target_archetype_id" />
       </component>
       <property name="linkId" access="field" type="string" length="100"
-        column="target_linkId" />
+        column="target_linkId" index="lookup_relationship_target_linkId_idx"/>
     </component>
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

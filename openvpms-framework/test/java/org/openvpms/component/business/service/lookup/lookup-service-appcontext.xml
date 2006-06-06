@@ -143,23 +143,4 @@
     </property>
   </bean>
 
-  <!--  The Lookup DAO bean -->
-  <bean id="lookupDao"
-    class="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDAOHibernate">
-    <property name="sessionFactory">
-      <ref local="sessionFactory" />
-    </property>
-  </bean>
-
-  <!--  The Lookup Service -->
-  <bean id="lookupService"
-    class="org.openvpms.component.business.service.lookup.LookupService">
-    <constructor-arg index="0">
-      <ref bean="archetypeService" />
-    </constructor-arg>
-    <constructor-arg index="1">
-      <ref bean="lookupDao" />
-    </constructor-arg>
-  </bean>
-
 </beans>

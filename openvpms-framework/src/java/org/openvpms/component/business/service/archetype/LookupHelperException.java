@@ -16,40 +16,38 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.dao.im.lookup;
+package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 /**
+ * This exception is the base service exception for the 
+ * {@link LookupHelper} service. 
  * 
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class LookupDAOException extends OpenVPMSException {
+public class LookupHelperException extends OpenVPMSException {
 
     /**
-     * Generated SUID.
+     * Generated SUID
      */
-    private static final long serialVersionUID = 1403478672254798421L;
+    private static final long serialVersionUID = 2702065851372889620L;
 
     /**
-     * An enumeration of error codes.
+     * An enumeration of error codes
      */
     public enum ErrorCode {
-        FailedToInitializeService,
-        FailedToInsertLookup, 
-        FailedToInsertLookupRelationship,
-        FailedToDeleteLookup, 
-        FailedToDeleteLookupRelationship,
-        FailedToUpdateLookup, 
-        FailedToFindLookups,
-        FailedToSaveLookup, 
-        FailedToGetLookupsByConcept,
-        FailedToGetSourceLookups,
-        FailedToGetTargetLookups,
-        InvalidRelationshipType,
-        FailedToLocateLookup
+        SourceNotSpecified,
+        TypeNotSpecified,
+        InvalidTargetLookupSpec,
+        InvalidSourceLookupSpec,
+        InvalidSourceValue,
+        InvalidTargetValue,
+        InvalidLookupAssertion,
+        InvalidLookupType,
+        InvalidAssertion
     }
 
     /**
@@ -62,7 +60,7 @@ public class LookupDAOException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.dao.im.lookup."
+            .getMessages("org.openvpms.component.business.service.archetype."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -72,7 +70,7 @@ public class LookupDAOException extends OpenVPMSException {
      * @param errorCode
      *            the error code
      */
-    public LookupDAOException(ErrorCode errorCode) {
+    public LookupHelperException(ErrorCode errorCode) {
         super(messages.getMessage(errorCode.toString()));
         this.errorCode = errorCode;
     }
@@ -87,7 +85,7 @@ public class LookupDAOException extends OpenVPMSException {
      *            the parameters used to render the message associated with the
      *            error code
      */
-    public LookupDAOException(ErrorCode errorCode, Object[] params) {
+    public LookupHelperException(ErrorCode errorCode, Object[] params) {
         super(messages.getMessage(errorCode.toString(), params));
         this.errorCode = errorCode;
     }
@@ -101,7 +99,7 @@ public class LookupDAOException extends OpenVPMSException {
      * @param cause
      *            the root exception
      */
-    public LookupDAOException(ErrorCode errorCode, Throwable cause) {
+    public LookupHelperException(ErrorCode errorCode, Throwable cause) {
         super(messages.getMessage(errorCode.toString()), cause);
         this.errorCode = errorCode;
     }
@@ -118,7 +116,7 @@ public class LookupDAOException extends OpenVPMSException {
      * @param cause
      *            the root exception
      */
-    public LookupDAOException(ErrorCode errorCode, Object[] params,
+    public LookupHelperException(ErrorCode errorCode, Object[] params,
             Throwable cause) {
         super(messages.getMessage(errorCode.toString(), params), cause);
         this.errorCode = errorCode;

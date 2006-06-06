@@ -118,6 +118,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     @SuppressWarnings("unchecked")
     public IPage<IMObject> get(String queryString, Map<String, Object> valueMap, int firstRow, int numOfRows) {
         try {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Query String: " + queryString.toString() +
+                        "Parameters: " + valueMap.toString());
+                
+            }
+             
             return executeQuery(queryString, new ArrayList<String>(valueMap.keySet()), 
                     new ArrayList<Object>(valueMap.values()), firstRow, numOfRows, 
                     new Page<IMObject>());
