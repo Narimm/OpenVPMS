@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.LookupHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 
@@ -52,14 +53,9 @@ public class LookupServiceTestCase extends
     
     
     /**
-     * Holds a reference to the lookup service
-     */
-    private LookupService lookupService;
-    
-    /**
      * Holds a reference to the archetype service
      */
-    private ArchetypeService archetypeService;
+    private ArchetypeService service;
     
 
     public static void main(String[] args) {
@@ -73,17 +69,10 @@ public class LookupServiceTestCase extends
     }
 
     /**
-     * @param partyService The lookupService to set.
-     */
-    public void setLookupService(LookupService lookupService) {
-        this.lookupService = lookupService;
-    }
-
-    /**
      * @param archetypeService The archetypeService to set.
      */
     public void setArchetypeService(ArchetypeService archetypeService) {
-        this.archetypeService = archetypeService;
+        this.service = archetypeService;
     }
 
     /*
@@ -104,7 +93,7 @@ public class LookupServiceTestCase extends
     public void testLookupObjectCreation()
     throws Exception {
         for (int index = 0; index < 5; index++) {
-            Lookup lookup = lookupService.create("lookup.country");
+            Lookup lookup = (Lookup)service.create("lookup.country");
             assertTrue(lookup != null);
             
             // set to meet the archetype requirements
@@ -112,7 +101,7 @@ public class LookupServiceTestCase extends
             lookup.setCode("AU-" + index);
             
             // insert the lookup object
-            lookupService.insert(lookup);
+            service.save(lookup);
         }
     }
 
@@ -123,23 +112,24 @@ public class LookupServiceTestCase extends
         // create the country and states and relationships
         Lookup cty = createCountryLookup("Australia");
         Lookup state1 = createStateLookup("Victoria");
-        archetypeService.save(state1);
+        service.save(state1);
         Lookup state2 = createStateLookup("NSW");
-        archetypeService.save(state2);
+        service.save(state2);
         Lookup state3 = createStateLookup("Tasmania");
-        archetypeService.save(state3);
+        service.save(state3);
         cty.addLookupRelationship(createLookupRelationship(cty, state1));
         cty.addLookupRelationship(createLookupRelationship(cty, state2));
         cty.addLookupRelationship(createLookupRelationship(cty, state3));
-        archetypeService.save(cty);
+        service.save(cty);
         
         // retrieve all the lookups
-        IPage<IMObject> page = ArchetypeQueryHelper.getTagetLookups(archetypeService, 
-                cty, 0, -1);
+        IPage<IMObject> page = ArchetypeQueryHelper.getTagetLookups(service, 
+                cty, "lookup.state", 0, -1);
         assertTrue(page.getRows().size() == 3);
 
         // retrueve all the source lookups
-        page = ArchetypeQueryHelper.getsourceLookups(archetypeService, state1, 0, 1);
+        page = ArchetypeQueryHelper.getSourceLookups(service, state1, 
+                "lookup.country", 0, 1);
         assertTrue(page.getTotalNumOfRows() == 1);
         assertTrue(page.getRows().iterator().next().getLinkId().equals(cty.getLinkId()));
     }
@@ -149,11 +139,10 @@ public class LookupServiceTestCase extends
      */
     public void testLookupRetrievalFromNodeDescriptor()
     throws Exception {
-        ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("person.person");
+        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor("person.person");
         assertTrue(descriptor.getNodeDescriptor("title") != null);
         assertTrue(descriptor.getNodeDescriptor("title").isLookup());
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("title")).size() == 7);
+        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("title")).size() == 7);
     }
     
     /**
@@ -162,11 +151,10 @@ public class LookupServiceTestCase extends
      */
     public void testDatabaseLookupRetrievalFromNodeDescriptor()
     throws Exception {
-        ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("contact.location");
+        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor("contact.location");
         assertTrue(descriptor.getNodeDescriptor("country") != null);
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("country")).size() > 0);
+        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("country")).size() > 0);
     }
     
     /**
@@ -174,11 +162,10 @@ public class LookupServiceTestCase extends
      */
     public void testDatabaseLookupRetrievalFromNodeDescriptor2()
     throws Exception {
-        ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("contact.location");
+        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor("contact.location");
         assertTrue(descriptor.getNodeDescriptor("country") != null);
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("country"), null).size() > 0);
+        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("country"), null).size() > 0);
     }
     
     /**
@@ -187,14 +174,12 @@ public class LookupServiceTestCase extends
      */
     public void testConstrainedLookupRetrievalFromNodeDescriptor()
     throws Exception {
-        ArchetypeDescriptor descriptor = archetypeService
-            .getArchetypeDescriptor("contact.location");
-        Contact contact = (Contact)archetypeService.create(
-            descriptor.getType());
+        ArchetypeDescriptor descriptor = service.getArchetypeDescriptor("contact.location");
+        Contact contact = (Contact)service.create(descriptor.getType());
         contact.getDetails().setAttribute("country", "Australia");
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), contact).size() > 0);
+        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("state"), contact).size() > 0);
         contact.getDetails().setAttribute("country", "Tasmania");
-        assertTrue(lookupService.get(descriptor.getNodeDescriptor("state"), contact).size() == 0);
+        assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("state"), contact).size() == 0);
     }
     
     /**
@@ -206,7 +191,7 @@ public class LookupServiceTestCase extends
                 new String[]{"lookuprel.common"}, true, true)
                 .setFirstRow(0)
                 .setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        List<IMObject> objects = archetypeService.get(query).getRows();
+        List<IMObject> objects = service.get(query).getRows();
         assertTrue(objects != null);
     }
     
@@ -221,9 +206,7 @@ public class LookupServiceTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
         
-        this.lookupService = (LookupService)applicationContext.getBean(
-            "lookupService");
-        this.archetypeService = (ArchetypeService)applicationContext.getBean(
+        this.service = (ArchetypeService)applicationContext.getBean(
             "archetypeService");
     }
 
@@ -235,7 +218,7 @@ public class LookupServiceTestCase extends
      * @return Lookup
      */
     private Lookup createCountryLookup(String name) {
-        Lookup country = (Lookup)archetypeService.create("lookup.country");
+        Lookup country = (Lookup)service.create("lookup.country");
         country.setValue(name);
         
         return country;
@@ -249,7 +232,7 @@ public class LookupServiceTestCase extends
      * @return Lookup            
      */
     private Lookup createStateLookup(String name) {
-        Lookup state = (Lookup)archetypeService.create("lookup.state");
+        Lookup state = (Lookup)service.create("lookup.state");
         state.setValue(name);
         
         return state;
@@ -265,7 +248,7 @@ public class LookupServiceTestCase extends
      * @return LookupRelationship                        
      */
      private LookupRelationship createLookupRelationship(Lookup source, Lookup target) {
-         LookupRelationship rel = (LookupRelationship)archetypeService.create("lookuprel.common");
+         LookupRelationship rel = (LookupRelationship)service.create("lookuprel.common");
          rel.setSource(source.getObjectReference());
          rel.setTarget(target.getObjectReference());
          

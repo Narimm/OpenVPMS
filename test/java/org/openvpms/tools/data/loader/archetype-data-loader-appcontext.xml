@@ -125,9 +125,6 @@
           /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
         </value>
         <value>
-          /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
-        </value>
-        <value>
           /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
         </value>
         <value>
@@ -199,17 +196,6 @@
     </property>
   </bean>
 
-  <!--  The Lookup Service -->
-  <bean id="lookupService"
-    class="org.openvpms.component.business.service.lookup.LookupService">
-    <constructor-arg index="0">
-      <ref bean="archetypeService" />
-    </constructor-arg>
-    <constructor-arg index="1">
-      <ref bean="lookupDao" />
-    </constructor-arg>
-  </bean>
-  
   <!--  The JXPathHelper class, which allows the user to register JXPath extension functions -->
   <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
     <constructor-arg index="0">
