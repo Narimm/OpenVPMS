@@ -22,6 +22,7 @@ package org.openvpms.component.business.service.security;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 /**
  * This class overrides the {@link org.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor}
@@ -51,7 +52,7 @@ public class OpenVPMSMethodSecurityInterceptor extends
             throw new OpenVPMSAccessDeniedException(
                     OpenVPMSAccessDeniedException.ErrorCode.AccessDenied,
                     new Object[] {mi.getMethod().getName(), 
-                            mi.getThis().getClass().getName()}, exception);
+                            ((IMObject)mi.getArguments()[0]).getArchetypeId().getShortName()}, exception);
         }
     }
 
