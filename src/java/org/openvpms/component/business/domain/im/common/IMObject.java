@@ -191,8 +191,8 @@ public class IMObject implements Serializable, Cloneable {
         
         IMObject rhs = (IMObject)obj;
         return new EqualsBuilder()
-            .append(linkId, rhs.linkId)
-            .append(archetypeId, rhs.archetypeId)
+            .append(getLinkId(), rhs.getLinkId())
+            .append(getArchetypeId(), rhs.getArchetypeId())
             .isEquals();
     }
 
