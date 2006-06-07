@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype;
 // spring-context
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -115,6 +116,53 @@ public class ArchetypeServiceClassificationTestCase extends
         
     }
     
+    public void testClassificationEquals() {
+        // create a classification and save
+        String name = "randompurpose" + new Random().nextInt();
+        Classification purpose = createContactPurpose(name);
+        service.save(purpose);
+
+        // reload the classification and verify equals == true
+        String[] shortNames = {"classification.contactPurpose"};
+        List<IMObject> class1 = ArchetypeQueryHelper.get(service, shortNames,
+                                 true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+        IMObject purpose2 = get(name, class1);
+        assertNotNull(purpose2);
+        assertEquals(purpose, purpose2);
+    }
+
+    public void testOBF58() {
+         // create a purpose & save
+        String name = "randompurpose" + new Random().nextInt();
+        Classification purpose = createContactPurpose(name);
+        service.save(purpose);
+
+        // reload the purpose
+        String[] shortNames = {"classification.contactPurpose"};
+        List<IMObject> purposes = ArchetypeQueryHelper.get(service, shortNames,
+                                 true, 0, ArchetypeQuery.ALL_ROWS).getRows();
+        purpose = (Classification) get(name, purposes);
+        assertNotNull(purpose);
+
+        Contact contact = createPhoneContact("03", "9763434");
+
+        // add the purpose
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("contact.phoneNumber");
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("purposes");
+        ndesc.addChildToCollection(contact, purpose);
+
+        // save the contact and reload
+        service.save(contact);
+        contact = (Contact) ArchetypeQueryHelper.getByObjectReference(service,
+                contact.getObjectReference());
+        assertTrue(contact != null);
+
+        // get the purpose from the contact and verify it equals the original
+        IMObject purpose2 = get(name, ndesc.getChildren(contact));
+        assertNotNull(purpose2);
+        assertEquals(purpose, purpose2);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -169,5 +217,21 @@ public class ArchetypeServiceClassificationTestCase extends
         classification.setName(purpose);
         
         return classification;
+    }
+    
+    /**
+     * Returns an object by name.
+     *
+     * @param name the name
+     * @param objects the objects
+     * @return the matching object or null
+     */
+    protected IMObject get(String name, List<IMObject> objects) {
+        for (IMObject object : objects) {
+            if (object.getName().equals(name)) {
+                return object;
+            }
+        }
+        return null;
     }
 }
