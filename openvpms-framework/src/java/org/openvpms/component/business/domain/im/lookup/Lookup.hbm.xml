@@ -53,13 +53,13 @@
       type="boolean" />
     <property name="details" access="property" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
-    <set name="sourceLookupRelationships" access="property" lazy="false"
+    <set name="sourceLookupRelationships" access="property" lazy="true"
       cascade="all,delete-orphan" inverse="true">
       <key column="source_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
         class="org.openvpms.component.business.domain.im.lookup.LookupRelationship" />
     </set>
-    <set name="targetLookupRelationships" access="property" lazy="false"
+    <set name="targetLookupRelationships" access="property" lazy="true"
       cascade="all,delete-orphan" inverse="true">
       <key column="target_linkId" not-null="true" property-ref="linkId" />
       <one-to-many
