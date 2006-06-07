@@ -163,7 +163,10 @@ public class PagedIMObjectTableModel
      * @return the total number of pages
      */
     public int getPages() {
-        return _set.getPages();
+        if (_set.getPage(_page) != null) {
+            return _set.getPages();
+        }
+        return 0;
     }
 
     /**
@@ -182,7 +185,10 @@ public class PagedIMObjectTableModel
      * @return the total number of rows
      */
     public int getRows() {
-        return _set.getRows();
+        if (_set.getPage(_page) != null) {
+            return _set.getRows();
+        }
+        return 0;
     }
 
     /**
