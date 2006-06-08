@@ -110,13 +110,7 @@
           class="org.acegisecurity.AuthenticationTrustResolverImpl"/>
 
     <bean id="authenticationProcessingFilterEntryPoint"
-          class="org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint">
-        <property name="loginFormUrl">
-            <value>/login</value>
-        </property>
-        <property name="forceHttps">
-            <value>false</value>
-        </property>
+          class="org.openvpms.web.servlet.EchoAuthenticationEntryPoint">
     </bean>
 
     <!-- ================================================================== -->
