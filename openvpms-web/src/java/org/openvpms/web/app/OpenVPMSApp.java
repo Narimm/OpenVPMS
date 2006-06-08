@@ -18,15 +18,22 @@
 
 package org.openvpms.web.app;
 
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.resource.util.Styles;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Window;
+import nextapp.echo2.webcontainer.ContainerContext;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
+import nextapp.echo2.webrender.ClientConfiguration;
+import nextapp.echo2.webrender.Connection;
+import nextapp.echo2.webrender.WebRenderServlet;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.ContextApplicationInstance;
-import org.openvpms.web.resource.util.Styles;
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -54,6 +61,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      * @return the default window of the application
      */
     public Window init() {
+        configureSessionExpirationURL();
         setStyleSheet(Styles.DEFAULT_STYLE_SHEET);
         _window = new Window();
         _window.setTitle("OpenVPMS");
@@ -117,5 +125,26 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     protected void setContextChangeListener(ContextChangeListener listener) {
         _listener = listener;
+    }
+
+    /**
+     * Configures the client to redirect to the login page when the session
+     * expires.
+     */
+    private void configureSessionExpirationURL() {
+        ContainerContext context = (ContainerContext) getContextProperty(
+                ContainerContext.CONTEXT_PROPERTY_NAME);
+        Connection connection = WebRenderServlet.getActiveConnection();
+        if (context != null && connection != null) {
+            HttpServletRequest request = connection.getRequest();
+            StringBuffer uri = request.getRequestURL();
+            String baseUri = uri.substring(0, uri.lastIndexOf("/"));
+            String loginUri = baseUri + "/login";
+            ClientConfiguration config = new ClientConfiguration();
+            config.setProperty(
+                    ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI,
+                    loginUri);
+            context.setClientConfiguration(config);
+        }
     }
 }

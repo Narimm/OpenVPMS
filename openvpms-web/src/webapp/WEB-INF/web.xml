@@ -42,22 +42,26 @@
      - to access it anywhere in the web application, outside of the framework.
      -->
     <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
     <!--	Setup a listener to connect spring with log4j -->
     <listener>
-        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+        <listener-class>
+            org.springframework.web.util.Log4jConfigListener</listener-class>
     </listener>
 
     <!--  Setup ACEGI to subscribe to http session events in the web context -->
     <listener>
-        <listener-class>org.acegisecurity.ui.session.HttpSessionEventPublisher</listener-class>
+        <listener-class>
+            org.acegisecurity.ui.session.HttpSessionEventPublisher</listener-class>
     </listener>
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>
+            org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>loginApp</param-value>
@@ -66,7 +70,8 @@
 
     <servlet>
         <servlet-name>AppServlet</servlet-name>
-        <servlet-class>org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
+        <servlet-class>
+            org.openvpms.web.servlet.SpringWebContainerServlet</servlet-class>
         <init-param>
             <param-name>app-name</param-name>
             <param-value>openVPMSApp</param-value>
@@ -93,4 +98,8 @@
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
 
+    <session-config>
+        <session-timeout>120</session-timeout>
+        <!-- 2 hours -->
+    </session-config>
 </web-app>
