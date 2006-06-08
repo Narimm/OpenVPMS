@@ -22,7 +22,7 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
 
 /**
- * User workspace.
+ * Lookup workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -30,7 +30,7 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class LookupWorkspace extends CRUDWorkspace {
 
     /**
-     * Construct a new <code>ClassificationWorkspace</code>.
+     * Construct a new <code>LookupWorkspace</code>.
      */
     public LookupWorkspace() {
         super("admin", "lookup", "lookup", "lookup", null);
