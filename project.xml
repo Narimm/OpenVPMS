@@ -460,7 +460,7 @@
     <dependency>
       <groupId>org.openvpms</groupId>
       <artifactId>openvpms-framework</artifactId>
-      <version>0.7-SNAPSHOT</version>
+      <version>0.7</version>
       <url>http://www.openvpms.org</url>
     </dependency>
   </dependencies>
