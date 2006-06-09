@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.util;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
 /**
  * Abstract implementation of the {@link IMObjectCopyHandler} interface.
@@ -75,8 +76,8 @@ public abstract class AbstractIMObjectCopyHandler
      *         <code>false</code>
      */
     protected boolean isCopyable(NodeDescriptor node, boolean source) {
-        boolean result = true;
-        if (!source) {
+        boolean result = !node.getClazz().equals(DynamicAttributeMap.class);
+        if (result && !source) {
             result = (!node.isReadOnly() && !node.isDerived());
         }
         return result;
