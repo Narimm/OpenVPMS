@@ -27,7 +27,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat (/value, ' ', /code)" />
-		<node name="target" path="/targetLookupRelationships"
+		<!-- node name="target" path="/targetLookupRelationships"
 			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange" filter="lookupRelationship.countryState" >
 				<propertyList name="archetypes">
@@ -38,6 +38,6 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
-		</node>
+		</node-->
 	</archetype>
 </archetypes>
