@@ -32,12 +32,14 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="weight" path="/details/attributes/weight" type="java.math.BigDecimal" defaultValue="0.0"/>
 			<node name="units" path="/details/attributes/units" type="java.lang.String"
-				minCardinality="1" maxLength="30">
-				<assertion name="lookup">
-					<property name="type" value="targetLookup" />
-					<property name="relationship" value="lookupRelationship.uomGroup" />
-					<property name="value" value="'Weight'" />
-					<errorMessage>An error message</errorMessage>
+				minCardinality="1" maxLength="30" default="'Kilograms'">
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="Kilograms" value="Kilograms" />
+						<property name="Grams" value="Grams" />
+						<property name="Pounds" value="Pounds" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
 		</node>
