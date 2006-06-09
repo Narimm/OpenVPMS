@@ -111,6 +111,12 @@
 
     <bean id="authenticationProcessingFilterEntryPoint"
           class="org.openvpms.web.servlet.EchoAuthenticationEntryPoint">
+        <property name="loginFormUrl">
+            <value>/login</value>
+        </property>
+        <property name="forceHttps">
+            <value>false</value>
+        </property>
     </bean>
 
     <!-- ================================================================== -->
