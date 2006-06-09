@@ -20,32 +20,35 @@ package org.openvpms.web.servlet;
 
 import nextapp.echo2.webrender.ContentType;
 import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.intercept.web.AuthenticationEntryPoint;
+import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
 /**
  * An <code>AuthenticationEntryPoint</code> for use with echo2.
- * A typical implementation would send a redirection to a login page.
- * However, when the client is an echo2 app, it has know way of detecting that
- * a redirection has occurred due to a limitation of XmlHttpRequest which
- * automatically follows redirections.<br/>
- * To workaround this, an <code>HttpServletResponse.SC_BAD_REQUEST</code>
- * is sent instead. If echo2's ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI
- * has been configured correctly, the echo2 client will redirect to that.<br/>
- * The downside is that non echo2 clients will get a page with the message
- * 'Session Expired', rather than being redirected to the login page.
+ * <p/>
+ * This redirects the caller to the login form. However if the caller is
+ * an echo2 client, the redirection is initiated by sending an
+ * <code>HttpServletResponse.SC_BAD_REQUEST</code> status. The echo2 client
+ * interprets this as a redirection if
+ * <code>ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI</code>
+ * has been configured.
+ * <br/>
+ * This is required as the echo2 client has no way of detecting that
+ * a redirection has occurred as XmlHttpRequest automatically follows
+ * redirections.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class EchoAuthenticationEntryPoint
-        implements AuthenticationEntryPoint {
+        extends AuthenticationProcessingFilterEntryPoint {
 
     /**
      * Commences an authentication scheme.
@@ -61,10 +64,17 @@ public class EchoAuthenticationEntryPoint
                          AuthenticationException authException) throws
                                                                 IOException,
                                                                 ServletException {
-        HttpServletResponse req = (HttpServletResponse) response;
-        req.setContentType(ContentType.TEXT_HTML.getMimeType());
-        req.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        req.getWriter().write("Session Expired");
-        req.flushBuffer();
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse resp = (HttpServletResponse) response;
+        String query = req.getQueryString();
+        if (query != null && query.contains("service")) {
+            // probably an echo2 client
+            resp.setContentType(ContentType.TEXT_HTML.getMimeType());
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("Session Expired");
+            resp.flushBuffer();
+        } else {
+            super.commence(request, response, authException);
+        }
     }
 }
