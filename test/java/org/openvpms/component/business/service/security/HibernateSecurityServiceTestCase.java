@@ -158,8 +158,11 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
         deleteUser("jima");
         User user = createUser("jima", "jima");
         SecurityRole role1 = createSecurityRole("role1");
-        role1.addAuthority(createAuthority("save.person.person",
-                "archetypeService", "save", "person.person"));
+        ArchetypeAwareGrantedAuthority authority = createAuthority(
+                "save.person.person", "archetypeService", "save", "person.person");
+        dao.save(authority);
+        
+        role1.addAuthority(authority);
         user.addRole(role1);
         dao.save(role1);
         dao.save(user);
@@ -168,8 +171,11 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
         deleteUser("bernief");
         user = createUser("bernief", "bernief");
         SecurityRole role2 = createSecurityRole("role2");
-        role2.addAuthority(createAuthority("save.party.animal",
-                "archetypeService", "save", "party.animal"));
+        authority = createAuthority("save.party.animal", "archetypeService", 
+                "save", "party.animal");
+        dao.save(authority);
+        
+        role2.addAuthority(authority);
         user.addRole(role2);
         dao.save(role2);
         dao.save(user);

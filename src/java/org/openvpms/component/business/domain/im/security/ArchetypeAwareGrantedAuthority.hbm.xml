@@ -49,7 +49,6 @@
     <property name="method" access="property" column="method" type="string" />
     <property name="archetypeShortName" access="property" column="arch_short_name" type="string" />
     <property name="authority" access="property" column="authority" type="string" />
-    <many-to-one name="role" column="security_role_id" />
   </class>
 
   <query name="archetypeAwareGrantedAuthority.getRowCount">

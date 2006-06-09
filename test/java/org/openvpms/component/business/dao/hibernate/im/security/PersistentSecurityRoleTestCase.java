@@ -199,10 +199,15 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             SecurityRole role = createSecurityRole("admin");
-            role.addAuthority(createAuthority("modify-add-products", "archetype", 
-                    "create", "product.*"));
-            role.addAuthority(createAuthority("modify-remove-products", "archetype", 
-                    "remove", "product.*"));
+            ArchetypeAwareGrantedAuthority authority = createAuthority(
+                    "modify-add-products", "archetype", "create", "product.*");
+            session.save(authority);
+            role.addAuthority(authority);
+            
+            authority = createAuthority(
+                    "modify-remove-products", "archetype", "remove", "product.*");
+            session.save(authority);
+            role.addAuthority(authority);
             
             session.save(role);
             tx.commit();
@@ -243,8 +248,11 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
             tx = session.beginTransaction();
             SecurityRole role = createSecurityRole("admin");
             for (int index = 0; index < count; index++) {
-                role.addAuthority(createAuthority("authority" + index, "archetype", 
-                        "create" + index, "product.*"));
+                ArchetypeAwareGrantedAuthority authority = createAuthority(
+                        "authority" + index, "archetype", "create" + index, 
+                        "product.*");
+                session.save(authority);
+                role.addAuthority(authority);
             }
             
             session.save(role);
@@ -269,7 +277,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
             acount1 = HibernateSecurityUtil.getTableRowCount(session, "securityRole");
             bcount1 = HibernateSecurityUtil.getTableRowCount(session, "archetypeAwareGrantedAuthority");
             assertTrue(acount1 == acount + 1);
-            assertTrue(bcount1 == bcount + count - 1);
+            assertTrue(bcount1 == bcount + count);
             
             role = (SecurityRole)session.load(SecurityRole.class, role.getUid());
             assertTrue(role != null);
@@ -299,8 +307,11 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
             // execute the test
             tx = session.beginTransaction();
             SecurityRole role = createSecurityRole("admin");
-            role.addAuthority(createAuthority("modify-all", "archetype", 
-                    "create", "*"));
+            ArchetypeAwareGrantedAuthority authority = createAuthority(
+                    "modify-all", "archetype", "create", "*");
+            session.save(authority);
+            
+            role.addAuthority(authority);
             session.save(role);
             tx.commit();
 
@@ -315,7 +326,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
             assertTrue(role.getAuthorities().size() == 1);
 
             // modify the authority
-            ArchetypeAwareGrantedAuthority authority = role.getAuthorities().iterator().next();
+            authority = role.getAuthorities().iterator().next();
             authority.setMethod("modify");
             tx = session.beginTransaction();
             session.save(role);
