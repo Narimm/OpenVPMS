@@ -431,18 +431,6 @@
       <url>http://jakarta.apache.org/commons/jxpath/</url>
     </dependency>
     <dependency>
-      <groupId>tapestry</groupId>
-      <artifactId>tapestry</artifactId>
-      <version>4.0-beta-10</version>
-      <url>http://jakarta.apache.org/tapestry</url>
-    </dependency>
-    <dependency>
-      <groupId>tapestry</groupId>
-      <artifactId>tapestry-annotations</artifactId>
-      <version>4.0-beta-10</version>
-      <url>http://jakarta.apache.org/tapestry</url>
-    </dependency>
-    <dependency>
       <groupId>acegisecurity</groupId>
       <artifactId>acegi-security</artifactId>
       <version>1.0.0-RC1</version>
@@ -459,12 +447,6 @@
       <artifactId>ognl</artifactId>
       <version>2.6.5</version>
       <url>http://ognl.org</url>
-    </dependency>
-    <dependency>
-      <groupId>hivemind</groupId>
-      <artifactId>hivemind</artifactId>
-      <version>1.1-rc-1</version>
-      <url>http://jakarta.apache.org/hivemind</url>
     </dependency>
     <dependency>
       <groupId>oro</groupId>
