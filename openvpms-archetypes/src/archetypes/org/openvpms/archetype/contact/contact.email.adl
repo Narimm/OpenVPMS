@@ -21,7 +21,7 @@
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" derived="true"
-			derivedValue="archetypeId/concept" />
+			derivedValue="'Email Address'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat(/details/attributes/emailAddress,' ')" />
