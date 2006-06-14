@@ -158,6 +158,9 @@
     <property name="entityInterceptor">
       <ref local="entityInterceptor" />
     </property>
+    <property name="ruleEngine">
+      <ref local="ruleEngine" />
+    </property>
   </bean>
 
   <!--  The Audit Service -->
@@ -311,8 +314,8 @@
   </bean>
 
   <!--  The DroolsRileEngine interceptor -->
-  <bean id="ruleEngineInterceptor"
-    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngineInterceptor">
+  <bean id="ruleEngine"
+    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngine">
     <constructor-arg index="0">
       <ref local="ruleSource" />
     </constructor-arg>
@@ -340,7 +343,7 @@
   <bean id="ruleEngineAdvisor"
     class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
     <property name="advice">
-      <ref local="ruleEngineInterceptor" />
+      <ref local="ruleEngine" />
     </property>
     <property name="patterns">
       <list>

@@ -43,6 +43,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.business.service.archetype.query.QueryBuilder;
 import org.openvpms.component.business.service.archetype.query.QueryContext;
+import org.openvpms.component.business.service.ruleengine.IStatelessRuleEngineInvocation;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -81,6 +82,12 @@ public class ArchetypeService implements IArchetypeService {
      * The DAO instance it will use...optional
      */
     private IMObjectDAO dao;
+    
+    /**
+     * The rule engine to use. If not specified then the service does
+     * not support rule engine invocations.
+     */
+    private IStatelessRuleEngineInvocation ruleEngine;
     
     /**
      * A reference to the query builder. The query build is stuff is not
@@ -142,6 +149,20 @@ public class ArchetypeService implements IArchetypeService {
     public void setEntityInterceptor(EntityInterceptor entityInterceptor) {
         this.entityInterceptor = entityInterceptor;
         entityInterceptor.setDescriptorCache(dCache);
+    }
+
+    /**
+     * @return Returns the ruleEngine.
+     */
+    public IStatelessRuleEngineInvocation getRuleEngine() {
+        return ruleEngine;
+    }
+
+    /**
+     * @param ruleEngine The ruleEngine to set.
+     */
+    public void setRuleEngine(IStatelessRuleEngineInvocation ruleEngine) {
+        this.ruleEngine = ruleEngine;
     }
 
     /*
@@ -506,6 +527,24 @@ public class ArchetypeService implements IArchetypeService {
      */
     public List<String> getArchetypeShortNames() {
         return dCache.getArchetypeShortNames();
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#executeRule(java.lang.String, java.util.Map, java.util.List)
+     */
+    public List<Object> executeRule(String ruleUri, Map<String, Object> props, List<Object> facts) {
+        if (ruleEngine == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.RuleEngineNotSupported);
+        }
+        try {
+            return ruleEngine.executeRule(ruleUri, props, facts);
+        } catch(Exception exception) {
+            // rethrow as an {@link ArchetypeServiceException}
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToExecuteRule,
+                    new Object[] {ruleUri}, exception);
+        }
     }
 
     /**

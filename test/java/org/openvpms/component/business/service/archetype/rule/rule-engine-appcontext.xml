@@ -145,6 +145,9 @@
     <property name="entityInterceptor">
       <ref local="entityInterceptor" />
     </property>
+    <property name="ruleEngine">
+      <ref local="ruleEngine" />
+    </property>
   </bean>
 
   <!-- The `local' ruleServiceProvider; we can have as many different ruleProviders as we want -->

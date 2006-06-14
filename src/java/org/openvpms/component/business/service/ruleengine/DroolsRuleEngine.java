@@ -22,6 +22,7 @@ package org.openvpms.component.business.service.ruleengine;
 // java core
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 // aop alliance
 import org.aopalliance.intercept.MethodInterceptor;
@@ -53,14 +54,14 @@ import org.springmodules.jsr94.core.Jsr94RuleSupport;
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
-public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
-        MethodInterceptor {
+public class DroolsRuleEngine extends Jsr94RuleSupport implements
+        MethodInterceptor, IStatelessRuleEngineInvocation {
     /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
-            .getLogger(DroolsRuleEngineInterceptor.class);
+            .getLogger(DroolsRuleEngine.class);
     
     /**
      * Cache a copy of the directory rule source
@@ -75,7 +76,7 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
      * @param ruleSource
  *                the directory rule source
      */
-    public DroolsRuleEngineInterceptor(DirectoryRuleSource ruleSource) {
+    public DroolsRuleEngine(DirectoryRuleSource ruleSource) {
         this.ruleSource = ruleSource;
     }
     
@@ -108,6 +109,15 @@ public class DroolsRuleEngineInterceptor extends Jsr94RuleSupport implements
         // no op
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.ruleengine.IStatelessRuleEngineInvocation#executeRule(java.lang.String, java.util.Map, java.util.List)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Object> executeRule(String ruleUri, Map<String, Object> props,
+            List<Object> facts) {
+        return (List<Object>)executeStateless(ruleUri, props, facts,  null);
+    }
+    
     /**
      * This is executed before the business logic of the intercepted method
      * 
