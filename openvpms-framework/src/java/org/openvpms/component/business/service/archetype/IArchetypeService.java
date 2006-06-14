@@ -272,4 +272,22 @@ public interface IArchetypeService {
      *            a runtime exception if it cannot complete the call                        
      */
     public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly);
+    
+    /**
+     * Execute the rule specified by the uri and using the passed in 
+     * properties and facts. 
+     * 
+     * @param ruleUri
+     *            the rule uri
+     * @param properties
+     *            a set of properties that can be used by the rule engine
+     * @param facts
+     *            a list of facts that are asserted in to the working memory
+     * @return List<Object>
+     *            a list objects, which maybe an empty list.
+     * @throws ArchetypeServiceException
+     *            if it cannot execute the specified rule                                                
+     */
+    public List<Object> executeRule(String ruleUri, Map<String, Object> props,
+            List<Object> facts);
 }
