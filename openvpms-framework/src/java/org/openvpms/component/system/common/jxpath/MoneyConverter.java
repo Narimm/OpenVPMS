@@ -20,6 +20,8 @@
 
 package org.openvpms.component.system.common.jxpath;
 
+import java.math.BigDecimal;
+
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -88,11 +90,19 @@ public final class MoneyConverter implements Converter {
         }
 
         if (value instanceof Money) {
-            return (value);
+            return value;
         }
 
         try {
-            return (new Money(value.toString()));
+            if (value instanceof String) {
+                return new Money((String)value);
+            } else if (value instanceof BigDecimal) {
+                return new Money((BigDecimal)value);
+            } else if (value instanceof Double) {
+                return new Money((Double)value);
+            } else {
+                return new Money(value.toString());
+            }
         } catch (Exception e) {
             if (useDefault) {
                 return (defaultValue);

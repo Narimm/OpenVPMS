@@ -51,12 +51,14 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.component.system.common.test.BaseTestCase;
 
 /**
@@ -473,6 +475,24 @@ public class JXPathTestCase extends BaseTestCase {
         Object obj = ctx.getValue("/low + /high");
         assertTrue(obj instanceof BigDecimal);
         assertTrue(((BigDecimal)obj).equals(new BigDecimal(300)));
+    }
+    
+    /**
+     * Test for bug OBf-54
+     */
+    public void testOBF54()
+    throws Exception {
+        OpenVPMSTypeConverter converter = new OpenVPMSTypeConverter();
+        Object obj = null;
+        
+        obj = converter.convert("10.55", Money.class);
+        assertTrue(obj.getClass().getName(), obj instanceof Money);
+        
+        obj = converter.convert(new BigDecimal(10.55), Money.class);
+        assertTrue(obj.getClass().getName(), obj instanceof Money);
+        
+        obj = converter.convert(new Double(10.55), Money.class);
+        assertTrue(obj.getClass().getName(), obj instanceof Money);
     }
     
     /**
