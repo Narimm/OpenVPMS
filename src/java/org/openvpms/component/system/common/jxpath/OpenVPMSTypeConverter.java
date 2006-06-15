@@ -231,6 +231,11 @@ public class OpenVPMSTypeConverter extends BasicTypeConverter {
         if (type == BigInteger.class) {
             return BigInteger.valueOf((long) value);
         }
+        
+        if (type == Money.class) {
+            return new Money(value);
+        }
+        
         return null;
     }
 
@@ -269,6 +274,10 @@ public class OpenVPMSTypeConverter extends BasicTypeConverter {
         }
         if (type == BigInteger.class) {
             return BigInteger.valueOf(value.longValue());
+        }
+        
+        if (type == Money.class) {
+            return new Money((BigDecimal)value);
         }
 
         return null;

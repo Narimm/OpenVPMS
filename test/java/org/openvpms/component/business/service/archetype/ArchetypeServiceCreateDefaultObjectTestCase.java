@@ -80,6 +80,14 @@ public class ArchetypeServiceCreateDefaultObjectTestCase extends
         }
     }
     
+    /**
+     * Test that the lookup objects are correctly populated when specified
+     */
+    public void testOBF43()
+    throws Exception {
+        
+    }
+    
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */
