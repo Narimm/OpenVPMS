@@ -47,7 +47,11 @@ public class RuleEngineException extends OpenVPMSException {
         InvalidFile,
         FailedToRegister,
         NoDirSpecified,
-        FailedToExecuteRule
+        FailedToExecuteRule,
+        InvalidSourceSpecified,
+        FailedToRegisterRuleExecutionSets,
+        InvalidDescriptorFileName,
+        FailedToProcessRuleDescriptor
     }
 
     /**

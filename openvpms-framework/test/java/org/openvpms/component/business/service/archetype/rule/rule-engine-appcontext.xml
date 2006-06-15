@@ -179,14 +179,13 @@
 
   <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
   <bean id="ruleSource"
-    class="org.openvpms.component.business.service.ruleengine.DirectoryRuleSource">
+    class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
     <property name="ruleRuntime">
       <ref local="ruleRuntime" />
     </property>
     <property name="ruleAdministrator">
       <ref local="ruleAdministrator" />
     </property>
-    <property name="directory" value="org/openvpms/rules" />
   </bean>
 
   <!-- Jsr94Template -->

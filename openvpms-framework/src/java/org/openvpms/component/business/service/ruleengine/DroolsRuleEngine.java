@@ -64,9 +64,9 @@ public class DroolsRuleEngine extends Jsr94RuleSupport implements
             .getLogger(DroolsRuleEngine.class);
     
     /**
-     * Cache a copy of the directory rule source
+     * Cache a copy of the rule source
      */
-    private DirectoryRuleSource ruleSource;
+    private BaseRuleSource ruleSource;
     
     
     /**
@@ -76,7 +76,7 @@ public class DroolsRuleEngine extends Jsr94RuleSupport implements
      * @param ruleSource
  *                the directory rule source
      */
-    public DroolsRuleEngine(DirectoryRuleSource ruleSource) {
+    public DroolsRuleEngine(BaseRuleSource ruleSource) {
         this.ruleSource = ruleSource;
     }
     

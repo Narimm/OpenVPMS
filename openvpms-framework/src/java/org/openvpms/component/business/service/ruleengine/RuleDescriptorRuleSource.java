@@ -13,46 +13,49 @@
  *
  *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: AuditServiceTestCase.java 328 2005-12-07 13:31:09Z jalateras $
+ *  $Id$
  */
 package org.openvpms.component.business.service.ruleengine;
 
 // java core
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Collection;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 // jsr94
 import javax.rules.admin.RuleExecutionSet;
 
 // spring-modules
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.exolab.castor.mapping.Mapping;
+import org.exolab.castor.xml.Unmarshaller;
+import org.xml.sax.InputSource;
 
 /**
- * This class will source rule-sets from one or more drl files stored in the
- * specified root directory. It will search all subdirectories and process and
- * rule files
+ * This class is responsible for loading rules from a rule descriptor file. The
+ * rule descriptor file contains an entry for each rule that is to be loaded. 
+ * Each rule contains a source and path attribute, which denotes how to load
+ * the rule and the location of the rule respectively.
  * 
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
+ * @version $LastChangedDate$
  */
-public class DirectoryRuleSource extends BaseRuleSource {
+public class RuleDescriptorRuleSource extends BaseRuleSource {
     /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
-            .getLogger(DirectoryRuleSource.class);
+            .getLogger(RuleDescriptorRuleSource.class);
 
     /**
-     * The root rule directory
+     * The descriptor file name that contains the rule entries. It
+     * defaults to an xml file in the root class path
      */
-    private String directory;
+    private String descriptorFileName = "rules.xml";
 
     /**
      * Caches the name of the various rule sets
@@ -92,42 +95,92 @@ public class DirectoryRuleSource extends BaseRuleSource {
      * @see org.springmodules.jsr94.support.AbstractRuleSource#registerRuleExecutionSets()
      */
     protected void registerRuleExecutionSets() throws RuleEngineException {
-        // check that a non-null directory was specified
-        if (StringUtils.isEmpty(directory)) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.NoDirSpecified);
-        }
-
-        // check that a valid directory was specified
-        File dir = FileUtils.toFile(Thread.currentThread()
-                .getContextClassLoader().getResource(directory));
-        if (dir == null) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidDir,
-                    new Object[] { directory});
-        }
-        
-        if (logger.isDebugEnabled()) {
-            logger.debug("The base rules directory is " + dir.getAbsolutePath());
-        }
-        
-        if (!dir.isDirectory()) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidDir,
-                    new Object[] { directory });
-        }
-
-        // process all the files in the directory, that match the filter
-        Collection collection = FileUtils.listFiles(dir, new String[] {"drl"}, true);
-        Iterator files = collection.iterator();
-        while (files.hasNext()) {
-            File afile = (File)files.next();
-            if (logger.isDebugEnabled()) {
-                logger.debug("Registeting the rule set in  " 
-                        + afile.getAbsolutePath());
+        RuleDescriptors rdescs = null;
+        try {
+            Mapping mapping = new Mapping();
+            mapping.loadMapping(new InputSource(new InputStreamReader(
+                    Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                            "org/openvpms/component/business/service/ruleengine/rule-source-mapping-file.xml"))));
+            
+            InputStreamReader is = new InputStreamReader(
+                    Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(descriptorFileName));
+            if (is == null) {
+                throw new RuleEngineException(
+                        RuleEngineException.ErrorCode.InvalidDescriptorFileName,
+                        new Object[] {descriptorFileName});
+                
             }
-            registerRuleExecutionSet(afile);
+            rdescs = (RuleDescriptors)new Unmarshaller(mapping).unmarshal(is);
+        } catch (Exception exception) {
+            throw new RuleEngineException(
+                    RuleEngineException.ErrorCode.FailedToRegisterRuleExecutionSets,
+                    null, exception);
+                    
         }
+            
+        // for each on process according to the source
+        for (RuleDescriptor rdesc : rdescs.getRuleDescriptors()) {
+            try {
+                switch (rdesc.getSource()) {
+                case SYSTEM:
+                    processFromSytemPath(rdesc.getPath());
+                    break;
+                    
+                case CLASSPATH:
+                    processFromClassPath(rdesc.getPath());
+                    break;
+                    
+                }
+            } catch (Exception exception) {
+                throw new RuleEngineException(
+                        RuleEngineException.ErrorCode.FailedToProcessRuleDescriptor,
+                        new Object[] {rdesc.getSource(), rdesc.getPath()},
+                        exception);
+            }
+        }
+            
+    }
+
+    /**
+     * The following path refers to a file that is stored in the class path
+     * 
+     * @param path
+     *            a valid path in the class path
+     * @throws Exception
+     *            propagate exception to caller            
+     */
+    private void processFromClassPath(String path) 
+    throws Exception {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+        if (is == null) {
+            throw new RuleEngineException(
+                    RuleEngineException.ErrorCode.InvalidFile,
+                    new Object[] { path });
+        }
+        
+        registerRuleExecutionSet(is);
+        
+    }
+
+    /**
+     * The following path refers to a file that is stored in the file system
+     * 
+     * @param path
+     *            a valid path in the file system
+     * @throws Exception
+     *            propagate exception to caller            
+     */
+    private void processFromSytemPath(String path) 
+    throws Exception {
+        File file = new File(path);
+        if (!file.exists()) {
+            throw new RuleEngineException(
+                    RuleEngineException.ErrorCode.InvalidFile,
+                    new Object[] {path});
+        }
+        
+        registerRuleExecutionSet(new FileInputStream(file));
     }
 
     /*
@@ -169,17 +222,17 @@ public class DirectoryRuleSource extends BaseRuleSource {
     }
 
     /**
-     * @return Returns the directory.
+     * @return Returns the descriptorFileName.
      */
-    public String getDirectory() {
-        return directory;
+    public String getDescriptorFileName() {
+        return descriptorFileName;
     }
 
     /**
-     * @param directory The directory to set.
+     * @param descriptorFileName The descriptorFileName to set.
      */
-    public void setDirectory(String directory) {
-        this.directory = directory;
+    public void setDescriptorFileName(String descriptorFileName) {
+        this.descriptorFileName = descriptorFileName;
     }
 
     /**
@@ -196,32 +249,25 @@ public class DirectoryRuleSource extends BaseRuleSource {
     /**
      * Create and register a rule execution set
      * 
-     * @param file
-     *            the file containing the rule set
+     * @param is
+     *            the input stream to a rule set
      * @throws RuleEngineException 
      *            if it cannot create or register the rule set            
      */
-    private void registerRuleExecutionSet(File file) {
-        // check that the file exists.
-        if (!file.exists()) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.InvalidFile,
-                    new Object[] {file.getName()});
-        }
-        
-        // creater and register the rule execution set (i.e. rule set)
+    private void registerRuleExecutionSet(InputStream is) {
+        String uri = null;
         try {
             RuleExecutionSet ruleExecutionSet = ruleAdministrator
                 .getLocalRuleExecutionSetProvider(providerProperties)
-                .createRuleExecutionSet(new FileInputStream(file), rulesetProperties);
-            String uri = ruleExecutionSet.getName();
+                .createRuleExecutionSet(is, rulesetProperties);
+            uri = ruleExecutionSet.getName();
             ruleAdministrator.registerRuleExecutionSet(uri, ruleExecutionSet,
                     registrationProperties);
-            ruleSetNames.put(uri, file.getName());
+            ruleSetNames.put(uri, uri);
         } catch (Exception exception) {
             throw new RuleEngineException(
                     RuleEngineException.ErrorCode.FailedToRegister,
-                    new Object[] {file.getName()}, exception);
+                    new Object[] {uri}, exception);
         }
     }
 }
