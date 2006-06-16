@@ -1,0 +1,23 @@
+<project default="jar:jar"
+  xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
+  xmlns:j="jelly:core">
+
+  <postGoal name="java:compile">
+    <attainGoal name="generate-hibernate-properties"/>
+  </postGoal>
+
+  <goal name="generate-hibernate-properties">
+    <copy tofile="${maven.build.dest}/hibernate.properties" 
+          file="${basedir}/src/conf/hibernate/hibernate.properties">
+      <filterset>
+        <filter token="HIBERNATE_DIALECT" value="${hibernate.dialect}"/>
+        <filter token="JDBC_DRIVER" value="${hibernate.connection.driver_class}"/>
+        <filter token="JDBC_URL" value="${hibernate.connection.url}"/>
+        <filter token="JDBC_USERNAME" value="${hibernate.connection.username}"/>
+        <filter token="JDBC_PASSWORD" value="${hibernate.connection.password}"/>
+      </filterset>
+    </copy>
+  </goal>
+
+</project>
