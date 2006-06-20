@@ -80,7 +80,7 @@ public abstract class AbstractIMObjectCollectionReporter
     public JasperDesign generate() throws JRException {
         JasperDesign design = getDesign();
         design.setName(_descriptor.getName() + "_subreport");
-        List<NodeDescriptor> nodes = getDescriptors();
+        NodeDescriptor[] nodes = getDescriptors();
 
         JRElementFactory factory = new JRElementFactory(design);
         JRTextElement proto = factory.createTextField();
@@ -92,7 +92,7 @@ public abstract class AbstractIMObjectCollectionReporter
         JRDesignBand columns = columnFactory.createColumnHeader();
         int x = 0;
         for (int i = 0; i < widths.length; ++i) {
-            NodeDescriptor node = nodes.get(i);
+            NodeDescriptor node = nodes[i];
             JRDesignStaticText label = columnFactory.createStaticText(
                     node.getDisplayName());
             label.setX(x);
@@ -105,7 +105,7 @@ public abstract class AbstractIMObjectCollectionReporter
         JRDesignBand detail = factory.createDetail();
         x = 0;
         for (int i = 0; i < widths.length; ++i) {
-            NodeDescriptor node = nodes.get(i);
+            NodeDescriptor node = nodes[i];
             JRDesignField field = new JRDesignField();
             field.setName(getFieldName(node));
             Class valueClass = ReportHelper.getValueClass(node);
@@ -130,7 +130,7 @@ public abstract class AbstractIMObjectCollectionReporter
      *
      * @return the descriptors of the nodes to display
      */
-    protected abstract List<NodeDescriptor> getDescriptors();
+    protected abstract NodeDescriptor[] getDescriptors();
 
     /**
      * Returns the node name to be used in a field expression.
@@ -140,6 +140,15 @@ public abstract class AbstractIMObjectCollectionReporter
      */
     protected String getFieldName(NodeDescriptor descriptor) {
         return descriptor.getName();
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getArchetypeService() {
+        return _service;
     }
 
     /**
@@ -195,9 +204,9 @@ public abstract class AbstractIMObjectCollectionReporter
      * @param pageWidth the pageWidth
      * @return the widths of each of the nodes
      */
-    private int[] getWidths(List<NodeDescriptor> nodes,
+    private int[] getWidths(NodeDescriptor[] nodes,
                             Font font, int pageWidth) {
-        int[] widths = new int[nodes.size()];
+        int[] widths = new int[nodes.length];
         BufferedImage hack = new BufferedImage(1, 1,
                                                BufferedImage.TYPE_INT_RGB);
         Graphics graphics = hack.getGraphics();
@@ -206,7 +215,7 @@ public abstract class AbstractIMObjectCollectionReporter
 
         int total = 0;
         for (int i = 0; i < widths.length; ++i) {
-            NodeDescriptor node = nodes.get(i);
+            NodeDescriptor node = nodes[i];
             int length = node.getMaxLength();
             if (length > 50) {
                 length = 50;

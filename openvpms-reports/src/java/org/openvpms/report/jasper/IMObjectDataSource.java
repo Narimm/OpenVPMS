@@ -31,6 +31,8 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.List;
+
 
 /**
  * Implementation of the <code>JRDataSource</code> interface, for a single
@@ -126,10 +128,12 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
             if (node.isObjectReference()) {
                 object = getObject(object, node);
+            } else if (node.isCollection() && node.getMaxCardinality() == 1) {
+                List<IMObject> values = node.getChildren(object);
+                object = (!values.isEmpty()) ? values.get(0) : null;
             } else {
                 throw new JRException(
-                        "Field doesn't refer to an object refenerence: "
-                                + field);
+                        "Field doesn't refer to an object reference: " + field);
             }
             name = name.substring(index + 1);
             if (object != null) {

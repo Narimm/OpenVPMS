@@ -22,8 +22,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -36,6 +37,13 @@ public class ActRelationshipCollectionReporter
         extends AbstractIMObjectCollectionReporter {
 
     /**
+     * The node descriptors.
+     */
+    private LinkedHashMap<NodeDescriptor, String> _descriptors =
+            new LinkedHashMap<NodeDescriptor, String>();
+
+
+    /**
      * Construct a new <code>DefaultIMObjectCollectionReporter</code>.
      *
      * @param descriptor the collection node descriptor
@@ -44,14 +52,6 @@ public class ActRelationshipCollectionReporter
     public ActRelationshipCollectionReporter(NodeDescriptor descriptor,
                                              IArchetypeService service) {
         super(descriptor, service);
-    }
-
-    /**
-     * Returns the descriptors of the nodes to display.
-     *
-     * @return the descriptors of the nodes to display
-     */
-    protected List<NodeDescriptor> getDescriptors() {
         ArchetypeDescriptor items = getArchetype();
         NodeDescriptor target = items.getNodeDescriptor("target");
         List<NodeDescriptor> nodes = null;
@@ -63,9 +63,50 @@ public class ActRelationshipCollectionReporter
                 nodes = getIntersection(nodes, all);
             }
         }
+
         assert nodes != null;
-        return filter(nodes);
+        nodes = filter(nodes);
+
+        for (NodeDescriptor node : nodes) {
+            String field = "target." + node.getName();
+            if (node.isCollection() && node.getMaxCardinality() == 1) {
+                String[] shortNames = ReportHelper.getShortNames(
+                        getArchetypeService(), node);
+                if (ReportHelper.matches(shortNames, "participation.*")) {
+                    field = "target." + node.getName() + ".entity.name";
+                    node = getNodeDescriptor(shortNames[0], "entity");
+                }
+            }
+            _descriptors.put(node, field);
+        }
     }
+
+    /**
+     * Returns a node descriptor for the specified archetype.
+     *
+     * @param shortName the archetype short name
+     * @param name the node name
+     * @return the node descriptor or <code>null</code> if it doesn't exist
+     */
+    private NodeDescriptor getNodeDescriptor(String shortName, String name) {
+        IArchetypeService service = getArchetypeService();
+        ArchetypeDescriptor archetype
+                = service.getArchetypeDescriptor(shortName);
+        if (archetype != null) {
+            return archetype.getNodeDescriptor(name);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the descriptors of the nodes to display.
+     *
+     * @return the descriptors of the nodes to display
+     */
+    protected NodeDescriptor[] getDescriptors() {
+        return _descriptors.keySet().toArray(new NodeDescriptor[0]);
+    }
+
 
     /**
      * Filters out hidden nodes.
@@ -83,7 +124,6 @@ public class ActRelationshipCollectionReporter
         return result;
     }
 
-
     /**
      * Returns the node name to be used in a field expression.
      *
@@ -91,7 +131,7 @@ public class ActRelationshipCollectionReporter
      * @return the node name
      */
     protected String getFieldName(NodeDescriptor descriptor) {
-        return "target." + descriptor.getName();
+        return _descriptors.get(descriptor);
     }
 
     /**

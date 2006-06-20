@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -52,17 +51,14 @@ public class EntityRelationshipCollectionReporter
      *
      * @return the descriptors of the nodes to display
      */
-    protected List<NodeDescriptor> getDescriptors() {
+    protected NodeDescriptor[] getDescriptors() {
         ArchetypeDescriptor archetype = getArchetype();
         NodeDescriptor target = archetype.getNodeDescriptor("target");
         List<ArchetypeDescriptor> archetypes = getArchetypes(target);
         ArchetypeDescriptor targetArch = archetypes.get(0);
         NodeDescriptor name = targetArch.getNodeDescriptor("name");
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
         NodeDescriptor description = archetype.getNodeDescriptor("description");
-        result.add(name);
-        result.add(description);
-        return result;
+        return new NodeDescriptor[] {name, description};
     }
 
     /**

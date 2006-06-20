@@ -22,9 +22,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * Default report generator for a collection of <code>IMObject</code>s.
@@ -52,14 +49,11 @@ public class DefaultIMObjectCollectionReporter
      *
      * @return the descriptors of the nodes to display
      */
-    protected List<NodeDescriptor> getDescriptors() {
+    protected NodeDescriptor[] getDescriptors() {
         ArchetypeDescriptor archetype = getArchetypes().get(0);
         NodeDescriptor name = archetype.getNodeDescriptor("name");
         NodeDescriptor description = archetype.getNodeDescriptor("description");
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        result.add(name);
-        result.add(description);
-        return result;
+        return new NodeDescriptor[]{name, description};
     }
 
 }
