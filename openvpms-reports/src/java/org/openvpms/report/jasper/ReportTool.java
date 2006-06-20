@@ -22,9 +22,12 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Switch;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -35,6 +38,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.PrintStream;
 import java.util.List;
 
 
@@ -97,10 +101,11 @@ public class ReportTool {
     /**
      * Generates a report for an object and displays it on-screen.
      *
-     * @param object the object
+     * @param object  the object
+     * @param showXML if  <code>true</code> display the .jrxml
      */
-    public void view(IMObject object) throws JRException {
-        JasperPrint report = generate(object);
+    public void view(IMObject object, boolean showXML) throws JRException {
+        JasperPrint report = generate(object, showXML);
         JasperViewer viewer = new JasperViewer(report, true);
         viewer.setVisible(true);
     }
@@ -108,11 +113,13 @@ public class ReportTool {
     /**
      * Generates a report for an object and saves it as a PDF.
      *
-     * @param object the object
-     * @param path   the PDF output path
+     * @param object  the object
+     * @param path    the PDF output path
+     * @param showXML if  <code>true</code> display the .jrxml
      */
-    public void generatePDF(IMObject object, String path) throws JRException {
-        JasperPrint report = generate(object);
+    public void generatePDF(IMObject object, String path, boolean showXML)
+            throws JRException {
+        JasperPrint report = generate(object, showXML);
         JasperExportManager.exportReportToPdfFile(report, path);
     }
 
@@ -128,22 +135,27 @@ public class ReportTool {
             if (!config.success()) {
                 displayUsage(parser);
             } else {
-                String list = config.getString("list");
-                String[] report = config.getStringArray("report");
+                boolean list = config.getBoolean("list");
+                boolean report = config.getBoolean("report");
+                String shortName = config.getString("shortName");
+                String name = config.getString("name");
                 String pdf = config.getString("pdf");
 
-                if (list != null) {
+                if (list && shortName != null) {
                     ReportTool reporter = new ReportTool();
-                    reporter.list(config.getString("list"));
-                } else if (report != null && report.length == 2) {
+                    reporter.list(shortName);
+                } else if (report && shortName != null) {
                     ReportTool reporter = new ReportTool();
-                    IMObject object = reporter.get(report[0], report[1]);
+                    IMObject object = reporter.get(shortName, name);
+                    boolean xml = config.getBoolean("xml");
                     if (object != null) {
                         if (pdf != null) {
-                            reporter.generatePDF(object, pdf);
+                            reporter.generatePDF(object, pdf, xml);
                         } else {
-                            reporter.view(object);
+                            reporter.view(object, xml);
                         }
+                    } else {
+                        System.out.println("No match found");
                     }
                 } else {
                     displayUsage(parser);
@@ -158,15 +170,25 @@ public class ReportTool {
     /**
      * Generates a report for an object.
      *
-     * @param object the object
+     * @param object  the object
+     * @param showXML if  <code>true</code> display the .jrxml
      * @return a report for <code>object</code>
      * @throws JRException for any error
      */
-    private JasperPrint generate(IMObject object) throws JRException {
+    private JasperPrint generate(IMObject object, boolean showXML) throws
+                                                                   JRException {
         ArchetypeDescriptor archetype
                 = _service.getArchetypeDescriptor(object.getArchetypeId());
         IMObjectReportGenerator generator
                 = new IMObjectReportGenerator(archetype, _service);
+        if (showXML) {
+            JRXmlWriter.writeReport(generator.getReport(),
+                                    new PrintStream(System.out), "UTF-8");
+            for (JasperReport subreport : generator.getSubreports()) {
+                JRXmlWriter.writeReport(subreport,
+                                        new PrintStream(System.out), "UTF-8");
+            }
+        }
         return generator.generate(object);
     }
 
@@ -179,29 +201,22 @@ public class ReportTool {
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
 
-        FlaggedOption report = new FlaggedOption("report") {
-            public String getSyntax() {
-                return "[-r <shortName>,<name>]";
-            }
-        };
-        report.setShortFlag('r').setList(true).setListSeparator(',')
-                .setHelp("Generate a report for the specified archetype");
-
-        parser.registerParameter(report);
-
-        FlaggedOption list = new FlaggedOption("list") {
-            public String getSyntax() {
-                return "[-l <shortName>]";
-            }
-        };
-        list.setShortFlag('l')
-                .setUsageName("shortName")
-                .setHelp("List archetypes with the specified short name");
-        parser.registerParameter(list);
-
+        parser.registerParameter(new Switch("report").setShortFlag('r')
+                .setHelp("Generate a report for the specified archetype"));
+        parser.registerParameter(new Switch("list").setShortFlag('l')
+                .setHelp("List archetypes with the specified short name"));
+        parser.registerParameter(new FlaggedOption("shortName")
+                .setShortFlag('s').setLongFlag("shortName")
+                .setHelp("The archetype short name"));
+        parser.registerParameter(new FlaggedOption("name")
+                .setShortFlag('n').setLongFlag("name")
+                .setHelp("The archetype name. Use with -r"));
         parser.registerParameter(new FlaggedOption("pdf").setShortFlag('p')
                 .setLongFlag("pdf")
-                .setHelp("Generate a PDF file. Use wuth -r"));
+                .setHelp("Generate a PDF file. Use with -r"));
+        parser.registerParameter(new Switch("xml").setShortFlag('x')
+                .setLongFlag("xml")
+                .setHelp("Display generated XML. Use with -r"));
         return parser;
     }
 

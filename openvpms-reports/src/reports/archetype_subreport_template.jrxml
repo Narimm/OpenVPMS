@@ -6,9 +6,9 @@
 		 columnCount="1"
 		 printOrder="Vertical"
 		 orientation="Portrait"
-		 pageWidth="175"
-		 pageHeight="842"
-		 columnWidth="175"
+		 pageWidth="515"
+		 pageHeight="120"
+		 columnWidth="515"
 		 columnSpacing="0"
 		 leftMargin="0"
 		 rightMargin="0"
@@ -23,7 +23,7 @@
 	<import value="net.sf.jasperreports.engine.*" />
 	<import value="net.sf.jasperreports.engine.data.*" />
 
-	<style 
+	<style
 		name="Arial_Normal"
 		isDefault="true"
 		fontName="Arial"
@@ -36,7 +36,7 @@
 		pdfEncoding="Cp1252"
 		isPdfEmbedded="false"
 	/>
-	<style 
+	<style
 		name="Arial_Bold"
 		isDefault="false"
 		fontName="Arial"
@@ -49,7 +49,7 @@
 		pdfEncoding="Cp1252"
 		isPdfEmbedded="false"
 	/>
-	<style 
+	<style
 		name="Arial_Italic"
 		isDefault="false"
 		fontName="Arial"
@@ -64,9 +64,7 @@
 	/>
 
 
-	<field name="name" class="java.lang.String"/>
-	<field name="description" class="java.lang.String"/>
-    <field name="displayName" class="java.lang.String"/>
+	<field name="displayName" class="java.lang.String"/>
 
 		<background>
 			<band height="0"  isSplitAllowed="true" >
@@ -102,7 +100,7 @@
 						style="Arial_Normal"
 						x="0"
 						y="0"
-						width="174"
+						width="515"
 						height="12"
 						backcolor="#999999"
 						key="rectangle-1"/>
@@ -125,7 +123,7 @@
 				<staticText>
 					<reportElement
 						style="Arial_Normal"
-						x="87"
+						x="298"
 						y="0"
 						width="88"
 						height="12"
@@ -157,7 +155,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						style="Arial_Normal"
-						x="87"
+						x="298"
 						y="0"
 						width="88"
 						height="12"
