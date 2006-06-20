@@ -19,7 +19,6 @@
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRElement;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -32,11 +31,9 @@ import net.sf.jasperreports.engine.design.JRDesignField;
 import net.sf.jasperreports.engine.design.JRDesignParameter;
 import net.sf.jasperreports.engine.design.JRDesignStaticText;
 import net.sf.jasperreports.engine.design.JRDesignSubreport;
-import net.sf.jasperreports.engine.design.JRDesignTextElement;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -55,11 +52,6 @@ import java.util.Map;
 public class IMObjectReportGenerator {
 
     /**
-     * The archetype descriptor.
-     */
-    private final ArchetypeDescriptor _archetype;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService _service;
@@ -70,10 +62,9 @@ public class IMObjectReportGenerator {
     private final JasperDesign _design;
 
     /**
-     * Detail template.
+     * Template helper.
      */
-    private JRDesignBand _detail;
-
+    private final JRElementFactory _template;
 
     private JasperReport _report;
 
@@ -94,8 +85,7 @@ public class IMObjectReportGenerator {
                                    IArchetypeService service)
             throws JRException {
         _design = JRXmlLoader.load("src/reports/archetype_template.jrxml");
-        _detail = (JRDesignBand) _design.getDetail();
-        _archetype = archetype;
+        _template = new JRElementFactory(_design);
         _service = service;
 
         JRDesignParameter param = new JRDesignParameter();
@@ -112,7 +102,7 @@ public class IMObjectReportGenerator {
         _design.addField(displayName);
 
         int y = 0;
-        for (NodeDescriptor node : _archetype.getSimpleNodeDescriptors()) {
+        for (NodeDescriptor node : archetype.getSimpleNodeDescriptors()) {
             if (node.isHidden()) {
                 continue;
             }
@@ -121,9 +111,10 @@ public class IMObjectReportGenerator {
             field.setValueClass(node.getClazz());
             _design.addField(field);
 
-            JRDesignStaticText label = createStaticText(node.getDisplayName());
+            JRDesignStaticText label = _template.createStaticText(
+                    node.getDisplayName());
             label.setY(y);
-            JRDesignTextField textField = createText();
+            JRDesignTextField textField = _template.createTextField();
             textField.setY(y);
             JRDesignExpression expression = new JRDesignExpression();
             expression.setValueClass(node.getClazz());
@@ -135,7 +126,7 @@ public class IMObjectReportGenerator {
             y += 20;
         }
 
-        for (NodeDescriptor node : _archetype.getComplexNodeDescriptors()) {
+        for (NodeDescriptor node : archetype.getComplexNodeDescriptors()) {
             JRDesignSubreport report = getSubreport(node);
             detail.addElement(report);
             report.setY(y);
@@ -143,6 +134,7 @@ public class IMObjectReportGenerator {
         }
         detail.setHeight(y + 20);
         _design.setDetail(detail);
+
         _report = JasperCompileManager.compileReport(_design);
     }
 
@@ -157,19 +149,25 @@ public class IMObjectReportGenerator {
         HashMap properties = new HashMap(_subreports);
         IMObjectDataSource source = new IMObjectDataSource(object, _service);
         properties.put("dataSource", source);
-        JasperPrint print = JasperFillManager.fillReport(
-                _report, properties, source);
-        return print;
+        return JasperFillManager.fillReport(_report, properties, source);
     }
 
-    public void report(IMObject object) throws JRException {
-        HashMap properties = new HashMap(_subreports);
-        IMObjectDataSource source = new IMObjectDataSource(object, _service);
-        properties.put("dataSource", source);
-        JasperPrint print = JasperFillManager.fillReport(
-                _report, properties, source);
-        JasperViewer viewer = new JasperViewer(print, true);
-        viewer.setVisible(true);
+    /**
+     * Returns the master report.
+     *
+     * @return the master report
+     */
+    public JasperReport getReport() {
+        return _report;
+    }
+
+    /**
+     * Returns the sub-reports.
+     *
+     * @return the sub-reports.
+     */
+    public JasperReport[] getSubreports() {
+        return _subreports.values().toArray(new JasperReport[0]);
     }
 
     /**
@@ -181,127 +179,27 @@ public class IMObjectReportGenerator {
      */
     private JRDesignSubreport getSubreport(NodeDescriptor node)
             throws JRException {
-        JasperDesign design = JRXmlLoader.load(
-                "src/reports/archetype_subreport_template.jrxml");
-        String subreportName = node.getName() + "_subreport";
-        JRDesignSubreport report = createSubreport();
+        IMObjectCollectionReporter generator
+                = IMObjectCollectionReporterFactory.create(node, _service);
+        JasperDesign collectionReport = generator.generate();
+        String subreportName = collectionReport.getName();
+        JRDesignSubreport subreport = _template.createSubreport();
+        subreport.setHeight(collectionReport.getPageHeight());
         JRExpression dataSource = createExpression(
                 "$P{dataSource}.getDataSource(\"" + node.getName() + "\")",
                 JRDataSource.class);
-        report.setDataSourceExpression(dataSource);
+        subreport.setDataSourceExpression(dataSource);
         JRExpression expression = createExpression(
                 "$P{" + subreportName + "}", JasperReport.class);
-        report.setExpression(expression);
+        subreport.setExpression(expression);
         JRDesignParameter param = new JRDesignParameter();
         param.setName(subreportName);
         param.setValueClass(JasperReport.class);
         _design.addParameter(param);
-        JasperReport compiled = JasperCompileManager.compileReport(design);
+        JasperReport compiled = JasperCompileManager.compileReport(
+                collectionReport);
         _subreports.put(subreportName, compiled);
-        return report;
-    }
-
-    /**
-     * Helper to create a static text field.
-     *
-     * @param text the text
-     * @return a new static text field
-     */
-    private JRDesignStaticText createStaticText(String text) {
-        JRDesignStaticText result = new JRDesignStaticText();
-        result.setText(text);
-
-        JRDesignStaticText template = (JRDesignStaticText) getTemplate(
-                JRDesignStaticText.class);
-        if (template != null) {
-            copy(template, result);
-        }
-        return result;
-    }
-
-    /**
-     * Helper to create a text field.
-     *
-     * @return a new text field
-     */
-    private JRDesignTextField createText() {
-        JRDesignTextField result = new JRDesignTextField();
-
-        JRDesignTextField template = (JRDesignTextField) getTemplate(
-                JRDesignTextField.class);
-        if (template != null) {
-            copy(template, result);
-        }
-        return result;
-    }
-
-    /**
-     * Helper to create a sub report.
-     *
-     * @return a new sub report
-     */
-    private JRDesignSubreport createSubreport() {
-        JRDesignSubreport report = new JRDesignSubreport(_design);
-        JRDesignSubreport template
-                = (JRDesignSubreport) getTemplate(JRDesignSubreport.class);
-        if (template != null) {
-            report.setForecolor(template.getForecolor());
-            report.setBackcolor(template.getBackcolor());
-            report.setHeight(template.getHeight());
-            report.setKey(template.getKey());
-            report.setMode(template.getMode());
-            report.setPositionType(template.getPositionType());
-            report.setX(template.getX());
-            report.setY(template.getY());
-            report.setStretchType(template.getStretchType());
-            report.setRemoveLineWhenBlank(template.isRemoveLineWhenBlank());
-            report.setPrintInFirstWholeBand(template.isPrintInFirstWholeBand());
-            report.setPrintRepeatedValues(template.isPrintRepeatedValues());
-            report.setPrintWhenDetailOverflows(
-                    template.isPrintWhenDetailOverflows());
-            report.setPrintWhenExpression(template.getPrintWhenExpression());
-        }
-        return report;
-    }
-
-    private JRElement getTemplate(Class clazz) {
-        if (_detail != null) {
-            for (JRElement element : _detail.getElements()) {
-                if (element.getClass().isAssignableFrom(clazz)) {
-                    return element;
-                }
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Helper to copy style.
-     *
-     * @param source
-     * @param target
-     */
-    private void copy(JRDesignTextElement source, JRDesignTextElement target) {
-        target.setHeight(source.getHeight());
-        target.setWidth(source.getWidth());
-        target.setX(source.getX());
-        target.setY(source.getY());
-
-        target.setForecolor(source.getForecolor());
-        target.setBackcolor(source.getBackcolor());
-
-        target.setFontName(source.getFontName());
-        target.setFontSize(source.getFontSize());
-        target.setBold(source.isBold());
-        target.setHorizontalAlignment(source.getHorizontalAlignment());
-        target.setVerticalAlignment(source.getVerticalAlignment());
-
-        target.setBorder(source.getBorder());
-        target.setTopBorder(source.getTopBorder());
-        target.setTopBorderColor(source.getTopBorderColor());
-        target.setBottomBorder(source.getBottomBorder());
-        target.setBottomBorderColor(source.getBottomBorderColor());
+        return subreport;
     }
 
     /**
@@ -314,9 +212,7 @@ public class IMObjectReportGenerator {
     private JRExpression createExpression(String text, Class clazz) {
         JRDesignExpression result = new JRDesignExpression();
         result.setText(text);
-        if (clazz != null) {
-            result.setValueClass(clazz);
-        }
+        result.setValueClass(clazz);
         return result;
     }
 
