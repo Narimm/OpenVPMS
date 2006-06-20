@@ -53,46 +53,12 @@ public class DefaultIMObjectCollectionReporter
      * @return the descriptors of the nodes to display
      */
     protected List<NodeDescriptor> getDescriptors() {
-/*
-        List<NodeDescriptor> nodes = null;
-        for (ArchetypeDescriptor archetype : archetypes) {
-            List<NodeDescriptor> all = archetype.getAllNodeDescriptors();
-            if (nodes == null) {
-                nodes = all;
-            } else {
-                nodes = getIntersection(nodes, all);
-            }
-        }
-        assert nodes != null;
-*/
         ArchetypeDescriptor archetype = getArchetypes().get(0);
         NodeDescriptor name = archetype.getNodeDescriptor("name");
         NodeDescriptor description = archetype.getNodeDescriptor("description");
         List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
         result.add(name);
         result.add(description);
-        return result;
-    }
-
-    /**
-     * Helper to return the intersection of two lists of node descriptors.
-     *
-     * @param first  the first list of nodes
-     * @param second the second list of nodes
-     * @return the intersection of the two lists
-     */
-    private List<NodeDescriptor> getIntersection(
-            List<NodeDescriptor> first, List<NodeDescriptor> second) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        for (NodeDescriptor a : first) {
-            for (NodeDescriptor b : second) {
-                if (a.getName().equals(
-                        b.getName()) && !a.isHidden()) {
-                    result.add(a);
-                    break;
-                }
-            }
-        }
         return result;
     }
 

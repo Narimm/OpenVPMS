@@ -27,7 +27,8 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Generates a jasper report for a collection of
+ * <code>EntityRelationship</code>s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

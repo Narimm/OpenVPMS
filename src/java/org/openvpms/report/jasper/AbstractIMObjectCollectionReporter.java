@@ -108,17 +108,12 @@ public abstract class AbstractIMObjectCollectionReporter
             NodeDescriptor node = nodes.get(i);
             JRDesignField field = new JRDesignField();
             field.setName(getFieldName(node));
-            Class clazz;
-            if (node.isObjectReference() || node.isCollection()) {
-                clazz = String.class;
-            } else {
-                clazz = node.getClazz();
-            }
-            field.setValueClass(clazz);
+            Class valueClass = ReportHelper.getValueClass(node);
+            field.setValueClass(valueClass);
             design.addField(field);
             JRDesignTextField textField = factory.createTextField();
             JRDesignExpression expression = new JRDesignExpression();
-            expression.setValueClass(clazz);
+            expression.setValueClass(valueClass);
             expression.setText("$F{" + getFieldName(node) + "}");
             textField.setExpression(expression);
             textField.setX(x);

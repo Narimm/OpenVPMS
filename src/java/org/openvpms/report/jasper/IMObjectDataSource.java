@@ -152,7 +152,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             } else if (node.isCollection()) {
                 StringBuffer descriptions = new StringBuffer();
                 for (IMObject value : node.getChildren(object)) {
-                    descriptions.append(value.getDescription());
+                    descriptions.append(value.getName());
                     descriptions.append('\n');
                 }
                 result = descriptions.toString();

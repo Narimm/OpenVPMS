@@ -38,18 +38,28 @@ public class IMObjectCollectionReporterFactory {
      * @return a new collection reporter
      */
     public static IMObjectCollectionReporter create(NodeDescriptor descriptor,
-                                                    IArchetypeService service
-    ) {
+                                                    IArchetypeService service) {
         boolean entityRelationship = true;
         String[] shortNames = descriptor.getArchetypeRange();
         for (String shortName : shortNames) {
             if (!shortName.startsWith("entityRelationship")) {
                 entityRelationship = false;
+                break;
             }
         }
         if (entityRelationship) {
             return new EntityRelationshipCollectionReporter(descriptor,
                                                             service);
+        }
+        boolean actRelationship = true;
+        for (String shortName : shortNames) {
+            if (!shortName.startsWith("actRelationship")) {
+                actRelationship = false;
+                break;
+            }
+        }
+        if (actRelationship) {
+            return new ActRelationshipCollectionReporter(descriptor, service);
         }
         return new DefaultIMObjectCollectionReporter(descriptor, service);
     }

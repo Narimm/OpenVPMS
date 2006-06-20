@@ -96,11 +96,6 @@ public class IMObjectReportGenerator {
 
         JRDesignBand detail = new JRDesignBand();
 
-        JRDesignField displayName = new JRDesignField();
-        displayName.setName("displayName");
-        displayName.setValueClass(String.class);
-        _design.addField(displayName);
-
         int y = 0;
         for (NodeDescriptor node : archetype.getSimpleNodeDescriptors()) {
             if (node.isHidden()) {
@@ -108,7 +103,8 @@ public class IMObjectReportGenerator {
             }
             JRDesignField field = new JRDesignField();
             field.setName(node.getName());
-            field.setValueClass(node.getClazz());
+            Class valueClass = ReportHelper.getValueClass(node);
+            field.setValueClass(valueClass);
             _design.addField(field);
 
             JRDesignStaticText label = _template.createStaticText(
@@ -117,13 +113,20 @@ public class IMObjectReportGenerator {
             JRDesignTextField textField = _template.createTextField();
             textField.setY(y);
             JRDesignExpression expression = new JRDesignExpression();
-            expression.setValueClass(node.getClazz());
+            expression.setValueClass(valueClass);
             expression.setText("$F{" + node.getName() + "}");
             textField.setExpression(expression);
 
             detail.addElement(label);
             detail.addElement(textField);
             y += 20;
+        }
+
+        if (!_design.getFieldsMap().containsKey("displayName")) {
+            JRDesignField displayName = new JRDesignField();
+            displayName.setName("displayName");
+            displayName.setValueClass(String.class);
+            _design.addField(displayName);
         }
 
         for (NodeDescriptor node : archetype.getComplexNodeDescriptors()) {
