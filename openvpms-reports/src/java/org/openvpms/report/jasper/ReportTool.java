@@ -29,8 +29,10 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -77,7 +79,7 @@ public class ReportTool {
         IPage<IMObject> rows = _service.get(query);
         for (IMObject object : rows.getRows()) {
             System.out.println(object.getArchetypeId().getShortName()
-                    + " " + object.getName());
+                    + " " + object.getUid() + " " + object.getName());
         }
     }
 
@@ -96,6 +98,19 @@ public class ReportTool {
         IPage<IMObject> rows = _service.get(query);
         List<IMObject> objects = rows.getRows();
         return (!objects.isEmpty()) ? objects.get(0) : null;
+    }
+
+    /**
+     * Returns the first instance with the specified short name and uid
+     *
+     * @param shortName the archetype short name
+     * @param uid       the instance identifier
+     * @return the corresponding object, or <code>null</code> if none was found
+     */
+    public IMObject get(String shortName, long uid) {
+        ArchetypeId id = _service.getArchetypeDescriptor(
+                shortName).getType();
+        return ArchetypeQueryHelper.getByUid(_service, id, uid);
     }
 
     /**
@@ -138,6 +153,7 @@ public class ReportTool {
                 boolean list = config.getBoolean("list");
                 boolean report = config.getBoolean("report");
                 String shortName = config.getString("shortName");
+                long id = config.getLong("id", -1);
                 String name = config.getString("name");
                 String pdf = config.getString("pdf");
 
@@ -146,7 +162,12 @@ public class ReportTool {
                     reporter.list(shortName);
                 } else if (report && shortName != null) {
                     ReportTool reporter = new ReportTool();
-                    IMObject object = reporter.get(shortName, name);
+                    IMObject object;
+                    if (id == -1) {
+                        object = reporter.get(shortName, name);
+                    } else {
+                        object = reporter.get(shortName, id);
+                    }
                     boolean xml = config.getBoolean("xml");
                     if (object != null) {
                         if (pdf != null) {
@@ -211,6 +232,10 @@ public class ReportTool {
         parser.registerParameter(new FlaggedOption("name")
                 .setShortFlag('n').setLongFlag("name")
                 .setHelp("The archetype name. Use with -r"));
+        parser.registerParameter(new FlaggedOption("id")
+                .setShortFlag('i').setLongFlag("id")
+                .setStringParser(JSAP.LONG_PARSER)
+                .setHelp("The archetype id. Use with -r"));
         parser.registerParameter(new FlaggedOption("pdf").setShortFlag('p')
                 .setLongFlag("pdf")
                 .setHelp("Generate a PDF file. Use with -r"));
