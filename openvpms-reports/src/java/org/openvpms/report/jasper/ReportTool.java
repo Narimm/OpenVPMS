@@ -200,17 +200,17 @@ public class ReportTool {
                                                                    JRException {
         ArchetypeDescriptor archetype
                 = _service.getArchetypeDescriptor(object.getArchetypeId());
-        IMObjectReportGenerator generator
-                = new IMObjectReportGenerator(archetype, _service);
+        IMObjectReport report = IMObjectReportFactory.create(
+                archetype.getShortName(), _service);
         if (showXML) {
-            JRXmlWriter.writeReport(generator.getReport(),
+            JRXmlWriter.writeReport(report.getReport(),
                                     new PrintStream(System.out), "UTF-8");
-            for (JasperReport subreport : generator.getSubreports()) {
+            for (JasperReport subreport : report.getSubreports()) {
                 JRXmlWriter.writeReport(subreport,
                                         new PrintStream(System.out), "UTF-8");
             }
         }
-        return generator.generate(object);
+        return report.generate(object);
     }
 
     /**

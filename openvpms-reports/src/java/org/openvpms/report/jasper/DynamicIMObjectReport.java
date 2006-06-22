@@ -22,8 +22,6 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JRDesignBand;
 import net.sf.jasperreports.engine.design.JRDesignExpression;
@@ -49,12 +47,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectReportGenerator {
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService _service;
+public class DynamicIMObjectReport extends AbstractIMObjectReport {
 
     /**
      * Design time report.
@@ -66,6 +59,9 @@ public class IMObjectReportGenerator {
      */
     private final JRElementFactory _template;
 
+    /**
+     * The compiled report.
+     */
     private JasperReport _report;
 
     /**
@@ -76,17 +72,17 @@ public class IMObjectReportGenerator {
 
 
     /**
-     * Construct a new <code>IMObjectReportGenerator</code>.
+     * Construct a new <code>DynamicIMObjectReport</code>.
      *
      * @param archetype the archetype descriptor
      * @param service   the archetype service
      */
-    public IMObjectReportGenerator(ArchetypeDescriptor archetype,
-                                   IArchetypeService service)
+    public DynamicIMObjectReport(ArchetypeDescriptor archetype,
+                                 IArchetypeService service)
             throws JRException {
+        super(service);
         _design = JRXmlLoader.load("src/reports/archetype_template.jrxml");
         _template = new JRElementFactory(_design);
-        _service = service;
 
         JRDesignParameter param = new JRDesignParameter();
         param.setName("dataSource");
@@ -142,20 +138,6 @@ public class IMObjectReportGenerator {
     }
 
     /**
-     * Generates a report for an object.
-     *
-     * @param object the object
-     * @return the report
-     * @throws JRException for any error
-     */
-    public JasperPrint generate(IMObject object) throws JRException {
-        HashMap properties = new HashMap(_subreports);
-        IMObjectDataSource source = new IMObjectDataSource(object, _service);
-        properties.put("dataSource", source);
-        return JasperFillManager.fillReport(_report, properties, source);
-    }
-
-    /**
      * Returns the master report.
      *
      * @return the master report
@@ -174,6 +156,18 @@ public class IMObjectReportGenerator {
     }
 
     /**
+     * Returns the report parameters to use when filling the report.
+     *
+     * @return the report parameters
+     * @param object
+     */
+    protected Map<String, Object> getParameters(IMObject object) {
+        Map<String, Object> result = super.getParameters(object);
+        result.putAll(_subreports);
+        return result;
+    }
+
+    /**
      * Generates a subreport for a node.
      *
      * @param node the node
@@ -182,8 +176,9 @@ public class IMObjectReportGenerator {
      */
     private JRDesignSubreport getSubreport(NodeDescriptor node)
             throws JRException {
-        IMObjectCollectionReporter generator
-                = IMObjectCollectionReporterFactory.create(node, _service);
+        IMObjectCollectionReport generator
+                = IMObjectCollectionReportFactory.create(
+                node, getArchetypeService());
         JasperDesign collectionReport = generator.generate();
         String subreportName = collectionReport.getName();
         JRDesignSubreport subreport = _template.createSubreport();

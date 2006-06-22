@@ -24,14 +24,9 @@ import net.sf.jasperreports.engine.JRField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -49,24 +44,14 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     private final IMObject _object;
 
     /**
-     * The archetype service.
+     * The node resolver.
      */
-    private final IArchetypeService _service;
-
-    /**
-     * The archetype descriptor.
-     */
-    private final ArchetypeDescriptor _archetype;
+    private final NodeResolver _resolver;
 
     /**
      * Determines if there is another record.
      */
     private boolean _next = true;
-
-    /**
-     * The logger.
-     */
-    private static final Log _log = LogFactory.getLog(IMObjectDataSource.class);
 
 
     /**
@@ -78,8 +63,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     public IMObjectDataSource(IMObject object, IArchetypeService service) {
         super(service);
         _object = object;
-        _archetype = service.getArchetypeDescriptor(object.getArchetypeId());
-        _service = service;
+        _resolver = new NodeResolver(object, service);
     }
 
     /**
@@ -102,14 +86,26 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     public JRDataSource getDataSource(String name) throws JRException {
-        NodeDescriptor descriptor = _archetype.getNodeDescriptor(name);
+        return getDataSource(name, null);
+    }
+
+    /**
+     * Returns a data source for a collection node.
+     *
+     * @param name the collection node name
+     * @param sortNode the node to sort on. May be <code>null</code>
+     * @throws JRException for any error
+     */
+    public JRDataSource getDataSource(String name, String sortNode)
+            throws JRException {
+        ArchetypeDescriptor archetype = _resolver.getArchetype();
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
         if (descriptor == null) {
             throw new JRException("No node found for field=" + name);
         }
-        return new IMObjectCollectionDataSource(_object, descriptor,
-                                                getArchetypeService());
+        return new IMObjectCollectionDataSource(
+                _object, descriptor, getArchetypeService(), sortNode);
     }
-
     /**
      * Gets the field value for the current position.
      *
@@ -118,71 +114,20 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {
-        Object result = null;
-        String name = field.getName();
-        int index;
-        IMObject object = _object;
-        ArchetypeDescriptor archetype = _archetype;
-        while ((index = name.indexOf(".")) != -1) {
-            String nodeName = name.substring(0, index);
-            NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
-            if (node.isObjectReference()) {
-                object = getObject(object, node);
-            } else if (node.isCollection() && node.getMaxCardinality() == 1) {
-                List<IMObject> values = node.getChildren(object);
-                object = (!values.isEmpty()) ? values.get(0) : null;
-            } else {
-                throw new JRException(
-                        "Field doesn't refer to an object reference: " + field);
+        NodeResolver.State state = _resolver.resolve(field.getName());
+        Object value = state.getValue();
+        Object result;
+        if (value != null && state.getLeafNode().isCollection()) {
+            Collection<IMObject> values = (Collection<IMObject>) value;
+            StringBuffer descriptions = new StringBuffer();
+            for (IMObject object : values) {
+                descriptions.append(object.getName());
+                descriptions.append('\n');
             }
-            name = name.substring(index + 1);
-            if (object != null) {
-                archetype = _service.getArchetypeDescriptor(
-                        object.getArchetypeId());
-            }
-        }
-        NodeDescriptor node = archetype.getNodeDescriptor(name);
-        if (name.equals("displayName") && node == null) {
-            result = archetype.getDisplayName();
+            result = descriptions.toString();
         } else {
-            if (node == null) {
-                throw new JRException("No node found for field=" + field);
-            }
-            if (node.isObjectReference()) {
-                object = getObject(object, node);
-                if (object != null) {
-                    result = object.getName();
-                }
-            } else if (node.isCollection()) {
-                StringBuffer descriptions = new StringBuffer();
-                for (IMObject value : node.getChildren(object)) {
-                    descriptions.append(value.getName());
-                    descriptions.append('\n');
-                }
-                result = descriptions.toString();
-            } else {
-                result = node.getValue(object);
-            }
+            result = value;
         }
         return result;
     }
-
-    /**
-     * Resolve a reference.
-     *
-     * @param parent     the parent object
-     * @param descriptor the reference descriptor
-     */
-    protected IMObject getObject(IMObject parent, NodeDescriptor descriptor) {
-        IMObjectReference ref = (IMObjectReference) descriptor.getValue(parent);
-        if (ref != null) {
-            try {
-                return ArchetypeQueryHelper.getByObjectReference(_service, ref);
-            } catch (OpenVPMSException exception) {
-                _log.warn(exception, exception);
-            }
-        }
-        return null;
-    }
-
 }

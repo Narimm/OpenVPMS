@@ -22,27 +22,25 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
-import java.util.List;
-
 
 /**
- * Generates a jasper report for a collection of
- * <code>EntityRelationship</code>s.
+ * Default report generator for a collection of <code>IMObject</code>s.
+ * This displays the name and description nodes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipCollectionReporter
-        extends AbstractIMObjectCollectionReporter {
+public class DefaultIMObjectCollectionReport
+        extends AbstractIMObjectCollectionReport {
 
     /**
-     * Construct a new <code>AbstractIMObjectCollectionReporter</code>.
+     * Construct a new <code>DefaultIMObjectCollectionReport</code>.
      *
      * @param descriptor the collection node descriptor
      * @param service    the archetype service
      */
-    public EntityRelationshipCollectionReporter(NodeDescriptor descriptor,
-                                                IArchetypeService service) {
+    public DefaultIMObjectCollectionReport(NodeDescriptor descriptor,
+                                           IArchetypeService service) {
         super(descriptor, service);
     }
 
@@ -52,25 +50,10 @@ public class EntityRelationshipCollectionReporter
      * @return the descriptors of the nodes to display
      */
     protected NodeDescriptor[] getDescriptors() {
-        ArchetypeDescriptor archetype = getArchetype();
-        NodeDescriptor target = archetype.getNodeDescriptor("target");
-        List<ArchetypeDescriptor> archetypes = getArchetypes(target);
-        ArchetypeDescriptor targetArch = archetypes.get(0);
-        NodeDescriptor name = targetArch.getNodeDescriptor("name");
+        ArchetypeDescriptor archetype = getArchetypes().get(0);
+        NodeDescriptor name = archetype.getNodeDescriptor("name");
         NodeDescriptor description = archetype.getNodeDescriptor("description");
-        return new NodeDescriptor[] {name, description};
+        return new NodeDescriptor[]{name, description};
     }
 
-    /**
-     * Returns the node name to be used in a field expression.
-     *
-     * @param descriptor the node descriptor
-     * @return the node name
-     */
-    protected String getFieldName(NodeDescriptor descriptor) {
-        if (descriptor.getName().equals("name")) {
-            return "target.name";
-        }
-        return super.getFieldName(descriptor);
-    }
 }
