@@ -33,8 +33,8 @@ import java.util.ArrayList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ActRelationshipCollectionReporter
-        extends AbstractIMObjectCollectionReporter {
+public class ActRelationshipCollectionReport
+        extends AbstractIMObjectCollectionReport {
 
     /**
      * The node descriptors.
@@ -44,13 +44,13 @@ public class ActRelationshipCollectionReporter
 
 
     /**
-     * Construct a new <code>DefaultIMObjectCollectionReporter</code>.
+     * Construct a new <code>DefaultIMObjectCollectionReport</code>.
      *
      * @param descriptor the collection node descriptor
      * @param service    the archetype service
      */
-    public ActRelationshipCollectionReporter(NodeDescriptor descriptor,
-                                             IArchetypeService service) {
+    public ActRelationshipCollectionReport(NodeDescriptor descriptor,
+                                           IArchetypeService service) {
         super(descriptor, service);
         ArchetypeDescriptor items = getArchetype();
         NodeDescriptor target = items.getNodeDescriptor("target");

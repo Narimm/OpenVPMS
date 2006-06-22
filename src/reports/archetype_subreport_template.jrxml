@@ -23,7 +23,7 @@
 	<import value="net.sf.jasperreports.engine.*" />
 	<import value="net.sf.jasperreports.engine.data.*" />
 
-	<style
+	<style 
 		name="Arial_Normal"
 		isDefault="true"
 		fontName="Arial"
@@ -36,7 +36,7 @@
 		pdfEncoding="Cp1252"
 		isPdfEmbedded="false"
 	/>
-	<style
+	<style 
 		name="Arial_Bold"
 		isDefault="false"
 		fontName="Arial"
@@ -49,7 +49,7 @@
 		pdfEncoding="Cp1252"
 		isPdfEmbedded="false"
 	/>
-	<style
+	<style 
 		name="Arial_Italic"
 		isDefault="false"
 		fontName="Arial"

@@ -23,12 +23,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
 /**
- * A factory for {@link IMObjectCollectionReporter} instances.
+ * A factory for {@link IMObjectCollectionReport} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectCollectionReporterFactory {
+public class IMObjectCollectionReportFactory {
 
     /**
      * Creates a new collection reporter.
@@ -37,7 +37,7 @@ public class IMObjectCollectionReporterFactory {
      * @param service    the archetype service
      * @return a new collection reporter
      */
-    public static IMObjectCollectionReporter create(NodeDescriptor descriptor,
+    public static IMObjectCollectionReport create(NodeDescriptor descriptor,
                                                     IArchetypeService service) {
         boolean entityRelationship = true;
         String[] shortNames = descriptor.getArchetypeRange();
@@ -48,8 +48,8 @@ public class IMObjectCollectionReporterFactory {
             }
         }
         if (entityRelationship) {
-            return new EntityRelationshipCollectionReporter(descriptor,
-                                                            service);
+            return new EntityRelationshipCollectionReport(descriptor,
+                                                          service);
         }
         boolean actRelationship = true;
         for (String shortName : shortNames) {
@@ -59,8 +59,8 @@ public class IMObjectCollectionReporterFactory {
             }
         }
         if (actRelationship) {
-            return new ActRelationshipCollectionReporter(descriptor, service);
+            return new ActRelationshipCollectionReport(descriptor, service);
         }
-        return new DefaultIMObjectCollectionReporter(descriptor, service);
+        return new DefaultIMObjectCollectionReport(descriptor, service);
     }
 }
