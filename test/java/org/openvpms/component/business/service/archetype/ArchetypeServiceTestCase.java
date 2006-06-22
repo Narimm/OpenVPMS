@@ -258,6 +258,9 @@ public class ArchetypeServiceTestCase extends BaseTestCase {
         IArchetypeDescriptorCache cache = new ArchetypeDescriptorCacheFS(dir,
                 new String[] { extension }, assertionFile);
         service = new ArchetypeService(cache);
+        
+        // set up the archetype service helper
+        new ArchetypeServiceHelper(service); 
     }
 
     /**

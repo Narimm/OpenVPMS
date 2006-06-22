@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.component.business.service.archetype.helper;
 
 // openvpms-framework
 import java.util.ArrayList;
@@ -41,6 +41,8 @@ import org.openvpms.component.business.domain.im.datatypes.property.AssertionPro
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -48,6 +50,7 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
 
 /**
  * This is a helper class for retrieving lookups reference data.
@@ -428,6 +431,29 @@ public class LookupHelper  {
             .setActiveOnly(true);
 
         return new ArrayList<Lookup>((List)service.get(query).getRows());
+    }
+    
+    /**
+     *  Return the default lookup object for the specified archetype short name.
+     *  It assumes that the archetype short name refers to a {@link Lookup}.
+     *  <p>
+     *  This method also assumes that the specified archetype short name has a 
+     *  node called 'defaultLookup' defined, which is of type boolean. 
+     *  
+     * @paeam service
+     *            the archetype service  
+     * @param lookup
+     *            the archetype short name of the lookup.
+     * @return IMObject
+     *            the object of null if one does not exist                       
+     */
+    public static Lookup getDefaultLookup(IArchetypeService service, String lookup) {
+        IPage<IMObject> results = service.get(new ArchetypeQuery(lookup, false, false)
+                    .add(new NodeConstraint("defaultLookup", RelationalOp.EQ, true))
+                    .setNumOfRows(1));
+
+        return (results.getRows().size() == 1) ? (Lookup)results.getRows().get(0) : null;
+        
     }
     
     /**

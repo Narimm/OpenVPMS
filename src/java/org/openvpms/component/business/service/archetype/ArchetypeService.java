@@ -94,7 +94,7 @@ public class ArchetypeService implements IArchetypeService {
      * well abstracted at this stage since there are no requirements to 
      * support anything outside (hibernate).
      */
-    private QueryBuilder builder = new QueryBuilder(this);
+    private QueryBuilder builder = new QueryBuilder();
 
     /**
      * The entity interceptor that is used to intercept calls hibernate

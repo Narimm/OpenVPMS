@@ -45,6 +45,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -466,7 +467,7 @@ public class ArchetypeServicePersistenceTestCase extends
                 person.getArchetypeId());
         NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
         List<IMObject> children = 
-            ArchetypeServiceHelper.getCandidateChildren(service, ndesc, person);
+            ArchetypeQueryHelper.getCandidateChildren(service, ndesc, person);
         assertTrue(children.size() > 0);
         for (IMObject child : children) {
             boolean matchFound = false;

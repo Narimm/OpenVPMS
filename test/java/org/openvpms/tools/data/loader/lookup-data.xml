@@ -70,4 +70,21 @@
 	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B10"   />
 	<data id="B11" archetype="lookup.breed" breed="Balinese"  />
 	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B11"  />
+
+    <data archetype="lookup.afl" team="St Kilda" alias="Saints" defaultLookup="true"  />
+    <data archetype="lookup.afl" team="Richmond" alias="Tigers" />
+    <data archetype="lookup.afl" team="Western Bulldogs" alias="Dogs" />
+    <data archetype="lookup.afl" team="Hawthorn" alias="Hawks" />
+    <data archetype="lookup.afl" team="Collingwood" alias="Pies" />
+    <data archetype="lookup.afl" team="Brisbane Lions" alias="Lions" />
+    <data archetype="lookup.afl" team="Sydney Swans" alias="Swans" />
+    <data archetype="lookup.afl" team="Melbourne" alias="Deamons" />
+    <data archetype="lookup.afl" team="West Coast Eagles" alias="Eagles" />
+    <data archetype="lookup.afl" team="Fremantle" alias="Freo" />
+    <data archetype="lookup.afl" team="Adelaide" alias="Crows" />
+    <data archetype="lookup.afl" team="Port Adelaide" alias="Port" />
+    <data archetype="lookup.afl" team="Essendon" alias="Bombers" />
+    <data archetype="lookup.afl" team="Geelong" alias="Cats" />
+    <data archetype="lookup.afl" team="North Melbourne" alias="Kangaroos" />
+    <data archetype="lookup.afl" team="Carlton" alias="Blues" />
 </archetype>

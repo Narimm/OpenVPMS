@@ -158,6 +158,14 @@
       <ref local="entityInterceptor" />
     </property>
   </bean>
+  
+  <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+  <bean id="archetypeServiceHelper"
+    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+    <constructor-arg index="0">
+      <ref local="archetypeService" />
+    </constructor-arg>
+  </bean>
 
   <!--  The Audit Service -->
   <bean id="auditService"

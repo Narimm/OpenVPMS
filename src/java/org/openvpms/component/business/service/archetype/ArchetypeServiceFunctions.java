@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 /**
  * This class provides a list of helper functions for using the 
@@ -49,22 +50,6 @@ public class ArchetypeServiceFunctions {
             .getLogger(ArchetypeServiceFunctions.class);
     
     /**
-     * A reference to the archetype service
-     */
-    private static IArchetypeService archetypeService;
-    
-    
-    /**
-     * Construct an instance give a reference to the archetype service
-     * 
-     * @param service
-     *            the archetype service
-     */
-    public ArchetypeServiceFunctions(IArchetypeService service) {
-        archetypeService = service;
-    }
-    
-    /**
      * This will take a list of {@link IMObjectReference} instances and return
      * a list of the corresponding {@link IMObject} instances
      * 
@@ -76,7 +61,7 @@ public class ArchetypeServiceFunctions {
         List<IMObject> objects = new ArrayList<IMObject>();
         for (IMObjectReference ref : references) {
             objects.add(ArchetypeQueryHelper.getByObjectReference(
-                    archetypeService, ref));
+                    ArchetypeServiceHelper.getArchetypeService(), ref));
         }
 
         return objects;
@@ -90,6 +75,7 @@ public class ArchetypeServiceFunctions {
      * @return IMObject            
      */
     public static IMObject resolve(IMObjectReference reference) {
-        return ArchetypeQueryHelper.getByObjectReference(archetypeService, reference);
+        return ArchetypeQueryHelper.getByObjectReference(
+                ArchetypeServiceHelper.getArchetypeService(), reference);
     }
 }

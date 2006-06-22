@@ -86,7 +86,8 @@ public class ArchetypeServiceException extends OpenVPMSException {
         InvalidNodeDescriptor,
         InvalidDefaultValue,
         FailedToExecuteRule,
-        RuleEngineNotSupported
+        RuleEngineNotSupported,
+        ArchetypeServiceNotSet
     }
 
     /**

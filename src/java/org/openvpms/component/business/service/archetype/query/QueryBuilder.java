@@ -34,7 +34,7 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.query.QueryContext.LogicalOperator;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
@@ -72,19 +72,10 @@ public class QueryBuilder {
     private static final Logger logger = Logger.getLogger(QueryBuilder.class);
     
     /**
-     * The archetype service
-     */
-    private IArchetypeService service;
-    
-    
-    /**
      * Create an instance of the builder
-     * 
-     * @param service
-     *            a reference to the archetype service
      */
-    public QueryBuilder(IArchetypeService service) {
-        this.service = service;
+    public QueryBuilder() {
+        // do nothing
     }
 
     /**     * Build the HQL from the specified {@link ArchetypeQuery}.
@@ -529,7 +520,8 @@ public class QueryBuilder {
         }
         
         ArchetypeId id = constraint.getArchetypeId();
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(id);
+        ArchetypeDescriptor adesc = ArchetypeServiceHelper.getArchetypeService()
+            .getArchetypeDescriptor(id);
         DistinctTypesResultSet types = new DistinctTypesResultSet();
           
         if (adesc != null) {
@@ -694,7 +686,8 @@ public class QueryBuilder {
      */
     private DistinctTypesResultSet getDistinctTypes(ArchetypeIdConstraint constraint) {
         ArchetypeId id = constraint.getArchetypeId();
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(id);
+        ArchetypeDescriptor adesc = ArchetypeServiceHelper.getArchetypeService()
+            .getArchetypeDescriptor(id);
         DistinctTypesResultSet types = new DistinctTypesResultSet();
           
         if (adesc != null) {
@@ -792,7 +785,7 @@ public class QueryBuilder {
         DistinctTypesResultSet results = new DistinctTypesResultSet();
         
         // search through the cache for matching archetype descriptors
-        for (ArchetypeDescriptor desc : service.getArchetypeDescriptors()) {
+        for (ArchetypeDescriptor desc : ArchetypeServiceHelper.getArchetypeService().getArchetypeDescriptors()) {
             ArchetypeId archId = desc.getType();
             if ((primaryOnly) &&
                 (desc.isPrimary() == false)) {
@@ -847,8 +840,8 @@ public class QueryBuilder {
             modShortNames[index] = StringUtilities.toRegEx(shortNames[index]);
         }
         // adjust the reference model name
-        for (String name : service.getArchetypeShortNames()) {
-            ArchetypeDescriptor desc = service.getArchetypeDescriptor(name); 
+        for (String name : ArchetypeServiceHelper.getArchetypeService().getArchetypeShortNames()) {
+            ArchetypeDescriptor desc = ArchetypeServiceHelper.getArchetypeService().getArchetypeDescriptor(name); 
             if ((primaryOnly) &&
                 (!desc.isPrimary())) {
                     continue;

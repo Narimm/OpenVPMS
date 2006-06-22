@@ -40,8 +40,8 @@ import org.openvpms.component.business.domain.im.datatypes.property.NamedPropert
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.util.StringUtilities;
 
@@ -60,22 +60,6 @@ public class ArchetypeRangeAssertion {
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
             .getLogger(ArchetypeRangeAssertion.class);
-
-    /**
-     * Hold a reference to the archetype service, which is required by some
-     * methods
-     */
-    private static IArchetypeService archetypeService;
-    
-    /**
-     * Construct an instance of the class with the specified dependencies.
-     * 
-     * @param service
-     *            the archetype service
-     */
-    public ArchetypeRangeAssertion(IArchetypeService service) {
-        archetypeService = service;
-    }
 
     /**
      * This method is called during the create phase of an archetype. It will
@@ -110,7 +94,8 @@ public class ArchetypeRangeAssertion {
                 }
                 
                 // okay a default value needs to be created
-                ArchetypeDescriptor adesc = archetypeService.getArchetypeDescriptor(type.shortName);
+                ArchetypeDescriptor adesc = ArchetypeServiceHelper.getArchetypeService()
+                    .getArchetypeDescriptor(type.shortName);
                 if (adesc == null) {
                     throw new AssertionRuntimeException(
                             AssertionRuntimeException.ErrorCode.ArchetypeDoesNotExist,
@@ -120,7 +105,8 @@ public class ArchetypeRangeAssertion {
                 
                 try {
                     ArchetypeId aid = adesc.getType();
-                List<IMObject> objects = ArchetypeQueryHelper.get(archetypeService,
+                List<IMObject> objects = ArchetypeQueryHelper.get(
+                        ArchetypeServiceHelper.getArchetypeService(),
                         aid.getRmName(), aid.getEntityName(), aid.getConcept(),
                         type.defaultValue, true, 0, ArchetypeQuery.ALL_ROWS).getRows();
                     

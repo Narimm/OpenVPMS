@@ -17,10 +17,12 @@
  */
  
 
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.component.business.service.archetype.helper;
 
 // openvpms-framework
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 // commons-lang
 import org.apache.commons.lang.StringUtils;
@@ -31,9 +33,12 @@ import org.apache.log4j.Logger;
 // openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
@@ -72,7 +77,6 @@ public class ArchetypeQueryHelper {
                 new ArchetypeQuery(archId)
                 .add(new NodeConstraint("uid", RelationalOp.EQ, uid)));
         return (results.getRows().size() == 1) ? results.getRows().get(0) : null;
-        
     }
     
     /**
@@ -345,5 +349,51 @@ public class ArchetypeQueryHelper {
                 .setFirstRow(firstRow)
                 .setNumOfRows(numOfRows);
         return service.get(query);
+    }
+
+    /**
+     * This is a static method that will return a list of candidate children 
+     * given an reference to the archetype service, the node descriptor for 
+     * the node in question and the context object.
+     * 
+     * TODO Deprecate this function and go about doing it another way
+     * 
+     * @param service
+     *            the archetype service
+     * @param ndesc
+     *            the node descriptor
+     * @param context
+     *            the context object            
+     * @return List<IMObject>
+     */
+    public static List<IMObject> getCandidateChildren(IArchetypeService service,
+            NodeDescriptor ndesc, IMObject context) {
+    
+        // find the node descriptor
+        if (ndesc == null) {
+            return null;
+        }
+        
+        // check that the node is a collection and that the parentChild
+        // attribute is set to false
+        if (!(ndesc.isCollection()) ||
+            (ndesc.isParentChild())) {
+            return null;
+        }
+                
+        // now there are two ways that candidate children cna be specified
+        // Firstly they can be specified using the candidateChildren assertion
+        // and secondly they can be specified using the archetypeRange
+        // assertion
+        List<IMObject> children = new ArrayList<IMObject>();
+        if (ndesc.containsAssertionType("candidateChildren")) {
+            children = ndesc.getCandidateChildren(context);
+        } else if (ndesc.containsAssertionType("archetypeRange")) {
+            children = get(service,
+                    ndesc.getArchetypeRange(), true, 0, ArchetypeQuery.ALL_ROWS)
+                    .getRows();
+        }
+        
+        return children;
     }
 }

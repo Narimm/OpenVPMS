@@ -46,4 +46,5 @@
     <data collection="classifications" archetype="classification.staff"  childId="id:19" />
     <data collection="classifications" archetype="classification.staff" childId="id:20" />
   </data>
+  <data archetype="person.footballer" title="Mr" firstName="Jimmy" lastName="Alateras" />
 </archetype>
