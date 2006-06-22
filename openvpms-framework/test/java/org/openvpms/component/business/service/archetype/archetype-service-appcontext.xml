@@ -146,31 +146,28 @@
       <ref local="entityInterceptor" />
     </property>
   </bean>
-  
+
   <!--  Instantiate the assertion beans and inject their dependencies -->
-  <bean id="archetypeAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.ArchetypeRangeAssertion">
+  <bean id="archetypeServiceHelper"
+    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
     <constructor-arg index="0">
       <ref local="archetypeService" />
     </constructor-arg>
   </bean>
-  
-  <!--  Instatiate the bean used to expose archetype service functions  -->
-  <bean id="archetypeServiceFunctions"
-    class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
-    <constructor-arg index="0">
-      <ref local="archetypeService" />
-    </constructor-arg>
-  </bean>
-  
+
   <!--  The JXPathHelper class, which allows the user to register JXPath extension functions -->
-  <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+  <bean id="jxpathHelper"
+    class="org.openvpms.component.system.common.jxpath.JXPathHelper">
     <constructor-arg index="0">
       <props>
-        <prop key="tf">org.openvpms.component.system.service.jxpath.TestFunctions</prop>
-        <prop key="openvpms">org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions</prop>
+        <prop key="tf">
+          org.openvpms.component.system.service.jxpath.TestFunctions
+        </prop>
+        <prop key="openvpms">
+          org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions
+        </prop>
       </props>
     </constructor-arg>
   </bean>
-  
+
 </beans>

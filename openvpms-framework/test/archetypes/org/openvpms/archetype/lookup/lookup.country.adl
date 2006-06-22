@@ -10,6 +10,8 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat (/value, ' ', /code)" />
+		<node name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
+			defaultValue="false()" />
         <node name="target" path="/targetLookupRelationships"
 			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="*"/>
         <node name="source" path="/sourceLookupRelationships"

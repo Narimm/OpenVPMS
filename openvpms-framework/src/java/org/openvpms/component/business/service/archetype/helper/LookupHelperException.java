@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.component.business.service.archetype;
+package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -63,7 +63,7 @@ public class LookupHelperException extends OpenVPMSException {
      * class is loaded.
      */
     private static Messages messages = Messages
-            .getMessages("org.openvpms.component.business.service.archetype."
+            .getMessages("org.openvpms.component.business.service.archetype.helper"
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**

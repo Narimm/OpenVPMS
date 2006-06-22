@@ -122,7 +122,7 @@
 			test-case="normal">
 			<params>
 				<param name="recordCount1" type="java.lang.Integer">
-					66
+					69
 				</param>
 			</params>
 		</method>
@@ -137,7 +137,7 @@
 					1
 				</param>
 				<param name="recordCount3" type="java.lang.Integer">
-					5
+					7
 				</param>
 				<param name="recordCount4" type="java.lang.Integer">
 					1
@@ -150,13 +150,13 @@
 			test-case="normal">
 			<params>
 				<param name="recordCount1" type="java.lang.Integer">
-					11
+					13
 				</param>
 				<param name="recordCount2" type="java.lang.Integer">
 					15
 				</param>
 				<param name="recordCount3" type="java.lang.Integer">
-					12
+					13
 				</param>
 			</params>
 		</method>

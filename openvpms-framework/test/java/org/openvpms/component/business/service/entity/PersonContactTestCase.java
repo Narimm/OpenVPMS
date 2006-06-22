@@ -25,9 +25,9 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 /**
  * Test the entity service

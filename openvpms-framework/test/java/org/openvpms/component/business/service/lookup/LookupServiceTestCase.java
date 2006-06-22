@@ -24,6 +24,9 @@ import java.util.List;
 // spring-context
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+// common langs
+import org.apache.commons.lang.StringUtils;
+
 // openvpms-framework
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -34,7 +37,7 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
-import org.openvpms.component.business.service.archetype.LookupHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
@@ -144,6 +147,24 @@ public class LookupServiceTestCase extends
         assertTrue(descriptor.getNodeDescriptor("title") != null);
         assertTrue(descriptor.getNodeDescriptor("title").isLookup());
         assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("title")).size() == 7);
+    }
+    
+    /**
+     * Test for that the default indicator in the lookup model is working
+     */
+    public void testOBF43()
+    throws Exception {
+        // the case where no default value is specified
+        Party person = (Party)service.create("person.footballer");
+        assertFalse(StringUtils.isEmpty((String)person.getDetails().getAttribute("team")));
+        String team = (String)person.getDetails().getAttribute("team");
+        assertTrue(team.equals("St Kilda"));
+        
+        // the case where a default value is specified
+        person = (Party)service.create("person.newfootballer");
+        assertFalse(StringUtils.isEmpty((String)person.getDetails().getAttribute("team")));
+        team = (String)person.getDetails().getAttribute("team");
+        assertTrue(team.equals("Richmond"));
     }
     
     /**

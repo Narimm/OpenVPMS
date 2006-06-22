@@ -134,15 +134,15 @@
       <ref local="imObjectDao" />
     </property>
   </bean>
-
-  <!--  The Archetype Service Functions Bean -->
-  <bean id="archetypeServiceFunctions"
-    class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
+  
+  <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+  <bean id="archetypeServiceHelper"
+    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
     <constructor-arg index="0">
       <ref local="archetypeService" />
     </constructor-arg>
   </bean>
-  
+
   <!--  The JXPathHelper class, which allows the user to register JXPath extension functions -->
   <bean id="jxpathHelper" class="org.openvpms.component.system.common.jxpath.JXPathHelper">
     <constructor-arg index="0">

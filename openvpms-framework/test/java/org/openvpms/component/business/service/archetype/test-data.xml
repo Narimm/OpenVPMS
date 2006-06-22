@@ -5,7 +5,7 @@
   <class name="ArchetypeServiceTestCase">
     <params>
       <param name="assertionFile" type="java.lang.String">
-        org/openvpms/archetype/assertionTypes.xml
+         org/openvpms/component/business/service/archetype/assertionTypes.xml
       </param>
       <param name="dir" type="java.lang.String">
         org/openvpms/archetype
@@ -17,7 +17,7 @@
   <class name="ArchetypeServiceWithAssertionDescriptorTestCase">
     <params>
       <param name="assertionFile" type="java.lang.String">
-        org/openvpms/archetype/assertionTypes.xml
+        org/openvpms/component/business/service/archetype/assertionTypes.xml
       </param>
       <param name="archetypeFile" type="java.lang.String">
         org/openvpms/archetype/system/assertion/assertion.archetypeRange.adl
@@ -28,7 +28,7 @@
   <class name="ValidationErrorTestCase">
     <params>
       <param name="assertionFile" type="java.lang.String">
-        org/openvpms/archetype/assertionTypes.xml
+        org/openvpms/component/business/service/archetype/assertionTypes.xml
       </param>
       <param name="dir" type="java.lang.String">
         org/openvpms/archetype
@@ -85,7 +85,7 @@
   <class name="CreateDefaultObjectTestCase">
     <params>
       <param name="assertionFile" type="java.lang.String">
-        org/openvpms/archetype/assertionTypes.xml
+        org/openvpms/component/business/service/archetype/assertionTypes.xml
       </param>
       <param name="dir" type="java.lang.String">
         org/openvpms/archetype

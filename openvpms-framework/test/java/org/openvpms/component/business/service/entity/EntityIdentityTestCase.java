@@ -23,8 +23,8 @@ package org.openvpms.component.business.service.entity;
 import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 /**
  * Test the entity service

@@ -20,13 +20,8 @@
 package org.openvpms.component.business.service.archetype;
 
 // java core
-import java.util.ArrayList;
-import java.util.List;
 
 // openvpms-framework
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
 
 /**
  * This is a helper class for the archetype service.
@@ -35,50 +30,38 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
  * @version  $LastChangedDate$
  */
 public class ArchetypeServiceHelper {
+    
     /**
-     * This is a static method that will return a list of candidate children 
-     * given an reference to the archetype service, the node descriptor for 
-     * the node in question and the context object.
-     * 
-     * TODO Deprecate this function and go about doing it another way
+     * A reference to the archetype service
+     */
+    private static IArchetypeService archetypeService;
+    
+    
+    /**
+     * Instantiate an instance of this class using the specified service
      * 
      * @param service
-     *            the archetype service
-     * @param ndesc
-     *            the node descriptor
-     * @param context
-     *            the context object            
-     * @return List<IMObject>
+     *            a reference to the archetype service
      */
-    public static List<IMObject> getCandidateChildren(IArchetypeService service,
-            NodeDescriptor ndesc, IMObject context) {
-
-        // find the node descriptor
-        if (ndesc == null) {
-            return null;
-        }
-        
-        // check that the node is a collection and that the parentChild
-        // attribute is set to false
-        if (!(ndesc.isCollection()) ||
-            (ndesc.isParentChild())) {
-            return null;
-        }
-                
-        // now there are two ways that candidate children cna be specified
-        // Firstly they can be specified using the candidateChildren assertion
-        // and secondly they can be specified using the archetypeRange
-        // assertion
-        List<IMObject> children = new ArrayList<IMObject>();
-        if (ndesc.containsAssertionType("candidateChildren")) {
-            children = ndesc.getCandidateChildren(context);
-        } else if (ndesc.containsAssertionType("archetypeRange")) {
-            children = ArchetypeQueryHelper.get(service,
-                    ndesc.getArchetypeRange(), true, 0, ArchetypeQuery.ALL_ROWS)
-                    .getRows();
-        }
-        
-        return children;
+    public ArchetypeServiceHelper(IArchetypeService service) {
+        archetypeService = service;
     }
-
+    
+    /**
+     * Return a reference to the {@link IArchetypeService}. If one is not 
+     * available then raise an exception
+     * 
+     * @return IArchetypeService
+     * @throws ArchetypeServiceException
+     *            if the value is not set
+     */
+    public static IArchetypeService getArchetypeService()
+    throws ArchetypeServiceException {
+        if (archetypeService == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.ArchetypeServiceNotSet);
+        }
+        
+        return archetypeService;
+    }
 }

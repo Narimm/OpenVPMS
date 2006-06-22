@@ -147,20 +147,17 @@
     </property>
   </bean>
   
-  <!--  The QueryBuilder Service -->
-  <bean id="queryBuilder"
-    class="org.openvpms.component.business.service.archetype.query.QueryBuilder">
+  <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+  <bean id="archetypeServiceHelper"
+    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
     <constructor-arg index="0">
       <ref local="archetypeService" />
     </constructor-arg>
   </bean>
 
-  <!--  Instantiate the assertion beans and inject their dependencies -->
-  <bean id="archetypeAssertion"
-    class="org.openvpms.component.business.service.archetype.assertion.ArchetypeRangeAssertion">
-    <constructor-arg index="0">
-      <ref local="archetypeService" />
-    </constructor-arg>
-  </bean>
+  <!--  Instantiate the archetype service helper bean and inject their dependencies -->
+  <bean id="queryBuilder"
+    class="org.openvpms.component.business.service.archetype.query.QueryBuilder" />
+
   
 </beans>

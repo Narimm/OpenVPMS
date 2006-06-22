@@ -163,6 +163,14 @@
     </property>
   </bean>
 
+  <!--  The Archetype Service Helper so others can reference the service statically -->
+  <bean id="archetypeServiceHelper"
+    class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+    <constructor-arg index="0">
+      <ref local="archetypeService" />
+    </constructor-arg>
+  </bean>
+
   <!--  The Audit Service -->
   <bean id="auditService"
     class="org.openvpms.component.business.service.audit.AuditService">
