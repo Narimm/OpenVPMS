@@ -83,10 +83,20 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * Returns a data source for a collection node.
      *
      * @param name      the collection node name
+     * @throws JRException for any error
+     */
+    public JRDataSource getDataSource(String name) throws JRException {
+        return getDataSource(name, new String[0]);
+    }
+
+    /**
+     * Returns a data source for a collection node.
+     *
+     * @param name      the collection node name
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name, String ... sortNodes)
+    public JRDataSource getDataSource(String name, String[] sortNodes)
             throws JRException {
         ArchetypeDescriptor archetype = _resolver.getArchetype();
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
@@ -109,7 +119,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         Object value = state.getValue();
         Object result = null;
         if (value != null) {
-            if (state.getLeafNode() != null 
+            if (state.getLeafNode() != null
                     && state.getLeafNode().isCollection()) {
                 Collection<IMObject> values = (Collection<IMObject>) value;
                 StringBuffer descriptions = new StringBuffer();

@@ -18,6 +18,9 @@
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +29,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.StringUtilities;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -111,7 +115,7 @@ public class ReportHelper {
      * Determines if a set of short names match a particular archetype.
      *
      * @param shortNames the short names
-     * @param type the archetype wildcard
+     * @param type       the archetype wildcard
      */
     public static boolean matches(String[] shortNames, String type) {
         String regexp = StringUtilities.toRegEx(type);
@@ -123,4 +127,19 @@ public class ReportHelper {
         return true;
     }
 
+    /**
+     * Loads a report resource.
+     *
+     * @param path the resource path
+     * @return the design corresponding to <code>path</code>
+     * @throws JRException if the resource can't be loaded
+     */
+    public static JasperDesign getReportResource(String path)
+            throws JRException {
+        InputStream stream = ReportHelper.class.getResourceAsStream(path);
+        if (stream == null) {
+            throw new JRException("Report resource not found: " + path);
+        }
+        return JRXmlLoader.load(stream);
+    }
 }

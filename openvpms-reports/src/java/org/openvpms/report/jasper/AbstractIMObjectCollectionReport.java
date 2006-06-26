@@ -26,7 +26,6 @@ import net.sf.jasperreports.engine.design.JRDesignField;
 import net.sf.jasperreports.engine.design.JRDesignStaticText;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -192,8 +191,8 @@ public abstract class AbstractIMObjectCollectionReport
      * @throws JRException for any error
      */
     protected JasperDesign getDesign() throws JRException {
-        return JRXmlLoader.load(
-                "src/reports/archetype_subreport_template.jrxml");
+        return ReportHelper.getReportResource(
+                "/archetype_subreport_template.jrxml");
     }
 
     /**

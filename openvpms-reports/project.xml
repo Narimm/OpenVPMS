@@ -106,54 +106,36 @@
             <artifactId>commons-lang</artifactId>
             <version>2.0</version>
             <url>http://jakarta.apache.org/commons/lang/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.0.4</version>
             <url>http://jakarta.apache.org/commons/logging/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
             <version>1.2.1</version>
             <url>http://jakarta.apache.org/commons/dbcp/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
             <version>1.2</version>
             <url>http://jakarta.apache.org/commons/pool/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.11</version>
             <url>http://jakarta.apache.org/log4j/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-resources</groupId>
             <artifactId>commons-resources</artifactId>
             <version>1.0-dev</version>
             <url>http://jakarta.apache.org/commons/resources/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -202,9 +184,6 @@
             <version>2.0.8</version>
             <type>jar</type>
             <url>http://jakarta.apache.org/oro/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -212,9 +191,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -222,9 +198,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -232,9 +205,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -249,9 +219,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -259,9 +226,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -269,9 +233,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -279,9 +240,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -289,9 +247,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springframework</groupId>
@@ -299,9 +254,6 @@
             <version>1.2.5</version>
             <type>jar</type>
             <url>http://www.springframework.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>springmodules</groupId>
@@ -309,9 +261,6 @@
             <version>0.2</version>
             <type>jar</type>
             <url>http://springmodules.dev.java.net/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>taglibs</groupId>
@@ -319,9 +268,6 @@
             <version>1.0.6</version>
             <type>jar</type>
             <url>http://jakarta.apache.org/taglibs/</url>
-            <properties>
-                <war.bundle>true</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>aopalliance</groupId>
@@ -329,9 +275,6 @@
             <version>1.0</version>
             <type>jar</type>
             <url>http://www.aopalliance.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>drools</groupId>
@@ -339,9 +282,6 @@
             <version>2.1</version>
             <type>jar</type>
             <url>http://drools.codehaus.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>drools</groupId>
@@ -349,9 +289,6 @@
             <version>1.1</version>
             <type>jar</type>
             <url>http://drools.codehaus.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>janino</groupId>
@@ -359,9 +296,6 @@
             <version>2.3.8</version>
             <type>jar</type>
             <url>http://www.janino.net/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>ehcache</groupId>
@@ -369,45 +303,30 @@
             <version>1.1</version>
             <type>jar</type>
             <url>http://ehcache.sf.net</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jug</groupId>
             <artifactId>jug</artifactId>
             <version>2.0rc4</version>
             <url>http://jug.safehaus.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>1.2</version>
             <url>http://jakarta.apache.org/commons/io/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.1</version>
             <url>http://jakarta.apache.org/commons/collections/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-digester</groupId>
             <artifactId>commons-digester</artifactId>
             <version>1.7</version>
             <url>http://jakarta.apache.org/commons/digester/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-javaflow</groupId>
@@ -415,7 +334,6 @@
             <version>20060411</version>
             <url>http://jakarta.apache.org/commons/sandbox/javaflow</url>
         </dependency>
-
         <dependency>
             <groupId>castor</groupId>
             <artifactId>castor-xml</artifactId>
@@ -424,171 +342,114 @@
                 <classpath>true</classpath>
             </properties>
             <url>http://castor.codehaus.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xstream</groupId>
             <artifactId>xstream</artifactId>
             <version>1.1.2</version>
             <url>http://xstream.codehaus.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xpp3</groupId>
             <artifactId>xpp3</artifactId>
             <version>1.1.2a</version>
             <url>http://xstream.codehaus.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <url>http://xml.apache.org/xerces2-j/</url>
             <version>2.4.0</version>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <url>http://xml.apache.org/xerces2-j/</url>
             <version>2.0.2</version>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>hibernate</groupId>
             <artifactId>hibernate</artifactId>
             <version>3.1b3-openvpms</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>hibernate</groupId>
             <artifactId>asm</artifactId>
             <version>3.1b3</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>hibernate</groupId>
             <artifactId>asm-attrs</artifactId>
             <version>3.1b3</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>2.7.5H3</version>
             <url>http://www.antlr.org/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jsap</groupId>
             <artifactId>JSAP</artifactId>
             <version>2.0a</version>
             <url>http://jsap.sourceforge.net/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
             <version>1.4</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jta</groupId>
             <artifactId>jta</artifactId>
             <version>1.0.1</version>
             <url>http://java.sun.com</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
             <version>2.1.2</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>odmg</groupId>
             <artifactId>odmg</artifactId>
             <version>3.0</version>
             <url>http://www.hibernate.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.0.0-beta-bin</version>
             <url>http://www.mysql.com</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>c3p0</groupId>
             <artifactId>c3p0</artifactId>
             <version>0.9.0</version>
             <url>http://sourceforge.net/projects/c3p0</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
             <version>1.3-20060323</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
-            <properties>
-                <war.bundle>true</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
             <version>1.7.0</version>
             <url>http://jakarta.apache.org/commons/jxpath/</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>acegisecurity</groupId>
             <artifactId>acegi-security</artifactId>
             <version>1.0.0-RC1</version>
             <url>http://www.acegisecurity.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>servletapi</groupId>
@@ -601,18 +462,12 @@
             <artifactId>ognl</artifactId>
             <version>2.6.5</version>
             <url>http://ognl.org</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>net.sf.echopoint</groupId>
             <artifactId>echopointng</artifactId>
             <version>2.1.0rc2</version>
             <url>http://echopoint.sf.net</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>oro</groupId>
@@ -625,32 +480,24 @@
             <artifactId>openvpms-framework</artifactId>
             <version>0.7</version>
             <url>http://www.openvpms.org</url>
-            <properties>
-                <war.bundle>true</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
             <version>0.4</version>
             <url>http://www.openvpms.org</url>
-            <properties>
-                <war.bundle>true</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
             <version>1.2.3</version>
             <url>http://jasperreports.sourceforge.net</url>
-            <properties>
-                <war.bundle>false</war.bundle>
-            </properties>
         </dependency>
         <dependency>
             <groupId>com.lowagie</groupId>
             <artifactId>itext</artifactId>
             <version>1.02b</version>
+            <url>http://www.lowagie.com/iText/</url>
         </dependency>
     </dependencies>
 
@@ -694,9 +541,9 @@
                 </includes>
             </resource>
             <resource>
-                <directory>${basedir}/src/conf/log4j</directory>
+                <directory>${basedir}/src/reports</directory>
                 <includes>
-                    <include>log4j.properties</include>
+                    <include>*.jrxml</include>
                 </includes>
             </resource>
         </resources>
