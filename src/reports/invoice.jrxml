@@ -83,7 +83,7 @@
 		</title>
 		<pageHeader>
 			<band height="69"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="91"
 						y="3"
@@ -176,7 +176,7 @@
 						width="530"
 						height="31"
 						key="subreport-1"/>
-					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", "target.patient.entity.name")]]></dataSourceExpression>
+					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", "target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name")]]></dataSourceExpression>
 					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{items_subreport}]]></subreportExpression>
 				</subreport>
 			</band>
