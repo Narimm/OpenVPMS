@@ -18,11 +18,10 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.web.component.dialog.ErrorDialog;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
@@ -66,7 +65,7 @@ public class ErrorHelper {
      * @param title the title
      * @param error the error
      */
-    public static void show(String title, OpenVPMSException error) {
+    public static void show(String title, Throwable error) {
         _log.error(error.getLocalizedMessage(), error);
         ErrorDialog.show(title, error.getLocalizedMessage());
     }
@@ -76,7 +75,7 @@ public class ErrorHelper {
      *
      * @param error the error
      */
-    public static void show(OpenVPMSException error) {
+    public static void show(Throwable error) {
         _log.error(error.getLocalizedMessage(), error);
         ErrorDialog.show(error.getLocalizedMessage());
     }
