@@ -23,7 +23,6 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JRDesignParameter;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -57,10 +56,9 @@ public class InvoiceReport extends AbstractIMObjectReport {
      */
     public InvoiceReport(IArchetypeService service) throws JRException {
         super(service);
-        JasperDesign invoice
-                = JRXmlLoader.load("src/reports/invoice.jrxml");
+        JasperDesign invoice = ReportHelper.getReportResource("/invoice.jrxml");
         JasperDesign invoiceItems
-                = JRXmlLoader.load("src/reports/invoiceItems.jrxml");
+                = ReportHelper.getReportResource("/invoiceItems.jrxml");
         if (!invoice.getParametersMap().containsKey("object")) {
             JRDesignParameter object = new JRDesignParameter();
             object.setName("object");
@@ -87,7 +85,7 @@ public class InvoiceReport extends AbstractIMObjectReport {
      * @return the sub-reports.
      */
     public JasperReport[] getSubreports() {
-        return new JasperReport[] {_invoiceItems};
+        return new JasperReport[]{_invoiceItems};
     }
 
     /**

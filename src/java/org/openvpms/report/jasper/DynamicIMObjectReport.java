@@ -31,7 +31,6 @@ import net.sf.jasperreports.engine.design.JRDesignStaticText;
 import net.sf.jasperreports.engine.design.JRDesignSubreport;
 import net.sf.jasperreports.engine.design.JRDesignTextField;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -81,7 +80,7 @@ public class DynamicIMObjectReport extends AbstractIMObjectReport {
                                  IArchetypeService service)
             throws JRException {
         super(service);
-        _design = JRXmlLoader.load("src/reports/archetype_template.jrxml");
+        _design = ReportHelper.getReportResource("/archetype_template.jrxml");
         _template = new JRElementFactory(_design);
 
         JRDesignParameter param = new JRDesignParameter();
@@ -158,8 +157,8 @@ public class DynamicIMObjectReport extends AbstractIMObjectReport {
     /**
      * Returns the report parameters to use when filling the report.
      *
-     * @return the report parameters
      * @param object
+     * @return the report parameters
      */
     protected Map<String, Object> getParameters(IMObject object) {
         Map<String, Object> result = super.getParameters(object);
