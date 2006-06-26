@@ -18,19 +18,33 @@
 
 package org.openvpms.web.app.subsystem;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.report.jasper.IMObjectReport;
+import org.openvpms.report.jasper.IMObjectReportFactory;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.filetransfer.Download;
+import nextapp.echo2.app.filetransfer.DownloadProvider;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 
 /**
@@ -89,7 +103,7 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     protected boolean canEdit(Act act) {
         String status = act.getStatus();
         return INPROGRESS_STATUS.equals(status)
-               || COMPLETED_STATUS.equals(status);
+                || COMPLETED_STATUS.equals(status);
     }
 
     /**
@@ -142,11 +156,13 @@ public abstract class ActCRUDWindow extends CRUDWindow {
         String title = Messages.get("act.print.title", name);
         String message = Messages.get("act.print.message", name);
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                doPrint();
-            }
-        });
+        dialog.addActionListener(ConfirmationDialog.OK_ID,
+                                 new ActionListener() {
+                                     public void actionPerformed(
+                                             ActionEvent event) {
+                                         doPrint();
+                                     }
+                                 });
         dialog.show();
     }
 
@@ -201,16 +217,51 @@ public abstract class ActCRUDWindow extends CRUDWindow {
      */
     private void doPrint() {
         Act act = (Act) getObject();
-        String status = act.getStatus();
-        if (!POSTED_STATUS.equals(status)) {
-            act.setStatus(POSTED_STATUS);
-            setPrintStatus(act, true);
-            SaveHelper.save(act);
-            setObject(act);
-            CRUDWindowListener listener = getListener();
-            if (listener != null) {
-                listener.saved(act, false);
+        String shortName = act.getArchetypeId().getShortName();
+        try {
+            IMObjectReport report = IMObjectReportFactory.create(
+                    shortName, ServiceHelper.getArchetypeService());
+            final JasperPrint print = report.generate(act);
+
+            Download download = new Download();
+            download.setProvider(new DownloadProvider() {
+
+                public String getContentType() {
+                    return "application/pdf";
+                }
+
+                public String getFileName() {
+                    return print.getName() + ".pdf";
+                }
+
+                public int getSize() {
+                    return -1;
+                }
+
+                public void writeFile(OutputStream stream) throws IOException {
+                    try {
+                        JasperExportManager.exportReportToPdfStream(print,
+                                                                    stream);
+                    } catch (JRException exception) {
+                        throw new IOException(exception.getMessage());
+                    }
+                }
+            });
+            download.setActive(true);
+            OpenVPMSApp.getInstance().enqueueCommand(download);
+            String status = act.getStatus();
+            if (!POSTED_STATUS.equals(status)) {
+                act.setStatus(POSTED_STATUS);
+                setPrintStatus(act, true);
+                SaveHelper.save(act);
+                setObject(act);
+                CRUDWindowListener listener = getListener();
+                if (listener != null) {
+                    listener.saved(act, false);
+                }
             }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
         }
     }
 

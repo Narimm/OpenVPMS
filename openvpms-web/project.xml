@@ -102,6 +102,33 @@
 
     <dependencies>
         <dependency>
+            <groupId>commons-digester</groupId>
+            <artifactId>commons-digester</artifactId>
+            <version>1.7</version>
+            <url>http://jakarta.apache.org/commons/digester/</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.0</version>
+            <url>http://jakarta.apache.org/commons/fileupload/</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>commons-javaflow</groupId>
+            <artifactId>commons-javaflow</artifactId>
+            <version>20060411</version>
+            <url>http://jakarta.apache.org/commons/sandbox/javaflow</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.0</version>
@@ -151,6 +178,15 @@
             <artifactId>commons-resources</artifactId>
             <version>1.0-dev</version>
             <url>http://jakarta.apache.org/commons/resources/</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <version>1.02b</version>
+            <url>http://www.lowagie.com/iText/</url>
             <properties>
                 <war.bundle>false</war.bundle>
             </properties>
@@ -635,6 +671,24 @@
             </properties>
         </dependency-->
         <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-filetransfer-app</artifactId>
+            <version>20060626</version>
+            <url>http://www.nextapp.com/platform/echo2/echo/</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>com.nextapp</groupId>
+            <artifactId>echo-filetransfer-webcontainer</artifactId>
+            <version>20060626</version>
+            <url>http://www.nextapp.com/platform/echo2/echo/</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
             <groupId>net.sf.echopoint</groupId>
             <artifactId>echopointng</artifactId>
             <version>2.1.0rc2</version>
@@ -673,6 +727,24 @@
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-reports</artifactId>
+            <version>0.1-SNAPSHOT</version>
+            <url>http://www.openvpms.org</url>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>1.2.3</version>
+            <url>http://jasperreports.sourceforge.net</url>
+            <properties>
+                <war.bundle>false</war.bundle>
             </properties>
         </dependency>
     </dependencies>
