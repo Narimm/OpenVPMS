@@ -64,30 +64,19 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      *
      * @param parent     the parent objecft
      * @param descriptor the collection desccriptor
-     * @param sortNode   the sort node. May be <code>null</code>
+     * @param sortNodes  the sort nodes
      */
     public IMObjectCollectionDataSource(IMObject parent,
                                         NodeDescriptor descriptor,
                                         IArchetypeService service,
-                                        String sortNode) {
+                                        String ... sortNodes) {
         super(service);
         List<IMObject> values = descriptor.getChildren(parent);
-        if (sortNode != null) {
+        for (String sortNode : sortNodes) {
             sort(values, sortNode);
         }
         _iter = values.iterator();
         _descriptor = descriptor;
-    }
-
-    private void sort(List<IMObject> objects, String sortNode) {
-        Comparator comparator = ComparatorUtils.naturalComparator();
-        comparator = ComparatorUtils.nullLowComparator(comparator);
-
-        Transformer transformer
-                = new NodeTransformer(sortNode, getArchetypeService());
-        TransformingComparator transComparator
-                = new TransformingComparator(transformer, comparator);
-        Collections.sort(objects, transComparator);
     }
 
     /**
@@ -121,6 +110,24 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
             }
         }
         return result;
+    }
+
+    /**
+     * Sorts a list of IMObjects on a node in the form specified by
+     * {@link NodeResolver}.
+     *
+     * @param objects  the objects to sort
+     * @param sortNode the node to sort on
+     */
+    private void sort(List<IMObject> objects, String sortNode) {
+        Comparator comparator = ComparatorUtils.naturalComparator();
+        comparator = ComparatorUtils.nullLowComparator(comparator);
+
+        Transformer transformer
+                = new NodeTransformer(sortNode, getArchetypeService());
+        TransformingComparator transComparator
+                = new TransformingComparator(transformer, comparator);
+        Collections.sort(objects, transComparator);
     }
 
     private static class NodeTransformer implements Transformer {
@@ -176,6 +183,5 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         }
 
     }
-
 
 }

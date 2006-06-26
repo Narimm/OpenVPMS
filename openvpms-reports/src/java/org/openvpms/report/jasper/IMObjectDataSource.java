@@ -82,21 +82,11 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     /**
      * Returns a data source for a collection node.
      *
-     * @param name the collection node name
+     * @param name      the collection node name
+     * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error
      */
-    public JRDataSource getDataSource(String name) throws JRException {
-        return getDataSource(name, null);
-    }
-
-    /**
-     * Returns a data source for a collection node.
-     *
-     * @param name the collection node name
-     * @param sortNode the node to sort on. May be <code>null</code>
-     * @throws JRException for any error
-     */
-    public JRDataSource getDataSource(String name, String sortNode)
+    public JRDataSource getDataSource(String name, String ... sortNodes)
             throws JRException {
         ArchetypeDescriptor archetype = _resolver.getArchetype();
         NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
@@ -104,8 +94,9 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
             throw new JRException("No node found for field=" + name);
         }
         return new IMObjectCollectionDataSource(
-                _object, descriptor, getArchetypeService(), sortNode);
+                _object, descriptor, getArchetypeService(), sortNodes);
     }
+
     /**
      * Gets the field value for the current position.
      *
@@ -116,17 +107,20 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     public Object getFieldValue(JRField field) throws JRException {
         NodeResolver.State state = _resolver.resolve(field.getName());
         Object value = state.getValue();
-        Object result;
-        if (value != null && state.getLeafNode().isCollection()) {
-            Collection<IMObject> values = (Collection<IMObject>) value;
-            StringBuffer descriptions = new StringBuffer();
-            for (IMObject object : values) {
-                descriptions.append(object.getName());
-                descriptions.append('\n');
+        Object result = null;
+        if (value != null) {
+            if (state.getLeafNode() != null 
+                    && state.getLeafNode().isCollection()) {
+                Collection<IMObject> values = (Collection<IMObject>) value;
+                StringBuffer descriptions = new StringBuffer();
+                for (IMObject object : values) {
+                    descriptions.append(object.getName());
+                    descriptions.append('\n');
+                }
+                result = descriptions.toString();
+            } else {
+                result = value;
             }
-            result = descriptions.toString();
-        } else {
-            result = value;
         }
         return result;
     }
