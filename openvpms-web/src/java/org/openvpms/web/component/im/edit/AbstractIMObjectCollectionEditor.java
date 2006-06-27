@@ -357,12 +357,6 @@ public abstract class AbstractIMObjectCollectionEditor
             }
         });
 
-        Button cancel = ButtonFactory.create(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onCancel();
-            }
-        });
-
         Button delete = ButtonFactory.create(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onDelete();
@@ -372,13 +366,11 @@ public abstract class AbstractIMObjectCollectionEditor
         // remove any shortcuts from the text, as multiple collections may
         // be displayed on the one form
         create.setText(ShortcutHelper.getLocalisedText("button.add"));
-        cancel.setText(ShortcutHelper.getLocalisedText("button.cancel"));
         delete.setText(ShortcutHelper.getLocalisedText("button.delete"));
 
         focus.add(create);
-        focus.add(cancel);
         focus.add(delete);
-        Row row = RowFactory.create(ROW_STYLE, create, cancel, delete);
+        Row row = RowFactory.create(ROW_STYLE, create, delete);
 
         if (range.length == 1) {
             _shortname = range[0];
@@ -454,16 +446,19 @@ public abstract class AbstractIMObjectCollectionEditor
      * Deletes the selected object.
      */
     protected void onDelete() {
-        IMObject object = _table.getTable().getSelected();
+        IMObject object;
+        if (_editor != null) {
+            object = _editor.getObject();
+            removeEditor();
+        } else {
+            object = _table.getTable().getSelected();
+        }
         if (object != null) {
             delete(object);
             _listeners.notifyListeners(this);
         }
     }
 
-    /**
-     * Cancels the current edit.
-     */
     protected void onCancel() {
         if (_editor != null) {
             removeEditor();
