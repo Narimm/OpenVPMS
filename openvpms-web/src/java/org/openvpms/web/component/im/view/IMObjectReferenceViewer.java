@@ -18,19 +18,20 @@
 
 package org.openvpms.web.component.im.view;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 
 
 /**
@@ -57,7 +58,7 @@ public class IMObjectReferenceViewer {
      * Construct a new <code>IMObjectReferenceViewer</code>.
      *
      * @param reference the reference to view
-     * @param link if <code>true</code> enable an hyperlink to the object
+     * @param link      if <code>true</code> enable an hyperlink to the object
      */
     public IMObjectReferenceViewer(IMObjectReference reference, boolean link) {
         _reference = reference;
@@ -75,7 +76,8 @@ public class IMObjectReferenceViewer {
         if (object != null) {
             String text = Messages.get("imobject.name", object.getName());
             if (_link) {
-                Button button = ButtonFactory.create(null, "hyperlink");
+                Button button = ButtonFactory.create();
+                button.setStyleName("hyperlink");
                 button.setText(text);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
