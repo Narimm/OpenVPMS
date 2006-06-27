@@ -24,16 +24,17 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.test.AbstractAppTest;
+
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 
 /**
@@ -72,7 +73,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
         assertTrue("Require collection with min cardinality >= 0",
-                property.getMinCardinality() >= 0);
+                   property.getMinCardinality() >= 0);
         CollectionPropertyEditor editor = createEditor(property, parent);
 
         IMObject element = createObject();
@@ -91,7 +92,7 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         // make sure the element has saved
         assertEquals("Retrieved element doesnt match that saved",
-                element, get(element));
+                     element, get(element));
 
         // now retrieve parent and verify collection matches the original
         IMObject savedParent = get(parent);
@@ -113,7 +114,7 @@ public abstract class AbstractCollectionPropertyEditorTest
         IMObject parent = createParent();
         CollectionProperty property = getCollectionProperty(parent);
         assertTrue("Require collection with min cardinality >= 0",
-                property.getMinCardinality() >= 0);
+                   property.getMinCardinality() >= 0);
         CollectionPropertyEditor editor = createEditor(property, parent);
 
         IMObject elt1 = createObject();
@@ -133,9 +134,9 @@ public abstract class AbstractCollectionPropertyEditorTest
 
         // make sure the elements have saved
         assertEquals("Retrieved element1 doesnt match that saved",
-                elt1, get(elt1));
+                     elt1, get(elt1));
         assertEquals("Retrieved element2 doesnt match that saved",
-                elt2, get(elt2));
+                     elt2, get(elt2));
 
         // now remove elt1, save and verify that it is no longer available
         editor.remove(elt1);
@@ -194,7 +195,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      * Returns an editor for a collection property.
      *
      * @param property the collection property
-     * @param parent the parent of the collection
+     * @param parent   the parent of the collection
      * @return a new editor for the property
      */
     protected abstract CollectionPropertyEditor createEditor(
@@ -216,8 +217,8 @@ public abstract class AbstractCollectionPropertyEditorTest
      */
     protected IMObject get(IMObject object) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
-        return ArchetypeQueryHelper.getByObjectReference(service,
-                object.getObjectReference());
+        return ArchetypeQueryHelper.getByObjectReference(
+                service, object.getObjectReference());
     }
 
 }

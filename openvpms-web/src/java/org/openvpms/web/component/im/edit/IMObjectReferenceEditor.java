@@ -36,8 +36,8 @@ import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;

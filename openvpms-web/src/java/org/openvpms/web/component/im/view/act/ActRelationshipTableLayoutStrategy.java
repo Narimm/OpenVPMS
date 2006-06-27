@@ -18,19 +18,7 @@
 
 package org.openvpms.web.component.im.view.act;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import nextapp.echo2.app.Component;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
@@ -39,8 +27,21 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.table.act.DefaultActTableModel;
 import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+
+import nextapp.echo2.app.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -50,7 +51,8 @@ import org.openvpms.web.spring.ServiceHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrategy {
+public class ActRelationshipTableLayoutStrategy
+        implements IMObjectLayoutStrategy {
 
     /**
      * The act short names.
@@ -77,13 +79,15 @@ public class ActRelationshipTableLayoutStrategy implements IMObjectLayoutStrateg
      * This renders an object in a <code>Component</code>, using a factory to
      * create the child components.
      *
-     * @param object  the object to apply
+     * @param object     the object to apply
      * @param properties
-     * @param context the layout context
+     * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
-    public Component apply(IMObject object, PropertySet properties, LayoutContext context) {
-        IMObjectTableModel model = new DefaultActTableModel(_shortNames, context);
+    public Component apply(IMObject object, PropertySet properties,
+                           LayoutContext context) {
+        IMObjectTableModel model = new DefaultActTableModel(_shortNames,
+                                                            context);
         Act act = (Act) object;
         List<IMObject> acts = getActs(act);
         ResultSet set = new PreloadedResultSet<IMObject>(acts, 25);

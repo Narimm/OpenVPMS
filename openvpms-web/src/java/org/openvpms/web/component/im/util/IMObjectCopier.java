@@ -18,16 +18,17 @@
 
 package org.openvpms.web.component.im.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -111,7 +112,8 @@ public class IMObjectCopier {
 
         // copy the nodes
         for (NodeDescriptor sourceDesc : sourceType.getAllNodeDescriptors()) {
-            NodeDescriptor targetDesc = _handler.getNode(sourceDesc, targetType);
+            NodeDescriptor targetDesc = _handler.getNode(sourceDesc,
+                                                         targetType);
             if (targetDesc != null) {
                 if (sourceDesc.isObjectReference()) {
                     IMObjectReference ref
@@ -157,7 +159,9 @@ public class IMObjectCopier {
                 // copied, so save it
                 _service.save(object);
             }
-            result = object.getObjectReference();
+            if (object != null) {
+                result = object.getObjectReference();
+            }
         }
         return result;
     }

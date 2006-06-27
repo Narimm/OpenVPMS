@@ -32,7 +32,7 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyList
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.LookupHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import org.apache.commons.lang.StringUtils;

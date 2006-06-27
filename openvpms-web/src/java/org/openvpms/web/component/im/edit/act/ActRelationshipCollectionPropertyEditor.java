@@ -24,16 +24,6 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.edit.AbstractCollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
@@ -42,6 +32,18 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;

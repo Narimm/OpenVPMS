@@ -44,7 +44,7 @@ import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
@@ -266,7 +266,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
                 _editors.add(editor);
             }
         } else {
-            List<IMObject> identifiers = ArchetypeServiceHelper.getCandidateChildren(
+            List<IMObject> identifiers;
+            identifiers = ArchetypeQueryHelper.getCandidateChildren(
                     ServiceHelper.getArchetypeService(),
                     descriptor, object);
             Palette palette = new BoundPalette(identifiers, property);

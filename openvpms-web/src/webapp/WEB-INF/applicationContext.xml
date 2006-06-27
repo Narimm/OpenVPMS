@@ -187,16 +187,23 @@
 
     <!-- The User Details service -->
     <bean id="hibernateUserDetailsService"
-      class="org.openvpms.component.business.service.security.hibernate.HibernateUserDetailsService">
-      <constructor-arg index="0">
-        <ref local="imObjectDao" />
-      </constructor-arg>
+          class="org.openvpms.component.business.service.security.hibernate.HibernateUserDetailsService">
+        <constructor-arg index="0">
+            <ref local="imObjectDao"/>
+        </constructor-arg>
     </bean>
 
 
     <!-- ================================================================== -->
     <!--                         ARCHETYPE SUPPORT                          -->
     <!-- ================================================================== -->
+
+    <bean id="archetypeServiceHelper"
+          class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+        <constructor-arg index="0">
+            <ref local="archetypeService"/>
+        </constructor-arg>
+    </bean>
 
     <!-- The JXPathHelper class, used to register extension functions -->
     <bean id="jxpathHelper"
@@ -208,14 +215,6 @@
                 <prop key="party">
                     org.openvpms.archetype.function.party.PartyFunctions</prop>
             </props>
-        </constructor-arg>
-    </bean>
-
-    <!--  The Archetype Service Functions Bean -->
-    <bean id="archetypeServiceFunctions"
-          class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
         </constructor-arg>
     </bean>
 
