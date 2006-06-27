@@ -487,4 +487,8 @@
 	<data archetype="lookup.creditcard" creditcard="Diners" floorLimit="500.00" />
 	<data archetype="lookup.customerAccountType" accountType="Normal" />
 	<data archetype="lookup.supplierAccountType" accountType="Normal" />
+	<data archetype="lookup.personTitle" title="Mr" />
+	<data archetype="lookup.personTitle" title="Mrs" />
+	<data archetype="lookup.personTitle" title="Ms" />
+	<data archetype="lookup.personTitle" title="Dr" />
 </archetype>

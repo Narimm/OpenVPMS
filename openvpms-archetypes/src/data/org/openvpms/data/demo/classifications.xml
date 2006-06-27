@@ -33,16 +33,20 @@
 	<data archetype="classification.paymentType" name="Credit" />
 	<data archetype="classification.paymentType" name="EFT" />
 	<data archetype="classification.paymentType" name="Postal Note" />
-	<data archetype="classification.productGroup" name="Worming" />
-	<data archetype="classification.productGroup" name="Vaccination" />
-	<data archetype="classification.productGroup" name="Desexing" />
-	<data archetype="classification.productGroup" name="Drugs" />
-	<data archetype="classification.productGroup" name="Grooming" />
-	<data archetype="classification.productGroup" name="Surgery" />
-	<data archetype="classification.productGroup" name="Food" />
-	<data archetype="classification.productGroup" name="Fleas" />
-	<data archetype="classification.productGroup" name="Anaesthesia" />
-	<data archetype="classification.productGroup" name="Other" />
+	<data id="MERCH" archetype="classification.productGroup" name="Merch"  />
+	<data id="DRUGS" archetype="classification.productGroup" name="Drugs"  />
+	<data id="MISC" archetype="classification.productGroup" name="Misc"  />
+	<data id="ANAESTHETIC" archetype="classification.productGroup" name="Anaesthetic"  />
+	<data id="PATHOLOGY" archetype="classification.productGroup" name="Pathology"  />
+	<data id="SURGERY" archetype="classification.productGroup" name="Surgery"  />
+	<data id="DESEX" archetype="classification.productGroup" name="Desex"  />
+	<data id="GROOMING" archetype="classification.productGroup" name="Grooming"  />
+	<data id="FEES" archetype="classification.productGroup" name="Fees"  />
+	<data id="HOSP" archetype="classification.productGroup" name="Hosp"  />
+	<data id="P" archetype="classification.productGroup" name="P"  />
+	<data id="TRAVEL" archetype="classification.productGroup" name="Travel"  />
+	<data id="VACCINATIONS" archetype="classification.productGroup" name="Vaccinations"  />
+	<data id="RADIOLOGY" archetype="classification.productGroup" name="Radiology"  />
 	<data archetype="classification.productIncomeType" name="Professional" />
 	<data archetype="classification.productIncomeType" name="Medication" />
 	<data archetype="classification.productIncomeType" name="Merchandise" />
@@ -60,4 +64,18 @@
 	<data id="Clinician" archetype="classification.userType" name="Clinician" />
 	<data id="Nurse" archetype="classification.userType" name="Nurse" />
 	<data id="Receptionist" archetype="classification.userType" name="Receptionist" />
+	<data id="Normal" archetype="classification.customerType" name="Normal"  />
+	<data id="Valued" archetype="classification.customerType" name="Valued"  />
+	<data id="Bad" archetype="classification.customerType" name="Bad"  />
+	<data id="Pensioner" archetype="classification.customerType" name="Pensioner"  />
+	<data id="Monthly" archetype="classification.customerType" name="Monthly"  />
+	<data id="Cash Only" archetype="classification.customerType" name="Cash Only"  />
+	<data id="User One" archetype="classification.customerType" name="User One"  />
+	<data id="User Two" archetype="classification.customerType" name="User Two"  />
+	<data id="User Three" archetype="classification.customerType" name="User Three"  />
+	<data id="User Four" archetype="classification.customerType" name="User Four"  />
+	<data id="User Five" archetype="classification.customerType" name="User Five"  />
+	<data id="User Six" archetype="classification.customerType" name="User Six"  />
+	<data id="User Seven" archetype="classification.customerType" name="User Seven"  />
+	<data id="User Eight" archetype="classification.customerType" name="User Eight"  />
 </archetype>
