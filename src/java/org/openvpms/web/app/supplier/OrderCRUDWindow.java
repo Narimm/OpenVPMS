@@ -18,25 +18,6 @@
 
 package org.openvpms.web.app.supplier;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -49,6 +30,26 @@ import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -205,11 +206,13 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
         String title = Messages.get("supplier.order.invoice.title");
         String message = Messages.get("supplier.order.invoice.message");
         ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                invoice(act);
-            }
-        });
+        dialog.addActionListener(ConfirmationDialog.OK_ID,
+                                 new ActionListener() {
+                                     public void actionPerformed(
+                                             ActionEvent event) {
+                                         invoice(act);
+                                     }
+                                 });
         dialog.show();
     }
 
@@ -259,8 +262,8 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
         NodeDescriptor totalDesc = invoiceDesc.getNodeDescriptor("amount");
         BigDecimal total = BigDecimal.ZERO;
         for (ActRelationship relationship : act.getSourceActRelationships()) {
-            Act item = (Act) ArchetypeQueryHelper.getByObjectReference(service,
-                                                                       relationship.getTarget());
+            Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
+                    service, relationship.getTarget());
             BigDecimal value = (BigDecimal) itemTotalDesc.getValue(item);
             total = total.add(value);
         }
@@ -312,7 +315,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
         public IMObject getObject(IMObject object, IArchetypeService service) {
             IMObject result;
             if (object instanceof Act || object instanceof ActRelationship
-                || object instanceof Participation) {
+                    || object instanceof Participation) {
                 String shortName = object.getArchetypeId().getShortName();
                 for (String[] map : TYPE_MAP) {
                     String orderType = map[0];
