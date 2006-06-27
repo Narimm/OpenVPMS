@@ -161,4 +161,27 @@ public class AssertionDescriptorTestCase
             }
         }
     }
+    
+    /**
+     * Deleting nodes with archetypes assertions cause a validation error
+     */
+    public void testOBF10()
+    throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("person.person");
+        assertTrue(adesc != null);
+        
+        
+        // find and remove the classifications node
+        assertTrue(adesc.getNodeDescriptor("classifications") != null);
+        adesc.removeNodeDescriptor("classifications");
+        assertTrue(adesc.getNodeDescriptor("classifications") == null);
+        
+        // remove the title node
+        assertTrue(adesc.getNodeDescriptor("title") != null);
+        adesc.removeNodeDescriptor("title");
+        assertTrue(adesc.getNodeDescriptor("title") == null);
+        
+        // now validate the archetype
+        service.validateObject(adesc);
+    }
 }

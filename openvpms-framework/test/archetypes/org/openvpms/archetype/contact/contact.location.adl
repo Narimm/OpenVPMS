@@ -35,6 +35,7 @@
 					<property name="relationship" value="lookupRelationship.countryState" />
 					<property name="value"
 						value="/details/attributes/country" />
+					<property name="unspecified" value="other" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

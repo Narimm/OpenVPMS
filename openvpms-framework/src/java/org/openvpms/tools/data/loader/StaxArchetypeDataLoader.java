@@ -22,6 +22,7 @@ package org.openvpms.tools.data.loader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,11 +45,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 //log4j
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import org.apache.log4j.PropertyConfigurator;
 
 // spring framework
 import org.springframework.context.ApplicationContext;
@@ -62,7 +63,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.tools.archetype.loader.ArchetypeLoader;
 
 // jsap library
 import com.martiansoftware.jsap.FlaggedOption;
@@ -290,9 +290,8 @@ public class StaxArchetypeDataLoader {
                         
                         stack.push(current);
                     } catch (Exception exception) {
-                        throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement,
-                                new Object[] {formatElement(reader)}, exception);
+                        logger.error("Error in start element\n" +
+                                formatElement(reader) + "\n", exception);
                     }
                 }
                 break;
@@ -325,13 +324,11 @@ public class StaxArchetypeDataLoader {
                             hasReference = false;
                         }
                     } catch (ValidationException validation) {
-                        throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.FailedToValidate,
-                                new Object[] {current.toString()}, validation);
+                        logger.error("Failed to validate object\n" +
+                                current.toString(), validation);
                     } catch (Exception exception) {
-                        throw new ArchetypeDataLoaderException(
-                                ArchetypeDataLoaderException.ErrorCode.FailedToSave,
-                                new Object[] {current.toString()}, exception);
+                        logger.error("Failed to save object\n" +
+                                current.toString(), exception);
                     }
                 } 
                 
@@ -395,9 +392,8 @@ public class StaxArchetypeDataLoader {
                                 }
                                 stack.push(current);
                             } catch (Exception exception) {
-                                throw new ArchetypeDataLoaderException(
-                                        ArchetypeDataLoaderException.ErrorCode.ErrorInStartElement,
-                                        new Object[] {formatElement(reader)}, exception);
+                                logger.error("Error in start element\n" +
+                                        formatElement(reader) + "\n", exception);
                             }
                         }
                         break;
@@ -410,13 +406,11 @@ public class StaxArchetypeDataLoader {
                                     validateOrSave(current);
                                 }
                             } catch (ValidationException validation) {
-                                throw new ArchetypeDataLoaderException(
-                                        ArchetypeDataLoaderException.ErrorCode.FailedToValidate,
-                                        new Object[] {current.toString()}, validation);
+                                logger.error("Failed to validate object\n" +
+                                        current.toString(), validation);
                             } catch (Exception exception) {
-                                throw new ArchetypeDataLoaderException(
-                                        ArchetypeDataLoaderException.ErrorCode.FailedToSave,
-                                        new Object[] {current.toString()}, exception);
+                                logger.error("Failed to save object\n" +
+                                        current.toString(), exception);
                             }
                         } 
                         
@@ -870,16 +864,20 @@ public class StaxArchetypeDataLoader {
      * @throws Exception
      */
     private void createLogger() throws Exception {
-        BasicConfigurator.configure();
-
-        // set the root logger level to error
-        Logger.getRootLogger().setLevel(Level.ERROR);
-        Logger.getRootLogger().removeAllAppenders();
-        Logger.getRootLogger().addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
-        
-        logger = Logger.getLogger(ArchetypeLoader.class);
-        logger.setLevel(Level.INFO);
-        //logger.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+        URL url = Thread.currentThread().getContextClassLoader().getResource("log4j.properties");
+        System.out.println("Using log4j property file: " + url.toString());
+        if (url != null) {
+            PropertyConfigurator.configure(url);
+            logger = Logger.getLogger(StaxArchetypeDataLoader.class);
+        } else {
+            // set the root logger level to error
+            Logger.getRootLogger().setLevel(Level.ERROR);
+            Logger.getRootLogger().removeAllAppenders();
+            
+            logger = Logger.getLogger(StaxArchetypeDataLoader.class);
+            logger.setLevel(Level.INFO);
+            logger.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+        }
     }
 
     /**

@@ -53,7 +53,7 @@ public class LookupServiceTestCase extends
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
             .getLogger(LookupServiceTestCase.class);
-    
+     
     
     /**
      * Holds a reference to the archetype service
@@ -229,6 +229,21 @@ public class LookupServiceTestCase extends
         assertTrue(descriptor.getNodeDescriptor("breed") != null);
         assertTrue(descriptor.getNodeDescriptor("breed").isLookup());
         assertTrue(LookupHelper.get(service, descriptor.getNodeDescriptor("breed"), animal).size() > 0);
+    }
+    
+    /**
+     * Test that OBF-15 has been resolved
+     */
+    public void testOBF15()
+    throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("contact.location");
+        assertTrue(adesc != null);
+        NodeDescriptor ndesc = adesc.getNodeDescriptor("country");
+        assertTrue(ndesc != null);
+        assertTrue(StringUtils.isEmpty(LookupHelper.getUnspecifiedValue(ndesc)));
+        ndesc = adesc.getNodeDescriptor("state");
+        assertTrue(ndesc != null);
+        assertTrue(LookupHelper.getUnspecifiedValue(ndesc).equals("other"));
     }
     
     /* (non-Javadoc)
