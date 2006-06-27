@@ -788,6 +788,12 @@
                     <include>log4j.properties</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>${basedir}/src/conf/echo2</directory>
+                <includes>
+                    <include>**</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 

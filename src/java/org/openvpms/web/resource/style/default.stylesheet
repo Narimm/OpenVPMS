@@ -176,7 +176,7 @@
     </style>
 
     <style name="MainPane.Menu.Button"
-           type="nextapp.echo2.app.button.AbstractButton">
+           type="org.openvpms.web.component.button.ShortcutButton">
         <properties>
             <property name="insets" value="8px 0px"/>
             <property name="foreground" value="#fdf5e6"/>
@@ -190,6 +190,12 @@
             <property name="rolloverBackground" value="#99cc66"/>
             <property name="font">
                 <font bold="true"/>
+            </property>
+            <property name="border">
+                <border style="none"/>
+            </property>
+            <property name="rolloverBorder">
+                <border style="none"/>
             </property>
         </properties>
     </style>
@@ -629,14 +635,16 @@
     <!--  Tree                                                               -->
     <!-- =================================================================== -->
 
-    <style name="default" type="org.openvpms.web.component.tree.StyleableTreeCellRenderer">
+    <style name="default"
+           type="org.openvpms.web.component.tree.StyleableTreeCellRenderer">
         <properties>
             <property name="selectedForeground" value="#ffffff"/>
             <property name="selectedBackground" value="#000000"/>
         </properties>
     </style>
 
-    <style name="default" type="org.openvpms.web.component.tree.StyleableTreeIcons">
+    <style name="default"
+           type="org.openvpms.web.component.tree.StyleableTreeIcons">
         <properties>
             <property name="plus"
                       type="nextapp.echo2.app.ResourceImageReference">
@@ -960,12 +968,12 @@
             </property>
             <property name="font">
                 <font size="9pt">
-                     <typeface name="Verdana"/>
+                    <typeface name="Verdana"/>
                 </font>
             </property>
         </properties>
     </style>
-    
+
     <style name="default-1024x768" base-name="default"
            type="nextapp.echo2.app.TextArea">
         <properties>

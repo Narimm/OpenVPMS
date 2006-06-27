@@ -18,12 +18,12 @@
 
 package org.openvpms.web.component.subsystem;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import org.openvpms.web.resource.util.Messages;
 
 import nextapp.echo2.app.Component;
 
-import org.openvpms.web.resource.util.Messages;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 
 /**
@@ -68,6 +68,7 @@ public abstract class AbstractWorkspace implements Workspace {
 
     /**
      * Returns the localised title of this workspace.
+     * May contain keyboard shortcuts.
      *
      * @return the localised title if this workspace
      */
@@ -140,7 +141,7 @@ public abstract class AbstractWorkspace implements Workspace {
                                                        newValue);
         }
     }
-    
+
     /**
      * Lays out the component.
      *
@@ -162,7 +163,7 @@ public abstract class AbstractWorkspace implements Workspace {
     /**
      * Returns the workspace localisation identifier.
      *
-     * @return the workspace localisation id,
+     * @return the workspace localisation id
      */
     protected String getWorkspaceId() {
         return _workspaceId;
@@ -172,7 +173,7 @@ public abstract class AbstractWorkspace implements Workspace {
      * Determines if the workspace should be refreshed.
      *
      * @return <code>true</code> if the workspace should be refreshed,
-     * otherwise <code>false</code>
+     *         otherwise <code>false</code>
      */
     protected boolean refreshWorkspace() {
         return false;

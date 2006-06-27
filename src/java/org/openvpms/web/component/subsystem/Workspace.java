@@ -18,11 +18,11 @@
 
 package org.openvpms.web.component.subsystem;
 
-import java.beans.PropertyChangeListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 import nextapp.echo2.app.Component;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import java.beans.PropertyChangeListener;
 
 
 /**
@@ -41,6 +41,7 @@ public interface Workspace {
 
     /**
      * Returns the localised title of this workspace.
+     * May contain keyboard shortcuts.
      *
      * @return the localised title of this workspace
      */

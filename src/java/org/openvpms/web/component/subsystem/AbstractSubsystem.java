@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.subsystem;
 
+import org.openvpms.web.resource.util.Messages;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -57,11 +57,13 @@ public abstract class AbstractSubsystem implements Subsystem {
 
     /**
      * Returns a localised title for the subsystem.
+     * May contain keyboard shortcuts.
      *
      * @return a localised title for the subsystem.
      */
     public String getTitle() {
-        return Messages.get("subsystem." + _id);
+        String key = "subsystem." + _id;
+        return Messages.get(key);
     }
 
     /**

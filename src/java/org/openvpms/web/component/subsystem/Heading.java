@@ -18,12 +18,13 @@
 
 package org.openvpms.web.component.subsystem;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-
+import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 
 
 /**
@@ -45,6 +46,8 @@ public final class Heading {
         String subsystem = Messages.get("subsystem." + subsystemId);
         String workspace = Messages.get("workspace." + subsystemId
                 + "." + workspaceId);
+        subsystem = ShortcutHelper.getText(subsystem);
+        workspace = ShortcutHelper.getText(workspace);
         String text = Messages.get("workspace.heading", subsystem, workspace);
 
         Label heading = LabelFactory.create();
