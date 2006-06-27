@@ -318,7 +318,7 @@ public class ArchetypeServicePersistenceTestCase extends
         assertTrue(after.size() == before.size() + 1);
         for (Object entity : after) {
             assertTrue(((Entity)entity).getName(), ((Entity)entity).getName().matches("br.*"));
-        }
+        } 
 
         // now test with a starts with
         after = service.get(new ArchetypeQuery("party", "animal", "pet", false, false)
