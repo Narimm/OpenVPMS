@@ -51,29 +51,13 @@ public class ShortcutButton extends PushButton {
      */
     public void setText(String text) {
         if (text != null) {
-            text = parse(text);
+            String key = ShortcutHelper.getShortcut(text);
+            if (key != null) {
+                setAccessKey(key);
+                text = ShortcutHelper.getText(text);
+            }
         }
         super.setText(text);
-    }
-
-    private String parse(String text) {
-        int lastIndex = 0;
-        int index;
-        StringBuffer buf = new StringBuffer();
-        while ((index = text.indexOf("&", lastIndex)) != -1) {
-            int keyIndex = index + 1;
-            if (keyIndex < text.length()) {
-                if (text.charAt(keyIndex) != '&') {
-                    char key = text.charAt(keyIndex);
-                    String str = Character.toString(key);
-                    setAccessKey(str);
-                }
-                buf.append(text.substring(lastIndex, index));
-            }
-            lastIndex = index + 1;
-        }
-        buf.append(text.substring(lastIndex));
-        return buf.toString();
     }
 
 }

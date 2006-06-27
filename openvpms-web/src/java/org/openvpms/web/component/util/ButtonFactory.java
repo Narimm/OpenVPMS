@@ -18,11 +18,11 @@
 
 package org.openvpms.web.component.util;
 
-import echopointng.ButtonEx;
+import org.openvpms.web.component.button.ShortcutButton;
+import org.openvpms.web.resource.util.Messages;
+
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -45,7 +45,7 @@ public final class ButtonFactory extends ComponentFactory {
      * @return a new button
      */
     public static Button create() {
-        Button button = new Button();
+        Button button = new ShortcutButton();
         setDefaultStyle(button);
         return button;
     }
@@ -59,16 +59,7 @@ public final class ButtonFactory extends ComponentFactory {
     public static Button create(String key) {
         Button button;
         if (key != null) {
-            String accellerator = getString(TYPE, key + ".key", true);
-            String text = getString(TYPE, key, false);
-            if (accellerator != null) {
-                ButtonEx ext = new ButtonEx(text);
-                ext.setAccessKey(accellerator);
-                button = ext;
-            } else {
-                button = new Button(getString(TYPE, key, false));
-            }
-
+            button = new ShortcutButton(getString(TYPE, key, false));
             setDefaultStyle(button);
         } else {
             button = create();
@@ -76,6 +67,17 @@ public final class ButtonFactory extends ComponentFactory {
         return button;
     }
 
+    /**
+     * Create a new button with default style and listener.
+     *
+     * @param listener the listener
+     * @return a new button
+     */
+    public static Button create(ActionListener listener) {
+        Button button = create();
+        button.addActionListener(listener);
+        return button;
+    }
 
     /**
      * Create a new button with a localised text message, default style, and

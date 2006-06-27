@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -42,9 +43,9 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -55,9 +56,9 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 
@@ -311,7 +312,7 @@ public abstract class AbstractIMObjectCollectionEditor
     public boolean validate(Validator validator) {
         boolean valid = false;
         if (addCurrentEdits(validator)) {
-           valid = _collection.validate(validator);
+            valid = _collection.validate(validator);
         }
         return valid;
     }
@@ -350,23 +351,29 @@ public abstract class AbstractIMObjectCollectionEditor
         range = DescriptorHelper.getShortNames(range,
                                                false); // expand any wildcards
 
-        Button create = ButtonFactory.create("add", new ActionListener() {
+        Button create = ButtonFactory.create(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onNew();
             }
         });
 
-        Button cancel = ButtonFactory.create("cancel", new ActionListener() {
+        Button cancel = ButtonFactory.create(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onCancel();
             }
         });
 
-        Button delete = ButtonFactory.create("delete", new ActionListener() {
+        Button delete = ButtonFactory.create(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onDelete();
             }
         });
+
+        // remove any shortcuts from the text, as multiple collections may
+        // be displayed on the one form
+        create.setText(ShortcutHelper.getLocalisedText("button.add"));
+        cancel.setText(ShortcutHelper.getLocalisedText("button.cancel"));
+        delete.setText(ShortcutHelper.getLocalisedText("button.delete"));
 
         focus.add(create);
         focus.add(cancel);

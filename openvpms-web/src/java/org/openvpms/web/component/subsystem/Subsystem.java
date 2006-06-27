@@ -32,6 +32,7 @@ public interface Subsystem {
 
     /**
      * Returns a localised title for the subsystem.
+     * May contain keyboard shortcuts.
      *
      * @return a localised title for the subsystem.
      */
