@@ -45,13 +45,14 @@ public final class ButtonFactory extends ComponentFactory {
      * @return a new button
      */
     public static Button create() {
-        Button button = new ShortcutButton();
+        Button button = new Button();
         setDefaultStyle(button);
         return button;
     }
 
     /**
      * Create a new button with a localised text message, and default style.
+     * The button will be parsed for shortcuts.
      *
      * @param key the resource bundle key. May be <code>null</code>
      * @return a new button
@@ -60,10 +61,10 @@ public final class ButtonFactory extends ComponentFactory {
         Button button;
         if (key != null) {
             button = new ShortcutButton(getString(TYPE, key, false));
-            setDefaultStyle(button);
         } else {
-            button = create();
+            button = new ShortcutButton();
         }
+        setDefaultStyle(button);
         return button;
     }
 
@@ -81,7 +82,7 @@ public final class ButtonFactory extends ComponentFactory {
 
     /**
      * Create a new button with a localised text message, default style, and
-     * listener.
+     * listener. The button will be parsed for shortcuts.
      *
      * @param key      the resource bundle key. May be <code>null</code>
      * @param listener the listener
@@ -95,6 +96,7 @@ public final class ButtonFactory extends ComponentFactory {
 
     /**
      * Create a new button with a localised text message and style.
+     * The button will be parsed for shortcuts.
      *
      * @param key   the resource bundle key. May be <code>null</code>
      * @param style the style name
