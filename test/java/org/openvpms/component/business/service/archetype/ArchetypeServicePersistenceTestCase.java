@@ -317,7 +317,7 @@ public class ArchetypeServicePersistenceTestCase extends
                 .add(new NodeConstraint("name", RelationalOp.EQ, "br*"))).getRows();
         assertTrue(after.size() == before.size() + 1);
         for (Object entity : after) {
-            assertTrue(((Entity)entity).getName().matches("br.*"));
+            assertTrue(((Entity)entity).getName(), ((Entity)entity).getName().matches("br.*"));
         }
 
         // now test with a starts with

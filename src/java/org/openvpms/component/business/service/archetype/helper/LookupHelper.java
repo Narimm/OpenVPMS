@@ -496,4 +496,30 @@ public class LookupHelper  {
 
         return types;
     }
+    
+    /**
+     * Return the unspecified lookup value give the following 
+     * {@link NodeDescriptor}. If the  specified descriptor does not contain
+     * any lookup assertions then return null.
+     * 
+     * @param ndesc
+     *            the node descriptor
+     * @return String
+     *            the unspecified value or null            
+     */
+    public static String getUnspecifiedValue(NodeDescriptor ndesc) {
+        String value = null;
+        
+        if (ndesc != null) {
+          AssertionDescriptor adesc = ndesc.getAssertionDescriptor("lookup");
+          if (adesc  != null) {
+              NamedProperty prop = adesc.getProperty("unspecified");
+              if (prop != null) {
+                  value = (String)prop.getValue();
+              }
+          }
+        }
+        
+        return value;
+    }
 }
