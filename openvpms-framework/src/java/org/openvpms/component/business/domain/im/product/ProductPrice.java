@@ -21,9 +21,12 @@ package org.openvpms.component.business.domain.im.product;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
@@ -65,6 +68,11 @@ public class ProductPrice extends IMObject {
      * do we multiple by the quantity sold
      */
     private boolean fixed;
+    
+    /**
+     * The classification for the product price
+     */
+    private Set<Classification> classifications = new HashSet<Classification>();
     
     /**
      * A placeholder for all entity details, which denotes the dynamic and
@@ -164,6 +172,52 @@ public class ProductPrice extends IMObject {
         this.details = details;
     }
 
+    /**
+     * Convenience method that return all the {@link Classification} as an array.
+     * 
+     * @return Classification[]
+     */
+    public Classification[] getClassificationsAsArray() {
+        return (Classification[])classifications.toArray(
+                new Classification[classifications.size()]);
+    }
+    
+    /**
+     * Return all the associated {@link Classification}
+     * 
+     * @return Set<Classification>
+     */
+    public Set<Classification> getClassifications() {
+        return this.classifications;
+    }
+    
+    /**
+     * @param classifications The classifications to set.
+     */
+    public void setClassifications(Set<Classification> classifications) {
+        this.classifications = classifications;
+    }
+    
+    /**
+     * Add a {@link Classification}
+     * 
+     * @param classification 
+     *            the classification to add
+     */
+    public void addClassification(Classification classification) {
+        classifications.add(classification);
+    }
+
+    /**
+     * Remove the specified {@link Classification}.
+     * 
+     * @param classification
+     */
+    public void removeClassification(Classification classification) {
+        classifications.remove(classification);
+    }
+    
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
@@ -183,6 +237,7 @@ public class ProductPrice extends IMObject {
         copy.fromDate = (Date)(this.fromDate == null ?
                 null : this.fromDate.clone());;
         copy.price = this.price;
+        copy.classifications = new HashSet<Classification>(this.classifications);
         copy.product = this.product;
         copy.thruDate  = (Date)(this.thruDate == null ?
                 null : this.thruDate.clone());
