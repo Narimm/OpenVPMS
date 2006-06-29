@@ -22,14 +22,16 @@ import org.apache.commons.jxpath.util.TypeConverter;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 
 /**
- * Helper to access an {@link IMObject} properties via node names.
+ * Helper to access an {@link IMObject}'s properties via their names.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -63,6 +65,57 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the underlying object.
+     *
+     * @return the object
+     */
+    public IMObject getObject() {
+        return _object;
+    }
+
+    /**
+     * Determines if a node exists.
+     *
+     * @param name the node name
+     * @return <code>true</code> if the node exists, otherwise
+     *         <code>false</code>
+     */
+    public boolean hasNode(String name) {
+        return (getDescriptor(name) != null);
+    }
+
+    /**
+     * Returns the named node's descriptor.
+     *
+     * @param name the node name
+     * @return the descriptor corresponding to <code>name</code> or
+     *         <code>null</code> if none exists.
+     */
+    public NodeDescriptor getDescriptor(String name) {
+        return _archetype.getNodeDescriptor(name);
+    }
+
+    /**
+     * Returns the archetype display name.
+     *
+     * @return the archetype display name, or its short name if none is present.
+     */
+    public String getDisplayName() {
+        return _archetype.getDisplayName();
+    }
+
+    /**
+     * Returns the display name of a node.
+     *
+     * @param name the node name
+     * @return the node display name
+     */
+    public String getDisplayName(String name) {
+        NodeDescriptor node = getNode(name);
+        return node.getDisplayName();
+    }
+
+    /**
      * Returns the boolean value of a node.
      *
      * @param name the node name
@@ -80,6 +133,16 @@ public class IMObjectBean {
      */
     public int getInt(String name) {
         return (Integer) getValue(name, int.class);
+    }
+
+    /**
+     * Returns the long value of a node.
+     *
+     * @param name the node name
+     * @return the value of the node
+     */
+    public long getLong(String name) {
+        return (Long) getValue(name, long.class);
     }
 
     /**
@@ -103,13 +166,23 @@ public class IMObjectBean {
     }
 
     /**
+     * Returns the <code>Date</code> value of a node.
+     *
+     * @param name the node name
+     * @return the value of the node
+     */
+    public Date getDate(String name) {
+        return (Date) getValue(name, Date.class);
+    }
+
+    /**
      * Returns the value of a node.
      *
      * @param name the node name
      * @return the value of the node
      */
     public Object getValue(String name) {
-        NodeDescriptor node = _archetype.getNodeDescriptor(name);
+        NodeDescriptor node = getNode(name);
         return node.getValue(_object);
     }
 
@@ -120,7 +193,7 @@ public class IMObjectBean {
      * @return the collection corresponding to the node
      */
     public List<IMObject> getValues(String name) {
-        NodeDescriptor node = _archetype.getNodeDescriptor(name);
+        NodeDescriptor node = getNode(name);
         return node.getChildren(_object);
     }
 
@@ -131,8 +204,30 @@ public class IMObjectBean {
      * @param value the new node value
      */
     public void setValue(String name, Object value) {
-        NodeDescriptor node = _archetype.getNodeDescriptor(name);
+        NodeDescriptor node = getNode(name);
         node.setValue(_object, value);
+    }
+
+    /**
+     * Adds a value to a collection.
+     *
+     * @param name  the node name
+     * @param value the value to add
+     */
+    public void addValue(String name, IMObject value) {
+        NodeDescriptor node = getNode(name);
+        node.addChildToCollection(_object, value);
+    }
+
+    /**
+     * Removes a value from a collection.
+     *
+     * @param name  the node name
+     * @param value the value to remove
+     */
+    public void removeValue(String name, IMObject value) {
+        NodeDescriptor node = getNode(name);
+        node.removeChildFromCollection(_object, value);
     }
 
     /**
@@ -145,6 +240,23 @@ public class IMObjectBean {
     protected Object getValue(String name, Class type) {
         Object value = getValue(name);
         return CONVERTER.convert(value, type);
+    }
+
+    /**
+     * Returns a node descriptor.
+     *
+     * @param name the node name
+     * @return the descriptor corresponding to <code>name</code>
+     * @throws IMObjectBeanException if the descriptor does't exist
+     */
+    private NodeDescriptor getNode(String name) {
+        NodeDescriptor node = _archetype.getNodeDescriptor(name);
+        if (node == null) {
+            String shortName = _object.getArchetypeId().getShortName();
+            throw new IMObjectBeanException(NodeDescriptorNotFound, name,
+                                            shortName);
+        }
+        return node;
     }
 
 }
