@@ -503,6 +503,31 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(java.util.Collection)
+     */
+    public void save(Collection entities) {
+        if (dao == null) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.NoDaoConfigured,
+                    new Object[] {});
+        }
+
+        // first validate each entity
+        for (Object entity : entities) {
+            validateObject((IMObject)entity);
+        }
+        
+        // now issue a call to save the entities
+        try {
+            dao.save(entities);
+        } catch (IMObjectDAOException exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToSaveCollectionOfObjects,
+                    new Object[] { entities.size() }, exception);
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 

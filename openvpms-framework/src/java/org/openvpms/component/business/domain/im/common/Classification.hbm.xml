@@ -22,6 +22,7 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.common.Classification"
     table="classifications">
+    <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
       <column name="classification_id" index="classification_id_idx" />
       <generator class="increment" />

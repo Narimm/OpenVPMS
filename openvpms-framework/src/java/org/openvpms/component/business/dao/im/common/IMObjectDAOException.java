@@ -39,6 +39,7 @@ public class IMObjectDAOException extends OpenVPMSException {
      */
     public enum ErrorCode {
         FailedToSaveIMObject, 
+        FailedToSaveCollectionOfObjects,
         FailedToDeleteIMObject, 
         FailedToFindIMObject, 
         FailedToFindIMObjects,

@@ -22,6 +22,7 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.lookup.Lookup"
     table="lookups">
+    <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
       <column name="lookup_id" index="lookup_id_idx" />
       <generator class="increment" />

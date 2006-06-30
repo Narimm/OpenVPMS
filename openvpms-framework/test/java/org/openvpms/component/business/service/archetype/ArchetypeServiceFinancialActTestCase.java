@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
@@ -166,6 +167,87 @@ public class ArchetypeServiceFinancialActTestCase extends
         FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1), 
                 new Money(2), new Money(3), new Money(4), true, false);
         service.save(act);
+        
+        // now retrieve it
+        FinancialAct act1 = (FinancialAct)ArchetypeQueryHelper
+           .getByObjectReference(service, act.getObjectReference());
+        assertTrue(act1 != null);
+        assertTrue(act.getName().equals(act1.getName()));
+        assertTrue(act.getDescription().equals(act1.getDescription()));
+        assertTrue(act.getQuantity().compareTo(act1.getQuantity()) == 0);
+        assertTrue(act.getFixedAmount().compareTo(act1.getFixedAmount()) == 0);
+        assertTrue(act.getUnitAmount().compareTo(act1.getUnitAmount()) == 0);
+        assertTrue(act.getTaxAmount().compareTo(act1.getTaxAmount()) == 0);
+        assertTrue(act.getTotal().compareTo(act1.getTotal()) == 0);
+        assertTrue(act.isCredit() == act1.isCredit());
+        assertTrue(act.isPrinted() == act1.isPrinted());
+    }
+    
+    /**
+     * Test the creation of a simple financial act. Then retrieve the object and
+     * compare using NodeDescriptors.
+     */
+    public void testFinancialActCreationAndRetrieval()
+    throws Exception { 
+        FinancialAct act = createFinancialAct(new BigDecimal(1), new Money(1), 
+                new Money(2), new Money(3), new Money(4), true, false);
+        service.save(act);
+        
+        // now retrieve it
+        FinancialAct act1 = (FinancialAct)ArchetypeQueryHelper
+           .getByObjectReference(service, act.getObjectReference());
+        assertTrue(act1 != null);
+        
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("financial.act");
+        NodeDescriptor ndesc = null;
+        
+        // set the name node
+        ndesc = adesc.getNodeDescriptor("name");
+        assertTrue(ndesc != null);
+        String name = (String)ndesc.getValue(act1);
+        assertTrue(act.getName().equals(name));
+        
+        // set the quantity node
+        ndesc = adesc.getNodeDescriptor("quantity");
+        assertTrue(ndesc != null);
+        BigDecimal quantity = (BigDecimal)ndesc.getValue(act1);
+        assertTrue(act.getQuantity().compareTo(quantity) == 0);
+        
+        // set the fixed amount node
+        ndesc = adesc.getNodeDescriptor("fixedAmount");
+        assertTrue(ndesc != null);
+        Money fixedAmount = (Money)ndesc.getValue(act1);
+        assertTrue(act.getFixedAmount().compareTo(fixedAmount) == 0);
+        
+        // set the unit amount node
+        ndesc = adesc.getNodeDescriptor("unitAmount");
+        assertTrue(ndesc != null);
+        Money unitAmount = (Money)ndesc.getValue(act1);
+        assertTrue(act.getUnitAmount().compareTo(unitAmount) == 0);
+        
+        // set the tax amount node
+        ndesc = adesc.getNodeDescriptor("taxAmount");
+        assertTrue(ndesc != null);
+        Money taxAmount = (Money)ndesc.getValue(act1);
+        assertTrue(act.getTaxAmount().compareTo(taxAmount) == 0);
+        
+        // set the total node
+        ndesc = adesc.getNodeDescriptor("total");
+        assertTrue(ndesc != null);
+        Money total = (Money)ndesc.getValue(act1);
+        assertTrue(act.getTotal().compareTo(total) == 0);
+        
+        // set the credit node
+        ndesc = adesc.getNodeDescriptor("credit");
+        assertTrue(ndesc != null);
+        Boolean credit = (Boolean)ndesc.getValue(act1);
+        assertTrue(act.isCredit() == credit.booleanValue());
+        
+        // set the credit node
+        ndesc = adesc.getNodeDescriptor("printed");
+        assertTrue(ndesc != null);
+        Boolean printed = (Boolean)ndesc.getValue(act1);
+        assertTrue(act.isPrinted() == printed.booleanValue());
     }
     
     /**

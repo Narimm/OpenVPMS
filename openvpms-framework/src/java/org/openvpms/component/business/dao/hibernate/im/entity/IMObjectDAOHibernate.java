@@ -20,6 +20,7 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 
 // java core
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 // openvpms-framework
 import org.openvpms.component.business.dao.im.Page;
@@ -76,7 +78,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         HibernateTemplate template = super
                 .createHibernateTemplate(sessionFactory);
         template.setCacheQueries(true);
-        template.setAllowCreate(true);
+        //template.setAllowCreate(true);
+        //template.setFlushMode(HibernateTemplate.FLUSH_NEVER);
 
         return template;
     }
@@ -87,12 +90,57 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void save(IMObject object) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.saveOrUpdate(object);
+            tx.commit();
+        } catch (Exception exception) {
+            if (tx !=null) {
+                tx.rollback();
+            }
+            
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
+                    new Object[] { new Long(object.getUid()) }, exception);
+            
+        } finally {
+            session.close();
+        }
+        
+        /**
         try {
             getHibernateTemplate().saveOrUpdate(object);
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToSaveIMObject,
                     new Object[] { new Long(object.getUid()) }, exception);
+        }
+        */
+    }
+
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#save(java.util.Collection)
+     */
+    public void save(Collection objects) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            for (Object object : objects) {
+                session.saveOrUpdate(object);
+            }
+            tx.commit();
+        } catch (Exception exception) {
+            if (tx !=null) {
+                tx.rollback();
+            }
+            
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToSaveCollectionOfObjects,
+                    new Object[] { objects.size() }, exception);
+            
+        } finally {
+            session.close();
         }
     }
 
@@ -102,6 +150,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @see org.openvpms.component.business.dao.im.common.IMObjectDAO#delete(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void delete(IMObject object) {
+        Session session = getHibernateTemplate().getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.delete(object);
+            tx.commit();
+        } catch (Exception exception) {
+            if (tx !=null) {
+                tx.rollback();
+            }
+            
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
+                    new Object[] { new Long(object.getUid()) });
+            
+        } finally {
+            session.close();
+        }
+        
+        /**
         try {
             getHibernateTemplate().delete(object);
         } catch (Exception exception) {
@@ -109,6 +176,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     IMObjectDAOException.ErrorCode.FailedToDeleteIMObject,
                     new Object[] { new Long(object.getUid()) });
         }
+        **/
     }
     
     

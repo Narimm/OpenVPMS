@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,6 +119,16 @@ public class StaxArchetypeDataLoader {
      * A reference to the idCache
      */
     private Cache idCache;
+    
+    /**
+     * The batch size that we should use for saving objects
+     */
+    private int batchSaveSize = 0;
+    
+    /**
+     * The cache for batching saved objects
+     */
+    private ArrayList batchSaveCache = new ArrayList();
 
     /**
      * A linkId to id cache
@@ -200,13 +211,20 @@ public class StaxArchetypeDataLoader {
      * @throws Exception
      */
     private void load() throws Exception {
+        // set some of the configuration options
         verbose = config.getBoolean("verbose");
         validateOnly = config.getBoolean("validateOnly");
+        batchSaveSize = config.getInt("batchSaveSize");
+        
         if (config.getString("file") != null) {
             // first parse
             processFile(config.getString("file"));
+            
             // second parse
             processUnprocessedElementCache();
+            
+            // force a flush on the cache
+            flushBatchSaveCache();
             
             // dump the statistics
             dumpStatistics();
@@ -237,6 +255,9 @@ public class StaxArchetypeDataLoader {
             processFile(file.getAbsolutePath());
         }
         processUnprocessedElementCache();
+        
+        // force a flush on the cache
+        flushBatchSaveCache();
     }
 
     /**
@@ -511,7 +532,9 @@ public class StaxArchetypeDataLoader {
                     }
                 }
             } else {
-                // childId is defined then we need to retrieve that object
+                // childId is defined then we need to retrieve that object. We 
+                // need to force a flush first though
+                flushBatchSaveCache();
                 object = getObjectForId(reader.getAttributeValue(null, "childId"), validateOnly);
             }
 
@@ -575,7 +598,11 @@ public class StaxArchetypeDataLoader {
         if (validateOnly) {
             archetypeService.validateObject(current);
         } else {
-            archetypeService.save(current);
+            if (batchSaveSize > 0) {
+                batchSaveEntity(current, false);
+            } else {
+                archetypeService.save(current);
+            }
         }
         
         // update the stats
@@ -606,6 +633,40 @@ public class StaxArchetypeDataLoader {
         }
         
     }
+    /**
+     * This method will cache the entity and save it only when the size of 
+     * the cache reaches the configured batch size.
+     * 
+     * @param current
+     *            the entity to save
+     * @param forceFlush
+     *            if true always flush the cache            
+     */
+    @SuppressWarnings("unchecked")
+    private void batchSaveEntity(IMObject current, boolean forceFlush) {
+        if (current != null) {
+            batchSaveCache.add(current);
+        }
+        
+        // determine whether we need to flush
+        if (((forceFlush) ||
+            (batchSaveCache.size() >= batchSaveSize)) && 
+            (batchSaveCache.size() > 0)) {
+            archetypeService.save(batchSaveCache);
+            batchSaveCache.clear();
+        }
+    }
+    
+    /**
+     * For a flush on the batchSaveCache
+     */
+    private void flushBatchSaveCache() {
+        if (batchSaveCache.size() > 0) {
+            archetypeService.save(batchSaveCache);
+            batchSaveCache.clear();
+        }
+    }
+
     /**
      * Process the id reference attribute value and set it accordingly.
      * 
@@ -774,7 +835,32 @@ public class StaxArchetypeDataLoader {
      */
     private boolean attributesContainReferences(XMLStreamReader reader) {
          for (int index = 0; index < reader.getAttributeCount(); index++) {
-            if (isAttributeIdRef(reader.getAttributeValue(index))) {
+            if (isAttributeIdNotCached(reader.getAttributeValue(index))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the attribute value is for a reference and not in cache.
+     * 
+     * @param value
+     *            the attribute value to evaluate
+     * @return boolean
+     */
+    private boolean isAttributeIdNotCached(String value) {
+        if (value.startsWith("id:")) {
+            try {
+                String ref = value.substring("id:".length());
+                if (StringUtils.isEmpty(ref))
+                    return true;
+                Element element = idCache.get(ref);
+                if (element == null) {
+                    return true;
+                }
+            } catch (Exception exception) {
                 return true;
             }
         }
@@ -856,6 +942,10 @@ public class StaxArchetypeDataLoader {
         jsap.registerParameter(new Switch("validateOnly")
                 .setLongFlag("validateOnly").setDefault("false").setHelp(
                         "Only validate the data file. Do not process."));
+        jsap.registerParameter(new FlaggedOption("batchSaveSize")
+                .setStringParser(JSAP.INTEGER_PARSER).setDefault("0")
+                .setShortFlag('b').setLongFlag("batchSaveSize")
+                .setHelp("The batch size for saving entities."));
     }
 
     /**

@@ -27,8 +27,8 @@
 	        maxmemory="512m"
     	    fork="true">
             <ant:classpath>
-           		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dest}"/>
+           		<ant:path refid="maven.dependency.classpath"/>
            		<ant:pathelement path="${maven.build.dir}/test-classes"/>
             </ant:classpath>
         	<arg line="${openvpms.lookup.loader.cmdline}"/>
