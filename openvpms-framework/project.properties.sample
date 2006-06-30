@@ -1,4 +1,4 @@
-ji# ------------------------------------------------- #
+# ------------------------------------------------- #
 # compiler properties
 # ------------------------------------------------- #
 maven.compile.source=1.5
@@ -16,6 +16,15 @@ maven.compile.optimize=true
 #maven.proxy.password=
 maven.repo.remote=http://maven.openvpms.org/,http://www.ibiblio.org/maven
 
+# ------------------------------------------------- #
+# maven deploy settings
+# ------------------------------------------------- #
+maven.repo.list=openvpms
+#maven.repo.openvpms=scp://150.101.154.206
+maven.repo.openvpms=scp://150.101.154.206:2233
+maven.repo.openvpms.directory=/home/e-smith/files/ibays/maven/html/
+maven.repo.openvpms.username=jalateras
+maven.repo.openvpms.password=Plucker1
 
 # ------------------------------------------------- #
 # properties for checkstyle plugin
@@ -47,6 +56,7 @@ maven.castor.properties.dir=.
 # ------------------------------------------------- #
 maven.junit.fork=yes
 #maven.junit.testmatch=**PersistentClassficationTestCase.*
+maven.junit.jvmargs=-Xmx256m
 
 # ------------------------------------------------- #
 # Properties for hibernate plugin
@@ -71,12 +81,15 @@ maven.hibernate.properties=src/conf/hibernate/hibernate.properties
 # ------------------------------------------------- #
 # Properties for Reference Data Loader
 # ------------------------------------------------- #
-openvpms.lookup.loader.cmdline=src/java/org/openvpms/tools/lookup/loader/lookup-data.xml
+openvpms.lookup.loader.cmdline= -c org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -f test/java/org/openvpms/tools/data/loader/lookup-data.xml
 
 # ------------------------------------------------- #
 # Properties for Archetyped Data Loader
 # ------------------------------------------------- #
-openvpms.data.loader.cmdline= -f src/java/org/openvpms/tools/data/loader/archetype-data.xml
+#openvpms.data.loader.cmdline= -p -d src/java/org/openvpms/tools/data/loader
+#openvpms.data.loader.cmdline= -c org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -f test/java/org/openvpms/tools/data/loader/archetype-data.xml
+#openvpms.data.loader.cmdline= -v -c org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -f test/java/org/openvpms/tools/data/loader/security-data.xml
+openvpms.data.loader.cmdline= -s -c org/openvpms/tools/data/loader/archetype-data-loader-appcontext.xml -f ../openvpms-archetypes/src/data/org/openvpms/data/demo/security.xml -b 10
 
 # ------------------------------------------------- #
 # Properties for Security Data Loader
@@ -86,5 +99,5 @@ openvpms.security.loader.cmdline=src/java/org/openvpms/tools/security/loader/sec
 # ------------------------------------------------- #
 # Properties for Archetype Loader
 # ------------------------------------------------- #
+#openvpms.archetype.loader.cmdline= -v -s -c -o -m test/archetypes/org/openvpms/archetype/assertionTypes.xml -d test/archetypes/org/openvpms/archetype
 openvpms.archetype.loader.cmdline=-v -s -c -o -m test/archetypes/org/openvpms/archetype/assertionTypes.xml -d test/archetypes/org/openvpms/archetype
-#openvpms.archetype.loader.cmdline=-v -s -c -o -m ../openvpms-archetypes/src/archetypes/org/openvpms/archetype/assertionTypes.xml -d ../openvpms-archetypes/src/archetypes/org/openvpms/archetype
