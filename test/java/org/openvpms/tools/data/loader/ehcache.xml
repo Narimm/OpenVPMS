@@ -33,4 +33,24 @@
   -->
   <defaultCache maxElementsInMemory="10000" eternal="false"
     timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="false" />
+
+  <cache name="org.openvpms.component.business.domain.im.lookup.Lookup"
+    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+
+  <cache name="org.openvpms.component.business.domain.im.product.Product"
+    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+
+  <cache name="org.openvpms.component.business.domain.im.party.Party"
+    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+
+  <cache
+    name="org.openvpms.component.business.domain.im.common.EntityRelationship"
+    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+
+  <cache
+    name="org.openvpms.component.business.domain.im.lookup.LookupRelationship"
+    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
+
+  <cache name="org.openvpms.component.business.domain.im.product.ProductPrice"
+    maxElementsInMemory="1000" eternal="true" overflowToDisk="false" />
 </ehcache>

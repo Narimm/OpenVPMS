@@ -31,6 +31,11 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class IMObjectBeanException extends OpenVPMSException {
 
     /**
+     * Default SUID
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
      * An enumeration of error codes
      */
     public enum ErrorCode {

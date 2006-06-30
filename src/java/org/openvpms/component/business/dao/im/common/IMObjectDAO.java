@@ -19,6 +19,7 @@
 package org.openvpms.component.business.dao.im.common;
 
 // java
+import java.util.Collection;
 import java.util.Map;
 
 // openvpms-framework
@@ -51,6 +52,16 @@ public interface IMObjectDAO {
      */
     public void save(IMObject object);
 
+    /**
+     * This will save an array of {@link IMObject} instances in a single 
+     * transaction. This is an all or nothing proposition.
+     * 
+     * @param objects
+     *            a collection of objects
+     * @throws IMObjectDAOException
+     *            a runtime exception if the request cannot complete            
+     */
+    public void save(Collection objects);
     /**
      * Delete the specified {@link IMOBject}
      * 

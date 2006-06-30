@@ -20,7 +20,7 @@
 #
 hibernate.dialect=org.hibernate.dialect.MySQLDialect
 hibernate.connection.driver_class=com.mysql.jdbc.Driver
-hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms
+hibernate.connection.url=jdbc:mysql://localhost:3306/openvpms_prod
 hibernate.connection.username=mysql
 hibernate.connection.password=mysql
 hibernate.show_sql=false
@@ -32,6 +32,10 @@ hibernate.show_sql=false
 #hibernate.connection.password=
 #hibernate.show_sql=false
 
+#
+# JDBC configuration
+#
+hibernate.jdbc.batch_size=30
 
 #
 # Transaction locking ptroblems with mysql are resolved with this 
@@ -41,6 +45,12 @@ hibernate.c3p0.min_size=5
 hibernate.c3p0.max_size=20
 hibernate.c3p0.timeout=1800
 hibernate.c3p0.max_statements=50
+
+# 
+# The cache provider
+#
+hibernate.cache.provider_class=org.hibernate.cache.EhCacheProvider
+hibernate.cache.use_second_level_cache=true
 
 #
 # The HQL parser

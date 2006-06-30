@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -185,7 +186,7 @@ public interface IArchetypeService {
     public void remove(IMObject entity);
 
     /**
-     * Save or upadate the specified enity
+     * Save or upadate the specified entity
      * 
      * @param entity
      *            the entity to insert or update
@@ -195,6 +196,18 @@ public interface IArchetypeService {
      *            if the specified entity cannot be validated                        
      */
     public void save(IMObject entity);
+    
+    /**
+     * Save a collection of {@link IMObject} instances
+     * 
+     * @param entities
+     *            the entities to insert or update
+     * @throws ArchetypeServiceException
+     *            if the service cannot save any of the entities
+     * @throws ValidationException
+     *            if any of the specified entities cannot be validated                        
+     */
+    public void save(Collection entities);
     
     /**
      * Retrieve the objects specified by the following {@link ArchetypeQuery}

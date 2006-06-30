@@ -22,6 +22,7 @@
 <hibernate-mapping>
   <class name="org.openvpms.component.business.domain.im.act.ActRelationship"
     table="act_relationships">
+    <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
       <column name="act_relationship_id" index="act_relationship_id_idx" />
       <generator class="increment" />

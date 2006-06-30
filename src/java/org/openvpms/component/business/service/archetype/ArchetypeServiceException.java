@@ -59,6 +59,7 @@ public class ArchetypeServiceException extends OpenVPMSException {
         InvalidAssertionFile,
         InvalidAssertionSpecified,
         FailedToSaveObject,
+        FailedToSaveCollectionOfObjects,
         FailedToDeleteObject,
         FailedToFindObject,
         FailedToFindObjects,
