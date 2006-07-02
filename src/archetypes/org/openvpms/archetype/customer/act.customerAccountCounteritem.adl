@@ -17,7 +17,7 @@
 -->
 <archetypes>
     <archetype name="openvpms-common-act.customerAccountCounterItem.1.0" latest="true" primary="false"
-        type="org.openvpms.component.business.domain.im.act.Act" displayName="Customer Counter Sale Item" >
+        type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Counter Sale Item" >
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
         <node name="name" type="java.lang.String" path="/name"
             hidden="true" minCardinality="1" derived="true"
@@ -31,14 +31,10 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="details" path="/details" hidden="true"
-            type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-            minCardinality="1" maxCardinality="1">
-            <node name="quantity" path="/details/attributes/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
-            <node name="fixedPrice" path="/details/attributes/fixedPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
-            <node name="unitPrice" path="/details/attributes/unitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
-            <node name="total" path="/details/attributes/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/fixedPrice + /details/attributes/quantity * /details/attributes/unitPrice"/>
-        </node>
+        <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
+        <node name="fixedPrice" path="/fixedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
+            derived="true" derivedValue="/fixedAmount + /quantity * /unitAmount"/>
     </archetype>
 </archetypes>
