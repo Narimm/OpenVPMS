@@ -10,7 +10,7 @@
   <inceptionYear>2006</inceptionYear>
   <name>openvpms</name>
   <artifactId>openvpms-archetypes</artifactId>
-  <currentVersion>0.4</currentVersion>
+  <currentVersion>0.5-SNAPSHOT</currentVersion>
   <package>org.openvpms</package>
   <url>http://www.openvpms.org/${pom.artifactId}</url>
   <issueTrackingUrl>
@@ -460,7 +460,7 @@
     <dependency>
       <groupId>org.openvpms</groupId>
       <artifactId>openvpms-framework</artifactId>
-      <version>0.7</version>
+      <version>0.8-SNAPSHOT</version>
       <url>http://www.openvpms.org</url>
     </dependency>
   </dependencies>
@@ -508,6 +508,12 @@
           <include>**/*.xml</include>
         </includes>
       </resource>
+        <resource>
+            <directory>${basedir}/src/conf/log4j</directory>
+            <includes>
+                <include>log4j.properties</include>
+            </includes>
+        </resource>
     </resources>
   </build>
 
