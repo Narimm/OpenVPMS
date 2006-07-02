@@ -18,6 +18,8 @@
 
 package org.openvpms.archetype.util;
 
+import java.util.Collection;
+
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -103,4 +105,24 @@ public class TypeHelper {
         return shortName.matches(regexp);
     }
 
+    /**
+     * Returns the first object instance from a collection with matching short
+     * name.
+     *
+     * @param shortName the short name
+     * @param objects   the objects to search
+     * @return the first object from the collection with matching short name, or
+     *         <code>null</code> if none exists.
+     */
+    public static <T extends IMObject> T
+            getObject(String shortName, Collection<T> objects) {
+        T result = null;
+        for (T object : objects) {
+            if (TypeHelper.isA(object, shortName)) {
+                result = object;
+                break;
+            }
+        }
+        return result;
+    }
 }

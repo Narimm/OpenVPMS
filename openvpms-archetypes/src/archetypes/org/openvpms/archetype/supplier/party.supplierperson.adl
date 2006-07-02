@@ -30,13 +30,9 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="title" path="/details/attributes/title" type="java.lang.String"
 				minCardinality="1" maxlength="15" >
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="Mr" value="Mr" />
-						<property name="Ms" value="Ms" />
-						<property name="Mrs" value="Mrs" />
-						<property name="Dr" value="Dr" />
-					</propertyList>
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="source" value="lookup.personTitle" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>

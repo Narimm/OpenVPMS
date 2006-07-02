@@ -22,8 +22,8 @@ import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 
 /**
@@ -33,6 +33,16 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class MedicalRecordRules {
+
+    /**
+     * Adds a new <em>act.patientClinicalEvent</em>
+     * to the New<em>act.patientClinicalEpisode</em> act passed.
+     *
+     * @param service the archetype service
+     * @param act     the Episode act
+     */
+    public static void addNewEpisodeEvent(IArchetypeService service, Act act) {
+    }
 
     /**
      * Recursively deletes children of <em>act.patientClinicalEpisode</em>
