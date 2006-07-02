@@ -16,44 +16,38 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.customerAccountChargesCounter.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Counter Sale" >
+	<archetype name="openvpms-common-act.tillBalance.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Till Balance" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="concat('Customer Invoice', '')" />
+			derivedValue="concat('Till Balance', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="' '" />
-		<node name="startTime" path="/activityStartTime"
-			type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="amount" path="/total" 
-                    type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
-                    defaultValue="'0.0'"/>
-		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="false()" readOnly="true" />
+		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
-		<node name="status" path="/status" type="java.lang.String"
+		<node name="status" path="/status" type="java.lang.String" defaultValue="'Uncleared'"
 			minCardinality="1">
-			<assertion name="lookup">
-				<property name="type" value="lookup" />
-				<property name="source" value="lookup.chargeStatus" />
-				<errorMessage>An error message</errorMessage>
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="Uncleared" value="Uncleared" />
+					<property name="Cleared" value="Cleared" />
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-        <node name="customer" path="/participations" type="java.util.HashSet"
+        <node name="till" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.customer" hidden="true"/>
-        <node name="author" path="/participations" type="java.util.HashSet"
-              minCardinality="0" maxCardinality="1"
-              filter="participation.author" hidden="true"/>
+              filter="participation.till" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="actRelationship.customerAccountCounterItem" />
+							value="actRelationship.tillBalanceItem" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
