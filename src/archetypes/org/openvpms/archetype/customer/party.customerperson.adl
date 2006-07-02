@@ -30,16 +30,9 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="title" path="/details/attributes/title" type="java.lang.String"
 				minCardinality="0" maxLength="10">
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="Mr" value="Mr" />
-						<property name="Ms" value="Ms" />
-						<property name="Mrs" value="Mrs" />
-						<property name="Dr" value="Dr" />
-						<property name="Miss" value="Miss" />
-						<property name="Sir" value="Sir" />
-						<property name="Lady" value="Lady" />
-					</propertyList>
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="source" value="lookup.personTitle" />
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
@@ -47,7 +40,7 @@
 				minCardinality="0" maxLength="30" />
 			<node name="initials" path="/details/attributes/initials" type="java.lang.String" maxLength="10" />
 			<node name="lastName" path="/details/attributes/lastName" type="java.lang.String"
-				minCardinality="0" maxLength="30" />
+				minCardinality="1" maxLength="30" />
 			<node name="accountType" path="/details/attributes/accountType" type="java.lang.String"
 				minCardinality="0" maxLength="15" defaultValue="'Normal'">
 				<assertion name="lookup">
