@@ -364,7 +364,7 @@
     <dependency>
       <groupId>hibernate</groupId>
       <artifactId>hibernate</artifactId>
-      <version>3.1b3</version>
+      <version>3.1b3-openvpms</version>
       <url>http://www.hibernate.org</url>
     </dependency>
     <dependency>
