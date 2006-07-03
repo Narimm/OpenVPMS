@@ -18,18 +18,19 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableColumn;
-import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
+import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.resource.util.Messages;
+
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableModel;
 
 
 /**

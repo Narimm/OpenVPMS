@@ -18,19 +18,21 @@
 
 package org.openvpms.web.app.customer;
 
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 
 import java.util.Date;
 
@@ -142,17 +144,20 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
         if (POSTED_STATUS.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("customer.account.reverse.title", name);
-            String message = Messages.get("customer.account.reverse.message", name);
+            String message = Messages.get("customer.account.reverse.message",
+                                          name);
             ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-            dialog.addActionListener(ConfirmationDialog.OK_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    reverse(act);
-                }
-            });
+            dialog.addActionListener(ConfirmationDialog.OK_ID,
+                                     new ActionListener() {
+                                         public void actionPerformed(
+                                                 ActionEvent event) {
+                                             reverse(act);
+                                         }
+                                     });
             dialog.show();
         } else {
             showStatusError(act, "customer.account.noreverse.title",
-                    "customer.account.noreverse.message");
+                            "customer.account.noreverse.message");
         }
     }
 
@@ -184,7 +189,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
             SaveHelper.save(reversal);
         } catch (OpenVPMSException exception) {
             String title = Messages.get("customer.account.reverse.failed",
-                    getArchetypeDescriptor().getDisplayName());
+                                        getArchetypeDescriptor().getDisplayName());
             ErrorHelper.show(title, exception);
         }
     }

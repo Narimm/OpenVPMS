@@ -22,8 +22,8 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -31,6 +31,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 
 import java.util.List;
 
@@ -72,7 +74,8 @@ public class InvoiceWorkspace extends SupplierActWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.supplierAccountChargesInvoice");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = DescriptorHelper.getLookups(descriptor);
+        List<Lookup> lookups = LookupHelper.get(
+                ServiceHelper.getArchetypeService(), descriptor);
         return new ActQuery(customer, "supplier", "participation.supplier",
                             "act", "supplierAccountCharges*", lookups,
                             "Posted");

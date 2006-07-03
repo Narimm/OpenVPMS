@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.im.util.AbstractIMObjectCopyHandler;
-import org.openvpms.web.component.im.util.IMObjectCopier;
-import org.openvpms.web.component.im.util.IMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 
 
 /**
@@ -76,7 +76,7 @@ public abstract class AbstractActReversalHandler
     public IMObject getObject(IMObject object, IArchetypeService service) {
         IMObject result;
         if (object instanceof Act || object instanceof ActRelationship
-            || object instanceof Participation) {
+                || object instanceof Participation) {
             String shortName = object.getArchetypeId().getShortName();
             for (String[] map : _shortNames) {
                 String debitType = map[0];

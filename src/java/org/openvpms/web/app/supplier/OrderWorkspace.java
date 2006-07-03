@@ -20,13 +20,15 @@ package org.openvpms.web.app.supplier;
 
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 
 import java.util.List;
 
@@ -67,7 +69,8 @@ public class OrderWorkspace extends SupplierActWorkspace {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.supplierOrder");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = DescriptorHelper.getLookups(descriptor);
+        List<Lookup> lookups = LookupHelper.get(
+                ArchetypeServiceHelper.getArchetypeService(), descriptor);
         return new ActQuery(customer, "supplier", "participation.supplier",
                             "act", "supplierOrder", lookups);
     }

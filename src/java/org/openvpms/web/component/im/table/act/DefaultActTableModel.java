@@ -18,18 +18,20 @@
 
 package org.openvpms.web.component.im.table.act;
 
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DescriptorTableModel;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.DescriptorTableModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,8 +85,8 @@ public class DefaultActTableModel extends DescriptorTableModel {
         } else if (!archetypes.isEmpty()) {
             ArchetypeDescriptor archetype = archetypes.get(0);
             columns = addColumns(new DefaultTableColumnModel(),
-                    archetype.getAllNodeDescriptors(),
-                    context);
+                                 archetype.getAllNodeDescriptors(),
+                                 context);
         } else {
             throw new IllegalArgumentException(
                     "Argument 'shortNames' doesn't refer to a valid archetype");
@@ -136,7 +138,7 @@ public class DefaultActTableModel extends DescriptorTableModel {
             LayoutContext context) {
 
         NodeFilter filter = FilterHelper.chain(new NamedNodeFilter("items"),
-                context.getDefaultNodeFilter());
+                                               context.getDefaultNodeFilter());
         descriptors = FilterHelper.filter(null, filter, descriptors);
         DescriptorTableModel.create(descriptors, columns);
         return columns;

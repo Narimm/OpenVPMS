@@ -20,9 +20,9 @@ package org.openvpms.web.component.im.table;
 
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.logging.Log;

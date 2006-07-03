@@ -18,25 +18,26 @@
 
 package org.openvpms.web.component.im.layout;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import echopointng.table.DefaultPageableSortableTableModel;
 import echopointng.table.PageableSortableTable;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.edit.Property;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import org.apache.commons.lang.StringUtils;

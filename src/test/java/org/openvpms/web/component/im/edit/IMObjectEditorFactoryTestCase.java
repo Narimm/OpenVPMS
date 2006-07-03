@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
@@ -33,12 +31,15 @@ import org.openvpms.web.component.im.edit.order.OrderItemEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentItemEditor;
 import org.openvpms.web.component.im.edit.payment.PaymentEditor;
 import org.openvpms.web.component.im.edit.payment.SupplierPaymentItemEditor;
-import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**
@@ -93,8 +94,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>participation.patient</em>
      */
     public void testCreatePatientParticipationEditor() {
-            checkCreate("participation.patient", "act.customerEstimationItem",
-                        PatientParticipationEditor.class);
+        checkCreate("participation.patient", "act.customerEstimationItem",
+                    PatientParticipationEditor.class);
     }
 
     /**
@@ -102,8 +103,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>participation.product</em>
      */
     public void testCreateProductParticipationEditor() {
-            checkCreate("participation.product", "act.customerEstimationItem",
-                        ProductParticipationEditor.class);
+        checkCreate("participation.product", "act.customerEstimationItem",
+                    ProductParticipationEditor.class);
     }
 
     /**
@@ -143,9 +144,12 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * act.customerAccountCounterItem</em>
      */
     public void testCreateCustomerIvoiceItemEditor() {
-        checkCreate("act.customerAccountInvoiceItem", CustomerInvoiceItemEditor.class);
-        checkCreate("act.customerAccountCreditItem", CustomerInvoiceItemEditor.class);
-        checkCreate("act.customerAccountCounterItem", CustomerInvoiceItemEditor.class);
+        checkCreate("act.customerAccountInvoiceItem",
+                    CustomerInvoiceItemEditor.class);
+        checkCreate("act.customerAccountCreditItem",
+                    CustomerInvoiceItemEditor.class);
+        checkCreate("act.customerAccountCounterItem",
+                    CustomerInvoiceItemEditor.class);
     }
 
     /**
@@ -165,14 +169,22 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>act.customerAccountPayment.* and act.customerAccountRefund.*</em>
      */
     public void testCreateCustomerPaymentItemEditor() {
-        checkCreate("act.customerAccountPaymentCash", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCheque", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCredit", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentEFT", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCash", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCheque", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCredit", CustomerPaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundEFT", CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountPaymentCash",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountPaymentCheque",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountPaymentCredit",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountPaymentEFT",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountRefundCash",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountRefundCheque",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountRefundCredit",
+                    CustomerPaymentItemEditor.class);
+        checkCreate("act.customerAccountRefundEFT",
+                    CustomerPaymentItemEditor.class);
     }
 
     /**
@@ -196,8 +208,10 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>act.supplierAccountInvoiceItem and act.supplierAccountCreditItem</em>
      */
     public void testCreateSupplierInvoiceItemEditor() {
-        checkCreate("act.supplierAccountInvoiceItem", SupplierInvoiceItemEditor.class);
-        checkCreate("act.supplierAccountCreditItem", SupplierInvoiceItemEditor.class);
+        checkCreate("act.supplierAccountInvoiceItem",
+                    SupplierInvoiceItemEditor.class);
+        checkCreate("act.supplierAccountCreditItem",
+                    SupplierInvoiceItemEditor.class);
     }
 
     /**
@@ -205,14 +219,22 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * <em>act.supplierAccountPayment.* and act.supplierAccountRefund.*</em>
      */
     public void testCreateSupplierPaymentItemEditor() {
-        checkCreate("act.supplierAccountPaymentCash", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCheque", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCredit", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentEFT", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCash", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCheque", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCredit", SupplierPaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundEFT", SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentCash",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentCheque",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentCredit",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountPaymentEFT",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundCash",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundCheque",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundCredit",
+                    SupplierPaymentItemEditor.class);
+        checkCreate("act.supplierAccountRefundEFT",
+                    SupplierPaymentItemEditor.class);
     }
 
     /**
@@ -259,7 +281,7 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                       object);
         IMObject parent = _service.create(parentShortName);
         assertNotNull("Failed to create object with shortname="
-                      + parentShortName, parent);
+                + parentShortName, parent);
         IMObjectEditor editor = IMObjectEditorFactory.create(object, parent,
                                                              context);
         assertNotNull("Failed to create editor", editor);

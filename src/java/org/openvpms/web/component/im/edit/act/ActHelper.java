@@ -19,9 +19,7 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -29,7 +27,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
@@ -138,11 +137,9 @@ public class ActHelper {
      */
     public static BigDecimal sum(BigDecimal initial, Collection<Act> acts,
                                  String node) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-
         BigDecimal result = initial;
         for (Act act : acts) {
-            BigDecimal amount = getAmount(act, node, service);
+            BigDecimal amount = getAmount(act, node);
             result = result.add(amount);
         }
         return result;
@@ -156,8 +153,22 @@ public class ActHelper {
      * @return the amount corresponding to <code>node</code>
      */
     public static BigDecimal getAmount(Act act, String node) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        return getAmount(act, node, service);
+        IMObjectBean bean = new IMObjectBean(act);
+        BigDecimal result = BigDecimal.ZERO;
+        if (bean.hasNode(node)) {
+            BigDecimal value = bean.getBigDecimal(node);
+            boolean credit = false;
+            if (bean.hasNode("credit")) {
+                credit = bean.getBoolean("credit");
+            }
+            if (credit) {
+                result = result.subtract(value);
+            } else {
+                result = result.add(value);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -233,34 +244,4 @@ public class ActHelper {
         return new String[0];
     }
 
-
-    /**
-     * Returns an amount, taking into account any credit node.
-     *
-     * @param act     the act
-     * @param node    the amount node
-     * @param service the archetype service
-     * @return the amount corresponding to <code>node</code>
-     */
-    private static BigDecimal getAmount(Act act, String node,
-                                        IArchetypeService service) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(act, service);
-        BigDecimal result = BigDecimal.ZERO;
-        BigDecimal value = IMObjectHelper.getNumber(act, archetype, node);
-        if (value != null) {
-            Boolean credit = (Boolean) IMObjectHelper.getValue(
-                    act, archetype, "credit");
-            if (credit == null) {
-                credit = Boolean.FALSE;
-            }
-            if (Boolean.TRUE.equals(credit)) {
-                result = result.subtract(value);
-            } else {
-                result = result.add(value);
-            }
-        }
-
-        return result;
-    }
 }

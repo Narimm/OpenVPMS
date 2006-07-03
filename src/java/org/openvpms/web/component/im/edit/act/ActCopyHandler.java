@@ -23,8 +23,8 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.im.util.DefaultIMObjectCopyHandler;
-import org.openvpms.web.component.im.util.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 
 
 /**
@@ -49,7 +49,7 @@ public class ActCopyHandler extends DefaultIMObjectCopyHandler {
     public IMObject getObject(IMObject object, IArchetypeService service) {
         IMObject result;
         if (object instanceof Act || object instanceof ActRelationship
-            || object instanceof Participation) {
+                || object instanceof Participation) {
             result = super.getObject(object, service);
         } else {
             result = object;

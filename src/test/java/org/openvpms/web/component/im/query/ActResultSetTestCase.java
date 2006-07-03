@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.test.TestHelper;
 
@@ -249,7 +248,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
 
 
     /**
-     * Helper to create a new <code>act.customerEstimation</code>, and save it
+     * Helper to create a new <code>act.customerEstimation</code>, and save it.
      *
      * @param customer the customer
      * @param patient  the patient
@@ -259,11 +258,11 @@ public class ActResultSetTestCase extends AbstractAppTest {
     protected Act createEstimation(Party customer, Party patient,
                                    Product product) {
         Act act = createAct("act.customerEstimation");
-        IMObjectHelper.setValue(act, "status", "In Progress");
+        act.setStatus("In Progress");
         addParticipation(act, customer, "participation.customer");
 
         Act child = createAct("act.customerEstimationItem");
-        IMObjectHelper.setValue(child, "status", "In Progress");
+        child.setStatus("In Progress");
 
         addParticipation(child, patient, "participation.patient");
         addParticipation(child, product, "participation.product");

@@ -23,7 +23,6 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 
@@ -34,11 +33,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -149,10 +149,11 @@ public class ActRelationshipCollectionEditor
 
             IMObjectCopier copier = new IMObjectCopier(
                     new ActItemCopyHandler());
-            Collection values = IMObjectHelper.getValues(template, "includes");
+            IMObjectBean bean = new IMObjectBean(template);
+            List<IMObject> values = bean.getValues("includes");
             Act copy = act; // replace the existing act with the first
             // templated product
-            for (Object value : values) {
+            for (IMObject value : values) {
                 EntityRelationship relationship = (EntityRelationship) value;
                 IMObjectReference product = relationship.getTarget();
 
@@ -167,9 +168,10 @@ public class ActRelationshipCollectionEditor
                 }
                 editor.setProduct(product);
 
-                BigDecimal quantity = IMObjectHelper.getNumber(relationship,
-                                                               "includeQty");
-                if (quantity != null) {
+                IMObjectBean relationshipBean = new IMObjectBean(relationship);
+                if (relationshipBean.hasNode("includeQty")) {
+                    BigDecimal quantity = relationshipBean.getBigDecimal(
+                            "includeQty");
                     editor.setQuantity(quantity);
                 }
                 collection.add(copy);

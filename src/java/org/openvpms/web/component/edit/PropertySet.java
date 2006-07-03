@@ -21,7 +21,7 @@ package org.openvpms.web.component.edit;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.util.Collection;
 import java.util.HashMap;

@@ -18,8 +18,19 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
@@ -31,18 +42,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -204,7 +205,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
         }
 
         return new DefaultResultSet<T>(archetypes, name, _constraints, sort,
-                rows);
+                                       rows);
     }
 
     /**
@@ -369,7 +370,8 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
         if (_shortNames.length > 1) {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(_shortNames, true);
-            final SelectField shortNameSelector = SelectFieldFactory.create(model);
+            final SelectField shortNameSelector = SelectFieldFactory.create(
+                    model);
             shortNameSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     int index = shortNameSelector.getSelectedIndex();

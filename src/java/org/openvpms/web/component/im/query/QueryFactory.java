@@ -18,13 +18,14 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.lang.reflect.Constructor;
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
+
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import java.lang.reflect.Constructor;
 
 
 /**
