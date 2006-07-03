@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>0.4</currentVersion>
+    <currentVersion>0.5-SNAPSHOT</currentVersion>
     <package>org.openvpms</package>
     <shortDescription>VPMS Web Application</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>

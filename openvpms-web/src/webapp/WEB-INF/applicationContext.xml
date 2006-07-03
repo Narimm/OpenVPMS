@@ -68,6 +68,12 @@
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
+		        <prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
+		        <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
+		        <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
+		        <prop key="hibernate.c3p0.max_statements">
+		          ${hibernate.c3p0.max_statements}
+		        </prop>
             </props>
         </property>
         <property name="mappingResources">
