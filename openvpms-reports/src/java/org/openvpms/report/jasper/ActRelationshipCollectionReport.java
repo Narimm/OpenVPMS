@@ -21,6 +21,8 @@ package org.openvpms.report.jasper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -70,9 +72,8 @@ public class ActRelationshipCollectionReport
         for (NodeDescriptor node : nodes) {
             String field = "target." + node.getName();
             if (node.isCollection() && node.getMaxCardinality() == 1) {
-                String[] shortNames = ReportHelper.getShortNames(
-                        getArchetypeService(), node);
-                if (ReportHelper.matches(shortNames, "participation.*")) {
+                String[] shortNames = DescriptorHelper.getShortNames(node);
+                if (TypeHelper.matches(shortNames, "participation.*")) {
                     field = "target." + node.getName() + ".entity.name";
                     node = getNodeDescriptor(shortNames[0], "entity");
                 }
