@@ -36,7 +36,8 @@ public class TillRuleException extends OpenVPMSException {
     public enum ErrorCode {
         InvalidTillArchetype,
         MissingTill,
-        UnclearedTillExists
+        UnclearedTillExists,
+        SavingClearedTill
     }
 
     /**

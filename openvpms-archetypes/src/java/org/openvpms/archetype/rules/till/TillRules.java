@@ -18,7 +18,13 @@
 
 package org.openvpms.archetype.rules.till;
 
-import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.*;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.InvalidTillArchetype;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.MissingTill;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.UnclearedTillExists;
+import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.SavingClearedTill;
+
+import java.util.List;
+
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -31,8 +37,6 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-
-import java.util.List;
 
 
 /**
@@ -47,10 +51,9 @@ public class TillRules {
      * Rule that determines if an <em>act.tillBalance</em> can be saved.
      * One can be saved if:
      * <ul>
-     * <li>it has status 'Cleared'</li>
+     * <li>it has status 'Cleared' and was previously 'Uncleared'</li>
      * <li>it has status 'Uncleared' and there are no other uncleared
-     * act.tillBalances for  the till or it is a updated version of an existing
-     * act.tillBalance</li>
+     * act.tillBalances for  the till</li>
      * </ul>
      *
      * @param service the archetype service
@@ -64,42 +67,59 @@ public class TillRules {
             throw new TillRuleException(InvalidTillArchetype,
                                         act.getArchetypeId().getShortName());
         }
-        if ("Uncleared".equals(act.getStatus())) {
-            IMObjectBean balance = new IMObjectBean(act);
-            List<IMObject> tills = balance.getValues("till");
-            if (tills.size() != 1) {
-                throw new TillRuleException(MissingTill, act.getArchetypeId());
+        
+        // Get existing original Act
+        ArchetypeQuery existsquery = new ArchetypeQuery("act.tillBalance", false,true);
+        existsquery.setFirstRow(0);
+        existsquery.setNumOfRows(ArchetypeQuery.ALL_ROWS);
+        existsquery.add(new NodeConstraint("uid", RelationalOp.EQ, act.getUid()));
+        List<IMObject> existing = service.get(existsquery).getRows();
+        if (!existing.isEmpty()) {
+            // If have match then we have an original till balance being saved.
+            FinancialAct oldAct = (FinancialAct)existing.get(0);
+            // If old till balance cleared can't do
+            if ("Cleared".equals(oldAct.getStatus())) {
+                throw new TillRuleException(SavingClearedTill, act.getArchetypeId());               
             }
-            Participation participation = (Participation) tills.get(0);
-
-            ArchetypeQuery query = new ArchetypeQuery("act.tillBalance", false,
-                                                      true);
-            query.setFirstRow(0);
-            query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-            query.add(
-                    new NodeConstraint("status", RelationalOp.EQ, "Uncleared"));
-            CollectionNodeConstraint participations
-                    = new CollectionNodeConstraint("till",
-                                                   "participation.till",
-                                                   false, true);
-            participations.add(
-                    new ObjectRefNodeConstraint("entity",
-                                                participation.getEntity()));
-            query.add(participations);
-            List<IMObject> matches = service.get(query).getRows();
-            if (!matches.isEmpty()) {
-                IMObject match = matches.get(0);
-                if (match.getUid() != act.getUid()) {
-                    Object desc = participation.getEntity();
-                    IMObject till = ArchetypeQueryHelper.getByObjectReference(
-                            service, participation.getEntity());
-                    if (till != null) {
-                        desc = till.getName();
+        }
+        else {
+            // Else we have a completely new till balance so if status is cleared check no other uncleared for Till.                
+            if ("Uncleared".equals(act.getStatus())) {
+                IMObjectBean balance = new IMObjectBean(act);
+                List<IMObject> tills = balance.getValues("till");
+                if (tills.size() != 1) {
+                    throw new TillRuleException(MissingTill, act.getArchetypeId());
+                }
+                Participation participation = (Participation) tills.get(0);
+    
+                ArchetypeQuery query = new ArchetypeQuery("act.tillBalance", false,
+                                                          true);
+                query.setFirstRow(0);
+                query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
+                query.add(
+                        new NodeConstraint("status", RelationalOp.EQ, "Uncleared"));
+                CollectionNodeConstraint participations
+                        = new CollectionNodeConstraint("till",
+                                                       "participation.till",
+                                                       false, true);
+                participations.add(
+                        new ObjectRefNodeConstraint("entity",
+                                                    participation.getEntity()));
+                query.add(participations);
+                List<IMObject> matches = service.get(query).getRows();
+                if (!matches.isEmpty()) {
+                    IMObject match = matches.get(0);
+                    if (match.getUid() != act.getUid()) {
+                        Object desc = participation.getEntity();
+                        IMObject till = ArchetypeQueryHelper.getByObjectReference(
+                                service, participation.getEntity());
+                        if (till != null) {
+                            desc = till.getName();
+                        }
+                        throw new TillRuleException(UnclearedTillExists, desc);
                     }
-                    throw new TillRuleException(UnclearedTillExists, desc);
                 }
             }
         }
     }
-
 }
