@@ -18,10 +18,17 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
@@ -30,13 +37,6 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.archetype.util.TypeHelper;
-
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -67,7 +67,7 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         if (!TypeHelper.isA(participation, "participation.product")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
-                    + participation.getArchetypeId().getShortName());
+                            + participation.getArchetypeId().getShortName());
         }
     }
 

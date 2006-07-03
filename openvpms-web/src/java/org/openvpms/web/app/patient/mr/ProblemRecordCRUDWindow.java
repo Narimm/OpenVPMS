@@ -22,10 +22,10 @@ import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
-import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 
 /**
@@ -69,7 +69,7 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
                 addActRelationship(act, CLINICAL_EVENT,
                                    RELATIONSHIP_CLINICAL_EVENT_ITEM);
                 // add relationships for child acts
-                for (ActRelationship relationship : 
+                for (ActRelationship relationship :
                         act.getSourceActRelationships()) {
                     Act target = (Act) IMObjectHelper.getObject(
                             relationship.getTarget());

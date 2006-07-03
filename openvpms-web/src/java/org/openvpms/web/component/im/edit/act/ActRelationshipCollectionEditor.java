@@ -27,7 +27,6 @@ import org.openvpms.web.component.im.util.IMObjectCopier;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 
-import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -35,6 +34,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -151,7 +151,7 @@ public class ActRelationshipCollectionEditor
                     new ActItemCopyHandler());
             Collection values = IMObjectHelper.getValues(template, "includes");
             Act copy = act; // replace the existing act with the first
-                            // templated product
+            // templated product
             for (Object value : values) {
                 EntityRelationship relationship = (EntityRelationship) value;
                 IMObjectReference product = relationship.getTarget();

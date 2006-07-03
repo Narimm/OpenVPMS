@@ -21,8 +21,8 @@ package org.openvpms.web.app.customer;
 import org.openvpms.web.component.im.edit.act.AbstractActReversalHandler;
 import org.openvpms.web.component.im.util.IMObjectCopyHandler;
 
-import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 
 /**
