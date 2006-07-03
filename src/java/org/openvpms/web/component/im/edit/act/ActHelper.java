@@ -23,17 +23,17 @@ import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.archetype.util.TypeHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -56,7 +56,8 @@ public class ActHelper {
      * @return the account balance for <code>customer</code>
      */
     public static BigDecimal getCustomerAccountBalance(Party customer) {
-        String[] shortNames = DescriptorHelper.getShortNames("act.customerAccount*");
+        String[] shortNames = DescriptorHelper.getShortNames(
+                "act.customerAccount*");
         return getAccountBalance(customer.getObjectReference(), "customer",
                                  "participation.customer", shortNames);
     }

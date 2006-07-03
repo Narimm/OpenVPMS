@@ -32,12 +32,12 @@ import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
-import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;

@@ -18,13 +18,13 @@
 
 package org.openvpms.web.component.app;
 
-import org.openvpms.archetype.util.TypeHelper;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import org.apache.commons.lang.StringUtils;
 

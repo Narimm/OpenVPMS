@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.archetype.util.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
