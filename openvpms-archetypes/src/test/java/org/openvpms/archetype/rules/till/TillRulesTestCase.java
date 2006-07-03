@@ -56,6 +56,9 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         Act balance1 = createBalance("Uncleared");
         save(balance1);
 
+        // can save the same balance multiple times
+        save(balance1);
+
         Act balance2 = createBalance("Uncleared");
         try {
             save(balance2);
