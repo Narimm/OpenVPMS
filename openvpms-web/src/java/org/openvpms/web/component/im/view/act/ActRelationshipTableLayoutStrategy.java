@@ -26,7 +26,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.table.act.DefaultActTableModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
@@ -36,6 +35,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import nextapp.echo2.app.Component;
 

@@ -18,12 +18,13 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.List;
+import org.openvpms.web.test.AbstractAppTest;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+
+import java.util.List;
 
 
 /**

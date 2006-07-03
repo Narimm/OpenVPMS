@@ -18,17 +18,13 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -38,8 +34,13 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.spring.ServiceHelper;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -134,8 +135,8 @@ public class DefaultResultSet<T extends IMObject>
             descriptor = archetype.getNodeDescriptor(node);
             if (descriptor == null) {
                 _log.warn("Can't sort results on node=" + node
-                          + ". Node not supported by archetype="
-                          + archetype.getName());
+                        + ". Node not supported by archetype="
+                        + archetype.getName());
                 return false;
             }
         }

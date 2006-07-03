@@ -30,7 +30,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
@@ -45,6 +44,7 @@ import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;

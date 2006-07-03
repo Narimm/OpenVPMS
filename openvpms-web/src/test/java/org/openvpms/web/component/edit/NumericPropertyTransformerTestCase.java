@@ -18,12 +18,12 @@
 
 package org.openvpms.web.component.edit;
 
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import junit.framework.Assert;
 
@@ -55,7 +55,8 @@ public class NumericPropertyTransformerTestCase
      */
     public void testIntegerApply() {
         final Integer one = 1;
-        NumericPropertyTransformer handler = new NumericPropertyTransformer(_intNode);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(
+                _intNode);
 
         // test string conversions
         try {
@@ -86,7 +87,8 @@ public class NumericPropertyTransformerTestCase
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");
         final BigDecimal half = new BigDecimal("0.5");
-        NumericPropertyTransformer handler = new NumericPropertyTransformer(_decNode);
+        NumericPropertyTransformer handler = new NumericPropertyTransformer(
+                _decNode);
 
         // test string conversions
         try {

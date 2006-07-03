@@ -38,7 +38,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -51,6 +50,7 @@ import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import echopointng.GroupBox;

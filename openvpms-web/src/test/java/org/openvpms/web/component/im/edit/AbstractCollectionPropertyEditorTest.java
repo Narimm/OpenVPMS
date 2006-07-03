@@ -26,7 +26,6 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -35,6 +34,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**

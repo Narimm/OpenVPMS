@@ -18,20 +18,23 @@
 
 package org.openvpms.web.component.im.view;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
-import org.openvpms.web.component.im.util.DescriptorHelper;
+
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Factory for {@link IMObjectCollectionViewer}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

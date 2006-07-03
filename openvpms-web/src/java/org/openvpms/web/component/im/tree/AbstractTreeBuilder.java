@@ -24,11 +24,13 @@
  */
 package org.openvpms.web.component.im.tree;
 
-import echopointng.tree.MutableTreeNode;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.SortConstraint;
+
+import echopointng.tree.MutableTreeNode;
 
 
 /**

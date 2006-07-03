@@ -22,16 +22,16 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
-import org.openvpms.web.component.im.util.DescriptorHelper;
-import org.openvpms.web.component.im.create.IMObjectCreator;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**

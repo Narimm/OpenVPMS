@@ -26,7 +26,6 @@ import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
@@ -38,6 +37,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import nextapp.echo2.app.Row;

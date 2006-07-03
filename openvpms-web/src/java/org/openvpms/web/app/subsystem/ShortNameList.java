@@ -24,7 +24,7 @@
  */
 package org.openvpms.web.app.subsystem;
 
-import org.openvpms.web.component.im.util.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**
@@ -50,7 +50,7 @@ public class ShortNameList implements ShortNames {
     public ShortNameList(String refModelName, String entityName,
                          String conceptName) {
         _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
-                conceptName);
+                                                     conceptName);
     }
 
     /**

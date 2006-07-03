@@ -24,12 +24,12 @@
  */
 package org.openvpms.web.component.im.edit;
 
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.test.TestHelper;
+
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.test.TestHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 
 /**
@@ -63,8 +63,9 @@ public class DefaultCollectionPropertyEditorTestCase
      */
     protected IMObject createParent() {
         Party party = (Party) TestHelper.create("party.customerperson");
-        IMObjectHelper.setValue(party, "firstName", "foo");
-        IMObjectHelper.setValue(party, "lastName", "xyz");
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.setValue("firstName", "foo");
+        bean.setValue("lastName", "xyz");
         return party;
     }
 
@@ -81,7 +82,7 @@ public class DefaultCollectionPropertyEditorTestCase
      * Returns an editor for a collection property.
      *
      * @param property the collection property
-     * @param parent thhe parent of the collection
+     * @param parent   thhe parent of the collection
      * @return a new editor for the property
      */
     protected CollectionPropertyEditor createEditor(

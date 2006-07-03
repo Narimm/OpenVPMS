@@ -18,13 +18,14 @@
 
 package org.openvpms.web.component.im.view;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**
@@ -48,7 +49,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      */
     public IMObjectViewer(IMObject object) {
         this(object, new DefaultLayoutStrategyFactory().create(object),
-                null);
+             null);
     }
 
     /**
@@ -59,7 +60,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      */
     public IMObjectViewer(IMObject object, LayoutContext context) {
         this(object, new DefaultLayoutStrategyFactory().create(object),
-                context);
+             context);
     }
 
     /**

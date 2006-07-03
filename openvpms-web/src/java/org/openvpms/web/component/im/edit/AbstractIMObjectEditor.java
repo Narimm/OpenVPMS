@@ -33,7 +33,6 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.util.DescriptorHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -46,6 +45,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import nextapp.echo2.app.Button;

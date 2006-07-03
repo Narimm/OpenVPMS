@@ -21,20 +21,17 @@ package org.openvpms.web.component.im.util;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.spring.ServiceHelper;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 
 
@@ -77,38 +74,6 @@ public class IMObjectHelper {
     }
 
     /**
-     * Sets a value on an object.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @param value  the object value
-     * @throws DescriptorException if the value can't be set
-     */
-    public static void setValue(IMObject object, String node, Object value) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        setValue(object, archetype, node, value);
-    }
-
-    /**
-     * Sets a value on an object.
-     *
-     * @param object    the object
-     * @param archetype the archetype descriptor
-     * @param node      the node name
-     * @param value     the object value
-     * @throws DescriptorException if the value can't be set
-     */
-    public static void setValue(IMObject object,
-                                ArchetypeDescriptor archetype, String node,
-                                Object value) {
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-        if (descriptor != null) {
-            descriptor.setValue(object, value);
-        }
-    }
-
-    /**
      * Returns a value from an object, given the value's node descriptor name.
      *
      * @param object the object
@@ -117,125 +82,8 @@ public class IMObjectHelper {
      *         <code>null</code>
      */
     public static Object getValue(IMObject object, String node) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        return getValue(object, archetype, node);
-    }
-
-    /**
-     * Returns a value from an object, given the value's node descriptor name.
-     *
-     * @param object    the object
-     * @param archetype the archetype descriptor
-     * @param node      the node name
-     * @return the value corresponding to <code>node</code>. May be
-     *         <code>null</code>
-     */
-    public static Object getValue(IMObject object,
-                                  ArchetypeDescriptor archetype, String node) {
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-        if (descriptor != null) {
-            return descriptor.getValue(object);
-        }
-        return null;
-    }
-
-    /**
-     * Returns a string value from an object, given the value's node descriptor
-     * name.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @return the value corresponding to <code>node</code>. May be
-     *         <code>null</code>
-     */
-    public static String getString(IMObject object, String node) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        return getString(object, archetype, node);
-    }
-
-    /**
-     * Returns a string value from an object, given the value's node descriptor
-     * name.
-     *
-     * @param object    the object
-     * @param archetype the archetype descriptor
-     * @param node      the node name
-     * @return the value corresponding to <code>node</code>. May be
-     *         <code>null</code>
-     */
-    public static String getString(IMObject object,
-                                   ArchetypeDescriptor archetype,
-                                   String node) {
-        String result = null;
-        Object value = getValue(object, archetype, node);
-        if (value != null) {
-            result = value.toString();
-        }
-        return result;
-    }
-
-    /**
-     * Returns a numeric value from an object, given the value's node descriptor
-     * name.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @return the value corresponding to <code>node</code>. May be
-     *         <code>null</code>
-     */
-    public static BigDecimal getNumber(IMObject object, String node) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        return getNumber(object, archetype, node);
-    }
-
-    /**
-     * Returns a numeric value from an object, given the value's node descriptor
-     * name.
-     *
-     * @param object    the object
-     * @param archetype the archetype descriptor
-     * @param node      the node name
-     * @return the value corresponding to <code>node</code>. May be
-     *         <code>null</code>
-     */
-    public static BigDecimal getNumber(IMObject object,
-                                       ArchetypeDescriptor archetype,
-                                       String node) {
-        BigDecimal result = null;
-        Object value = getValue(object, archetype, node);
-        if (value instanceof BigDecimal) {
-            result = (BigDecimal) value;
-        } else if (value instanceof Number) {
-            Number number = (Number) value;
-            if (number instanceof Float || number instanceof Double) {
-                result = new BigDecimal(number.doubleValue());
-            } else {
-                result = new BigDecimal(number.longValue());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a collection from an object, given the collection's node
-     * descriptor name.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @return the collection corresponding to <code>node</code>. May be
-     *         <code>null</code>
-     */
-    public static Collection getValues(IMObject object, String node) {
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-        if (descriptor != null) {
-            return descriptor.getChildren(object);
-        }
-        return null;
+        IMObjectBean bean = new IMObjectBean(object);
+        return (bean.hasNode(node)) ? bean.getValue(node) : null;
     }
 
     /**

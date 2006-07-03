@@ -24,6 +24,16 @@
  */
 package org.openvpms.web.component.im.util;
 
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ArchetypeProperty;
+import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
+
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.FunctorException;
 import org.apache.commons.collections.Transformer;
@@ -32,16 +42,6 @@ import org.apache.commons.collections.comparators.TransformingComparator;
 import org.apache.commons.collections.functors.ChainedTransformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
-import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,7 +104,7 @@ public class IMObjectSorter {
             } else if (constraint instanceof ArchetypeSortConstraint) {
                 Comparator type =
                         getComparator((ArchetypeSortConstraint) constraint,
-                                transformer);
+                                      transformer);
                 comparator.addComparator(type);
                 break;
             }
@@ -119,8 +119,7 @@ public class IMObjectSorter {
      * @return a new transformer
      */
     private static Transformer getTransformer(NodeSortConstraint sort) {
-        return new NodeTransformer(
-                sort.getNodeName(), ServiceHelper.getArchetypeService());
+        return new NodeTransformer(sort.getNodeName());
     }
 
     /**
@@ -212,11 +211,6 @@ public class IMObjectSorter {
         private final String _node;
 
         /**
-         * The archetype service.
-         */
-        private final IArchetypeService _service;
-
-        /**
          * Cached archetype descriptor.
          */
         private ArchetypeDescriptor _archetype;
@@ -230,12 +224,10 @@ public class IMObjectSorter {
         /**
          * Construct a new <code>NodeTransformer</code>.
          *
-         * @param node    the node name
-         * @param service the archetype service
+         * @param node the node name
          */
-        public NodeTransformer(String node, IArchetypeService service) {
+        public NodeTransformer(String node) {
             _node = node;
-            _service = service;
         }
 
         /**
@@ -271,8 +263,7 @@ public class IMObjectSorter {
         private NodeDescriptor getDescriptor(IMObject object) {
             if (_archetype == null
                     || !_archetype.getType().equals(object.getArchetypeId())) {
-                _archetype = DescriptorHelper.getArchetypeDescriptor(object,
-                        _service);
+                _archetype = DescriptorHelper.getArchetypeDescriptor(object);
                 _descriptor = _archetype.getNodeDescriptor(_node);
             }
             return _descriptor;
