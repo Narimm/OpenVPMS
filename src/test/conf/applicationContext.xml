@@ -232,6 +232,9 @@
                     org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEvent.after.drl
                 </value>
                 <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl
+                </value>
+                <value>
                     org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
                 </value>
             </list>
