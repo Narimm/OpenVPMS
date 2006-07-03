@@ -23,8 +23,44 @@
         <property name="password" value="${hibernate.connection.password}"/>
     </bean>
 
+    <!-- Configure CacheManager from specified config location -->
+    <bean id="cacheManager"
+      class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+      <property name="configLocation">
+        <value>classpath:ehcache.xml</value>
+      </property>
+    </bean>
 
-    <!--  Entity Interceptor Bean for Hibernate -->
+    <bean id="linkIdCache"
+       class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager"><ref local="cacheManager"/></property>
+       <property name="diskPersistent"><value>true</value></property>
+       <property name="cacheName"><value>linkIdCache</value></property>
+       <property name="maxElementsInMemory"><value>40000</value></property>
+       <property name="overflowToDisk"><value>true</value></property>
+       <property name="eternal"><value>true</value></property>
+     </bean>
+
+     <bean id="idCache"
+       class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager"><ref local="cacheManager"/></property>
+       <property name="cacheName"><value>idCache</value></property>
+       <property name="diskPersistent"><value>true</value></property>
+       <property name="maxElementsInMemory"><value>40000</value></property>
+       <property name="overflowToDisk"><value>true</value></property>
+       <property name="eternal"><value>true</value></property>
+     </bean>
+
+     <bean id="unprocessedElementCache"
+       class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager"><ref local="cacheManager"/></property>
+       <property name="cacheName"><value>unprocessedElementCache</value></property>
+       <property name="diskPersistent"><value>true</value></property>
+       <property name="maxElementsInMemory"><value>40000</value></property>
+       <property name="overflowToDisk"><value>true</value></property>
+       <property name="eternal"><value>true</value></property>
+     </bean>
+      <!--  Entity Interceptor Bean for Hibernate -->
     <bean id="entityInterceptor"
           class="org.openvpms.component.system.service.hibernate.EntityInterceptor">
     </bean>
@@ -39,19 +75,25 @@
             <ref local="entityInterceptor"/>
         </property>
         <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-                <prop key="hibernate.c3p0.min_size">
-                    ${hibernate.c3p0.min_size}</prop>
-                <prop key="hibernate.c3p0.max_size">
-                    ${hibernate.c3p0.max_size}</prop>
-                <prop key="hibernate.c3p0.timeout">
-                    ${hibernate.c3p0.timeout}</prop>
-                <prop key="hibernate.c3p0.max_statements">
-                    ${hibernate.c3p0.max_statements}
-                </prop>
-            </props>
+          <props>
+            <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+            <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+            <prop key="hibernate.max_fetch_depth">3</prop>
+            <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
+            <prop key="hibernate.cache.use_query_cache">true</prop>
+            <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+            <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+            <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
+            <prop key="hibernate.c3p0.max_statements">
+              ${hibernate.c3p0.max_statements}
+            </prop>
+            <prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
+            <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
+            <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
+            <prop key="hibernate.c3p0.max_statements">
+              ${hibernate.c3p0.max_statements}
+            </prop>
+          </props>
         </property>
         <property name="mappingResources">
             <list>
@@ -140,13 +182,11 @@
         </property>
     </bean>
 
-    <!--  Instantiate the assertion beans and inject their dependencies -->
-    <bean id="archetypeAssertion"
-          class="org.openvpms.component.business.service.archetype.assertion.ArchetypeRangeAssertion">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-    </bean>
+    <bean id="archetypeServiceHelper" class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
+	    <constructor-arg index="0">
+	      <ref local="archetypeService" />
+	    </constructor-arg>
+	</bean>
 
 
     <!-- ================================================================== -->

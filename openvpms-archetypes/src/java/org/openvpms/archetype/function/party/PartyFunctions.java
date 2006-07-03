@@ -18,17 +18,14 @@
 
 package org.openvpms.archetype.function.party;
 
-import java.util.List;
-
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.util.List;
 
 
 /**
@@ -38,21 +35,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
  * @version $LastChangedDate$
  */
 public class PartyFunctions {
-
-    /**
-     * The archetype service.
-     */
-    private static IArchetypeService _service;
-
-
-    /**
-     * Construct a new <code>PartyFunctions</code>.
-     *
-     * @param service the archetype service
-     */
-    public PartyFunctions(IArchetypeService service) {
-        _service = service;
-    }
 
     /**
      * Returns a stringfield form of a party's contacts.
@@ -66,22 +48,22 @@ public class PartyFunctions {
         if (pointer == null || !(pointer.getValue() instanceof Party)) {
             return null;
         }
-        
+
         StringBuffer result = new StringBuffer();
 
         Party party = (Party) pointer.getValue();
         for (Contact contact : party.getContacts()) {
-            String shortName = contact.getArchetypeId().getShortName();
-            ArchetypeDescriptor archetype
-                    = _service.getArchetypeDescriptor(shortName);
-            Boolean preferred = new Boolean(getValue(contact,"preferred",archetype));
-            if (preferred) {
-                String description = getContactDescription(contact,archetype);
-                if (description != null) {
-                    if (result.length() != 0) {
-                        result.append(", ");
+            IMObjectBean bean = new IMObjectBean(contact);
+            if (bean.hasNode("preferred")) {
+                boolean preferred = bean.getBoolean("preferred");
+                if (preferred) {
+                    String description = getContactDescription(bean);
+                    if (description != null) {
+                        if (result.length() != 0) {
+                            result.append(", ");
+                        }
+                        result.append(description);
                     }
-                    result.append(description);
                 }
             }
         }
@@ -94,19 +76,14 @@ public class PartyFunctions {
      * @param contact the contact
      * @return the description of <code>object</code>. May be <code>null</code>
      */
-    private static String getContactDescription(Contact contact, ArchetypeDescriptor archetype) {
-
+    private static String getContactDescription(IMObjectBean contact) {
         StringBuffer result = new StringBuffer();
-        String description = getValue(contact, "description", archetype);
-        if (description != null) {
-            result.append(description);
+        if (contact.hasNode("description")) {
+            result.append(contact.getString("description"));
         }
 
-        NodeDescriptor purposes
-                = archetype.getNodeDescriptor("purposes");
-
-        if (purposes != null) {
-            List<IMObject> list = purposes.getChildren(contact);
+        if (contact.hasNode("purposes")) {
+            List<IMObject> list = contact.getValues("purposes");
             if (!list.isEmpty()) {
                 if (result.length() != 0) {
                     result.append(" ");
@@ -131,50 +108,15 @@ public class PartyFunctions {
         StringBuffer result = new StringBuffer();
 
         for (IMObject object : objects) {
-            ArchetypeDescriptor archetype = getArchetype(object);
-            if (archetype != null) {
-                String value = getValue(object, node, archetype);
-                if (value != null) {
-                    if (result.length() != 0) {
-                        result.append(", ");
-                    }
-                    result.append(value);
+            IMObjectBean bean = new IMObjectBean(object);
+            if (bean.hasNode(node)) {
+                if (result.length() != 0) {
+                    result.append(", ");
                 }
+                result.append(bean.getString(node));
             }
         }
         return result.toString();
     }
 
-    /**
-     * Returns the stringified value of a node.
-     *
-     * @param object    the object
-     * @param node      the node name
-     * @param archetype the archetype's descriptor
-     * @return the stringified value of <code>node</code>. May be
-     *         <code>null</code>
-     */
-    private static String getValue(IMObject object, String node,
-                                   ArchetypeDescriptor archetype) {
-        String result = null;
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-        if (descriptor != null) {
-            Object value = descriptor.getValue(object);
-            if (value != null) {
-                result = value.toString();
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Helper to return an object's archetype descriptor.
-     *
-     * @param object the object
-     * @return the object's archetype descriptor. May be <code>null</code>
-     */
-    private static ArchetypeDescriptor getArchetype(IMObject object) {
-        String shortName = object.getArchetypeId().getShortName();
-        return _service.getArchetypeDescriptor(shortName);
-    }
 }
