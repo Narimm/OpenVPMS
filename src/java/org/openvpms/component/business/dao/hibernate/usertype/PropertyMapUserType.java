@@ -51,12 +51,12 @@ public class PropertyMapUserType implements UserType, Serializable {
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * Define the SQL types for {@link ItemStructure
+     * Define the SQL types for {@link #sqlTypes()}.
      */
     private static final int[] SQL_TYPES = {Types.VARCHAR};
-    
+
     /**
      * Default constructor
      */
@@ -85,7 +85,7 @@ public class PropertyMapUserType implements UserType, Serializable {
         if (obj1 == obj2) {
             return true;
         }
-        
+
         if (obj1 == null || obj2 == null) {
             return false;
         } else {
@@ -105,16 +105,11 @@ public class PropertyMapUserType implements UserType, Serializable {
      */
     public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
             throws HibernateException, SQLException {
-        if (rs.wasNull()) {
-            return null;
+        String value = rs.getString(names[0]);
+        if (value != null) {
+            return (PropertyMap) new XStream().fromXML(value);
         }
-        
-        if (rs.getString(names[0]) == null) {
-            return (PropertyMap)null;
-        } else {
-            return (PropertyMap)new XStream()
-                .fromXML(rs.getString(names[0]));
-        }
+        return null;
     }
 
     /* (non-Javadoc)
@@ -133,7 +128,6 @@ public class PropertyMapUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#deepCopy(java.lang.Object)
      */
     public Object deepCopy(Object obj) throws HibernateException {
-        //TODO Implment the deep copy algorithm
         return obj;
     }
 

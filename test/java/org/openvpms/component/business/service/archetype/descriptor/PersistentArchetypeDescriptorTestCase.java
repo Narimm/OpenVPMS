@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
+import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.party.Contact;
 
@@ -326,8 +327,8 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "assertionDescriptor");
             
             // set up the descriptor
-            NodeDescriptor ndesc = null;
-            AssertionDescriptor adesc = null;
+            NodeDescriptor ndesc;
+            AssertionDescriptor adesc;
             desc.setClassName(Party.class.getName());
             ndesc = createNodeDescriptor("uid", "/uid", "java.lang.Long", 1, 1);
             desc.addNodeDescriptor(ndesc);
@@ -374,7 +375,7 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
             closeSession();
         }
     }
-    
+
     /**
      * Test archetype with updating of node descriptors
      */
@@ -472,8 +473,8 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
                     session, "assertionDescriptor");
             
             // set up the descriptor
-            NodeDescriptor ndesc = null;
-            AssertionDescriptor adesc = null;
+            NodeDescriptor ndesc;
+            AssertionDescriptor adesc;
             desc.setClassName(Party.class.getName());
             ndesc = createNodeDescriptor("uid", "/uid", "java.lang.Long", 1, 1);
             desc.addNodeDescriptor(ndesc);
@@ -551,7 +552,44 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
         }
     }
     
-    
+    /**
+     * Verifies that an {@link AssertionDescriptor}'s ProperyMap is correctly
+     * loaded when its other attributes are null.
+     *
+     * @throws Exception for any error
+     */
+    public void testOBF112() throws Exception {
+        Session session = currentSession();
+        Transaction tx = null;
+
+        try {
+            AssertionDescriptor assertion = new AssertionDescriptor();
+            assertion.setName("assertionOBF112");
+            assertion.addProperty(createAssertionProperty("expression",
+                    "java.lang.String", ".*"));
+            assertNotNull(assertion.getPropertyMap());
+            tx = session.beginTransaction();
+            session.save(assertion);
+            tx.commit();
+            session.evict(assertion); // evict the assertion to force load from db
+
+            // reload and verify the property map was loaded
+            AssertionDescriptor loaded = (AssertionDescriptor) session.load(
+                    AssertionDescriptor.class,
+                    assertion.getUid());
+            PropertyMap map = loaded.getPropertyMap();
+            assertNotNull(map);
+            assertNotNull(loaded.getProperty("expression"));
+        } catch (Exception exception) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw exception;
+        } finally {
+            closeSession();
+        }
+    }
+
     /*
      * @see BaseTestCase#tearDown()
      */
@@ -597,12 +635,8 @@ public class PersistentArchetypeDescriptorTestCase extends HibernateInfoModelTes
      * Delete the archetype with the specified arhetypeId QName. This must
      * be called within a transaction
      * 
-     * @param session
-     *            the hibernate session
-     * @param qname
-     *            the qname to use    
-     * @return ArchetypeDescriptor
-     *            the desciptor                    
+     * @param session the hibernate session
+     * @param qName the qname to use
      */
     private void deleteArchetypeDescriptorWithName(Session session, String qName) 
     throws Exception {
