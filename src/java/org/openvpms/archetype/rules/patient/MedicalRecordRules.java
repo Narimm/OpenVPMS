@@ -20,9 +20,14 @@ package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.AbstractIMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 
@@ -42,6 +47,62 @@ public class MedicalRecordRules {
      * @param act     the Episode act
      */
     public static void addNewEpisodeEvent(IArchetypeService service, Act act) {
+        // Copy the Episode 
+        IMObjectCopier copier = new IMObjectCopier(new MedicalEventCopyHandler());
+        Act event = (Act) copier.copy(act);
+        service.save(event);
+
+        // Create a act relationship between the Episode and Event
+        ActRelationship rel = (ActRelationship)service.create("actRelationship.patientClinicalEpisodeEvent");
+        rel.setSource(act.getObjectReference());
+        rel.setTarget(event.getObjectReference());
+        act.addSourceActRelationship(rel);
+        service.save(act);       
+    }
+
+    private static class MedicalEventCopyHandler extends AbstractIMObjectCopyHandler {
+
+        /**
+         * Map of invoice types to their corresponding credit types.
+         */
+        private static final String[][] TYPE_MAP = {
+                {"act.patientClinicalEpisode", "act.patientClinicalEvent"}
+        };
+
+        /**
+         * Determines how {@link IMObjectCopier} should treat an object.
+         *
+         * @param object  the source object
+         * @param service the archetype service
+         * @return <code>object</code> if the object shouldn't be copied,
+         *         <code>null</code> if it should be replaced with
+         *         <code>null</code>, or a new instance if the object should be
+         *         copied
+         */
+        public IMObject getObject(IMObject object, IArchetypeService service) {
+            IMObject result;
+            if (object instanceof Act || object instanceof ActRelationship
+                    || object instanceof Participation) {
+                String shortName = object.getArchetypeId().getShortName();
+                for (String[] map : TYPE_MAP) {
+                    String episodeType = map[0];
+                    String eventType = map[1];
+                    if (episodeType.equals(shortName)) {
+                        shortName = eventType;
+                        break;
+                    }
+                }
+                result = service.create(shortName);
+                if (result == null) {
+                    throw new ArchetypeServiceException(
+                            ArchetypeServiceException.ErrorCode.FailedToCreateArchetype,
+                            new String[]{shortName});
+                }
+            } else {
+                result = object;
+            }
+            return result;
+        }
     }
 
     /**

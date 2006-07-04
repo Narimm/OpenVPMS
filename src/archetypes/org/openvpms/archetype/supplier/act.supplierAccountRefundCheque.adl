@@ -17,19 +17,19 @@
 -->
 <archetypes>
 	<archetype name="openvpms-common-act.supplierAccountRefundCheque.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.act.Act" displayName="Supplier Refund Cheque" >
+		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Supplier Refund Cheque" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Cheque Refund'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Amount : ', /details/attributes/amount,' Details : ',/details/attributes/drawer,
+			derivedValue="concat(' Amount : ', /total,' Details : ',/details/attributes/drawer,
 			' ', /details/attributes/bsb,' ',/details/attributes/bank)" />
+		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="amount" path="/details/attributes/amount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 			<node name="drawer" path="/details/attributes/drawer" type="java.lang.String" maxLength="50" />
 			<node name="bsb" path="/details/attributes/bsb" type="java.lang.String" maxLength="50" />
 			<node name="bank" path="/details/attributes/bank" type="java.lang.String"

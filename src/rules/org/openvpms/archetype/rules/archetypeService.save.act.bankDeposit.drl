@@ -15,24 +15,24 @@
  *
  *  $$Id$$
 -->
-<rule-set name="archetypeService.save.act.patientClinicalEpisode.after"
+<rule-set name="archetypeService.save.act.bankDeposit.before"
     xmlns="http://drools.org/rules"    
     xmlns:java="http://drools.org/semantics/java"
     xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Add Event to New Episode">
+    <rule name="Check Can Save Bank Deposit">
         <parameter identifier="service">
-        	<java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
-        </parameter>
-        <parameter identifier="act">
-        	<java:class>org.openvpms.component.business.domain.im.act.Act</java:class>
-        </parameter>
-        <java:condition>act.isNew()</java:condition>
-        <java:consequence>
-            org.openvpms.archetype.rules.patient.MedicalRecordRules.addNewEpisodeEvent(service, act);
-        </java:consequence>
+             <java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
+         </parameter>
+         <parameter identifier="act">
+             <java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
+         </parameter>
+         <java:consequence>
+             org.openvpms.archetype.rules.deposit.DepositRules.checkCanSaveBankDeposit(service, act);
+         </java:consequence>
+
     </rule>
 
 </rule-set> 
