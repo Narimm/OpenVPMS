@@ -17,18 +17,14 @@
 -->
 <archetypes>
 	<archetype name="openvpms-common-act.supplierAccountRefundCash.1.0" latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.act.Act" displayName="Supplier Refund Cash" >
+		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Supplier Refund Cash" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Cash Refund'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(' Amount : ', /details/attributes/amount)" />
-		<node name="details" path="/details" hidden="true"
-			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-			minCardinality="1" maxCardinality="1">
-			<node name="amount" path="/details/attributes/amount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
-		</node>
+			derivedValue="concat(' Amount : ', /total)" />
+		<node name="amount" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="1.0"/>
 	</archetype>
 </archetypes>

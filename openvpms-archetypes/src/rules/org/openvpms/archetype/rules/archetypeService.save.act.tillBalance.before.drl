@@ -22,7 +22,7 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Check Uncleared Till Balances">
+    <rule name="Check Can Save Till Balances">
         <parameter identifier="service">
              <java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
          </parameter>
@@ -30,7 +30,7 @@
              <java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
          </parameter>
          <java:consequence>
-             org.openvpms.archetype.rules.till.TillRules.checkUnclearedTillBalance(service, act);
+             org.openvpms.archetype.rules.till.TillRules.checkCanSaveTillBalance(service, act);
          </java:consequence>
 
     </rule>

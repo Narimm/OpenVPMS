@@ -31,13 +31,9 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="details" path="/details" hidden="true"
-            type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-            minCardinality="1" maxCardinality="1">
-            <node name="quantity" path="/details/attributes/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
-            <node name="unitCost" path="/details/attributes/unitCost" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
-            <node name="total" path="/details/attributes/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/quantity * /details/attributes/unitCost"/>
-        </node>
+        <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
+        <node name="unitCost" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
+        <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
+            derived="true" derivedValue="/quantity * /unitAmount"/>
     </archetype>
 </archetypes>
