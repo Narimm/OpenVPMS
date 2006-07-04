@@ -172,7 +172,9 @@ public class ActRelationshipCollectionEditor
                 if (relationshipBean.hasNode("includeQty")) {
                     BigDecimal quantity = relationshipBean.getBigDecimal(
                             "includeQty");
-                    editor.setQuantity(quantity);
+                    if (quantity != null) {
+                        editor.setQuantity(quantity);
+                    }
                 }
                 collection.add(copy);
                 collection.setEditor(copy, editor);
