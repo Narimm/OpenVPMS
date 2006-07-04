@@ -36,9 +36,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
 
-// log4j
-import org.apache.log4j.Logger;
-
 /**
  * Test that ability to create and query on Documentss.
  * 
@@ -47,13 +44,7 @@ import org.apache.log4j.Logger;
  */
 public class ArchetypeServiceFinancialActTestCase extends
         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceFinancialActTestCase.class);
-    
+
     /**
      * Holds a reference to the entity service
      */
@@ -93,13 +84,13 @@ public class ArchetypeServiceFinancialActTestCase extends
     }
     
     /**
-     * Test the creation of a FinancialAct using the {@link NodeDescriptors}
+     * Test the creation of a FinancialAct using the {@link NodeDescriptor}s.
      */
     public void testFinancialActCreationThruNodeDescriptors()
     throws Exception {
         FinancialAct act = (FinancialAct)service.create("financial.act");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor("financial.act");
-        NodeDescriptor ndesc = null;
+        NodeDescriptor ndesc;
         
         // set the name node
         ndesc = adesc.getNodeDescriptor("name");
@@ -141,13 +132,13 @@ public class ArchetypeServiceFinancialActTestCase extends
         ndesc = adesc.getNodeDescriptor("credit");
         assertTrue(ndesc != null);
         ndesc.setValue(act, true);
-        assertTrue(act.isCredit() == true);
+        assertTrue(act.isCredit());
         
         // set the credit node
         ndesc = adesc.getNodeDescriptor("printed");
         assertTrue(ndesc != null);
         ndesc.setValue(act, false);
-        assertTrue(act.isPrinted() == false);
+        assertTrue(!act.isPrinted());
 
         // set the start time node
         ndesc = adesc.getNodeDescriptor("startTime");
@@ -199,7 +190,7 @@ public class ArchetypeServiceFinancialActTestCase extends
         assertTrue(act1 != null);
         
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor("financial.act");
-        NodeDescriptor ndesc = null;
+        NodeDescriptor ndesc;
         
         // set the name node
         ndesc = adesc.getNodeDescriptor("name");
@@ -241,13 +232,13 @@ public class ArchetypeServiceFinancialActTestCase extends
         ndesc = adesc.getNodeDescriptor("credit");
         assertTrue(ndesc != null);
         Boolean credit = (Boolean)ndesc.getValue(act1);
-        assertTrue(act.isCredit() == credit.booleanValue());
+        assertTrue(act.isCredit() == credit);
         
         // set the credit node
         ndesc = adesc.getNodeDescriptor("printed");
         assertTrue(ndesc != null);
         Boolean printed = (Boolean)ndesc.getValue(act1);
-        assertTrue(act.isPrinted() == printed.booleanValue());
+        assertTrue(act.isPrinted() == printed);
     }
     
     /**
@@ -349,6 +340,26 @@ public class ArchetypeServiceFinancialActTestCase extends
         NodeDescriptor stndesc = adesc.getNodeDescriptor("startTime");
         etndesc.setValue(act, stndesc.getValue(act));
         assertTrue(act.getActivityStartTime().equals(act.getActivityEndTime()));
+    }
+
+    /**
+     * Tests that a null value for the fixedAmount, unitAmount, and taxAmount
+     * fields doesn't affect the total field.
+     */
+    public void testOBF112() {
+        Money fixedAmount = null;
+        Money unitAmount = null;
+        Money taxAmount = null;
+        Money total = new Money(1);
+        FinancialAct act = createFinancialAct(new BigDecimal(1), fixedAmount,
+                                              unitAmount, taxAmount,
+                                              total, true, false);
+        service.save(act);
+        FinancialAct loaded
+                = (FinancialAct) ArchetypeQueryHelper.getByObjectReference(
+                service, act.getObjectReference());
+        assertNotNull(loaded);
+        assertTrue(total.compareTo(loaded.getTotal()) == 0);
     }
     
     /**

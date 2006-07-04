@@ -48,12 +48,12 @@ public class MoneyUserType implements UserType, Serializable {
      * Default SUID
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * Define the SQL type
      */
     private static final int[] SQL_TYPES = {Types.NUMERIC};
-    
+
     /**
      * Default constructor
      */
@@ -82,7 +82,7 @@ public class MoneyUserType implements UserType, Serializable {
         if (obj1 == obj2) {
             return true;
         }
-        
+
         if (obj1 == null || obj2 == null) {
             return false;
         } else {
@@ -102,15 +102,8 @@ public class MoneyUserType implements UserType, Serializable {
      */
     public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
             throws HibernateException, SQLException {
-        if (rs.wasNull()) {
-            return null;
-        }
-        
-        if (rs.getString(names[0]) == null) {
-            return (Money)null;
-        } else {
-            return new Money(rs.getBigDecimal(names[0]));
-        }
+        BigDecimal value = rs.getBigDecimal(names[0]);
+        return (value != null) ? new Money(value) : null;
     }
 
     /* (non-Javadoc)
@@ -129,7 +122,6 @@ public class MoneyUserType implements UserType, Serializable {
      * @see org.hibernate.usertype.UserType#deepCopy(java.lang.Object)
      */
     public Object deepCopy(Object obj) throws HibernateException {
-        //TODO Implment the deep copy algorithm
         return (Money)obj;
     }
 
