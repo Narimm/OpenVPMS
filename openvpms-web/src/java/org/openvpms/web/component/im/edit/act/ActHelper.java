@@ -157,14 +157,16 @@ public class ActHelper {
         BigDecimal result = BigDecimal.ZERO;
         if (bean.hasNode(node)) {
             BigDecimal value = bean.getBigDecimal(node);
-            boolean credit = false;
-            if (bean.hasNode("credit")) {
-                credit = bean.getBoolean("credit");
-            }
-            if (credit) {
-                result = result.subtract(value);
-            } else {
-                result = result.add(value);
+            if (value != null) {
+                boolean credit = false;
+                if (bean.hasNode("credit")) {
+                    credit = bean.getBoolean("credit");
+                }
+                if (credit) {
+                    result = result.subtract(value);
+                } else {
+                    result = result.add(value);
+                }
             }
         }
 
