@@ -50,10 +50,6 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="productPrice.defaultPrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
 							value="productPrice.unitPrice" />
 					</propertyMap>
 				</propertyList>

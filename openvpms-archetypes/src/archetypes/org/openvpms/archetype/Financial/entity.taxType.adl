@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entity.organisationTaxType.1.0" latest="true"
+	<archetype name="openvpms-common-entity.taxType.1.0" latest="true"
 		type="org.openvpms.component.business.domain.im.common.Entity"  displayName="Tax Type" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" displayName="Tax Type" type="java.lang.String" path="/name" minCardinality="1" />
@@ -51,6 +51,19 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="entityRelationship.practiceTaxType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="rates" path="/participations"
+			type="java.util.HashSet" baseName="Participation" minCardinality="0" maxCardinality="*" 
+			filter="participation.taxRate" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="participation.taxRate" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

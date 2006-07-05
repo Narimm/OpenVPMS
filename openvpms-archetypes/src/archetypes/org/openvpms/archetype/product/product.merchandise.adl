@@ -57,14 +57,6 @@
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="productPrice.defaultPrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="productPrice.variablePrice" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
 							value="productPrice.avgCostPrice" />
 					</propertyMap>
 					<propertyMap name="archetype">
@@ -78,10 +70,6 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="productPrice.markup" />
-					</propertyMap>
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="productPrice.dispensingFee" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
