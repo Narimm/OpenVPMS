@@ -31,13 +31,14 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class TillRuleException extends OpenVPMSException {
 
     /**
-     * An enumeration of error codes
+     * An enumeration of error codes.
      */
     public enum ErrorCode {
         InvalidTillArchetype,
         MissingTill,
         UnclearedTillExists,
-        SavingClearedTill
+        SavingClearedTill,
+        CantAddActToTill
     }
 
     /**
