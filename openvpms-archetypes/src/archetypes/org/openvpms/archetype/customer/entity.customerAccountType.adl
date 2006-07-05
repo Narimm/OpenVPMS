@@ -1,0 +1,69 @@
+<!-- 
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $$Id$$
+-->
+<archetypes>
+	<archetype name="openvpms-common-entity.customerAccountType.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.common.Entity" displayName="Customer Account Type" >
+		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
+		<node name="name" displayName="Account Type" type="java.lang.String" path="/name" minCardinality="1" />
+		<node name="description" type="java.lang.String" path="/description" />
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
+			<node name="creditLimit" path="/details/attributes/creditLimit" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+			<node name="paymentTerms" path="/details/attributes/paymentTerms" type="java.lang.Integer" minCardinality="0" />
+			<node name="paymentUom" displayName="Payment Terms Units" path="/details/attributes/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="days" value="days" />
+						<property name="weeks" value="weeks" />
+						<property name="months" value="months" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
+			<node name="accountFee" displayName="Account Fee Type" path="/details/attributes/accountFee" type="java.lang.String" minCardinality="0" defaultValue="'Fixed'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="Fixed" value="Fixed" />
+						<property name="Percentage" value="Percentage" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
+			<node name="accountFeeAmount" displayName="Fee Amount" path="/details/attributes/accountFeeAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+			<node name="accountFeeMinimum" displayName="Minimum Fee" path="/details/attributes/accountFeeMinimum" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+			<node name="accountFeeBalance" displayName="Minimum Balance" path="/details/attributes/accountFeeBalance" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+			<node name="accountFeeDays" displayName="Overdue Days" path="/details/attributes/accountFeeDays" type="java.lang.Integer" minCardinality="0" />
+			<node name="accountFeeMessage" displayName="Fee Message" path="/details/attributes/accountFeeMessage" type="java.lang.String" minCardinality="0" maxLength="300" />
+			<node name="settlementDiscount" displayName="Settlement Discount Type" path="/details/attributes/settlementDiscount" type="java.lang.String" minCardinality="0" defaultValue="'Percentage'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="Fixed" value="Fixed" />
+						<property name="Percentage" value="Percentage" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
+			<node name="settlementDiscountAmount" displayName="Discount Amount" path="/details/attributes/settlementDiscountAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+			<node name="settlementDiscountMaximum" displayName="Maximum Balance" path="/details/attributes/settlementDiscountMinimum" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
+			<node name="settlementDiscountDays" displayName="Payment Days" path="/details/attributes/settlementDiscountDays" type="java.lang.Integer" minCardinality="0" />
+			<node name="settlementDiscountMessage" displayName="Message" path="/details/attributes/settlementDiscountMessage" type="java.lang.String" minCardinality="0" maxLength="300" />
+			<node name="generalMessage" displayName="General Message" path="/details/attributes/generalMessage" type="java.lang.String" minCardinality="0" maxLength="300" />
+			<node name="overdueMessage" displayName="Overdue Message" path="/details/attributes/overdueMessage" type="java.lang.String" minCardinality="0" maxLength="300" />
+		</node>
+	</archetype>
+</archetypes>
