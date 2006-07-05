@@ -35,6 +35,6 @@ public class FinancialSubsystem extends AbstractSubsystem {
         addWorkspace(new DummyWorkspace("financial", "till"));
         addWorkspace(new DummyWorkspace("financial", "deposit"));
         addWorkspace(new DummyWorkspace("financial", "period"));
-        addWorkspace(new DummyWorkspace("financial", "tax"));
+        addWorkspace(new TaxTypeWorkspace());
     }
 }
