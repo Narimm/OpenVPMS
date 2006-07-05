@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import nextapp.echo2.app.list.AbstractListModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -136,6 +137,24 @@ public class LookupListModel extends AbstractListModel {
      */
     public Lookup getLookup(int index) {
         return _lookups.get(index);
+    }
+
+    /**
+     * Returns the index of the specified lookup.
+     *
+     * @param lookup the lookup
+     * @return the index of <code>lookup</code>, or <code>-1</code> if it
+     *         doesn't exist
+     */
+    public int indexOf(String lookup) {
+        int result = -1;
+        for (int i = 0; i < _lookups.size(); ++i) {
+            if (StringUtils.equals(lookup, _lookups.get(i).getCode())) {
+                result = i;
+                break;
+            }
+        }
+        return result;
     }
 
     /**

@@ -18,23 +18,23 @@
 
 package org.openvpms.web.app.financial;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
 
 /**
- * Financial subsystem.
+ * Table model for <em>actRelationship.tillBalanceItems</em>.
+ * This displays all related acts in a {@link TillActTableModel}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class FinancialSubsystem extends AbstractSubsystem {
+public class TillBalanceActRelationshipTableModel
+        extends AbstractActRelationshipTableModel {
 
-    public FinancialSubsystem() {
-        super("financial");
-        addWorkspace(new TillWorkspace());
-        addWorkspace(new DummyWorkspace("financial", "deposit"));
-        addWorkspace(new DummyWorkspace("financial", "period"));
-        addWorkspace(new TaxTypeWorkspace());
+    /**
+     * Constructs a new <code>TillBalanceActRelationshipTableModel</code>
+     */
+    public TillBalanceActRelationshipTableModel() {
+        setModel(new TillActTableModel());
     }
 }

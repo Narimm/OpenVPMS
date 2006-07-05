@@ -18,7 +18,16 @@
 
 package org.openvpms.web.component.im.table.act;
 
-import java.math.BigDecimal;
+import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
@@ -27,15 +36,7 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.resource.util.Messages;
+import java.math.BigDecimal;
 
 
 /**
@@ -49,17 +50,17 @@ public class ActAmountTableModel extends DefaultIMObjectTableModel {
     /**
      * Date column index.
      */
-    private static final int DATE_INDEX = NEXT_INDEX;
+    protected static final int DATE_INDEX = NEXT_INDEX;
 
     /**
      * Status column index.
      */
-    private static final int STATUS_INDEX = DATE_INDEX + 1;
+    protected static final int STATUS_INDEX = DATE_INDEX + 1;
 
     /**
      * Amount column index.
      */
-    private static final int AMOUNT_INDEX = STATUS_INDEX + 1;
+    protected static final int AMOUNT_INDEX = STATUS_INDEX + 1;
 
 
     /**
@@ -174,7 +175,7 @@ public class ActAmountTableModel extends DefaultIMObjectTableModel {
      * @param name  the column name
      * @return a new column
      */
-    private static TableColumn createTableColumn(int index, String name) {
+    protected static TableColumn createTableColumn(int index, String name) {
         TableColumn column = new TableColumn(index);
         column.setHeaderValue(Messages.get(name));
         return column;

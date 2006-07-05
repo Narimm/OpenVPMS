@@ -24,24 +24,18 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
-import org.openvpms.web.component.im.table.act.DefaultActTableModel;
-import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import nextapp.echo2.app.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -55,7 +49,7 @@ public class ActRelationshipTableLayoutStrategy
         implements IMObjectLayoutStrategy {
 
     /**
-     * The act short names.
+     * The act relationship short names.
      */
     private final String[] _shortNames;
 
@@ -66,11 +60,7 @@ public class ActRelationshipTableLayoutStrategy
      * @param descriptor the act relationship collection descriptor
      */
     public ActRelationshipTableLayoutStrategy(NodeDescriptor descriptor) {
-        String relationshipType = descriptor.getArchetypeRange()[0];
-        ArchetypeDescriptor relationship
-                = DescriptorHelper.getArchetypeDescriptor(relationshipType);
-        NodeDescriptor target = relationship.getNodeDescriptor("target");
-        _shortNames = target.getArchetypeRange();
+        _shortNames = descriptor.getArchetypeRange();
     }
 
     /**
@@ -86,28 +76,13 @@ public class ActRelationshipTableLayoutStrategy
      */
     public Component apply(IMObject object, PropertySet properties,
                            LayoutContext context) {
-        IMObjectTableModel model = new DefaultActTableModel(_shortNames,
-                                                            context);
+        IMObjectTableModel model
+                = IMObjectTableModelFactory.create(_shortNames, context);
         Act act = (Act) object;
-        List<IMObject> acts = getActs(act);
-        ResultSet set = new PreloadedResultSet<IMObject>(acts, 25);
+        List<IMObject> relationships = new ArrayList<IMObject>();
+        relationships.addAll(act.getSourceActRelationships());
+        ResultSet set = new PreloadedResultSet<IMObject>(relationships, 25);
         return new PagedIMObjectTable(model, set);
-    }
-
-    protected List<IMObject> getActs(Act act) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        Set<ActRelationship> relationships = act.getSourceActRelationships();
-        List<IMObject> result = new ArrayList<IMObject>();
-        for (ActRelationship relationship : relationships) {
-            if (relationship.getTarget() != null) {
-                Act item = (Act) ArchetypeQueryHelper.getByObjectReference(
-                        service, relationship.getTarget());
-                if (item != null) {
-                    result.add(item);
-                }
-            }
-        }
-        return result;
     }
 
 }
