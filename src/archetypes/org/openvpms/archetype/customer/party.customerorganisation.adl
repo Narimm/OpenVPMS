@@ -26,16 +26,25 @@
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="accountType" path="/details/attributes/accountType" type="java.lang.String"
-				minCardinality="1" maxLength="15" defaultValue="'Normal'" >
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="source" value="lookup.customerAccountType" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="patients" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
+			filter="entityRelationship.patient*" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.patientLocation" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.patientOwner" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
 		<node name="contacts" path="/contacts"
 			type="java.util.HashSet" baseName="Contact" minCardinality="1" maxCardinality="*">
 			<assertion name="archetypeRange">
@@ -60,18 +69,27 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="patients" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
-			filter="entityRelationship.patient*" >
+		<node name="taxes" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+			filter="entityRelationship.productTaxes" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.patientLocation" />
+							value="entityRelationship.customerTaxType" />
 					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="Type" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
+			filter="entityRelationship.productTypeProduct" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.patientOwner" />
+							value="entityRelationship.customerAccountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
