@@ -42,5 +42,6 @@ public class CustomerSubsystem extends AbstractSubsystem {
         addWorkspace(new PaymentWorkspace());
         addWorkspace(new AccountWorkspace());
         addWorkspace(new DummyWorkspace("customer", "statements"));
+        addWorkspace(new AccountTypeWorkspace());
     }
 }
