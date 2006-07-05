@@ -18,23 +18,22 @@
 
 package org.openvpms.web.app.financial;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 
 
 /**
- * Financial subsystem.
+ * Displays acts associated with a till balance.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class FinancialSubsystem extends AbstractSubsystem {
+public class TillActTableModel extends ActAmountTableModel {
 
-    public FinancialSubsystem() {
-        super("financial");
-        addWorkspace(new TillWorkspace());
-        addWorkspace(new DummyWorkspace("financial", "deposit"));
-        addWorkspace(new DummyWorkspace("financial", "period"));
-        addWorkspace(new TaxTypeWorkspace());
+    /**
+     * Construct a new <code>TillActTableModel</code>.
+     */
+    public TillActTableModel() {
+        super(false, true);
     }
+
 }

@@ -68,12 +68,15 @@
                 <prop key="hibernate.c3p0.max_statements">
                     ${hibernate.c3p0.max_statements}
                 </prop>
-		        <prop key="hibernate.cache.provider_class">${hibernate.cache.provider_class}</prop>
-		        <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
-		        <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
-		        <prop key="hibernate.c3p0.max_statements">
-		          ${hibernate.c3p0.max_statements}
-		        </prop>
+                <prop key="hibernate.cache.provider_class">
+                    ${hibernate.cache.provider_class}</prop>
+                <prop key="hibernate.cache.use_second_level_cache">
+                    ${hibernate.cache.use_second_level_cache}</prop>
+                <prop key="hibernate.jdbc.batch_size">
+                    ${hibernate.jdbc.batch_size}</prop>
+                <prop key="hibernate.c3p0.max_statements">
+                    ${hibernate.c3p0.max_statements}
+                </prop>
             </props>
         </property>
         <property name="mappingResources">
@@ -224,14 +227,6 @@
         </constructor-arg>
     </bean>
 
-    <!--  The Party Functions Bean -->
-    <bean id="partyFunctions"
-          class="org.openvpms.archetype.function.party.PartyFunctions">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-    </bean>
-
     <!-- ================================================================== -->
     <!--                 RULES DEFINITIONS (DROOLS)                         -->
     <!-- ================================================================== -->
@@ -275,9 +270,19 @@
                     org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEvent.after.drl
                 </value>
                 <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.after.drl
+                </value>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.after.drl
+                </value>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl
+                </value>
+                <value>
                     org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
                 </value>
             </list>
+
         </property>
         <property name="ruleRuntime">
             <ref local="ruleRuntime"/>

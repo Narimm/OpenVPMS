@@ -723,7 +723,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>0.4</version>
+            <version>0.5-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>

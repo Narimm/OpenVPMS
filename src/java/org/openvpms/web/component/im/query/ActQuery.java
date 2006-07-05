@@ -277,6 +277,16 @@ public class ActQuery extends AbstractQuery {
     }
 
     /**
+     * Sets the initial status to query on.
+     *
+     * @param status the status to query on
+     */
+    public void setStatus(String status) {
+        _statuses = new String[]{status};
+        updateStatusSelector(status);
+    }
+
+    /**
      * Performs the query.
      *
      * @param rows the maxiomum no. of rows per page
@@ -393,6 +403,9 @@ public class ActQuery extends AbstractQuery {
                     onStatusChanged();
                 }
             });
+            if (_statuses.length == 1) {
+                updateStatusSelector(_statuses[0]);
+            }
         }
 
         _startAll = CheckBoxFactory.create("actquery.all", true);
@@ -566,6 +579,20 @@ public class ActQuery extends AbstractQuery {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         field.getDateChooser().setSelectedDate(calendar);
+    }
+
+    /**
+     * Sets the selected status in the status selector, if it exists.
+     *
+     * @param status the status to selecte
+     */
+    private void updateStatusSelector(String status) {
+        if (_statusSelector != null) {
+            LookupListModel model
+                    = (LookupListModel) _statusSelector.getModel();
+            int index = model.indexOf(status);
+            _statusSelector.setSelectedIndex(index);
+        }
     }
 
 }
