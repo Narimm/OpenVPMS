@@ -33,6 +33,13 @@
 			<node name="quantity" path="/details/attributes/quantity" type="java.lang.Integer"
 				minCardinality="1">
 			</node>
+			<node name="uom" displayName="Units of Measure" path="/details/attributes/qtyUom" type="java.lang.String" minCardinality="0" >
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="source" value="lookup.uom" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>
 		</node>		
 	</archetype>
 </archetypes>
