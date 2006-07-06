@@ -38,7 +38,7 @@ import java.util.List;
  * <p/>
  * The class extends {@link Jsr94RuleSupport}, which eases the integration with
  * other JSR-94 compliant rules engines and provides convenience methods for
- * creating session with the rule engine and exeucting rules.
+ * creating session with the rule engine and executing rules.
  * <p/>
  * This class also implements the AOPAlliance {@link MethodInterceptor} interface
  * so that it can execute business rules before and or after the method
@@ -53,7 +53,7 @@ import java.util.List;
 public class RuleEngineInterceptor extends Jsr94RuleSupport implements
                                                             MethodInterceptor {
     /**
-     * Define a logger for this class
+     * Define a logger for this class.
      */
     private static final Log _log
             = LogFactory.getLog(RuleEngineInterceptor.class);
@@ -79,19 +79,9 @@ public class RuleEngineInterceptor extends Jsr94RuleSupport implements
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Object result;
 
-        // all exceptions and errors will be caught and wrapped in a
-        // {@link RuleEngineException| before rethrowing it to the client
-        try {
-            beforeMethodInvocation(invocation);
-            result = invocation.proceed();
-            afterMethodInvocation(invocation);
-        } catch (Exception exception) {
-            throw new RuleEngineException(
-                    RuleEngineException.ErrorCode.FailedToExecuteRule,
-                    new Object[]{invocation.getMethod().getName()},
-                    exception);
-        }
-
+        beforeMethodInvocation(invocation);
+        result = invocation.proceed();
+        afterMethodInvocation(invocation);
         return result;
     }
 
@@ -103,27 +93,21 @@ public class RuleEngineInterceptor extends Jsr94RuleSupport implements
     }
 
     /**
-     * This is executed before the business logic of the intercepted method
+     * This is executed before the business logic of the intercepted method.
      *
      * @param invocation the method invocation
      */
     private void beforeMethodInvocation(MethodInvocation invocation) {
         String uri = RuleSetUriHelper.getRuleSetURI(invocation, true);
-        if (RuleEngineInterceptor._log.isDebugEnabled()) {
-            RuleEngineInterceptor._log.debug(
-                    "beforeMethodInvocation: Invoking rule set URI "
-                            + uri + " for object " + invocation.getThis().toString());
+        if (_log.isDebugEnabled()) {
+            _log.debug("beforeMethodInvocation: Invoking rule set URI "
+                    + uri + " for object " + invocation.getThis().toString());
         }
-
-        // only invoke the rule engine if there is an corresponding rule set
-        // for the uri.
-        if (_ruleSource.hasRuleExecutionSet(uri)) {
-            executeStateless(uri, getFacts(invocation));
-        }
+        executeRules(uri, invocation);
     }
 
     /**
-     * This is executed after the business logic of the intercepted method
+     * This is executed after the business logic of the intercepted method.
      *
      * @param invocation the methof invocation
      */
@@ -133,17 +117,32 @@ public class RuleEngineInterceptor extends Jsr94RuleSupport implements
             _log.debug("afterMethodInvocation: Invoking rule set URI "
                     + uri + " for object " + invocation.getThis().toString());
         }
+        executeRules(uri, invocation);
+    }
 
-        // only invoke the rule engine if there is an corresponding rule set
-        // for the uri.
+    /**
+     * Executes rules if there is a corresponding rule set for the uri.
+     *
+     * @param uri        the uri
+     * @param invocation the method invocation
+     * @throws RuleEngineException if the rule fails to execute
+     */
+    private void executeRules(String uri, MethodInvocation invocation) {
         if (_ruleSource.hasRuleExecutionSet(uri)) {
-            executeStateless(uri, getFacts(invocation));
+            try {
+                executeStateless(uri, getFacts(invocation));
+            } catch (Throwable exception) {
+                throw new RuleEngineException(
+                        RuleEngineException.ErrorCode.FailedToExecuteRule,
+                        new Object[]{invocation.getMethod().getName()},
+                        exception);
+            }
         }
     }
 
     /**
      * Return the list of facts that should be injected into the working
-     * memory
+     * memory.
      *
      * @param invocation meta data about the method that is being invoked
      * @return List<Object>
