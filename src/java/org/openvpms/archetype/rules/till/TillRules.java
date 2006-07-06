@@ -23,23 +23,24 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 
 /**
- * Till rules.
+ * Till business rules.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -61,7 +62,7 @@ public class TillRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static void checkCanSaveTillBalance(FinancialAct act,
-                                                 IArchetypeService service) {
+                                               IArchetypeService service) {
         if (!TypeHelper.isA(act, "act.tillBalance")) {
             throw new TillRuleException(InvalidTillArchetype,
                                         act.getArchetypeId().getShortName());
@@ -87,20 +88,16 @@ public class TillRules {
             // Else we have a completely new till balance so if status is
             // cleared check no other uncleared for Till.
             if ("Uncleared".equals(act.getStatus())) {
-                IMObjectReference till = getTill(act);
+                Party till = TillHelper.getTill(act);
                 if (till == null) {
                     throw new TillRuleException(MissingTill,
                                                 act.getArchetypeId());
                 }
-                FinancialAct current = getUnclearedTillBalance(till, service);
+                FinancialAct current = TillHelper.getUnclearedTillBalance(
+                        till.getObjectReference());
                 if (current != null && current.getUid() != act.getUid()) {
-                    Object desc = till;
-                    IMObject t = ArchetypeQueryHelper.getByObjectReference(
-                            service, till);
-                    if (t != null) {
-                        desc = t.getName();
-                    }
-                    throw new TillRuleException(UnclearedTillExists, desc);
+                    throw new TillRuleException(UnclearedTillExists,
+                                                till.getName());
                 }
             }
         }
@@ -123,11 +120,11 @@ public class TillRules {
             throw new TillRuleException(CantAddActToTill,
                                         act.getArchetypeId().getShortName());
         }
-        IMObjectReference till = getTill(act);
+        IMObjectReference till = TillHelper.getTillReference(act);
         if (till != null) {
-            FinancialAct balance = getUnclearedTillBalance(till, service);
+            FinancialAct balance = TillHelper.getUnclearedTillBalance(till);
             if (balance == null) {
-                balance = createTillBalance(till, service);
+                balance = TillHelper.createTillBalance(till);
             } else {
                 // determine if the act is present in the till balance
                 for (ActRelationship relationship
@@ -139,76 +136,55 @@ public class TillRules {
                     }
                 }
             }
-            ActRelationship relationship = (ActRelationship) service.create(
-                    "actRelationship.tillBalanceItem");
-            relationship.setSource(balance.getObjectReference());
-            relationship.setTarget(act.getObjectReference());
-            balance.addActRelationship(relationship);
+            TillHelper.addRelationship("actRelationship.tillBalanceItem",
+                                       balance, act);
             service.save(balance);
         }
     }
 
     /**
-     * Helper to return the uncleared till balance for a till, if it exists.
+     * Clears a till.
      *
-     * @param till    a reference to the till
+     * @param balance the current till balance
+     * @param amount  the amount to clear from the till
+     * @param account the account to deposit to
      * @param service the archetype service
-     * @return the uncleared till balance, or <code>null</code> if none exists
+     * @throws TillRuleException if the balance doesn't have a till
      */
-    public static FinancialAct getUnclearedTillBalance(
-            IMObjectReference till, IArchetypeService service) {
-        FinancialAct act = null;
-        ArchetypeQuery query = new ArchetypeQuery("act.tillBalance",
-                                                  false,
-                                                  true);
-        query.setFirstRow(0);
-        query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        query.add(new NodeConstraint("status", RelationalOp.EQ, "Uncleared"));
-        CollectionNodeConstraint participations
-                = new CollectionNodeConstraint("till",
-                                               "participation.till",
-                                               false, true);
-        participations.add(new ObjectRefNodeConstraint("entity", till));
-        query.add(participations);
-        List<IMObject> matches = service.get(query).getRows();
-        if (!matches.isEmpty()) {
-            act = (FinancialAct) matches.get(0);
+    public static void clearTill(FinancialAct balance, BigDecimal amount,
+                                 Party account,
+                                 IArchetypeService service) {
+        Party till = TillHelper.getTill(balance);
+        if (till == null) {
+            throw new TillRuleException(MissingTill, balance.getArchetypeId());
         }
-        return act;
+        IMObjectBean bean = new IMObjectBean(till);
+        BigDecimal current = bean.getBigDecimal("tillFloat");
+        if (current == null) {
+            current = BigDecimal.ZERO;
+        }
+        BigDecimal diff = amount.subtract(current);
+        balance.setStatus("Cleared");
+        FinancialAct adjustment = TillHelper.createTillBalanceAdjustment(
+                till.getObjectReference(), new Money(diff));
+        FinancialAct deposit = TillHelper.createBankDeposit(
+                balance, account.getObjectReference());
+        service.save(adjustment);
+        service.save(balance);
+        service.save(deposit);
+
+        // need to reload the till to avoid hibernate StaleObjectException
+        // caused by saving the balance (which has a reference to the till)
+        String tillName = till.getName();
+        till = (Party) ArchetypeQueryHelper.getByObjectReference(
+                service,till.getObjectReference());
+        bean = new IMObjectBean(till);
+        if (till == null) {
+            throw new TillRuleException(TillNotFound, tillName);
+        }
+        bean.setValue("lastCleared", new Date());
+        bean.setValue("tillFloat", diff);
+        service.save(till);
     }
 
-    /**
-     * Helper to create a new till balance.
-     *
-     * @param till the till
-     * @param service the archetype service
-     * @return a new till balance
-     */
-    private static FinancialAct createTillBalance(IMObjectReference till,
-                                                  IArchetypeService service) {
-        FinancialAct balance = (FinancialAct) service.create("act.tillBalance");
-        balance.setStatus("Uncleared");
-        Participation p = (Participation) service.create("participation.till");
-        p.setAct(balance.getObjectReference());
-        p.setEntity(till);
-        balance.addParticipation(p);
-        return balance;
-    }
-
-    /**
-     * Helper to get a till from an act.
-     *
-     * @param act the act
-     * @return a reference to the till, or <code>null</code> if no till is found
-     */
-    private static IMObjectReference getTill(FinancialAct act) {
-        IMObjectReference till = null;
-        IMObjectBean balance = new IMObjectBean(act);
-        List<IMObject> tills = balance.getValues("till");
-        if (!tills.isEmpty()) {
-            Participation participation = (Participation) tills.get(0);
-            till = participation.getEntity();
-        }
-        return till;
-    }
 }

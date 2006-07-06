@@ -22,12 +22,15 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.ruleengine.RuleEngineException;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -143,6 +146,31 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link TillRules#clearTill)} method
+     */
+    public void testClearTill() {
+        Party account = createAccount();
+        FinancialAct balance = createBalance("Uncleared");
+        balance.setTotal(new Money(100));
+        save(balance);
+
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        TillRules.clearTill(balance, new Money(100), account, service);
+
+        assertEquals("Cleared", balance.getStatus());
+
+        Party till = (Party) get(_till.getObjectReference());
+        IMObjectBean bean = new IMObjectBean(till);
+        BigDecimal tillFloat = bean.getBigDecimal("tillFloat");
+        Date lastCleared = bean.getDate("lastCleared");
+        Date now = new Date();
+
+        assertTrue(tillFloat.compareTo(new Money(100)) == 0);
+        assertTrue(now.compareTo(lastCleared) == 1); // expect now > lastCleared
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -163,10 +191,8 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
      */
     private void checkAddToTillBalance(FinancialAct act,
                                        boolean balanceExists) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        FinancialAct balance = TillRules.getUnclearedTillBalance(
-                _till.getObjectReference(), service);
+        FinancialAct balance = TillHelper.getUnclearedTillBalance(
+                _till.getObjectReference());
         if (balanceExists) {
             assertNotNull(balance);
         } else {
@@ -174,8 +200,8 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         }
         save(act);
 
-        balance = TillRules.getUnclearedTillBalance(
-                _till.getObjectReference(), service);
+        balance = TillHelper.getUnclearedTillBalance(
+                _till.getObjectReference());
         assertNotNull(balance);
         int found = 0;
         for (ActRelationship relationship :
@@ -197,7 +223,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     private FinancialAct createBalance(String status) {
         FinancialAct act = createAct("act.tillBalance");
         act.setStatus(status);
-        addParticipation(act, _till, "participation.till");
+        TillHelper.addTill(act, _till.getObjectReference());
         return act;
     }
 
@@ -210,8 +236,9 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         FinancialAct act = createAct("act.customerAccountPayment");
         act.setStatus("In Progress");
         Party party = createCustomer();
-        addParticipation(act, _till, "participation.till");
-        addParticipation(act, party, "participation.customer");
+        TillHelper.addTill(act, _till.getObjectReference());
+        TillHelper.addParticipation("participation.customer", act,
+                                    party.getObjectReference());
         return act;
     }
 
@@ -224,8 +251,9 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         FinancialAct act = createAct("act.customerAccountRefund");
         act.setStatus("In Progress");
         Party party = createCustomer();
-        addParticipation(act, _till, "participation.till");
-        addParticipation(act, party, "participation.customer");
+        TillHelper.addTill(act, _till.getObjectReference());
+        TillHelper.addParticipation("participation.customer", act,
+                                    party.getObjectReference());
         return act;
     }
 
@@ -242,22 +270,6 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Adds a participation.
-     *
-     * @param act           the act to add to
-     * @param entity        the participation entity             `
-     * @param participation the participation short name
-     */
-    private void addParticipation(Act act, Entity entity,
-                                  String participation) {
-        Participation p = (Participation) create(participation);
-        assertNotNull(p);
-        p.setAct(act.getObjectReference());
-        p.setEntity(entity.getObjectReference());
-        act.addParticipation(p);
-    }
-
-    /**
      * Creates and saves a new till.
      *
      * @return the new till
@@ -268,6 +280,24 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         till.setName("TillRulesTestCase-Till" + hashCode());
         save(till);
         return till;
+    }
+
+    /**
+     * Creates and saves a new deposit account.
+     *
+     * @return a new account
+     */
+    private Party createAccount() {
+        Party account = (Party) create("party.organisationDeposit");
+        assertNotNull(account);
+        account.setName("TillRulesTestCase-Account" + hashCode());
+        IMObjectBean bean = new IMObjectBean(account);
+        bean.setValue("bank", "Westpac");
+        bean.setValue("branch", "Eltham");
+        bean.setValue("accountNumber", "123-456-789");
+        bean.setValue("accountName", "Foo");
+        save(account);
+        return account;
     }
 
     /**
