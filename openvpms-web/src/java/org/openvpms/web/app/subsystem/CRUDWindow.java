@@ -193,7 +193,7 @@ public class CRUDWindow {
         getComponent();
         _objectContainer.removeAll();
         if (object != null) {
-            _viewer = new IMObjectViewer(object);
+            _viewer = createViewer(object);
             _objectContainer.add(_viewer.getComponent());
             enableButtons(true);
         } else {
@@ -422,6 +422,15 @@ public class CRUDWindow {
         } else {
             confirmDelete(object);
         }
+    }
+
+    /**
+     * Creates a new {@link IMObjectViewer} for an object.
+     *
+     * @param object the object to view
+     */
+    protected IMObjectViewer createViewer(IMObject object) {
+        return new IMObjectViewer(object);
     }
 
     /**

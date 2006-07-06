@@ -136,17 +136,33 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
             if (_editor != null) {
                 box.add(_editor.getComponent());
             } else {
-                IMObjectLayoutStrategy strategy
-                        = new ActRelationshipTableLayoutStrategy(items);
-
-                context = new DefaultLayoutContext(context);
-                context.setComponentFactory(new TableComponentFactory(context));
-
-                Component child = strategy.apply(object, properties, context);
+                Component child = createItems(object, items, properties, context
+                );
                 box.add(child);
             }
             container.add(box);
         }
+    }
+
+    /**
+     * Creates a component to represent the item node.
+     *
+     * @param object     the parent object
+     * @param items      the items node descriptor
+     * @param properties the properties
+     * @param context    the layout context
+     * @return a component to represent the items node
+     */
+    protected Component createItems(IMObject object, NodeDescriptor items,
+                                    PropertySet properties,
+                                    LayoutContext context) {
+        IMObjectLayoutStrategy strategy
+                = new ActRelationshipTableLayoutStrategy(items);
+
+        context = new DefaultLayoutContext(context);
+        context.setComponentFactory(new TableComponentFactory(context));
+
+        return strategy.apply(object, properties, context);
     }
 
     /**
@@ -187,7 +203,8 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
                     || (TypeHelper.isA(parent, "act.supplierAccountPayment*",
                                        "supplierAccountRefund*")
                     && !(TypeHelper.isA(parent, "act.supplierAccountPayment",
-                                        "act.supplierAccountRefund")))) {
+                                        "act.supplierAccountRefund")))
+                    || TypeHelper.isA(parent, "act.tillBalanceAdjustment")) {
                 // need to exclude act item amounts
                 return component;
             }
