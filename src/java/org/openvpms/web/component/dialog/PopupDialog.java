@@ -50,6 +50,12 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
+     * The dialog action.
+     */
+    private String _action;
+
+
+    /**
      * Construct a new <code>PopupDialog</code>.
      *
      * @param title   the window title
@@ -86,18 +92,38 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Convenience method, invoked when the OK button is pressed. This closes
+     * Returns the dialog action.
+     *
+     * @return the dialog action
+     */
+    public String getAction() {
+        return _action;
+    }
+
+    /**
+     * Sets the dialog action.
+     *
+     * @param action the action
+     */
+    protected void setAction(String action) {
+        _action = action;
+    }
+
+    /**
+     * Invoked when the OK button is pressed. This sets the action and closes
      * the window.
      */
     protected void onOK() {
+        setAction(OK_ID);
         close();
     }
 
     /**
-     * Convenience method, invoked when the cancel button is pressed. This
+     * Invoked when the cancel button is pressed. This sets the action and
      * closes the window.
      */
     protected void onCancel() {
+        setAction(CANCEL_ID);
         close();
     }
 

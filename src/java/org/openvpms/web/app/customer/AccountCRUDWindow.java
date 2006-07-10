@@ -33,6 +33,8 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 
 import java.util.Date;
 
@@ -146,14 +148,15 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
             String title = Messages.get("customer.account.reverse.title", name);
             String message = Messages.get("customer.account.reverse.message",
                                           name);
-            ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-            dialog.addActionListener(ConfirmationDialog.OK_ID,
-                                     new ActionListener() {
-                                         public void actionPerformed(
-                                                 ActionEvent event) {
-                                             reverse(act);
-                                         }
-                                     });
+            final ConfirmationDialog dialog
+                    = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent e) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                        reverse(act);
+                    }
+                }
+            });
             dialog.show();
         } else {
             showStatusError(act, "customer.account.noreverse.title",

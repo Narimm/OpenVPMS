@@ -18,16 +18,16 @@
 
 package org.openvpms.web.component.dialog;
 
+import org.openvpms.web.component.focus.FocusTree;
+import org.openvpms.web.component.util.ButtonRow;
+import org.openvpms.web.component.util.SplitPaneFactory;
+import org.openvpms.web.resource.util.Styles;
+
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.web.component.focus.FocusTree;
-import org.openvpms.web.component.util.ButtonRow;
-import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Styles;
 
 
 /**
@@ -74,8 +74,9 @@ public abstract class PopupWindow extends WindowPane {
 
         _row = new ButtonRow(tabTree);
 
-        _layout = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                                          "PopupWindow.Layout");
+        _layout = SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                "PopupWindow.Layout");
         _layout.add(_row);
         add(_layout);
     }
@@ -98,52 +99,19 @@ public abstract class PopupWindow extends WindowPane {
     }
 
     /**
-     * Adds a listener to receive notification when the user presses a button.
-     * The listener receives events from all buttons.
-     *
-     * @param listener the listener to add
-     */
-    public void addActionListener(ActionListener listener) {
-        _row.addActionListener(listener);
-    }
-
-    /**
-     * Adds a listener to receive notification when the user presses a specific
-     * button.
-     *
-     * @param id       the button identifier
-     * @param listener the listener to add
-     */
-    public void addActionListener(String id, ActionListener listener) {
-        _row.addActionListener(id, listener);
-    }
-
-    /**
-     * Removes an <code>ActionListener</code> from receiving notification when
-     * the user presses a button.
-     *
-     * @param listener the listener to remove
-     */
-    public void removeActionListener(ActionListener listener) {
-        _row.removeActionListener(listener);
-    }
-
-    /**
-     * Removes an <code>ActionListener</code> from receiving notification when
-     * the user presses a specific button.
-     *
-     * @param id       the button identifier
-     * @param listener the listener to remove
-     */
-    public void removeActionListener(String id, ActionListener listener) {
-        _row.removeActionListener(id, listener);
-    }
-
-    /**
      * Returns the layout pane.
      */
     protected SplitPane getLayout() {
         return _layout;
+    }
+
+    /**
+     * Returns the button row.
+     *
+     * @return the button row
+     */
+    protected ButtonRow getButtonRow() {
+        return _row;
     }
 
     /**

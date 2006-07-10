@@ -21,7 +21,6 @@ package org.openvpms.web.app.subsystem;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -503,6 +502,18 @@ public class CRUDWindow {
     }
 
     /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    protected void onRefresh(IMObject object) {
+        setObject(null);
+        if (_listener != null) {
+            _listener.refresh(object);
+        }
+    }
+
+    /**
      * Edit an IMObject.
      *
      * @param object the object to edit
@@ -533,16 +544,20 @@ public class CRUDWindow {
         String title = Messages.get("imobject.deactivate.title", _type);
         String message = Messages.get("imobject.deactivate.message",
                                       object.getName());
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                try {
-                    object.setActive(false);
-                    service.save(object);
-                    onSaved(object, false);
-                } catch (OpenVPMSException exception) {
-                    ErrorHelper.show(exception);
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    IArchetypeService service
+                            = ServiceHelper.getArchetypeService();
+                    try {
+                        object.setActive(false);
+                        service.save(object);
+                        onSaved(object, false);
+                    } catch (OpenVPMSException exception) {
+                        ErrorHelper.show(exception);
+                    }
                 }
             }
         });
@@ -559,10 +574,13 @@ public class CRUDWindow {
         String title = Messages.get("imobject.delete.title", _type);
         String message = Messages.get("imobject.delete.title",
                                       object.getName());
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(SelectionDialog.OK_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                delete(object);
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    delete(object);
+                }
             }
         });
         dialog.show();

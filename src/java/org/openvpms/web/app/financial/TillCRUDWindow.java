@@ -20,6 +20,7 @@ package org.openvpms.web.app.financial;
 
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -27,6 +28,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.table.IMObjectTable;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -34,6 +36,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.archetype.rules.till.TillHelper;
 import org.openvpms.archetype.rules.till.TillRules;
@@ -50,9 +53,12 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -60,6 +66,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -91,9 +98,14 @@ public class TillCRUDWindow extends CRUDWindow {
     private Button _adjust;
 
     /**
-     * The selected till balance adjustment
+     * The transfer button.
      */
-    private FinancialAct _adjustment;
+    private Button _transfer;
+
+    /**
+     * The selected child act.
+     */
+    private FinancialAct _childAct;
 
     /**
      * Clear button identifier.
@@ -114,6 +126,11 @@ public class TillCRUDWindow extends CRUDWindow {
      * Adjust button identifier.
      */
     private static final String ADJUST_ID = "adjust";
+
+    /**
+     * Transfer button identifier.
+     */
+    private static final String TRANSFER_ID = "transfer";
 
 
     /**
@@ -157,11 +174,17 @@ public class TillCRUDWindow extends CRUDWindow {
                 onAdjust();
             }
         });
+        _transfer = ButtonFactory.create(TRANSFER_ID, new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onTransfer();
+            }
+        });
         buttons.add(_clear);
         buttons.add(_summary);
         buttons.add(_print);
         buttons.add(_adjust);
         buttons.add(getEditButton());
+        buttons.add(_transfer);
     }
 
     /**
@@ -186,8 +209,12 @@ public class TillCRUDWindow extends CRUDWindow {
             buttons.add(_print);
             if (uncleared) {
                 buttons.add(_adjust);
-                if (_adjustment != null) {
+                if (TypeHelper.isA(_childAct, "act.tillBalanceAdjustment")) {
                     buttons.add(getEditButton());
+                } else if (TypeHelper.isA(_childAct,
+                                          "act.customerAccountPayment",
+                                          "act.customerAccountRefund")) {
+                    buttons.add(_transfer);
                 }
             }
         }
@@ -208,11 +235,12 @@ public class TillCRUDWindow extends CRUDWindow {
                 }
                 final ClearTillDialog dialog = new ClearTillDialog();
                 dialog.setAmount(lastBalance);
-                dialog.addActionListener(
-                        ClearTillDialog.OK_ID, new ActionListener() {
-                    public void actionPerformed(
-                            ActionEvent e) {
-                        doClear(act, dialog.getAmount(), dialog.getAccount());
+                dialog.addWindowPaneListener(new WindowPaneListener() {
+                    public void windowPaneClosing(WindowPaneEvent e) {
+                        if (ClearTillDialog.OK_ID.equals(dialog.getAction())) {
+                            doClear(act, dialog.getAmount(),
+                                    dialog.getAccount());
+                        }
                     }
                 });
                 dialog.show();
@@ -242,6 +270,36 @@ public class TillCRUDWindow extends CRUDWindow {
     }
 
     /**
+     * Invoked when the 'transfer' button is pressed.
+     */
+    protected void onTransfer() {
+        final FinancialAct act = (FinancialAct) getObject();
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        String[] shortNames = {"party.organisationTill"};
+        IPage<IMObject> page = ArchetypeQueryHelper.get(
+                service, shortNames, true, 0, ArchetypeQuery.ALL_ROWS);
+        List<IMObject> accounts = page.getRows();
+        String title = Messages.get("till.transfer.title");
+        String message = Messages.get("till.transfer.message");
+        ListBox list = new ListBox(accounts.toArray());
+        list.setCellRenderer(new IMObjectListCellRenderer());
+
+        final SelectionDialog dialog
+                = new SelectionDialog(title, message, list);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                Party selected = (Party) dialog.getSelected();
+                if (selected != null) {
+                    doTransfer(act, _childAct, selected);
+                }
+            }
+        });
+        dialog.show();
+
+    }
+
+    /**
      * Invoked when a new adjustment has been created.
      *
      * @param object the new adjustment
@@ -259,20 +317,22 @@ public class TillCRUDWindow extends CRUDWindow {
     }
 
     /**
-     * Invoked when the edit button is pressed. This popups up an {@link
+     * Invoked when the edit button is pressed for a. This popups up an {@link
      * EditDialog}.
      */
     @Override
     protected void onEdit() {
-        LayoutContext context = new DefaultLayoutContext(true);
-        final IMObjectEditor editor = createEditor(_adjustment, context);
-        EditDialog dialog = new EditDialog(editor, context);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                onEditCompleted(editor, false);
-            }
-        });
-        dialog.show();
+        if (TypeHelper.isA(_childAct, "act.tillBalanceAdjustment")) {
+            LayoutContext context = new DefaultLayoutContext(true);
+            final IMObjectEditor editor = createEditor(_childAct, context);
+            EditDialog dialog = new EditDialog(editor, context);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    onEditCompleted(editor, false);
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -329,19 +389,16 @@ public class TillCRUDWindow extends CRUDWindow {
                 table.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         IMObject selected = table.getSelected();
-                        FinancialAct adjustment = null;
+                        FinancialAct child = null;
                         if (TypeHelper.isA(selected,
                                            "actRelationship.tillBalanceItem")) {
-                            ActRelationship relationship = (ActRelationship) selected;
-                            if (TypeHelper.isA(relationship.getTarget(),
-                                               "act.tillBalanceAdjustment")) {
-                                adjustment = (FinancialAct) IMObjectHelper.getObject(
-                                        relationship.getTarget());
-                            }
+                            ActRelationship relationship
+                                    = (ActRelationship) selected;
+                            child = (FinancialAct) IMObjectHelper.getObject(
+                                    relationship.getTarget());
                         }
-                        setSelectedAdjustment(adjustment);
+                        setSelectedChild(child);
                     }
-
                 });
                 return paged;
             }
@@ -363,10 +420,34 @@ public class TillCRUDWindow extends CRUDWindow {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception.getMessage(), exception);
         }
+        onRefresh(getObject());
     }
 
-    private void setSelectedAdjustment(FinancialAct adjustment) {
-        _adjustment = adjustment;
+    /**
+     * Transfers the selected payment/refund to a different till.
+     *
+     * @param balance the original balance
+     * @param act     the act to transfer
+     * @param till    the till to transfer to
+     */
+    private void doTransfer(FinancialAct balance, FinancialAct act,
+                            Party till) {
+        try {
+            TillRules.transfer(balance, act, till,
+                               ArchetypeServiceHelper.getArchetypeService());
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception.getMessage(), exception);
+        }
+        onRefresh(getObject());
+    }
+
+    /**
+     * Sets the selected child act.
+     *
+     * @param child the child act. May be <code>null</code>
+     */
+    private void setSelectedChild(FinancialAct child) {
+        _childAct = child;
         enableButtons(getObject() != null);
     }
 }

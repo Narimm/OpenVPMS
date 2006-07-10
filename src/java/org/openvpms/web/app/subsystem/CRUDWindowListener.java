@@ -18,9 +18,9 @@
 
 package org.openvpms.web.app.subsystem;
 
-import java.util.EventListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.util.EventListener;
 
 
 /**
@@ -35,7 +35,7 @@ public interface CRUDWindowListener extends EventListener {
      * Invoked when an object is saved.
      *
      * @param object the saved object
-     * @param isNew determines if the object is a new instance
+     * @param isNew  determines if the object is a new instance
      */
     void saved(IMObject object, boolean isNew);
 
@@ -45,4 +45,11 @@ public interface CRUDWindowListener extends EventListener {
      * @param object the deleted object
      */
     void deleted(IMObject object);
+
+    /**
+     * Invoked when the parent needs to refresh an object.
+     *
+     * @param object the object to refresh
+     */
+    void refresh(IMObject object);
 }
