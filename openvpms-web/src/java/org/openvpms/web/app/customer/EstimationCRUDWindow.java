@@ -46,6 +46,8 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -204,14 +206,15 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         final Act act = (Act) getObject();
         String title = Messages.get("customer.estimation.invoice.title");
         String message = Messages.get("customer.estimation.invoice.message");
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(ConfirmationDialog.OK_ID,
-                                 new ActionListener() {
-                                     public void actionPerformed(
-                                             ActionEvent event) {
-                                         invoice(act);
-                                     }
-                                 });
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    invoice(act);
+                }
+            }
+        });
         dialog.show();
     }
 

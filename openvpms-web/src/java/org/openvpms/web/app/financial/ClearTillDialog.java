@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.SelectField;
@@ -58,6 +59,7 @@ public class ClearTillDialog extends PopupDialog {
      */
     private final SelectField _account;
 
+
     /**
      * Construct a new <code>ClearTillDialog</code>.
      */
@@ -71,16 +73,19 @@ public class ClearTillDialog extends PopupDialog {
         _amount = new TextField();
 
         String[] shortNames = {"party.organisationDeposit"};
-        List<IMObject> objects = ArchetypeQueryHelper.get(service, shortNames,
-                                                          true, 0,
-                                                          ArchetypeQuery.ALL_ROWS).getRows();
-        _account = SelectFieldFactory.create(objects);
+        IPage<IMObject> page = ArchetypeQueryHelper.get(
+                service, shortNames, true, 0, ArchetypeQuery.ALL_ROWS);
+        List<IMObject> accounts = page.getRows();
+        _account = SelectFieldFactory.create(accounts);
         _account.setCellRenderer(new IMObjectListCellRenderer());
+        if (!accounts.isEmpty()) {
+            _account.setSelectedIndex(0);
+        }
 
         Grid grid = GridFactory.create(2);
-        grid.add(LabelFactory.create("till.amount"));
+        grid.add(LabelFactory.create("till.clear.amount"));
         grid.add(_amount);
-        grid.add(LabelFactory.create("till.deposit"));
+        grid.add(LabelFactory.create("till.clear.account"));
         grid.add(_account);
         getLayout().add(grid);
     }
@@ -97,10 +102,16 @@ public class ClearTillDialog extends PopupDialog {
     /**
      * Returns the till float amount.
      *
-     * @return the till float amount
+     * @return the till float amount. May be <code>null</code>
      */
     public BigDecimal getAmount() {
-        return new BigDecimal(_amount.getText());
+        BigDecimal amount = null;
+        try {
+            amount = new BigDecimal(_amount.getText());
+        } catch (NumberFormatException ignore) {
+            // no-op
+        }
+        return amount;
     }
 
     /**
@@ -111,4 +122,15 @@ public class ClearTillDialog extends PopupDialog {
     public Party getAccount() {
         return (Party) _account.getSelectedItem();
     }
+
+    /**
+     * Invoked when the OK button is pressed. Closes the window if the amount
+     * and deposit are valid
+     */
+    protected void onOK() {
+        if (getAmount() != null && getAccount() != null) {
+            super.onOK();
+        }
+    }
+
 }

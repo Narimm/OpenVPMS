@@ -18,15 +18,19 @@
 
 package org.openvpms.web.app.subsystem;
 
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -56,7 +60,7 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
                          String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
         ShortNames shortNames = new ShortNameList(refModelName, entityName,
-                                 conceptName); 
+                                                  conceptName);
         _window = new CRUDWindow(getType(), shortNames);
     }
 
@@ -86,6 +90,10 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
             public void deleted(IMObject object) {
                 onDeleted(object);
             }
+
+            public void refresh(IMObject object) {
+                onRefresh(object);
+            }
         });
     }
 
@@ -96,7 +104,8 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
     @Override
     protected void onSelect() {
         final Browser browser = createBrowser(getRefModelName(),
-                                              getEntityName(), getConceptName());
+                                              getEntityName(),
+                                              getConceptName());
 
         String title = Messages.get("imobject.select.title", getType());
         final BrowserDialog popup = new BrowserDialog(title, browser, true);
@@ -135,6 +144,19 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
      */
     protected void onDeleted(IMObject object) {
         setObject(null);
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    protected void onRefresh(IMObject object) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        object = ArchetypeQueryHelper.getByObjectReference(
+                service, object.getObjectReference());
+        setObject(object);
     }
 
 }

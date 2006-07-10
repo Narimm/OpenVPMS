@@ -18,18 +18,18 @@
 
 package org.openvpms.web.component.dialog;
 
-import java.util.List;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
 
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
+import java.util.List;
 
 
 /**
@@ -85,10 +85,21 @@ public class SelectionDialog extends PopupDialog {
      * @param list    the list of items to select from
      */
     public SelectionDialog(String title, String message, ListModel list) {
+        this(title, message, new ListBox(list));
+    }
+
+    /**
+     * Creates a new <code>SelectionDialog</code>.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param list    the list of items to select from
+     */
+    public SelectionDialog(String title, String message, ListBox list) {
         super(title, STYLE, Buttons.CANCEL);
         setModal(true);
 
-        _list = new ListBox(list);
+        _list = list;
         _list.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelected();
@@ -99,7 +110,6 @@ public class SelectionDialog extends PopupDialog {
         Column column = ColumnFactory.create(prompt, _list);
         getLayout().add(column);
     }
-
 
     /**
      * Returns the selected item.

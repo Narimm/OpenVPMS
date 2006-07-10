@@ -40,6 +40,8 @@ import net.sf.jasperreports.engine.JasperPrint;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.filetransfer.Download;
 import nextapp.echo2.app.filetransfer.DownloadProvider;
 
@@ -155,14 +157,15 @@ public abstract class ActCRUDWindow extends CRUDWindow {
         String name = getArchetypeDescriptor().getDisplayName();
         String title = Messages.get("act.print.title", name);
         String message = Messages.get("act.print.message", name);
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message);
-        dialog.addActionListener(ConfirmationDialog.OK_ID,
-                                 new ActionListener() {
-                                     public void actionPerformed(
-                                             ActionEvent event) {
-                                         doPrint();
-                                     }
-                                 });
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    doPrint();
+                }
+            }
+        });
         dialog.show();
     }
 

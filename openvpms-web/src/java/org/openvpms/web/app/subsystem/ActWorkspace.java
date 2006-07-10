@@ -18,17 +18,23 @@
 
 package org.openvpms.web.app.subsystem;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.query.*;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
 
 import java.util.List;
 
@@ -100,6 +106,17 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     }
 
     /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    protected void onRefresh(IMObject object) {
+        _acts.query();
+        _acts.setSelected((Act) object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
      * Invoked when an act is selected.
      *
      * @param act the act
@@ -140,14 +157,14 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * Creates the workspace split pane.
      *
      * @param browser the act browser
-     * @param window the CRUD window
+     * @param window  the CRUD window
      * @return a new workspace split pane
      */
     protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
         Component acts = getActs(browser);
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                "ActWorkspace.Layout", acts,
-                window.getComponent());
+                                       "ActWorkspace.Layout", acts,
+                                       window.getComponent());
     }
 
 
@@ -248,6 +265,10 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
 
             public void deleted(IMObject object) {
                 onDeleted(object);
+            }
+
+            public void refresh(IMObject object) {
+                onRefresh(object);
             }
         });
         if (_workspace != null) {
