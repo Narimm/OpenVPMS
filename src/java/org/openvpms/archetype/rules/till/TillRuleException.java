@@ -37,9 +37,10 @@ public class TillRuleException extends OpenVPMSException {
         InvalidTillArchetype,
         MissingTill,
         UnclearedTillExists,
-        SavingClearedTill,
+        ClearedTill,
         CantAddActToTill,
-        TillNotFound
+        TillNotFound,
+        MissingRelationship
     }
 
     /**

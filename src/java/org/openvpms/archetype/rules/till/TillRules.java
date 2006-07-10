@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -81,7 +82,7 @@ public class TillRules {
             FinancialAct oldAct = (FinancialAct) existing.get(0);
             // If old till balance cleared can't do
             if ("Cleared".equals(oldAct.getStatus())) {
-                throw new TillRuleException(SavingClearedTill,
+                throw new TillRuleException(ClearedTill,
                                             act.getArchetypeId());
             }
         } else {
@@ -132,18 +133,14 @@ public class TillRules {
         if (balance == null) {
             balance = TillHelper.createTillBalance(till);
         } else {
-            // determine if the act is present in the till balance
-            for (ActRelationship relationship
-                    : balance.getSourceActRelationships()) {
-                IMObjectReference target = relationship.getTarget();
-                if (act.getObjectReference().equals(target)) {
-                    // act already in till balance, so ignore.
-                    return;
-                }
+            // determine if the act is present in the till balance.
+            if (TillHelper.getRelationship(balance, act) != null) {
+                // act already in till balance, so ignore.
+                return;
             }
         }
-        TillHelper.addRelationship("actRelationship.tillBalanceItem",
-                                   balance, act);
+        TillHelper.addRelationship("actRelationship.tillBalanceItem", balance,
+                                   act);
         service.save(balance);
     }
 
@@ -190,6 +187,52 @@ public class TillRules {
         bean.setValue("lastCleared", new Date());
         bean.setValue("tillFloat", diff);
         service.save(till);
+    }
+
+    /**
+     * Transfers an act from one till to another.
+     *
+     * @param balance the till balance to transfer from
+     * @param act     the act to transfer
+     * @param till    the till to transfer to
+     * @param service the archetype service
+     */
+    public static void transfer(FinancialAct balance, FinancialAct act,
+                                Party till, IArchetypeService service) {
+        if (!TypeHelper.isA(balance, "act.tillBalance")) {
+            throw new TillRuleException(
+                    InvalidTillArchetype,
+                    balance.getArchetypeId().getShortName());
+        }
+        if (!TypeHelper.isA(act, "act.customerAccountPayment",
+                            "act.customerAccountRefund")) {
+            throw new TillRuleException(CantAddActToTill,
+                                        act.getArchetypeId().getShortName());
+        }
+        Party orig = TillHelper.getTill(balance);
+        if (orig == null) {
+            throw new TillRuleException(MissingTill, balance.getUid());
+        }
+        if (!"Uncleared".equals(balance.getStatus())) {
+            throw new TillRuleException(ClearedTill, balance.getUid());
+        }
+        ActRelationship relationship = TillHelper.getRelationship(balance, act);
+        if (relationship == null) {
+            throw new TillRuleException(MissingRelationship, balance.getUid());
+        }
+        balance.removeActRelationship(relationship);
+
+        Participation participation = TillHelper.getTillParticipation(act);
+        if (participation == null) {
+            throw new TillRuleException(MissingTill, balance.getUid());
+        }
+
+        IMObjectReference tillRef = till.getObjectReference();
+        participation.setEntity(tillRef);
+        service.save(balance);
+        service.save(participation);
+
+        addToTill(act, service);
     }
 
 }

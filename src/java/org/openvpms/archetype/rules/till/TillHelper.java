@@ -55,14 +55,11 @@ public class TillHelper {
      * @return a reference to the till, or <code>null</code> if no till is found
      */
     public static IMObjectReference getTillReference(FinancialAct act) {
-        IMObjectReference till = null;
-        IMObjectBean balance = new IMObjectBean(act);
-        List<IMObject> tills = balance.getValues("till");
-        if (!tills.isEmpty()) {
-            Participation participation = (Participation) tills.get(0);
-            till = participation.getEntity();
+        Participation participation = getTillParticipation(act);
+        if (participation != null) {
+            return participation.getEntity();
         }
-        return till;
+        return null;
     }
 
     /**
@@ -82,6 +79,22 @@ public class TillHelper {
                                                                      ref);
         }
         return till;
+    }
+
+    /**
+     * Helper to get a till participation from an act.
+     *
+     * @param act the act
+     * @return a reference to the participation, or <code>null</code> if none
+     *         is found
+     */
+    public static Participation getTillParticipation(FinancialAct act) {
+        IMObjectBean balance = new IMObjectBean(act);
+        List<IMObject> tills = balance.getValues("till");
+        if (!tills.isEmpty()) {
+            return (Participation) tills.get(0);
+        }
+        return null;
     }
 
     /**
@@ -208,4 +221,23 @@ public class TillHelper {
         relationship.setTarget(target.getObjectReference());
         source.addActRelationship(relationship);
     }
+
+    /**
+     * Returns the first act relationship found between two acts.
+     *
+     * @param source the source act
+     * @param target the target act
+     * @return the act relationship or <code>null</code> if none is found
+     */
+    public static ActRelationship getRelationship(Act source, Act target) {
+        IMObjectReference ref = target.getObjectReference();
+        for (ActRelationship relationship
+                : source.getSourceActRelationships()) {
+            if (ref.equals(relationship.getTarget())) {
+                return relationship;
+            }
+        }
+        return null;
+    }
+
 }
