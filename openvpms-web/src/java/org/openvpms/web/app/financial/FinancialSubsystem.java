@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.financial;
 
+import org.openvpms.web.app.financial.till.TillWorkspace;
 import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 

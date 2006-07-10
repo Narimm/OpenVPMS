@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.financial;
+package org.openvpms.web.app.financial.till;
 
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
