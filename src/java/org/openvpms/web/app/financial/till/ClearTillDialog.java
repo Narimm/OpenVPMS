@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.financial;
+package org.openvpms.web.app.financial.till;
 
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;

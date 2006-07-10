@@ -16,24 +16,25 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.financial;
+package org.openvpms.web.app.financial.till;
 
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
 
 /**
- * Displays acts associated with a till balance.
+ * Table model for <em>actRelationship.tillBalanceItems</em>.
+ * This displays all related acts in a {@link TillActTableModel}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TillActTableModel extends ActAmountTableModel {
+public class TillBalanceActRelationshipTableModel
+        extends AbstractActRelationshipTableModel {
 
     /**
-     * Construct a new <code>TillActTableModel</code>.
+     * Constructs a new <code>TillBalanceActRelationshipTableModel</code>
      */
-    public TillActTableModel() {
-        super(false, true);
+    public TillBalanceActRelationshipTableModel() {
+        setModel(new TillActTableModel());
     }
-
 }
