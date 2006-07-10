@@ -110,9 +110,9 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that {@link TillRules#addToTill} adds
+     * Verifies that {@link TillRules#addToTill} adds posted
      * <em>act.customerAccountPayment</em> and
-     * <em>act.customerAccountRefund</em>  to the associated till balance
+     * <em>act.customerAccountRefund</em> to the associated till balance
      * when they are saved.
      * Requires the rules <em>archetypeServicfe.save.act.customerAccountPayment.after</em> and
      * <em>archetypeServicfe.save.act.customerAccountRefund.after</em>
@@ -120,8 +120,16 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     public void testAddToTillBalance() {
         FinancialAct payment = createPayment();
         FinancialAct refund = createRefund();
+
         checkAddToTillBalance(payment, false);
-        checkAddToTillBalance(refund, true);
+        checkAddToTillBalance(refund, false);
+
+        payment.setStatus("Posted");
+        checkAddToTillBalance(payment, false); // payment now updates balance
+        checkAddToTillBalance(refund, true);   // refund not added
+
+        refund.setStatus("Posted");
+        checkAddToTillBalance(refund, true);   // refund now updates balance
 
         // verify that subsequent saves only get don't get added to the balance
         // again
@@ -182,8 +190,9 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that {@link TillRules#addToTill} adds an act to the associated
-     * till balance when its saved.
+     * Verifies that {@link TillRules#addToTill} adds acts with status 'Posted'
+     * to the associated till balance when its saved, while other statuses are
+     * ignored.
      *
      * @param act           the act to save
      * @param balanceExists determines if the balance should exist prior to the
@@ -191,8 +200,10 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
      */
     private void checkAddToTillBalance(FinancialAct act,
                                        boolean balanceExists) {
+        boolean posted = "Posted".equals(act.getStatus());
         FinancialAct balance = TillHelper.getUnclearedTillBalance(
                 _till.getObjectReference());
+        boolean existsPriorToSave = (balance != null);
         if (balanceExists) {
             assertNotNull(balance);
         } else {
@@ -202,16 +213,29 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
 
         balance = TillHelper.getUnclearedTillBalance(
                 _till.getObjectReference());
-        assertNotNull(balance);
-        int found = 0;
-        for (ActRelationship relationship :
-                balance.getSourceActRelationships()) {
-            if (relationship.getTarget().equals(act.getObjectReference())) {
-                found++;
+
+        if (posted || existsPriorToSave) {
+            assertNotNull(balance);
+        } else {
+            assertNull(balance);
+        }
+        if (balance != null) {
+            int found = 0;
+            for (ActRelationship relationship :
+                    balance.getSourceActRelationships()) {
+                if (relationship.getTarget().equals(act.getObjectReference())) {
+                    found++;
+                }
+            }
+            if (posted) {
+                assertTrue("Act not added to till balance", found != 0);
+                assertFalse("Act added to till balance more than once",
+                            found > 1);
+            } else {
+                assertTrue("Act without Posted status added to till balance",
+                           found == 0);
             }
         }
-        assertTrue("Act not added to till balance", found != 0);
-        assertFalse("Act added to till balance more than once", found > 1);
     }
 
     /**

@@ -27,9 +27,9 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
@@ -106,12 +106,13 @@ public class TillRules {
     /**
      * Adds a <em>act.customerAccountPayment</em> or
      * <em>act.customerAccountRefund</em> to the associated till's uncleared
-     * <em>act.tillBalance</em>. If no uncleared till balance exists, one will
-     * be created.
+     * <em>act.tillBalance</em>, if the act's status is 'Posted'.
+     * If no uncleared till balance exists, one will be created.
      *
      * @param act     the till balance act
      * @param service the archetype service
-     * @throws TillRuleException         if the act can't be saved
+     * @throws TillRuleException         if the act is invalid or the till is
+     *                                   missing
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static void addToTill(FinancialAct act, IArchetypeService service) {
@@ -120,26 +121,30 @@ public class TillRules {
             throw new TillRuleException(CantAddActToTill,
                                         act.getArchetypeId().getShortName());
         }
+        if (!"Posted".equals(act.getStatus())) {
+            return;
+        }
         IMObjectReference till = TillHelper.getTillReference(act);
-        if (till != null) {
-            FinancialAct balance = TillHelper.getUnclearedTillBalance(till);
-            if (balance == null) {
-                balance = TillHelper.createTillBalance(till);
-            } else {
-                // determine if the act is present in the till balance
-                for (ActRelationship relationship
-                        : balance.getSourceActRelationships()) {
-                    IMObjectReference target = relationship.getTarget();
-                    if (act.getObjectReference().equals(target)) {
-                        // act already in till balance, so ignore.
-                        return;
-                    }
+        if (till == null) {
+            throw new TillRuleException(MissingTill, act.getArchetypeId());
+        }
+        FinancialAct balance = TillHelper.getUnclearedTillBalance(till);
+        if (balance == null) {
+            balance = TillHelper.createTillBalance(till);
+        } else {
+            // determine if the act is present in the till balance
+            for (ActRelationship relationship
+                    : balance.getSourceActRelationships()) {
+                IMObjectReference target = relationship.getTarget();
+                if (act.getObjectReference().equals(target)) {
+                    // act already in till balance, so ignore.
+                    return;
                 }
             }
-            TillHelper.addRelationship("actRelationship.tillBalanceItem",
-                                       balance, act);
-            service.save(balance);
         }
+        TillHelper.addRelationship("actRelationship.tillBalanceItem",
+                                   balance, act);
+        service.save(balance);
     }
 
     /**
@@ -177,7 +182,7 @@ public class TillRules {
         // caused by saving the balance (which has a reference to the till)
         String tillName = till.getName();
         till = (Party) ArchetypeQueryHelper.getByObjectReference(
-                service,till.getObjectReference());
+                service, till.getObjectReference());
         bean = new IMObjectBean(till);
         if (till == null) {
             throw new TillRuleException(TillNotFound, tillName);
