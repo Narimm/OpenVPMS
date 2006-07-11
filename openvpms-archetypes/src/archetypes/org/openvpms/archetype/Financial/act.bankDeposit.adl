@@ -32,8 +32,8 @@
 			minCardinality="1">
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="Uncleared" value="UnDeposited" />
-					<property name="Cleared" value="Deposited" />
+					<property name="UnDeposited" value="UnDeposited" />
+					<property name="Deposited" value="Deposited" />
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>

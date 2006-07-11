@@ -42,13 +42,13 @@
 			</assertion>
 		</node>
         <node name="customer" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
+              minCardinality="0" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
         <node name="items" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="1" maxCardinality="*">
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">

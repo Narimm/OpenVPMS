@@ -33,7 +33,7 @@
 			<node name="drawer" path="/details/attributes/drawer" type="java.lang.String" maxLength="50" />
 			<node name="bsb" path="/details/attributes/bsb" type="java.lang.String" maxLength="50" />
 			<node name="bank" path="/details/attributes/bank" type="java.lang.String"
-				minCardinality="1" maxLength="30">
+				minCardinality="0" maxLength="30">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
 					<property name="source" value="lookup.bank" />
