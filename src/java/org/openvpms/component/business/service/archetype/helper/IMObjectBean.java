@@ -22,6 +22,10 @@ import org.apache.commons.jxpath.util.TypeConverter;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 
@@ -46,7 +50,12 @@ public class IMObjectBean {
     /**
      * The archetype.
      */
-    private final ArchetypeDescriptor _archetype;
+    private ArchetypeDescriptor _archetype;
+
+    /**
+     * The archetype service.
+     */
+    private IArchetypeService _service;
 
     /**
      * Used to convert node values to a particular type.
@@ -60,8 +69,18 @@ public class IMObjectBean {
      * @param object the object
      */
     public IMObjectBean(IMObject object) {
-        _archetype = DescriptorHelper.getArchetypeDescriptor(object);
+        this(object, null);
+    }
+
+    /**
+     * Constructs a new <code>IMObjectBean</code>
+     *
+     * @param object the object
+     * @param service the archetype service. May be <code>null</code>
+     */
+    public IMObjectBean(IMObject object, IArchetypeService service) {
         _object = object;
+        _service = service;
     }
 
     /**
@@ -71,6 +90,16 @@ public class IMObjectBean {
      */
     public IMObject getObject() {
         return _object;
+    }
+
+    /**
+     * Determines if the object is one of a set of archetypes.
+     *
+     * @param shortNames the archetype short names. May contain wildcards
+     * @return <code>true</code> if the object is one of <code>shortNames</code>
+     */
+    public boolean isA(String ... shortNames) {
+        return TypeHelper.isA(_object, shortNames);
     }
 
     /**
@@ -92,7 +121,7 @@ public class IMObjectBean {
      *         <code>null</code> if none exists.
      */
     public NodeDescriptor getDescriptor(String name) {
-        return _archetype.getNodeDescriptor(name);
+        return getArchetype().getNodeDescriptor(name);
     }
 
     /**
@@ -101,7 +130,7 @@ public class IMObjectBean {
      * @return the archetype display name, or its short name if none is present.
      */
     public String getDisplayName() {
-        return _archetype.getDisplayName();
+        return getArchetype().getDisplayName();
     }
 
     /**
@@ -119,30 +148,66 @@ public class IMObjectBean {
      * Returns the boolean value of a node.
      *
      * @param name the node name
-     * @return the value of the node
+     * @return the value of the node, or <code>false</code> if the node is null
      */
     public boolean getBoolean(String name) {
-        return (Boolean) getValue(name, boolean.class);
+        return getBoolean(name, false);
+    }
+
+    /**
+     * Returns the boolean value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public boolean getBoolean(String name, boolean defaultValue) {
+        return (Boolean) getValue(name, defaultValue, boolean.class);
     }
 
     /**
      * Returns the integer value of a node.
      *
      * @param name the node name
-     * @return the value of the node
+     * @return the value of the node, or <code>0</code> if the node is null
      */
     public int getInt(String name) {
-        return (Integer) getValue(name, int.class);
+        return getInt(name, 0);
+    }
+
+    /**
+     * Returns the integer value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public int getInt(String name, int defaultValue) {
+        return (Integer) getValue(name, defaultValue, int.class);
     }
 
     /**
      * Returns the long value of a node.
      *
      * @param name the node name
-     * @return the value of the node
+     * @return the value of the node, or <code>0</code> if the node is null
      */
     public long getLong(String name) {
-        return (Long) getValue(name, long.class);
+        return getLong(name, 0);
+    }
+
+    /**
+     * Returns the long value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public long getLong(String name, long defaultValue) {
+        return (Long) getValue(name, defaultValue, long.class);
     }
 
     /**
@@ -152,17 +217,63 @@ public class IMObjectBean {
      * @return the value of the node.
      */
     public String getString(String name) {
-        return (String) getValue(name, String.class);
+        return getString(name, null);
+    }
+
+    /**
+     * Returns the string value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public String getString(String name, String defaultValue) {
+        return (String) getValue(name, defaultValue, String.class);
     }
 
     /**
      * Returns the <code>BigDecimal</code> value of a node.
      *
      * @param name the node name
-     * @return the value of the node
+     * @return the value of the node. May be <code>null</code>
      */
     public BigDecimal getBigDecimal(String name) {
-        return (BigDecimal) getValue(name, BigDecimal.class);
+        return getBigDecimal(name, null);
+    }
+
+    /**
+     * Returns the <code>BigDecimal</code> value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public BigDecimal getBigDecimal(String name, BigDecimal defaultValue) {
+        return (BigDecimal) getValue(name, defaultValue, BigDecimal.class);
+    }
+
+    /**
+     * Returns the <code>Money</code> value of a node.
+     *
+     * @param name the node name
+     * @return the value of the node. May be <code>null</code>
+     */
+    public Money getMoney(String name) {
+        return getMoney(name, null);
+    }
+
+    /**
+     * Returns the <code>BigDecimal</code> value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public Money getMoney(String name, Money defaultValue) {
+        return (Money) getValue(name, defaultValue, Money.class);
     }
 
     /**
@@ -172,7 +283,19 @@ public class IMObjectBean {
      * @return the value of the node
      */
     public Date getDate(String name) {
-        return (Date) getValue(name, Date.class);
+        return getDate(name, null);
+    }
+
+    /**
+     * Returns the <code>Date</code> value of a node.
+     *
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @return the value of the node, or <code>defaultValue</code> if it
+     *         is null
+     */
+    public Date getDate(String name, Date defaultValue) {
+        return (Date) getValue(name, defaultValue, Date.class);
     }
 
     /**
@@ -231,15 +354,49 @@ public class IMObjectBean {
     }
 
     /**
+     * Saves the object.
+     *
+     * @throws ArchetypeServiceException if the object can't be saved
+     */
+    public void save() {
+        getArchetypeService().save(getObject());
+    }
+
+    /**
      * Converts a value to a particular type.
      *
-     * @param name the node name
-     * @param type the type to convert to
+     * @param name         the node name
+     * @param defaultValue the value to return if the node value is null
+     * @param type         the type to convert to if <code>defaultValue</code> is null
      * @return the value of the node as an instance of <code>type</code>
      */
-    protected Object getValue(String name, Class type) {
+    protected Object getValue(String name, Object defaultValue, Class type) {
         Object value = getValue(name);
-        return CONVERTER.convert(value, type);
+        return (value != null) ? CONVERTER.convert(value, type) : defaultValue;
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getArchetypeService() {
+        if (_service == null) {
+            _service = ArchetypeServiceHelper.getArchetypeService();
+        }
+        return _service;
+    }
+
+    /**
+     * Returns the archetype descriptor.
+     *
+     * @return the archetype descriptor
+     */
+    protected ArchetypeDescriptor getArchetype() {
+        if (_archetype == null) {
+            _archetype = DescriptorHelper.getArchetypeDescriptor(_object);
+        }
+        return _archetype;
     }
 
     /**
@@ -250,7 +407,7 @@ public class IMObjectBean {
      * @throws IMObjectBeanException if the descriptor does't exist
      */
     private NodeDescriptor getNode(String name) {
-        NodeDescriptor node = _archetype.getNodeDescriptor(name);
+        NodeDescriptor node = getArchetype().getNodeDescriptor(name);
         if (node == null) {
             String shortName = _object.getArchetypeId().getShortName();
             throw new IMObjectBeanException(NodeDescriptorNotFound, name,

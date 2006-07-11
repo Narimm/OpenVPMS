@@ -18,28 +18,28 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.apache.commons.resources.Messages;
 
 
 /**
- * Exception class for exceptions raised by {@link IMObjectBean}.
+ * Exception class for exceptions raised by {@link ActBean}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class IMObjectBeanException extends OpenVPMSException {
+public class ActBeanException extends OpenVPMSException {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * An enumeration of error codes
+     * An enumeration of error codes.
      */
     public enum ErrorCode {
-        NodeDescriptorNotFound
+        ArchetypeNotFound
     }
 
     /**
@@ -53,16 +53,16 @@ public class IMObjectBeanException extends OpenVPMSException {
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.component.business.service.archetype.helper."
+                    "org.openvpms.component.business.service.archetype.helper."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
-     * Constructs a new <code>IMObjectBeanException</code>.
+     * Constructs a new <code>ActBeanException</code>.
      *
      * @param errorCode the error code
      */
-    public IMObjectBeanException(ErrorCode errorCode, Object ... args) {
-        super(MESSAGES.getMessage(errorCode.toString(), args));
+    public ActBeanException(ErrorCode errorCode, Object ... args) {
+        super(ActBeanException.MESSAGES.getMessage(errorCode.toString(), args));
         _errorCode = errorCode;
     }
 
@@ -71,7 +71,7 @@ public class IMObjectBeanException extends OpenVPMSException {
      *
      * @return the error code
      */
-    public ErrorCode getErrorCode() {
+    public ActBeanException.ErrorCode getErrorCode() {
         return _errorCode;
     }
 
