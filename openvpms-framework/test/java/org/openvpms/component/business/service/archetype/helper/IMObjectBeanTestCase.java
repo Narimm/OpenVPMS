@@ -20,6 +20,7 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.*;
@@ -38,6 +39,30 @@ import java.util.List;
  */
 public class IMObjectBeanTestCase
         extends AbstractDependencyInjectionSpringContextTests {
+
+    /**
+     * Tests the {@link IMObjectBean#isA} method.
+     */
+    public void testIsA() {
+        IMObjectBean bean = createBean("act.customerAccountPayment");
+        String[] matches = {"act.customerAccountPaymentCash",
+                            "act.customerAccountPayment"};
+        assertTrue(bean.isA(matches));
+
+        String[] nomatches = {"act.customerAccountPaymentCash",
+                              "act.customerAccountPaymentCredit",
+                              "act.customerAccountPaymentEFT"};
+        assertFalse(bean.isA(nomatches));
+
+        // test wildcards
+        String[] wildmatch = {"act.customerEstimation*", "act.customerAccount*"};
+        assertTrue(bean.isA(wildmatch));
+
+        String[] wildnomatch = {"act.customerEstimation*",
+                                "act.customerInvoice*"};
+        assertFalse(bean.isA(wildnomatch));
+
+    }
 
     /**
      * Tests the {@link IMObjectBean#hasNode(String)} method.
@@ -120,41 +145,50 @@ public class IMObjectBeanTestCase
      * Tests the {@link IMObjectBean#getBoolean(String)} method.
      */
     public void testGetBoolean() {
-        IMObjectBean bean = createBean("animal.pet");
-        assertEquals(bean.getBoolean("desexed"), false);
-        bean.setValue("desexed", true);
-        assertEquals(true, bean.getBoolean("desexed"));
+        IMObjectBean bean = createBean("act.types");
+        assertEquals(false, bean.getBoolean("flag"));
+        assertEquals(true, bean.getBoolean("flag", true));
+
+        bean.setValue("flag", true);
+        assertEquals(true, bean.getBoolean("flag"));
     }
 
     /**
-     * Tests the {@link IMObjectBean#getInt(String)} method.
+     * Tests the {@link IMObjectBean#getInt} methods.
      */
     public void testGetInt() {
-        IMObjectBean bean = createBean("entityRelationship.animalOwner");
-        assertEquals(0, bean.getInt("sequence"));
-        bean.setValue("sequence", 1);
-        assertEquals(1, bean.getInt("sequence"));
+        IMObjectBean bean = createBean("act.types");
+        assertEquals(0, bean.getInt("size"));
+        assertEquals(-1, bean.getInt("size", -1));
+
+        int size = 100;
+        bean.setValue("size", size);
+        assertEquals(size, bean.getInt("size"));
     }
 
     /**
-     * Tests the {@link IMObjectBean#getLong(String)} method.
+     * Tests the {@link IMObjectBean#getLong} methods.
      */
     public void testGetLong() {
-        IMObjectBean bean = createBean("document.common");
-        long size = 10000000L;
+        IMObjectBean bean = createBean("act.types");
         assertEquals(0, bean.getLong("size"));
+        assertEquals(-1, bean.getLong("size", -1));
+
+        long size = 10000000L;
         bean.setValue("size", size);
         assertEquals(size, bean.getLong("size"));
     }
 
     /**
-     * Tests the {@link IMObjectBean#getString(String)} method.
+     * Tests the {@link IMObjectBean#getString} methods.
      */
     public void testGetString() {
-        IMObjectBean bean = createBean("document.common");
+        IMObjectBean bean = createBean("act.types");
         assertNull(bean.getValue("name"));
-        bean.setValue("name", "invoice.pdf");
-        assertEquals("invoice.pdf", bean.getValue("name"));
+        assertEquals("foo", bean.getString("name", "foo"));
+
+        bean.setValue("name", "bar");
+        assertEquals("bar", bean.getValue("name"));
 
         // test conversion, long -> string
         long size = 10000000L;
@@ -163,24 +197,49 @@ public class IMObjectBeanTestCase
     }
 
     /**
-     * Tests the {@link IMObjectBean#getBigDecimal(String)} method.
+     * Tests the {@link IMObjectBean#getBigDecimal} methods.
      */
     public void testGetBigDecimal() {
-        IMObjectBean bean = createBean("act.customerAccountPayment");
+        IMObjectBean bean = createBean("act.types");
+
+        assertNull(bean.getBigDecimal("amount"));
+        assertEquals(bean.getBigDecimal("amount", BigDecimal.ZERO),
+                     BigDecimal.ZERO);
+
         BigDecimal expected = new BigDecimal("1234.56");
-        assertEquals(bean.getBigDecimal("amount"), new BigDecimal("0.0"));
         bean.setValue("amount", expected);
         assertEquals(expected, bean.getBigDecimal("amount"));
+
+        // quantity has a default value
+        assertEquals(bean.getBigDecimal("quantity"), new BigDecimal("1.0"));
     }
 
     /**
-     * Tests the {@link IMObjectBean#getBigDecimal(String)} method.
+     * Tests the {@link IMObjectBean#getMoney} methods.
+     */
+    public void testMoney() {
+        IMObjectBean bean = createBean("act.types");
+
+        assertNull(bean.getMoney("amount"));
+        assertEquals(bean.getMoney("amount", new Money(0)), new Money(0));
+
+        Money expected = new Money("1234.56");
+        bean.setValue("amount", expected);
+        assertEquals(expected, bean.getMoney("amount"));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getDate} methods.
      */
     public void testGetDate() {
-        IMObjectBean bean = createBean("act.customerAccountPayment");
-        Date expected = new Date();
-        bean.setValue("startTime", expected);
-        assertEquals(expected, bean.getDate("startTime"));
+        IMObjectBean bean = createBean("act.types");
+
+        Date now = new Date();
+        assertNull(bean.getDate("endTime"));
+        assertEquals(bean.getDate("endTime", now), now);
+
+        bean.setValue("endTime", now);
+        assertEquals(now, bean.getDate("endTime"));
     }
 
     /**
@@ -213,6 +272,23 @@ public class IMObjectBeanTestCase
 
         // removal of non-existent object is a no-op
         bean.removeValue("contacts", phone);
+    }
+
+    /**
+     * Tests {@link IMObjectBean#save}.
+     */
+    public void testSave() {
+        IMObjectBean bean = createBean("act.types");
+        IMObject object = bean.getObject();
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        String name = getClass().getName() + bean.hashCode();
+        bean.setValue("name", name);
+        bean.save();
+        object = ArchetypeQueryHelper.getByObjectReference(
+                service, object.getObjectReference());
+        bean = new IMObjectBean(object);
+        assertEquals(name, bean.getValue("name"));
     }
 
     /**
