@@ -3476,8 +3476,8 @@
 <data collection="prices" archetype="productPrice.unitPrice" price="0.44"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
-<data id="P765" archetype="product.service" name="Travel" printedName="" species="">
-<data collection="prices" archetype="productPrice.unitPrice" price="0.44"  />
+<data id="P765" archetype="product.service" name="Travel" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.70"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:TRAVEL"  />
 </data>
 <data id="P766" archetype="product.medication" name="Travad Enema" printedName="Travad Enema" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
