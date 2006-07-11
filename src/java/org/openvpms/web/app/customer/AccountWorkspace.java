@@ -60,7 +60,13 @@ public class AccountWorkspace extends CustomerActWorkspace {
     protected ActQuery createQuery(Party customer) {
         String[] shortNames = {"act.customerAccountCharges*",
                                "act.customerAccountPayment",
-                               "act.customerAccountRefund"};
+                               "act.customerAccountRefund",
+                               "act.customerAccountClosingBalance",
+                               "act.customerAccountOpeningBalance",
+                               "act.customerAccountDebitAdjust",
+                               "act.customerAccountCreditAdjust",
+                               "act.customerAccountInitialBalance",
+                               "act.customerAccountBadDebt"};
         String[] statuses = {"Posted"};
 
         return new ActQuery(customer, "customer", "participation.customer",
