@@ -19,18 +19,12 @@
 package org.openvpms.archetype.rules.till;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -49,79 +43,31 @@ import java.util.List;
 public class TillHelper {
 
     /**
-     * Helper to get a till reference from an act.
-     *
-     * @param act the act
-     * @return a reference to the till, or <code>null</code> if no till is found
-     */
-    public static IMObjectReference getTillReference(FinancialAct act) {
-        Participation participation = getTillParticipation(act);
-        if (participation != null) {
-            return participation.getEntity();
-        }
-        return null;
-    }
-
-    /**
-     * Helper to get a till from an act.
-     *
-     * @param act the act
-     * @return a reference to the till, or <code>null</code> if no till is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public static Party getTill(FinancialAct act) {
-        Party till = null;
-        IMObjectReference ref = getTillReference(act);
-        if (ref != null) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            till = (Party) ArchetypeQueryHelper.getByObjectReference(service,
-                                                                     ref);
-        }
-        return till;
-    }
-
-    /**
-     * Helper to get a till participation from an act.
-     *
-     * @param act the act
-     * @return a reference to the participation, or <code>null</code> if none
-     *         is found
-     */
-    public static Participation getTillParticipation(FinancialAct act) {
-        IMObjectBean balance = new IMObjectBean(act);
-        List<IMObject> tills = balance.getValues("till");
-        if (!tills.isEmpty()) {
-            return (Participation) tills.get(0);
-        }
-        return null;
-    }
-
-    /**
      * Helper to return the uncleared till balance for a till, if it exists.
      *
      * @param till a reference to the till
      * @return the uncleared till balance, or <code>null</code> if none exists
      */
-    public static FinancialAct getUnclearedTillBalance(IMObjectReference till) {
-        FinancialAct act = null;
+    public static Act getUnclearedTillBalance(IMObjectReference till) {
+        Act act = null;
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery("act.tillBalance",
+        ArchetypeQuery query = new ArchetypeQuery(TillRules.TILL_BALANCE,
                                                   false,
                                                   true);
         query.setFirstRow(0);
         query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        query.add(new NodeConstraint("status", RelationalOp.EQ, "Uncleared"));
+        query.add(new NodeConstraint("status", RelationalOp.EQ,
+                                     TillRules.UNCLEARED));
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint("till",
-                                               "participation.till",
+                                               TillRules.TILL_PARTICIPATION,
                                                false, true);
         participations.add(new ObjectRefNodeConstraint("entity", till));
         query.add(participations);
         List<IMObject> matches = service.get(query).getRows();
         if (!matches.isEmpty()) {
-            act = (FinancialAct) matches.get(0);
+            act = (Act) matches.get(0);
         }
         return act;
     }
@@ -132,15 +78,15 @@ public class TillHelper {
      * @param till the till
      * @return a new till balance
      */
-    public static FinancialAct createTillBalance(IMObjectReference till) {
+    public static Act createTillBalance(IMObjectReference till) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        FinancialAct balance = (FinancialAct) service.create("act.tillBalance");
-        balance.setStatus("Uncleared");
-        addTill(balance, till);
-        return balance;
+        Act act = (Act) service.create(TillRules.TILL_BALANCE);
+        ActBean bean = new ActBean(act);
+        bean.setStatus(TillRules.UNCLEARED);
+        bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
+        return act;
     }
-
 
     /**
      * Creates a new till balance adjustment, associating it with a till.
@@ -149,14 +95,14 @@ public class TillHelper {
      * @param amount the amount
      * @return a new till balance adjustment
      */
-    public static FinancialAct createTillBalanceAdjustment(
+    public static Act createTillBalanceAdjustment(
             IMObjectReference till, Money amount) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        FinancialAct act = (FinancialAct) service.create(
-                "act.tillBalanceAdjustment");
-        act.setTotal(amount);
-        addTill(act, till);
+        Act act = (Act) service.create("act.tillBalanceAdjustment");
+        ActBean bean = new ActBean(act);
+        bean.setValue("amount", amount);
+        bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
         return act;
     }
 
@@ -167,77 +113,15 @@ public class TillHelper {
      * @param account the account to deposit to
      * @return a new bank deposit
      */
-    public static FinancialAct createBankDeposit(FinancialAct balance,
-                                                 IMObjectReference account) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        FinancialAct act = (FinancialAct) service.create("act.bankDeposit");
-        addParticipation("participation.deposit", act, account);
-        addRelationship("actRelationship.bankDepositItem", act, balance);
+    public static Act createBankDeposit(Act balance,
+                                        IMObjectReference account) {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        Act act = (Act) service.create("act.bankDeposit");
+        ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.deposit", account);
+        bean.addRelationship("actRelationship.bankDepositItem", balance);
         return act;
-    }
-
-    /**
-     * Associates a till with an act.
-     *
-     * @param act  the act
-     * @param till the till
-     */
-    public static void addTill(FinancialAct act, IMObjectReference till) {
-        addParticipation("participation.till", act, till);
-    }
-
-    /**
-     * Adds a participation to an act.
-     *
-     * @param shortName the participation short name
-     * @param act       the act
-     * @param entity    the participation entity
-     */
-    public static Participation addParticipation(String shortName, Act act,
-                                                 IMObjectReference entity) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Participation p = (Participation) service.create(shortName);
-        p.setAct(act.getObjectReference());
-        p.setEntity(entity);
-        act.addParticipation(p);
-        return p;
-    }
-
-    /**
-     * Adds an act relationship.
-     *
-     * @param shortName the relationship short name
-     * @param source    the source act
-     * @param target    the target act
-     */
-    public static void addRelationship(String shortName, FinancialAct source,
-                                       FinancialAct target) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        ActRelationship relationship
-                = (ActRelationship) service.create(shortName);
-        relationship.setSource(source.getObjectReference());
-        relationship.setTarget(target.getObjectReference());
-        source.addActRelationship(relationship);
-    }
-
-    /**
-     * Returns the first act relationship found between two acts.
-     *
-     * @param source the source act
-     * @param target the target act
-     * @return the act relationship or <code>null</code> if none is found
-     */
-    public static ActRelationship getRelationship(Act source, Act target) {
-        IMObjectReference ref = target.getObjectReference();
-        for (ActRelationship relationship
-                : source.getSourceActRelationships()) {
-            if (ref.equals(relationship.getTarget())) {
-                return relationship;
-            }
-        }
-        return null;
     }
 
 }
