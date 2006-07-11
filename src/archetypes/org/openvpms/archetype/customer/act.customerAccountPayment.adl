@@ -42,10 +42,10 @@
 			</assertion>
 		</node>
         <node name="till" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
+              minCardinality="0" maxCardinality="1"
               filter="participation.till" />
         <node name="customer" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
+              minCardinality="0" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"

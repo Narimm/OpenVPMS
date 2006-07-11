@@ -26,7 +26,7 @@
             path="/description" hidden="true" derived="true"
             derivedValue="' '" />
         <node name="product" path="/participations" type="java.util.HashSet"
-              minCardinality="1" maxCardinality="1"
+              minCardinality="0" maxCardinality="1"
               filter="participation.product"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"

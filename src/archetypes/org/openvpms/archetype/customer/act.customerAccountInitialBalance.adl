@@ -16,12 +16,12 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-act.customerAccountRefund.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Refund" >
+	<archetype name="openvpms-common-act.customerAccountInitialBalance.1.0" latest="true"
+		type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Customer Initial Balance" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
-			derivedValue="'Customer Refund'" />
+			derivedValue="'Customer Initial Balance'" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="' '" />
@@ -33,34 +33,12 @@
 		<node name="credit" path="/credit" type="java.lang.Boolean"
 			defaultValue="false()" readOnly="true" hidden="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
-		<node name="status" path="/status" type="java.lang.String"
-			minCardinality="1">
-			<assertion name="lookup">
-				<property name="type" value="lookup" />
-				<property name="source" value="lookup.paymentStatus" />
-				<errorMessage>An error message</errorMessage>
-			</assertion>
-		</node>
-        <node name="till" path="/participations" type="java.util.HashSet"
-              minCardinality="0" maxCardinality="1"
-              filter="participation.till" />
+		<node name="status" path="/status" type="java.lang.String"	minCardinality="1" defaultValue="'Posted'" />
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
-        <node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.customerAccountRefundItem" >
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="actRelationship.customerAccountRefundItem" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
 	</archetype>
 </archetypes>
