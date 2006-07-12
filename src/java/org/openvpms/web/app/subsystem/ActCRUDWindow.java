@@ -18,35 +18,15 @@
 
 package org.openvpms.web.app.subsystem;
 
-import org.openvpms.web.app.OpenVPMSApp;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.report.jasper.IMObjectReport;
-import org.openvpms.report.jasper.IMObjectReportFactory;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-import nextapp.echo2.app.filetransfer.Download;
-import nextapp.echo2.app.filetransfer.DownloadProvider;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 
 /**
@@ -72,16 +52,6 @@ public abstract class ActCRUDWindow extends CRUDWindow {
      * deleted.
      */
     protected static final String POSTED_STATUS = "Posted";
-
-    /**
-     * The print button.
-     */
-    private Button _print;
-
-    /**
-     * Print button identifier.
-     */
-    private static final String PRINT_ID = "print";
 
 
     /**
@@ -151,41 +121,6 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     }
 
     /**
-     * Invoked when the 'print' button is pressed.
-     */
-    protected void onPrint() {
-        String name = getArchetypeDescriptor().getDisplayName();
-        String title = Messages.get("act.print.title", name);
-        String message = Messages.get("act.print.message", name);
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    doPrint();
-                }
-            }
-        });
-        dialog.show();
-    }
-
-    /**
-     * Returns the print button.
-     *
-     * @return the print button
-     */
-    protected Button getPrintButton() {
-        if (_print == null) {
-            _print = ButtonFactory.create(PRINT_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onPrint();
-                }
-            });
-        }
-        return _print;
-    }
-
-    /**
      * Sets the print status.
      *
      * @param act     the act
@@ -216,42 +151,13 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     }
 
     /**
-     * Print the act, updating its status if required.
+     * Invoked when the object has been printed.
+     *
+     * @param object the object
      */
-    private void doPrint() {
-        Act act = (Act) getObject();
-        String shortName = act.getArchetypeId().getShortName();
+    protected void onPrinted(IMObject object) {
+        Act act = (Act) object;
         try {
-            IMObjectReport report = IMObjectReportFactory.create(
-                    shortName, ServiceHelper.getArchetypeService());
-            final JasperPrint print = report.generate(act);
-
-            Download download = new Download();
-            download.setProvider(new DownloadProvider() {
-
-                public String getContentType() {
-                    return "application/pdf";
-                }
-
-                public String getFileName() {
-                    return print.getName() + ".pdf";
-                }
-
-                public int getSize() {
-                    return -1;
-                }
-
-                public void writeFile(OutputStream stream) throws IOException {
-                    try {
-                        JasperExportManager.exportReportToPdfStream(print,
-                                                                    stream);
-                    } catch (JRException exception) {
-                        throw new IOException(exception.getMessage());
-                    }
-                }
-            });
-            download.setActive(true);
-            OpenVPMSApp.getInstance().enqueueCommand(download);
             String status = act.getStatus();
             if (!POSTED_STATUS.equals(status)) {
                 act.setStatus(POSTED_STATUS);

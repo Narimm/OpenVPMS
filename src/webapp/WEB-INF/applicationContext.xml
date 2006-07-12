@@ -273,6 +273,9 @@
                     org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.after.drl
                 </value>
                 <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.bankDeposit.before.drl
+                </value>
+                <value>
                     org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.after.drl
                 </value>
                 <value>
@@ -282,7 +285,6 @@
                     org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
                 </value>
             </list>
-
         </property>
         <property name="ruleRuntime">
             <ref local="ruleRuntime"/>

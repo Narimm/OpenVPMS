@@ -18,37 +18,28 @@
 
 package org.openvpms.web.app.financial.till;
 
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.financial.FinancialActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.table.IMObjectTable;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import org.openvpms.archetype.rules.till.TillHelper;
 import org.openvpms.archetype.rules.till.TillRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -57,7 +48,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
@@ -75,22 +65,17 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-07-03 23:56:49Z $
  */
-public class TillCRUDWindow extends CRUDWindow {
+public class TillCRUDWindow extends FinancialActCRUDWindow {
+
+    /**
+     * The selected child act.
+     */
+    protected FinancialAct _childAct;
 
     /**
      * The clear button.
      */
     private Button _clear;
-
-    /**
-     * The summary button.
-     */
-    private Button _summary;
-
-    /**
-     * The print button.
-     */
-    private Button _print;
 
     /**
      * The adjust button.
@@ -103,24 +88,9 @@ public class TillCRUDWindow extends CRUDWindow {
     private Button _transfer;
 
     /**
-     * The selected child act.
-     */
-    private FinancialAct _childAct;
-
-    /**
      * Clear button identifier.
      */
     private static final String CLEAR_ID = "clear";
-
-    /**
-     * Summary button identifier.
-     */
-    private static final String SUMMARY_ID = "summary";
-
-    /**
-     * Print button identifier.
-     */
-    private static final String PRINT_ID = "print";
 
     /**
      * Adjust button identifier.
@@ -134,7 +104,7 @@ public class TillCRUDWindow extends CRUDWindow {
 
 
     /**
-     * Create a new <code>EstimationCRUDWindow</code>.
+     * Create a new <code>TillCRUDWindow</code>.
      *
      * @param type         display name for the types of objects that this may
      *                     create
@@ -145,6 +115,16 @@ public class TillCRUDWindow extends CRUDWindow {
     public TillCRUDWindow(String type, String refModelName,
                           String entityName, String conceptName) {
         super(type, new ShortNameList(refModelName, entityName, conceptName));
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    public void setObject(IMObject object) {
+        _childAct = null;
+        super.setObject(object);
     }
 
     /**
@@ -159,16 +139,6 @@ public class TillCRUDWindow extends CRUDWindow {
                 onClear();
             }
         });
-        _print = ButtonFactory.create(PRINT_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onPrint();
-            }
-        });
-        _summary = ButtonFactory.create(SUMMARY_ID, new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onSummary();
-            }
-        });
         _adjust = ButtonFactory.create(ADJUST_ID, new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onAdjust();
@@ -180,8 +150,8 @@ public class TillCRUDWindow extends CRUDWindow {
             }
         });
         buttons.add(_clear);
-        buttons.add(_summary);
-        buttons.add(_print);
+        buttons.add(getSummaryButton());
+        buttons.add(getPrintButton());
         buttons.add(_adjust);
         buttons.add(getEditButton());
         buttons.add(_transfer);
@@ -205,8 +175,8 @@ public class TillCRUDWindow extends CRUDWindow {
             if (uncleared) {
                 buttons.add(_clear);
             }
-            buttons.add(_summary);
-            buttons.add(_print);
+            buttons.add(getSummaryButton());
+            buttons.add(getPrintButton());
             if (uncleared) {
                 buttons.add(_adjust);
                 if (TypeHelper.isA(_childAct, "act.tillBalanceAdjustment")) {
@@ -226,7 +196,8 @@ public class TillCRUDWindow extends CRUDWindow {
     protected void onClear() {
         final FinancialAct act = (FinancialAct) getObject();
         try {
-            Party till = TillHelper.getTill(act);
+            ActBean actBean = new ActBean(act);
+            Party till = (Party) actBean.getParticipant("participation.till");
             if (till != null) {
                 IMObjectBean bean = new IMObjectBean(till);
                 BigDecimal lastBalance = bean.getBigDecimal("lastBalance");
@@ -248,18 +219,6 @@ public class TillCRUDWindow extends CRUDWindow {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
-    }
-
-    /**
-     * Invoked when the 'summary' button is pressed.
-     */
-    protected void onSummary() {
-    }
-
-    /**
-     * Invoked when the 'print' button is pressed.
-     */
-    protected void onPrint() {
     }
 
     /**
@@ -309,9 +268,12 @@ public class TillCRUDWindow extends CRUDWindow {
         // populate the adjust with the current till
         FinancialAct act = (FinancialAct) getObject();
         FinancialAct adjustment = (FinancialAct) object;
-        IMObjectReference till = TillHelper.getTillReference(act);
+        ActBean actBean = new ActBean(act);
+        IMObjectReference till
+                = actBean.getParticipantRef("participation.till");
         if (till != null) {
-            TillHelper.addTill(adjustment, till);
+            ActBean adjBean = new ActBean(adjustment);
+            adjBean.setParticipant("participation.till", till);
         }
         super.onCreated(object);
     }
@@ -347,8 +309,9 @@ public class TillCRUDWindow extends CRUDWindow {
         if (editor.isSaved()) {
             if (isNew) {
                 FinancialAct adjustment = (FinancialAct) editor.getObject();
-                TillHelper.addRelationship("actRelationship.tillBalanceItem",
-                                           act, adjustment);
+                ActBean bean = new ActBean(act);
+                bean.addRelationship("actRelationship.tillBalanceItem",
+                                     adjustment);
                 SaveHelper.save(act);
             }
         } else if (editor.isDeleted()) {
@@ -361,49 +324,14 @@ public class TillCRUDWindow extends CRUDWindow {
     }
 
     /**
-     * Creates a new {@link IMObjectViewer} for an object.
+     * Invoked when a child act is selected/deselected.
      *
-     * @param object the object to view
+     * @param child the child act. May be <code>null</code>
      */
-    protected IMObjectViewer createViewer(IMObject object) {
-        IMObjectLayoutStrategy strategy = new ActLayoutStrategy() {
-
-            /**
-             * Creates a component to represent the item node.
-             *
-             * @param object     the parent object
-             * @param items      the items node descriptor
-             * @param properties the properties
-             * @param context    the layout context
-             * @return a component to represent the items node
-             */
-            protected Component createItems(IMObject object,
-                                            NodeDescriptor items,
-                                            PropertySet properties,
-                                            LayoutContext context) {
-                Component component = super.createItems(object, items,
-                                                        properties,
-                                                        context);
-                final PagedIMObjectTable paged = (PagedIMObjectTable) component;
-                final IMObjectTable table = paged.getTable();
-                table.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        IMObject selected = table.getSelected();
-                        FinancialAct child = null;
-                        if (TypeHelper.isA(selected,
-                                           "actRelationship.tillBalanceItem")) {
-                            ActRelationship relationship
-                                    = (ActRelationship) selected;
-                            child = (FinancialAct) IMObjectHelper.getObject(
-                                    relationship.getTarget());
-                        }
-                        setSelectedChild(child);
-                    }
-                });
-                return paged;
-            }
-        };
-        return new IMObjectViewer(object, strategy, null);
+    @Override
+    protected void onChildActSelected(FinancialAct child) {
+        _childAct = child;
+        enableButtons(getObject() != null);
     }
 
     /**
@@ -441,13 +369,4 @@ public class TillCRUDWindow extends CRUDWindow {
         onRefresh(getObject());
     }
 
-    /**
-     * Sets the selected child act.
-     *
-     * @param child the child act. May be <code>null</code>
-     */
-    private void setSelectedChild(FinancialAct child) {
-        _childAct = child;
-        enableButtons(getObject() != null);
-    }
 }

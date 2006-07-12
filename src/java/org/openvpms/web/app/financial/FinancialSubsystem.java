@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.financial;
 
+import org.openvpms.web.app.financial.deposit.DepositWorkspace;
 import org.openvpms.web.app.financial.till.TillWorkspace;
 import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
@@ -34,7 +35,7 @@ public class FinancialSubsystem extends AbstractSubsystem {
     public FinancialSubsystem() {
         super("financial");
         addWorkspace(new TillWorkspace());
-        addWorkspace(new DummyWorkspace("financial", "deposit"));
+        addWorkspace(new DepositWorkspace());
         addWorkspace(new DummyWorkspace("financial", "period"));
         addWorkspace(new TaxTypeWorkspace());
     }

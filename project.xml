@@ -340,6 +340,16 @@
             </properties>
         </dependency>
         <dependency>
+            <groupId>springframework</groupId>
+            <artifactId>spring-support</artifactId>
+            <version>1.2.5</version>
+            <type>jar</type>
+            <url>http://www.springframework.org/</url>
+            <properties>
+                <war.bundle>false</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
             <groupId>springmodules</groupId>
             <artifactId>springmodules</artifactId>
             <version>0.2</version>
@@ -788,12 +798,12 @@
                     <include>log4j.properties</include>
                 </includes>
             </resource>
-	      <resource>
-	        <directory>${basedir}/src/conf/ehcache</directory>
-	        <includes>
-	          <include>**/*.xml</include>
-	        </includes>
-	      </resource>
+            <resource>
+                <directory>${basedir}/src/conf/ehcache</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
             <resource>
                 <directory>${basedir}/src/conf/echo2</directory>
                 <includes>
