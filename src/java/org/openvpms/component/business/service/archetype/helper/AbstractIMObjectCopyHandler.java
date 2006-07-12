@@ -80,7 +80,9 @@ public abstract class AbstractIMObjectCopyHandler
     protected boolean isCopyable(NodeDescriptor node, boolean source) {
         boolean result = !node.getClazz().equals(DynamicAttributeMap.class);
         if (result && !source) {
-            result = (!node.isReadOnly() && !node.isDerived());
+            // Removed readOnly check for temporary OBF-115 fix.
+//            result = (!node.isReadOnly() && !node.isDerived());
+            result = !node.isDerived();
         }
         return result;
     }
