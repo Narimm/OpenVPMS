@@ -16,12 +16,11 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.till;
+package org.openvpms.archetype.rules.deposit;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -35,75 +34,55 @@ import java.util.List;
 
 
 /**
- * Till helper.
+ * Bank deposit helper.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TillHelper {
+public class DepositHelper {
 
     /**
-     * Helper to return the uncleared till balance for a till, if it exists.
+     * Returns the undeposited bank deposit for an account, if it exists.
      *
-     * @param till a reference to the till
-     * @return the uncleared till balance, or <code>null</code> if none exists
+     * @param account the account
+     * @return an <em>act.bankDeposit</code> or <code>null</code> if none exists
      */
-    public static Act getUnclearedTillBalance(IMObjectReference till) {
-        Act act = null;
+    public static Act getUndepositedDeposit(Entity account) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        ArchetypeQuery query = new ArchetypeQuery(TillRules.TILL_BALANCE,
+        ArchetypeQuery query = new ArchetypeQuery(DepositRules.BANK_DEPOSIT,
                                                   false,
                                                   true);
         query.setFirstRow(0);
         query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        query.add(new NodeConstraint("status", RelationalOp.EQ,
-                                     TillRules.UNCLEARED));
+        query.add(
+                new NodeConstraint("status", RelationalOp.EQ,
+                                   DepositRules.UNDEPOSITED));
         CollectionNodeConstraint participations
-                = new CollectionNodeConstraint("till",
-                                               TillRules.TILL_PARTICIPATION,
-                                               false, true);
-        participations.add(new ObjectRefNodeConstraint("entity", till));
+                = new CollectionNodeConstraint(
+                "depositAccount", DepositRules.DEPOSIT_PARTICIPATION,
+                false, true);
+        participations.add(new ObjectRefNodeConstraint(
+                "entity", account.getObjectReference()));
         query.add(participations);
         List<IMObject> matches = service.get(query).getRows();
-        if (!matches.isEmpty()) {
-            act = (Act) matches.get(0);
-        }
-        return act;
+        return (!matches.isEmpty()) ? (Act) matches.get(0) : null;
     }
 
     /**
-     * Helper to create a new till balance, associating it with a till.
+     * Creates a new bank deposit, associating it with a till balance.
      *
-     * @param till the till
-     * @return a new till balance
+     * @param balance the till balance
+     * @param account the account to deposit to
+     * @return a new bank deposit
      */
-    public static Act createTillBalance(IMObjectReference till) {
+    public static Act createBankDeposit(Act balance, Entity account) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Act act = (Act) service.create(TillRules.TILL_BALANCE);
+        Act act = (Act) service.create(DepositRules.BANK_DEPOSIT);
         ActBean bean = new ActBean(act);
-        bean.setStatus(TillRules.UNCLEARED);
-        bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
+        bean.addParticipation(DepositRules.DEPOSIT_PARTICIPATION, account);
+        bean.addRelationship("actRelationship.bankDepositItem", balance);
         return act;
     }
-
-    /**
-     * Creates a new till balance adjustment, associating it with a till.
-     *
-     * @param till   the till
-     * @param amount the amount
-     * @return a new till balance adjustment
-     */
-    public static Act createTillBalanceAdjustment(
-            IMObjectReference till, Money amount) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Act act = (Act) service.create("act.tillBalanceAdjustment");
-        ActBean bean = new ActBean(act);
-        bean.setValue("amount", amount);
-        bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
-        return act;
-    }
-
 }
