@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.till;
 
+import org.openvpms.archetype.rules.deposit.DepositHelper;
 import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.*;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -179,12 +180,19 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean balance = createBalance("Uncleared");
         balance.save();
 
+        // make sure there is no uncleared deposit for the accouunt
+        Act deposit = DepositHelper.getUndepositedDeposit(account);
+        assertNull(deposit);
+
+        // clear the till
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         TillRules.clearTill(balance.getAct(), new Money(100), account, service);
 
+        // make sure the balance is updated
         assertEquals("Cleared", balance.getStatus());
 
+        // make sure the till is updated
         Party till = (Party) get(_till.getObjectReference());
         IMObjectBean bean = new IMObjectBean(till);
         BigDecimal tillFloat = bean.getBigDecimal("tillFloat");
@@ -193,6 +201,13 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
 
         assertTrue(tillFloat.compareTo(new Money(100)) == 0);
         assertTrue(now.compareTo(lastCleared) == 1); // expect now > lastCleared
+
+        // make sure a new uncleared bank deposit exists, with a relationship
+        // to the till balance
+        deposit = DepositHelper.getUndepositedDeposit(account);
+        assertNotNull(deposit);
+        ActBean depBean = new ActBean(deposit);
+        assertNotNull(depBean.getRelationship(balance.getAct()));
     }
 
     /**
@@ -203,12 +218,18 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         payment.setStatus("Posted");
         Act balance = checkAddToTillBalance(payment, false);
 
+        // make sure using the latest version of the act (i.e, with relationship
+        // to balance)
+        Act act = (Act) get(payment.getAct().getObjectReference());
+
         Party newTill = createTill();
+        save(newTill);
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        TillRules.transfer(balance, payment.getAct(), newTill, service);
+        TillRules.transfer(balance, act, newTill, service);
 
-        // make sure the payment has been removed from the original balance
+        // reload the balance and make sure the payment has been removed
+        balance = (Act) get(balance.getObjectReference());
         assertEquals(0, countRelationships(balance, payment.getAct()));
 
         // make sure the payment has been added to a new balance
@@ -264,7 +285,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean payment = createPayment();
         payment.setStatus("Posted");
         try {
-            TillRules.transfer(act, payment.getAct(), _till, service);
+            TillRules.transfer(act, payment.getAct(), createTill(), service);
         } catch (TillRuleException expected) {
             assertEquals(ClearedTill, expected.getErrorCode());
         }
@@ -281,7 +302,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean payment = createPayment();
         payment.setStatus("Posted");
         try {
-            TillRules.transfer(act, payment.getAct(), _till, service);
+            TillRules.transfer(act, payment.getAct(), createTill(), service);
         } catch (TillRuleException expected) {
             assertEquals(MissingRelationship, expected.getErrorCode());
         }
@@ -304,9 +325,28 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
                                     payment.getAct());
 
         try {
-            TillRules.transfer(balance, payment.getAct(), _till, service);
+            TillRules.transfer(balance, payment.getAct(), createTill(),
+                               service);
         } catch (TillRuleException expected) {
             assertEquals(MissingTill, expected.getErrorCode());
+        }
+    }
+
+    /**
+     * Verifies that {@link TillRules#transfer} throws TillRuleException if
+     * an attempt is made to transfer to the same till.
+     */
+    public void testTransferToSameTill() {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        ActBean payment = createPayment();
+        payment.setStatus("Posted");
+        Act balance = checkAddToTillBalance(payment, false);
+
+        try {
+            TillRules.transfer(balance, payment.getAct(), _till, service);
+        } catch (TillRuleException expected) {
+            assertEquals(InvalidTransferTill, expected.getErrorCode());
         }
     }
 
@@ -319,6 +359,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     protected void onSetUp() throws Exception {
         super.onSetUp();
         _till = createTill();
+        save(_till);
     }
 
     /**
@@ -421,7 +462,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates and saves a new till.
+     * Creates a new till.
      *
      * @return the new till
      */
@@ -429,7 +470,6 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         Party till = (Party) create("party.organisationTill");
         assertNotNull(till);
         till.setName("TillRulesTestCase-Till" + hashCode());
-        save(till);
         return till;
     }
 

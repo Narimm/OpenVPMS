@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.till;
 
+import org.openvpms.archetype.rules.deposit.DepositHelper;
 import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -171,8 +172,10 @@ public class TillRules {
         balance.setStatus(CLEARED);
         Act adjustment = TillHelper.createTillBalanceAdjustment(
                 till.getObjectReference(), new Money(diff));
-        Act deposit = TillHelper.createBankDeposit(
-                balance, account.getObjectReference());
+        Act deposit = DepositHelper.getUndepositedDeposit(account);
+        if (deposit == null) {
+            deposit = DepositHelper.createBankDeposit(balance, account);
+        }
 
 /*
         todo - commented out as workaround for OBF-114
@@ -226,6 +229,9 @@ public class TillRules {
         if (orig == null) {
             throw new TillRuleException(MissingTill, balance.getUid());
         }
+        if (orig.equals(till)) {
+            throw new TillRuleException(InvalidTransferTill, till.getName());
+        }
         if (!UNCLEARED.equals(balance.getStatus())) {
             throw new TillRuleException(ClearedTill, balance.getUid());
         }
@@ -233,12 +239,11 @@ public class TillRules {
         if (relationship == null) {
             throw new TillRuleException(MissingRelationship, balance.getUid());
         }
-        balanceBean.removeRelationship(relationship);
+//        balanceBean.removeRelationship(relationship);
 
         if (actBean.getParticipant(TILL_PARTICIPATION) == null) {
             throw new TillRuleException(MissingTill, act.getUid());
         }
-        actBean.setParticipant(TILL_PARTICIPATION, till);
 
 /*
         todo - commented out as workaround for OBF-114
@@ -247,8 +252,20 @@ public class TillRules {
         acts.add(act);
         service.save(acts);
 */
-        balanceBean.save();
+        // balanceBean.save();
+        actBean.setParticipant(TILL_PARTICIPATION, till);
+        actBean.removeRelationship(relationship);
         actBean.save();
+
+        // need to reload the act to avoid hibernate StaleStateException
+        // due to propagation of removal of relationship
+/*
+        act = (Act) ArchetypeQueryHelper.getByObjectReference(
+                service, act.getObjectReference());
+        actBean = new ActBean(act);
+        actBean.setParticipant(TILL_PARTICIPATION, till);
+        actBean.save();
+*/
 
         // @todo should save all modifications in the one transaction
         addToTill(act, service);

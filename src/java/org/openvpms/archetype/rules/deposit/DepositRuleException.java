@@ -34,9 +34,9 @@ public class DepositRuleException extends OpenVPMSException {
      */
     public enum ErrorCode {
         InvalidDepositArchetype,
-        MissingDeposit,
-        UnclearedDepositExists,
-        SavingClearedDeposit
+        MissingAccount,
+        UndepositedDepositExists,
+        DepositAlreadyDeposited
     }
 
     /**

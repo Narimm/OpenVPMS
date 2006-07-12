@@ -23,7 +23,7 @@
   </bean>
 
   <!-- Configure CacheManager from specified config location -->
-  <bean id="cacheManager" 
+  <bean id="cacheManager"
     class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
     <property name="configLocation">
       <value>classpath:ehcache.xml</value>
@@ -58,7 +58,7 @@
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
     <property name="eternal"><value>true</value></property>
-  </bean>  
+  </bean>
   
   <!--  Entity Interceptor Bean for Hibernate -->
   <bean id="entityInterceptor"

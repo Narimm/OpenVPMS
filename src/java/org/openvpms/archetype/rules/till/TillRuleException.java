@@ -40,7 +40,8 @@ public class TillRuleException extends OpenVPMSException {
         ClearedTill,
         CantAddActToTill,
         TillNotFound,
-        MissingRelationship
+        MissingRelationship,
+        InvalidTransferTill
     }
 
     /**

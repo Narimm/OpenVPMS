@@ -18,110 +18,132 @@
 
 package org.openvpms.archetype.rules.deposit;
 
-import static org.openvpms.archetype.rules.deposit.DepositRuleException.ErrorCode.MissingDeposit;
-import static org.openvpms.archetype.rules.deposit.DepositRuleException.ErrorCode.InvalidDepositArchetype;
-import static org.openvpms.archetype.rules.deposit.DepositRuleException.ErrorCode.SavingClearedDeposit;
-import static org.openvpms.archetype.rules.deposit.DepositRuleException.ErrorCode.UnclearedDepositExists;
-
-import java.util.List;
-
-import org.openvpms.archetype.rules.till.TillRuleException;
+import static org.openvpms.archetype.rules.deposit.DepositRuleException.ErrorCode.*;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
+
+import java.util.Date;
+
 
 /**
  * Deposit rules.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-
 public class DepositRules {
 
     /**
-     * Rule that determines if an <em>act.depositBalance</em> can be saved.
+     * Deposited act status.
+     */
+    public static final String DEPOSITED = "Deposited";
+
+    /**
+     * Undeposited act status.
+     */
+    public static final String UNDEPOSITED = "UnDeposited";
+
+    /**
+     * Bank deposit act short name.
+     */
+    public static final String BANK_DEPOSIT = "act.bankDeposit";
+
+    /**
+     * Deposit participation short name.
+     */
+    public static final String DEPOSIT_PARTICIPATION = "participation.deposit";
+
+
+    /**
+     * Rule that determines if an <em>act.bankDeposit</em> can be saved.
      * One can be saved if:
      * <ul>
-     * <li>it has status 'Cleared' and was previously 'Uncleared'</li>
-     * <li>it has status 'Uncleared' and there are no other uncleared
-     * act.tillBalances for  the till</li>
+     * <li>it has status 'Deposited' and was previously 'UnDeposited'</li>
+     * <li>it has status 'UnDeposited' and there are no other undeposited
+     * act.bankDeposits for the deposit account</li>
      * </ul>
      *
+     * @param act     the deposit act
      * @param service the archetype service
-     * @param act     the deposit balance act
      * @throws DepositRuleException if the act can't be saved
      */
-    public static void checkCanSaveDepositBalance(IArchetypeService service,
-                                                 FinancialAct act)
+    public static void checkCanSaveBankDeposit(FinancialAct act,
+                                               IArchetypeService service)
             throws DepositRuleException {
-        if (!TypeHelper.isA(act, "act.bankDeposit")) {
+        ActBean bean = new ActBean(act);
+        if (!bean.isA(BANK_DEPOSIT)) {
             throw new DepositRuleException(InvalidDepositArchetype,
-                                        act.getArchetypeId().getShortName());
+                                           act.getArchetypeId().getShortName());
         }
-        
-        // Get existing original Act
-        ArchetypeQuery existsquery = new ArchetypeQuery("act.bankDeposit", false,true);
-        existsquery.setFirstRow(0);
-        existsquery.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        existsquery.add(new NodeConstraint("uid", RelationalOp.EQ, act.getUid()));
-        List<IMObject> existing = service.get(existsquery).getRows();
-        if (!existing.isEmpty()) {
-            // If have match then we have an original till balance being saved.
-            FinancialAct oldAct = (FinancialAct)existing.get(0);
-            // If old till balance cleared can't do
-            if ("Cleared".equals(oldAct.getStatus())) {
-                throw new DepositRuleException(SavingClearedDeposit, act.getArchetypeId());               
+
+        Act oldAct = (Act) ArchetypeQueryHelper.getByUid(
+                service, act.getArchetypeId(), act.getUid());
+        if (oldAct != null) {
+            // If the act already exists, make sure it hasn't been deposited
+            if (DEPOSITED.equals(oldAct.getStatus())) {
+                throw new DepositRuleException(DepositAlreadyDeposited,
+                                               act.getUid());
             }
-        }
-        else {
-            // Else we have a completely new till balance so if status is cleared check no other uncleared for Till.                
-            if ("Uncleared".equals(act.getStatus())) {
-                IMObjectBean balance = new IMObjectBean(act);
-                List<IMObject> tills = balance.getValues("depositAccount");
-                if (tills.size() != 1) {
-                    throw new DepositRuleException(MissingDeposit, act.getArchetypeId());
+        } else {
+            // its a new bank deposit so if status is undeposited
+            // check no other undeposited act exists.
+            if (UNDEPOSITED.equals(act.getStatus())) {
+                Entity account = bean.getParticipant(DEPOSIT_PARTICIPATION);
+                if (account == null) {
+                    throw new DepositRuleException(MissingAccount,
+                                                   act.getUid());
                 }
-                Participation participation = (Participation) tills.get(0);
-    
-                ArchetypeQuery query = new ArchetypeQuery("act.bankDeposit", false,
-                                                          true);
-                query.setFirstRow(0);
-                query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-                query.add(
-                        new NodeConstraint("status", RelationalOp.EQ, "Uncleared"));
-                CollectionNodeConstraint participations
-                        = new CollectionNodeConstraint("depositAccount",
-                                                       "participation.deposit",
-                                                       false, true);
-                participations.add(
-                        new ObjectRefNodeConstraint("entity",
-                                                    participation.getEntity()));
-                query.add(participations);
-                List<IMObject> matches = service.get(query).getRows();
-                if (!matches.isEmpty()) {
-                    IMObject match = matches.get(0);
+
+                Act match = DepositHelper.getUndepositedDeposit(account);
+                if (match != null) {
                     if (match.getUid() != act.getUid()) {
-                        Object desc = participation.getEntity();
-                        IMObject deposit = ArchetypeQueryHelper.getByObjectReference(
-                                service, participation.getEntity());
-                        if (deposit != null) {
-                            desc = deposit.getName();
-                        }
-                        throw new DepositRuleException(UnclearedDepositExists, desc);
+                        throw new DepositRuleException(UndepositedDepositExists,
+                                                       account.getName());
                     }
                 }
             }
         }
     }
 
+    /**
+     * Processes an <em>act.bankDeposit</em>.
+     *
+     * @param act     the deposit act
+     * @param service the archetype service
+     */
+    public static void deposit(Act act, IArchetypeService service) {
+        ActBean bean = new ActBean(act, service);
+        if (!bean.isA(BANK_DEPOSIT)) {
+            throw new DepositRuleException(InvalidDepositArchetype,
+                                           act.getArchetypeId().getShortName());
+        }
+        if (DEPOSITED.equals(bean.getStatus())) {
+            throw new DepositRuleException(DepositAlreadyDeposited,
+                                           bean.getStatus());
+        }
+        bean.setStatus(DEPOSITED);
+        IMObjectReference accountRef = bean.getParticipantRef(
+                DEPOSIT_PARTICIPATION);
+        if (accountRef == null) {
+            throw new DepositRuleException(MissingAccount,
+                                           act.getUid());
+        }
+
+        bean.save();
+        // @todo - need to save in the same transaction when OBF-114 fixed
+
+        IMObject account = ArchetypeQueryHelper.getByObjectReference(
+                service, accountRef);
+        IMObjectBean accBean = new IMObjectBean(account, service);
+        accBean.setValue("lastDeposit", new Date());
+
+        accBean.save();
+    }
 }
