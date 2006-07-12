@@ -76,7 +76,7 @@
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
-    <set name="participations" access="property" lazy="false" inverse="true"
+    <set name="participations" access="property" lazy="true" inverse="true"
       cascade="all,delete-orphan">
       <key column="entity_linkId" property-ref="linkId" not-null="true" />
       <one-to-many
