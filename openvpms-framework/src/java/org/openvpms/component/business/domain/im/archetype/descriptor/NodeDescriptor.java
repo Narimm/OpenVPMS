@@ -1453,11 +1453,12 @@ public class NodeDescriptor extends Descriptor {
      *             if it cannot set the value
      */
     public void setValue(IMObject context, Object value) {
-        if (isReadOnly()) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.CannotSetValueForReadOnlyNode,
-                    new Object[] { getName() });
-        }
+        // Removed readOnly check for temporary OBF-115 fix
+//        if (isReadOnly()) {
+//            throw new DescriptorException(
+//                    DescriptorException.ErrorCode.CannotSetValueForReadOnlyNode,
+//                    new Object[] { getName() });
+//        }
         
         if (context == null) {
             throw new DescriptorException(
