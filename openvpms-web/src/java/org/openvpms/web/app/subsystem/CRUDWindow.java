@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.subsystem;
 
+import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -44,7 +45,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.jasper.IMObjectReport;
+import org.openvpms.report.jasper.IMObjectReportFactory;
 
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperPrint;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
@@ -53,6 +59,11 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import nextapp.echo2.app.filetransfer.Download;
+import nextapp.echo2.app.filetransfer.DownloadProvider;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Generic CRUD window.
@@ -113,6 +124,11 @@ public class CRUDWindow {
     private Button _delete;
 
     /**
+     * The print button.
+     */
+    private Button _print;
+
+    /**
      * Edit button identifier.
      */
     private static final String EDIT_ID = "edit";
@@ -126,6 +142,11 @@ public class CRUDWindow {
      * Delete button identifier.
      */
     private static final String DELETE_ID = "delete";
+
+    /**
+     * Print button identifier.
+     */
+    private static final String PRINT_ID = "print";
 
     /**
      * The style name.
@@ -323,6 +344,22 @@ public class CRUDWindow {
     }
 
     /**
+     * Returns the print button.
+     *
+     * @return the print button
+     */
+    protected Button getPrintButton() {
+        if (_print == null) {
+            _print = ButtonFactory.create(PRINT_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onPrint();
+                }
+            });
+        }
+        return _print;
+    }
+
+    /**
      * Returns the button row.
      *
      * @return the button row
@@ -424,6 +461,15 @@ public class CRUDWindow {
     }
 
     /**
+     * Invoked when the 'print' button is pressed.
+     * This implementation pops up a dialog confirming if printing should
+     * proceed. If so, {@link #print} is invoked.
+     */
+    protected void onPrint() {
+        confirmPrint(getObject());
+    }
+
+    /**
      * Creates a new {@link IMObjectViewer} for an object.
      *
      * @param object the object to view
@@ -499,6 +545,62 @@ public class CRUDWindow {
         if (_listener != null) {
             _listener.deleted(object);
         }
+    }
+
+    /**
+     * Prints an object. Invokes {@link #onPrinted} if successful.
+     *
+     * @param object the object
+     */
+    protected void print(IMObject object) {
+        boolean printed = false;
+        String shortName = object.getArchetypeId().getShortName();
+        try {
+            IMObjectReport report = IMObjectReportFactory.create(
+                    shortName, ServiceHelper.getArchetypeService());
+            final JasperPrint print = report.generate(object);
+
+            Download download = new Download();
+            download.setProvider(new DownloadProvider() {
+
+                public String getContentType() {
+                    return "application/pdf";
+                }
+
+                public String getFileName() {
+                    return print.getName() + ".pdf";
+                }
+
+                public int getSize() {
+                    return -1;
+                }
+
+                public void writeFile(OutputStream stream) throws IOException {
+                    try {
+                        JasperExportManager.exportReportToPdfStream(print,
+                                                                    stream);
+                    } catch (JRException exception) {
+                        throw new IOException(exception.getMessage());
+                    }
+                }
+            });
+            download.setActive(true);
+            OpenVPMSApp.getInstance().enqueueCommand(download);
+            printed = true;
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+        if (printed) {
+            onPrinted(object);
+        }
+    }
+
+    /**
+     * Invoked when the object has been printed.
+     *
+     * @param object the object
+     */
+    protected void onPrinted(IMObject object) {
     }
 
     /**
@@ -586,4 +688,25 @@ public class CRUDWindow {
         dialog.show();
     }
 
+    /**
+     * Pops up a dialog prompting if printing of an object should proceed,
+     * printing it if OK is selected.
+     *
+     * @param object the object to delete
+     */
+    private void confirmPrint(final IMObject object) {
+        String title = Messages.get("imobject.print.title", _type);
+        String message = Messages.get("imobject.print.title",
+                                      object.getName());
+        final ConfirmationDialog dialog
+                = new ConfirmationDialog(title, message);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent e) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    delete(object);
+                }
+            }
+        });
+        dialog.show();
+    }
 }

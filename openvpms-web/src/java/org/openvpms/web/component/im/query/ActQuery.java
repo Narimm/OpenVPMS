@@ -452,7 +452,7 @@ public class ActQuery extends AbstractQuery {
      */
     private void onStatusChanged() {
         String value = (String) _statusSelector.getSelectedItem();
-        _statuses = new String[]{value};
+        _statuses = (value != null) ? new String[]{value} : new String[0];
     }
 
     /**
@@ -591,7 +591,9 @@ public class ActQuery extends AbstractQuery {
             LookupListModel model
                     = (LookupListModel) _statusSelector.getModel();
             int index = model.indexOf(status);
-            _statusSelector.setSelectedIndex(index);
+            if (index != -1) {
+                _statusSelector.setSelectedIndex(index);
+            }
         }
     }
 
