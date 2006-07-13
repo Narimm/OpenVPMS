@@ -41,6 +41,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionT
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.query.QueryBuilder;
 import org.openvpms.component.business.service.archetype.query.QueryContext;
 import org.openvpms.component.business.service.ruleengine.IStatelessRuleEngineInvocation;
@@ -514,8 +515,13 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         // first validate each entity
+        // TODO:  Temporay fix for problem with participations and act relationships that have a mincardinality
+        // of 1 and fail validation during data load. see OBF-116
         for (Object entity : entities) {
-            validateObject((IMObject)entity);
+            if (TypeHelper.isA((IMObject)entity,"act.*"))
+                deriveValues((IMObject)entity);
+            else
+                validateObject((IMObject)entity);
         }
         
         // now issue a call to save the entities
