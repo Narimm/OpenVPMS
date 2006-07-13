@@ -28,6 +28,8 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -200,12 +202,10 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             Party till = (Party) actBean.getParticipant("participation.till");
             if (till != null) {
                 IMObjectBean bean = new IMObjectBean(till);
-                BigDecimal lastBalance = bean.getBigDecimal("lastBalance");
-                if (lastBalance == null) {
-                    lastBalance = BigDecimal.ZERO;
-                }
+                BigDecimal lastFloat = bean.getBigDecimal("tillFloat",
+                                                          BigDecimal.ZERO);
                 final ClearTillDialog dialog = new ClearTillDialog();
-                dialog.setAmount(lastBalance);
+                dialog.setAmount(lastFloat);
                 dialog.addWindowPaneListener(new WindowPaneListener() {
                     public void windowPaneClosing(WindowPaneEvent e) {
                         if (ClearTillDialog.OK_ID.equals(dialog.getAction())) {
@@ -332,6 +332,10 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     protected void onChildActSelected(FinancialAct child) {
         _childAct = child;
         enableButtons(getObject() != null);
+        if (child != null) {
+            IMObjectViewer viewer = new IMObjectViewer(child);
+            new IMObjectViewerDialog(viewer);
+        }
     }
 
     /**
