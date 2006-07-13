@@ -83,7 +83,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
         if (readOnly) {
             _selector = new Selector(Selector.ButtonStyle.HIDE);
         } else {
-            _selector = new Selector(Selector.ButtonStyle.RIGHT);
+            _selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL);
             FocusSet set = new FocusSet("IMObjectReferenceEditor");
             set.add(_selector.getSelect());
             context.getFocusTree().add(set);
