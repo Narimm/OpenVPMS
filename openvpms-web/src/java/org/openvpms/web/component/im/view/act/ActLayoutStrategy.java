@@ -178,45 +178,5 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         return getNodeFilter(context, filter);
     }
 
-    /**
-     * Creates a component for a property.
-     *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display <code>property</code>
-     */
-    @Override
-    protected Component createComponent(Property property, IMObject parent,
-                                        LayoutContext context) {
-        Component component = super.createComponent(property, parent,
-                                                    context);
-        String name = property.getDescriptor().getName();
-        if (name.equals("lowTotal") || name.equals("highTotal")
-                || name.equals("amount")) {
-            // @todo - workaround for OVPMS-211
-
-            if ((TypeHelper.isA(parent, "act.customerAccountPayment*",
-                                "act.customerAccountRefund*")
-                    && !(TypeHelper.isA(parent, "act.customerAccountPayment",
-                                        "act.customerAccountRefund")))
-                    || (TypeHelper.isA(parent, "act.supplierAccountPayment*",
-                                       "supplierAccountRefund*")
-                    && !(TypeHelper.isA(parent, "act.supplierAccountPayment",
-                                        "act.supplierAccountRefund")))
-                    || TypeHelper.isA(parent, "act.tillBalanceAdjustment")) {
-                // need to exclude act item amounts
-                return component;
-            }
-            component.setEnabled(false);
-            component.setFocusTraversalParticipant(false);
-            if (component instanceof TextComponent) {
-                Alignment align = new Alignment(Alignment.RIGHT,
-                                                Alignment.DEFAULT);
-                ((TextComponent) component).setAlignment(align);
-            }
-        }
-        return component;
-    }
 
 }

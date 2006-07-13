@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.admin;
 
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
@@ -29,6 +29,6 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class AccountTypeWorkspace extends CRUDWorkspace {
 
     public AccountTypeWorkspace() {
-        super("customer", "accountType", "common", "entity", "customerAccountType");
+        super("admin", "accountType", "common", "entity", "customerAccountType");
     }
 }

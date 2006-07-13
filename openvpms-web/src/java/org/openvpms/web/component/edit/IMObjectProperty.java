@@ -389,7 +389,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
      *                                       derived
      */
     private void checkReadOnly() {
-        if (_descriptor.isReadOnly() || _descriptor.isDerived()) {
+        if (_descriptor.isDerived()) {
             throw new UnsupportedOperationException(
                     "Attenpt to modify read-only property: "
                             + getDescriptor().getDisplayName());
