@@ -169,12 +169,4 @@
             </props>
         </constructor-arg>
     </bean>
-
-    <!--  The Party Functions Bean -->
-    <bean id="partyFunctions"
-          class="org.openvpms.archetype.function.party.PartyFunctions">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-    </bean>
 </beans>

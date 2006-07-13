@@ -22,6 +22,13 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -48,6 +55,56 @@ public class ReportHelper {
             return String.class;
         }
         return descriptor.getClazz();
+    }
+
+    /**
+     * Helper to return a value for an object, for display purposes.
+     * If the object is a:
+     * <ul>
+     * <li>Participation, returns the name/description of the participating
+     * Entity</li>
+     * <li>EntityRelationship, returns the name/description of the target
+     * entity</li>
+     * <li>otherwise, returns the object's name, or its description if the name
+     * is null</li>
+     * <ul>
+     *
+     * @param object the object. May be <code>null</code>
+     * @return a value for the object
+     */
+    public static String getValue(IMObject object) {
+        String value = null;
+        if (object instanceof Participation) {
+            value = getValue(((Participation) object).getEntity());
+        } else if (object instanceof EntityRelationship) {
+            value = getValue(((EntityRelationship) object).getTarget());
+        } else if (object != null) {
+            value = object.getName();
+            if (value == null) {
+                value = object.getDescription();
+            }
+        }
+        if (value == null) {
+            value = "";
+        }
+        return value;
+    }
+
+    /**
+     * Helper to return a value for an object, for display purposes.
+     *
+     * @param ref the object reference. May be <code>null</code>
+     * @return a value for the object
+     */
+    public static String getValue(IMObjectReference ref) {
+        IMObject object = null;
+        if (ref != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            object = ArchetypeQueryHelper.getByObjectReference(
+                    service, ref);
+        }
+        return getValue(object);
     }
 
     /**

@@ -82,7 +82,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     /**
      * Returns a data source for a collection node.
      *
-     * @param name      the collection node name
+     * @param name the collection node name
      * @throws JRException for any error
      */
     public JRDataSource getDataSource(String name) throws JRException {
@@ -121,13 +121,19 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         if (value != null) {
             if (state.getLeafNode() != null
                     && state.getLeafNode().isCollection()) {
-                Collection<IMObject> values = (Collection<IMObject>) value;
-                StringBuffer descriptions = new StringBuffer();
-                for (IMObject object : values) {
-                    descriptions.append(object.getName());
-                    descriptions.append('\n');
+                if (value instanceof Collection) {
+                    Collection<IMObject> values = (Collection<IMObject>) value;
+                    StringBuffer descriptions = new StringBuffer();
+                    for (IMObject object : values) {
+                        descriptions.append(ReportHelper.getValue(object));
+                        descriptions.append('\n');
+                    }
+                    result = descriptions.toString();
+                } else {
+                    // single value collection.
+                    IMObject object = (IMObject) value;
+                    result = ReportHelper.getValue(object);
                 }
-                result = descriptions.toString();
             } else {
                 result = value;
             }
