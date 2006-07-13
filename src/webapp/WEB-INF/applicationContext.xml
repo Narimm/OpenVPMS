@@ -284,6 +284,12 @@
                 <value>
                     org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
                 </value>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.customerAccountChargesInvoice.before.drl
+                </value>
+                <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.customerAccountInvoiceItem.before.drl
+                </value>
             </list>
         </property>
         <property name="ruleRuntime">

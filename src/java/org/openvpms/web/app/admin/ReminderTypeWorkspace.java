@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.product;
+package org.openvpms.web.app.admin;
 
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
@@ -26,12 +26,12 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
  * @version  $LastChangedDate$
  */
 
-public class ProductTypeWorkspace extends CRUDWorkspace {
+public class ReminderTypeWorkspace extends CRUDWorkspace {
     /**
-     * Construct a new <code>ProductTypeWorkspace</code>.
+     * Construct a new <code>ReminderTypeWorkspace</code>.
      */
-    public ProductTypeWorkspace() {
-        super("product", "productType", "common", "entity", "productType");
+    public ReminderTypeWorkspace() {
+        super("admin", "reminderType", "common", "entity", "reminderType");
     }
 
 }
