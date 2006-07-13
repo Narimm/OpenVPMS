@@ -18,6 +18,9 @@
 
 package org.openvpms.archetype.rules.tax;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
@@ -57,8 +60,10 @@ public class TaxRules {
         }
         
         // TODO Tax Calculation algorithm
+        // As a test lets just set the primary acts tax to 10% assuming total includes tax
         
-        act.setTaxAmount(new Money("0.0"));
+        BigDecimal result = act.getTotal().divide(new BigDecimal("11"),3,RoundingMode.HALF_UP);
+        act.setTaxAmount(new Money(result));
     }
 
 }
