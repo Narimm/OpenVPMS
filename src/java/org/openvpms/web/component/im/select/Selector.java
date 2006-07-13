@@ -18,18 +18,20 @@
 
 package org.openvpms.web.component.im.select;
 
+import org.openvpms.web.component.button.ShortcutHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -44,7 +46,7 @@ public class Selector {
      * Determines the layout of the 'select' button.
      */
     public enum ButtonStyle {
-        LEFT, RIGHT, HIDE}
+        LEFT, RIGHT, HIDE, LEFT_NO_ACCEL, RIGHT_NO_ACCEL}
 
     /**
      * Determines how the object is displayed.
@@ -135,10 +137,10 @@ public class Selector {
                 value = Messages.get("imobject.name", object.getName());
             } else if (_format == Format.DESCRIPTION) {
                 value = Messages.get("imobject.description",
-                        object.getDescription());
+                                     object.getDescription());
             } else if (_format == Format.SUMMARY) {
                 value = Messages.get("imobject.summary", object.getName(),
-                        object.getDescription());
+                                     object.getDescription());
             }
 
             _summary.setText(value);
@@ -176,7 +178,8 @@ public class Selector {
      * @param container the container
      */
     protected void doLayout(Row container) {
-        if (_buttonStyle == ButtonStyle.RIGHT) {
+        if (_buttonStyle == ButtonStyle.RIGHT
+                || _buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
             // button on the right. The 'wrapper' forces the summary+deactivated
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
@@ -204,7 +207,14 @@ public class Selector {
      */
     protected Button getButton() {
         if (_select == null) {
-            _select = ButtonFactory.create("select");
+            if (_buttonStyle == ButtonStyle.LEFT_NO_ACCEL
+                    || _buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+                String text = ShortcutHelper.getLocalisedText("button.select");
+                _select = ButtonFactory.create();
+                _select.setText(text);
+            } else {
+                _select = ButtonFactory.create("select");
+            }
         }
         return _select;
     }
