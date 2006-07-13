@@ -65,19 +65,6 @@
 			<groupExpression><![CDATA[$F{target.product.entity.displayName}]]></groupExpression>
 			<groupHeader>
 			<band height="19"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="61"
-						y="2"
-						width="213"
-						height="15"
-						key="textField-5"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" isBold="true"/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{target.product.entity.displayName}]]></textFieldExpression>
-				</textField>
 			</band>
 			</groupHeader>
 			<groupFooter>
