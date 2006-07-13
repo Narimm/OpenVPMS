@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -153,25 +152,38 @@ public class TillRules {
     /**
      * Clears a till.
      *
-     * @param balance the current till balance
-     * @param amount  the amount to clear from the till
-     * @param account the account to deposit to
-     * @param service the archetype service
+     * @param balance   the current till balance
+     * @param cashFloat the amount remaining in the till
+     * @param account   the account to deposit to
+     * @param service   the archetype service
      * @throws TillRuleException if the balance doesn't have a till
      */
-    public static void clearTill(Act balance, BigDecimal amount, Party account,
+    public static void clearTill(Act balance, BigDecimal cashFloat,
+                                 Party account,
                                  IArchetypeService service) {
-        ActBean actBean = new ActBean(balance);
-        Entity till = actBean.getParticipant(TILL_PARTICIPATION);
+        ActBean balanceBean = new ActBean(balance);
+        Entity till = balanceBean.getParticipant(TILL_PARTICIPATION);
         if (till == null) {
             throw new TillRuleException(MissingTill, balance.getUid());
         }
-        IMObjectBean bean = new IMObjectBean(till);
-        BigDecimal current = bean.getBigDecimal("tillFloat", BigDecimal.ZERO);
-        BigDecimal diff = amount.subtract(current);
         balance.setStatus(CLEARED);
-        Act adjustment = TillHelper.createTillBalanceAdjustment(
-                till.getObjectReference(), new Money(diff));
+
+        IMObjectBean tillBean = new IMObjectBean(till);
+        BigDecimal lastCashFloat = tillBean.getBigDecimal("tillFloat",
+                                                          BigDecimal.ZERO);
+
+        BigDecimal diff = cashFloat.subtract(lastCashFloat);
+        if (diff.compareTo(BigDecimal.ZERO) != 0) {
+            // need to generate an adjustment, and associate it with the balance
+            boolean credit = (lastCashFloat.compareTo(cashFloat) > 0);
+            Act adjustment = TillHelper.createTillBalanceAdjustment(
+                    till.getObjectReference(), diff.abs(), credit);
+            service.save(adjustment);
+
+            balanceBean.addRelationship("actRelationship.tillBalanceItem",
+                                        adjustment);
+        }
+
         Act deposit = DepositHelper.getUndepositedDeposit(account);
         if (deposit == null) {
             deposit = DepositHelper.createBankDeposit(balance, account);
@@ -185,7 +197,6 @@ public class TillRules {
         acts.add(deposit);
         service.save(acts);
 */
-        service.save(adjustment);
         service.save(balance);
         service.save(deposit);
 
@@ -194,13 +205,13 @@ public class TillRules {
         String tillName = till.getName();
         till = (Party) ArchetypeQueryHelper.getByObjectReference(
                 service, till.getObjectReference());
-        bean = new IMObjectBean(till);
+        tillBean = new IMObjectBean(till);
         if (till == null) {
             throw new TillRuleException(TillNotFound, tillName);
         }
-        bean.setValue("lastCleared", new Date());
-        bean.setValue("tillFloat", diff);
-        bean.save();
+        tillBean.setValue("lastCleared", new Date());
+        tillBean.setValue("tillFloat", cashFloat);
+        tillBean.save();
     }
 
     /**

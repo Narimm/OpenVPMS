@@ -24,16 +24,17 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.ruleengine.RuleEngineException;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Set;
 
 
 /**
@@ -173,41 +174,34 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TillRules#clearTill)} method.
+     * Tests the {@link TillRules#clearTill)} method, with a zero cash float.
+     * This should not create an <em>act.tillBalanceAdjustment</e>.
      */
-    public void testClearTill() {
-        Party account = createAccount();
-        ActBean balance = createBalance("Uncleared");
-        balance.save();
+    public void testClearTillWithNoAdjustment() {
+        final BigDecimal cashFloat = BigDecimal.ZERO;
+        checkClearTill(cashFloat, cashFloat);
+    }
 
-        // make sure there is no uncleared deposit for the accouunt
-        Act deposit = DepositHelper.getUndepositedDeposit(account);
-        assertNull(deposit);
+    /**
+     * Tests the {@link TillRules#clearTill)} method, with an initial cash float
+     * of <code>40.0</code> and new cash float of <code>20.0</code>.
+     * This should create a credit adjustment of <code>20.0</code>
+     */
+    public void testClearTillWithCreditAdjustment() {
+        final BigDecimal cashFloat = new BigDecimal(40);
+        final BigDecimal newCashFloat = new BigDecimal(100);
+        checkClearTill(cashFloat, newCashFloat);
+    }
 
-        // clear the till
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        TillRules.clearTill(balance.getAct(), new Money(100), account, service);
-
-        // make sure the balance is updated
-        assertEquals("Cleared", balance.getStatus());
-
-        // make sure the till is updated
-        Party till = (Party) get(_till.getObjectReference());
-        IMObjectBean bean = new IMObjectBean(till);
-        BigDecimal tillFloat = bean.getBigDecimal("tillFloat");
-        Date lastCleared = bean.getDate("lastCleared");
-        Date now = new Date();
-
-        assertTrue(tillFloat.compareTo(new Money(100)) == 0);
-        assertTrue(now.compareTo(lastCleared) == 1); // expect now > lastCleared
-
-        // make sure a new uncleared bank deposit exists, with a relationship
-        // to the till balance
-        deposit = DepositHelper.getUndepositedDeposit(account);
-        assertNotNull(deposit);
-        ActBean depBean = new ActBean(deposit);
-        assertNotNull(depBean.getRelationship(balance.getAct()));
+    /**
+     * Tests the {@link TillRules#clearTill)} method, with an initial cash float
+     * of <code>40.0</code> and new cash float of <code>100.0</code>.
+     * This should create a debit adjustment of <code>60.0</code>
+     */
+    public void testClearTillWithDebitAdjustment() {
+        final BigDecimal cashFloat = new BigDecimal(40);
+        final BigDecimal newCashFloat = new BigDecimal(100);
+        checkClearTill(cashFloat, newCashFloat);
     }
 
     /**
@@ -404,6 +398,73 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
             }
         }
         return balance;
+    }
+
+    /**
+     * Checks the behaviour of the {@link TillRules#clearTill} method.
+     *
+     * @param initialCashFloat the initial cash float value
+     * @param newCashFloat     the new cash float value
+     */
+    private void checkClearTill(BigDecimal initialCashFloat,
+                                BigDecimal newCashFloat) {
+
+        IMObjectBean tillBean = new IMObjectBean(_till);
+        tillBean.setValue("tillFloat", initialCashFloat);
+        tillBean.save();
+
+        Party account = createAccount();
+        ActBean balance = createBalance("Uncleared");
+        balance.save();
+
+        // make sure there is no uncleared deposit for the accouunt
+        Act deposit = DepositHelper.getUndepositedDeposit(account);
+        assertNull(deposit);
+
+        // clear the till
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        TillRules.clearTill(balance.getAct(), newCashFloat, account, service);
+
+        // make sure the balance is updated
+        assertEquals("Cleared", balance.getStatus());
+
+        if (initialCashFloat.compareTo(newCashFloat) != 0) {
+            // expect a till balance adjustment to have been made
+            Set<ActRelationship> rels
+                    = balance.getAct().getSourceActRelationships();
+            assertEquals(1, rels.size());
+            ActRelationship r = rels.toArray(new ActRelationship[0])[0];
+            Act target = (Act) get(r.getTarget());
+            assertTrue(TypeHelper.isA(target, "act.tillBalanceAdjustment"));
+            ActBean adjBean = new ActBean(target);
+            BigDecimal amount = adjBean.getBigDecimal("amount");
+            BigDecimal expected = newCashFloat.subtract(initialCashFloat).abs();
+
+            boolean credit = (newCashFloat.compareTo(initialCashFloat) < 0);
+            assertTrue(expected.compareTo(amount) == 0);
+            assertEquals(credit, adjBean.getBoolean("credit"));
+        } else {
+            // no till balance adjustment should have been generated
+            assertTrue(balance.getAct().getSourceActRelationships().isEmpty());
+        }
+
+        // make sure the till is updated
+        Party till = (Party) get(_till.getObjectReference());
+        IMObjectBean bean = new IMObjectBean(till);
+        BigDecimal currentFloat = bean.getBigDecimal("tillFloat");
+        Date lastCleared = bean.getDate("lastCleared");
+        Date now = new Date();
+
+        assertTrue(currentFloat.compareTo(newCashFloat) == 0);
+        assertTrue(now.compareTo(lastCleared) == 1); // expect now > lastCleared
+
+        // make sure a new uncleared bank deposit exists, with a relationship
+        // to the till balance
+        deposit = DepositHelper.getUndepositedDeposit(account);
+        assertNotNull(deposit);
+        ActBean depBean = new ActBean(deposit);
+        assertNotNull(depBean.getRelationship(balance.getAct()));
     }
 
     /**
