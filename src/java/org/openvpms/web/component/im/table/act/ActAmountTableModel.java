@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.resource.util.Messages;
@@ -37,6 +38,7 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -150,10 +152,13 @@ public class ActAmountTableModel extends DefaultIMObjectTableModel {
     @Override
     protected Object getValue(IMObject object, int column, int row) {
         Act act = (Act) object;
-        Object result;
+        Object result = null;
         switch (column) {
             case DATE_INDEX:
-                result = act.getActivityStartTime();
+                Date date = act.getActivityStartTime();
+                if (date != null) {
+                    result = DateFormatter.format(date, false);
+                }
                 break;
             case STATUS_INDEX:
                 result = act.getStatus();
