@@ -690,7 +690,7 @@ public class CRUDWindow {
 
     /**
      * Pops up a dialog prompting if printing of an object should proceed,
-     * printing it if OK is selected.
+     * invoking {@link #print} it if OK is selected.
      *
      * @param object the object to delete
      */
@@ -703,7 +703,7 @@ public class CRUDWindow {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent e) {
                 if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    delete(object);
+                    print(object);
                 }
             }
         });
