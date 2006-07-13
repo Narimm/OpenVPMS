@@ -21,7 +21,6 @@ package org.openvpms.archetype.rules.till;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -31,6 +30,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -93,15 +93,19 @@ public class TillHelper {
      *
      * @param till   the till
      * @param amount the amount
+     * @param credit if <code>true</code> this is a credit adjustment,
+     *               otherwise its a debit adjustment
      * @return a new till balance adjustment
      */
-    public static Act createTillBalanceAdjustment(
-            IMObjectReference till, Money amount) {
+    public static Act createTillBalanceAdjustment(IMObjectReference till,
+                                                  BigDecimal amount,
+                                                  boolean credit) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Act act = (Act) service.create("act.tillBalanceAdjustment");
         ActBean bean = new ActBean(act);
         bean.setValue("amount", amount);
+        bean.setValue("credit", credit);
         bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
         return act;
     }
