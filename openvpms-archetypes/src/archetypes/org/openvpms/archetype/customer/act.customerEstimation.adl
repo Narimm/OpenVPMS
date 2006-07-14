@@ -38,10 +38,10 @@
               minCardinality="1" maxCardinality="1">
             <node name="lowTotal" path="/details/attributes/lowTotal"
                   type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-                  defaultValue="'0.0'" minCardinality="1"/>
+                  defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
             <node name="highTotal" path="/details/attributes/highTotal"
                   type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
-                  defaultValue="'0.0'" minCardinality="1"/>
+                  defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
             <node name="printed" path="/details/attributes/printed"
                   type="java.lang.Boolean" defaultValue="false()"
                   minCardinality="1"/>

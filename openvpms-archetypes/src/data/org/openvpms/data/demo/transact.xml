@@ -1,5 +1,5 @@
 <archetype>
-<data id="TR1" archetype="act.customerAccountChargesInvoice" startTime="07/05/1991" amount="93.10" status="Posted"  />
+<data id="TR1" archetype="act.customerAccountChargesInvoice" startTime="07/05/1991" amount="93.10" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C13" act="id:TR1"  />
 <data id="TR2" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="22.00"  />
 <data archetype="participation.patient" entity="id:A20" act="id:TR2"  />
@@ -29,7 +29,7 @@
 <data archetype="participation.patient" entity="id:A19" act="id:TR8"  />
 <data archetype="participation.product" entity="id:P243" act="id:TR8"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR1" target="id:TR8"  />
-<data id="TR9" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="640.00" status="Posted"  />
+<data id="TR9" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="640.00" status="Posted" notes="Suture laceration to near fore hock.~"  />
 <data archetype="participation.customer" entity="id:C10" act="id:TR9"  />
 <data id="TR10" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="55.00"  />
 <data archetype="participation.patient" entity="id:A17" act="id:TR10"  />
@@ -138,7 +138,7 @@
 <data archetype="actRelationship.customerAccountPaymentItem" source="id:TR35" target="id:TR36"  />
 <data id="TR37" archetype="act.customerAccountPaymentCheque" amount="17.10"  />
 <data archetype="actRelationship.customerAccountPaymentItem" source="id:TR35" target="id:TR37"  />
-<data id="TR38" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="37.10" status="Posted"  />
+<data id="TR38" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="37.10" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C10" act="id:TR38"  />
 <data id="TR39" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="25.00"  />
 <data archetype="participation.patient" entity="id:A14" act="id:TR39"  />
@@ -157,7 +157,7 @@
 <data archetype="participation.till" entity="id:OT1" act="id:TR42"  />
 <data id="TR43" archetype="act.customerAccountPaymentCash" amount="15.05"  />
 <data archetype="actRelationship.customerAccountPaymentItem" source="id:TR42" target="id:TR43"  />
-<data id="TR44" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="15.05" status="Posted"  />
+<data id="TR44" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="15.05" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C4" act="id:TR44"  />
 <data id="TR45" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="15.00"  />
 <data archetype="participation.product" entity="id:P829" act="id:TR45"  />
@@ -165,7 +165,7 @@
 <data id="TR46" archetype="act.customerAccountInvoiceItem" quantity="0.50" fixedPrice="0.00" unitPrice="0.10"  />
 <data archetype="participation.product" entity="id:P433" act="id:TR46"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR44" target="id:TR46"  />
-<data id="TR47" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="93.16" status="Posted"  />
+<data id="TR47" archetype="act.customerAccountChargesInvoice" startTime="12/05/1993" amount="93.16" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C10" act="id:TR47"  />
 <data id="TR48" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="52.50"  />
 <data archetype="participation.patient" entity="id:A13" act="id:TR48"  />
@@ -190,7 +190,7 @@
 <data archetype="actRelationship.customerAccountPaymentItem" source="id:TR52" target="id:TR53"  />
 <data id="TR54" archetype="act.customerAccountPaymentCheque" amount="200.00"  />
 <data archetype="actRelationship.customerAccountPaymentItem" source="id:TR52" target="id:TR54"  />
-<data id="TR55" archetype="act.customerAccountChargesInvoice" startTime="13/08/1993" amount="187.20" status="Posted"  />
+<data id="TR55" archetype="act.customerAccountChargesInvoice" startTime="13/08/1993" amount="187.20" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR55"  />
 <data id="TR56" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="55.00"  />
 <data archetype="participation.patient" entity="id:A16" act="id:TR56"  />
@@ -224,7 +224,7 @@
 <data archetype="participation.patient" entity="id:A18" act="id:TR63"  />
 <data archetype="participation.product" entity="id:P602" act="id:TR63"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR55" target="id:TR63"  />
-<data id="TR64" archetype="act.customerAccountChargesInvoice" startTime="13/08/1993" amount="208.70" status="Posted"  />
+<data id="TR64" archetype="act.customerAccountChargesInvoice" startTime="13/08/1993" amount="208.70" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR64"  />
 <data id="TR65" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="55.00"  />
 <data archetype="participation.patient" entity="id:A16" act="id:TR65"  />
@@ -262,7 +262,7 @@
 <data archetype="participation.customer" entity="id:C11" act="id:TR73"  />
 <data id="TR74" archetype="act.customerAccountOpeningBalance" startTime="13/08/1993" amount="395.90"  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR74"  />
-<data id="TR75" archetype="act.customerAccountChargesInvoice" startTime="13/08/1993" amount="206.70" status="Posted"  />
+<data id="TR75" archetype="act.customerAccountChargesInvoice" startTime="13/08/1993" amount="206.70" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR75"  />
 <data id="TR76" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="55.00"  />
 <data archetype="participation.patient" entity="id:A16" act="id:TR76"  />
@@ -300,7 +300,7 @@
 <data archetype="participation.customer" entity="id:C11" act="id:TR84"  />
 <data id="TR85" archetype="act.customerAccountOpeningBalance" startTime="13/08/1993" amount="602.60"  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR85"  />
-<data id="TR86" archetype="act.customerAccountChargesInvoice" startTime="23/11/1993" amount="57.00" status="Posted"  />
+<data id="TR86" archetype="act.customerAccountChargesInvoice" startTime="23/11/1993" amount="57.00" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C10" act="id:TR86"  />
 <data id="TR87" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="25.00"  />
 <data archetype="participation.patient" entity="id:A14" act="id:TR87"  />
@@ -410,7 +410,7 @@
 <data archetype="participation.customer" entity="id:C9" act="id:TR136"  />
 <data id="TR137" archetype="act.customerAccountOpeningBalance" startTime="06/12/1993" amount="0.00"  />
 <data archetype="participation.customer" entity="id:C9" act="id:TR137"  />
-<data id="TR138" archetype="act.customerAccountChargesInvoice" startTime="27/05/1995" amount="290.00" status="Posted"  />
+<data id="TR138" archetype="act.customerAccountChargesInvoice" startTime="27/05/1995" amount="290.00" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C2" act="id:TR138"  />
 <data id="TR139" archetype="act.customerAccountInvoiceItem" quantity="10.00" fixedPrice="0.00" unitPrice="29.00"  />
 <data archetype="participation.patient" entity="id:A2" act="id:TR139"  />
@@ -426,7 +426,7 @@
 <data archetype="participation.till" entity="id:OT1" act="id:TR142"  />
 <data id="TR143" archetype="act.customerAccountPaymentCash" amount="200.00"  />
 <data archetype="actRelationship.customerAccountPaymentItem" source="id:TR142" target="id:TR143"  />
-<data id="TR144" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="50.00" status="Posted"  />
+<data id="TR144" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="50.00" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C3" act="id:TR144"  />
 <data id="TR145" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="25.00"  />
 <data archetype="participation.patient" entity="id:A5" act="id:TR145"  />
@@ -436,7 +436,7 @@
 <data archetype="participation.patient" entity="id:A5" act="id:TR146"  />
 <data archetype="participation.product" entity="id:P183" act="id:TR146"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR144" target="id:TR146"  />
-<data id="TR147" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="50.50" status="Posted"  />
+<data id="TR147" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="50.50" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C10" act="id:TR147"  />
 <data id="TR148" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="30.00"  />
 <data archetype="participation.patient" entity="id:A14" act="id:TR148"  />
@@ -450,7 +450,7 @@
 <data archetype="participation.patient" entity="id:A14" act="id:TR150"  />
 <data archetype="participation.product" entity="id:P802" act="id:TR150"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR147" target="id:TR150"  />
-<data id="TR151" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="264.70" status="Posted"  />
+<data id="TR151" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="264.70" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR151"  />
 <data id="TR152" archetype="act.customerAccountInvoiceItem" quantity="1.00" fixedPrice="0.00" unitPrice="55.00"  />
 <data archetype="participation.patient" entity="id:A16" act="id:TR152"  />
@@ -476,7 +476,7 @@
 <data archetype="participation.patient" entity="id:A18" act="id:TR157"  />
 <data archetype="participation.product" entity="id:P161" act="id:TR157"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR151" target="id:TR157"  />
-<data id="TR158" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="206.35" status="Posted"  />
+<data id="TR158" archetype="act.customerAccountChargesInvoice" startTime="23/10/2001" amount="206.35" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C2" act="id:TR158"  />
 <data id="TR159" archetype="act.customerAccountInvoiceItem" quantity="50.00" fixedPrice="0.00" unitPrice="1.50"  />
 <data archetype="participation.patient" entity="id:A2" act="id:TR159"  />
@@ -514,18 +514,18 @@
 <data archetype="participation.patient" entity="id:A3" act="id:TR167"  />
 <data archetype="participation.product" entity="id:P710" act="id:TR167"  />
 <data archetype="actRelationship.customerAccountInvoiceItem" source="id:TR158" target="id:TR167"  />
-<data id="TR168" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="50.00" status="Posted"  />
+<data id="TR168" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="50.00" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C3" act="id:TR168"  />
-<data id="TR169" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="190.66" status="Posted"  />
+<data id="TR169" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="190.66" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C10" act="id:TR169"  />
-<data id="TR170" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="93.10" status="Posted"  />
+<data id="TR170" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="93.10" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C13" act="id:TR170"  />
-<data id="TR171" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="680.10" status="Posted"  />
+<data id="TR171" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="680.10" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C11" act="id:TR171"  />
-<data id="TR172" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="496.35" status="Posted"  />
+<data id="TR172" archetype="act.customerAccountCreditAdjust" startTime="23/10/2001" amount="496.35" status="Posted" notes=""  />
 <data archetype="participation.customer" entity="id:C2" act="id:TR172"  />
-<data id="TR173" archetype="act.customerAccountDebitAdjust" startTime="30/08/2002" amount="50.00" status="Posted"  />
+<data id="TR173" archetype="act.customerAccountDebitAdjust" startTime="30/08/2002" amount="50.00" status="Posted" notes="TEST"  />
 <data archetype="participation.customer" entity="id:C3" act="id:TR173"  />
-<data id="TR174" archetype="act.customerAccountCreditAdjust" startTime="30/08/2002" amount="25.00" status="Posted"  />
+<data id="TR174" archetype="act.customerAccountCreditAdjust" startTime="30/08/2002" amount="25.00" status="Posted" notes="TEST"  />
 <data archetype="participation.customer" entity="id:C3" act="id:TR174"  />
 </archetype>
