@@ -268,11 +268,12 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         // populate the adjust with the current till
         FinancialAct act = (FinancialAct) getObject();
         FinancialAct adjustment = (FinancialAct) object;
+        adjustment.setDescription(Messages.get("till.adjustment.description"));
         ActBean actBean = new ActBean(act);
         IMObjectReference till
                 = actBean.getParticipantRef("participation.till");
+        ActBean adjBean = new ActBean(adjustment);
         if (till != null) {
-            ActBean adjBean = new ActBean(adjustment);
             adjBean.setParticipant("participation.till", till);
         }
         super.onCreated(object);
