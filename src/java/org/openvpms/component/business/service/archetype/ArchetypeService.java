@@ -507,7 +507,8 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(java.util.Collection)
      */
-    public void save(Collection entities) {
+
+    public void save(Collection entities, boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,
@@ -515,13 +516,10 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         // first validate each entity
-        // TODO:  Temporay fix for problem with participations and act relationships that have a mincardinality
-        // of 1 and fail validation during data load. see OBF-116
-        for (Object entity : entities) {
-            if (TypeHelper.isA((IMObject)entity,"act.*"))
-                deriveValues((IMObject)entity);
-            else
+        if (validate) {
+            for (Object entity : entities) {
                 validateObject((IMObject)entity);
+            }
         }
         
         // now issue a call to save the entities

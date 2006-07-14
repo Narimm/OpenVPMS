@@ -64,6 +64,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 // jsap library
 import com.martiansoftware.jsap.FlaggedOption;
@@ -645,6 +646,13 @@ public class StaxArchetypeDataLoader {
     @SuppressWarnings("unchecked")
     private void batchSaveEntity(IMObject current, boolean forceFlush) {
         if (current != null) {
+            // Lets validate before adding to batch so whole batch doesn't fail later
+            // TODO:  Temporay fix for problem with participations and act relationships that have a mincardinality
+            // of 1 and fail validation during data load. see OBF-116
+            if (TypeHelper.isA(current,"act.*"))
+                archetypeService.deriveValues(current);
+            else
+                archetypeService.validateObject(current);
             batchSaveCache.add(current);
         }
         
@@ -652,7 +660,7 @@ public class StaxArchetypeDataLoader {
         if (((forceFlush) ||
             (batchSaveCache.size() >= batchSaveSize)) && 
             (batchSaveCache.size() > 0)) {
-            archetypeService.save(batchSaveCache);
+            archetypeService.save(batchSaveCache, false);
             batchSaveCache.clear();
         }
     }
@@ -662,7 +670,7 @@ public class StaxArchetypeDataLoader {
      */
     private void flushBatchSaveCache() {
         if (batchSaveCache.size() > 0) {
-            archetypeService.save(batchSaveCache);
+            archetypeService.save(batchSaveCache, false);
             batchSaveCache.clear();
         }
     }

@@ -202,12 +202,14 @@ public interface IArchetypeService {
      * 
      * @param entities
      *            the entities to insert or update
+     * @param validate
+     *            whether to validate or not
      * @throws ArchetypeServiceException
      *            if the service cannot save any of the entities
      * @throws ValidationException
      *            if any of the specified entities cannot be validated                        
      */
-    public void save(Collection entities);
+    public void save(Collection entities, boolean validate);
     
     /**
      * Retrieve the objects specified by the following {@link ArchetypeQuery}
