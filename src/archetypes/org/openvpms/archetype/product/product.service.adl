@@ -82,14 +82,27 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="taxes" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-			filter="entityRelationship.productTaxes" >
+		<node name="taxes" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.taxType" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.taxTypeProduct" />
+							value="classification.taxType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="discounts" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.discountType" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.discountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
@@ -141,20 +154,6 @@
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
-		</node>
-		<node name="insurance" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-			filter="classification.insurance" >
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="classification.customerInsurance" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
-		
+		</node>		
 	</archetype>
 </archetypes>

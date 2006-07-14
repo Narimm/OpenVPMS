@@ -56,5 +56,18 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+		<node name="taxes" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
+			filter="classification.taxType" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.taxType" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
 	</archetype>
 </archetypes>

@@ -42,10 +42,11 @@
             <node name="fixedPrice" path="/details/attributes/fixedPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
             <node name="lowUnitPrice" path="/details/attributes/lowUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
             <node name="highUnitPrice" path="/details/attributes/highUnitPrice" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="1"/>
+            <node name="discount" path="/details/attributes/discount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0" minCardinality="0"/>
             <node name="lowTotal" path="/details/attributes/lowTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/fixedPrice + /details/attributes/lowQty * /details/attributes/lowUnitPrice" minCardinality="1"/>
+                derived="true" derivedValue="/details/attributes/fixedPrice - /details/attributes/discount + /details/attributes/lowQty * /details/attributes/lowUnitPrice" minCardinality="1"/>
             <node name="highTotal" path="/details/attributes/highTotal" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
-                derived="true" derivedValue="/details/attributes/fixedPrice + /details/attributes/highQty * /details/attributes/highUnitPrice" minCardinality="1"/>
+                derived="true" derivedValue="/details/attributes/fixedPrice - /details/attributes/discount + /details/attributes/highQty * /details/attributes/highUnitPrice" minCardinality="1"/>
         </node>
     </archetype>
 </archetypes>

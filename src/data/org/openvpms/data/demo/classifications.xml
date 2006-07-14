@@ -26,8 +26,12 @@
 	<data archetype="classification.customerType" name="Large Animal" />
 	<data archetype="classification.customerType" name="Stud" />
 	<data archetype="classification.customerType" name="Farm" />
-	<data archetype="classification.customerInsurance" name="PetsFirst" />
-	<data archetype="classification.customerInsurance" name="VetPlan" />
+	<data archetype="classification.discountType" name="PetsFirst Medication" rate="10.0" />
+	<data archetype="classification.discountType" name="PetsFirst Services"  rate="100.0" />
+	<data archetype="classification.discountType" name="Pensioner Medication" rate="10.0" />
+	<data archetype="classification.discountType" name="Pensioner Services"  rate="5.0" />
+	<data archetype="classification.taxType" name="GST" rate="10.0" />
+	<data archetype="classification.taxType" name="GST Exempt" rate="0.0" />
 	<data archetype="classification.paymentType" name="Cash" />
 	<data archetype="classification.paymentType" name="Cheque" />
 	<data archetype="classification.paymentType" name="Credit" />
