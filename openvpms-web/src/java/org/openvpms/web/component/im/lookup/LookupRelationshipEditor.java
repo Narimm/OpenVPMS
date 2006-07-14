@@ -13,24 +13,25 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: EntityRelationshipEditor.java 894 2006-05-17 01:10:40Z tanderson $
+ *  $Id$
  */
 
-package org.openvpms.web.component.im.relationship;
+package org.openvpms.web.component.im.lookup;
 
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.relationship.AbstractRelationshipEditor;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 
 
 /**
- * An editor for {@link EntityRelationship}s.
+ * An editor for {@link LookupRelationship}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-17 01:10:40Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class EntityRelationshipEditor extends AbstractRelationshipEditor {
+public class LookupRelationshipEditor extends AbstractRelationshipEditor {
 
     /**
      * Construct a new <code>EntityRelationshipEditor</code>.
@@ -39,9 +40,9 @@ public class EntityRelationshipEditor extends AbstractRelationshipEditor {
      * @param parent       the parent object
      * @param context      the layout context
      */
-    public EntityRelationshipEditor(EntityRelationship relationship,
-                                    IMObject parent, LayoutContext context) {
+    public LookupRelationshipEditor(LookupRelationship relationship,
+                                    IMObject parent,
+                                    LayoutContext context) {
         super(relationship, parent, context);
     }
-
 }
