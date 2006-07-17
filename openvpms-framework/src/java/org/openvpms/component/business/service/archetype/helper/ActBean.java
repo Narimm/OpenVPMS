@@ -27,6 +27,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.component.business.service.archetype.helper.ActBeanException.ErrorCode.ArchetypeNotFound;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Helper to access an {@link Act}'s properties via their names.
@@ -48,7 +51,7 @@ public class ActBean extends IMObjectBean {
     /**
      * Constructs a new <code>ActBean</code>.
      *
-     * @param act the act
+     * @param act     the act
      * @param service the archetype service
      */
     public ActBean(Act act, IArchetypeService service) {
@@ -131,6 +134,29 @@ public class ActBean extends IMObjectBean {
     }
 
     /**
+     * Resolves and returns a list of the child acts.
+     *
+     * @return a list of the child acts
+     * @throws ArchetypeServiceException for any archetype service
+     */
+    public List<Act> getActs() {
+        List<Act> result = new ArrayList<Act>();
+        Act act = getAct();
+        for (ActRelationship r : act.getSourceActRelationships()) {
+            IArchetypeService service = getArchetypeService();
+            IMObjectReference target = r.getTarget();
+            if (target != null) {
+                Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
+                        service, target);
+                if (child != null) {
+                    result.add(child);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Adds a participation.
      *
      * @param shortName the participation short name
@@ -179,7 +205,7 @@ public class ActBean extends IMObjectBean {
         return null;
     }
 
-   /**
+    /**
      * Removes a participation.
      *
      * @param shortName the participation shortName
@@ -195,7 +221,6 @@ public class ActBean extends IMObjectBean {
     /**
      * Returns a reference to the participant of the first participation
      * matching the specified type.
-     *
      */
     public IMObjectReference getParticipantRef(String shortName) {
         Participation p = getParticipation(shortName);
