@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.customer;
 
+import org.openvpms.web.app.customer.account.AccountWorkspace;
 import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 

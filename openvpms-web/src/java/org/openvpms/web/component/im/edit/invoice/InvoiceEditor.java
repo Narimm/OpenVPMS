@@ -18,14 +18,15 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
-import java.math.BigDecimal;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -58,6 +59,10 @@ public class InvoiceEditor extends ActEditor {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
         amount.setValue(value);
+
+        Property taxAmount = getProperty("tax");
+        BigDecimal tax = ActHelper.sum(getEditor().getActs(), "tax");
+        taxAmount.setValue(tax);
     }
 
 }

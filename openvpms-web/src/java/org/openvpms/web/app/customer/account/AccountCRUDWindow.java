@@ -16,30 +16,19 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.account;
 
+import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.create.IMObjectCreatorListener;
-import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import nextapp.echo2.app.Button;
@@ -188,10 +177,11 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
      */
     protected void onAdjust() {
         String[] shortNames = {"act.customerAccountDebitAdjust",
-                "act.customerAccountCreditAdjust",
-                "act.customerAccountInitialBalance",
-                "act.customerAccountBadDebt"};
-        onCreate(Messages.get("customer.accounts.createType"), new ShortNameList(shortNames));        
+                               "act.customerAccountCreditAdjust",
+                               "act.customerAccountInitialBalance",
+                               "act.customerAccountBadDebt"};
+        onCreate(Messages.get("customer.account.createType"),
+                 new ShortNameList(shortNames));
     }
 
     /**
@@ -202,7 +192,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
      */
     @Override
     protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
-        if(editor.isSaved()) {
+        if (editor.isSaved()) {
             onRefresh(getObject());
         }
     }
