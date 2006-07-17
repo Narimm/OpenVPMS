@@ -28,6 +28,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import java.util.List;
+
 
 /**
  * Tests the {@link ActBean} class.
@@ -56,6 +58,28 @@ public class ActBeanTestCase
 
         bean.removeRelationship(r);
         assertNull(bean.getRelationship(target));
+    }
+
+    /**
+     * Tests the {@link ActBean#getActs} method.
+     */
+    public void testGetActs() {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        final String relName = "actRelationship.customerEstimationItem";
+        ActBean bean = createBean("act.customerEstimation");
+        Act[] expected = new Act[3];
+        for (int i = 0; i < 3; ++i) {
+            Act target = (Act) create("act.customerEstimationItem");
+            service.save(target);
+            bean.addRelationship(relName, target);
+            expected[i] = target;
+        }
+        List<Act> acts = bean.getActs();
+        assertEquals(expected.length, acts.size());
+        for (Act exp : expected) {
+            assertTrue(acts.contains(exp));
+        }
     }
 
     /**
