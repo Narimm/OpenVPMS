@@ -11,33 +11,30 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.deposit;
+package org.openvpms.archetype.rules.tax;
 
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**
- * Exception class for exceptions raised by deposit rules.
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Exception class for exceptions raised by tax rules.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class DepositRuleException extends OpenVPMSException {
+public class TaxRuleException extends OpenVPMSException {
 
     /**
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        InvalidDepositArchetype,
-        MissingAccount,
-        UndepositedDepositExists,
-        DepositAlreadyDeposited
+        InvalidActForTax
     }
 
     /**
@@ -45,13 +42,14 @@ public class DepositRuleException extends OpenVPMSException {
      */
     private final ErrorCode _errorCode;
 
+    
     /**
      * The appropriate resource file is loaded cached into memory when this
      * class is loaded.
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.archetype.rules.deposit."
+            "org.openvpms.archetype.rules.tax."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -59,8 +57,8 @@ public class DepositRuleException extends OpenVPMSException {
      *
      * @param errorCode the error code
      */
-    public DepositRuleException(ErrorCode errorCode, Object ... args) {
-        super(MESSAGES.getMessage(errorCode.toString(), args));
+    public TaxRuleException(ErrorCode errorCode, Object ... args) {
+        super(TaxRuleException.MESSAGES.getMessage(errorCode.toString(), args));
         _errorCode = errorCode;
     }
 
@@ -69,7 +67,7 @@ public class DepositRuleException extends OpenVPMSException {
      *
      * @return the error code
      */
-    public ErrorCode getErrorCode() {
+    public TaxRuleException.ErrorCode getErrorCode() {
         return _errorCode;
     }
 }
