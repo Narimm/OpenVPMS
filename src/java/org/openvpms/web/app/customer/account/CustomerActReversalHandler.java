@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.account;
 
 import org.openvpms.web.component.im.edit.act.AbstractActReversalHandler;
 

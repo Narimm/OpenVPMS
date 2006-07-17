@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
@@ -25,12 +27,17 @@ import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.rules.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
@@ -70,6 +77,12 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
             throw new IllegalArgumentException("Invalid act type:"
                     + act.getArchetypeId().getShortName());
         }
+        ModifiableListener listener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateTaxAmount();
+            }
+        };
+        getProperty("total").addModifiableListener(listener);
     }
 
     /**
@@ -116,6 +129,20 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                     unitPrice.setValue(unit.getPrice());
                 }
             }
+        }
+    }
+
+    /**
+     * Calculates the tax amount.
+     */
+    private void updateTaxAmount() {
+        ActBean bean = new ActBean((Act) getParent());
+        Party customer = (Party) bean.getParticipant("participation.customer");
+        if (customer != null && getProduct() != null) {
+            TaxRules.calculateTax((FinancialAct) getObject(), customer,
+                                  ArchetypeServiceHelper.getArchetypeService());
+            Property property = getProperty("tax");
+            property.refresh();
         }
     }
 

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
@@ -235,6 +236,20 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     SupplierPaymentItemEditor.class);
         checkCreate("act.supplierAccountRefundEFT",
                     SupplierPaymentItemEditor.class);
+    }
+
+    /**
+     * Verifies that an {@link AdjustmentActEditor} is created for
+     * <em>act.customerAccountBadDebt</em>,
+     * <em>act.customerAccountDebitAdjust</em> and
+     * <em>act.customerAccountCreditAdjust</em>
+     */
+    public void testCreateAdjustmentActEditor() {
+        checkCreate("act.customerAccountBadDebt", AdjustmentActEditor.class);
+        checkCreate("act.customerAccountCreditAdjust",
+                    AdjustmentActEditor.class);
+        checkCreate("act.customerAccountDebitAdjust",
+                    AdjustmentActEditor.class);
     }
 
     /**
