@@ -212,15 +212,18 @@ public class TaxRules {
     private static BigDecimal calculateTaxAmount(FinancialAct act,
                                                  List<IMObject> taxRates,
                                                  IArchetypeService service) {
-        BigDecimal total = act.getTotal();
         BigDecimal taxTotal = BigDecimal.ZERO;
-        for (IMObject taxRate : taxRates) {
-            IMObjectBean taxBean = new IMObjectBean(taxRate, service);
-            BigDecimal rate = taxBean.getBigDecimal("rate", BigDecimal.ZERO);
-            BigDecimal divisor = new BigDecimal(100).add(rate);
-            BigDecimal tax = total.multiply(rate).divide(divisor, 3,
-                                                         RoundingMode.HALF_UP);
-            taxTotal = taxTotal.add(tax);
+        BigDecimal total = act.getTotal();
+        if (total != null) {
+            for (IMObject taxRate : taxRates) {
+                IMObjectBean taxBean = new IMObjectBean(taxRate, service);
+                BigDecimal rate = taxBean.getBigDecimal("rate",
+                                                        BigDecimal.ZERO);
+                BigDecimal divisor = new BigDecimal(100).add(rate);
+                BigDecimal tax = total.multiply(rate);
+                tax = tax.divide(divisor, 3, RoundingMode.HALF_UP);
+                taxTotal = taxTotal.add(tax);
+            }
         }
         act.setTaxAmount(new Money(taxTotal));
         return taxTotal;
