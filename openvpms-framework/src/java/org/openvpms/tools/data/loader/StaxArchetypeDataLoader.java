@@ -29,34 +29,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-
-// stax 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-// ehcache
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
-//commons-io
 import org.apache.commons.io.FileUtils;
-
-//commons-io
 import org.apache.commons.lang.StringUtils;
-
-//log4j
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
-
-// spring framework
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -65,8 +51,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-// jsap library
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
@@ -649,7 +637,9 @@ public class StaxArchetypeDataLoader {
             // Lets validate before adding to batch so whole batch doesn't fail later
             // TODO:  Temporay fix for problem with participations and act relationships that have a mincardinality
             // of 1 and fail validation during data load. see OBF-116
-            if (TypeHelper.isA(current,"act.*"))
+            if (TypeHelper.isA(current,"actRelationship.*"))
+                archetypeService.validateObject(current);
+            else if (TypeHelper.isA(current,"act.*"))
                 archetypeService.deriveValues(current);
             else
                 archetypeService.validateObject(current);
@@ -657,10 +647,20 @@ public class StaxArchetypeDataLoader {
         }
         
         // determine whether we need to flush
-        if (((forceFlush) ||
-            (batchSaveCache.size() >= batchSaveSize)) && 
-            (batchSaveCache.size() > 0)) {
-            archetypeService.save(batchSaveCache, false);
+        if (((forceFlush) ||(batchSaveCache.size() >= batchSaveSize)) && (batchSaveCache.size() > 0)) {
+            try {
+                archetypeService.save(batchSaveCache, false);
+            } catch (OpenVPMSException exception) {
+                // Ok one of the batch failed so nothing saved.  Try again one by one logging each error.
+                for (Object object : batchSaveCache) {
+                    try {
+                       archetypeService.save((IMObject)object);
+                    } catch (OpenVPMSException e) {
+                        logger.error("Failed to save object\n" +
+                                object.toString(), e);
+                    }
+                }                
+            }
             batchSaveCache.clear();
         }
     }
