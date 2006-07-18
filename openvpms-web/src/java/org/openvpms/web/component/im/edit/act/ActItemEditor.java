@@ -18,11 +18,17 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import java.math.BigDecimal;
-
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.text.TextComponent;
+import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,17 +36,13 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.text.TextComponent;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -71,16 +73,26 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Returns a reference to the customer, obtained from the parent act.
+     *
+     * @return a reference to the customer or <code>null</code> if the act
+     *         has no parent
+     */
+    public IMObjectReference getCustomer() {
+        Act act = (Act) getParent();
+        ActBean bean = new ActBean(act);
+        return bean.getParticipantRef("participation.customer");
+    }
+
+    /**
      * Returns a reference to the product.
      *
      * @return a reference to the product, or <code>null</code> if the act has
      *         no product
      */
     public IMObjectReference getProduct() {
-        Editor product = getEditor("product");
-        if (product instanceof ProductParticipationEditor) {
-            ProductParticipationEditor editor
-                    = (ProductParticipationEditor) product;
+        ProductParticipationEditor editor = getProductEditor();
+        if (editor != null) {
             return (IMObjectReference) editor.getEntity().getValue();
         }
         return null;
@@ -97,6 +109,20 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
             Property entity = editor.getEntity();
             entity.setValue(product);
         }
+    }
+
+    /**
+     * Returns a reference to the patient.
+     *
+     * @return a reference to the patient, or <code>null</code> if the act
+     *         has no patient
+     */
+    public IMObjectReference getPatient() {
+        PatientParticipationEditor editor = getPatientEditor();
+        if (editor != null) {
+            return (IMObjectReference) editor.getEntity().getValue();
+        }
+        return null;
     }
 
     /**
@@ -238,7 +264,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
                                                         context);
             String name = property.getDescriptor().getName();
             if (name.equals("lowTotal") || name.equals("highTotal")
-                || name.equals("total")) {
+                    || name.equals("total")) {
                 // @todo - workaround for OVPMS-211
                 component.setEnabled(false);
                 component.setFocusTraversalParticipant(false);
