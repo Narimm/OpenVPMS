@@ -38,7 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 
 
 /**
- * {@link DefaultCollectionPropertyEditor} test.
+ * {@link CollectionPropertyEditor} test.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -67,7 +67,7 @@ public abstract class AbstractCollectionPropertyEditorTest
     }
 
     /**
-     * Tests {@link DefaultCollectionPropertyEditor#save}.
+     * Tests {@link CollectionPropertyEditor#save}.
      */
     public void testSave() {
         IMObject parent = createParent();
@@ -108,7 +108,7 @@ public abstract class AbstractCollectionPropertyEditorTest
     }
 
     /**
-     * Tests {@link DefaultCollectionPropertyEditor#remove}.
+     * Tests {@link CollectionPropertyEditor#remove}.
      */
     public void testRemove() {
         IMObject parent = createParent();
@@ -137,6 +137,68 @@ public abstract class AbstractCollectionPropertyEditorTest
                      elt1, get(elt1));
         assertEquals("Retrieved element2 doesnt match that saved",
                      elt2, get(elt2));
+
+        // now remove elt1, save and verify that it is no longer available
+        editor.remove(elt1);
+        assertEquals(1, editor.getObjects().size());
+        assertFalse(editor.getObjects().contains(elt1));
+        assertTrue(editor.getObjects().contains(elt2));
+
+        assertTrue("Failed to save parent", SaveHelper.save(parent));
+        assertTrue("Failed to save collection", editor.save());
+        assertNull("element1 wasnt deleted", get(elt1));
+
+        // now retrieve parent and verify collection matches the original
+        IMObject savedParent = get(parent);
+        assertNotNull(savedParent);
+        CollectionPropertyEditor saved = createEditor(
+                getCollectionProperty(savedParent), savedParent);
+        assertEquals(1, saved.getObjects().size());
+        assertTrue(saved.getObjects().contains(elt2));
+
+        assertFalse("Collection shouldn't be modified", saved.isModified());
+        assertFalse("Collection not saved", saved.isSaved());
+        assertTrue("Collection should be valid", saved.isValid());
+    }
+
+    /**
+     * Tests {@link CollectionPropertyEditor#remove} on a collection that has
+     * been saved and reloaded.
+     */
+    public void testRemoveAfterReload() {
+        IMObject parent = createParent();
+        CollectionProperty property = getCollectionProperty(parent);
+        assertTrue("Require collection with min cardinality >= 0",
+                   property.getMinCardinality() >= 0);
+        CollectionPropertyEditor editor = createEditor(property, parent);
+
+        IMObject elt1 = createObject();
+        IMObject elt2 = createObject();
+
+        editor.add(elt1);
+        editor.add(elt2);
+
+        assertEquals(2, editor.getObjects().size());
+        assertTrue(editor.getObjects().contains(elt1));
+        assertTrue(editor.getObjects().contains(elt2));
+        assertTrue(editor.isValid());
+        assertTrue(editor.isModified());
+
+        assertTrue("Failed to save parent", SaveHelper.save(parent));
+        assertTrue("Failed to save collection", editor.save());
+
+        // make sure the elements have saved
+        assertEquals("Retrieved element1 doesnt match that saved",
+                     elt1, get(elt1));
+        assertEquals("Retrieved element2 doesnt match that saved",
+                     elt2, get(elt2));
+
+        // reload parent and collection
+        parent = get(parent);
+        editor = createEditor(getCollectionProperty(parent), parent);
+        assertEquals(2, editor.getObjects().size());
+        elt1 = get(elt1);
+        elt2 = get(elt2);
 
         // now remove elt1, save and verify that it is no longer available
         editor.remove(elt1);
