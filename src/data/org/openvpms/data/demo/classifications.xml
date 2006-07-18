@@ -74,12 +74,4 @@
 	<data id="Pensioner" archetype="classification.customerType" name="Pensioner"  />
 	<data id="Monthly" archetype="classification.customerType" name="Monthly"  />
 	<data id="Cash Only" archetype="classification.customerType" name="Cash Only"  />
-	<data id="User One" archetype="classification.customerType" name="User One"  />
-	<data id="User Two" archetype="classification.customerType" name="User Two"  />
-	<data id="User Three" archetype="classification.customerType" name="User Three"  />
-	<data id="User Four" archetype="classification.customerType" name="User Four"  />
-	<data id="User Five" archetype="classification.customerType" name="User Five"  />
-	<data id="User Six" archetype="classification.customerType" name="User Six"  />
-	<data id="User Seven" archetype="classification.customerType" name="User Seven"  />
-	<data id="User Eight" archetype="classification.customerType" name="User Eight"  />
 </archetype>
