@@ -112,9 +112,14 @@ public class DiscountRules {
         BigDecimal result = BigDecimal.ZERO;
 
         for (IMObject discount : discounts) {
-            IMObjectBean taxBean = new IMObjectBean(discount, service);
-            BigDecimal rate = taxBean.getBigDecimal("rate", BigDecimal.ZERO);
-            BigDecimal dFixedPrice = calcDiscount(fixedPrice, rate);
+            IMObjectBean discountBean = new IMObjectBean(discount, service);
+            BigDecimal rate = discountBean.getBigDecimal("rate", BigDecimal.ZERO);
+            Boolean discountFixed = discountBean.getBoolean("discountFixed");
+            BigDecimal dFixedPrice;
+            if (discountFixed)
+                dFixedPrice = calcDiscount(fixedPrice, rate);
+            else
+                dFixedPrice = new BigDecimal("0.0");
             BigDecimal dUnitPrice = calcDiscount(unitPrice, rate);
             BigDecimal amount = quantity.multiply(dUnitPrice).add(dFixedPrice);
             result = result.add(amount);
