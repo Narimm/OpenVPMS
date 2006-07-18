@@ -26,6 +26,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P4" archetype="product.medication" name="Acepromazine 10mg Injection" printedName="" species="" drugSchedule="S4" activeIngredients="10mg/ml" sellingUnits="Ml" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P5" archetype="product.medication" name="Acepromazine 25mg Tablets" printedName="Acepromazine 25mg Tablets" species="" drugSchedule="S4" activeIngredients="25mg" sellingUnits="Tablets" >
@@ -142,6 +143,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P29" archetype="product.service" name="Anaesthetic - Epidural" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P30" archetype="product.service" name="Anaesthetic - Gaseous" printedName="" >
@@ -153,15 +155,19 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P32" archetype="product.service" name="General Anaesthetic - Horse" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P33" archetype="product.service" name="Anaesthetic - Intravenous L/an" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P34" archetype="product.service" name="Anaesthetic - Intravenous S/an" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P35" archetype="product.service" name="Local Anaesthetic Infiltration" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P36" archetype="product.service" name="Local Anaesthetic -Nerve Block" printedName="" >
@@ -261,6 +267,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P55" archetype="product.medication" name="Benacillin Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P56" archetype="product.medication" name="Benzelmin Worming Paste" printedName="" species="" drugSchedule="S4" activeIngredients="185g/kg Oxfendazole" sellingUnits="Syringes" >
@@ -313,12 +320,15 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P67" archetype="product.service" name="Blood Test - Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P68" archetype="product.service" name="Blood Testing - Sheep" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P69" archetype="product.service" name="Blood Transfusion" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P70" archetype="product.service" name="Blood Typing   Identification" printedName="" >
@@ -387,6 +397,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P83" archetype="product.service" name="Caesarian Section - Cow" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P84" archetype="product.service" name="Caesarian Section - Dog" printedName="" >
@@ -479,39 +490,51 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P103" archetype="product.merchandise" name="Catgut Cassette 0" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P104" archetype="product.merchandise" name="Catgut Cassette 1" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P105" archetype="product.merchandise" name="Catgut Cassette 2" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P106" archetype="product.merchandise" name="Catgut Cassette 2/0" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P107" archetype="product.merchandise" name="Catgut Cassette 3/0" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P108" archetype="product.merchandise" name="I/v Catheter 14 Gauge" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P109" archetype="product.merchandise" name="I/v Catheter 18 Gauge" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P110" archetype="product.merchandise" name="I/v Catheter 20 Gauge" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P111" archetype="product.merchandise" name="Jackson Cat Catheter 3 Fg" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P112" archetype="product.merchandise" name="Jackson Cat Catheter 4 Fg" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P113" archetype="product.merchandise" name="Dog Catheter" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P114" archetype="product.merchandise" name="Horse Catheter" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P115" archetype="product.medication" name="Cat-Lax Paste" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Creams" >
@@ -636,6 +659,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P139" archetype="product.service" name="Clip Dog" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:GROOMING"  />
 </data>
 <data id="P140" archetype="product.medication" name="Coforta 10 % Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
@@ -645,21 +669,27 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P141" archetype="product.merchandise" name="Dog Collar 10cm" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P142" archetype="product.merchandise" name="Dog Collar 15cm" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P143" archetype="product.merchandise" name="Dog Collar 20cm" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P144" archetype="product.merchandise" name="Dog Collar 25cm" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P145" archetype="product.merchandise" name="Dog Collar 30cm" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P146" archetype="product.medication" name="Coloxyl Drops" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Btl Drps" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P147" archetype="product.medication" name="Coloxyl With Danthron Tablets" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
@@ -691,12 +721,15 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P163" archetype="product.service" name="Consultation Beef Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P164" archetype="product.service" name="Consultation Cattle Stud" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P165" archetype="product.service" name="Consultation Dairy Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P166" archetype="product.service" name="Consultation Dog" printedName="" >
@@ -720,6 +753,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P171" archetype="product.service" name="Consultation - Farm Visit" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P172" archetype="product.service" name="Consultation Feline" printedName="" >
@@ -727,6 +761,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P173" archetype="product.service" name="Consultation Goat" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P174" archetype="product.service" name="Consultation Horse" printedName="" >
@@ -734,6 +769,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P175" archetype="product.service" name="Consultation - Insurance Exam." printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P176" archetype="product.service" name="Consultation - Large Animal" printedName="" >
@@ -745,6 +781,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P178" archetype="product.service" name="Consultation No Charge" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P179" archetype="product.merchandise" name="Consultation Phone" printedName="" species="" sellingUnits="Units" >
@@ -752,6 +789,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P180" archetype="product.service" name="Consultation Pig" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P181" archetype="product.service" name="Consultation Revisit" printedName="" >
@@ -767,6 +805,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P184" archetype="product.service" name="Consultation Sheep" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P185" archetype="product.service" name="Vaccination Fee" printedName="" >
@@ -798,6 +837,7 @@
 <data id="P191" archetype="product.medication" name="Cytobin Tablets" printedName="" species="" drugSchedule="S4" activeIngredients="120mcg L-Triiodothyronine" sellingUnits="Tablets" >
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P192" archetype="product.merchandise" name="Darrows I/v Fluid Injection" printedName="" species="" sellingUnits="Ml" >
@@ -810,6 +850,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P194" archetype="product.service" name="Debt Collection Fee" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P195" archetype="product.medication" name="Deltacal  400  Tablets" printedName="" species="" drugSchedule="S4" activeIngredients="400mg" sellingUnits="Tablets" >
@@ -825,9 +866,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P198" archetype="product.service" name="Dental Work - Cat" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P199" archetype="product.service" name="Dental Work - Dog" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P200" archetype="product.service" name="Dentistry - Teeth Extraction" printedName="" >
@@ -835,15 +878,19 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P201" archetype="product.service" name="Horse - Teeth File" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P202" archetype="product.service" name="Horse Teeth File   Drench" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P203" archetype="product.service" name="Horse Teeth Drench   Vacc" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P204" archetype="product.service" name="Horse Teeth Extraction" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P205" archetype="product.service" name="Dentistry - Ultrasonic Scale" printedName="" >
@@ -916,6 +963,7 @@
 </data>
 <data id="P220" archetype="product.medication" name="Dimercaprol Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P221" archetype="product.medication" name="Dimmitrol 200mg Tablets" printedName="Dimmitrol 200mg Tablets" species="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Units" >
@@ -1010,6 +1058,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P240" archetype="product.service" name="Dressings" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P241" archetype="product.medication" name="Droncit Tapewormer For Cats" printedName="Droncit Cat X 50" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
@@ -1096,6 +1145,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P257" archetype="product.service" name="Electrocardiograph - Horse" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P258" archetype="product.medication" name="Electro Scours Treatment" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Packets" >
@@ -1105,6 +1155,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P259" archetype="product.service" name="Electrocardiograph S/animal" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P260" archetype="product.medication" name="Emtryl Soluble Powder" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
@@ -1294,9 +1345,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P297" archetype="product.service" name="Freeze Brand Foal" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P298" archetype="product.service" name="Freight" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P299" archetype="product.medication" name="Frudix Injection" printedName="" species="" drugSchedule="S4" activeIngredients="50mg/ml" sellingUnits="Ml" >
@@ -1472,6 +1525,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P332" archetype="product.service" name="Groom - Cat" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P333" archetype="product.service" name="Grooming   Clipping" printedName="" >
@@ -1521,6 +1575,7 @@
 </data>
 <data id="P342" archetype="product.medication" name="Heparin Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P343" archetype="product.medication" name="Prescription Diet Canine C/d" printedName="Hills Canine C/d" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Packets" >
@@ -1610,6 +1665,7 @@
 </data>
 <data id="P360" archetype="product.medication" name="Prescription Diet Feline W/d" printedName="Hills Feline W/d" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Packets" >
 <data collection="prices" archetype="productPrice.markup" markup="24.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P361" archetype="product.merchandise" name="Hills Plastic Lids" printedName="" species="" sellingUnits="Units" >
@@ -1678,6 +1734,7 @@
 <data id="P374" archetype="product.medication" name="Ipecacuanha Syrup" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P375" archetype="product.merchandise" name="Kelatovit" printedName="Kelatovit 15 Kg" species="" sellingUnits="Packets" >
@@ -1741,6 +1798,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P386" archetype="product.medication" name="Lasonil Ointment 40 G" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ointmnts" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P387" archetype="product.medication" name="Laubal-H Injection" printedName="" species="" drugSchedule="S4" activeIngredients="50mg/ml" sellingUnits="Ml" >
@@ -1814,6 +1872,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P402" archetype="product.medication" name="Lincocin Tablets - 200mg" printedName="" species="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Tablets" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P403" archetype="product.medication" name="Liquifilm Artifical Tear Drops" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
@@ -1877,6 +1936,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P415" archetype="product.medication" name="Masovox Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P416" archetype="product.medication" name="Mastalone Blue Intramammary" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Syringes" >
@@ -1902,6 +1962,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P420" archetype="product.service" name="Medication" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P421" archetype="product.merchandise" name="Melolin Dressing - Large" printedName="" species="" sellingUnits="Units" >
@@ -2130,9 +2191,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P464" archetype="product.service" name="Obstetrical - Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P465" archetype="product.service" name="Obstetrical - Dog" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P466" archetype="product.service" name="Obstetrical - Feline" printedName="" >
@@ -2140,9 +2203,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P467" archetype="product.service" name="Obstetrical - Goat" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P468" archetype="product.service" name="Obstetrical - Horse" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P469" archetype="product.merchandise" name="Obstetrical Lube" printedName="Obstetrical Lube" species="" sellingUnits="Bottles" >
@@ -2150,9 +2215,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P470" archetype="product.service" name="Obstetrical - Pig" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P471" archetype="product.service" name="Obstetrical - Sheep" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P472" archetype="product.medication" name="Oestradiol Benz.0.2mg Inj" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Btl Mls" >
@@ -2281,6 +2348,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P496" archetype="product.medication" name="Panmycin Aquadrops" printedName="" species="" drugSchedule="S4" activeIngredients="100mg/ml" sellingUnits="Btl Mls" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P497" archetype="product.merchandise" name="Paranet Bandage 7 Metres" printedName="Paranet 7 M X 10 Cm" species="" sellingUnits="Packets" >
@@ -2344,9 +2412,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P511" archetype="product.service" name="Pathology Endocrinology" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P512" archetype="product.service" name="Export Path.laboratory Fees" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P513" archetype="product.service" name="Faecal Floatation Test" printedName="" >
@@ -2362,6 +2432,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P516" archetype="product.service" name="Pathology - Full Blood Profile" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P517" archetype="product.service" name="Pathology Fbe" printedName="" >
@@ -2373,6 +2444,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P519" archetype="product.service" name="Pathology Fees -Coll.  Interp." printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P520" archetype="product.service" name="Felv Test" printedName="" >
@@ -2408,9 +2480,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P528" archetype="product.service" name="Haematology Test" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P529" archetype="product.service" name="Heartworm Difil Test" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P530" archetype="product.service" name="Heartworm Test" printedName="" >
@@ -2422,6 +2496,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P532" archetype="product.service" name="Heartworm Red Test" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P533" archetype="product.service" name="Pathology Immunology Tests" printedName="" >
@@ -2429,6 +2504,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P534" archetype="product.service" name="Microbiology Test" printedName="Microbiology Test" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P535" archetype="product.service" name="Nsaid Test" printedName="" >
@@ -2444,12 +2520,15 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P538" archetype="product.service" name="Pathology Profile - Bovine" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P539" archetype="product.service" name="Pathology Profile - Canine" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P540" archetype="product.service" name="Pathology Profile - Equine" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P541" archetype="product.service" name="Pathology Profile - Feline" printedName="" >
@@ -2499,6 +2578,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P552" archetype="product.medication" name="Penicillin Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P553" archetype="product.medication" name="Penicillin Plus" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
@@ -2511,6 +2591,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P555" archetype="product.medication" name="Penstrep Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P556" archetype="product.medication" name="Pentothal 5g" printedName="" species="" drugSchedule="S4" activeIngredients="5g" sellingUnits="Units" >
@@ -2688,21 +2769,27 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P591" archetype="product.service" name="Post Mortem Examination Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P592" archetype="product.service" name="Post Mortem Examination Equine" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P593" archetype="product.service" name="Post Mortem Examin. Insurance" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P594" archetype="product.service" name="Post Mortem Examination Pig" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P595" archetype="product.service" name="Post Mortem Exam. Small Animal" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P596" archetype="product.service" name="Post Mortem Examination Sheep" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P597" archetype="product.medication" name="Prednefrin Forte Eye Drops 1%" printedName="Prednefrin Forte Drops 1%" species="" drugSchedule="S4" activeIngredients="1%" sellingUnits="Btl Drps" >
@@ -2728,6 +2815,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P601" archetype="product.service" name="Pregnancy Test Embryo Transfer" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P602" archetype="product.service" name="Pregnancy Examination - Horse" printedName="" >
@@ -2743,9 +2831,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:P"  />
 </data>
 <data id="P605" archetype="product.service" name="Pregnancy Examination - Sheep" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P606" archetype="product.service" name="Preg.test   Tagging - Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P607" archetype="product.medication" name="Prilocaine 2% Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
@@ -2841,6 +2931,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P625" archetype="product.service" name="Rectal Examination" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P626" archetype="product.merchandise" name="Rectal Examination Gloves" printedName="" species="" sellingUnits="Units" >
@@ -2931,6 +3022,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data id="P644" archetype="product.medication" name="Saline Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P645" archetype="product.merchandise" name="Saline Mix" printedName="" species="" sellingUnits="Units" >
@@ -2946,6 +3038,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P648" archetype="product.service" name="Ultrasound Scan" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P649" archetype="product.medication" name="Schirmer Tear Test" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Others" >
@@ -3087,6 +3180,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DESEX"  />
 </data>
 <data id="P679" archetype="product.service" name="Spey - Surcharge Fee" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P680" archetype="product.medication" name="Spotton Large" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
@@ -3143,6 +3237,7 @@
 </data>
 <data id="P690" archetype="product.medication" name="Strongid Plus Paste" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Syringes" >
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P691" archetype="product.medication" name="Sudafed 60mg Tablets" printedName="" species="" drugSchedule="S4" activeIngredients="60mg" sellingUnits="Tablets" >
@@ -3193,9 +3288,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P701" archetype="product.service" name="Ear Examination   Irrigation" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P702" archetype="product.service" name="Embryotomy" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P703" archetype="product.service" name="Endoscopic Examination" printedName="" >
@@ -3227,6 +3324,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P710" archetype="product.service" name="Minor Surgery" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P711" archetype="product.medication" name="Surolan Ear Drops" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Btl Drps" >
@@ -3248,6 +3346,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P715" archetype="product.service" name="Bone Pinning Dog Medium" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P716" archetype="product.service" name="Bone Pinning Dog Normal" printedName="" >
@@ -3259,6 +3358,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P718" archetype="product.service" name="Surgery Surcharge Fee" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P719" archetype="product.service" name="Tail Docking   Dewclaw Removal" printedName="" >
@@ -3328,9 +3428,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P733" archetype="product.merchandise" name="Syringe 30 Ml" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P734" archetype="product.merchandise" name="Syringe 35 Ml" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P735" archetype="product.merchandise" name="Syringe 50 Ml" printedName="" species="" sellingUnits="Units" >
@@ -3358,6 +3460,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P740" archetype="product.service" name="T.b. Testing - Cattle" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P741" archetype="product.merchandise" name="Teat - Cat" printedName="" species="" sellingUnits="Units" >
@@ -3381,6 +3484,7 @@
 </data>
 <data id="P745" archetype="product.medication" name="Terramycin Eye Ointment" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ointmnts" >
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P746" archetype="product.medication" name="Terramycin Foaming Pessaries" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
@@ -3448,6 +3552,7 @@
 <data id="P759" archetype="product.medication" name="Topigen Drops" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Btl Drps" >
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P760" archetype="product.medication" name="Topigol Ointment" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Creams" >
@@ -3544,6 +3649,7 @@
 <data id="P778" archetype="product.medication" name="Triplopen Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P779" archetype="product.medication" name="Tricin Powder 50g" printedName="Tricin Powder 50g" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Units" >
@@ -3552,12 +3658,15 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P780" archetype="product.medication" name="Trivetrin Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P781" archetype="product.merchandise" name="Tubinette Tubular Bandage H56" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P782" archetype="product.merchandise" name="Tubinette Tubular Bandage H78" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data id="P783" archetype="product.medication" name="Tylan Injection 200" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
@@ -3578,9 +3687,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P787" archetype="product.service" name="Uterine Biopsy - Mare" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:PATHOLOGY"  />
 </data>
 <data id="P788" archetype="product.service" name="Uterine Prolapse" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P789" archetype="product.medication" name="Utozyme Foaming Pessaries" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
@@ -3678,6 +3789,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:VACCINATIONS"  />
 </data>
 <data id="P810" archetype="product.service" name="Vaginal Prolapse" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data id="P811" archetype="product.medication" name="Valabarb Injection" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Ml" >
@@ -3705,6 +3817,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P816" archetype="product.service" name="Vasectomy - Sheep" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data id="P817" archetype="product.medication" name="Vasolamin S 10% Injection" printedName="" species="" drugSchedule="S4" activeIngredients="100mg/ml" sellingUnits="Ml" >
@@ -3858,6 +3971,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data id="P850" archetype="product.service" name="Barium Meal X-Ray Series" printedName="" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:RADIOLOGY"  />
 </data>
 <data id="P851" archetype="product.merchandise" name="X-Ray Developer 5 Litres" printedName="" species="" sellingUnits="Units" >
@@ -3894,9 +4008,11 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P859" archetype="product.merchandise" name="Xylocaine Gel" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P860" archetype="product.merchandise" name="Xylocaine Spray" printedName="" species="" sellingUnits="Units" >
+<data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data id="P861" archetype="product.medication" name="Yeast Tablets" printedName="" species="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >

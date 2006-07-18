@@ -59,6 +59,10 @@
 						<property name="shortName"
 							value="act.customerAccountPaymentEFT" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerAccountPaymentDiscount" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
