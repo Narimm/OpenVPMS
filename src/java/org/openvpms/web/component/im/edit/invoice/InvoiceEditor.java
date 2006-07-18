@@ -61,8 +61,10 @@ public class InvoiceEditor extends ActEditor {
         amount.setValue(value);
 
         Property taxAmount = getProperty("tax");
-        BigDecimal tax = ActHelper.sum(getEditor().getActs(), "tax");
-        taxAmount.setValue(tax);
+        if (taxAmount != null) {
+            BigDecimal tax = ActHelper.sum(getEditor().getActs(), "tax");
+            taxAmount.setValue(tax);
+        }
     }
 
 }

@@ -25,8 +25,10 @@ import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.rules.discount.DiscountRules;
 import org.openvpms.archetype.rules.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -37,8 +39,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
 
@@ -62,7 +64,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
 
     /**
-     * Construct a new <code>InvoiceItemEdtor</code>.
+     * Construct a new <code>CustomerInvoiceItemEditor</code>.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -77,12 +79,24 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
             throw new IllegalArgumentException("Invalid act type:"
                     + act.getArchetypeId().getShortName());
         }
-        ModifiableListener listener = new ModifiableListener() {
+        // add a listener to update the tax amount when the total changes
+        ModifiableListener totalListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 updateTaxAmount();
             }
         };
-        getProperty("total").addModifiableListener(listener);
+        getProperty("total").addModifiableListener(totalListener);
+
+        // add a listener to update the discount amount when the quantity,
+        // fixed or unit price changes.
+        ModifiableListener discountListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateDiscount();
+            }
+        };
+        getProperty("fixedPrice").addModifiableListener(discountListener);
+        getProperty("quantity").addModifiableListener(discountListener);
+        getProperty("unitPrice").addModifiableListener(discountListener);
     }
 
     /**
@@ -136,15 +150,55 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      * Calculates the tax amount.
      */
     private void updateTaxAmount() {
-        ActBean bean = new ActBean((Act) getParent());
-        Party customer = (Party) bean.getParticipant("participation.customer");
-        if (customer != null && getProduct() != null) {
-            TaxRules.calculateTax((FinancialAct) getObject(), customer,
-                                  ArchetypeServiceHelper.getArchetypeService());
-            Property property = getProperty("tax");
-            property.refresh();
+        try {
+            Party customer = (Party) IMObjectHelper.getObject(getCustomer());
+            if (customer != null && getProduct() != null) {
+                // calculate the tax amount
+                TaxRules.calculateTax((FinancialAct) getObject(), customer,
+                                      ArchetypeServiceHelper.getArchetypeService());
+                Property property = getProperty("tax");
+                property.refresh();
+
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 
+    /**
+     * Calculates the discount amount.
+     */
+    private void updateDiscount() {
+        try {
+            Party customer = (Party) IMObjectHelper.getObject(getCustomer());
+            Party patient = (Party) IMObjectHelper.getObject(getPatient());
+            Product product = (Product) IMObjectHelper.getObject(
+                    getProduct());
+
+            // calculate the discount
+            if (customer != null && patient != null && product != null) {
+                FinancialAct act = (FinancialAct) getObject();
+                BigDecimal fixedPrice = act.getFixedAmount();
+                BigDecimal unitPrice = act.getUnitAmount();
+                BigDecimal quantity = act.getQuantity();
+                if (fixedPrice == null) {
+                    fixedPrice = BigDecimal.ZERO;
+                }
+                if (unitPrice == null) {
+                    unitPrice = BigDecimal.ZERO;
+                }
+                if (quantity == null) {
+                    quantity = BigDecimal.ZERO;
+                }
+                BigDecimal amount = DiscountRules.calculateDiscountAmount(
+                        customer, patient, product, fixedPrice, unitPrice,
+                        quantity, ArchetypeServiceHelper.getArchetypeService());
+                Property discount = getProperty("discount");
+                discount.setValue(amount);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
 
 }

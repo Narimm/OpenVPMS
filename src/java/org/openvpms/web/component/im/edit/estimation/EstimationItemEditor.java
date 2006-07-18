@@ -18,20 +18,28 @@
 
 package org.openvpms.web.component.im.edit.estimation;
 
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import org.openvpms.archetype.rules.discount.DiscountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
 
@@ -68,6 +76,17 @@ public class EstimationItemEditor extends ActItemEditor {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
+
+        // add a listener to update the discount when the fixed, high unit price
+        // or quantity, changes
+        ModifiableListener listener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updateDiscount();
+            }
+        };
+        getProperty("fixedPrice").addModifiableListener(listener);
+        getProperty("highUnitPrice").addModifiableListener(listener);
+        getProperty("highQty").addModifiableListener(listener);
     }
 
     /**
@@ -119,6 +138,36 @@ public class EstimationItemEditor extends ActItemEditor {
                     highUnitPrice.setValue(unit.getPrice());
                 }
             }
+        }
+    }
+
+    /**
+     * Calculates the discount amount.
+     */
+    private void updateDiscount() {
+        try {
+            Party customer = (Party) IMObjectHelper.getObject(getCustomer());
+            Party patient = (Party) IMObjectHelper.getObject(getPatient());
+            Product product = (Product) IMObjectHelper.getObject(
+                    getProduct());
+
+            if (customer != null && patient != null && product != null) {
+                Act act = (Act) getObject();
+                ActBean bean = new ActBean(act);
+                BigDecimal fixedPrice = bean.getBigDecimal("fixedPrice",
+                                                           BigDecimal.ZERO);
+                BigDecimal unitPrice = bean.getBigDecimal("highUnitPrice",
+                                                          BigDecimal.ZERO);
+                BigDecimal quantity = bean.getBigDecimal("highQty",
+                                                         BigDecimal.ZERO);
+                BigDecimal amount = DiscountRules.calculateDiscountAmount(
+                        customer, patient, product, fixedPrice, unitPrice,
+                        quantity, ArchetypeServiceHelper.getArchetypeService());
+                Property discount = getProperty("discount");
+                discount.setValue(amount);
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 
