@@ -201,7 +201,16 @@ public class ActRelationshipCollectionPropertyEditor
                         setEditor(object, null);
                     }
                 } else {
-                    deleted = SaveHelper.remove(object, service);
+                    // reload the object to avoid hibernate stale object
+                    // exceptions. These will occur if the parent was saved
+                    // first.
+                    IMObject toDelete = ArchetypeQueryHelper.getByObjectReference(
+                            service, object.getObjectReference());
+                    if (toDelete != null) {
+                        deleted = SaveHelper.remove(toDelete, service);
+                    } else {
+                        deleted = false;
+                    }
                 }
                 if (deleted) {
                     _removed.remove(object);
