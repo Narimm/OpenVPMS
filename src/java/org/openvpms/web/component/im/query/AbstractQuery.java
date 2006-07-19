@@ -88,6 +88,11 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     private IConstraint _constraints;
 
     /**
+     * Determines if duplicate rows should be filtered.
+     */
+    private boolean _distinct;
+
+    /**
      * The instance name. If the text is <code>null</code> or empty, indicates
      * to query all instances.
      */
@@ -204,8 +209,10 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
                                                           activeOnly);
         }
 
-        return new DefaultResultSet<T>(archetypes, name, _constraints, sort,
-                                       rows);
+        ResultSet<T> set = new DefaultResultSet<T>(archetypes, name,
+                                                   _constraints, sort, rows,
+                                                   _distinct);
+        return set;
     }
 
     /**
@@ -216,6 +223,25 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      */
     public boolean isAuto() {
         return false;
+    }
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @param distinct if true, remove duplicate rows
+     */
+    public void setDistinct(boolean distinct) {
+        _distinct = distinct;
+    }
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @return <code>true</code> if duplicate rows should be removed;
+     *         otherwise <code>false</code>
+     */
+    public boolean isDistinct() {
+        return _distinct;
     }
 
     /**

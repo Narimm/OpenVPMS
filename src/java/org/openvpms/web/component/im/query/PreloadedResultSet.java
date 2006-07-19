@@ -18,12 +18,13 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.web.component.im.util.IMObjectSorter;
+
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.util.IMObjectSorter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,6 +100,25 @@ public class PreloadedResultSet<T extends IMObject>
      */
     public SortConstraint[] getSortConstraints() {
         return _sort;
+    }
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @param distinct if true, remove duplicate rows
+     */
+    public void setDistinct(boolean distinct) {
+        // no-op
+    }
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @return <code>true</code> if duplicate rows should be removed;
+     *         otherwise <code>false</code>
+     */
+    public boolean isDistinct() {
+        return false;
     }
 
     /**

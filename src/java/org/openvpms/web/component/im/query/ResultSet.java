@@ -93,4 +93,18 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      */
     SortConstraint[] getSortConstraints();
 
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @param distinct if true, remove duplicate rows
+     */
+    void setDistinct(boolean distinct);
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @return <code>true</code> if duplicate rows should be removed;
+     *         otherwise <code>false</code>
+     */
+    boolean isDistinct();
 }

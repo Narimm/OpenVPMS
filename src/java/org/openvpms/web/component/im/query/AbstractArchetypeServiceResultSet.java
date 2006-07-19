@@ -41,6 +41,11 @@ public abstract class AbstractArchetypeServiceResultSet<T>
     private final IConstraint _constraints;
 
     /**
+     * Determines if duplicate rows should be filtered.
+     */
+    private boolean _distinct;
+
+    /**
      * The sort criteria. May be <code>null</code>.
      */
     private SortConstraint[] _sort;
@@ -98,6 +103,25 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      */
     public SortConstraint[] getSortConstraints() {
         return _sort;
+    }
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @param distinct if true, remove duplicate rows
+     */
+    public void setDistinct(boolean distinct) {
+        _distinct = distinct;
+    }
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @return <code>true</code> if duplicate rows should be removed;
+     *         otherwise <code>false</code>
+     */
+    public boolean isDistinct() {
+        return _distinct;
     }
 
     /**

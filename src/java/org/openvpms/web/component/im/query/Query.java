@@ -18,11 +18,11 @@
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+
+import nextapp.echo2.app.Component;
 
 
 /**
@@ -56,6 +56,21 @@ public interface Query<T extends IMObject> {
      *         otherwie <code>false</code>
      */
     boolean isAuto();
+
+    /**
+     * Determines if duplicate rows should be filtered.
+     *
+     * @param distinct if true, remove duplicate rows
+     */
+    void setDistinct(boolean distinct);
+
+    /**
+     * Determines if dusplicate rows should be filtered.
+     *
+     * @return <code>true</code> if duplicate rows should be removed;
+     *         otherwise <code>false</code>
+     */
+    boolean isDistinct();
 
     /**
      * Add a listener for query events.

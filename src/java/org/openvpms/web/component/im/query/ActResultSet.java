@@ -18,10 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.Date;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.spring.ServiceHelper;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -40,7 +37,11 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.spring.ServiceHelper;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.Date;
 
 
 /**
@@ -173,6 +174,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             ArchetypeQuery query = new ArchetypeQuery(_archetypes);
             query.setFirstRow(firstRow);
             query.setNumOfRows(maxRows);
+            query.setDistinct(isDistinct());
 
             if (_statuses != null) {
                 query.add(_statuses);
