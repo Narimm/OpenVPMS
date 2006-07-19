@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.patient;
 
+import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -71,6 +72,18 @@ public class InformationWorkspace extends CRUDWorkspace {
         super.setObject(object);
         Context.getInstance().setPatient((Party) object);
     }
+
+    /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    @Override
+    public Component getSummary() {
+        return PatientSummary.getSummary((Party) getObject());
+    }
+
 
     /**
      * Determines if the workspace should be refreshed. This implementation
