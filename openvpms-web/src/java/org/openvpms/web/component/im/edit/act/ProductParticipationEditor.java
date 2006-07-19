@@ -116,6 +116,7 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
                     if (species != null) {
                         IConstraint constraint = getSpeciesConstraint(species);
                         query.setConstraints(constraint);
+                        query.setDistinct(true);
                     }
                 }
             }

@@ -77,13 +77,15 @@ public class DefaultResultSet<T extends IMObject>
      *                     <code<null</code>
      * @param sort         the sort criteria. May be <code>null</code>
      * @param rows         the maximum no. of rows per page
+     * @param distinct     if <code>true</code> filter duplicate rows
      */
     public DefaultResultSet(BaseArchetypeConstraint archetypes,
                             String instanceName, IConstraint constraints,
-                            SortConstraint[] sort, int rows) {
+                            SortConstraint[] sort, int rows, boolean distinct) {
         super(constraints, rows, sort);
         _archetypes = archetypes;
         _instanceName = instanceName;
+        setDistinct(distinct);
         reset();
     }
 
@@ -112,6 +114,7 @@ public class DefaultResultSet<T extends IMObject>
             }
             query.setFirstRow(firstRow);
             query.setNumOfRows(maxRows);
+            query.setDistinct(isDistinct());
             result = service.get(query);
         } catch (OpenVPMSException exception) {
             _log.error(exception, exception);
