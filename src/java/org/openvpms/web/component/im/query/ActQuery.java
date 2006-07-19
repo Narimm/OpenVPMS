@@ -202,6 +202,39 @@ public class ActQuery extends AbstractQuery {
     }
 
     /**
+     * Construct a new <code>ActQuery</code>.
+     *
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param shortNames    the act short names
+     * @param statusLookups the act status lookups
+     * @param excludeStatus to exclude. May be <code>null</code>
+     */
+    public ActQuery(Entity entity, String participant, String participation,
+            String[] shortNames, List<Lookup> statusLookups, String excludeStatus) {
+        super(shortNames);
+        setEntity(entity);
+        _participant = participant;
+        _participation = participation;
+        _excludeStatus = excludeStatus;
+        if (_excludeStatus != null) {
+            _statusLookups = new ArrayList<Lookup>(statusLookups);
+            for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
+                 iterator.hasNext();) {
+                Lookup lookup = iterator.next();
+                if (lookup.getValue().equals(_excludeStatus)) {
+                    iterator.remove();
+                }
+            }
+        } else {
+            _statusLookups = statusLookups;
+        }
+        _selectType = false;
+        _statuses = new String[0];
+    }
+
+    /**
      * Construct a new <code>ActQuery</code> to query acts for a specific
      * status.
      *
