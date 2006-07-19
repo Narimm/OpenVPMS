@@ -20,16 +20,9 @@
 package org.openvpms.component.business.service.archetype.query;
 
 // java-core
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-// commons-lang
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -51,9 +44,13 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.util.StringUtilities;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 /**
  * Thie builder is responsible for building the HQL from an 
  * {@link ArchetypeQuery} instance.
@@ -92,7 +89,7 @@ public class QueryBuilder {
                     QueryBuilderException.ErrorCode.NullQuery);
         }
         
-        QueryContext context = new QueryContext();
+        QueryContext context = new QueryContext(query.isDistinct());
         processConstraint(query.getArchetypeConstraint(), context);
         
         return context;
