@@ -30,8 +30,7 @@
 	<data archetype="classification.discountType" name="PetsFirst Services"  rate="100.0" />
 	<data archetype="classification.discountType" name="Pensioner Medication" rate="10.0" />
 	<data archetype="classification.discountType" name="Pensioner Services"  rate="5.0" />
-	<data archetype="classification.taxType" name="GST" rate="10.0" />
-	<data archetype="classification.taxType" name="GST Exempt" rate="0.0" />
+	<data id="GST" archetype="classification.taxType" name="GST" rate="10.0" />
 	<data archetype="classification.paymentType" name="Cash" />
 	<data archetype="classification.paymentType" name="Cheque" />
 	<data archetype="classification.paymentType" name="Credit" />
@@ -74,4 +73,12 @@
 	<data id="Pensioner" archetype="classification.customerType" name="Pensioner"  />
 	<data id="Monthly" archetype="classification.customerType" name="Monthly"  />
 	<data id="Cash Only" archetype="classification.customerType" name="Cash Only"  />
+	<data archetype="classification.reminderGroup" name="Vaccinations" />
+	<data archetype="classification.reminderGroup" name="Desexing" />
+	<data archetype="classification.reminderGroup" name="Worming" />
+	<data archetype="classification.documentGroup" name="Letters" />
+	<data archetype="classification.documentGroup" name="Reports" />
+	<data archetype="classification.documentGroup" name="Forms" />
+	<data archetype="classification.documentGroup" name="Handouts" />
+	<data archetype="classification.documentGroup" name="Certificates" />
 </archetype>
