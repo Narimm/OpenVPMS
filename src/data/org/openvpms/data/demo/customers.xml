@@ -5,14 +5,6 @@
 <data id="Pensioner" archetype="entity.customerAccountType" name="Pensioner"  />
 <data id="Monthly" archetype="entity.customerAccountType" name="Monthly"  />
 <data id="Cash Only" archetype="entity.customerAccountType" name="Cash Only"  />
-<data id="User One" archetype="entity.customerAccountType" name="User One"  />
-<data id="User Two" archetype="entity.customerAccountType" name="User Two"  />
-<data id="User Three" archetype="entity.customerAccountType" name="User Three"  />
-<data id="User Four" archetype="entity.customerAccountType" name="User Four"  />
-<data id="User Five" archetype="entity.customerAccountType" name="User Five"  />
-<data id="User Six" archetype="entity.customerAccountType" name="User Six"  />
-<data id="User Seven" archetype="entity.customerAccountType" name="User Seven"  />
-<data id="User Eight" archetype="entity.customerAccountType" name="User Eight"  />
 <data id="C1" archetype="party.customerperson" title="Mr" firstName="Alan" initials="A" lastName="Lawson" >
 <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="98754312" preferred="True"  />
 <data collection="contacts" archetype="contact.location" address="12 Station Road" suburb="Black Rock" state="VIC" postcode="3456" preferred="True"  />

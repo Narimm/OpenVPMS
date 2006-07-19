@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Alert'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/alertType, 'End Date : ', /activityEndTime)" />
+			derivedValue="concat(/details/attributes/alertType, ' - ', /reason,' End Date : ', /activityEndTime)" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
@@ -39,6 +39,16 @@
 				</assertion>
 			</node>
 		</node>
-		<node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" />
+        <node name="reason" path="/reason" type="java.lang.String" maxLength="100"/>
+		<node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="In Progress" value="In Progress" />
+					<property name="Completed" value="Completed" />
+				</propertyList>
+				<errorMessage>An error message</errorMessage>
+			</assertion>
+		</node>
 	</archetype>
 </archetypes>

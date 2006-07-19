@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Reminder'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat('Due Date : ', /activityEndTime, ' Reminder Count : ', /details/attributes/reminderCount)" />
+			derivedValue="concat('Due Date : ', /activityEndTime, ' Reminders Sent : ', /details/attributes/reminderCount)" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
@@ -35,16 +35,14 @@
 			<assertion name="lookup.local">
 				<propertyList name="entries">
 					<property name="In Progress" value="In Progress" />
-					<property name="Cancelled" value="Cancelled" />
-					<property name="Sent" value="Sent" />
-					<property name="Cleared" value="Cleared" />
+					<property name="Completed" value="Completed" />
 				</propertyList>
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
 		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" 
 			minCardinality="1" maxCardinality="1">
-			<node name="reminderCount" path="/details/attributes/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
+			<node name="reminderCount" displayName="Reminders Sent" path="/details/attributes/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
 		</node>
 		<node displayName="Reminders" name="reminders" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
 			hidden="true" minCardinality="0" maxCardinality="*">

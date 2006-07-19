@@ -77,4 +77,7 @@
 	<data archetype="lookup.personTitle" title="Mrs" />
 	<data archetype="lookup.personTitle" title="Ms" />
 	<data archetype="lookup.personTitle" title="Dr" />
+	<data archetype="lookup.alertType" alertType="Allergy" />
+	<data archetype="lookup.alertType" alertType="Agression" />
+	<data archetype="lookup.alertType" alertType="Other" />
 </archetype>
