@@ -1,16 +1,15 @@
 package org.openvpms.component.business.service.archetype.query;
 
 // java core
+import org.openvpms.component.business.service.archetype.query.QueryBuilder.DistinctTypesResultSet;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-
-// openvpms-framework
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
-import org.openvpms.component.business.service.archetype.query.QueryBuilder.DistinctTypesResultSet;
 
 /**
  * This class holds the state of the HQL as it is beign built
@@ -75,6 +74,19 @@ public class QueryContext {
      * Default constructor. Initialize the operational stack
      */
     QueryContext() {
+        this(false);
+    }
+
+    /**
+     * Constructs a <code>QueryContext</code>.
+     *
+     * @param distinct if <code>true</code> filter duplicate rows
+     */
+    QueryContext(boolean distinct) {
+        if (distinct) {
+            selectClause.append("distinct ");
+            initSelectClauseLen = selectClause.length();
+        }
     }
     
     /**
@@ -87,7 +99,7 @@ public class QueryContext {
     /**
      * Push a logical operator on the stack
      * 
-     * @param operator
+     * @param op
      * @return QueryContext
      */
     QueryContext pushLogicalOperator(LogicalOperator op) {
@@ -111,7 +123,7 @@ public class QueryContext {
     /**
      * Push the distinct types
      * 
-     * @param operator
+     * @param types
      * @return QueryContext
      */
     QueryContext pushDistinctTypes(DistinctTypesResultSet types) {
@@ -233,7 +245,7 @@ public class QueryContext {
      * 
      * @param property
      *            the property
-     * @param c
+     * @param op
      *            the relational operator to apply            
      * @param value
      *            the object value
@@ -295,7 +307,7 @@ public class QueryContext {
      * @return QueryContext                        
      */
     QueryContext addWhereConstraint(String property, NodeConstraint constraint) {
-        String varName = null;
+        String varName;
         
         switch (constraint.getOperator()) {
         case BTW:
