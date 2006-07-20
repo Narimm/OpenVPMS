@@ -91,5 +91,18 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+		<node name="type" path="/entityRelationships"
+			type="java.util.HashSet" baseName="EntityRelationship" hidden="true" minCardinality="0" maxCardinality="*"
+			filter="entityRelationship.productTypeProduct" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityRelationship.productTypeProduct" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
 	</archetype>
 </archetypes>
