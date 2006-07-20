@@ -39,7 +39,7 @@
 			<node name="reference" displayName="Reference" path="/details/attributes/reference" type="java.lang.String" minCardinality="0" maxLength="20" />
 		</node>
 		<node name="credit" path="/credit" type="java.lang.Boolean"
-			defaultValue="false()" readOnly="true" hidden="true" />
+			defaultValue="false()" readOnly="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
