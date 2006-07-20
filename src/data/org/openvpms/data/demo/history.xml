@@ -1,67 +1,67 @@
 <archetype>
-<data id="HI1" archetype="act.patientClinicalEpisode" startTime="24/04/1996" completeTime="24/04/1996" reason="Consultation" status="Completed"  />
+<data id="HI1" archetype="act.patientClinicalEpisode" startTime="24/04/2005" completeTime="24/04/2005" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A1" act="id:HI1"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI1"  />
-<data id="HI2" archetype="act.patientClinicalEvent" startTime="24/04/1996" reason="Consultation"  />
+<data id="HI2" archetype="act.patientClinicalEvent" startTime="24/04/2005" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A1" act="id:HI2"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI2"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI1" target="id:HI2"  />
-<data id="HI3" archetype="act.patientClinicalNote" startTime="24/04/1996" note="VACC4"  />
+<data id="HI3" archetype="act.patientClinicalNote" startTime="24/04/2005" note="VACC4"  />
 <data archetype="participation.patient" entity="id:A1" act="id:HI3"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI2" target="id:HI3"  />
-<data id="HI4" archetype="act.patientClinicalEpisode" startTime="27/05/1995" completeTime="27/05/1995" reason="Consultation" status="Completed"  />
+<data id="HI4" archetype="act.patientClinicalEpisode" startTime="27/05/2004" completeTime="27/05/2004" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A3" act="id:HI4"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI4"  />
-<data id="HI5" archetype="act.patientClinicalEvent" startTime="27/05/1995" reason="Consultation"  />
+<data id="HI5" archetype="act.patientClinicalEvent" startTime="27/05/2004" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A3" act="id:HI5"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI5"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI4" target="id:HI5"  />
-<data id="HI6" archetype="act.patientClinicalNote" startTime="27/05/1995" note="VX/VACCC3 (Qty:     1.00) -  "  />
+<data id="HI6" archetype="act.patientClinicalNote" startTime="27/05/2004" note="VX/VACCC3 (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A3" act="id:HI6"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI5" target="id:HI6"  />
-<data id="HI7" archetype="act.patientClinicalEpisode" startTime="27/05/1995" completeTime="27/05/1995" reason="Consultation" status="Completed"  />
+<data id="HI7" archetype="act.patientClinicalEpisode" startTime="27/05/2004" completeTime="27/05/2004" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A4" act="id:HI7"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI7"  />
-<data id="HI8" archetype="act.patientClinicalEvent" startTime="27/05/1995" reason="Consultation"  />
+<data id="HI8" archetype="act.patientClinicalEvent" startTime="27/05/2004" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A4" act="id:HI8"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI8"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI7" target="id:HI8"  />
-<data id="HI9" archetype="act.patientClinicalNote" startTime="27/05/1995" note="OXYTOCIN INJECTION (Qty:     1.00) -  "  />
+<data id="HI9" archetype="act.patientClinicalNote" startTime="27/05/2004" note="OXYTOCIN INJECTION (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A4" act="id:HI9"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI8" target="id:HI9"  />
-<data id="HI10" archetype="act.patientClinicalNote" startTime="27/05/1995" note="LUTALYSE INJECTION (Qty:     1.00) -  "  />
+<data id="HI10" archetype="act.patientClinicalNote" startTime="27/05/2004" note="LUTALYSE INJECTION (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A4" act="id:HI10"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI8" target="id:HI10"  />
-<data id="HI11" archetype="act.patientClinicalNote" startTime="27/05/1995" note="PENSTREP INJECTION (Qty:     1.00) -  "  />
+<data id="HI11" archetype="act.patientClinicalNote" startTime="27/05/2004" note="PENSTREP INJECTION (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A4" act="id:HI11"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI8" target="id:HI11"  />
-<data id="HI12" archetype="act.patientClinicalEpisode" startTime="23/04/1996" completeTime="23/04/1996" reason="Consultation" status="Completed"  />
+<data id="HI12" archetype="act.patientClinicalEpisode" startTime="23/04/2005" completeTime="23/04/2005" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI12"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI12"  />
-<data id="HI13" archetype="act.patientClinicalEvent" startTime="23/04/1996" reason="Consultation"  />
+<data id="HI13" archetype="act.patientClinicalEvent" startTime="23/04/2005" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI13"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI13"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI12" target="id:HI13"  />
-<data id="HI14" archetype="act.patientClinicalNote" startTime="23/04/1996" note="Admitted to Hospital Tue Apr 23 05:37:54 1996"  />
+<data id="HI14" archetype="act.patientClinicalNote" startTime="23/04/2005" note="Admitted to Hospital Tue Apr 23 05:37:54 2005"  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI14"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI13" target="id:HI14"  />
-<data id="HI15" archetype="act.patientClinicalEvent" startTime="24/04/1996" reason="Consultation"  />
+<data id="HI15" archetype="act.patientClinicalEvent" startTime="24/04/2005" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI15"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI15"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI12" target="id:HI15"  />
-<data id="HI16" archetype="act.patientClinicalNote" startTime="24/04/1996" note="vaccination (Weight : 15kg)"  />
+<data id="HI16" archetype="act.patientClinicalNote" startTime="24/04/2005" note="vaccination (Weight : 15kg)"  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI16"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI15" target="id:HI16"  />
-<data id="HI17" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Temp: 39 Wt: N/R Card/Vas: N/R Integ: N.A.D. Resp: N.A.D."  />
+<data id="HI17" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Temp: 39 Wt: N/R Card/Vas: N/R Integ: N.A.D. Resp: N.A.D."  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI17"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI15" target="id:HI17"  />
-<data id="HI18" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Sense: N.A.D. Neuro: N.A.D. Gastr: N.A.D. Uro/Gen: N.A.D."  />
+<data id="HI18" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Sense: N.A.D. Neuro: N.A.D. Gastr: N.A.D. Uro/Gen: N.A.D."  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI18"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI15" target="id:HI18"  />
-<data id="HI19" archetype="act.patientClinicalNote" startTime="24/04/1996" note="M.Skel.: N.A.D. N.A.D."  />
+<data id="HI19" archetype="act.patientClinicalNote" startTime="24/04/2005" note="M.Skel.: N.A.D. N.A.D."  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI19"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI15" target="id:HI19"  />
-<data id="HI20" archetype="act.patientClinicalNote" startTime="24/04/1996" note="AT :yjgjhhgkjhjk"  />
+<data id="HI20" archetype="act.patientClinicalNote" startTime="24/04/2005" note="AT :yjgjhhgkjhjk"  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI20"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI15" target="id:HI20"  />
 <data id="HI21" archetype="act.patientClinicalEpisode" startTime="23/08/2002" completeTime="23/08/2002" reason="Consultation" status="Completed"  />
@@ -109,286 +109,286 @@
 <data id="HI34" archetype="act.patientClinicalNote" startTime="27/05/2004" note=""  />
 <data archetype="participation.patient" entity="id:A5" act="id:HI34"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI33" target="id:HI34"  />
-<data id="HI35" archetype="act.patientClinicalEpisode" startTime="14/03/1996" completeTime="14/03/1996" reason="Consultation" status="Completed"  />
+<data id="HI35" archetype="act.patientClinicalEpisode" startTime="14/03/2005" completeTime="14/03/2005" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI35"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI35"  />
-<data id="HI36" archetype="act.patientClinicalEvent" startTime="14/03/1996" reason="Consultation"  />
+<data id="HI36" archetype="act.patientClinicalEvent" startTime="14/03/2005" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI36"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI36"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI35" target="id:HI36"  />
-<data id="HI37" archetype="act.patientClinicalNote" startTime="14/03/1996" note="Haem. Results from IDEXX at 10:10"  />
+<data id="HI37" archetype="act.patientClinicalNote" startTime="14/03/2005" note="Haem. Results from IDEXX at 10:10"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI37"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI37"  />
-<data id="HI38" archetype="act.patientClinicalNote" startTime="14/03/1996" note="HCT = 34.9 % (37.0-55.0):HGB = 11.3 g/fl (12.0-18-0):"  />
+<data id="HI38" archetype="act.patientClinicalNote" startTime="14/03/2005" note="HCT = 34.9 % (37.0-55.0):HGB = 11.3 g/fl (12.0-18-0):"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI38"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI38"  />
-<data id="HI39" archetype="act.patientClinicalNote" startTime="14/03/1996" note="MCHC = 32.4 g/dl (30.0-36.9):WBC # 22.4 X10^9/L (6.0-16.9):"  />
+<data id="HI39" archetype="act.patientClinicalNote" startTime="14/03/2005" note="MCHC = 32.4 g/dl (30.0-36.9):WBC # 22.4 X10^9/L (6.0-16.9):"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI39"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI39"  />
-<data id="HI40" archetype="act.patientClinicalNote" startTime="14/03/1996" note="GRANS # 20.0 X10^9/L (3.3-12.0):%GRANS # 89 % (00000-00000):"  />
+<data id="HI40" archetype="act.patientClinicalNote" startTime="14/03/2005" note="GRANS # 20.0 X10^9/L (3.3-12.0):%GRANS # 89 % (00000-00000):"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI40"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI40"  />
-<data id="HI41" archetype="act.patientClinicalNote" startTime="14/03/1996" note="NEUT ! 0.0 X10^9/L (2.8-10.5):EOS ! 0.0 X10^9/L (05-1.5):"  />
+<data id="HI41" archetype="act.patientClinicalNote" startTime="14/03/2005" note="NEUT ! 0.0 X10^9/L (2.8-10.5):EOS ! 0.0 X10^9/L (05-1.5):"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI41"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI41"  />
-<data id="HI42" archetype="act.patientClinicalNote" startTime="14/03/1996" note="L/M = 2.4 X10^9/L (1.1-6.3):%L/M # 11 % (00000-00000):"  />
+<data id="HI42" archetype="act.patientClinicalNote" startTime="14/03/2005" note="L/M = 2.4 X10^9/L (1.1-6.3):%L/M # 11 % (00000-00000):"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI42"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI42"  />
-<data id="HI43" archetype="act.patientClinicalNote" startTime="14/03/1996" note="PLT = 428 X10^9/L (175-500):Retics ! 0.2 % (00000-00000):"  />
+<data id="HI43" archetype="act.patientClinicalNote" startTime="14/03/2005" note="PLT = 428 X10^9/L (175-500):Retics ! 0.2 % (00000-00000):"  />
 <data archetype="participation.patient" entity="id:A6" act="id:HI43"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI36" target="id:HI43"  />
-<data id="HI44" archetype="act.patientClinicalEpisode" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation" status="Completed"  />
+<data id="HI44" archetype="act.patientClinicalEpisode" startTime="07/05/2000" completeTime="07/05/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A9" act="id:HI44"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI44"  />
-<data id="HI45" archetype="act.patientClinicalEvent" startTime="07/05/1991" reason="Consultation"  />
+<data id="HI45" archetype="act.patientClinicalEvent" startTime="07/05/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A9" act="id:HI45"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI45"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI44" target="id:HI45"  />
-<data id="HI46" archetype="act.patientClinicalNote" startTime="07/05/1991" note="DRENCH 5 PLUS HORSES PER HORSE (Qty:     1.00) -  "  />
+<data id="HI46" archetype="act.patientClinicalNote" startTime="07/05/2000" note="DRENCH 5 PLUS HORSES PER HORSE (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A9" act="id:HI46"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI45" target="id:HI46"  />
-<data id="HI47" archetype="act.patientClinicalEpisode" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation" status="Completed"  />
+<data id="HI47" archetype="act.patientClinicalEpisode" startTime="07/05/2000" completeTime="07/05/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI47"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI47"  />
-<data id="HI48" archetype="act.patientClinicalEvent" startTime="07/05/1991" reason="Consultation"  />
+<data id="HI48" archetype="act.patientClinicalEvent" startTime="07/05/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI48"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI48"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI47" target="id:HI48"  />
-<data id="HI49" archetype="act.patientClinicalNote" startTime="07/05/1991" note="DRENCH   FLOAT TEETH (Qty:     1.00) -  "  />
+<data id="HI49" archetype="act.patientClinicalNote" startTime="07/05/2000" note="DRENCH   FLOAT TEETH (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI49"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI48" target="id:HI49"  />
-<data id="HI50" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCST (Qty:     1.00) -  "  />
+<data id="HI50" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCST (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI50"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI48" target="id:HI50"  />
-<data id="HI51" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCTE (Qty:     1.00) -  "  />
+<data id="HI51" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCTE (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI51"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI48" target="id:HI51"  />
-<data id="HI52" archetype="act.patientClinicalNote" startTime="07/05/1991" note="LAUBAL-H INJECTION (Qty:     5.00) -  "  />
+<data id="HI52" archetype="act.patientClinicalNote" startTime="07/05/2000" note="LAUBAL-H INJECTION (Qty:     5.00) -  "  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI52"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI48" target="id:HI52"  />
-<data id="HI53" archetype="act.patientClinicalEpisode" startTime="19/02/1991" completeTime="19/02/1991" reason="Consultation" status="Completed"  />
+<data id="HI53" archetype="act.patientClinicalEpisode" startTime="19/02/2000" completeTime="19/02/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A11" act="id:HI53"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI53"  />
-<data id="HI54" archetype="act.patientClinicalEvent" startTime="19/02/1991" reason="Consultation"  />
+<data id="HI54" archetype="act.patientClinicalEvent" startTime="19/02/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A11" act="id:HI54"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI54"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI53" target="id:HI54"  />
-<data id="HI55" archetype="act.patientClinicalNote" startTime="19/02/1991" note="TETANUS ANTITOXIN (Qty:     1.00) -  "  />
+<data id="HI55" archetype="act.patientClinicalNote" startTime="19/02/2000" note="TETANUS ANTITOXIN (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A11" act="id:HI55"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI54" target="id:HI55"  />
-<data id="HI56" archetype="act.patientClinicalNote" startTime="19/02/1991" note="PENTOTHAL 5G (Qty:    60.00) -  "  />
+<data id="HI56" archetype="act.patientClinicalNote" startTime="19/02/2000" note="PENTOTHAL 5G (Qty:    60.00) -  "  />
 <data archetype="participation.patient" entity="id:A11" act="id:HI56"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI54" target="id:HI56"  />
-<data id="HI57" archetype="act.patientClinicalNote" startTime="19/02/1991" note="GIAFEN INJECTION (Qty:    80.00) -  "  />
+<data id="HI57" archetype="act.patientClinicalNote" startTime="19/02/2000" note="GIAFEN INJECTION (Qty:    80.00) -  "  />
 <data archetype="participation.patient" entity="id:A11" act="id:HI57"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI54" target="id:HI57"  />
-<data id="HI58" archetype="act.patientClinicalNote" startTime="19/02/1991" note="PENICILLIN INJECTION (Qty:    20.00) -  "  />
+<data id="HI58" archetype="act.patientClinicalNote" startTime="19/02/2000" note="PENICILLIN INJECTION (Qty:    20.00) -  "  />
 <data archetype="participation.patient" entity="id:A11" act="id:HI58"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI54" target="id:HI58"  />
-<data id="HI59" archetype="act.patientClinicalEpisode" startTime="12/05/1993" completeTime="12/05/1993" reason="Consultation" status="Completed"  />
+<data id="HI59" archetype="act.patientClinicalEpisode" startTime="12/05/2003" completeTime="12/05/2003" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI59"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI59"  />
-<data id="HI60" archetype="act.patientClinicalEvent" startTime="12/05/1993" reason="Consultation"  />
+<data id="HI60" archetype="act.patientClinicalEvent" startTime="12/05/2003" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI60"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI60"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI59" target="id:HI60"  />
-<data id="HI61" archetype="act.patientClinicalProblem" startTime="12/05/1993" problem="CELLULITIS - myxomatosis "  />
+<data id="HI61" archetype="act.patientClinicalProblem" startTime="12/05/2003" problem="CELLULITIS - myxomatosis "  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI61"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI60" target="id:HI61"  />
-<data id="HI62" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Corneal Opacity"  />
+<data id="HI62" archetype="act.patientClinicalNote" startTime="12/05/2003" note="Corneal Opacity"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI62"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI60" target="id:HI62"  />
-<data id="HI63" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Conjunctiva Inflamed"  />
+<data id="HI63" archetype="act.patientClinicalNote" startTime="12/05/2003" note="Conjunctiva Inflamed"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI63"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI60" target="id:HI63"  />
-<data id="HI64" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Eyes Weeping"  />
+<data id="HI64" archetype="act.patientClinicalNote" startTime="12/05/2003" note="Eyes Weeping"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI64"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI60" target="id:HI64"  />
-<data id="HI65" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Nicitating Membrane Proctosed"  />
+<data id="HI65" archetype="act.patientClinicalNote" startTime="12/05/2003" note="Nicitating Membrane Proctosed"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI65"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI60" target="id:HI65"  />
-<data id="HI66" archetype="act.patientClinicalEpisode" startTime="23/11/1993" completeTime="23/11/1993" reason="Consultation" status="Completed"  />
+<data id="HI66" archetype="act.patientClinicalEpisode" startTime="23/11/2003" completeTime="23/11/2003" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI66"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI66"  />
-<data id="HI67" archetype="act.patientClinicalEvent" startTime="23/11/1993" reason="Consultation"  />
+<data id="HI67" archetype="act.patientClinicalEvent" startTime="23/11/2003" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI67"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI67"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI66" target="id:HI67"  />
-<data id="HI68" archetype="act.patientClinicalNote" startTime="23/11/1993" note="AMOXIL TABLETS 50MG (Qty:    10.00) - Give ONE Tablet TWICE a Day for FIVE day(s) "  />
+<data id="HI68" archetype="act.patientClinicalNote" startTime="23/11/2003" note="AMOXIL TABLETS 50MG (Qty:    10.00) - Give ONE Tablet TWICE a Day for FIVE day(s) "  />
 <data archetype="participation.patient" entity="id:A12" act="id:HI68"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI67" target="id:HI68"  />
-<data id="HI69" archetype="act.patientClinicalEpisode" startTime="12/05/1993" completeTime="12/05/1993" reason="Consultation" status="Completed"  />
+<data id="HI69" archetype="act.patientClinicalEpisode" startTime="12/05/2003" completeTime="12/05/2003" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI69"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI69"  />
-<data id="HI70" archetype="act.patientClinicalEvent" startTime="12/05/1993" reason="Consultation"  />
+<data id="HI70" archetype="act.patientClinicalEvent" startTime="12/05/2003" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI70"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI70"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI69" target="id:HI70"  />
-<data id="HI71" archetype="act.patientClinicalNote" startTime="12/05/1993" note="fleas"  />
+<data id="HI71" archetype="act.patientClinicalNote" startTime="12/05/2003" note="fleas"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI71"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI71"  />
-<data id="HI72" archetype="act.patientClinicalNote" startTime="12/05/1993" note="allopecia on rump"  />
+<data id="HI72" archetype="act.patientClinicalNote" startTime="12/05/2003" note="allopecia on rump"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI72"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI72"  />
-<data id="HI73" archetype="act.patientClinicalNote" startTime="12/05/1993" note="VX/VACCC3 (Qty:     1.00) -  "  />
+<data id="HI73" archetype="act.patientClinicalNote" startTime="12/05/2003" note="VX/VACCC3 (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI73"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI73"  />
-<data id="HI74" archetype="act.patientClinicalNote" startTime="12/05/1993" note="AMOXIL AQUEOUS DROPS (Qty:     1.00) - Give TWO mls TWICE a Day "  />
+<data id="HI74" archetype="act.patientClinicalNote" startTime="12/05/2003" note="AMOXIL AQUEOUS DROPS (Qty:     1.00) - Give TWO mls TWICE a Day "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI74"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI74"  />
-<data id="HI75" archetype="act.patientClinicalNote" startTime="12/05/1993" note="DEXADRESON 2MG INJECTION (Qty:     2.00) -  "  />
+<data id="HI75" archetype="act.patientClinicalNote" startTime="12/05/2003" note="DEXADRESON 2MG INJECTION (Qty:     2.00) -  "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI75"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI75"  />
-<data id="HI76" archetype="act.patientClinicalNote" startTime="12/05/1993" note="DRONCIT TAPEWORMER FOR CATS (Qty:     1.00) - give 1 tablet every 3 months "  />
+<data id="HI76" archetype="act.patientClinicalNote" startTime="12/05/2003" note="DRONCIT TAPEWORMER FOR CATS (Qty:     1.00) - give 1 tablet every 3 months "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI76"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI76"  />
-<data id="HI77" archetype="act.patientClinicalProblem" startTime="12/05/1993" problem="SKIN ALLERGY MISC. OTHER DISEASE - flea "  />
+<data id="HI77" archetype="act.patientClinicalProblem" startTime="12/05/2003" problem="SKIN ALLERGY MISC. OTHER DISEASE - flea "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI77"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI77"  />
-<data id="HI78" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Hair Loss"  />
+<data id="HI78" archetype="act.patientClinicalNote" startTime="12/05/2003" note="Hair Loss"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI78"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI78"  />
-<data id="HI79" archetype="act.patientClinicalNote" startTime="12/05/1993" note="Puritis Of Eye"  />
+<data id="HI79" archetype="act.patientClinicalNote" startTime="12/05/2003" note="Puritis Of Eye"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI79"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI70" target="id:HI79"  />
-<data id="HI80" archetype="act.patientClinicalEpisode" startTime="23/11/1993" completeTime="23/11/1993" reason="Consultation" status="Completed"  />
+<data id="HI80" archetype="act.patientClinicalEpisode" startTime="23/11/2003" completeTime="23/11/2003" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI80"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI80"  />
-<data id="HI81" archetype="act.patientClinicalEvent" startTime="23/11/1993" reason="Consultation"  />
+<data id="HI81" archetype="act.patientClinicalEvent" startTime="23/11/2003" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI81"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI81"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI80" target="id:HI81"  />
-<data id="HI82" archetype="act.patientClinicalNote" startTime="23/11/1993" note="VX/VACCC4 (Qty:     1.00) -  "  />
+<data id="HI82" archetype="act.patientClinicalNote" startTime="23/11/2003" note="VX/VACCC4 (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI82"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI81" target="id:HI82"  />
-<data id="HI83" archetype="act.patientClinicalEpisode" startTime="24/04/1996" completeTime="24/04/1996" reason="Consultation" status="Completed"  />
+<data id="HI83" archetype="act.patientClinicalEpisode" startTime="24/04/2005" completeTime="24/04/2005" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI83"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI83"  />
-<data id="HI84" archetype="act.patientClinicalEvent" startTime="24/04/1996" reason="Consultation"  />
+<data id="HI84" archetype="act.patientClinicalEvent" startTime="24/04/2005" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI84"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI84"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI83" target="id:HI84"  />
-<data id="HI85" archetype="act.patientClinicalNote" startTime="24/04/1996" note="AT :ad.kfhjvlakdjv;lavvjajvjavad"  />
+<data id="HI85" archetype="act.patientClinicalNote" startTime="24/04/2005" note="AT :ad.kfhjvlakdjv;lavvjajvjavad"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI85"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI85"  />
-<data id="HI86" archetype="act.patientClinicalNote" startTime="24/04/1996" note="AT :gcgchsdgcchwdhj"  />
+<data id="HI86" archetype="act.patientClinicalNote" startTime="24/04/2005" note="AT :gcgchsdgcchwdhj"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI86"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI86"  />
-<data id="HI87" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Temp: 39 Wt: N/R Card/Vas: N/R Integ: N.A.D."  />
+<data id="HI87" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Temp: 39 Wt: N/R Card/Vas: N/R Integ: N.A.D."  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI87"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI87"  />
-<data id="HI88" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Resp: zhdchsjhdjhsd Sense: N.A.D. Neuro: N.A.D."  />
+<data id="HI88" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Resp: zhdchsjhdjhsd Sense: N.A.D. Neuro: N.A.D."  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI88"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI88"  />
-<data id="HI89" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Gastr: N.A.D. Uro/Gen: N.A.D. M.Skel.: N.A.D. N.A.D."  />
+<data id="HI89" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Gastr: N.A.D. Uro/Gen: N.A.D. M.Skel.: N.A.D. N.A.D."  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI89"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI89"  />
-<data id="HI90" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Admitted to Hospital Wed Apr 24 11:10:50 1996"  />
+<data id="HI90" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Admitted to Hospital Wed Apr 24 11:10:50 2005"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI90"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI90"  />
-<data id="HI91" archetype="act.patientClinicalNote" startTime="24/04/1996" note="VACCINATION - FELINE 3 (Qty:     1.00) -  "  />
+<data id="HI91" archetype="act.patientClinicalNote" startTime="24/04/2005" note="VACCINATION - FELINE 3 (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI91"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI91"  />
-<data id="HI92" archetype="act.patientClinicalNote" startTime="24/04/1996" note="AMOXIL TABLETS 50MG (Qty:    10.00) - Give ONE Tablet TWICE a Day for FIVE day(s) after Meals "  />
+<data id="HI92" archetype="act.patientClinicalNote" startTime="24/04/2005" note="AMOXIL TABLETS 50MG (Qty:    10.00) - Give ONE Tablet TWICE a Day for FIVE day(s) after Meals "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI92"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI92"  />
-<data id="HI93" archetype="act.patientClinicalProblem" startTime="24/04/1996" problem="FLEAAL - AT: "  />
+<data id="HI93" archetype="act.patientClinicalProblem" startTime="24/04/2005" problem="FLEAAL - AT: "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI93"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI93"  />
-<data id="HI94" archetype="act.patientClinicalProblem" startTime="24/04/1996" problem="FLEAAL - AT: "  />
+<data id="HI94" archetype="act.patientClinicalProblem" startTime="24/04/2005" problem="FLEAAL - AT: "  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI94"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI94"  />
-<data id="HI95" archetype="act.patientClinicalNote" startTime="24/04/1996" note="Hair Loss kxvkasjvka"  />
+<data id="HI95" archetype="act.patientClinicalNote" startTime="24/04/2005" note="Hair Loss kxvkasjvka"  />
 <data archetype="participation.patient" entity="id:A13" act="id:HI95"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI84" target="id:HI95"  />
-<data id="HI96" archetype="act.patientClinicalEpisode" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation" status="Completed"  />
+<data id="HI96" archetype="act.patientClinicalEpisode" startTime="07/05/2000" completeTime="07/05/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A15" act="id:HI96"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI96"  />
-<data id="HI97" archetype="act.patientClinicalEvent" startTime="07/05/1991" reason="Consultation"  />
+<data id="HI97" archetype="act.patientClinicalEvent" startTime="07/05/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A15" act="id:HI97"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI97"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI96" target="id:HI97"  />
-<data id="HI98" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCTE (Qty:     1.00) -  "  />
+<data id="HI98" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCTE (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A15" act="id:HI98"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI97" target="id:HI98"  />
-<data id="HI99" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCST (Qty:     1.00) -  "  />
+<data id="HI99" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCST (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A15" act="id:HI99"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI97" target="id:HI99"  />
-<data id="HI100" archetype="act.patientClinicalNote" startTime="07/05/1991" note="EQUIMEC WORMING PASTE (Qty:     1.00) -  "  />
+<data id="HI100" archetype="act.patientClinicalNote" startTime="07/05/2000" note="EQUIMEC WORMING PASTE (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A15" act="id:HI100"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI97" target="id:HI100"  />
-<data id="HI101" archetype="act.patientClinicalEpisode" startTime="20/04/1991" completeTime="20/04/1991" reason="Consultation" status="Completed"  />
+<data id="HI101" archetype="act.patientClinicalEpisode" startTime="20/04/2000" completeTime="20/04/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A16" act="id:HI101"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI101"  />
-<data id="HI102" archetype="act.patientClinicalEvent" startTime="20/04/1991" reason="Consultation"  />
+<data id="HI102" archetype="act.patientClinicalEvent" startTime="20/04/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A16" act="id:HI102"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI102"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI101" target="id:HI102"  />
-<data id="HI103" archetype="act.patientClinicalNote" startTime="20/04/1991" note="Suture laceration to near fore hock."  />
+<data id="HI103" archetype="act.patientClinicalNote" startTime="20/04/2000" note="Suture laceration to near fore hock."  />
 <data archetype="participation.patient" entity="id:A16" act="id:HI103"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI102" target="id:HI103"  />
-<data id="HI104" archetype="act.patientClinicalNote" startTime="20/04/1991" note="PENICILLIN INJECTION (Qty:   100.00) -  "  />
+<data id="HI104" archetype="act.patientClinicalNote" startTime="20/04/2000" note="PENICILLIN INJECTION (Qty:   100.00) -  "  />
 <data archetype="participation.patient" entity="id:A16" act="id:HI104"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI102" target="id:HI104"  />
-<data id="HI105" archetype="act.patientClinicalNote" startTime="20/04/1991" note="TETANUS ANTITOXIN (Qty:     1.00) -  "  />
+<data id="HI105" archetype="act.patientClinicalNote" startTime="20/04/2000" note="TETANUS ANTITOXIN (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A16" act="id:HI105"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI102" target="id:HI105"  />
-<data id="HI106" archetype="act.patientClinicalNote" startTime="20/04/1991" note="PRILOCAINE 2% INJECTION (Qty:     6.00) -  "  />
+<data id="HI106" archetype="act.patientClinicalNote" startTime="20/04/2000" note="PRILOCAINE 2% INJECTION (Qty:     6.00) -  "  />
 <data archetype="participation.patient" entity="id:A16" act="id:HI106"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI102" target="id:HI106"  />
-<data id="HI107" archetype="act.patientClinicalEpisode" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation" status="Completed"  />
+<data id="HI107" archetype="act.patientClinicalEpisode" startTime="07/05/2000" completeTime="07/05/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI107"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI107"  />
-<data id="HI108" archetype="act.patientClinicalEvent" startTime="07/05/1991" reason="Consultation"  />
+<data id="HI108" archetype="act.patientClinicalEvent" startTime="07/05/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI108"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI108"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI107" target="id:HI108"  />
-<data id="HI109" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCTE (Qty:     2.00) -  "  />
+<data id="HI109" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCTE (Qty:     2.00) -  "  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI109"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI108" target="id:HI109"  />
-<data id="HI110" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCST (Qty:     3.00) -  "  />
+<data id="HI110" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCST (Qty:     3.00) -  "  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI110"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI108" target="id:HI110"  />
-<data id="HI111" archetype="act.patientClinicalNote" startTime="07/05/1991" note="EQUIMEC WORMING PASTE (Qty:     1.00) -  "  />
+<data id="HI111" archetype="act.patientClinicalNote" startTime="07/05/2000" note="EQUIMEC WORMING PASTE (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI111"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI108" target="id:HI111"  />
-<data id="HI112" archetype="act.patientClinicalEpisode" startTime="20/11/1993" completeTime="20/11/1993" reason="Consultation" status="Completed"  />
+<data id="HI112" archetype="act.patientClinicalEpisode" startTime="20/11/2003" completeTime="20/11/2003" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI112"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI112"  />
-<data id="HI113" archetype="act.patientClinicalEvent" startTime="20/11/1993" reason="Consultation"  />
+<data id="HI113" archetype="act.patientClinicalEvent" startTime="20/11/2003" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI113"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI113"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI112" target="id:HI113"  />
-<data id="HI114" archetype="act.patientClinicalNote" startTime="20/11/1993" note="VX/VACCST (Qty:     1.00) -  "  />
+<data id="HI114" archetype="act.patientClinicalNote" startTime="20/11/2003" note="VX/VACCST (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A17" act="id:HI114"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI113" target="id:HI114"  />
-<data id="HI115" archetype="act.patientClinicalEpisode" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation" status="Completed"  />
+<data id="HI115" archetype="act.patientClinicalEpisode" startTime="07/05/2000" completeTime="07/05/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A18" act="id:HI115"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI115"  />
-<data id="HI116" archetype="act.patientClinicalEvent" startTime="07/05/1991" reason="Consultation"  />
+<data id="HI116" archetype="act.patientClinicalEvent" startTime="07/05/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A18" act="id:HI116"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI116"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI115" target="id:HI116"  />
-<data id="HI117" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCC3 (Qty:     1.00) -  "  />
+<data id="HI117" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCC3 (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A18" act="id:HI117"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI116" target="id:HI117"  />
-<data id="HI118" archetype="act.patientClinicalNote" startTime="07/05/1991" note="DRONTAL ALLWORMER TABLETS (Qty:     3.00) -  "  />
+<data id="HI118" archetype="act.patientClinicalNote" startTime="07/05/2000" note="DRONTAL ALLWORMER TABLETS (Qty:     3.00) -  "  />
 <data archetype="participation.patient" entity="id:A18" act="id:HI118"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI116" target="id:HI118"  />
-<data id="HI119" archetype="act.patientClinicalEpisode" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation" status="Completed"  />
+<data id="HI119" archetype="act.patientClinicalEpisode" startTime="07/05/2000" completeTime="07/05/2000" reason="Consultation" status="Completed"  />
 <data archetype="participation.patient" entity="id:A19" act="id:HI119"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI119"  />
-<data id="HI120" archetype="act.patientClinicalEvent" startTime="07/05/1991" reason="Consultation"  />
+<data id="HI120" archetype="act.patientClinicalEvent" startTime="07/05/2000" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A19" act="id:HI120"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI120"  />
 <data archetype="actRelationship.patientClinicalEpisodeEvent" source="id:HI119" target="id:HI120"  />
-<data id="HI121" archetype="act.patientClinicalNote" startTime="07/05/1991" note="VX/VACCF3 (Qty:     1.00) -  "  />
+<data id="HI121" archetype="act.patientClinicalNote" startTime="07/05/2000" note="VX/VACCF3 (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A19" act="id:HI121"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI120" target="id:HI121"  />
-<data id="HI122" archetype="act.patientClinicalNote" startTime="07/05/1991" note="DRONCIT TAPEWORMER FOR CATS (Qty:     1.00) -  "  />
+<data id="HI122" archetype="act.patientClinicalNote" startTime="07/05/2000" note="DRONCIT TAPEWORMER FOR CATS (Qty:     1.00) -  "  />
 <data archetype="participation.patient" entity="id:A19" act="id:HI122"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI120" target="id:HI122"  />
-<data id="HI123" archetype="act.patientClinicalNote" startTime="07/05/1991" note="PROBAN FLEA TABLETS (Qty:    50.00) - Give QUARTER Tablet TWICE Weekly "  />
+<data id="HI123" archetype="act.patientClinicalNote" startTime="07/05/2000" note="PROBAN FLEA TABLETS (Qty:    50.00) - Give QUARTER Tablet TWICE Weekly "  />
 <data archetype="participation.patient" entity="id:A19" act="id:HI123"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI120" target="id:HI123"  />
 </archetype>
