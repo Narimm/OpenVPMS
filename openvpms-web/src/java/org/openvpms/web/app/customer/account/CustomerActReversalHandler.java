@@ -18,11 +18,11 @@
 
 package org.openvpms.web.app.customer.account;
 
-import org.openvpms.web.component.im.edit.act.AbstractActReversalHandler;
-
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.im.edit.act.AbstractActReversalHandler;
 
 
 /**
@@ -157,6 +157,30 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
     private static final String REFUND_EFT_TYPE = "act.customerAccountRefundEFT";
 
     /**
+     * Debit Adjust type.
+     */
+    private static final String DEBIT_ADJUST_TYPE
+            = "act.customerAccountDebitAdjust";
+
+    /**
+     * Credit Adjust type.
+     */
+    private static final String CREDIT_ADJUST_TYPE
+            = "act.customerAccountCreditAdjust";
+
+    /**
+     * Bad Debt Adjust type.
+     */
+    private static final String BADDEBT_ADJUST_TYPE
+            = "act.customerAccountBadDebt";
+
+    /**
+     * Initial Balance type.
+     */
+    private static final String INITIAL_BALANCE_TYPE
+            = "act.customerAccountInitialBalance";
+
+    /**
      * Map of debit types to their corresponding credit types.
      */
     private static final String[][] TYPE_MAP = {
@@ -171,7 +195,10 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
             {PAYMENT_CASH_TYPE, REFUND_CASH_TYPE},
             {PAYMENT_CHEQUE_TYPE, REFUND_CHEQUE_TYPE},
             {PAYMENT_CREDIT_TYPE, REFUND_CREDIT_TYPE},
-            {PAYMENT_EFT_TYPE, REFUND_EFT_TYPE}
+            {PAYMENT_EFT_TYPE, REFUND_EFT_TYPE},
+            {DEBIT_ADJUST_TYPE, CREDIT_ADJUST_TYPE},
+            {DEBIT_ADJUST_TYPE, BADDEBT_ADJUST_TYPE},
+            {INITIAL_BALANCE_TYPE, CREDIT_ADJUST_TYPE}
     };
 
 
@@ -181,6 +208,25 @@ class CustomerActReversalHandler extends AbstractActReversalHandler {
      * @param act the act to reverse
      */
     public CustomerActReversalHandler(Act act) {
-        super(!TypeHelper.isA(act, CREDIT_TYPE, REFUND_TYPE), TYPE_MAP);
+        super(!TypeHelper.isA(act, CREDIT_TYPE, REFUND_TYPE, CREDIT_ADJUST_TYPE,BADDEBT_ADJUST_TYPE), TYPE_MAP);
+    }
+
+    /**
+     * Helper to determine if a node is copyable.
+     *
+     * @param node   the node descriptor
+     * @param source if <code>true</code> the node is the source; otherwise its
+     *               the target
+     * @return <code>true</code> if the node is copyable; otherwise
+     *         <code>false</code>
+     */
+
+    @Override    
+    protected boolean isCopyable(NodeDescriptor node, boolean source) {
+        if (node.getName().equals("credit")) {
+            return false;
+        } else {
+            return super.isCopyable(node,source);
+        }
     }
 }

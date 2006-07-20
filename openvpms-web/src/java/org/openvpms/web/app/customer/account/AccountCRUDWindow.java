@@ -29,6 +29,7 @@ import org.openvpms.web.resource.util.Messages;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 import nextapp.echo2.app.Button;
@@ -78,6 +79,18 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
      * Adjust button identifier.
      */
     private static final String ADJUST_ID = "adjust";
+
+    /**
+     * Opening Balance type.
+     */
+    private static final String OPENING_BALANCE_TYPE
+            = "act.customerAccountOpeningBalance";
+
+    /**
+     * Closing Balance type.
+     */
+    private static final String CLOSING_BALANCE_TYPE
+            = "act.customerAccountClosingBalance";
 
 
     /**
@@ -145,7 +158,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
     protected void onReverse() {
         final Act act = (Act) getObject();
         String status = act.getStatus();
-        if (POSTED_STATUS.equals(status)) {
+        if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE) && POSTED_STATUS.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("customer.account.reverse.title", name);
             String message = Messages.get("customer.account.reverse.message",
