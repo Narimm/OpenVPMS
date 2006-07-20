@@ -44,14 +44,6 @@ public class QueryFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link AutoQuery} is returned for
-     * <em>classification.*</em> short names.
-     */
-    public void testClassificationsAutoQuery() {
-        checkCreate("classification.*", AutoQuery.class);
-    }
-
-    /**
      * Verifies that a {@link AutoQuery} is returned for <em>lookup.*</em> short
      * names.
      */
