@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms</artifactId>
-    <currentVersion>0.5-SNAPSHOT</currentVersion>
+    <currentVersion>0.5</currentVersion>
     <package>org.openvpms</package>
     <shortDescription>VPMS Web Application</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
@@ -733,7 +733,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>0.8-SNAPSHOT</version>
+            <version>0.8</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -742,7 +742,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>0.5-SNAPSHOT</version>
+            <version>0.5</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -751,7 +751,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-reports</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
@@ -807,12 +807,12 @@
                     <include>log4j.properties</include>
                 </includes>
             </resource>
-	      <resource>
-	        <directory>${basedir}/src/conf/p6spy</directory>
-	        <includes>
-	          <include>**/*.properties</include>
-	        </includes>
-	      </resource>
+            <resource>
+                <directory>${basedir}/src/conf/p6spy</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
             <resource>
                 <directory>${basedir}/src/conf/ehcache</directory>
                 <includes>
