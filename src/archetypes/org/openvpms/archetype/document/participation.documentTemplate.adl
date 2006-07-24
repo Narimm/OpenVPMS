@@ -43,6 +43,18 @@
 						<property name="shortName"
 							value="act.documentTemplate" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.patientDocument" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.customerDocument" />
+					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="act.supplierDocument" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
