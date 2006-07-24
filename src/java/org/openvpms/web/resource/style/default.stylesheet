@@ -381,6 +381,12 @@
         </properties>
     </style>
 
+    <style name="WideCellSpacing" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="cellSpacing" value="20px"/>
+        </properties>
+    </style>
+
     <style name="CellSpacing" type="nextapp.echo2.app.Column">
         <properties>
             <property name="cellSpacing" value="5px"/>

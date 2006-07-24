@@ -97,6 +97,9 @@
                     /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
                 </value>
                 <value>
+                    /org/openvpms/component/business/domain/im/document/Document.hbm.xml
+                </value>
+                <value>
                     /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
                 </value>
                 <value>

@@ -39,12 +39,13 @@ import nextapp.echo2.app.event.WindowPaneListener;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class CRUDWorkspace extends AbstractViewWorkspace {
+public abstract class CRUDWorkspace extends AbstractViewWorkspace {
 
     /**
      * The CRUD window.
      */
     private CRUDWindow _window;
+
 
     /**
      * Construct a new <code>CRUDWorkspace</code>.
@@ -59,9 +60,6 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
                          String refModelName, String entityName,
                          String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
-        ShortNames shortNames = new ShortNameList(refModelName, entityName,
-                                                  conceptName);
-        _window = new CRUDWindow(getType(), shortNames);
     }
 
     /**
@@ -72,7 +70,7 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        _window.setObject(object);
+        getCRUDWindow().setObject(object);
     }
 
     /**
@@ -81,8 +79,9 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        container.add(_window.getComponent());
-        _window.setListener(new CRUDWindowListener() {
+        CRUDWindow window = getCRUDWindow();
+        container.add(window.getComponent());
+        window.setListener(new CRUDWindowListener() {
             public void saved(IMObject object, boolean isNew) {
                 onSaved(object, isNew);
             }
@@ -113,7 +112,7 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 if (popup.createNew()) {
-                    _window.onCreate();
+                    getCRUDWindow().onCreate();
                 } else {
                     IMObject object = popup.getSelected();
                     if (object != null) {
@@ -157,6 +156,30 @@ public class CRUDWorkspace extends AbstractViewWorkspace {
         object = ArchetypeQueryHelper.getByObjectReference(
                 service, object.getObjectReference());
         setObject(object);
+    }
+
+    /**
+     * Returns the CRUD window, creating it if it doesn't exist.
+     *
+     * @return the CRUD window
+     */
+    protected CRUDWindow getCRUDWindow() {
+        if (_window == null) {
+            _window = createCRUDWindow();
+        }
+        return _window;
+    }
+
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    protected CRUDWindow createCRUDWindow() {
+        ShortNames shortNames = new ShortNameList(getRefModelName(),
+                                                  getEntityName(),
+                                                  getConceptName());
+        return new CRUDWindow(getType(), shortNames);
     }
 
 }
