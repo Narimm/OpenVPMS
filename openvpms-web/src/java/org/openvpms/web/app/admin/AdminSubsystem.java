@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.admin;
 
+import org.openvpms.web.app.admin.doc.DocumentTemplateWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 import org.acegisecurity.Authentication;
