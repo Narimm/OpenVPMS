@@ -18,10 +18,10 @@
 
 package org.openvpms.web.app.patient;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
-import org.openvpms.web.app.admin.ReminderTypeWorkspace;
+import org.openvpms.web.app.patient.document.DocumentWorkspace;
 import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
 import org.openvpms.web.app.patient.reminder.ReminderWorkspace;
+import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -40,8 +40,8 @@ public class PatientSubsystem extends AbstractSubsystem {
         super("patient");
         addWorkspace(new InformationWorkspace());
         addWorkspace(new PatientRecordWorkspace());
-        addWorkspace(new DummyWorkspace("patient", "document"));
-        addWorkspace(new DummyWorkspace("patient", "investigation"));
+        addWorkspace(new DocumentWorkspace());
         addWorkspace(new ReminderWorkspace());
+        addWorkspace(new DummyWorkspace("patient", "investigation"));
     }
 }
