@@ -20,24 +20,14 @@ package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
-import java.util.Collection;
 
 
 /**
@@ -53,12 +43,6 @@ public class DocTemplateParticipationActEditor extends AbstractIMObjectEditor {
      * The template editor.
      */
     private final IMObjectReferenceEditor _templateEditor;
-
-    /**
-     * Property to update the document reference via. Used to enable
-     * modifications to the parent act to be updated.
-     */
-    private Property _document;
 
 
     /**
@@ -78,21 +62,7 @@ public class DocTemplateParticipationActEditor extends AbstractIMObjectEditor {
         }
         Property entity = getProperty("entity");
         _templateEditor = new IMObjectReferenceEditor(entity, context);
-        _templateEditor.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onSelect();
-            }
-        });
         getEditors().add(_templateEditor);
-    }
-
-    /**
-     * Sets the property to update document references.
-     *
-     * @param property the property
-     */
-    public void setDocument(Property property) {
-        _document = property;
     }
 
     /**
@@ -108,45 +78,6 @@ public class DocTemplateParticipationActEditor extends AbstractIMObjectEditor {
                 return _templateEditor.getComponent();
             }
         };
-    }
-
-    /**
-     * Invoked when the entity changes.
-     */
-    private void onSelect() {
-        Property entity = getProperty("entity");
-        IMObjectReference entityRef = (IMObjectReference) entity.getValue();
-        Entity template = (Entity) IMObjectHelper.getObject(entityRef);
-        if (template != null) {
-            DocumentAct act = getDocumentAct(template);
-            IMObjectReference docRef
-                    = (act != null) ? act.getDocReference() : null;
-            setDocument(docRef);
-        }
-    }
-
-    private DocumentAct getDocumentAct(Entity template) {
-        // @todo - need to access participations via IMObjectProperty as a
-        // workaround to OBF-105
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(template);
-        IMObjectProperty prop = new IMObjectProperty(
-                template, archetype.getNodeDescriptor("template"));
-        Collection participations = prop.getValues();
-        if (!participations.isEmpty()) {
-            Participation p = (Participation) participations.toArray()[0];
-            return (DocumentAct) IMObjectHelper.getObject(p.getAct());
-        }
-        return null;
-    }
-
-    private void setDocument(IMObjectReference ref) {
-        if (_document != null) {
-            _document.setValue(ref);
-        } else {
-            DocumentAct parent = (DocumentAct) getParent();
-            parent.setDocReference(ref);
-        }
     }
 
 }
