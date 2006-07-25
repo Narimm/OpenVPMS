@@ -16,18 +16,15 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.table;
-
-import java.util.List;
+package org.openvpms.web.component.im.relationship;
 
 import nextapp.echo2.app.Component;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
@@ -52,27 +49,6 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
     public EntityRelationshipTableModel(LayoutContext context) {
         super(createTableColumnModel());
         _edit = context.isEdit();
-    }
-
-    /**
-     * Determines if this model can display a set of archetypes.
-     *
-     * @param archetypes the archetype descriptors
-     * @return <code>true</ocde> if this model can display instances of
-     *         <code>archetypes</code>; otherwise <code>false</code>
-     */
-    public static boolean canHandle(List<ArchetypeDescriptor> archetypes) {
-        boolean result = false;
-        String className = EntityRelationship.class.getName();
-        for (ArchetypeDescriptor archetype : archetypes) {
-            if (className.equals(archetype.getClassName())) {
-                result = true;
-            } else {
-                result = false;
-                break;
-            }
-        }
-        return result;
     }
 
     /**
@@ -116,7 +92,7 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
      * @return a viewer of the "non-current" entity of the relationship
      */
     protected Component getEntity(EntityRelationship relationship) {
-        IMObjectReference entity = null;
+        IMObjectReference entity;
         IMObject current = Context.getInstance().getCurrent();
         if (current == null) {
             entity = relationship.getTarget();
@@ -124,10 +100,10 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
             IMObjectReference ref = new IMObjectReference(current);
 
             if (relationship.getSource() != null
-                && ref.equals(relationship.getSource())) {
+                    && ref.equals(relationship.getSource())) {
                 entity = relationship.getTarget();
             } else if (relationship.getTarget() != null
-                       && ref.equals(relationship.getTarget())) {
+                    && ref.equals(relationship.getTarget())) {
                 entity = relationship.getSource();
             } else {
                 entity = relationship.getTarget();

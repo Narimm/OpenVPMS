@@ -16,8 +16,21 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
+package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.filetransfer.UploadEvent;
+import nextapp.echo2.app.filetransfer.UploadListener;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -30,31 +43,18 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
 
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.filetransfer.UploadEvent;
-import nextapp.echo2.app.filetransfer.UploadListener;
-
 import java.io.InputStream;
 
 
 /**
- * Participation editor for document templates.
+ * Participation editor for document templates, where the parent object
+ * is an {@link Entity}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocTemplateParticipationEditor extends AbstractIMObjectEditor {
+public class DocTemplateParticipationEntityEditor
+        extends AbstractIMObjectEditor {
 
     /**
      * The upload selector.
@@ -73,15 +73,15 @@ public class DocTemplateParticipationEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Construct a new <code>DocTemplateParticipationEditor</code>.
+     * Construct a new <code>DocTemplateParticipationEntityEditor</code>.
      *
      * @param participation the participation to edit
      * @param parent        the parent entity.
      * @param context       the layout context. May be <code>null</code>.
      */
-    public DocTemplateParticipationEditor(Participation participation,
-                                          Entity parent,
-                                          LayoutContext context) {
+    public DocTemplateParticipationEntityEditor(Participation participation,
+                                                Entity parent,
+                                                LayoutContext context) {
         super(participation, parent, context);
         Property entity = getProperty("entity");
         if (entity.getValue() == null) {

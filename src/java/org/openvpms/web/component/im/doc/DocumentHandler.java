@@ -16,9 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
-
-import static org.openvpms.web.app.admin.doc.DocumentException.ErrorCode.UnsupportedDoc;
+package org.openvpms.web.component.im.doc;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -27,32 +25,23 @@ import java.io.InputStream;
 
 
 /**
- * Factory for {@link Document}s.
+ * Document handler.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @see DocumentFactory
  */
-public class DocumentFactory {
+public interface DocumentHandler {
 
     /**
-     * Creates a new {@link Document} for the specified file name and content
-     * stream.
+     * Creates a new {@link Document} from a stream.
      *
-     * @param fileName the document file name
+     * @param fileName the file name
      * @param stream   a stream representing the document content
      * @return a new document
-     * @throws DocumentException         for any document exception
+     * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Document create(String fileName, InputStream stream) {
-        DocumentHandler handler = null;
-        if (fileName.endsWith(".jrxml")) {
-            handler = new JRXMLDocumentHandler();
-        }
-        if (handler == null) {
-            throw new DocumentException(UnsupportedDoc, fileName);
-        }
-        return handler.getDocument(fileName, stream);
-    }
+    Document getDocument(String fileName, InputStream stream);
 
 }

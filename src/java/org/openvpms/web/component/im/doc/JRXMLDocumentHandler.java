@@ -16,20 +16,18 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
-
-import static org.openvpms.web.app.admin.doc.DocumentException.ErrorCode.ReadError;
-import static org.openvpms.web.app.admin.doc.DocumentException.ErrorCode.WriteError;
-
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+package org.openvpms.web.component.im.doc;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.ReadError;
+import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.WriteError;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

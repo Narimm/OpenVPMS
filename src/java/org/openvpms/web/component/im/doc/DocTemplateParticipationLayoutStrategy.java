@@ -16,9 +16,16 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
+package org.openvpms.web.component.im.doc;
 
-import org.openvpms.web.app.OpenVPMSApp;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -27,22 +34,6 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
-
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.document.Document;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.filetransfer.Download;
-import nextapp.echo2.app.filetransfer.DownloadProvider;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 
 /**
@@ -95,31 +86,7 @@ public class DocTemplateParticipationLayoutStrategy
      * @param act the document act
      */
     private void onDownload(DocumentAct act) {
-        final Document document = (Document) IMObjectHelper.getObject(
-                act.getDocReference());
-        if (document != null) {
-            Download download = new Download();
-            download.setProvider(new DownloadProvider() {
-
-                public String getContentType() {
-                    return document.getMimeType();
-                }
-
-                public String getFileName() {
-                    return document.getName();
-                }
-
-                public int getSize() {
-                    return (int) document.getDocSize();
-                }
-
-                public void writeFile(OutputStream stream) throws IOException {
-                    stream.write(document.getContents());
-                }
-            });
-            download.setActive(true);
-            OpenVPMSApp.getInstance().enqueueCommand(download);
-        }
+        DownloadHelper.download(act.getDocReference());
     }
 
 }

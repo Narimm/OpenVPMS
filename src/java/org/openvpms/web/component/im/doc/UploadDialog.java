@@ -16,14 +16,13 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
-
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.resource.util.Messages;
+package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.filetransfer.UploadEvent;
 import nextapp.echo2.app.filetransfer.UploadListener;
 import nextapp.echo2.app.filetransfer.UploadSelect;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.TooManyListenersException;
 

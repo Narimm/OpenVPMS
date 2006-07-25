@@ -18,6 +18,17 @@
 
 package org.openvpms.web.component.im.edit;
 
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.list.ListModel;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.bound.BoundPalette;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Editor;
@@ -26,6 +37,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.doc.DocumentEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -40,18 +52,6 @@ import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.SelectFieldFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.spring.ServiceHelper;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.TextField;
-import nextapp.echo2.app.list.ListModel;
 
 import java.text.Format;
 import java.util.List;
@@ -284,8 +284,14 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
      * @return a new editor for <code>property</code>
      */
     protected Editor getObjectReferenceEditor(Property property) {
-        IMObjectReferenceEditor editor = new IMObjectReferenceEditor(
-                property, getLayoutContext());
+        String[] range = DescriptorHelper.getShortNames(
+                property.getDescriptor());
+        Editor editor;
+        if (TypeHelper.matches(range, "document.*")) {
+            editor = new DocumentEditor(property, getLayoutContext());
+        } else {
+            editor = new IMObjectReferenceEditor(property, getLayoutContext());
+        }
         _editors.add(editor);
         return editor;
     }
