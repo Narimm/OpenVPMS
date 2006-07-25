@@ -16,11 +16,10 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
-
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+package org.openvpms.web.component.im.doc;
 
 import org.apache.commons.resources.Messages;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
 /**

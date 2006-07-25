@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.lang.reflect.Constructor;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
+
+import java.lang.reflect.Constructor;
 
 
 /**
@@ -39,7 +38,7 @@ public class IMObjectEditorFactory {
     /**
      * Editor implementations.
      */
-    private static ArchetypeHandlers _editors;
+    private static ShortNamePairArchetypeHandlers _editors;
 
     /**
      * The logger.
@@ -77,8 +76,16 @@ public class IMObjectEditorFactory {
                                         LayoutContext context) {
         IMObjectEditor result = null;
 
-        String shortName = object.getArchetypeId().getShortName();
-        Class clazz = getEditors().getHandler(shortName);
+        Class clazz;
+        if (parent != null) {
+            String primary = object.getArchetypeId().getShortName();
+            String secondary = parent.getArchetypeId().getShortName();
+            clazz = getEditors().getHandler(primary, secondary);
+        } else {
+            String shortName = object.getArchetypeId().getShortName();
+            clazz = getEditors().getHandler(shortName);
+        }
+
         if (clazz != null) {
             Constructor ctor = getConstructor(clazz, object, parent, context);
             if (ctor != null) {
@@ -90,7 +97,7 @@ public class IMObjectEditorFactory {
                 }
             } else {
                 _log.error("No valid constructor found for class: "
-                           + clazz.getName());
+                        + clazz.getName());
             }
         }
         if (result == null) {
@@ -104,10 +111,10 @@ public class IMObjectEditorFactory {
      *
      * @return the editors
      */
-    private static synchronized ArchetypeHandlers getEditors() {
+    private static synchronized ShortNamePairArchetypeHandlers getEditors() {
         if (_editors == null) {
-            _editors = new ArchetypeHandlers("IMObjectEditorFactory.properties",
-                                             IMObjectEditor.class);
+            _editors = new ShortNamePairArchetypeHandlers(
+                    "IMObjectEditorFactory.properties", IMObjectEditor.class);
         }
         return _editors;
     }
@@ -123,7 +130,8 @@ public class IMObjectEditorFactory {
      *         none can be found
      */
     private static Constructor getConstructor(Class type, IMObject object,
-                                              IMObject parent, LayoutContext context) {
+                                              IMObject parent,
+                                              LayoutContext context) {
         Constructor[] ctors = type.getConstructors();
 
         for (Constructor ctor : ctors) {
@@ -135,11 +143,14 @@ public class IMObjectEditorFactory {
                 Class ctorLayout = ctorTypes[2];
 
                 if (ctorObj.isAssignableFrom(object.getClass())
-                    && ((parent != null && ctorParent.isAssignableFrom(parent.getClass()))
-                        || (parent == null && IMObject.class.isAssignableFrom(ctorParent)))
-                    && ((context != null && ctorLayout.isAssignableFrom(context.getClass()))
-                        || (context == null && LayoutContext.class.isAssignableFrom(ctorLayout))))
-                {
+                        && ((parent != null && ctorParent.isAssignableFrom(
+                        parent.getClass()))
+                        || (parent == null && IMObject.class.isAssignableFrom(
+                        ctorParent)))
+                        && ((context != null && ctorLayout.isAssignableFrom(
+                        context.getClass()))
+                        || (context == null && LayoutContext.class.isAssignableFrom(
+                        ctorLayout)))) {
                     return ctor;
                 }
             }

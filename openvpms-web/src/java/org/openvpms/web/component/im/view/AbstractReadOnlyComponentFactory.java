@@ -18,21 +18,21 @@
 
 package org.openvpms.web.component.im.view;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.LabelFactory;
-
+import echopointng.RichTextArea;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
-import echopointng.RichTextArea;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.doc.DocumentViewer;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
@@ -178,6 +178,12 @@ public abstract class AbstractReadOnlyComponentFactory
             // disable hyperlinks if an edit is in progress.
             link = false;
         }
+        String[] range = DescriptorHelper.getShortNames(
+                property.getDescriptor());
+        if (TypeHelper.matches(range, "document.*")) {
+            return new DocumentViewer(ref, link).getComponent();
+        }
+
         return new IMObjectReferenceViewer(ref, link).getComponent();
     }
 

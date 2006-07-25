@@ -18,20 +18,18 @@
 
 package org.openvpms.web.component.im.select;
 
-import org.openvpms.web.component.button.ShortcutHelper;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.button.ShortcutHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -194,7 +192,8 @@ public class Selector {
         } else {
             container.add(getSummary());
             container.add(getDeactivated());
-            if (_buttonStyle == ButtonStyle.LEFT) {
+            if (_buttonStyle == ButtonStyle.LEFT
+                    || _buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
                 container.add(getButton(), 0);
             }
         }

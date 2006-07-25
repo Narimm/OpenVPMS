@@ -18,20 +18,14 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 
@@ -42,18 +36,19 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeHandlers {
+public class ArchetypeHandlers extends AbstractArchetypeHandlers {
 
-    /**
-     * Map of short names to their correspnding handler class.
-     */
-    private Map<String, Class> _handlers = new HashMap<String, Class>();
 
     /**
      * The logger.
      */
     private static final Log _log
             = LogFactory.getLog(ArchetypeHandlers.class);
+
+    /**
+     * Map of short names to their correspnding handler class.
+     */
+    private Map<String, Class> _handlers = new HashMap<String, Class>();
 
 
     /**
@@ -63,44 +58,18 @@ public class ArchetypeHandlers {
      * @param type class the each handler must implement/extend
      */
     public ArchetypeHandlers(String name, Class type) {
-        Set<URL> paths = getPaths(name);
-
-        for (URL path : paths) {
-            try {
-                Properties properties = new Properties();
-                properties.load(path.openStream());
-                Enumeration shortNames = properties.propertyNames();
-                while (shortNames.hasMoreElements()) {
-                    String shortName = (String) shortNames.nextElement();
-                    String className = properties.getProperty(shortName);
-                    String[] matches = DescriptorHelper.getShortNames(
-                            shortName, false);
-                    if (matches.length == 0) {
-                        _log.warn("No archetypes found matching short name="
-                                + shortName + ", loaded from path=" + path);
-                    } else {
-                        if (_handlers.get(shortName) != null) {
-                            _log.warn("Duplicate sbort name=" + shortName
-                                    + " from " + path + ": ignoring");
-                        } else {
-                            Class clazz = getClass(className, type, path);
-                            if (clazz != null) {
-                                _handlers.put(shortName, clazz);
-                            }
-                        }
-                    }
-                }
-            } catch (IOException exception) {
-                _log.error(exception, exception);
-            }
-        }
+        Parser parser = new Parser(type);
+        parser.parse(name);
     }
 
     /**
      * Returns a class that can handle an archetype.
      *
      * @param shortName the archetype short name
+     * @return an implemenation that supports <code>shortName</code> or
+     *         <code>null</code> if there is no match
      */
+    @Override
     public Class getHandler(String shortName) {
         return getHandler(new String[]{shortName});
     }
@@ -144,73 +113,40 @@ public class ArchetypeHandlers {
         return (match != null) ? _handlers.get(match) : null;
     }
 
-    /**
-     * Returns all resources with the given name.
-     *
-     * @return the paths to resource with name <code>name</code>
-     */
-    private Set<URL> getPaths(String name) {
-        Set<URL> paths = new HashSet<URL>();
-        for (ClassLoader loader : getClassLoaders()) {
-            if (loader != null) {
-                try {
-                    Enumeration<URL> urls = loader.getResources(name);
-                    while (urls.hasMoreElements()) {
-                        paths.add(urls.nextElement());
+    class Parser extends ArchetypePropertiesParser {
+
+        /**
+         * Constructs a new <code>Parser</code>.
+         *
+         * @param type the type all handler classes must implement
+         */
+        public Parser(Class type) {
+            super(type);
+        }
+
+        /**
+         * Parse a property file entry.
+         *
+         * @param key   the property key
+         * @param value the property value
+         */
+        protected void parse(String key, String value) {
+            String[] matches = DescriptorHelper.getShortNames(key, false);
+            if (matches.length == 0) {
+                _log.warn("No archetypes found matching short name=" + key
+                        + ", loaded from path=" + getPath());
+            } else {
+                if (_handlers.get(key) != null) {
+                    _log.warn("Duplicate sbort name=" + key
+                            + " from " + getPath() + ": ignoring");
+                } else {
+                    Class clazz = getClass(value);
+                    if (clazz != null) {
+                        _handlers.put(key, clazz);
                     }
-                } catch (IOException exception) {
-                    _log.error(exception, exception);
                 }
             }
         }
-        return paths;
-    }
-
-    /**
-     * Loads a class.
-     *
-     * @param name the class name
-     * @param type the type that the class must implement/extend
-     * @param path the properties resource path where the class was specified
-     * @return the class, or <code>null</code> if it can't be found
-     */
-    private Class getClass(String name, Class type, URL path) {
-        for (ClassLoader loader : getClassLoaders()) {
-            if (loader != null) {
-                try {
-                    Class clazz = loader.loadClass(name);
-                    if (type.isAssignableFrom(clazz)) {
-                        return clazz;
-                    } else {
-                        _log.error("Failed to load class: " + name
-                                + ", specified in " + path
-                                + ": does not extend" + type.getName());
-                        return null;
-
-                    }
-                } catch (ClassNotFoundException ignore) {
-                    // no-op
-                }
-            }
-        }
-        _log.error("Failed to load class: " + name + ", specified in " + path);
-        return null;
-    }
-
-    /**
-     * Returns a list of classloaders to locate for resources with. The list
-     * will contain the context class loader and this class' loader, or this
-     * class' loader if the context class loader is null or the same.
-     *
-     * @return a list of classloaders to locate for resources with
-     */
-    private ClassLoader[] getClassLoaders() {
-        ClassLoader context = Thread.currentThread().getContextClassLoader();
-        ClassLoader clazz = ArchetypeHandlers.class.getClassLoader();
-        if (context != null && context != clazz) {
-            return new ClassLoader[]{context, clazz};
-        }
-        return new ClassLoader[]{clazz};
     }
 
 }
