@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.doc.DocTemplateParticipationActEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
@@ -57,11 +56,6 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     public PatientDocumentActEditor(DocumentAct act, IMObject parent,
                                     LayoutContext context) {
         super(act, parent, context);
-
-        DocTemplateParticipationActEditor editor
-                = (DocTemplateParticipationActEditor) getEditor(
-                "documentTemplate");
-        editor.setDocument(getProperty(DOC_REFERENCE));
     }
 
     /**
@@ -74,10 +68,8 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
         return new LayoutStrategy();
     }
 
-
     /**
-     * Layout strategy that treats the 'docReference' node as a simple node,
-     * and displays it as an upload button.
+     * Layout strategy that treats the 'docReference' node as a simple node.
      */
     private class LayoutStrategy extends AbstractLayoutStrategy {
 
