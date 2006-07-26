@@ -43,15 +43,17 @@ public class DocumentFactory {
      * @throws DocumentException         for any document exception
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Document create(String fileName, InputStream stream) {
+    public static Document create(String fileName, InputStream stream, String contentType, Integer size) {
         DocumentHandler handler = null;
         if (fileName.endsWith(".jrxml")) {
             handler = new JRXMLDocumentHandler();
         }
+        else
+            handler = new GenericDocumentHandler();
         if (handler == null) {
             throw new DocumentException(UnsupportedDoc, fileName);
         }
-        return handler.getDocument(fileName, stream);
+        return handler.getDocument(fileName, stream, contentType, size);
     }
 
 }

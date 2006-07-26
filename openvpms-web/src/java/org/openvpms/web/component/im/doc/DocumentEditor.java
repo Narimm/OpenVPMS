@@ -103,7 +103,9 @@ public class DocumentEditor extends AbstractPropertyEditor {
             public void fileUpload(UploadEvent event) {
                 String fileName = event.getFileName();
                 InputStream stream = event.getInputStream();
-                upload(fileName, stream);
+                String contentType = event.getContentType();
+                Integer size = event.getSize();
+                upload(fileName, stream, contentType, size);
             }
 
             public void invalidFileUpload(UploadEvent event) {
@@ -122,11 +124,11 @@ public class DocumentEditor extends AbstractPropertyEditor {
      * @param fileName the filename
      * @param stream   the file stream
      */
-    private void upload(String fileName, InputStream stream) {
+    private void upload(String fileName, InputStream stream, String contentType, Integer size) {
         final IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         try {
-            Document doc = DocumentFactory.create(fileName, stream);
+            Document doc = DocumentFactory.create(fileName, stream, contentType, size);
             service.save(doc);
             IMObjectReference ref = doc.getObjectReference();
             getProperty().setValue(ref);
