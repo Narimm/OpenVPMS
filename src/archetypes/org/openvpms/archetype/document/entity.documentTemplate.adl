@@ -28,7 +28,7 @@
 			<node name="archetype" path="/details/attributes/archetype" type="java.lang.String"	minCardinality="0" />
 			<node name="save" path="/details/attributes/save" type="java.lang.Boolean" defaultValue="false()" />
 		</node>
-        <node name="template" path="/participations" type="java.util.HashSet"
+        <node name="content" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
               filter="participation.documentTemplate"/>
     </archetype>
