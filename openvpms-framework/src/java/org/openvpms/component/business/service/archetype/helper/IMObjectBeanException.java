@@ -39,7 +39,8 @@ public class IMObjectBeanException extends OpenVPMSException {
      * An enumeration of error codes
      */
     public enum ErrorCode {
-        NodeDescriptorNotFound
+        NodeDescriptorNotFound,
+        ArchetypeNotFound
     }
 
     /**
