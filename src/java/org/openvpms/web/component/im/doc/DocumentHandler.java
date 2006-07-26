@@ -38,10 +38,12 @@ public interface DocumentHandler {
      *
      * @param fileName the file name
      * @param stream   a stream representing the document content
+     * @param contentType mimetype of stream
+     * @param size size of stream
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    Document getDocument(String fileName, InputStream stream);
+    Document getDocument(String fileName, InputStream stream, String contentType, Integer size);
 
 }

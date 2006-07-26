@@ -11,35 +11,30 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
 
 package org.openvpms.web.component.im.doc;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import net.sf.jasperreports.engine.xml.JRXmlWriter;
-import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.ReadError;
 import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.WriteError;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 /**
- * Jasper Reports document handler.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class JRXMLDocumentHandler implements DocumentHandler {
+
+public class GenericDocumentHandler implements DocumentHandler {
 
     /**
      * Creates a new {@link Document} from a stream.
@@ -54,22 +49,15 @@ public class JRXMLDocumentHandler implements DocumentHandler {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Document document;
-        JasperDesign design;
         try {
-            design = JRXmlLoader.load(stream);
-        } catch (JRException exception) {
-            throw new DocumentException(ReadError, fileName, exception);
-        }
-        try {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            JRXmlWriter.writeReport(design, bytes, "UTF-8");
-
-            document = (Document) service.create("document.jrxml");
+            document = (Document) service.create("document.other");
             document.setName(fileName);
-            byte[] data = bytes.toByteArray();
+            document.setMimeType(contentType);
+            byte[] data = new byte[size];
+            stream.read(data);
             document.setDocSize(data.length);
             document.setContents(data);
-        } catch (JRException exception) {
+        } catch (Exception exception) {
             throw new DocumentException(WriteError, fileName, exception);
         }
         return document;
