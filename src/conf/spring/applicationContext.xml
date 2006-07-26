@@ -57,6 +57,9 @@
                     /org/openvpms/component/business/domain/im/lookup/Lookup.hbm.xml
                 </value>
                 <value>
+                    /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
+                </value>
+                <value>
                     /org/openvpms/component/business/domain/im/act/Act.hbm.xml
                 </value>
                 <value>
@@ -64,6 +67,9 @@
                 </value>
                 <value>
                     /org/openvpms/component/business/domain/im/common/Classification.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/document/Document.hbm.xml
                 </value>
                 <value>
                     /org/openvpms/component/business/domain/im/common/Entity.hbm.xml
@@ -84,9 +90,6 @@
                     /org/openvpms/component/business/domain/im/product/ProductPrice.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/component/business/domain/im/lookup/LookupRelationship.hbm.xml
-                </value>
-                <value>
                     /org/openvpms/component/business/domain/im/archetype/descriptor/ArchetypeDescriptor.hbm.xml
                 </value>
                 <value>
@@ -102,13 +105,13 @@
                     /org/openvpms/component/business/domain/im/archetype/descriptor/ActionTypeDescriptor.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
-                </value>
-                <value>
                     /org/openvpms/component/business/domain/im/security/SecurityRole.hbm.xml
                 </value>
                 <value>
                     /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
                 </value>
             </list>
         </property>
@@ -169,4 +172,12 @@
             </props>
         </constructor-arg>
     </bean>
+
+    <bean id="templateHelper"
+          class="org.openvpms.report.jasper.TemplateHelper">
+        <constructor-arg index="0">
+            <ref local="sessionFactory"/>
+        </constructor-arg>
+    </bean>
+
 </beans>

@@ -11,7 +11,7 @@
     <inceptionYear>2005</inceptionYear>
     <name>openvpms</name>
     <artifactId>openvpms-reports</artifactId>
-    <currentVersion>0.1</currentVersion>
+    <currentVersion>0.2-SNAPSHOT</currentVersion>
     <package>org.openvpms.report</package>
     <shortDescription>OpenVPMS report generator</shortDescription>
     <url>http://www.openvpms.org/${pom.artifactId}</url>
