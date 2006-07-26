@@ -26,7 +26,6 @@
 	<import value="org.openvpms.report.jasper.PartyHelper" />
 
 	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.IMObjectDataSource"/>
-	<parameter name="items_subreport" isForPrompting="false" class="net.sf.jasperreports.engine.JasperReport"/>
 
 	<field name="author.entity.name" class="java.lang.String"/>
 	<field name="customer.entity.name" class="java.lang.String"/>
@@ -177,7 +176,7 @@
 						height="31"
 						key="subreport-1"/>
 					<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("items", new String[]{"target.patient.entity.name", "target.product.entity.displayName", "target.product.entity.name"})]]></dataSourceExpression>
-					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{items_subreport}]]></subreportExpression>
+					<subreportExpression  class="net.sf.jasperreports.engine.JasperReport"><![CDATA["invoiceItems.jrxml"]]></subreportExpression>
 				</subreport>
 			</band>
 		</detail>

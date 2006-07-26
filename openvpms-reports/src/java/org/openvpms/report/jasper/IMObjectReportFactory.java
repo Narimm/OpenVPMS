@@ -19,6 +19,7 @@
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
@@ -41,9 +42,10 @@ public class IMObjectReportFactory {
     public static IMObjectReport create(String shortName,
                                         IArchetypeService service)
             throws JRException {
-        if (shortName.equals("act.customerAccountChargesInvoice")) {
-            return new InvoiceReport(service);
-
+        JasperDesign report = TemplateHelper.getReportForArchetype(shortName,
+                                                                   service);
+        if (report != null) {
+            return new TemplatedIMObjectReport(report, service);
         }
         return new DynamicIMObjectReport(
                 service.getArchetypeDescriptor(shortName), service);
