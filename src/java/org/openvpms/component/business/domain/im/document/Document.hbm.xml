@@ -51,7 +51,7 @@
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <property name="contents" access="property" type="binary">
-      <column name="contents" sql-type="blob" />
+      <column name="contents" sql-type="longblob" />
     </property>
   </class>
 
