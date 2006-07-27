@@ -92,7 +92,7 @@ public abstract class AbstractReadOnlyComponentFactory
             // need to enable this otherwise table selection is disabled
             enable = true;
         } else if (descriptor.isObjectReference()) {
-            result = getObjectViewer(property);
+            result = getObjectViewer(property, context);
             // need to enable this for hyperlinks to work
             enable = true;
         } else {
@@ -169,9 +169,10 @@ public abstract class AbstractReadOnlyComponentFactory
      * Returns a viewer for an object reference.
      *
      * @param property the object reference property
+     * @param context  the context object
      * @return an component to display the object reference.
      */
-    protected Component getObjectViewer(Property property) {
+    protected Component getObjectViewer(Property property, IMObject context) {
         IMObjectReference ref = (IMObjectReference) property.getValue();
         boolean link = true;
         if (getLayoutContext().isEdit()) {
@@ -181,7 +182,7 @@ public abstract class AbstractReadOnlyComponentFactory
         String[] range = DescriptorHelper.getShortNames(
                 property.getDescriptor());
         if (TypeHelper.matches(range, "document.*")) {
-            return new DocumentViewer(ref, link).getComponent();
+            return new DocumentViewer(ref, context, link).getComponent();
         }
 
         return new IMObjectReferenceViewer(ref, link).getComponent();
