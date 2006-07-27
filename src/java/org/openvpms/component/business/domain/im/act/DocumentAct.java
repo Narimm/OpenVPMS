@@ -43,6 +43,16 @@ public class DocumentAct extends Act {
     private String docVersion;
     
     /**
+     * The filename of the document
+     */
+    private String fileName;
+    
+    /**
+     * The mimetype of the document
+     */
+    private String mimeType;
+    
+    /**
      * A reference to the actual {@link Document}
      */
     private IMObjectReference docReference;
@@ -80,6 +90,34 @@ public class DocumentAct extends Act {
      */
     public void setDocVersion(String version) {
         this.docVersion = version;
+    }
+
+    /**
+     * @return Returns the fileName.
+     */
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * @param fileName The fileName to set.
+     */
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    /**
+     * @return Returns the mimeType.
+     */
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    /**
+     * @param mimeType The mimeType to set.
+     */
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
     /* (non-Javadoc)
