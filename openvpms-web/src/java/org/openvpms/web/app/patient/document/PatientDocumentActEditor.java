@@ -18,18 +18,23 @@
 
 package org.openvpms.web.app.patient.document;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -56,6 +61,17 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     public PatientDocumentActEditor(DocumentAct act, IMObject parent,
                                     LayoutContext context) {
         super(act, parent, context);
+        getEditor("docReference").addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                   DocumentAct act = (DocumentAct) getObject();
+                   IMObjectReference docRef = act.getDocReference();
+                   // update filename etc from reference
+                   Document document = (Document)IMObjectHelper.getObject(docRef);
+                   act.setFileName(document.getName());
+                   act.setMimeType(document.getMimeType());
+            }
+        }
+        );
     }
 
     /**

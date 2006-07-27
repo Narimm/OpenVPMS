@@ -18,11 +18,14 @@
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+
+import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -64,17 +67,18 @@ public class DocTemplateParticipationLayoutStrategy
         final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
         if (act != null) {
             Button button = ButtonFactory.create();
-            button.setStyleName("hyperlink");
-            button.setText(act.getFileName());
+            String styleName = "download.".concat(FilenameUtils.getExtension(act.getFileName()));
+            if (ApplicationInstance.getActive().getStyle(Button.class, styleName) == null)
+                styleName = "download.default";
+            button.setStyleName(styleName);
+            button.setText(act.getDescription());
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onDownload(act);
                 }
             });
 
-            Label label = LabelFactory.create();
-            label.setText(act.getDescription());
-            return RowFactory.create("WideCellSpacing", button, label);
+            return button;
         }
         return LabelFactory.create();
     }

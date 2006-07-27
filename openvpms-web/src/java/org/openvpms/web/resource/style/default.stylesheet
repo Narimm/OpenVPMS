@@ -604,6 +604,10 @@
         </properties>
     </style>
 
+    <!-- =================================================================== -->
+    <!--  Hyperlink Button                                                   -->
+    <!-- =================================================================== -->
+
 
     <style name="hyperlink" type="nextapp.echo2.app.button.AbstractButton">
         <properties>
@@ -616,7 +620,171 @@
         </properties>
     </style>
 
+    <!-- =================================================================== -->
+    <!--  Download Buttons                                                   -->
+    <!-- =================================================================== -->
 
+
+    <style name="download.avi" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/avi.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.doc" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/doc.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.fla" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/fla.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.gif" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/gif.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.htm" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/htm.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.html" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/html.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.jpg" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/jpg.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.mp3" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/mp3.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.pdf" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/pdf.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.ppt" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/ppt.gif"/>
+            </property>
+        </properties>
+    </style>
+    
+    <style name="download.swf" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/swf.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.swt" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/swt.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.txt" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/txt.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.xls" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/xls.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.zip" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/zip.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.default" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/default.gif"/>
+            </property>
+        </properties>
+    </style>
+    
     <!-- =================================================================== -->
     <!--  Popup window                                                       -->
     <!-- =================================================================== -->

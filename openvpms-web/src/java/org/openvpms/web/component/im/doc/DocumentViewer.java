@@ -18,11 +18,15 @@
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+
+import org.apache.commons.io.FilenameUtils;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -78,11 +82,23 @@ public class DocumentViewer {
     public Component getComponent() {
         Component result;
         if (_reference != null) {
-            String text = DescriptorHelper.getDisplayName(
-                    _reference.getArchetypeId().getShortName());
+            String text;
+            String styleName;
+            if (_parent instanceof DocumentAct) {
+                DocumentAct dact = (DocumentAct)_parent;
+                styleName = "download.".concat(FilenameUtils.getExtension(dact.getFileName()));
+                if (ApplicationInstance.getActive().getStyle(Button.class, styleName) == null)
+                    styleName = "download.default";
+                text = dact.getFileName();
+            }
+            else {
+                styleName="donwload.default";
+                text = DescriptorHelper.getDisplayName(_reference.getArchetypeId().getShortName());
+            }
+            
             if (_link) {
                 Button button = ButtonFactory.create();
-                button.setStyleName("hyperlink");
+                button.setStyleName(styleName);
                 button.setText(text);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
