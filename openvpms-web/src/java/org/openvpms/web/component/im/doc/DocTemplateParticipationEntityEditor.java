@@ -179,7 +179,8 @@ public class DocTemplateParticipationEntityEditor
                     Integer size = event.getSize();
                     Document doc = DocumentFactory.create(fileName, stream, contentType, size);
                     service.save(doc);
-                    _act.setName(doc.getName());
+                    _act.setFileName(doc.getName());
+                    _act.setMimeType(doc.getMimeType());
                     _act.setDescription(doc.getDescription());
                     _act.setDocReference(doc.getObjectReference());
                     _selector.setObject(_act);
