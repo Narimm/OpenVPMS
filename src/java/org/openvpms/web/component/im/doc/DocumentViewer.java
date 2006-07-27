@@ -23,6 +23,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -44,6 +45,11 @@ public class DocumentViewer {
     private final IMObjectReference _reference;
 
     /**
+     * The parent object. May be <code>null</code>
+     */
+    private final IMObject _parent;
+
+    /**
      * Determines if a hyperlink should be created, to enable downloads of
      * the document.
      */
@@ -54,10 +60,13 @@ public class DocumentViewer {
      * Construct a new <code>DocumentViewer</code>.
      *
      * @param reference the reference to view
+     * @param parent    the parent. May be <code>null</code>
      * @param link      if <code>true</code> enable an hyperlink to the object
      */
-    public DocumentViewer(IMObjectReference reference, boolean link) {
+    public DocumentViewer(IMObjectReference reference, IMObject parent,
+                          boolean link) {
         _reference = reference;
+        _parent = parent;
         _link = link;
     }
 
