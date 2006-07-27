@@ -27,6 +27,8 @@
         <node name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="description" type="java.lang.String" path="/description"/>
+        <node name="fileName" type="java.lang.String" path="/fileName" readOnly="true" />
+        <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" />
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'In Progress'">
             <assertion name="lookup.local">
