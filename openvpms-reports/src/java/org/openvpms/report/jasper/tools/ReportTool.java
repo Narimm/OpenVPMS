@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper;
+package org.openvpms.report.jasper.tools;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -37,10 +37,14 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.report.jasper.IMObjectReport;
+import org.openvpms.report.jasper.IMObjectReportFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.PrintStream;
+import java.io.File;
 import java.util.List;
 
 
@@ -55,16 +59,16 @@ public class ReportTool {
     /**
      * The archetype service.
      */
-    IArchetypeService _service;
+    private final IArchetypeService _service;
 
 
     /**
      * Construct a new <code>ReportTool</code>.
+     *
+     * @param service the archetype service
      */
-    public ReportTool() {
-        ApplicationContext context = new ClassPathXmlApplicationContext(
-                "applicationContext.xml");
-        _service = (IArchetypeService) context.getBean("archetypeService");
+    public ReportTool(IArchetypeService service) {
+        _service = service;
     }
 
     /**
@@ -150,6 +154,7 @@ public class ReportTool {
             if (!config.success()) {
                 displayUsage(parser);
             } else {
+                String contextPath = config.getString("context");
                 boolean list = config.getBoolean("list");
                 boolean report = config.getBoolean("report");
                 String shortName = config.getString("shortName");
@@ -158,10 +163,10 @@ public class ReportTool {
                 String pdf = config.getString("pdf");
 
                 if (list && shortName != null) {
-                    ReportTool reporter = new ReportTool();
+                    ReportTool reporter = create(contextPath);
                     reporter.list(shortName);
                 } else if (report && shortName != null) {
-                    ReportTool reporter = new ReportTool();
+                    ReportTool reporter = create(contextPath);
                     IMObject object;
                     if (id == -1) {
                         object = reporter.get(shortName, name);
@@ -182,8 +187,7 @@ public class ReportTool {
                     displayUsage(parser);
                 }
             }
-        }
-        catch (Throwable throwable) {
+        } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
     }
@@ -214,6 +218,26 @@ public class ReportTool {
     }
 
     /**
+     * Creates the report tool.
+     *
+     * @param contextPath the application context path
+     * @return a new report tool
+     */
+    private static ReportTool create(String contextPath) {
+        ApplicationContext context;
+        if (!new File(contextPath).exists()) {
+            context = new ClassPathXmlApplicationContext(contextPath);
+        } else {
+            context = new FileSystemXmlApplicationContext(contextPath);
+        }
+
+        IArchetypeService service
+                = (IArchetypeService) context.getBean("archetypeService");
+
+        return new ReportTool(service);
+    }
+
+    /**
      * Creates a new command line parser.
      *
      * @return a new parser
@@ -222,6 +246,10 @@ public class ReportTool {
     private static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
 
+        parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
+                .setLongFlag("context")
+                .setDefault("applicationContext.xml")
+                .setHelp("Application context path"));
         parser.registerParameter(new Switch("report").setShortFlag('r')
                 .setHelp("Generate a report for the specified archetype"));
         parser.registerParameter(new Switch("list").setShortFlag('l')

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+
+<templates>
+    
+    <template name="Invoice Template"
+              archetype="act.customerAccountChargesInvoice"
+              path="invoice.jrxml"/>
+
+    <template name="Invoice Items Template"
+              path="invoiceItems.jrxml"/>
+</templates>
