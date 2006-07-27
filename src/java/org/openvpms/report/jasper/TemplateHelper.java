@@ -23,6 +23,7 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -173,19 +174,30 @@ public class TemplateHelper {
         return document;
     }
 
-    private static DocumentAct getDocumentAct(EntityBean bean) {
-        Session session = _sessionFactory.openSession();
-        try {
-            session.refresh(bean.getEntity());
-
-            return (DocumentAct) bean.getParticipant(
-                    "participation.documentTemplate");
-        } catch (Throwable throwable) {
-            _log.error(throwable, throwable);
-        } finally {
-            session.close();
+    /**
+     * Helper to refresh an entity within the context of a hibernate session.
+     * todo this is a workaround for OBF-105
+     *
+     * @param entity the entity to refresh
+     */
+    public static void refresh(Entity entity) {
+        if (!entity.isNew()) {
+            Session session = _sessionFactory.openSession();
+            try {
+                session.refresh(entity);
+                Hibernate.initialize(entity.getParticipations());
+            } catch (Throwable throwable) {
+                _log.error(throwable, throwable);
+            } finally {
+                session.close();
+            }
         }
-        return null;
+    }
+
+    private static DocumentAct getDocumentAct(EntityBean bean) {
+        refresh(bean.getEntity());
+        return (DocumentAct) bean.getParticipant(
+                "participation.documentTemplate");
     }
 
     /**
