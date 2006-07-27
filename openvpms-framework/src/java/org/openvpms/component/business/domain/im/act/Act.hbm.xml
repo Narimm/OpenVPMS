@@ -103,6 +103,10 @@
       <key column="document_act_id" />
       <property name="docVersion" access="property" column="doc_version"
         type="string" />
+      <property name="fileName" access="property" column="file_name"
+        type="string" />
+      <property name="mimeType" access="property" column="mime_type"
+        type="string" />
       <component name="docReference">
         <component name="archetypeId" access="field">
           <property name="qualifiedName" access="property" type="string"
