@@ -53,6 +53,11 @@ public class DocumentAct extends Act {
     private String mimeType;
     
     /**
+     * Indicates whether it has been printed
+     */
+    private boolean printed;
+    
+    /**
      * A reference to the actual {@link Document}
      */
     private IMObjectReference docReference;
@@ -118,6 +123,20 @@ public class DocumentAct extends Act {
      */
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
+    }
+
+    /**
+     * @return Returns the printed.
+     */
+    public boolean isPrinted() {
+        return printed;
+    }
+
+    /**
+     * @param printed The printed to set.
+     */
+    public void setPrinted(boolean printed) {
+        this.printed = printed;
     }
 
     /* (non-Javadoc)

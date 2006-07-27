@@ -107,6 +107,8 @@
         type="string" />
       <property name="mimeType" access="property" column="mime_type"
         type="string" />
+      <property name="printed" access="property" column="printed"
+        type="boolean" />
       <component name="docReference">
         <component name="archetypeId" access="field">
           <property name="qualifiedName" access="property" type="string"
