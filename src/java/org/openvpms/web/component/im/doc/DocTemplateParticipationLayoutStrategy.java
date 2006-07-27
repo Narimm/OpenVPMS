@@ -65,7 +65,7 @@ public class DocTemplateParticipationLayoutStrategy
         if (act != null) {
             Button button = ButtonFactory.create();
             button.setStyleName("hyperlink");
-            button.setText(act.getName());
+            button.setText(act.getFileName());
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onDownload(act);
