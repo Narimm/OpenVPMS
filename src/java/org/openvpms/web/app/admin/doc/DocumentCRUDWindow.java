@@ -18,10 +18,18 @@
 
 package org.openvpms.web.app.admin.doc;
 
+import nextapp.echo2.app.Row;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
-
-import nextapp.echo2.app.Row;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -78,6 +86,30 @@ public class DocumentCRUDWindow extends CRUDWindow {
      */
     @Override
     protected void onPrint() {
-        print(getObject());
+        try {
+            IMObjectBean bean = new IMObjectBean(getObject());
+            String shortName = getShortName(bean.getString("archetype"));
+            if (shortName != null) {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                IMObject object = service.create(shortName);
+                print(object);
+            } else {
+                ErrorDialog.show(Messages.get(
+                        "admin.documentTemplate.print.noarchetype"));
+            }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    private String getShortName(String shortName) {
+        if (!StringUtils.isEmpty(shortName)) {
+            String[] shortNames = DescriptorHelper.getShortNames(shortName);
+            if (shortNames.length != 0) {
+                return shortNames[0];
+            }
+        }
+        return null;
     }
 }
