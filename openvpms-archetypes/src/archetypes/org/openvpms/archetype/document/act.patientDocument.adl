@@ -27,8 +27,6 @@
         <node name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
         <node name="description" type="java.lang.String" path="/description"/>
-        <node name="fileName" type="java.lang.String" path="/fileName" readOnly="true" />
-        <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" />
         <node name="status" path="/status" type="java.lang.String"
               minCardinality="1" defaultValue="'In Progress'">
             <assertion name="lookup.local">
@@ -40,7 +38,8 @@
                 <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
-        <node name="documentTemplate" path="/participations"
+		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
+        <node name="documentTemplate" displayName="Template" path="/participations"
               type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.documentTemplate"/>
         <node displayName="Document" name="docReference" path="/docReference" minCardinality="0"
@@ -61,5 +60,7 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="fileName" type="java.lang.String" path="/fileName" readOnly="true" hidden="true" />
+        <node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" hidden="true" />
     </archetype>
 </archetypes>
