@@ -18,10 +18,12 @@
 
 package org.openvpms.report.jasper.tools;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPException;
-import com.martiansoftware.jsap.JSAPResult;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
+
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -41,11 +43,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.List;
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
+import com.martiansoftware.jsap.JSAPResult;
 
 
 /**
@@ -124,7 +125,8 @@ public class TemplateLoader {
         } else {
             entity = (Entity) _service.create("entity.documentTemplate");
             act = (DocumentAct) _service.create("act.documentTemplate");
-            act.setName(document.getName());
+            act.setFileName(document.getName());
+            act.setMimeType(document.getMimeType());
             act.setDescription(DescriptorHelper.getDisplayName(document));
             participation = (Participation) _service.create(
                     "participation.documentTemplate");
