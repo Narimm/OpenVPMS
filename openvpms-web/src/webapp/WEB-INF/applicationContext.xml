@@ -423,6 +423,15 @@
     <bean id='archetypeAwareVoter'
           class='org.openvpms.component.business.service.security.ArchetypeAwareVoter'/>
 
+    <!-- ================================================================== -->
+    <!--                        REPORTING                                   -->
+    <!-- ================================================================== -->
+    <bean id="templateHelper"
+          class="org.openvpms.report.jasper.TemplateHelper">
+        <constructor-arg index="0">
+            <ref local="sessionFactory"/>
+        </constructor-arg>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
