@@ -196,8 +196,7 @@ public class TemplateHelper {
 
     private static DocumentAct getDocumentAct(EntityBean bean) {
         refresh(bean.getEntity());
-        return (DocumentAct) bean.getParticipant(
-                "participation.document");
+        return (DocumentAct) bean.getParticipant("participation.document");
     }
 
     /**

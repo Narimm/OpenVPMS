@@ -37,12 +37,12 @@ import java.util.Map;
 
 
 /**
- * {@link IMObjectReport} that uses pre-defined templates.
+ * {@link JasperIMObjectReport} that uses pre-defined templates.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TemplatedIMObjectReport extends AbstractIMObjectReport {
+public class TemplatedJasperIMObjectReport extends AbstractJasperIMObjectReport {
 
     /**
      * The compiled report.
@@ -63,14 +63,14 @@ public class TemplatedIMObjectReport extends AbstractIMObjectReport {
 
 
     /**
-     * Constructs a new <code>TemplatedIMObjectReport</code>.
+     * Constructs a new <code>TemplatedJasperIMObjectReport</code>.
      *
      * @param design  the master report design
      * @param service the archetype service
      * @throws JRException for any error
      */
-    public TemplatedIMObjectReport(JasperDesign design,
-                                   IArchetypeService service)
+    public TemplatedJasperIMObjectReport(JasperDesign design,
+                                         IArchetypeService service)
             throws JRException {
         super(service);
         JRElement[] elements = design.getDetail().getElements();
