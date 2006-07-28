@@ -46,7 +46,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DynamicIMObjectReport extends AbstractIMObjectReport {
+public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
 
     /**
      * Design time report.
@@ -71,13 +71,13 @@ public class DynamicIMObjectReport extends AbstractIMObjectReport {
 
 
     /**
-     * Construct a new <code>DynamicIMObjectReport</code>.
+     * Construct a new <code>DynamicJasperIMObjectReport</code>.
      *
      * @param archetype the archetype descriptor
      * @param service   the archetype service
      */
-    public DynamicIMObjectReport(ArchetypeDescriptor archetype,
-                                 IArchetypeService service)
+    public DynamicJasperIMObjectReport(ArchetypeDescriptor archetype,
+                                       IArchetypeService service)
             throws JRException {
         super(service);
         _design = ReportHelper.getReportResource("/archetype_template.jrxml");

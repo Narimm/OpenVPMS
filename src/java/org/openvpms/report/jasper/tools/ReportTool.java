@@ -24,27 +24,28 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.report.jasper.IMObjectReport;
-import org.openvpms.report.jasper.IMObjectReportFactory;
+import org.openvpms.report.IMObjectReport;
+import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.report.jasper.JasperIMObjectReport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.PrintStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 
 
@@ -124,22 +125,31 @@ public class ReportTool {
      * @param showXML if  <code>true</code> display the .jrxml
      */
     public void view(IMObject object, boolean showXML) throws JRException {
-        JasperPrint report = generate(object, showXML);
-        JasperViewer viewer = new JasperViewer(report, true);
-        viewer.setVisible(true);
+        IMObjectReport report = getReport(object, showXML);
+        if (report instanceof JasperIMObjectReport) {
+            JasperIMObjectReport r = (JasperIMObjectReport) report;
+            JasperViewer viewer = new JasperViewer(r.report(object), true);
+            viewer.setVisible(true);
+        } else {
+            System.out.println("Can't view reports of type "
+                    + report.getClass().getName());
+        }
     }
 
     /**
-     * Generates a report for an object and saves it as a PDF.
+     * Generates a report for an object and saves it to disk.
      *
      * @param object  the object
-     * @param path    the PDF output path
+     * @param path    the output path
      * @param showXML if  <code>true</code> display the .jrxml
      */
-    public void generatePDF(IMObject object, String path, boolean showXML)
-            throws JRException {
-        JasperPrint report = generate(object, showXML);
-        JasperExportManager.exportReportToPdfFile(report, path);
+    public void save(IMObject object, String path, boolean showXML)
+            throws IOException {
+        IMObjectReport report = getReport(object, showXML);
+        Document doc = report.generate(object);
+        path = new File(path, doc.getName()).getPath();
+        FileOutputStream stream = new FileOutputStream(path);
+        stream.write(doc.getContents());
     }
 
     /**
@@ -160,7 +170,7 @@ public class ReportTool {
                 String shortName = config.getString("shortName");
                 long id = config.getLong("id", -1);
                 String name = config.getString("name");
-                String pdf = config.getString("pdf");
+                String output = config.getString("output");
 
                 if (list && shortName != null) {
                     ReportTool reporter = create(contextPath);
@@ -175,8 +185,8 @@ public class ReportTool {
                     }
                     boolean xml = config.getBoolean("xml");
                     if (object != null) {
-                        if (pdf != null) {
-                            reporter.generatePDF(object, pdf, xml);
+                        if (output != null) {
+                            reporter.save(object, output, xml);
                         } else {
                             reporter.view(object, xml);
                         }
@@ -193,29 +203,33 @@ public class ReportTool {
     }
 
     /**
-     * Generates a report for an object.
+     * Gets a report for an object.
      *
      * @param object  the object
      * @param showXML if  <code>true</code> display the .jrxml
-     * @return a report for <code>object</code>
-     * @throws JRException for any error
+     * @return a report for the object
      */
-    private JasperPrint generate(IMObject object, boolean showXML) throws
-                                                                   JRException {
-        ArchetypeDescriptor archetype
-                = _service.getArchetypeDescriptor(object.getArchetypeId());
-        IMObjectReport report = IMObjectReportFactory.create(
-                archetype.getShortName(), _service);
-        if (showXML) {
-            JRXmlWriter.writeReport(report.getReport(),
-                                    new PrintStream(System.out), "UTF-8");
-            for (JasperReport subreport : report.getSubreports()) {
-                JRXmlWriter.writeReport(subreport,
+    private IMObjectReport getReport(IMObject object, boolean showXML) {
+        String shortName = object.getArchetypeId().getShortName();
+        IMObjectReport report = IMObjectReportFactory.create(shortName,
+                                                             _service);
+        if (showXML && report instanceof JasperIMObjectReport) {
+            try {
+                JasperIMObjectReport j = (JasperIMObjectReport) report;
+                JRXmlWriter.writeReport(j.getReport(),
                                         new PrintStream(System.out), "UTF-8");
+                for (JasperReport subreport : j.getSubreports()) {
+                    JRXmlWriter.writeReport(subreport,
+                                            new PrintStream(System.out),
+                                            "UTF-8");
+                }
+            } catch (JRException exception) {
+                exception.printStackTrace();
             }
         }
-        return report.generate(object);
+        return report;
     }
+
 
     /**
      * Creates the report tool.
@@ -264,9 +278,9 @@ public class ReportTool {
                 .setShortFlag('i').setLongFlag("id")
                 .setStringParser(JSAP.LONG_PARSER)
                 .setHelp("The archetype id. Use with -r"));
-        parser.registerParameter(new FlaggedOption("pdf").setShortFlag('p')
-                .setLongFlag("pdf")
-                .setHelp("Generate a PDF file. Use with -r"));
+        parser.registerParameter(new FlaggedOption("output").setShortFlag('o')
+                .setLongFlag("output")
+                .setHelp("Save report to file. Use with -r"));
         parser.registerParameter(new Switch("xml").setShortFlag('x')
                 .setLongFlag("xml")
                 .setHelp("Display generated XML. Use with -r"));

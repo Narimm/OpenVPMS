@@ -499,6 +499,30 @@
             <version>1.02b</version>
             <url>http://www.lowagie.com/iText/</url>
         </dependency>
+        <dependency>
+            <groupId>org.openoffice</groupId>
+            <artifactId>juh</artifactId>
+            <version>2.0.3</version>
+            <url>http://openoffice.org</url>
+        </dependency>
+        <dependency>
+            <groupId>org.openoffice</groupId>
+            <artifactId>jurt</artifactId>
+            <version>2.0.3</version>
+            <url>http://openoffice.org</url>
+        </dependency>
+        <dependency>
+            <groupId>org.openoffice</groupId>
+            <artifactId>ridl</artifactId>
+            <version>2.0.3</version>
+            <url>http://openoffice.org</url>
+        </dependency>
+        <dependency>
+            <groupId>org.openoffice</groupId>
+            <artifactId>unoil</artifactId>
+            <version>2.0.3</version>
+            <url>http://openoffice.org</url>
+        </dependency>
     </dependencies>
 
     <build>

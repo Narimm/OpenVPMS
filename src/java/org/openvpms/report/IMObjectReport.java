@@ -16,16 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper;
+package org.openvpms.report;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 
 
 /**
- * Generates a jasper report for an <code>IMObject</code>.
+ * Generates a report for an <code>IMObject</code>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -36,22 +34,9 @@ public interface IMObjectReport {
      * Generates a report for an object.
      *
      * @param object the object
-     * @return the report
-     * @throws JRException for any error
+     * @return a document containing the report
+     * @throws IMObjectReportException for any error
      */
-    JasperPrint generate(IMObject object) throws JRException;
+    Document generate(IMObject object);
 
-    /**
-     * Returns the master report.
-     *
-     * @return the master report
-     */
-    JasperReport getReport();
-
-    /**
-     * Returns the sub-reports.
-     *
-     * @return the sub-reports.
-     */
-    JasperReport[] getSubreports();
 }

@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper;
+package org.openvpms.report;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.logging.Log;
@@ -137,9 +137,9 @@ public class NodeResolver {
      *
      * @param name the field name
      * @return the resolved state
-     * @throws JRException if the name is invalid
+     * @throws IMObjectReportException if the name is invalid
      */
-    public State resolve(String name) throws JRException {
+    public State resolve(String name) {
         State state;
         IMObject object = _root;
         ArchetypeDescriptor archetype = _archetype;
@@ -148,7 +148,7 @@ public class NodeResolver {
             String nodeName = name.substring(0, index);
             NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
             if (node == null) {
-                throw new JRException("Name doesn't refer to a valid node: "
+                throw new IMObjectReportException("Name doesn't refer to a valid node: "
                         + name);
             }
             Object value = getValue(object, node);
@@ -156,7 +156,7 @@ public class NodeResolver {
                 // object missing.
                 break;
             } else if (!(value instanceof IMObject)) {
-                throw new JRException(
+                throw new IMObjectReportException(
                         "Name doesn't refer to an object reference: " + name);
             }
             object = (IMObject) value;
