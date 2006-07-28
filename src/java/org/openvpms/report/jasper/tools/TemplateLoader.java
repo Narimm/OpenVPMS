@@ -117,7 +117,7 @@ public class TemplateLoader {
         if (!rows.isEmpty()) {
             act = (DocumentAct) rows.get(0);
             ActBean bean = new ActBean(act);
-            entity = bean.getParticipant("participation.documentTemplate");
+            entity = bean.getParticipant("participation.document");
             if (entity == null) {
                 entity = (Entity) _service.create("entity.documentTemplate");
                 bean.setParticipant("entity.documentTemplate", entity);
@@ -129,7 +129,7 @@ public class TemplateLoader {
             act.setMimeType(document.getMimeType());
             act.setDescription(DescriptorHelper.getDisplayName(document));
             participation = (Participation) _service.create(
-                    "participation.documentTemplate");
+                    "participation.document");
             participation.setAct(act.getObjectReference());
             act.addParticipation(participation);
             participation.setEntity(entity.getObjectReference());
