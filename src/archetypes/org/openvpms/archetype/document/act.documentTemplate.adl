@@ -27,7 +27,7 @@
 		<node name="mimeType" type="java.lang.String" path="/mimeType" readOnly="true" />
         <node name="template" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.documentTemplate" hidden="true"/>
+              filter="participation.document" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>

@@ -30,6 +30,6 @@
 		</node>
         <node name="content" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.documentTemplate"/>
+              filter="participation.document"/>
     </archetype>
 </archetypes>
