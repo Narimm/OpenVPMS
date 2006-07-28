@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 import java.lang.reflect.Constructor;
 
@@ -58,10 +58,26 @@ public abstract class AbstractLayoutStrategyFactory
      * @return a new layout strategy
      */
     public IMObjectLayoutStrategy create(IMObject object) {
-        IMObjectLayoutStrategy result = null;
+        return create(object, null);
+    }
 
-        String shortName = object.getArchetypeId().getShortName();
-        Class clazz = getStrategies().getHandler(shortName);
+    /**
+     * Creates a new layout strategy for an object.
+     *
+     * @param object the object to create the layout strategy for
+     * @param parent the parent object. May be <code>null</code>
+     */
+    public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
+        IMObjectLayoutStrategy result = null;
+        Class clazz;
+        if (parent != null) {
+            String primary = object.getArchetypeId().getShortName();
+            String secondary = parent.getArchetypeId().getShortName();
+            clazz = getStrategies().getHandler(primary, secondary);
+        } else {
+            String shortName = object.getArchetypeId().getShortName();
+            clazz = getStrategies().getHandler(shortName);
+        }
         if (clazz != null) {
             try {
                 Constructor ctor = clazz.getConstructor();
@@ -81,7 +97,7 @@ public abstract class AbstractLayoutStrategyFactory
      *
      * @return the strategy implementations
      */
-    protected abstract ArchetypeHandlers getStrategies();
+    protected abstract ShortNamePairArchetypeHandlers getStrategies();
 
     /**
      * Helper to load the strategy implementations.
@@ -89,8 +105,9 @@ public abstract class AbstractLayoutStrategyFactory
      * @param name the resource name
      * @return the strategy implementations
      */
-    protected ArchetypeHandlers load(String name) {
-        return new ArchetypeHandlers(name, IMObjectLayoutStrategy.class);
+    protected ShortNamePairArchetypeHandlers load(String name) {
+        return new ShortNamePairArchetypeHandlers(name,
+                                                  IMObjectLayoutStrategy.class);
     }
 
 }

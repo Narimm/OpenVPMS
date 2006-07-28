@@ -32,8 +32,16 @@ public interface IMObjectLayoutStrategyFactory {
     /**
      * Creates a new layout strategy for an object.
      *
-     * @param object  the object to create the layout strategy for
+     * @param object the object to create the layout strategy for
      * @return a new layout strategy
      */
     IMObjectLayoutStrategy create(IMObject object);
+
+    /**
+     * Creates a new layout strategy for an object.
+     *
+     * @param object the object to create the layout strategy for
+     * @param parent the parent object. May be <code>null</code>
+     */
+    IMObjectLayoutStrategy create(IMObject object, IMObject parent);
 }

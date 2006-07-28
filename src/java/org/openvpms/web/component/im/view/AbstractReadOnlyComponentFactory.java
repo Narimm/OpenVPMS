@@ -115,7 +115,7 @@ public abstract class AbstractReadOnlyComponentFactory
      */
     public Component create(IMObject object, IMObject context,
                             NodeDescriptor descriptor) {
-        IMObjectLayoutStrategy strategy = _strategies.create(object);
+        IMObjectLayoutStrategy strategy = _strategies.create(object, context);
         IMObjectViewer viewer
                 = new IMObjectViewer(object, strategy, getLayoutContext());
         return viewer.getComponent();

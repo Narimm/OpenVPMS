@@ -24,7 +24,7 @@
  */
 package org.openvpms.web.component.im.view.layout;
 
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 
 /**
@@ -39,7 +39,7 @@ public class TableLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
     /**
      * Layout strategy implementations.
      */
-    private static ArchetypeHandlers _strategies;
+    private static ShortNamePairArchetypeHandlers _strategies;
 
 
     /**
@@ -47,7 +47,7 @@ public class TableLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
      *
      * @return the strategy implementations
      */
-    protected ArchetypeHandlers getStrategies() {
+    protected ShortNamePairArchetypeHandlers getStrategies() {
         synchronized (getClass()) {
             if (_strategies == null) {
                 _strategies = load("TableLayoutStrategyFactory.properties");

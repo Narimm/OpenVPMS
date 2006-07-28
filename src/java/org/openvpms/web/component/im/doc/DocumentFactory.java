@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.doc;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.UnsupportedDoc;
 
 import java.io.InputStream;
 
@@ -43,15 +42,13 @@ public class DocumentFactory {
      * @throws DocumentException         for any document exception
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Document create(String fileName, InputStream stream, String contentType, Integer size) {
-        DocumentHandler handler = null;
+    public static Document create(String fileName, InputStream stream,
+                                  String contentType, Integer size) {
+        DocumentHandler handler;
         if (fileName.endsWith(".jrxml")) {
             handler = new JRXMLDocumentHandler();
-        }
-        else
+        } else {
             handler = new GenericDocumentHandler();
-        if (handler == null) {
-            throw new DocumentException(UnsupportedDoc, fileName);
         }
         return handler.getDocument(fileName, stream, contentType, size);
     }

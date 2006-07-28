@@ -19,7 +19,7 @@
 package org.openvpms.web.component.im.view.layout;
 
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
+import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 
 /**
@@ -29,19 +29,20 @@ import org.openvpms.web.component.im.util.ArchetypeHandlers;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultLayoutStrategyFactory extends AbstractLayoutStrategyFactory {
+public class DefaultLayoutStrategyFactory
+        extends AbstractLayoutStrategyFactory {
 
     /**
      * Layout strategy implementations.
      */
-    private static ArchetypeHandlers _strategies;
+    private static ShortNamePairArchetypeHandlers _strategies;
 
     /**
      * Returns the strategy imlementations.
      *
      * @return the strategy implementations
      */
-    protected ArchetypeHandlers getStrategies() {
+    protected ShortNamePairArchetypeHandlers getStrategies() {
         synchronized (getClass()) {
             if (_strategies == null) {
                 _strategies = load("DefaultLayoutStrategyFactory.properties");
