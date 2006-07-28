@@ -81,12 +81,15 @@ public class DocumentViewer {
      */
     public Component getComponent() {
         Component result;
+        String text = null;
+        String styleName = null;
         if (_reference != null) {
-            String text;
-            String styleName;
             if (_parent instanceof DocumentAct) {
                 DocumentAct dact = (DocumentAct)_parent;
-                styleName = "download.".concat(FilenameUtils.getExtension(dact.getFileName()));
+                if (dact.getFileName() != null)
+                    styleName = "download.".concat(FilenameUtils.getExtension(dact.getFileName()));
+                else
+                    styleName = "download.default";
                 if (ApplicationInstance.getActive().getStyle(Button.class, styleName) == null)
                     styleName = "download.default";
                 text = dact.getFileName();

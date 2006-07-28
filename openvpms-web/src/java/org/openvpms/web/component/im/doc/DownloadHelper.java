@@ -87,8 +87,11 @@ public class DownloadHelper {
      */
     public static Component getButton(final DocumentAct act) {
         Button button = ButtonFactory.create();
-        String styleName = "download.".concat(
-                FilenameUtils.getExtension(act.getFileName()));
+        String styleName = null;
+        if (act.getFileName() != null)
+            styleName = "download.".concat(FilenameUtils.getExtension(act.getFileName()));
+        else
+            styleName = "download.default";
         if (ApplicationInstance.getActive().getStyle(Button.class,
                                                      styleName) == null) {
             styleName = "download.default";

@@ -64,7 +64,7 @@ public class DocTemplateParticipationActLayoutStrategy
             TemplateHelper.refresh(entity); // todo - workaround for OBF-105
             EntityBean bean = new EntityBean(entity);
             final DocumentAct act = (DocumentAct) bean.getParticipant(
-                    "participation.documentTemplate");
+                    "participation.document");
             if (act != null) {
                 return DownloadHelper.getButton(act);
             }
