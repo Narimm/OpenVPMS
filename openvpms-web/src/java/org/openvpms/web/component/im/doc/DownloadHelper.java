@@ -18,12 +18,20 @@
 
 package org.openvpms.web.component.im.doc;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.filetransfer.Download;
 import nextapp.echo2.app.filetransfer.DownloadProvider;
+import org.apache.commons.io.FilenameUtils;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.ButtonFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -68,5 +76,30 @@ public class DownloadHelper {
             OpenVPMSApp.getInstance().enqueueCommand(download);
         }
 
+    }
+
+    /**
+     * Returns a button enabling a {@link DocumentAct}s associated document
+     * to be downloaded.
+     *
+     * @param act the act
+     * @return a download button
+     */
+    public static Component getButton(final DocumentAct act) {
+        Button button = ButtonFactory.create();
+        String styleName = "download.".concat(
+                FilenameUtils.getExtension(act.getFileName()));
+        if (ApplicationInstance.getActive().getStyle(Button.class,
+                                                     styleName) == null) {
+            styleName = "download.default";
+        }
+        button.setStyleName(styleName);
+        button.setText(act.getDescription());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                download(act.getDocReference());
+            }
+        });
+        return button;
     }
 }

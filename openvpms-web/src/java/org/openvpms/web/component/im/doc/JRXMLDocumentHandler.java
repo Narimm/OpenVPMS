@@ -46,11 +46,14 @@ public class JRXMLDocumentHandler implements DocumentHandler {
      *
      * @param fileName the file name
      * @param stream   a stream representing the document content
+     * @param mimeType the mime type of the content
+     * @param size     the size of stream
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document getDocument(String fileName, InputStream stream, String contentType, Integer size) {
+    public Document getDocument(String fileName, InputStream stream,
+                                String mimeType, int size) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Document document;

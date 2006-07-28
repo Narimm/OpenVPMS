@@ -18,35 +18,30 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.report.jasper.TemplateHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
 
 
 /**
- * Document template participation layout strategy. This displays the associated
- * document act name and description, enabling the document do be downloaded.
+ * Document template participation layout strategy, where the parent object is
+ * an {@link DocumentAct}. This navigates the entity and its corresponding
+ * <code>DocumentAct</code>, enabling any associated document do be downloaded.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocTemplateParticipationLayoutStrategy
+public class DocTemplateParticipationActLayoutStrategy
         implements IMObjectLayoutStrategy {
 
     /**
@@ -62,35 +57,19 @@ public class DocTemplateParticipationLayoutStrategy
      */
     public Component apply(IMObject object, PropertySet properties,
                            LayoutContext context) {
-        Property property = properties.get("act");
+        Property property = properties.get("entity");
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
-        if (act != null) {
-            Button button = ButtonFactory.create();
-            String styleName = "download.".concat(FilenameUtils.getExtension(act.getFileName()));
-            if (ApplicationInstance.getActive().getStyle(Button.class, styleName) == null)
-                styleName = "download.default";
-            button.setStyleName(styleName);
-            button.setText(act.getDescription());
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    onDownload(act);
-                }
-            });
-
-            return button;
+        Entity entity = (Entity) IMObjectHelper.getObject(ref);
+        if (entity != null) {
+            TemplateHelper.refresh(entity); // todo - workaround for OBF-105
+            EntityBean bean = new EntityBean(entity);
+            final DocumentAct act = (DocumentAct) bean.getParticipant(
+                    "participation.documentTemplate");
+            if (act != null) {
+                return DownloadHelper.getButton(act);
+            }
         }
         return LabelFactory.create();
-    }
-
-    /**
-     * Invoked when the act is selected to download the associated
-     * document template.
-     *
-     * @param act the document act
-     */
-    private void onDownload(DocumentAct act) {
-        DownloadHelper.download(act.getDocReference());
     }
 
 }

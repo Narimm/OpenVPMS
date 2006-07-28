@@ -18,20 +18,17 @@
 
 package org.openvpms.web.component.im.doc;
 
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.WriteError;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.ReadError;
+
+import java.io.InputStream;
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
 public class GenericDocumentHandler implements DocumentHandler {
@@ -41,24 +38,29 @@ public class GenericDocumentHandler implements DocumentHandler {
      *
      * @param fileName the file name
      * @param stream   a stream representing the document content
+     * @param mimeType the mime type of the content
+     * @param size     the size of stream
      * @return a new document
      * @throws DocumentException         if the document can't be created
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document getDocument(String fileName, InputStream stream, String contentType, Integer size) {
+    public Document getDocument(String fileName, InputStream stream,
+                                String mimeType, int size) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Document document;
         try {
             document = (Document) service.create("document.other");
             document.setName(fileName);
-            document.setMimeType(contentType);
+            document.setMimeType(mimeType);
             byte[] data = new byte[size];
-            stream.read(data);
+            if (stream.read(data) != size) {
+                throw new DocumentException(ReadError, fileName);
+            }
             document.setDocSize(data.length);
             document.setContents(data);
         } catch (Exception exception) {
-            throw new DocumentException(WriteError, fileName, exception);
+            throw new DocumentException(ReadError, fileName, exception);
         }
         return document;
     }

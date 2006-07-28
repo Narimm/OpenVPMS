@@ -18,9 +18,6 @@
 
 package org.openvpms.web.app.patient.document;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -35,6 +32,9 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -61,16 +61,12 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     public PatientDocumentActEditor(DocumentAct act, IMObject parent,
                                     LayoutContext context) {
         super(act, parent, context);
-        getEditor("docReference").addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                   DocumentAct act = (DocumentAct) getObject();
-                   IMObjectReference docRef = act.getDocReference();
-                   // update filename etc from reference
-                   Document document = (Document)IMObjectHelper.getObject(docRef);
-                   act.setFileName(document.getName());
-                   act.setMimeType(document.getMimeType());
-            }
-        }
+        getEditor(DOC_REFERENCE).addModifiableListener(
+                new ModifiableListener() {
+                    public void modified(Modifiable modifiable) {
+                        onDocumentUpdate();
+                    }
+                }
         );
     }
 
@@ -82,6 +78,25 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new LayoutStrategy();
+    }
+
+    /**
+     * Invoked when the document reference is updated. This duplicates
+     * the referenced document's name and mime-type to the fileName and mimeType
+     * properties respectively.
+     */
+    private void onDocumentUpdate() {
+        DocumentAct act = (DocumentAct) getObject();
+        IMObjectReference docRef = act.getDocReference();
+        Document document = (Document) IMObjectHelper.getObject(docRef);
+        String name = null;
+        String mimeType = null;
+        if (document != null) {
+            name = document.getName();
+            mimeType = document.getMimeType();
+        }
+        getProperty("fileName").setValue(name);
+        getProperty("mimeType").setValue(mimeType);
     }
 
     /**
