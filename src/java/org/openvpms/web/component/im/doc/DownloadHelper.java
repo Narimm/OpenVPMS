@@ -51,31 +51,39 @@ public class DownloadHelper {
      * @param doc a reference to the document
      */
     public static void download(IMObjectReference doc) {
-        final Document document = (Document) IMObjectHelper.getObject(doc);
+        Document document = (Document) IMObjectHelper.getObject(doc);
         if (document != null) {
-            Download download = new Download();
-            download.setProvider(new DownloadProvider() {
-
-                public String getContentType() {
-                    return document.getMimeType();
-                }
-
-                public String getFileName() {
-                    return document.getName();
-                }
-
-                public int getSize() {
-                    return (int) document.getDocSize();
-                }
-
-                public void writeFile(OutputStream stream) throws IOException {
-                    stream.write(document.getContents());
-                }
-            });
-            download.setActive(true);
-            OpenVPMSApp.getInstance().enqueueCommand(download);
+            download(document);
         }
+    }
 
+    /**
+     * Download a document.
+     *
+     * @param document the document to download
+     */
+    public static void download(final Document document) {
+        Download download = new Download();
+        download.setProvider(new DownloadProvider() {
+
+            public String getContentType() {
+                return document.getMimeType();
+            }
+
+            public String getFileName() {
+                return document.getName();
+            }
+
+            public int getSize() {
+                return (int) document.getDocSize();
+            }
+
+            public void writeFile(OutputStream stream) throws IOException {
+                stream.write(document.getContents());
+            }
+        });
+        download.setActive(true);
+        OpenVPMSApp.getInstance().enqueueCommand(download);
     }
 
     /**
@@ -87,9 +95,10 @@ public class DownloadHelper {
      */
     public static Component getButton(final DocumentAct act) {
         Button button = ButtonFactory.create();
-        String styleName = null;
+        String styleName;
         if (act.getFileName() != null)
-            styleName = "download.".concat(FilenameUtils.getExtension(act.getFileName()));
+            styleName = "download.".concat(
+                    FilenameUtils.getExtension(act.getFileName()));
         else
             styleName = "download.default";
         if (ApplicationInstance.getActive().getStyle(Button.class,
