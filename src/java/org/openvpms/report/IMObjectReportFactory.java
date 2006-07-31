@@ -28,6 +28,8 @@ import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplateHelper;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.openoffice.OpenOfficeIMObjectReport;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.ByteArrayInputStream;
 
@@ -41,7 +43,14 @@ import java.io.ByteArrayInputStream;
 public class IMObjectReportFactory {
 
     /**
-     * Create a new report.
+     * The logger.
+     */
+    private static final Log _log
+            = LogFactory.getLog(IMObjectReportFactory.class);
+
+
+    /**
+     * Creates a new report.
      *
      * @param shortName the archetype short name
      * @param service   the archetype service
@@ -55,15 +64,17 @@ public class IMObjectReportFactory {
                                                               service);
         try {
             if (doc != null) {
-                if (doc.getArchetypeId().getShortName().equals(
-                        "document.jrxml")) {
+                String name = doc.getName();
+                if (name.endsWith(".jrxml")) {
                     ByteArrayInputStream stream
                             = new ByteArrayInputStream(doc.getContents());
                     JasperDesign report = JRXmlLoader.load(stream);
                     return new TemplatedJasperIMObjectReport(report, service);
-                } else if (doc.getArchetypeId().getShortName().equals(
-                        "document.other")) {
+                } else if (name.endsWith(".odt")) {
                     return new OpenOfficeIMObjectReport(doc);
+                } else {
+                    _log.error("Unrecognised document template': " + name
+                            + "'. Falling back to dynamic jasper report");
                 }
             }
             return new DynamicJasperIMObjectReport(
