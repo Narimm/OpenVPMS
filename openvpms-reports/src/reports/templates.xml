@@ -6,12 +6,12 @@
               archetype="act.customerAccountChargesInvoice"
               path="invoice.jrxml"
               mimeType="text/xml"
-              docType="document.jrxml"/>
+              docType="document.other"/>
 
     <template name="Invoice Items Template"
               path="invoiceItems.jrxml"
               mimeType="text/xml"
-              docType="document.jrxml"/>
+              docType="document.other"/>
 
     <!--template name="OpenOffice Sample"
               path="test.odt"
