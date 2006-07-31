@@ -46,7 +46,7 @@
         <attainGoal name="java:jar-resources"/>
         <attainGoal name="generate-hibernate-properties"/>
         <ant:java
-                classname="org.openvpms.report.jasper.tools.TemplateLoader"
+                classname="org.openvpms.report.tools.TemplateLoader"
                 failonerror="true"
                 fork="true">
             <ant:classpath>

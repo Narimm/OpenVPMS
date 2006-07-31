@@ -150,6 +150,7 @@ public class ReportTool {
         path = new File(path, doc.getName()).getPath();
         FileOutputStream stream = new FileOutputStream(path);
         stream.write(doc.getContents());
+        stream.close();
     }
 
     /**

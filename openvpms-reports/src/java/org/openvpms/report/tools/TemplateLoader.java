@@ -16,14 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper.tools;
+package org.openvpms.report.tools;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.List;
-
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
+import com.martiansoftware.jsap.JSAPResult;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -39,18 +37,21 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.report.jasper.TemplateHelper;
+import org.openvpms.report.jasper.tools.Template;
+import org.openvpms.report.jasper.tools.Templates;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPException;
-import com.martiansoftware.jsap.JSAPResult;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 
 
 /**
- * Jasper Report template loader.
+ * Report template loader.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -150,29 +151,6 @@ public class TemplateLoader {
         _service.save(entity);
     }
 
-    private Document getDocument(Template template, File dir)
-            throws IOException {
-        Document document = (Document) _service.create("document.jrxml");
-        File file = new File(template.getPath());
-        if (!file.isAbsolute()) {
-            file = new File(dir, template.getPath());
-        }
-        FileInputStream stream = new FileInputStream(file);
-        int length = (int) file.length();
-        byte[] content = new byte[length];
-        if (stream.read(content) != length) {
-            throw new IOException("Failed to read " + file);
-        }
-        stream.close();
-
-        document.setContents(content);
-        document.setName(file.getName());
-        document.setDocSize(length);
-        document.setMimeType("application/xml");
-        _service.save(document);
-        return document;
-    }
-
     /**
      * Main line.
      *
@@ -208,6 +186,37 @@ public class TemplateLoader {
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
+    }
+
+    /**
+     * Creates a new {@link Document} from a template.
+     *
+     * @param template the template descriptor
+     * @param dir      the directory to locate relative paths
+     * @return a new document containing the serialized template
+     * @throws IOException for any error
+     */
+    private Document getDocument(Template template, File dir)
+            throws IOException {
+        Document document = (Document) _service.create(template.getDocType());
+        File file = new File(template.getPath());
+        if (!file.isAbsolute()) {
+            file = new File(dir, template.getPath());
+        }
+        FileInputStream stream = new FileInputStream(file);
+        int length = (int) file.length();
+        byte[] content = new byte[length];
+        if (stream.read(content) != length) {
+            throw new IOException("Failed to read " + file);
+        }
+        stream.close();
+
+        document.setContents(content);
+        document.setName(file.getName());
+        document.setDocSize(length);
+        document.setMimeType(template.getMimeType());
+        _service.save(document);
+        return document;
     }
 
     /**
