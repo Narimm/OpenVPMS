@@ -67,11 +67,12 @@ public class JRXMLDocumentHandler implements DocumentHandler {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             JRXmlWriter.writeReport(design, bytes, "UTF-8");
 
-            document = (Document) service.create("document.jrxml");
+            document = (Document) service.create("document.other");
             document.setName(fileName);
             byte[] data = bytes.toByteArray();
             document.setDocSize(data.length);
             document.setContents(data);
+            document.setMimeType("text/xml");
         } catch (JRException exception) {
             throw new DocumentException(WriteError, fileName, exception);
         }
