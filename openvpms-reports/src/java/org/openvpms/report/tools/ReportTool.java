@@ -16,17 +16,13 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper.tools;
+package org.openvpms.report.tools;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.xml.JRXmlWriter;
-import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -37,7 +33,6 @@ import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportFactory;
-import org.openvpms.report.jasper.JasperIMObjectReport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -45,7 +40,6 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 
 
@@ -60,8 +54,7 @@ public class ReportTool {
     /**
      * The archetype service.
      */
-    private final IArchetypeService _service;
-
+    private IArchetypeService _service;
 
     /**
      * Construct a new <code>ReportTool</code>.
@@ -113,39 +106,19 @@ public class ReportTool {
      * @return the corresponding object, or <code>null</code> if none was found
      */
     public IMObject get(String shortName, long uid) {
-        ArchetypeId id = _service.getArchetypeDescriptor(
-                shortName).getType();
+        ArchetypeId id = _service.getArchetypeDescriptor(shortName).getType();
         return ArchetypeQueryHelper.getByUid(_service, id, uid);
-    }
-
-    /**
-     * Generates a report for an object and displays it on-screen.
-     *
-     * @param object  the object
-     * @param showXML if  <code>true</code> display the .jrxml
-     */
-    public void view(IMObject object, boolean showXML) throws JRException {
-        IMObjectReport report = getReport(object, showXML);
-        if (report instanceof JasperIMObjectReport) {
-            JasperIMObjectReport r = (JasperIMObjectReport) report;
-            JasperViewer viewer = new JasperViewer(r.report(object), true);
-            viewer.setVisible(true);
-        } else {
-            System.out.println("Can't view reports of type "
-                    + report.getClass().getName());
-        }
     }
 
     /**
      * Generates a report for an object and saves it to disk.
      *
-     * @param object  the object
-     * @param path    the output path
-     * @param showXML if  <code>true</code> display the .jrxml
+     * @param object the object
+     * @param path   the output path
+     * @throws IOException for any I/O error
      */
-    public void save(IMObject object, String path, boolean showXML)
-            throws IOException {
-        IMObjectReport report = getReport(object, showXML);
+    public void save(IMObject object, String path) throws IOException {
+        IMObjectReport report = getReport(object);
         Document doc = report.generate(object);
         path = new File(path, doc.getName()).getPath();
         FileOutputStream stream = new FileOutputStream(path);
@@ -176,21 +149,16 @@ public class ReportTool {
                 if (list && shortName != null) {
                     ReportTool reporter = create(contextPath);
                     reporter.list(shortName);
-                } else if (report && shortName != null) {
-                    ReportTool reporter = create(contextPath);
+                } else if (report && shortName != null && output != null) {
+                    ReportTool reporter = ReportTool.create(contextPath);
                     IMObject object;
                     if (id == -1) {
                         object = reporter.get(shortName, name);
                     } else {
                         object = reporter.get(shortName, id);
                     }
-                    boolean xml = config.getBoolean("xml");
                     if (object != null) {
-                        if (output != null) {
-                            reporter.save(object, output, xml);
-                        } else {
-                            reporter.view(object, xml);
-                        }
+                        reporter.save(object, output);
                     } else {
                         System.out.println("No match found");
                     }
@@ -200,45 +168,38 @@ public class ReportTool {
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
+            System.exit(1);
         }
+        System.exit(0);
     }
 
     /**
      * Gets a report for an object.
      *
-     * @param object  the object
-     * @param showXML if  <code>true</code> display the .jrxml
+     * @param object the object
      * @return a report for the object
      */
-    private IMObjectReport getReport(IMObject object, boolean showXML) {
+    protected IMObjectReport getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        IMObjectReport report = IMObjectReportFactory.create(shortName,
-                                                             _service);
-        if (showXML && report instanceof JasperIMObjectReport) {
-            try {
-                JasperIMObjectReport j = (JasperIMObjectReport) report;
-                JRXmlWriter.writeReport(j.getReport(),
-                                        new PrintStream(System.out), "UTF-8");
-                for (JasperReport subreport : j.getSubreports()) {
-                    JRXmlWriter.writeReport(subreport,
-                                            new PrintStream(System.out),
-                                            "UTF-8");
-                }
-            } catch (JRException exception) {
-                exception.printStackTrace();
-            }
-        }
-        return report;
+        return IMObjectReportFactory.create(shortName, _service);
     }
 
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getArchetypeService() {
+        return _service;
+    }
 
     /**
-     * Creates the report tool.
+     * Helper to initialise the archetype service.
      *
      * @param contextPath the application context path
-     * @return a new report tool
      */
-    private static ReportTool create(String contextPath) {
+    protected static IArchetypeService initArchetypeService(
+            String contextPath) {
         ApplicationContext context;
         if (!new File(contextPath).exists()) {
             context = new ClassPathXmlApplicationContext(contextPath);
@@ -246,10 +207,19 @@ public class ReportTool {
             context = new FileSystemXmlApplicationContext(contextPath);
         }
 
-        IArchetypeService service
-                = (IArchetypeService) context.getBean("archetypeService");
+        return (IArchetypeService) context.getBean("archetypeService");
+    }
 
-        return new ReportTool(service);
+    /**
+     * Parses the command line.
+     *
+     * @param args the command line arguments
+     * @return the parsed results
+     * @throws JSAPException if the arguments can't be parsed
+     */
+    protected JSAPResult parse(String[] args) throws JSAPException {
+        JSAP parser = createParser();
+        return parser.parse(args);
     }
 
     /**
@@ -258,7 +228,7 @@ public class ReportTool {
      * @return a new parser
      * @throws JSAPException if the parser can't be created
      */
-    private static JSAP createParser() throws JSAPException {
+    protected static JSAP createParser() throws JSAPException {
         JSAP parser = new JSAP();
 
         parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
@@ -282,10 +252,17 @@ public class ReportTool {
         parser.registerParameter(new FlaggedOption("output").setShortFlag('o')
                 .setLongFlag("output")
                 .setHelp("Save report to file. Use with -r"));
-        parser.registerParameter(new Switch("xml").setShortFlag('x')
-                .setLongFlag("xml")
-                .setHelp("Display generated XML. Use with -r"));
         return parser;
+    }
+
+    /**
+     * Creates the report tool.
+     *
+     * @param contextPath the application context path
+     * @return a new report tool
+     */
+    private static ReportTool create(String contextPath) {
+        return new ReportTool(initArchetypeService(contextPath));
     }
 
     /**
@@ -293,8 +270,7 @@ public class ReportTool {
      */
     private static void displayUsage(JSAP parser) {
         System.err.println();
-        System.err
-                .println("Usage: java " + ReportTool.class.getName());
+        System.err.println("Usage: java " + ReportTool.class.getName());
         System.err.println("                " + parser.getUsage());
         System.err.println();
         System.err.println(parser.getHelp());
