@@ -114,12 +114,10 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
      * @throws OpenOfficeException for any error
      */
     public synchronized XPrinterServer getPrinterServer() {
-        return (XPrinterServer) getService(XPrinterServer.class.getName(),
+        // @todo how to get the PrintServer implementation by referring
+        // to its interface?
+        return (XPrinterServer) getService("stardiv.vcl.PrinterServer",
                                            XPrinterServer.class);
-/*
-             Object server = serviceManager.createInstanceWithContext(
-                    "stardiv.vcl.PrinterServer", context);
-*/
     }
 
 
@@ -177,6 +175,7 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
      * @throws Exception for any error
      */
     private void connect() throws com.sun.star.uno.Exception, Exception {
+
         XComponentContext initialContext
                 = Bootstrap.createInitialComponentContext(null);
         XMultiComponentFactory initialServiceManager
