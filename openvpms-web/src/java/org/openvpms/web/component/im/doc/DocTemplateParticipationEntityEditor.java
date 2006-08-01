@@ -182,7 +182,10 @@ public class DocTemplateParticipationEntityEditor
                     service.save(doc);
                     _act.setFileName(doc.getName());
                     _act.setMimeType(doc.getMimeType());
-                    _act.setDescription(doc.getDescription());
+                    if ( getParent() == null)
+                        _act.setDescription(doc.getDescription());
+                    else
+                        _act.setDescription(getParent().getName());
                     _act.setDocReference(doc.getObjectReference());
                     _selector.setObject(_act);
                     _docModified = true;

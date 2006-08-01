@@ -48,7 +48,11 @@ public class DocumentWorkspace extends PatientActWorkspace {
     /**
      * Payment and refund shortnames supported by the workspace.
      */
-    private static final String[] SHORT_NAMES = {"act.patientDocument"};
+    private static final String[] SHORT_NAMES = {"act.patientDocumentForm",
+                                                 "act.patientDocumentLetter",
+                                                 "act.patientDocumentAttachment",
+                                                 "act.patientDocumentImage",
+                                                 "act.patientDocumentHandout"};
 
     /**
      * Construct a new <code>InvoiceWorkspace</code>.
@@ -77,7 +81,7 @@ public class DocumentWorkspace extends PatientActWorkspace {
         IArchetypeService service
             = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
-            = DescriptorHelper.getArchetypeDescriptor("act.patientDocument");
+            = DescriptorHelper.getArchetypeDescriptor("act.patientDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");    
         List<Lookup> lookups = LookupHelper.get(service, statuses);
         ActQuery query = new ActQuery(patient, "patient", "participation.patient",
