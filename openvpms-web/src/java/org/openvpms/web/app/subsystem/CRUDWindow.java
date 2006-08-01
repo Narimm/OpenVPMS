@@ -34,11 +34,15 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.report.openoffice.OpenOfficeHelper;
+import org.openvpms.report.openoffice.PrintService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.doc.DownloadHelper;
@@ -454,8 +458,7 @@ public class CRUDWindow {
 
     /**
      * Invoked when the 'print' button is pressed.
-     * This implementation pops up a dialog confirming if printing should
-     * proceed. If so, {@link #print} is invoked.
+     * This implementation delegates to {@link #confirmPrint}.
      */
     protected void onPrint() {
         confirmPrint(getObject());
@@ -540,18 +543,44 @@ public class CRUDWindow {
     }
 
     /**
+     * Pops up a {@link PrintDialog} prompting if printing of an object
+     * should proceed, invoking {@link #print} if OK is selected, or
+     * {@link #printPreview} if Preview is selected.
+     *
+     * @param object the object to delete
+     */
+    protected void confirmPrint(final IMObject object) {
+        String title = Messages.get("imobject.print.title", _type);
+        final PrintDialog dialog = new PrintDialog(title);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                String action = dialog.getAction();
+                if (PrintDialog.OK_ID.equals(action)) {
+                    print(object, dialog.getPrinter());
+                } else if (PrintDialog.PREVIEW_ID.equals(action)) {
+                    printPreview(object);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
      * Prints an object. Invokes {@link #onPrinted} if successful.
      *
-     * @param object the object
+     * @param object  the object
+     * @param printer the printer name
      */
-    protected void print(IMObject object) {
+    protected void print(IMObject object, String printer) {
         boolean printed = false;
         String shortName = object.getArchetypeId().getShortName();
+        String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.RTF_TYPE};
         try {
             IMObjectReport report = IMObjectReportFactory.create(
-                    shortName, ServiceHelper.getArchetypeService());
+                    shortName, mimeTypes, ServiceHelper.getArchetypeService());
             final Document document = report.generate(object);
-            DownloadHelper.download(document);
+            PrintService service = OpenOfficeHelper.getPrintService();
+            service.print(document, printer);
             printed = true;
         } catch (Throwable exception) {
             ErrorHelper.show(exception);
@@ -560,6 +589,25 @@ public class CRUDWindow {
             onPrinted(object);
         }
     }
+
+    /**
+     * Generates a document and downloads it to the client.
+     *
+     * @param object the object to preview
+     */
+    protected void printPreview(IMObject object) {
+        String shortName = object.getArchetypeId().getShortName();
+        String[] mimeTypes = {DocFormats.PDF_TYPE};
+        try {
+            IMObjectReport report = IMObjectReportFactory.create(
+                    shortName, mimeTypes, ServiceHelper.getArchetypeService());
+            final Document document = report.generate(object);
+            DownloadHelper.download(document);
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
 
     /**
      * Invoked when the object has been printed.
@@ -654,25 +702,4 @@ public class CRUDWindow {
         dialog.show();
     }
 
-    /**
-     * Pops up a dialog prompting if printing of an object should proceed,
-     * invoking {@link #print} it if OK is selected.
-     *
-     * @param object the object to delete
-     */
-    private void confirmPrint(final IMObject object) {
-        String title = Messages.get("imobject.print.title", _type);
-        String message = Messages.get("imobject.print.title",
-                                      object.getName());
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    print(object);
-                }
-            }
-        });
-        dialog.show();
-    }
 }
