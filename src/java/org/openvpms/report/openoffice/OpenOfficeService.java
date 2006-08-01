@@ -86,6 +86,16 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
     }
 
     /**
+     * Constructs a new <code>OpenOfficeService</code>, connecting to the
+     * OpenOffice server started by the {@link BootstrapService}.
+     *
+     * @param service the bootstrap service.
+     */
+    public OpenOfficeService(BootstrapService service) {
+        this(service.getConnectionParameters());
+    }
+
+    /**
      * Invoked when the remote bridge has gone down, because the office crashed
      * or was terminated.
      *
@@ -176,21 +186,21 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
      */
     private void connect() throws com.sun.star.uno.Exception, Exception {
 
-        XComponentContext initialContext
+        XComponentContext localContext
                 = Bootstrap.createInitialComponentContext(null);
-        XMultiComponentFactory initialServiceManager
-                = initialContext.getServiceManager();
+        XMultiComponentFactory localServiceManager
+                = localContext.getServiceManager();
 
         // create the connector service
         XConnector connector = (XConnector) getService(
                 "com.sun.star.connection.Connector", XConnector.class,
-                initialServiceManager, initialContext);
+                localServiceManager, localContext);
 
         XConnection connection = connector.connect(_connectParams);
 
         XBridgeFactory bridgeFactory = (XBridgeFactory) getService(
                 "com.sun.star.bridge.BridgeFactory", XBridgeFactory.class,
-                initialServiceManager, initialContext);
+                localServiceManager, localContext);
 
         // create a nameless bridge with no instance provider
         XBridge bridge = bridgeFactory.createBridge("", _protocolParams,
