@@ -22,10 +22,10 @@ import com.sun.star.bridge.UnoUrlResolver;
 import com.sun.star.bridge.XUnoUrlResolver;
 import com.sun.star.comp.helper.Bootstrap;
 import com.sun.star.comp.helper.BootstrapException;
+import com.sun.star.connection.NoConnectException;
 import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
-import org.openvpms.report.IMObjectReportException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -44,28 +44,10 @@ import java.util.Random;
 public class BootstrapService {
 
     /**
-     * The component context.
+     * The connection parameters.
      */
-    private static XComponentContext _context;
+    private final String _connectParams;
 
-
-    /**
-     * Returns the component context.
-     *
-     * @return the component context
-     * @throws IMObjectReportException if a the component context can't be
-     *                                 bootstrapped
-     */
-    public static XComponentContext getComponentContext() {
-        if (_context == null) {
-            try {
-                bootstrap();
-            } catch (Throwable exception) {
-                throw new IMObjectReportException(exception);
-            }
-        }
-        return _context;
-    }
 
     /**
      * Bootstraps the component context from a UNO installation.
@@ -73,75 +55,89 @@ public class BootstrapService {
      * @throws BootstrapException if the component context can't be
      *                            bootstrapped
      */
-    private static void bootstrap() throws BootstrapException {
+    public BootstrapService() throws BootstrapException {
         try {
             // create default local component context
-            XComponentContext xLocalContext =
+            XComponentContext localContext =
                     Bootstrap.createInitialComponentContext(null);
-            if (xLocalContext == null)
-                throw new BootstrapException("no local component context!");
+            if (localContext == null) {
+                throw new BootstrapException("no local component context");
+            }
 
-            String sOffice =
+            String office =
                     System.getProperty("os.name").startsWith("Windows") ?
                             "soffice.exe" : "soffice";
             // create random pipe name
-            String sPipeName = "uno" +
+            String pipeName = "uno" +
                     Long.toString(
                             (new Random()).nextLong() & 0x7fffffffffffffffL);
 
-            // create call with arguments
-            String[] cmdArray = new String[7];
-            cmdArray[0] = sOffice;
-            cmdArray[1] = "-nologo";
-            cmdArray[2] = "-nodefault";
-            cmdArray[3] = "-norestore";
-            cmdArray[4] = "-nocrashreport";
-            cmdArray[5] = "-nolockcheck";
-            cmdArray[6] = "-accept=pipe,name=" + sPipeName + ";urp;";
+            // command line arguments
+            String[] args = {
+                    office, "-nologo", "-nodefault", "-norestore",
+                    "-nocrashreport", "-nolockcheck",
+                    "-accept=pipe,name=" + pipeName + ";urp;"
+            };
 
             // start office process
-            Process p = Runtime.getRuntime().exec(cmdArray);
+            Process p = Runtime.getRuntime().exec(args);
             pipe(p.getInputStream(), System.out, "CO> ");
             pipe(p.getErrorStream(), System.err, "CE> ");
 
             // initial service manager
-            XMultiComponentFactory xLocalServiceManager =
-                    xLocalContext.getServiceManager();
-            if (xLocalServiceManager == null)
-                throw new BootstrapException("no initial service manager!");
+            XMultiComponentFactory localServiceManager
+                    = localContext.getServiceManager();
+            if (localServiceManager == null)
+                throw new BootstrapException("no initial service manager");
 
             // create a URL resolver
-            XUnoUrlResolver xUrlResolver =
-                    UnoUrlResolver.create(xLocalContext);
+            XUnoUrlResolver urlResolver = UnoUrlResolver.create(localContext);
 
             // connection string
-            String sConnect = "uno:pipe,name=" + sPipeName +
-                    ";urp;StarOffice.ComponentContext";
+            _connectParams = "pipe,name=" + pipeName;
+            String connect = "uno:" + _connectParams
+                    + ";urp;StarOffice.ComponentContext";
 
             // wait until office is started
             for (; ;) {
                 try {
                     // try to connect to office
-                    Object context = xUrlResolver.resolve(sConnect);
-                    _context = (XComponentContext) UnoRuntime.queryInterface(
+                    Object context = urlResolver.resolve(connect);
+                    context = UnoRuntime.queryInterface(
                             XComponentContext.class, context);
-                    if (_context == null)
+                    if (context == null)
                         throw new BootstrapException("no component context!");
                     break;
-                } catch (com.sun.star.connection.NoConnectException ex) {
+                } catch (NoConnectException exception) {
                     // wait 500 ms, then try to connect again
                     Thread.sleep(500);
                 }
             }
-        } catch (BootstrapException e) {
-            throw e;
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.lang.Exception e) {
-            throw new BootstrapException(e.getMessage(), e);
+        } catch (BootstrapException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new BootstrapException(exception.getMessage(), exception);
         }
     }
 
+    /**
+     * Returns the connection parameters.
+     *
+     * @return the connection parameters
+     */
+    public String getConnectionParameters() {
+        return _connectParams;
+    }
+
+    /**
+     * Pipes process output to a stream.
+     *
+     * @param in     the stream to read from
+     * @param out    the stream to write to
+     * @param prefix logging prefix
+     */
     private static void pipe(final InputStream in, final PrintStream out,
                              final String prefix) {
 
@@ -157,8 +153,8 @@ public class BootstrapService {
                         }
                         out.println(prefix + s);
                     }
-                } catch (java.io.IOException e) {
-                    e.printStackTrace(System.err);
+                } catch (java.io.IOException exception) {
+                    exception.printStackTrace(System.err);
                 }
             }
         }.start();

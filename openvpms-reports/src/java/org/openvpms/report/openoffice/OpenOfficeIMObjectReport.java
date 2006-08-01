@@ -235,10 +235,13 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
             String name = FilenameUtils.removeExtension(_template.getName())
                     + "." + DocFormats.PDF_EXT;
             doc.setName(name);
+        } else {
+            doc.setName(_template.getName());
         }
         byte[] content = stream.getBuffer();
         doc.setContents(content);
         doc.setDocSize(content.length);
+        doc.setMimeType(_mimeType);
         return doc;
     }
 }

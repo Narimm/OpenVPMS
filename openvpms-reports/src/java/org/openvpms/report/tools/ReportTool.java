@@ -182,7 +182,7 @@ public class ReportTool {
      */
     protected IMObjectReport getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        String[] mimeTypes = {DocFormats.PDF_TYPE};
+        String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.PDF_TYPE};
         return IMObjectReportFactory.create(shortName, mimeTypes, _service);
     }
 

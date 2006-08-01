@@ -180,10 +180,36 @@
         </constructor-arg>
     </bean>
 
-    <bean id="openOfficeService"
-        class="org.openvpms.report.openoffice.OpenOfficeService">
+    <!--bean id="bootstrapService"
+        class="org.openvpms.report.openoffice.BootstrapService">
+    </bean-->
+
+    <!-- OpenOffice service. This can be configured to use the BootStrapService
+         to start a local OpenOffice server, or connect to an existing
+         OpenOffice server.
+         To connect to an existing server listening on a socket, use the
+         following, replacing host and port as required:
         <constructor-arg>
             <value>socket,host=localhost,port=8100,tcpNoDelay=1</value>
+        </constructor-arg>
+        The corresponding server should be run with the following:
+            soffice -nologo -nodefault -norestore -nocrashreport -nolockcheck '-accept=socket,port=8100;urp;'
+
+        To connect to an existing server listening on pipe (changing the pipe
+        name as required):
+        <constructor-arg>
+            <value>pipe,name=vpms</value>
+        </constructor-arg>
+        The corresponding server should be run with the following:
+            soffice -nologo -nodefault -norestore -nocrashreport -nolockcheck '-accept=pipe,name=vpms;urp;'
+    -->
+    <bean id="openOfficeService"
+        class="org.openvpms.report.openoffice.OpenOfficeService">
+        <!--constructor-arg>
+            <ref local="bootstrapService"/>
+        </constructor-arg-->
+        <constructor-arg>
+            <value>pipe,name=vpms</value>
         </constructor-arg>
     </bean>
 
