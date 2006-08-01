@@ -19,14 +19,18 @@
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.export.JRRtfExporter;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
+import org.openvpms.report.DocFormats;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +45,11 @@ public abstract class AbstractJasperIMObjectReport
         implements JasperIMObjectReport {
 
     /**
+     * The mime-type of the generated document.
+     */
+    private String _mimeType;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService _service;
@@ -49,9 +58,24 @@ public abstract class AbstractJasperIMObjectReport
     /**
      * Constructs a new <code>AbstractJasperIMObjectReport</code>.
      *
-     * @param service the archetype service
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @param service  the archetype service
+     * @throws JRException if no mime-type is supported
      */
-    public AbstractJasperIMObjectReport(IArchetypeService service) {
+    public AbstractJasperIMObjectReport(String[] mimeTypes,
+                                        IArchetypeService service)
+            throws JRException {
+        for (String mimeType : mimeTypes) {
+            if (DocFormats.PDF_TYPE.equals(mimeType)
+                    || DocFormats.RTF_TYPE.equals(mimeType)) {
+                _mimeType = mimeType;
+                break;
+            }
+        }
+        if (_mimeType == null) {
+            throw new JRException("No valid mime-types provided");
+        }
         _service = service;
     }
 
@@ -66,10 +90,15 @@ public abstract class AbstractJasperIMObjectReport
         Document document = (Document) _service.create("document.other");
         try {
             JasperPrint print = report(object);
-            byte[] report = JasperExportManager.exportReportToPdf(print);
+            byte[] report;
+            if (DocFormats.PDF_TYPE.equals(_mimeType)) {
+                report = JasperExportManager.exportReportToPdf(print);
+            } else {
+                report = exportToRTF(print);
+            }
             document.setName(print.getName());
             document.setContents(report);
-            document.setMimeType("application/pdf");
+            document.setMimeType(_mimeType);
             document.setDocSize(report.length);
         } catch (JRException exception) {
             throw new IMObjectReportException(exception);
@@ -111,4 +140,21 @@ public abstract class AbstractJasperIMObjectReport
     protected Map<String, Object> getParameters(IMObject object) {
         return new HashMap<String, Object>();
     }
+
+    /**
+     * Exports a generated jasper report to an RTF stream.
+     *
+     * @param report the report
+     * @return a new serialized RTF
+     * @throws JRException if the export fails
+     */
+    private byte[] exportToRTF(JasperPrint report) throws JRException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        JRRtfExporter exporter = new JRRtfExporter();
+        exporter.setParameter(JRExporterParameter.JASPER_PRINT, report);
+        exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
+        exporter.exportReport();
+        return stream.toByteArray();
+    }
+
 }

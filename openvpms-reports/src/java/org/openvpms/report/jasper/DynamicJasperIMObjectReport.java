@@ -74,12 +74,15 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      * Construct a new <code>DynamicJasperIMObjectReport</code>.
      *
      * @param archetype the archetype descriptor
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
      * @param service   the archetype service
      */
     public DynamicJasperIMObjectReport(ArchetypeDescriptor archetype,
+                                       String[] mimeTypes,
                                        IArchetypeService service)
             throws JRException {
-        super(service);
+        super(mimeTypes, service);
         _design = ReportHelper.getReportResource("/archetype_template.jrxml");
         _template = new JRElementFactory(_design);
 
