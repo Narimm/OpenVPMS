@@ -87,7 +87,7 @@ public class DocumentViewer {
             if (_parent instanceof DocumentAct) {
                 DocumentAct dact = (DocumentAct)_parent;
                 if (dact.getFileName() != null)
-                    styleName = "download.".concat(FilenameUtils.getExtension(dact.getFileName()));
+                    styleName = "download.".concat(FilenameUtils.getExtension(dact.getFileName()).toLowerCase());
                 else
                     styleName = "download.default";
                 if (ApplicationInstance.getActive().getStyle(Button.class, styleName) == null)

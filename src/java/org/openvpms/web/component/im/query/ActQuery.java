@@ -230,7 +230,7 @@ public class ActQuery extends AbstractQuery {
         } else {
             _statusLookups = statusLookups;
         }
-        _selectType = false;
+        _selectType = true;
         _statuses = new String[0];
     }
 
