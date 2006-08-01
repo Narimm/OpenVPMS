@@ -35,8 +35,8 @@ import java.util.Random;
 
 
 /**
- * Service to bootsrap a <code>XComponentContext</code> from an UNO
- * installation. The OpenOffice binaries must be in the path.
+ * Service to bootstrap an OpenOffice instance on the local host.
+ * The OpenOffice binaries must be in the path.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $

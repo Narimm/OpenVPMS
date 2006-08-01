@@ -21,6 +21,8 @@ package org.openvpms.report;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -28,8 +30,6 @@ import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
 import org.openvpms.report.jasper.TemplateHelper;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.openoffice.OpenOfficeIMObjectReport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.ByteArrayInputStream;
 
@@ -53,32 +53,37 @@ public class IMObjectReportFactory {
      * Creates a new report.
      *
      * @param shortName the archetype short name
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
      * @param service   the archetype service
      * @return a new report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMObjectReport create(String shortName,
+                                        String[] mimeTypes,
                                         IArchetypeService service) {
         Document doc = TemplateHelper.getDocumentForArchetype(shortName,
                                                               service);
         try {
             if (doc != null) {
                 String name = doc.getName();
-                if (name.endsWith(".jrxml")) {
+                if (name.endsWith(DocFormats.JRXML_EXT)) {
                     ByteArrayInputStream stream
                             = new ByteArrayInputStream(doc.getContents());
                     JasperDesign report = JRXmlLoader.load(stream);
-                    return new TemplatedJasperIMObjectReport(report, service);
-                } else if (name.endsWith(".odt")) {
-                    return new OpenOfficeIMObjectReport(doc);
+                    return new TemplatedJasperIMObjectReport(report, mimeTypes,
+                                                             service);
+                } else if (name.endsWith(DocFormats.ODT_EXT)) {
+                    return new OpenOfficeIMObjectReport(doc, mimeTypes);
                 } else {
                     _log.error("Unrecognised document template': " + name
                             + "'. Falling back to dynamic jasper report");
                 }
             }
             return new DynamicJasperIMObjectReport(
-                    service.getArchetypeDescriptor(shortName), service);
+                    service.getArchetypeDescriptor(shortName), mimeTypes,
+                    service);
         } catch (JRException exception) {
             throw new IMObjectReportException(exception);
         }

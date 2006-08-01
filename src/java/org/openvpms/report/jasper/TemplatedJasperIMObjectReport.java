@@ -42,7 +42,8 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TemplatedJasperIMObjectReport extends AbstractJasperIMObjectReport {
+public class TemplatedJasperIMObjectReport
+        extends AbstractJasperIMObjectReport {
 
     /**
      * The compiled report.
@@ -65,14 +66,17 @@ public class TemplatedJasperIMObjectReport extends AbstractJasperIMObjectReport 
     /**
      * Constructs a new <code>TemplatedJasperIMObjectReport</code>.
      *
-     * @param design  the master report design
-     * @param service the archetype service
+     * @param design    the master report design
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @param service   the archetype service
      * @throws JRException for any error
      */
     public TemplatedJasperIMObjectReport(JasperDesign design,
+                                         String[] mimeTypes,
                                          IArchetypeService service)
             throws JRException {
-        super(service);
+        super(mimeTypes, service);
         JRElement[] elements = design.getDetail().getElements();
         for (JRElement element : elements) {
             if (element instanceof JRDesignSubreport) {

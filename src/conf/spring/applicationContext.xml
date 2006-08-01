@@ -175,9 +175,32 @@
 
     <bean id="templateHelper"
           class="org.openvpms.report.jasper.TemplateHelper">
-        <constructor-arg index="0">
+        <constructor-arg>
             <ref local="sessionFactory"/>
         </constructor-arg>
     </bean>
 
+    <bean id="openOfficeService"
+        class="org.openvpms.report.openoffice.OpenOfficeService">
+        <constructor-arg>
+            <value>socket,host=localhost,port=8100,tcpNoDelay=1</value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="printService"
+        class= "org.openvpms.report.openoffice.PrintService">
+        <constructor-arg>
+            <ref local="openOfficeService"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="openOfficeHelper"
+        class= "org.openvpms.report.openoffice.OpenOfficeHelper">
+        <constructor-arg>
+            <ref local="openOfficeService"/>
+        </constructor-arg>
+        <constructor-arg>
+            <ref local="printService"/>
+        </constructor-arg>
+    </bean>
 </beans>

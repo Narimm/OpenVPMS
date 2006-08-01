@@ -22,31 +22,24 @@ import com.sun.star.beans.PropertyValue;
 import com.sun.star.beans.XPropertySet;
 import com.sun.star.container.XEnumerationAccess;
 import com.sun.star.container.XNameAccess;
-import com.sun.star.frame.XComponentLoader;
-import com.sun.star.frame.XModel;
 import com.sun.star.frame.XStorable;
 import com.sun.star.io.IOException;
-import com.sun.star.io.XInputStream;
 import com.sun.star.lang.XComponent;
-import com.sun.star.lang.XMultiComponentFactory;
-import com.sun.star.lib.uno.adapter.ByteArrayToXInputStreamAdapter;
 import com.sun.star.lib.uno.adapter.XOutputStreamToByteArrayAdapter;
 import com.sun.star.text.XTextDocument;
 import com.sun.star.text.XTextFieldsSupplier;
 import com.sun.star.uno.UnoRuntime;
-import com.sun.star.uno.XComponentContext;
-import com.sun.star.util.CloseVetoException;
-import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
+import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.NodeResolver;
 import org.openvpms.report.jasper.ReportHelper;
-import org.apache.commons.io.FilenameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,19 +56,14 @@ import java.util.List;
 public class OpenOfficeIMObjectReport implements IMObjectReport {
 
     /**
-     * The service manager.
-     */
-    private XMultiComponentFactory _serviceManager;
-
-    /**
-     * The remote context.
-     */
-    private XComponentContext _context;
-
-    /**
      * The document template.
      */
     private final Document _template;
+
+    /**
+     * The mime-type to generate the document as.
+     */
+    private String _mimeType;
 
     /**
      * Prefix for user fields. The value of these fields are populated with
@@ -88,10 +76,23 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
     /**
      * Creates a new <code>OpenOfficeIMObjectReport</code>.
      *
-     * @param template the document template
+     * @param template  the document template
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @throws IMObjectReportException if the mime-type is invalid
      */
-    public OpenOfficeIMObjectReport(Document template) {
+    public OpenOfficeIMObjectReport(Document template, String[] mimeTypes) {
         _template = template;
+        for (String mimeType : mimeTypes) {
+            if (DocFormats.ODT_TYPE.equals(mimeType)
+                    || DocFormats.RTF_TYPE.equals(mimeType)) {
+                _mimeType = mimeType;
+                break;
+            }
+        }
+        if (_mimeType == null) {
+            throw new IMObjectReportException("No valid mime-types provided");
+        }
     }
 
     /**
@@ -105,7 +106,8 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
         NodeResolver resolver = new NodeResolver(
                 object, ArchetypeServiceHelper.getArchetypeService());
         try {
-            XComponent template = newDocComponentFromTemplate();
+            XComponent template = DocumentHelper.newDocComponentFromTemplate(
+                    _template, OpenOfficeHelper.getService());
 
             // get XTextFieldsSupplier interface
             XTextFieldsSupplier textFieldsSupplier = (XTextFieldsSupplier)
@@ -196,103 +198,47 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
     }
 
     /**
-     * Loads a document as template.
-     *
-     * @return the new document component
-     * @throws com.sun.star.uno.Exception if the document can't be created
-     */
-    private XComponent newDocComponentFromTemplate()
-            throws com.sun.star.uno.Exception {
-        // get the remote service manager
-        XMultiComponentFactory serviceManager = getServiceManager();
-        // retrieve the Desktop object, we need its XComponentLoader
-        Object desktop = serviceManager.createInstanceWithContext(
-                "com.sun.star.frame.Desktop", _context);
-        XComponentLoader componentLoader = (XComponentLoader)
-                UnoRuntime.queryInterface(XComponentLoader.class, desktop);
-
-        byte[] content = _template.getContents();
-        XInputStream stream = new ByteArrayToXInputStreamAdapter(content);
-        PropertyValue[] properties = new PropertyValue[]{
-                property("ReadOnly", Boolean.TRUE),
-                property("Hidden", Boolean.TRUE),
-                property("AsTemplate", true),
-                property("InputStream", stream)
-        };
-        // AsTemplate tells office to create a new document from the given
-        // stream
-
-        return componentLoader.loadComponentFromURL("private:stream", "_blank",
-                                                    0, properties);
-    }
-
-    /**
      * Exports the template as a PDF, serializing to a {@link Document}.
      *
      * @param template the template
      * @return a new document, containing the serialized template
-     * @throws CloseVetoException
-     * @throws IOException
+     * @throws IOException for any I/O error
      */
-    private Document export(XComponent template) throws CloseVetoException,
-                                                        IOException {
-        XTextDocument aTextDocument = (XTextDocument) UnoRuntime.queryInterface(
+    private Document export(XComponent template) throws IOException {
+        boolean isPDF = _mimeType.equals(DocFormats.PDF_TYPE);
+        XTextDocument textDocument = (XTextDocument) UnoRuntime.queryInterface(
                 XTextDocument.class, template);
         XOutputStreamToByteArrayAdapter stream
                 = new XOutputStreamToByteArrayAdapter();
 
-        XStorable xStorable = (XStorable) UnoRuntime.queryInterface(
-                XStorable.class, aTextDocument);
-        PropertyValue[] properties = new PropertyValue[]{
-                property("OutputStream", stream),
-                property("Overwrite", true),
-                property("FilterName", "writer_pdf_Export")
-        };
+        XStorable storable = (XStorable) UnoRuntime.queryInterface(
+                XStorable.class, textDocument);
 
-        xStorable.storeToURL("private:stream", properties);
+        PropertyValue[] properties;
+        PropertyValue outputStream
+                = DocumentHelper.newProperty("OutputStream", stream);
+        PropertyValue overwrite = DocumentHelper.newProperty("Overwrite", true);
+        if (isPDF) {
+            PropertyValue filter = DocumentHelper.newProperty(
+                    "FilterName", "writer_pdf_Export");
+            properties = new PropertyValue[]{outputStream, overwrite, filter};
+        } else {
+            properties = new PropertyValue[]{outputStream, overwrite};
+        }
+
+        storable.storeToURL("private:stream", properties);
         stream.closeOutput();
-
-        XModel xModel = (XModel) UnoRuntime.queryInterface(XModel.class,
-                                                           template);
-        XCloseable xCloseable = (XCloseable) UnoRuntime.queryInterface(
-                XCloseable.class, xModel);
-        xCloseable.close(false);
-
+        DocumentHelper.close(template);
         IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         Document doc = (Document) service.create("document.other");
-        String name = FilenameUtils.removeExtension(_template.getName()) 
-                + ".pdf";
-        doc.setName(name);
+        if (isPDF) {
+            String name = FilenameUtils.removeExtension(_template.getName())
+                    + "." + DocFormats.PDF_EXT;
+            doc.setName(name);
+        }
         byte[] content = stream.getBuffer();
         doc.setContents(content);
         doc.setDocSize(content.length);
         return doc;
-    }
-
-    /**
-     * Returns the remote service manager.
-     *
-     * @return the service manager
-     */
-    private XMultiComponentFactory getServiceManager() {
-        if (_context == null && _serviceManager == null) {
-            _context = BootstrapService.getComponentContext();
-            _serviceManager = _context.getServiceManager();
-        }
-        return _serviceManager;
-    }
-
-    /**
-     * Helper to create a new <code>PropertyValue</code>.
-     *
-     * @param name  the property name
-     * @param value the property value
-     * @return a new <code>PropertyValue</code>
-     */
-    private PropertyValue property(String name, Object value) {
-        PropertyValue property = new PropertyValue();
-        property.Name = name;
-        property.Value = value;
-        return property;
     }
 }

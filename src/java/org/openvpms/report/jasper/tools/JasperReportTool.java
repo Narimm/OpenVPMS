@@ -31,6 +31,7 @@ import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
@@ -147,13 +148,15 @@ public class JasperReportTool extends ReportTool {
         Document doc = TemplateHelper.getDocumentForArchetype(
                 shortName, service);
         JasperIMObjectReport report = null;
+        String[] mimeTypes = {DocFormats.PDF_TYPE};
         try {
             if (doc != null) {
                 if (doc.getName().endsWith(".jrxml")) {
                     ByteArrayInputStream stream
                             = new ByteArrayInputStream(doc.getContents());
                     JasperDesign design = JRXmlLoader.load(stream);
-                    report = new TemplatedJasperIMObjectReport(design, service);
+                    report = new TemplatedJasperIMObjectReport(
+                            design, mimeTypes, service);
                 } else {
                     System.err.println("Warning:" + doc.getName()
                             + " not a recognised jasper extension. "
@@ -162,7 +165,8 @@ public class JasperReportTool extends ReportTool {
             }
             if (report == null) {
                 report = new DynamicJasperIMObjectReport(
-                        service.getArchetypeDescriptor(shortName), service);
+                        service.getArchetypeDescriptor(shortName), mimeTypes,
+                        service);
             }
         } catch (JRException exception) {
             throw new IMObjectReportException(exception);
