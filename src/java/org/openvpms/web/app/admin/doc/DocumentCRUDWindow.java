@@ -93,7 +93,7 @@ public class DocumentCRUDWindow extends CRUDWindow {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
                 IMObject object = service.create(shortName);
-                print(object);
+                confirmPrint(object);
             } else {
                 ErrorDialog.show(Messages.get(
                         "admin.documentTemplate.print.noarchetype"));
