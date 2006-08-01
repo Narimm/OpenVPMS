@@ -41,15 +41,15 @@
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="act.patientDocument" />
+							value="act.patientDocument*" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="act.customerDocument" />
+							value="act.customerDocument*" />
 					</propertyMap>
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="act.supplierDocument" />
+							value="act.supplierDocument*" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
