@@ -91,12 +91,15 @@ public abstract class AbstractJasperIMObjectReport
         try {
             JasperPrint print = report(object);
             byte[] report;
+            String ext;
             if (DocFormats.PDF_TYPE.equals(_mimeType)) {
                 report = JasperExportManager.exportReportToPdf(print);
+                ext = DocFormats.PDF_EXT;
             } else {
                 report = exportToRTF(print);
+                ext = DocFormats.RTF_EXT;
             }
-            document.setName(print.getName());
+            document.setName(print.getName() + "." + ext);
             document.setContents(report);
             document.setMimeType(_mimeType);
             document.setDocSize(report.length);
