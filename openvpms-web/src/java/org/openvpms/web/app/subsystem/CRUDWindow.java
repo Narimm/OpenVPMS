@@ -37,8 +37,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportFactory;
-import org.openvpms.report.openoffice.OpenOfficeHelper;
-import org.openvpms.report.openoffice.PrintService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
@@ -556,7 +554,7 @@ public class CRUDWindow {
             public void windowPaneClosing(WindowPaneEvent event) {
                 String action = dialog.getAction();
                 if (PrintDialog.OK_ID.equals(action)) {
-                    print(object, dialog.getPrinter());
+                    print(object, null);
                 } else if (PrintDialog.PREVIEW_ID.equals(action)) {
                     printPreview(object);
                 }
@@ -574,13 +572,18 @@ public class CRUDWindow {
     protected void print(IMObject object, String printer) {
         boolean printed = false;
         String shortName = object.getArchetypeId().getShortName();
-        String[] mimeTypes = {DocFormats.ODT_TYPE, DocFormats.RTF_TYPE};
+        String[] mimeTypes = {DocFormats.PDF_TYPE};
         try {
             IMObjectReport report = IMObjectReportFactory.create(
                     shortName, mimeTypes, ServiceHelper.getArchetypeService());
             final Document document = report.generate(object);
+/*
+            // @todo - need to generate reports to ODT/RTF format in order to
+            // print
             PrintService service = OpenOfficeHelper.getPrintService();
             service.print(document, printer);
+*/
+            DownloadHelper.download(document);
             printed = true;
         } catch (Throwable exception) {
             ErrorHelper.show(exception);

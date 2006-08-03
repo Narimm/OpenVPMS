@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.dialog;
 
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -27,9 +25,6 @@ import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.report.openoffice.PrintService;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
 
 
 /**
@@ -59,10 +54,12 @@ public class PrintDialog extends PopupDialog {
     public PrintDialog(String title) {
         super(title, Buttons.OK_CANCEL);
 
+/*
         Label printer = LabelFactory.create("printdialog.printer");
         _printers = SelectFieldFactory.create(getPrinters());
         Row row = RowFactory.create("ControlRow", printer, _printers);
         getLayout().add(row);
+*/
         addButton(PREVIEW_ID, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onPreview();
@@ -76,7 +73,8 @@ public class PrintDialog extends PopupDialog {
      * @return the selected printer, or <code>null</code> if none is selected
      */
     public String getPrinter() {
-        return (String) _printers.getSelectedItem();
+        // return (String) _printers.getSelectedItem();
+        return null;
     }
 
     /**
