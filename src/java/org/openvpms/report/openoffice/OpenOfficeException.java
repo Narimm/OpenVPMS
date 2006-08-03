@@ -45,6 +45,9 @@ public class OpenOfficeException extends OpenVPMSException {
         ServiceNotInit,
         FailedToCreateDoc,
         FailedToPrint,
+        FailedToGetField,
+        FailedToSetField,
+        FailedToExportDoc
     }
 
     /**
@@ -75,11 +78,11 @@ public class OpenOfficeException extends OpenVPMSException {
     /**
      * Constructs a new <code>OpenOfficeException</code>.
      *
-     * @param errorCode the error code
      * @param cause     the cause of the exception
+     * @param errorCode the error code
      * @param args      a list of arguments to format the error message with
      */
-    public OpenOfficeException(ErrorCode errorCode, Throwable cause,
+    public OpenOfficeException(Throwable cause, ErrorCode errorCode,
                                Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args), cause);
         _errorCode = errorCode;

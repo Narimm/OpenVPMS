@@ -18,7 +18,8 @@
 
 package org.openvpms.report;
 
-import net.sf.jasperreports.engine.JRException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.InvalidObject;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.InvalidNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -105,11 +106,59 @@ public class NodeResolver {
      * Returns the object associated with a field name.
      *
      * @return the object corresponding to <code>name</code>
-     * @throws JRException if the name is invalid
+     * @throws IMObjectReportException if the name is invalid
      */
-    public Object getObject(String name) throws JRException {
+    public Object getObject(String name) {
         return resolve(name).getValue();
     }
+
+    /**
+     * Resolves the node state corresponding to a field name.
+     *
+     * @param name the field name
+     * @return the resolved state
+     * @throws IMObjectReportException if the name is invalid
+     */
+    public State resolve(String name) {
+        State state;
+        IMObject object = _root;
+        ArchetypeDescriptor archetype = _archetype;
+        int index;
+        while ((index = name.indexOf(".")) != -1) {
+            String nodeName = name.substring(0, index);
+            NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
+            if (node == null) {
+                throw new IMObjectReportException(InvalidNode, name);
+            }
+            Object value = getValue(object, node);
+            if (value == null) {
+                // object missing.
+                break;
+            } else if (!(value instanceof IMObject)) {
+                throw new IMObjectReportException(InvalidObject, name);
+            }
+            object = (IMObject) value;
+            archetype = _service.getArchetypeDescriptor(
+                    object.getArchetypeId());
+            name = name.substring(index + 1);
+        }
+        if (object != null) {
+            NodeDescriptor leafNode = archetype.getNodeDescriptor(name);
+            Object value;
+            if (leafNode == null && "displayName".equals(name)) {
+                value = archetype.getDisplayName();
+            } else if (leafNode != null) {
+                value = getValue(object, leafNode);
+            } else {
+                throw new IMObjectReportException(InvalidNode, name);
+            }
+            state = new State(object, archetype, name, leafNode, value);
+        } else {
+            state = new State();
+        }
+        return state;
+    }
+
 
     /**
      * Returns the value of a node, converting any object references or
@@ -130,53 +179,6 @@ public class NodeResolver {
             result = descriptor.getValue(parent);
         }
         return result;
-    }
-
-    /**
-     * Resolves the node state corresponding to a field name.
-     *
-     * @param name the field name
-     * @return the resolved state
-     * @throws IMObjectReportException if the name is invalid
-     */
-    public State resolve(String name) {
-        State state;
-        IMObject object = _root;
-        ArchetypeDescriptor archetype = _archetype;
-        int index;
-        while ((index = name.indexOf(".")) != -1) {
-            String nodeName = name.substring(0, index);
-            NodeDescriptor node = archetype.getNodeDescriptor(nodeName);
-            if (node == null) {
-                throw new IMObjectReportException("Name doesn't refer to a valid node: "
-                        + name);
-            }
-            Object value = getValue(object, node);
-            if (value == null) {
-                // object missing.
-                break;
-            } else if (!(value instanceof IMObject)) {
-                throw new IMObjectReportException(
-                        "Name doesn't refer to an object reference: " + name);
-            }
-            object = (IMObject) value;
-            archetype = _service.getArchetypeDescriptor(
-                    object.getArchetypeId());
-            name = name.substring(index + 1);
-        }
-        if (object != null) {
-            NodeDescriptor leafNode = archetype.getNodeDescriptor(name);
-            Object value = null;
-            if (leafNode == null && "displayName".equals(name)) {
-                value = archetype.getDisplayName();
-            } else if (leafNode != null) {
-                value = getValue(object, leafNode);
-            }
-            state = new State(object, archetype, name, leafNode, value);
-        } else {
-            state = new State();
-        }
-        return state;
     }
 
     /**

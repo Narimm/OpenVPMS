@@ -18,6 +18,7 @@
 
 package org.openvpms.report.jasper;
 
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -104,7 +105,8 @@ public abstract class AbstractJasperIMObjectReport
             document.setMimeType(_mimeType);
             document.setDocSize(report.length);
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception);
+            throw new IMObjectReportException(FailedToGenerateReport, exception,
+                                              exception.getMessage());
         }
         return document;
     }

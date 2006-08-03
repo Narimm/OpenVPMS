@@ -16,12 +16,8 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper;
+package org.openvpms.report;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -30,8 +26,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
-import java.io.InputStream;
-import java.math.BigDecimal;
+import java.util.Collection;
 
 
 /**
@@ -41,21 +36,6 @@ import java.math.BigDecimal;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ReportHelper {
-
-    /**
-     * Returns the value class of a node.
-     *
-     * @param descriptor the node descriptor
-     */
-    public static Class getValueClass(NodeDescriptor descriptor) {
-        if (descriptor.isMoney()) {
-            return BigDecimal.class;
-        } else if (descriptor.isCollection()
-                || descriptor.isObjectReference()) {
-            return String.class;
-        }
-        return descriptor.getClazz();
-    }
 
     /**
      * Helper to return a value for an object, for display purposes.
@@ -108,18 +88,36 @@ public class ReportHelper {
     }
 
     /**
-     * Loads a report resource.
+     * Helper to return a the value of a node, handling collection nodes.
      *
-     * @param path the resource path
-     * @return the design corresponding to <code>path</code>
-     * @throws JRException if the resource can't be loaded
+     * @param name     the node name
+     * @param resolver the node resolver
+     * @return the node value
      */
-    public static JasperDesign getReportResource(String path)
-            throws JRException {
-        InputStream stream = ReportHelper.class.getResourceAsStream(path);
-        if (stream == null) {
-            throw new JRException("Report resource not found: " + path);
+    public static Object getValue(String name, NodeResolver resolver) {
+        NodeResolver.State state = resolver.resolve(name);
+        Object value = state.getValue();
+        Object result = null;
+        if (value != null) {
+            if (state.getLeafNode() != null
+                    && state.getLeafNode().isCollection()) {
+                if (value instanceof Collection) {
+                    Collection<IMObject> values = (Collection<IMObject>) value;
+                    StringBuffer descriptions = new StringBuffer();
+                    for (IMObject object : values) {
+                        descriptions.append(ReportHelper.getValue(object));
+                        descriptions.append('\n');
+                    }
+                    result = descriptions.toString();
+                } else {
+                    // single value collection.
+                    IMObject object = (IMObject) value;
+                    result = ReportHelper.getValue(object);
+                }
+            } else {
+                result = value;
+            }
         }
-        return JRXmlLoader.load(stream);
+        return result;
     }
 }

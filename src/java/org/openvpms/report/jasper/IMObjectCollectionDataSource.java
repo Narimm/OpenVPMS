@@ -21,7 +21,6 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import org.apache.commons.collections.ComparatorUtils;
-import org.apache.commons.collections.FunctorException;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -160,22 +159,12 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
          * object.
          *
          * @param input the object to be transformed, should be left unchanged
-         * @return a transformed object
-         * @throws ClassCastException       (runtime) if the input is the wrong
-         *                                  class
-         * @throws IllegalArgumentException (runtime) if the input is invalid
-         * @throws FunctorException         (runtime) if the transform cannot be
-         *                                  completed
          */
         public Object transform(Object input) {
             Object result;
             IMObject object = (IMObject) input;
             NodeResolver resolver = new NodeResolver(object, _service);
-            try {
-                result = resolver.getObject(_name);
-            } catch (JRException exception) {
-                throw new FunctorException(exception);
-            }
+            result = resolver.getObject(_name);
             if (!(result instanceof Comparable)) {
                 // not comparable so null to avoid class cast exceptions
                 result = null;

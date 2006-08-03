@@ -18,6 +18,7 @@
 
 package org.openvpms.report.jasper.tools;
 
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -169,7 +170,8 @@ public class JasperReportTool extends ReportTool {
                         service);
             }
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception);
+            throw new IMObjectReportException(FailedToCreateReport, exception,
+                                              exception.getMessage());
         }
 
         if (_showXML) {

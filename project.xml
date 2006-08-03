@@ -490,7 +490,7 @@
         <dependency>
             <groupId>jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.5</version>
             <url>http://jasperreports.sourceforge.net</url>
         </dependency>
         <dependency>
@@ -534,6 +534,18 @@
                 <include>**/*TestCase.java</include>
             </includes>
             <resources>
+                <resource>
+                    <directory>${basedir}/src/conf/spring</directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </resource>
+                <resource>
+                    <directory>${basedir}/target/hibernate</directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </resource>
                 <resource>
                     <directory>${basedir}/src/test/conf</directory>
                     <includes>
