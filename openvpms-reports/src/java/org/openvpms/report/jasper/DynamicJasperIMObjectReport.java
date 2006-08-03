@@ -83,7 +83,7 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
                                        IArchetypeService service)
             throws JRException {
         super(mimeTypes, service);
-        _design = ReportHelper.getReportResource("/archetype_template.jrxml");
+        _design = JasperReportHelper.getReportResource("/archetype_template.jrxml");
         _template = new JRElementFactory(_design);
 
         JRDesignParameter param = new JRDesignParameter();
@@ -101,7 +101,7 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
             }
             JRDesignField field = new JRDesignField();
             field.setName(node.getName());
-            Class valueClass = ReportHelper.getValueClass(node);
+            Class valueClass = JasperReportHelper.getValueClass(node);
             field.setValueClass(valueClass);
             _design.addField(field);
 

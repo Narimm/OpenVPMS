@@ -18,6 +18,7 @@
 
 package org.openvpms.report;
 
+import org.apache.commons.resources.Messages;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 
 
@@ -30,26 +31,65 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 public class IMObjectReportException extends OpenVPMSException {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * Constructs a new <code>IMObjectReportException</code>.
-     *
-     * @param message the error message
+     * An enumeration of error codes.
      */
-    public IMObjectReportException(String message) {
-        super(message);
+    public enum ErrorCode {
+        FailedToCreateReport,
+        FailedToGenerateReport,
+        InvalidNode,
+        InvalidObject,
+        UnsupportedMimeTypes
     }
-    
+
+    /**
+     * The error code.
+     */
+    private final ErrorCode _errorCode;
+
+
+    /**
+     * The appropriate resource file is loaded cached into memory when this
+     * class is loaded.
+     */
+    private static Messages MESSAGES
+            = Messages.getMessages(
+            "org.openvpms.report."+ OpenVPMSException.ERRMESSAGES_FILE);
+
     /**
      * Constructs a new <code>IMObjectReportException</code>.
      *
-     * @param cause the cause
+     * @param errorCode the error code
+     * @param args arguments used to format the error message
      */
-    public IMObjectReportException(Throwable cause) {
-        super(cause);
+    public IMObjectReportException(ErrorCode errorCode, Object ... args) {
+        super(MESSAGES.getMessage(errorCode.toString(), args));
+        _errorCode = errorCode;
+    }
+
+    /**
+     * Constructs a new <code>IMObjectReportException</code>.
+     *
+     * @param errorCode the error code
+     * @param cause the root cause
+     * @param args arguments used to format the error message
+     */
+    public IMObjectReportException(ErrorCode errorCode, Throwable cause,
+                                   Object ... args) {
+        super(MESSAGES.getMessage(errorCode.toString(), args), cause);
+        _errorCode = errorCode;
+    }
+    /**
+     * Returns the error code.
+     *
+     * @return the error code
+     */
+    public ErrorCode getErrorCode() {
+        return _errorCode;
     }
 
 }

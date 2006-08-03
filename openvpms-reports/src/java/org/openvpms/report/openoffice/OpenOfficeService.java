@@ -143,7 +143,7 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
             try {
                 connect();
             } catch (Exception exception) {
-                throw new OpenOfficeException(FailedToConnect, exception,
+                throw new OpenOfficeException(exception, FailedToConnect,
                                               _connectParams);
             }
         }
@@ -152,7 +152,7 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
             service = getService(name, type, _componentFactory,
                                  _componentContext);
         } catch (Exception exception) {
-            throw new OpenOfficeException(FailedToGetService, exception,
+            throw new OpenOfficeException(exception, FailedToGetService,
                                           name);
         }
         if (service == null) {

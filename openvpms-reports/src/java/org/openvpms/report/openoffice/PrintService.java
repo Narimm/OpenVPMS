@@ -22,7 +22,6 @@ import com.sun.star.awt.XPrinterServer;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.lang.EventObject;
 import com.sun.star.lang.IllegalArgumentException;
-import com.sun.star.lang.XComponent;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.view.PrintableState;
 import com.sun.star.view.PrintableStateEvent;
@@ -74,22 +73,18 @@ public class PrintService {
      * @throws OpenOfficeException for any error
      */
     public void print(Document document, String printer) {
-        final XComponent doc = DocumentHelper.newDocComponentFromTemplate(
-                document, _service);
+        final OpenOfficeDocument ood
+                = new OpenOfficeDocument(document, _service);
         XPrintable printable = (XPrintable) UnoRuntime.queryInterface(
-                XPrintable.class, doc);
-        PropertyValue[] printerDesc = {
-                DocumentHelper.newProperty("Name", printer)
-        };
+                XPrintable.class, ood.getComponent());
 
-        PropertyValue[] printOpts = {
-                DocumentHelper.newProperty("Pages", "1")
-        };
+        PropertyValue[] printerDesc = {newProperty("Name", printer)};
+        PropertyValue[] printOpts = {newProperty("Pages", "1")};
 
-        doc.addEventListener(new XPrintableListener() {
+        ood.getComponent().addEventListener(new XPrintableListener() {
             public void stateChanged(PrintableStateEvent event) {
                 if (!event.State.equals(PrintableState.JOB_STARTED)) {
-                    DocumentHelper.close(doc);
+                    ood.close();
                 }
             }
 
@@ -101,10 +96,24 @@ public class PrintService {
             printable.setPrinter(printerDesc);
             printable.print(printOpts);
         } catch (IllegalArgumentException exception) {
-            DocumentHelper.close(doc);
+            ood.close();
             throw new OpenOfficeException(FailedToPrint, exception.getMessage(),
                                           exception);
         }
+    }
+
+    /**
+     * Helper to create a new <code>PropertyValue</code>.
+     *
+     * @param name  the property name
+     * @param value the property value
+     * @return a new <code>PropertyValue</code>
+     */
+    private static PropertyValue newProperty(String name, Object value) {
+        PropertyValue property = new PropertyValue();
+        property.Name = name;
+        property.Value = value;
+        return property;
     }
 
 }

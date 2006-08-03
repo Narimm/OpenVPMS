@@ -107,7 +107,7 @@ public abstract class AbstractIMObjectCollectionReport
             NodeDescriptor node = nodes[i];
             JRDesignField field = new JRDesignField();
             field.setName(getFieldName(node));
-            Class valueClass = ReportHelper.getValueClass(node);
+            Class valueClass = JasperReportHelper.getValueClass(node);
             field.setValueClass(valueClass);
             design.addField(field);
             JRDesignTextField textField = factory.createTextField();
@@ -191,7 +191,7 @@ public abstract class AbstractIMObjectCollectionReport
      * @throws JRException for any error
      */
     protected JasperDesign getDesign() throws JRException {
-        return ReportHelper.getReportResource(
+        return JasperReportHelper.getReportResource(
                 "/archetype_subreport_template.jrxml");
     }
 

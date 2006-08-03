@@ -26,8 +26,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.NodeResolver;
-
-import java.util.Collection;
+import org.openvpms.report.ReportHelper;
 
 
 /**
@@ -116,29 +115,7 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
      * @throws JRException for any error
      */
     public Object getFieldValue(JRField field) throws JRException {
-        NodeResolver.State state = _resolver.resolve(field.getName());
-        Object value = state.getValue();
-        Object result = null;
-        if (value != null) {
-            if (state.getLeafNode() != null
-                    && state.getLeafNode().isCollection()) {
-                if (value instanceof Collection) {
-                    Collection<IMObject> values = (Collection<IMObject>) value;
-                    StringBuffer descriptions = new StringBuffer();
-                    for (IMObject object : values) {
-                        descriptions.append(ReportHelper.getValue(object));
-                        descriptions.append('\n');
-                    }
-                    result = descriptions.toString();
-                } else {
-                    // single value collection.
-                    IMObject object = (IMObject) value;
-                    result = ReportHelper.getValue(object);
-                }
-            } else {
-                result = value;
-            }
-        }
-        return result;
+        return ReportHelper.getValue(field.getName(), _resolver);
     }
+
 }

@@ -18,6 +18,7 @@
 
 package org.openvpms.report;
 
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
@@ -85,7 +86,8 @@ public class IMObjectReportFactory {
                     service.getArchetypeDescriptor(shortName), mimeTypes,
                     service);
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception);
+            throw new IMObjectReportException(FailedToCreateReport, exception,
+                                              exception.getMessage());
         }
     }
 }
