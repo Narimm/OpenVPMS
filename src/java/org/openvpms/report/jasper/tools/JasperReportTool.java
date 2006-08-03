@@ -170,7 +170,7 @@ public class JasperReportTool extends ReportTool {
                         service);
             }
         } catch (JRException exception) {
-            throw new IMObjectReportException(FailedToCreateReport, exception,
+            throw new IMObjectReportException(exception, FailedToCreateReport,
                                               exception.getMessage());
         }
 

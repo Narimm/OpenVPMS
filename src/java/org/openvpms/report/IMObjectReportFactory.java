@@ -86,7 +86,7 @@ public class IMObjectReportFactory {
                     service.getArchetypeDescriptor(shortName), mimeTypes,
                     service);
         } catch (JRException exception) {
-            throw new IMObjectReportException(FailedToCreateReport, exception,
+            throw new IMObjectReportException(exception, FailedToCreateReport,
                                               exception.getMessage());
         }
     }

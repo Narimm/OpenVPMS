@@ -133,6 +133,7 @@ public class NodeResolver {
             Object value = getValue(object, node);
             if (value == null) {
                 // object missing.
+                object = null;
                 break;
             } else if (!(value instanceof IMObject)) {
                 throw new IMObjectReportException(InvalidObject, name);

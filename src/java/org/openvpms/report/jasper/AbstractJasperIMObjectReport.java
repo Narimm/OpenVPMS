@@ -105,7 +105,7 @@ public abstract class AbstractJasperIMObjectReport
             document.setMimeType(_mimeType);
             document.setDocSize(report.length);
         } catch (JRException exception) {
-            throw new IMObjectReportException(FailedToGenerateReport, exception,
+            throw new IMObjectReportException(exception, FailedToGenerateReport,
                                               exception.getMessage());
         }
         return document;
