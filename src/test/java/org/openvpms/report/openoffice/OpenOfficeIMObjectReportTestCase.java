@@ -86,6 +86,7 @@ public class OpenOfficeIMObjectReportTestCase
         assertEquals("$100.00", fields.get("lowTotal"));
         assertEquals("J", fields.get("firstName"));
         assertEquals("Zoo", fields.get("lastName"));
+        assertEquals("2.00", fields.get("expression"));
     }
 
     /**
