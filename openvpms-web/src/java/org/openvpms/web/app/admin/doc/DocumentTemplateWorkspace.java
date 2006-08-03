@@ -18,10 +18,7 @@
 
 package org.openvpms.web.app.admin.doc;
 
-import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.app.subsystem.ShortNames;
 
 
 /**
@@ -39,18 +36,4 @@ public class DocumentTemplateWorkspace extends CRUDWorkspace {
         super("admin", "documentTemplate", "common", "entity",
               "documentTemplate");
     }
-
-    /**
-     * Creates a new CRUD window.
-     *
-     * @return a new CRUD window
-     */
-    @Override
-    protected CRUDWindow createCRUDWindow() {
-        ShortNames shortNames = new ShortNameList(getRefModelName(),
-                                                  getEntityName(),
-                                                  getConceptName());
-        return new DocumentCRUDWindow(getType(), shortNames);
-    }
-
 }
