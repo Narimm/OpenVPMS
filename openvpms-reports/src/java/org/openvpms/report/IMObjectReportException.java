@@ -74,11 +74,11 @@ public class IMObjectReportException extends OpenVPMSException {
     /**
      * Constructs a new <code>IMObjectReportException</code>.
      *
-     * @param errorCode the error code
      * @param cause the root cause
+     * @param errorCode the error code
      * @param args arguments used to format the error message
      */
-    public IMObjectReportException(ErrorCode errorCode, Throwable cause,
+    public IMObjectReportException(Throwable cause, ErrorCode errorCode,
                                    Object ... args) {
         super(MESSAGES.getMessage(errorCode.toString(), args), cause);
         _errorCode = errorCode;

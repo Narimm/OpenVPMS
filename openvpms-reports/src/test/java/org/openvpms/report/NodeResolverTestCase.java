@@ -72,6 +72,52 @@ public class NodeResolverTestCase
     }
 
     /**
+     * Tests behaviour where an intermediate node doesn't exist.
+     */
+    public void testMissingReference() {
+        ActBean act = createAct("act.customerEstimation");
+        NodeResolver resolver = new NodeResolver(act.getAct(), _service);
+        assertNull(resolver.getObject("customer.entity.firstName"));
+    }
+
+    /**
+     * Tests behaviour where an invalid node name is supplied.
+     */
+    public void testInvalidNode() {
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setParticipant("participation.customer", party);
+        NodeResolver resolver = new NodeResolver(act.getAct(), _service);
+
+        // root node followed by invalid node
+        try {
+            resolver.getObject("customer.invalidNode");
+            fail("expected IMObjectReportException to be thrown");
+        } catch (IMObjectReportException exception) {
+            assertEquals(IMObjectReportException.ErrorCode.InvalidNode,
+                         exception.getErrorCode());
+        }
+
+        // intermediate node followed by invalid node
+        try {
+            resolver.getObject("customer.entity.invalidNode");
+            fail("expected IMObjectReportException to be thrown");
+        } catch (IMObjectReportException exception) {
+            assertEquals(IMObjectReportException.ErrorCode.InvalidNode,
+                         exception.getErrorCode());
+        }
+
+        // leaf node followed by invalid node
+        try {
+            resolver.getObject("startTime.displayName");
+            fail("expected IMObjectReportException to be thrown");
+        } catch (IMObjectReportException exception) {
+            assertEquals(IMObjectReportException.ErrorCode.InvalidObject,
+                         exception.getErrorCode());
+        }
+    }
+
+    /**
      * Returns the location of the spring config files.
      *
      * @return an array of config locations
