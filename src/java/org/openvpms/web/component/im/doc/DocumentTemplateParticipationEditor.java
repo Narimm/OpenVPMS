@@ -31,13 +31,14 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Participation editor for document templates, where the parent object
- * is an {@link DocumentAct}.
+ * Editor for <em>participation.documentTemplate</em> participation
+ * relationships.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocTemplateParticipationActEditor extends AbstractIMObjectEditor {
+public class DocumentTemplateParticipationEditor
+        extends AbstractIMObjectEditor {
 
     /**
      * The template editor.
@@ -46,15 +47,15 @@ public class DocTemplateParticipationActEditor extends AbstractIMObjectEditor {
 
 
     /**
-     * Constructs a new <code>DocTemplateParticipationActEditor</code>.
+     * Constructs a new <code>DocumentTemplateParticipationEditor</code>.
      *
      * @param participation the participation
      * @param parent        the parent act
      * @param context       the layout context. May be <code>null</code>
      */
-    public DocTemplateParticipationActEditor(Participation participation,
-                                             DocumentAct parent,
-                                             LayoutContext context) {
+    public DocumentTemplateParticipationEditor(Participation participation,
+                                               DocumentAct parent,
+                                               LayoutContext context) {
         super(participation, parent, context);
         Property act = getProperty("act");
         if (act.getValue() == null) {
