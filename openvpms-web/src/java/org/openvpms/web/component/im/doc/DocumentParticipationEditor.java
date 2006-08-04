@@ -47,14 +47,12 @@ import java.io.InputStream;
 
 
 /**
- * Participation editor for document templates, where the parent object
- * is an {@link Entity}.
+ * Editor for <em>participation.document</em> participation relationships.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocTemplateParticipationEntityEditor
-        extends AbstractIMObjectEditor {
+public class DocumentParticipationEditor extends AbstractIMObjectEditor {
 
     /**
      * The upload selector.
@@ -73,15 +71,15 @@ public class DocTemplateParticipationEntityEditor
 
 
     /**
-     * Construct a new <code>DocTemplateParticipationEntityEditor</code>.
+     * Construct a new <code>DocumentParticipationEditor</code>.
      *
      * @param participation the participation to edit
      * @param parent        the parent entity.
      * @param context       the layout context. May be <code>null</code>.
      */
-    public DocTemplateParticipationEntityEditor(Participation participation,
-                                                Entity parent,
-                                                LayoutContext context) {
+    public DocumentParticipationEditor(Participation participation,
+                                       Entity parent,
+                                       LayoutContext context) {
         super(participation, parent, context);
         Property entity = getProperty("entity");
         if (entity.getValue() == null) {
@@ -182,7 +180,7 @@ public class DocTemplateParticipationEntityEditor
                     service.save(doc);
                     _act.setFileName(doc.getName());
                     _act.setMimeType(doc.getMimeType());
-                    if ( getParent() == null)
+                    if (getParent() == null)
                         _act.setDescription(doc.getDescription());
                     else
                         _act.setDescription(getParent().getName());

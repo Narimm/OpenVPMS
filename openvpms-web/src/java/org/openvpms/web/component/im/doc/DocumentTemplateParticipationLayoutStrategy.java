@@ -23,6 +23,8 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.report.jasper.TemplateHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -32,14 +34,14 @@ import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
- * Document template participation layout strategy, where the parent object is
- * an {@link Entity}. This displays the associated document act name and
- * description, enabling the document do be downloaded.
+ * Layout strategy for <em>participation.documentTemplate</em> participation
+ * relationships. This navigates the entity and its corresponding
+ * <code>DocumentAct</code>, enabling any associated document do be downloaded.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocTemplateParticipationEntityLayoutStrategy
+public class DocumentTemplateParticipationLayoutStrategy
         implements IMObjectLayoutStrategy {
 
     /**
@@ -55,11 +57,17 @@ public class DocTemplateParticipationEntityLayoutStrategy
      */
     public Component apply(IMObject object, PropertySet properties,
                            LayoutContext context) {
-        Property property = properties.get("act");
+        Property property = properties.get("entity");
         IMObjectReference ref = (IMObjectReference) property.getValue();
-        final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
-        if (act != null) {
-            return DownloadHelper.getButton(act);
+        Entity entity = (Entity) IMObjectHelper.getObject(ref);
+        if (entity != null) {
+            TemplateHelper.refresh(entity); // todo - workaround for OBF-105
+            EntityBean bean = new EntityBean(entity);
+            final DocumentAct act = (DocumentAct) bean.getParticipant(
+                    "participation.document");
+            if (act != null) {
+                return DownloadHelper.getButton(act);
+            }
         }
         return LabelFactory.create();
     }
