@@ -74,7 +74,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
      * Construct a new <code>DocumentParticipationEditor</code>.
      *
      * @param participation the participation to edit
-     * @param parent        the parent entity.
+     * @param parent        the parent entity
      * @param context       the layout context. May be <code>null</code>.
      */
     public DocumentParticipationEditor(Participation participation,
@@ -123,6 +123,20 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     protected boolean saveChildren() {
         boolean saved = super.saveChildren();
         if (saved && _docModified) {
+            if (!_act.isNew()) {
+                // need to reload the act as the participation has already
+                // been saved by the parent Entity. Failing to do so will
+                // result in hibernate StaleObjectExceptions
+                IMObjectReference ref = _act.getDocReference();
+                String fileName = _act.getFileName();
+                String mimeType = _act.getMimeType();
+                String description = _act.getDescription();
+                _act = getDocumentAct();
+                _act.setDocReference(ref);
+                _act.setFileName(fileName);
+                _act.setMimeType(mimeType);
+                _act.setDescription(description);
+            }
             saved = SaveHelper.save(_act);
         }
         return saved;
@@ -179,11 +193,13 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
                                                           contentType, size);
                     service.save(doc);
                     _act.setFileName(doc.getName());
+                    service.deriveValue(_act, "name");
                     _act.setMimeType(doc.getMimeType());
-                    if (getParent() == null)
+                    if (getParent() == null) {
                         _act.setDescription(doc.getDescription());
-                    else
+                    } else {
                         _act.setDescription(getParent().getName());
+                    }
                     _act.setDocReference(doc.getObjectReference());
                     _selector.setObject(_act);
                     _docModified = true;
