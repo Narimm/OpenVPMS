@@ -520,8 +520,13 @@ public class CRUDWindow {
     protected void delete(IMObject object) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         try {
-            service.remove(object);
-            onDeleted(object);
+            // make sure deleting the latest version, to avoid hibernate errors
+            object = ArchetypeQueryHelper.getByObjectReference(
+                    service, object.getObjectReference());
+            if (object != null) {
+                service.remove(object);
+                onDeleted(object);
+            }
         } catch (OpenVPMSException exception) {
             String title = Messages.get("imobject.delete.failed.title");
             ErrorHelper.show(title, exception);
