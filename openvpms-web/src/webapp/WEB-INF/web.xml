@@ -79,6 +79,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>DownloadServlet</servlet-name>
+        <servlet-class>org.openvpms.web.servlet.DownloadServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>LogoutServlet</servlet-name>
         <servlet-class>org.openvpms.web.servlet.LogoutServlet</servlet-class>
     </servlet>
@@ -91,6 +96,11 @@
     <servlet-mapping>
         <servlet-name>AppServlet</servlet-name>
         <url-pattern>/app</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>DownloadServlet</servlet-name>
+        <url-pattern>/download</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
