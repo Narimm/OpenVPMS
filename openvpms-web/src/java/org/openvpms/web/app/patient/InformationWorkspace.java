@@ -18,13 +18,7 @@
 
 package org.openvpms.web.app.patient;
 
-import org.openvpms.web.app.customer.CustomerSummary;
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
-
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -32,10 +26,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.Component;
+import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.Date;
 import java.util.Set;
@@ -129,14 +126,8 @@ public class InformationWorkspace extends CRUDWorkspace {
             if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
                 addRelationship(PATIENT_OWNER, patient, customer, service);
                 // refresh the customer
-                try {
-                    customer = (Party)
-                            ArchetypeQueryHelper.getByObjectReference(
-                                    service, customer.getObjectReference());
-                    context.setCustomer(customer);
-                } catch (OpenVPMSException exception) {
-                    ErrorHelper.show(exception);
-                }
+                customer = (Party) IMObjectHelper.reload(customer);
+                context.setCustomer(customer);
             }
         }
     }

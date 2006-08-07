@@ -18,19 +18,17 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.spring.ServiceHelper;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.app.Context;
 
 import java.util.Collection;
 
@@ -52,7 +50,7 @@ public class IMObjectHelper {
     /**
      * Returns an object given its reference.
      *
-     * @param reference the object reference May be <code>null</code>
+     * @param reference the object reference. May be <code>null</code>
      * @return the object corresponding to <code>reference</code> or
      *         <code>null</code> if none exists
      */
@@ -61,13 +59,35 @@ public class IMObjectHelper {
         if (reference != null) {
             result = Context.getInstance().getObject(reference);
             if (result == null) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
                 try {
+                    IArchetypeService service
+                            = ArchetypeServiceHelper.getArchetypeService();
                     result = ArchetypeQueryHelper.getByObjectReference(
                             service, reference);
                 } catch (OpenVPMSException error) {
                     _log.error(error, error);
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Reloads an object.
+     *
+     * @param object the object to reload. May be <code>null</code>
+     * @return the object, or <code>null</code> if it couldn't be reloaded
+     */
+    public static IMObject reload(IMObject object) {
+        IMObject result = null;
+        if (object != null) {
+            try {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                result = ArchetypeQueryHelper.getByObjectReference(
+                        service, object.getObjectReference());
+            } catch (OpenVPMSException error) {
+                _log.error(error, error);
             }
         }
         return result;

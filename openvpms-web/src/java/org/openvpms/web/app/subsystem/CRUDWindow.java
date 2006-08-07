@@ -29,27 +29,23 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
-import org.openvpms.web.component.im.doc.DownloadHelper;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.print.IMObjectPrinter;
+import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
@@ -417,10 +413,7 @@ public class CRUDWindow {
                 edit(object);
             } else {
                 // make sure the latest instance is being used.
-                IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
-                object = ArchetypeQueryHelper.getByObjectReference(
-                        service, object.getObjectReference());
+                object = IMObjectHelper.reload(object);
                 if (object == null) {
                     ErrorDialog.show(Messages.get("imobject.noexist"), _type);
                 } else {
@@ -456,10 +449,10 @@ public class CRUDWindow {
 
     /**
      * Invoked when the 'print' button is pressed.
-     * This implementation delegates to {@link #confirmPrint}.
      */
     protected void onPrint() {
-        confirmPrint(getObject());
+        IMObjectPrinter printer = createPrinter();
+        printer.print(getObject());
     }
 
     /**
@@ -521,8 +514,7 @@ public class CRUDWindow {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         try {
             // make sure deleting the latest version, to avoid hibernate errors
-            object = ArchetypeQueryHelper.getByObjectReference(
-                    service, object.getObjectReference());
+            object = IMObjectHelper.reload(object);
             if (object != null) {
                 service.remove(object);
                 onDeleted(object);
@@ -546,83 +538,12 @@ public class CRUDWindow {
     }
 
     /**
-     * Pops up a {@link PrintDialog} prompting if printing of an object
-     * should proceed, invoking {@link #print} if OK is selected, or
-     * {@link #printPreview} if Preview is selected.
+     * Creates a new printer.
      *
-     * @param object the object to delete
+     * @return a new printer.
      */
-    protected void confirmPrint(final IMObject object) {
-        String title = Messages.get("imobject.print.title", _type);
-        final PrintDialog dialog = new PrintDialog(title);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (PrintDialog.OK_ID.equals(action)) {
-                    print(object, null);
-                } else if (PrintDialog.PREVIEW_ID.equals(action)) {
-                    printPreview(object);
-                }
-            }
-        });
-        dialog.show();
-    }
-
-    /**
-     * Prints an object. Invokes {@link #onPrinted} if successful.
-     *
-     * @param object  the object
-     * @param printer the printer name
-     */
-    protected void print(IMObject object, String printer) {
-        boolean printed = false;
-        String shortName = object.getArchetypeId().getShortName();
-        String[] mimeTypes = {DocFormats.PDF_TYPE};
-        try {
-            IMObjectReport report = IMObjectReportFactory.create(
-                    shortName, mimeTypes, ServiceHelper.getArchetypeService());
-            final Document document = report.generate(object);
-/*
-            // @todo - need to generate reports to ODT/RTF format in order to
-            // print
-            PrintService service = OpenOfficeHelper.getPrintService();
-            service.print(document, printer);
-*/
-            DownloadHelper.download(document);
-            printed = true;
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
-        if (printed) {
-            onPrinted(object);
-        }
-    }
-
-    /**
-     * Generates a document and downloads it to the client.
-     *
-     * @param object the object to preview
-     */
-    protected void printPreview(IMObject object) {
-        String shortName = object.getArchetypeId().getShortName();
-        String[] mimeTypes = {DocFormats.PDF_TYPE};
-        try {
-            IMObjectReport report = IMObjectReportFactory.create(
-                    shortName, mimeTypes, ServiceHelper.getArchetypeService());
-            final Document document = report.generate(object);
-            DownloadHelper.download(document);
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-
-    /**
-     * Invoked when the object has been printed.
-     *
-     * @param object the object
-     */
-    protected void onPrinted(IMObject object) {
+    protected IMObjectPrinter createPrinter() {
+        return new IMObjectReportPrinter(_type);
     }
 
     /**

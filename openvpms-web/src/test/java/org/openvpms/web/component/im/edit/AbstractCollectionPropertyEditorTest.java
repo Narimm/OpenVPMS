@@ -24,17 +24,14 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.IMObjectProperty;
-import org.openvpms.web.spring.ServiceHelper;
-import org.openvpms.web.test.AbstractAppTest;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.IMObjectProperty;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.test.AbstractAppTest;
 
 
 /**
@@ -278,9 +275,7 @@ public abstract class AbstractCollectionPropertyEditorTest
      * @return the corresponding object or <code>null</code> if none is found
      */
     protected IMObject get(IMObject object) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        return ArchetypeQueryHelper.getByObjectReference(
-                service, object.getObjectReference());
+        return IMObjectHelper.reload(object);
     }
 
 }

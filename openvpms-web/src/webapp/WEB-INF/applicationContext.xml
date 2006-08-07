@@ -454,7 +454,7 @@
     <bean id="openOfficeService"
           class="org.openvpms.report.openoffice.OpenOfficeService">
         <constructor-arg>
-            <value>pipe,name=vpms</value>
+            <value>socket,host=localhost,port=8100,tcpNoDelay=1</value>
         </constructor-arg>
     </bean>
 

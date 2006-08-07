@@ -18,15 +18,16 @@
 
 package org.openvpms.web.app.subsystem;
 
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.print.IMObjectPrinter;
+import org.openvpms.web.component.im.print.IMObjectPrinterListener;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -121,6 +122,46 @@ public abstract class ActCRUDWindow extends CRUDWindow {
     }
 
     /**
+     * Creates a new printer.
+     *
+     * @return a new printer.
+     */
+    @Override
+    protected IMObjectPrinter createPrinter() {
+        IMObjectPrinter printer = super.createPrinter();
+        printer.setListener(new IMObjectPrinterListener() {
+            public void printed(IMObject object) {
+                ActCRUDWindow.this.printed(object);
+            }
+        });
+        return printer;
+    }
+
+    /**
+     * Invoked when an object has been successfully printed.
+     *
+     * @param object the object
+     */
+    protected void printed(IMObject object) {
+        Act act = (Act) object;
+        try {
+            String status = act.getStatus();
+            if (!POSTED_STATUS.equals(status)) {
+                act.setStatus(POSTED_STATUS);
+                setPrintStatus(act, true);
+                SaveHelper.save(act);
+                setObject(act);
+                CRUDWindowListener listener = getListener();
+                if (listener != null) {
+                    listener.saved(act, false);
+                }
+            }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
      * Sets the print status.
      *
      * @param act     the act
@@ -148,30 +189,6 @@ public abstract class ActCRUDWindow extends CRUDWindow {
         String title = Messages.get(titleKey, name);
         String message = Messages.get(messageKey, name, status);
         ErrorDialog.show(title, message);
-    }
-
-    /**
-     * Invoked when the object has been printed.
-     *
-     * @param object the object
-     */
-    protected void onPrinted(IMObject object) {
-        Act act = (Act) object;
-        try {
-            String status = act.getStatus();
-            if (!POSTED_STATUS.equals(status)) {
-                act.setStatus(POSTED_STATUS);
-                setPrintStatus(act, true);
-                SaveHelper.save(act);
-                setObject(act);
-                CRUDWindowListener listener = getListener();
-                if (listener != null) {
-                    listener.saved(act, false);
-                }
-            }
-        } catch (Throwable exception) {
-            ErrorHelper.show(exception);
-        }
     }
 
 }

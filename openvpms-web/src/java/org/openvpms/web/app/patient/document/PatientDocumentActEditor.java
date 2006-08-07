@@ -106,6 +106,19 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Regenerates the document from the template.
+     *
+     * @return <code>true</code> if the document was regenerated
+     */
+    public boolean refresh() {
+        boolean refreshed = false;
+        if (_lastTemplate != null) {
+            refreshed = generateDoc(_lastTemplate);
+        }
+        return refreshed;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -135,33 +148,47 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
                 && !template.equals(_lastTemplate))
                 || (template != null && _lastTemplate == null)) {
             _lastTemplate = template;
-            IMObject patient = Context.getInstance().getPatient();
+            generateDoc(template);
+        }
+    }
 
-            DocumentAct act = (DocumentAct) getObject();
-            if (patient != null) {
-                try {
-                    IArchetypeService service
-                            = ArchetypeServiceHelper.getArchetypeService();
-                    Entity entity = (Entity) IMObjectHelper.getObject(template);
-                    if (entity != null) {
-                        Document doc = TemplateHelper.getDocumentFromTemplate(
-                                entity, service);
-                        if (doc != null) {
-                            String[] formats = {DocFormats.PDF_TYPE};
-                            IMObjectReport report = IMObjectReportFactory.create(
-                                    doc, formats, service);
-                            Document gen = report.generate(patient);
-                            if (SaveHelper.save(gen)) {
-                                act.setDocReference(gen.getObjectReference());
-                                updateFileProperties(gen);
-                            }
+    /**
+     * Generates the document.
+     *
+     * @param template the document template
+     * @return <code>true</code> if the document was regenerated,
+     *         otherwise <code>false</code>
+     */
+    private boolean generateDoc(IMObjectReference template) {
+        boolean result = false;
+        IMObject patient = Context.getInstance().getPatient();
+
+        DocumentAct act = (DocumentAct) getObject();
+        if (patient != null) {
+            try {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                Entity entity = (Entity) IMObjectHelper.getObject(template);
+                if (entity != null) {
+                    Document doc = TemplateHelper.getDocumentFromTemplate(
+                            entity, service);
+                    if (doc != null) {
+                        String[] formats = {DocFormats.PDF_TYPE};
+                        IMObjectReport report = IMObjectReportFactory.create(
+                                doc, formats, service);
+                        Document gen = report.generate(patient);
+                        if (SaveHelper.save(gen)) {
+                            act.setDocReference(gen.getObjectReference());
+                            updateFileProperties(gen);
+                            result = true;
                         }
                     }
-                } catch (OpenVPMSException exception) {
-                    ErrorHelper.show(exception);
                 }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
             }
         }
+        return result;
     }
 
     /**
