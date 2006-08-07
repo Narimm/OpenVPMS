@@ -18,11 +18,14 @@
 
 package org.openvpms.web.component.im.table.act;
 
+import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -55,7 +58,9 @@ public class ParticipationTableModel extends DefaultIMObjectTableModel {
         if (entity != null) {
             result = super.getValue(entity, column, row);
         } else {
-            result = "";
+            Label label = LabelFactory.create();
+            label.setText(Messages.get("imobject.none"));
+            result = label;
         }
         return result;
     }

@@ -73,14 +73,6 @@ public class FinancialActCRUDWindow extends CRUDWindow {
     }
 
     /**
-     * Invoked when the 'print' button is pressed.
-     */
-    @Override
-    protected void onPrint() {
-        confirmPrint(getObject());
-    }
-
-    /**
      * Invoked when the 'summary' button is pressed.
      */
     protected void onSummary() {

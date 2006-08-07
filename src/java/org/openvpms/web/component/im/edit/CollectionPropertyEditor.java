@@ -24,11 +24,10 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.edit.Saveable;
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Validator;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Saveable;
+import org.openvpms.web.component.edit.Validator;
 
 import java.util.List;
 
@@ -123,4 +122,18 @@ public interface CollectionPropertyEditor extends Saveable {
      * @return the objects in the collection
      */
     List<IMObject> getObjects();
+
+    /**
+     * Returns the minimum cardinality.
+     *
+     * @return the minimum cardinality
+     */
+    int getMinCardinality();
+
+    /**
+     * Returns the maximum cardinality.
+     *
+     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     */
+    int getMaxCardinality();
 }

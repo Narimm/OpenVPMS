@@ -24,16 +24,14 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.edit.Validator;
-import org.openvpms.web.spring.ServiceHelper;
-
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
-
-import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -254,6 +252,24 @@ public abstract class AbstractCollectionPropertyEditor
             }
         }
         return objects;
+    }
+
+    /**
+     * Returns the minimum cardinality.
+     *
+     * @return the minimum cardinality
+     */
+    public int getMinCardinality() {
+        return _property.getMinCardinality();
+    }
+
+    /**
+     * Returns the maximum cardinality.
+     *
+     * @return the maximum cardinality, or <code>-1</code> if it is unbounded
+     */
+    public int getMaxCardinality() {
+        return _property.getMaxCardinality();
     }
 
     /**

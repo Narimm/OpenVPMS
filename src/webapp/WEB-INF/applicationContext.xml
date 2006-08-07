@@ -426,8 +426,7 @@
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->
-    <bean id="templateHelper"
-          class="org.openvpms.report.jasper.TemplateHelper">
+    <bean id="templateHelper" class="org.openvpms.report.TemplateHelper">
         <constructor-arg index="0">
             <ref local="sessionFactory"/>
         </constructor-arg>
@@ -442,7 +441,7 @@
             <value>socket,host=localhost,port=8100,tcpNoDelay=1</value>
         </constructor-arg>
         The corresponding server should be run with the following:
-            soffice -nologo -nodefault -norestore -nocrashreport -nolockcheck '-accept=socket,port=8100;urp;'
+            soffice -nologo -nodefault -norestore -nocrashreport -nolockcheck -accept=socket,port=8100;urp;
 
         To connect to an existing server listening on pipe (changing the pipe
         name as required):
@@ -450,7 +449,7 @@
             <value>pipe,name=vpms</value>
         </constructor-arg>
         The corresponding server should be run with the following:
-            soffice -nologo -nodefault -norestore -nocrashreport -nolockcheck '-accept=pipe,name=vpms;urp;'
+            soffice -nologo -nodefault -norestore -nocrashreport -nolockcheck -accept=pipe,name=vpms;urp;
     -->
     <bean id="openOfficeService"
           class="org.openvpms.report.openoffice.OpenOfficeService">
