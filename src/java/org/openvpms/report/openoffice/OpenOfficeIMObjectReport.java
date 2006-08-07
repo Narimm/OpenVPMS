@@ -64,7 +64,7 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
         _template = template;
         for (String mimeType : mimeTypes) {
             if (DocFormats.ODT_TYPE.equals(mimeType)
-                    || DocFormats.RTF_TYPE.equals(mimeType)) {
+                    || DocFormats.PDF_TYPE.equals(mimeType)) {
                 _mimeType = mimeType;
                 break;
             }

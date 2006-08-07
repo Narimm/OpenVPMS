@@ -26,10 +26,15 @@ import net.sf.jasperreports.engine.design.JRDesignExpression;
 import net.sf.jasperreports.engine.design.JRDesignParameter;
 import net.sf.jasperreports.engine.design.JRDesignSubreport;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.IMObjectReportException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +53,7 @@ public class TemplatedJasperIMObjectReport
     /**
      * The compiled report.
      */
-    private final JasperReport _report;
+    private JasperReport _report;
 
     /**
      * The sub-reports.
@@ -66,47 +71,40 @@ public class TemplatedJasperIMObjectReport
     /**
      * Constructs a new <code>TemplatedJasperIMObjectReport</code>.
      *
+     * @param template  the document template
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @param service   the archetype service
+     * @throws IMObjectReportException if the report cannot be created
+     */
+    public TemplatedJasperIMObjectReport(Document template, String[] mimeTypes,
+                                         IArchetypeService service) {
+        super(mimeTypes, service);
+        try {
+            ByteArrayInputStream stream
+                    = new ByteArrayInputStream(template.getContents());
+            JasperDesign report = JRXmlLoader.load(stream);
+            init(report, service);
+        } catch (JRException exception) {
+            throw new IMObjectReportException(exception, FailedToCreateReport,
+                                              exception.getMessage());
+        }
+    }
+
+    /**
+     * Constructs a new <code>TemplatedJasperIMObjectReport</code>.
+     *
      * @param design    the master report design
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @param service   the archetype service
-     * @throws JRException for any error
+     * @throws IMObjectReportException if the report cannot be created
      */
     public TemplatedJasperIMObjectReport(JasperDesign design,
                                          String[] mimeTypes,
-                                         IArchetypeService service)
-            throws JRException {
+                                         IArchetypeService service) {
         super(mimeTypes, service);
-        JRElement[] elements = design.getDetail().getElements();
-        for (JRElement element : elements) {
-            if (element instanceof JRDesignSubreport) {
-                JRDesignSubreport subreport = (JRDesignSubreport) element;
-                String reportName = getReportName(subreport);
-                JasperDesign report = TemplateHelper.getReport(reportName,
-                                                               service);
-                if (report == null) {
-                    throw new JRException("Failed to find subreport with name: "
-                            + reportName);
-                }
-
-                // replace the original expression with a parameter
-                JRDesignExpression expression = new JRDesignExpression();
-                expression.setText("$P{" + reportName + "}");
-                expression.setValueClass(JasperReport.class);
-                subreport.setExpression(expression);
-
-                JasperReport compiled
-                        = JasperCompileManager.compileReport(report);
-                _subreports.add(compiled);
-                _parameters.put(reportName, compiled);
-
-                JRDesignParameter param = new JRDesignParameter();
-                param.setName(reportName);
-                param.setValueClass(JasperReport.class);
-                design.addParameter(param);
-            }
-        }
-        _report = JasperCompileManager.compileReport(design);
+        init(design, service);
     }
 
     /**
@@ -137,6 +135,54 @@ public class TemplatedJasperIMObjectReport
         Map<String, Object> result = super.getParameters(object);
         result.putAll(_parameters);
         return result;
+    }
+
+    /**
+     * Initialises the report.
+     *
+     * @param design  the report design
+     * @param service the archetype service
+     * @throws IMObjectReportException if the report cannot be initialised
+     */
+    private void init(JasperDesign design, IArchetypeService service) {
+        try {
+            JRElement[] elements = design.getDetail().getElements();
+            for (JRElement element : elements) {
+                if (element instanceof JRDesignSubreport) {
+                    JRDesignSubreport subreport = (JRDesignSubreport) element;
+                    String reportName = getReportName(subreport);
+                    JasperDesign report = JasperReportHelper.getReport(
+                            reportName,
+                            service);
+                    if (report == null) {
+                        throw new IMObjectReportException(
+                                FailedToCreateReport,
+                                "Failed to find subreport with name: "
+                                        + reportName);
+                    }
+
+                    // replace the original expression with a parameter
+                    JRDesignExpression expression = new JRDesignExpression();
+                    expression.setText("$P{" + reportName + "}");
+                    expression.setValueClass(JasperReport.class);
+                    subreport.setExpression(expression);
+
+                    JasperReport compiled
+                            = JasperCompileManager.compileReport(report);
+                    _subreports.add(compiled);
+                    _parameters.put(reportName, compiled);
+
+                    JRDesignParameter param = new JRDesignParameter();
+                    param.setName(reportName);
+                    param.setValueClass(JasperReport.class);
+                    design.addParameter(param);
+                }
+            }
+            _report = JasperCompileManager.compileReport(design);
+        } catch (JRException exception) {
+            throw new IMObjectReportException(exception, FailedToCreateReport,
+                                              exception.getMessage());
+        }
     }
 
     /**

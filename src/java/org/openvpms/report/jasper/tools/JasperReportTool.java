@@ -37,7 +37,7 @@ import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
 import org.openvpms.report.jasper.JasperIMObjectReport;
-import org.openvpms.report.jasper.TemplateHelper;
+import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.tools.ReportTool;
 

@@ -36,7 +36,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.report.jasper.TemplateHelper;
+import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.tools.Template;
 import org.openvpms.report.jasper.tools.Templates;
 import org.springframework.context.ApplicationContext;

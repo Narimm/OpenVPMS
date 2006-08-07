@@ -18,21 +18,12 @@
 
 package org.openvpms.report;
 
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
-import org.openvpms.report.jasper.TemplateHelper;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.openoffice.OpenOfficeIMObjectReport;
-
-import java.io.ByteArrayInputStream;
 
 
 /**
@@ -44,11 +35,32 @@ import java.io.ByteArrayInputStream;
 public class IMObjectReportFactory {
 
     /**
-     * The logger.
+     * Creates a new report for a template.
+     *
+     * @param template  the document template
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @param service   the archetype service
+     * @return a new report
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    private static final Log _log
-            = LogFactory.getLog(IMObjectReportFactory.class);
-
+    public static IMObjectReport create(Document template, String[] mimeTypes,
+                                        IArchetypeService service) {
+        String name = template.getName();
+        IMObjectReport report;
+        if (name.endsWith(DocFormats.JRXML_EXT)) {
+            report = new TemplatedJasperIMObjectReport(template, mimeTypes,
+                                                       service);
+        } else if (name.endsWith(DocFormats.ODT_EXT)) {
+            report = new OpenOfficeIMObjectReport(template, mimeTypes);
+        } else {
+            throw new IMObjectReportException(
+                    FailedToCreateReport,
+                    "Unrecognised document template: '" + name + "'");
+        }
+        return report;
+    }
 
     /**
      * Creates a new report.
@@ -66,28 +78,6 @@ public class IMObjectReportFactory {
                                         IArchetypeService service) {
         Document doc = TemplateHelper.getDocumentForArchetype(shortName,
                                                               service);
-        try {
-            if (doc != null) {
-                String name = doc.getName();
-                if (name.endsWith(DocFormats.JRXML_EXT)) {
-                    ByteArrayInputStream stream
-                            = new ByteArrayInputStream(doc.getContents());
-                    JasperDesign report = JRXmlLoader.load(stream);
-                    return new TemplatedJasperIMObjectReport(report, mimeTypes,
-                                                             service);
-                } else if (name.endsWith(DocFormats.ODT_EXT)) {
-                    return new OpenOfficeIMObjectReport(doc, mimeTypes);
-                } else {
-                    _log.error("Unrecognised document template': " + name
-                            + "'. Falling back to dynamic jasper report");
-                }
-            }
-            return new DynamicJasperIMObjectReport(
-                    service.getArchetypeDescriptor(shortName), mimeTypes,
-                    service);
-        } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToCreateReport,
-                                              exception.getMessage());
-        }
+        return create(doc, mimeTypes, service);
     }
 }

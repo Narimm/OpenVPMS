@@ -18,7 +18,6 @@
 
 package org.openvpms.report.jasper;
 
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -28,8 +27,10 @@ import net.sf.jasperreports.engine.export.JRRtfExporter;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.DocFormats;
+import org.openvpms.report.IMObjectReportException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
@@ -61,12 +62,11 @@ public abstract class AbstractJasperIMObjectReport
      *
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
-     * @param service  the archetype service
-     * @throws JRException if no mime-type is supported
+     * @param service   the archetype service
+     * @throws IMObjectReportException if no mime-type is supported
      */
     public AbstractJasperIMObjectReport(String[] mimeTypes,
-                                        IArchetypeService service)
-            throws JRException {
+                                        IArchetypeService service) {
         for (String mimeType : mimeTypes) {
             if (DocFormats.PDF_TYPE.equals(mimeType)
                     || DocFormats.RTF_TYPE.equals(mimeType)) {
@@ -75,7 +75,7 @@ public abstract class AbstractJasperIMObjectReport
             }
         }
         if (_mimeType == null) {
-            throw new JRException("No valid mime-types provided");
+            throw new IMObjectReportException(UnsupportedMimeTypes);
         }
         _service = service;
     }
