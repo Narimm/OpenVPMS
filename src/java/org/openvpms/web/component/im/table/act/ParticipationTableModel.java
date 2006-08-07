@@ -54,10 +54,10 @@ public class ParticipationTableModel extends DefaultIMObjectTableModel {
     protected Object getValue(IMObject object, int column, int row) {
         Participation p = (Participation) object;
         Entity entity = (Entity) IMObjectHelper.getObject(p.getEntity());
-        Object result;
+        Object result = null;
         if (entity != null) {
             result = super.getValue(entity, column, row);
-        } else {
+        } else if (column == NAME_INDEX) {
             Label label = LabelFactory.create();
             label.setText(Messages.get("imobject.none"));
             result = label;

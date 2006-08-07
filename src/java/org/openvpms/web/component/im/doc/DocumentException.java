@@ -41,7 +41,8 @@ public class DocumentException extends OpenVPMSException {
     public enum ErrorCode {
         UnsupportedDoc,
         ReadError,
-        WriteError
+        WriteError,
+        NotFound
     }
 
     /**
@@ -55,7 +56,7 @@ public class DocumentException extends OpenVPMSException {
      */
     private static Messages MESSAGES
             = Messages.getMessages(
-            "org.openvpms.web.app.admin.doc."
+            "org.openvpms.web.component.im.doc."
                     + OpenVPMSException.ERRMESSAGES_FILE);
 
     /**
@@ -73,7 +74,7 @@ public class DocumentException extends OpenVPMSException {
      *
      * @return the error code
      */
-    public DocumentException.ErrorCode getErrorCode() {
+    public ErrorCode getErrorCode() {
         return _errorCode;
     }
 

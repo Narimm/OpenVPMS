@@ -18,19 +18,15 @@
 
 package org.openvpms.web.app.subsystem;
 
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -151,10 +147,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        object = ArchetypeQueryHelper.getByObjectReference(
-                service, object.getObjectReference());
+        object = IMObjectHelper.reload(object);
         setObject(object);
     }
 

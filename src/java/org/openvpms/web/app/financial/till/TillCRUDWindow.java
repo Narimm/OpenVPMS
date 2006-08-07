@@ -18,21 +18,13 @@
 
 package org.openvpms.web.app.financial.till;
 
-import org.openvpms.web.app.financial.FinancialActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.dialog.SelectionDialog;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.im.view.IMObjectViewerDialog;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.resource.util.Messages;
-
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.ListBox;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.till.TillRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -48,14 +40,21 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.ListBox;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.web.app.financial.FinancialActCRUDWindow;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.dialog.SelectionDialog;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.IMObjectViewer;
+import org.openvpms.web.component.im.view.IMObjectViewerDialog;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -316,10 +315,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                 SaveHelper.save(act);
             }
         } else if (editor.isDeleted()) {
-            IArchetypeService service
-                    = ArchetypeServiceHelper.getArchetypeService();
-            act = (FinancialAct) ArchetypeQueryHelper.getByObjectReference(
-                    service, act.getObjectReference());
+            act = (FinancialAct) IMObjectHelper.reload(act);
         }
         setObject(act);
     }
