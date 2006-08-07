@@ -16,11 +16,8 @@
  *  $Id$
  */
 
-package org.openvpms.report.jasper;
+package org.openvpms.report;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
@@ -38,7 +35,6 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
 
@@ -69,57 +65,6 @@ public class TemplateHelper {
      */
     public TemplateHelper(SessionFactory factory) {
         _sessionFactory = factory;
-    }
-
-    /**
-     * Returns a jasper report template given its name.
-     *
-     * @param name the report name
-     * @return the jasper report template or <code>null</code> if none can be
-     *         found
-     * @throws JRException if the report can't be deserialized
-     */
-    public static JasperDesign getReport(String name, IArchetypeService service)
-            throws JRException {
-        Document document = getDocument(name, service);
-        if (document != null) {
-            return getReport(document);
-        }
-        return null;
-    }
-
-    /**
-     * Returns a jasper report template corresponding to an archetype short
-     * name.
-     *
-     * @param shortName the archetype short name
-     * @param service   the archetype service
-     * @return the jasper report template corresponding to <code>shortName</code>
-     *         or <code>null</code> if none can be found.
-     * @throws JRException if the report can't be deserialized
-     */
-    public static JasperDesign getReportForArchetype(String shortName,
-                                                     IArchetypeService service)
-            throws JRException {
-        Document document = getDocumentForArchetype(shortName, service);
-        if (document != null) {
-            return getReport(document);
-        }
-        return null;
-    }
-
-    /**
-     * Deserializes a jasper report from a {@link Document}.
-     *
-     * @param document the document
-     * @return a new jasper report
-     * @throws JRException if the report can't be deserialized
-     */
-    public static JasperDesign getReport(Document document)
-            throws JRException {
-        ByteArrayInputStream stream
-                = new ByteArrayInputStream(document.getContents());
-        return JRXmlLoader.load(stream);
     }
 
     /**
@@ -172,6 +117,22 @@ public class TemplateHelper {
             }
         }
         return document;
+    }
+
+    /**
+     * Returns the document associated with an <em>entity.documentTemplate</em>.
+     *
+     * @param entity an <em>entity.documentTemplate</em>
+     * @param service the archetype service
+     */
+    public static Document getDocumentFromTemplate(Entity entity,
+                                                   IArchetypeService service) {
+        EntityBean bean = new EntityBean(entity);
+        DocumentAct act = getDocumentAct(bean);
+        if (act != null) {
+            return (Document) get(act.getDocReference(), service);
+        }
+        return null;
     }
 
     /**

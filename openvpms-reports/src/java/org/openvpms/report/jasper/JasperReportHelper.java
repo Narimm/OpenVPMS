@@ -22,7 +22,11 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.TemplateHelper;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
@@ -63,6 +67,58 @@ public class JasperReportHelper {
         if (stream == null) {
             throw new JRException("Report resource not found: " + path);
         }
+        return JRXmlLoader.load(stream);
+    }
+
+    /**
+     * Returns a jasper report template given its name.
+     *
+     * @param name the report name
+     * @return the jasper report template or <code>null</code> if none can be
+     *         found
+     * @throws JRException if the report can't be deserialized
+     */
+    public static JasperDesign getReport(String name, IArchetypeService service)
+            throws JRException {
+        Document document = TemplateHelper.getDocument(name, service);
+        if (document != null) {
+            return getReport(document);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a jasper report template corresponding to an archetype short
+     * name.
+     *
+     * @param shortName the archetype short name
+     * @param service   the archetype service
+     * @return the jasper report template corresponding to
+     *         <code>shortName</code> or <code>null</code> if none can be found.
+     * @throws JRException if the report can't be deserialized
+     */
+    public static JasperDesign getReportForArchetype(String shortName,
+                                                     IArchetypeService service)
+            throws JRException {
+        Document document = TemplateHelper.getDocumentForArchetype(shortName,
+                                                                   service);
+        if (document != null) {
+            return getReport(document);
+        }
+        return null;
+    }
+
+    /**
+     * Deserializes a jasper report from a {@link Document}.
+     *
+     * @param document the document
+     * @return a new jasper report
+     * @throws JRException if the report can't be deserialized
+     */
+    public static JasperDesign getReport(Document document)
+            throws JRException {
+        ByteArrayInputStream stream
+                = new ByteArrayInputStream(document.getContents());
         return JRXmlLoader.load(stream);
     }
 }

@@ -174,7 +174,7 @@
     </bean>
 
     <bean id="templateHelper"
-          class="org.openvpms.report.jasper.TemplateHelper">
+          class="org.openvpms.report.TemplateHelper">
         <constructor-arg>
             <ref local="sessionFactory"/>
         </constructor-arg>
