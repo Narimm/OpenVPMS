@@ -35,6 +35,8 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.IMObjectReportException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,12 +53,12 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
     /**
      * Design time report.
      */
-    private final JasperDesign _design;
+    private JasperDesign _design;
 
     /**
      * Template helper.
      */
-    private final JRElementFactory _template;
+    private JRElementFactory _template;
 
     /**
      * The compiled report.
@@ -77,13 +79,59 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @param service   the archetype service
+     * @throws IMObjectReportException if the report cannot be created
      */
     public DynamicJasperIMObjectReport(ArchetypeDescriptor archetype,
                                        String[] mimeTypes,
-                                       IArchetypeService service)
-            throws JRException {
+                                       IArchetypeService service) {
         super(mimeTypes, service);
-        _design = JasperReportHelper.getReportResource("/archetype_template.jrxml");
+        try {
+            init(archetype);
+        } catch (JRException exception) {
+            throw new IMObjectReportException(exception, FailedToCreateReport,
+                                              exception.getMessage());
+        }
+    }
+
+    /**
+     * Returns the master report.
+     *
+     * @return the master report
+     */
+    public JasperReport getReport() {
+        return _report;
+    }
+
+    /**
+     * Returns the sub-reports.
+     *
+     * @return the sub-reports.
+     */
+    public JasperReport[] getSubreports() {
+        return _subreports.values().toArray(new JasperReport[0]);
+    }
+
+    /**
+     * Returns the report parameters to use when filling the report.
+     *
+     * @param object
+     * @return the report parameters
+     */
+    protected Map<String, Object> getParameters(IMObject object) {
+        Map<String, Object> result = super.getParameters(object);
+        result.putAll(_subreports);
+        return result;
+    }
+
+    /**
+     * Initialises the report.
+     *
+     * @param archetype the archetype descriptor
+     * @throws JRException for any error
+     */
+    private void init(ArchetypeDescriptor archetype) throws JRException {
+        _design = JasperReportHelper.getReportResource(
+                "/archetype_template.jrxml");
         _template = new JRElementFactory(_design);
 
         JRDesignParameter param = new JRDesignParameter();
@@ -137,36 +185,6 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
         _design.setDetail(detail);
 
         _report = JasperCompileManager.compileReport(_design);
-    }
-
-    /**
-     * Returns the master report.
-     *
-     * @return the master report
-     */
-    public JasperReport getReport() {
-        return _report;
-    }
-
-    /**
-     * Returns the sub-reports.
-     *
-     * @return the sub-reports.
-     */
-    public JasperReport[] getSubreports() {
-        return _subreports.values().toArray(new JasperReport[0]);
-    }
-
-    /**
-     * Returns the report parameters to use when filling the report.
-     *
-     * @param object
-     * @return the report parameters
-     */
-    protected Map<String, Object> getParameters(IMObject object) {
-        Map<String, Object> result = super.getParameters(object);
-        result.putAll(_subreports);
-        return result;
     }
 
     /**
