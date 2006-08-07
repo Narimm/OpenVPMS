@@ -20,18 +20,16 @@ package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Command;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
@@ -62,12 +60,7 @@ public class DownloadHelper {
      * @param document the document to download
      */
     public static void download(final Document document) {
-        String qname = document.getArchetypeId().getQualifiedName();
-        String linkId = document.getLinkId();
-        String uri = "download?qname=" + qname + "&linkId=" + linkId;
-        Command command = new BrowserOpenWindowCommand(
-                uri, null, "width=800,height=600,resizable=yes,scrollbars=yes");
-        OpenVPMSApp.getInstance().enqueueCommand(command);
+        DownloadServlet.startDownload(document);
     }
 
     /**
