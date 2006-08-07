@@ -18,6 +18,16 @@
 
 package org.openvpms.web.component.im.edit;
 
+import echopointng.GroupBox;
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Insets;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
@@ -27,6 +37,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
+import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.filter.FilterHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -38,29 +49,12 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import echopointng.GroupBox;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Insets;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -128,6 +122,11 @@ public abstract class AbstractIMObjectCollectionEditor
     private final ModifiableListeners _listeners = new ModifiableListeners();
 
     /**
+     * Event broadcaster.
+     */
+    private final ModifiableListener _broadcaster;
+
+    /**
      * The button row style.
      */
     private static final String ROW_STYLE = "CellSpacing";
@@ -169,6 +168,11 @@ public abstract class AbstractIMObjectCollectionEditor
             }
         };
 
+        _broadcaster = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                _listeners.notifyListeners(modifiable);
+            }
+        };
     }
 
     /**
@@ -423,21 +427,12 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected void onNew() {
         if (addCurrentEdits(new Validator()) && _shortname != null) {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            try {
-                IMObject object = service.create(_shortname);
+            int maxSize = _collection.getMaxCardinality();
+            if (maxSize == -1 || _collection.getObjects().size() < maxSize) {
+                IMObject object = IMObjectCreator.create(_shortname);
                 if (object != null) {
                     edit(object);
-                } else {
-                    String title = Messages.get("imobject.create.failed.title");
-                    String message = Messages.get("imobject.create.failed",
-                                                  _shortname);
-                    ErrorHelper.show(title, message);
                 }
-            } catch (OpenVPMSException exception) {
-                String message = Messages.get("imobject.create.failed",
-                                              _shortname);
-                ErrorHelper.show(message, exception);
             }
         }
     }
@@ -539,6 +534,7 @@ public abstract class AbstractIMObjectCollectionEditor
         IMObjectEditor editor = _collection.getEditor(object);
         if (editor == null) {
             editor = createEditor(object, _context);
+            editor.addModifiableListener(_broadcaster);
             _collection.setEditor(object, editor);
         }
         return editor;

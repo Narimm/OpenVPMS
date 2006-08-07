@@ -18,19 +18,19 @@
 
 package org.openvpms.web.component.im.table;
 
-import org.openvpms.web.resource.util.Messages;
-
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
+import nextapp.echo2.app.table.TableModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-
-import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableColumn;
-import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -127,6 +127,11 @@ public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
                 break;
             case NAME_INDEX:
                 result = object.getName();
+                if (result == null) {
+                    Label label = LabelFactory.create();
+                    label.setText(Messages.get("imobject.none"));
+                    result = label;
+                }
                 break;
             case DESCRIPTION_INDEX:
                 result = object.getDescription();

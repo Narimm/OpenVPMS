@@ -21,19 +21,34 @@ package org.openvpms.web.app.patient.document;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.DocFormats;
+import org.openvpms.report.IMObjectReport;
+import org.openvpms.report.IMObjectReportFactory;
+import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -44,6 +59,16 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientDocumentActEditor extends AbstractIMObjectEditor {
+
+    /**
+     * The last document template.
+     */
+    private IMObjectReference _lastTemplate;
+
+    /**
+     * The document template node.
+     */
+    private static final String DOC_TEMPLATE = "documentTemplate";
 
     /**
      * The document reference node.
@@ -68,6 +93,16 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
                     }
                 }
         );
+        IMObjectCollectionEditor template
+                = (IMObjectCollectionEditor) getEditor(DOC_TEMPLATE);
+        if (template != null) {
+            _lastTemplate = getTemplate();
+            template.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onTemplateUpdate();
+                }
+            });
+        }
     }
 
     /**
@@ -81,14 +116,61 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Invoked when the document reference is updated. This duplicates
-     * the referenced document's name and mime-type to the fileName and mimeType
-     * properties respectively.
+     * Invoked when the document reference is updated.
+     * Invokes {@link #updateFileProperties} with the related document.
      */
     private void onDocumentUpdate() {
         DocumentAct act = (DocumentAct) getObject();
         IMObjectReference docRef = act.getDocReference();
         Document document = (Document) IMObjectHelper.getObject(docRef);
+        updateFileProperties(document);
+    }
+
+    /**
+     * Invoked when the document template updates.
+     */
+    private void onTemplateUpdate() {
+        IMObjectReference template = getTemplate();
+        if ((template != null && _lastTemplate != null
+                && !template.equals(_lastTemplate))
+                || (template != null && _lastTemplate == null)) {
+            _lastTemplate = template;
+            IMObject patient = Context.getInstance().getPatient();
+
+            DocumentAct act = (DocumentAct) getObject();
+            if (patient != null) {
+                try {
+                    IArchetypeService service
+                            = ArchetypeServiceHelper.getArchetypeService();
+                    Entity entity = (Entity) IMObjectHelper.getObject(template);
+                    if (entity != null) {
+                        Document doc = TemplateHelper.getDocumentFromTemplate(
+                                entity, service);
+                        if (doc != null) {
+                            String[] formats = {DocFormats.PDF_TYPE};
+                            IMObjectReport report = IMObjectReportFactory.create(
+                                    doc, formats, service);
+                            Document gen = report.generate(patient);
+                            if (SaveHelper.save(gen)) {
+                                act.setDocReference(gen.getObjectReference());
+                                updateFileProperties(gen);
+                            }
+                        }
+                    }
+                } catch (OpenVPMSException exception) {
+                    ErrorHelper.show(exception);
+                }
+            }
+        }
+    }
+
+    /**
+     * Duplicates the document's name and mime-type to the fileName and mimeType
+     * properties respectively to the {@link DocumentAct}.
+     *
+     * @param document the document
+     */
+    private void updateFileProperties(Document document) {
         String name = null;
         String mimeType = null;
         if (document != null) {
@@ -97,6 +179,23 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
         }
         getProperty("fileName").setValue(name);
         getProperty("mimeType").setValue(mimeType);
+    }
+
+    /**
+     * Helper to return a reference to the current template, an instance of
+     * <em>entity.documentTemplate</em>.
+     *
+     * @return a reference to the current template. May be <code>null</code>
+     */
+    private IMObjectReference getTemplate() {
+        CollectionProperty property
+                = (CollectionProperty) getProperty(DOC_TEMPLATE);
+        Collection values = property.getValues();
+        if (!values.isEmpty()) {
+            Participation p = (Participation) values.toArray()[0];
+            return p.getEntity();
+        }
+        return null;
     }
 
     /**
@@ -116,7 +215,16 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
                 ArchetypeDescriptor archetype) {
             List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
             nodes.addAll(super.getSimpleNodes(archetype));
-            nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
+            boolean found = false;
+            for (NodeDescriptor node : nodes) {
+                if (node.getName().equals(DOC_REFERENCE)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
+            }
             return nodes;
         }
 

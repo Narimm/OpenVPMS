@@ -57,6 +57,7 @@ public class DownloadHelper {
     /**
      * Download a document. This opens a new browser window on the client
      * to display the document.
+     * If the document is unsaved,
      *
      * @param document the document to download
      */
@@ -65,7 +66,7 @@ public class DownloadHelper {
         String linkId = document.getLinkId();
         String uri = "download?qname=" + qname + "&linkId=" + linkId;
         Command command = new BrowserOpenWindowCommand(
-                uri, null, "width=800,height=600,resizable=yes");
+                uri, null, "width=800,height=600,resizable=yes,scrollbars=yes");
         OpenVPMSApp.getInstance().enqueueCommand(command);
     }
 

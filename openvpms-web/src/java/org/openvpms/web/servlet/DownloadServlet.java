@@ -58,13 +58,6 @@ public class DownloadServlet extends HttpServlet {
     }
 
     /**
-     * Sets the archetype service.
-     */
-    public void setArchetypeService(IArchetypeService service) {
-        _service = service;
-    }
-
-    /**
      * Handles a GET request.
      * <p/>
      * If the request is incorrectly formatted, returns an HTTP "Bad Request"
