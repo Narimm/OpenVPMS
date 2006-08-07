@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
+import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
 import org.openvpms.report.openoffice.OpenOfficeIMObjectReport;
 
 
@@ -78,6 +79,11 @@ public class IMObjectReportFactory {
                                         IArchetypeService service) {
         Document doc = TemplateHelper.getDocumentForArchetype(shortName,
                                                               service);
+        if (doc == null) {
+                                       return new DynamicJasperIMObjectReport(
+                    service.getArchetypeDescriptor(shortName), mimeTypes,
+                    service);
+        }
         return create(doc, mimeTypes, service);
     }
 }
