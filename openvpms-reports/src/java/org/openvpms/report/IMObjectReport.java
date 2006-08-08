@@ -20,6 +20,7 @@ package org.openvpms.report;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 
 
 /**
@@ -35,7 +36,8 @@ public interface IMObjectReport {
      *
      * @param object the object
      * @return a document containing the report
-     * @throws IMObjectReportException for any error
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     Document generate(IMObject object);
 

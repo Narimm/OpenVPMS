@@ -27,6 +27,7 @@ import net.sf.jasperreports.engine.export.JRRtfExporter;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReportException;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
@@ -86,6 +87,7 @@ public abstract class AbstractJasperIMObjectReport
      * @param object the object
      * @return a document containing the report
      * @throws IMObjectReportException for any error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(IMObject object) {
         Document document = (Document) _service.create("document.other");
