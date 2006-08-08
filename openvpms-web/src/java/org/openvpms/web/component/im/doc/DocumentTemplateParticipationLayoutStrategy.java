@@ -66,7 +66,7 @@ public class DocumentTemplateParticipationLayoutStrategy
             final DocumentAct act = (DocumentAct) bean.getParticipant(
                     "participation.document");
             if (act != null) {
-                return DownloadHelper.getButton(act);
+                return new DocumentActDownloader(act).getComponent();
             }
         }
         return LabelFactory.create();

@@ -21,18 +21,11 @@ package org.openvpms.web.app.patient.document;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.report.DocFormats;
-import org.openvpms.report.IMObjectReport;
-import org.openvpms.report.IMObjectReportFactory;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
@@ -162,27 +155,15 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
     private boolean generateDoc(IMObjectReference template) {
         boolean result = false;
         IMObject patient = Context.getInstance().getPatient();
-
-        DocumentAct act = (DocumentAct) getObject();
         if (patient != null) {
+            DocumentAct act = (DocumentAct) getObject();
             try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                Entity entity = (Entity) IMObjectHelper.getObject(template);
-                if (entity != null) {
-                    Document doc = TemplateHelper.getDocumentFromTemplate(
-                            entity, service);
-                    if (doc != null) {
-                        String[] formats = {DocFormats.PDF_TYPE};
-                        IMObjectReport report = IMObjectReportFactory.create(
-                                doc, formats, service);
-                        Document gen = report.generate(patient);
-                        if (SaveHelper.save(gen)) {
-                            act.setDocReference(gen.getObjectReference());
-                            updateFileProperties(gen);
-                            result = true;
-                        }
-                    }
+                ReportGenerator gen = new ReportGenerator(template);
+                Document doc = gen.generate(patient);
+                if (SaveHelper.save(doc)) {
+                    act.setDocReference(doc.getObjectReference());
+                    updateFileProperties(doc);
+                    result = true;
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

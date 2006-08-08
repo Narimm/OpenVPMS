@@ -58,7 +58,7 @@ public class DocumentParticipationLayoutStrategy
         IMObjectReference ref = (IMObjectReference) property.getValue();
         final DocumentAct act = (DocumentAct) IMObjectHelper.getObject(ref);
         if (act != null) {
-            return DownloadHelper.getButton(act);
+            return new DocumentActDownloader(act).getComponent();
         }
         return LabelFactory.create();
     }
