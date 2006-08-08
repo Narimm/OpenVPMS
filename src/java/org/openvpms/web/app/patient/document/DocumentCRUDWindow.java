@@ -98,9 +98,7 @@ public class DocumentCRUDWindow extends PatientActCRUDWindow {
             buttons.add(getEditButton());
             buttons.add(getCreateButton());
             buttons.add(getDeleteButton());
-            if (canPrint()) {
-                buttons.add(getPrintButton());
-            }
+            buttons.add(getPrintButton());
             if (canRefresh()) {
                 buttons.add(_refresh);
             }
@@ -127,6 +125,25 @@ public class DocumentCRUDWindow extends PatientActCRUDWindow {
     }
 
     /**
+     * Invoked when the 'print' button is pressed.
+     */
+    @Override
+    protected void onPrint() {
+        boolean print = true;
+        DocumentAct act = (DocumentAct) getObject();
+        if (act.getDocReference() == null) {
+            if (canRefresh()) {
+                if (!refresh()) {
+                    print = false;
+                }
+            }
+        }
+        if (print) {
+            super.onPrint();
+        }
+    }
+
+    /**
      * Invoked when the 'refresh' button is pressed.
      */
     private void onRefresh() {
@@ -146,26 +163,19 @@ public class DocumentCRUDWindow extends PatientActCRUDWindow {
 
     /**
      * Refreshes the current document act.
+     *
+     * @return <code>true</code> if the document was refreshed
      */
-    private void refresh() {
+    private boolean refresh() {
+        boolean refreshed = false;
         DocumentAct act = (DocumentAct) getObject();
         PatientDocumentActEditor editor
                 = new PatientDocumentActEditor(act, null, null);
         if (editor.refresh()) {
-            editor.save();
+            refreshed = editor.save();
             onSaved(act, false);
         }
-    }
-
-    /**
-     * Determines if a document can be printed.
-     *
-     * @return <code>true</code> if the document can be refreshed, otherwise
-     *         <code>false</code>
-     */
-    private boolean canPrint() {
-        DocumentAct act = (DocumentAct) getObject();
-        return (act.getDocReference() != null);
+        return refreshed;
     }
 
     /**

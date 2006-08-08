@@ -24,9 +24,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.PrintDialog;
-import org.openvpms.web.component.im.doc.DownloadHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.servlet.DownloadServlet;
 
 
 /**
@@ -91,6 +91,15 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
     }
 
     /**
+     * Returns the display name for the types of objects that this may print.
+     *
+     * @return the type display name
+     */
+    protected String getType() {
+        return _type;
+    }
+
+    /**
      * Returns a document for an object.
      *
      * @param object the object
@@ -120,7 +129,7 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
     protected void doPrint(IMObject object, String printer) {
         try {
             Document document = getDocument(object);
-            DownloadHelper.download(document);
+            DownloadServlet.startDownload(document);
             printed(object);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -135,7 +144,7 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
     protected void doPrintPreview(IMObject object) {
         try {
             Document document = getDocument(object);
-            DownloadHelper.download(document);
+            DownloadServlet.startDownload(document);
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }

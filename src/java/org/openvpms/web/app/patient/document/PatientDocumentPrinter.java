@@ -18,13 +18,21 @@
 
 package org.openvpms.web.app.patient.document;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.report.DocFormats;
+import org.openvpms.report.IMObjectReportException;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.doc.DocumentException;
 import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.web.component.im.print.AbstractIMObjectPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -46,18 +54,47 @@ public class PatientDocumentPrinter extends AbstractIMObjectPrinter {
     }
 
     /**
+     * Pops up a {@link ConfirmationDialog} prompting if printing of an object
+     * should proceed, invoking {@link #doPrint} if 'OK' is selected.
+     *
+     * @param object the object to print
+     */
+    @Override
+    public void print(final IMObject object) {
+        String title = Messages.get("imobject.print.title", getType());
+        final ConfirmationDialog dialog = new ConfirmationDialog(title, "");
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                String action = dialog.getAction();
+                if (ConfirmationDialog.OK_ID.equals(action)) {
+                    doPrint(object, null);
+                }
+            }
+        });
+        dialog.show();
+    }
+
+    /**
      * Returns a document for an object.
      *
      * @param object the object
      * @return a document
-     * @throws DocumentException if the document cannot be found
+     * @throws DocumentException         if the document cannot be found
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document getDocument(IMObject object) {
         DocumentAct act = (DocumentAct) object;
         Document doc = (Document) IMObjectHelper.getObject(
                 act.getDocReference());
         if (doc == null) {
-            throw new DocumentException(NotFound);
+            // need to generate the document
+            IMObject patient = Context.getInstance().getPatient();
+            if (patient == null) {
+                throw new DocumentException(NotFound);
+            }
+            ReportGenerator gen = new ReportGenerator(act);
+            doc = gen.generate(patient, DocFormats.PDF_TYPE);
         }
         return doc;
     }

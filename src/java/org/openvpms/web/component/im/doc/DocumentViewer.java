@@ -18,19 +18,12 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -81,37 +74,26 @@ public class DocumentViewer {
      */
     public Component getComponent() {
         Component result;
-        String text = null;
-        String styleName = null;
         if (_reference != null) {
-            if (_parent instanceof DocumentAct) {
-                DocumentAct dact = (DocumentAct)_parent;
-                if (dact.getFileName() != null)
-                    styleName = "download.".concat(FilenameUtils.getExtension(dact.getFileName()).toLowerCase());
-                else
-                    styleName = "download.default";
-                if (ApplicationInstance.getActive().getStyle(Button.class, styleName) == null)
-                    styleName = "download.default";
-                text = dact.getFileName();
-            }
-            else {
-                styleName="donwload.default";
-                text = DescriptorHelper.getDisplayName(_reference.getArchetypeId().getShortName());
-            }
-            
             if (_link) {
-                Button button = ButtonFactory.create();
-                button.setStyleName(styleName);
-                button.setText(text);
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        onDownload();
-                    }
-                });
-                result = button;
+                Downloader downloader;
+                if (_parent instanceof DocumentAct) {
+                    DocumentAct act = (DocumentAct) _parent;
+                    downloader = new DocumentActDownloader(act);
+                } else {
+                    downloader = new DocumentRefDownloader(_reference);
+                }
+                result = downloader.getComponent();
             } else {
                 Label label = LabelFactory.create();
-                label.setText(text);
+                if (_parent instanceof DocumentAct) {
+                    DocumentAct act = (DocumentAct) _parent;
+                    label.setText(act.getFileName());
+                } else {
+                    String text = DescriptorHelper.getDisplayName(
+                            _reference.getArchetypeId().getShortName());
+                    label.setText(text);
+                }
                 result = label;
             }
         } else {
@@ -122,10 +104,4 @@ public class DocumentViewer {
         return result;
     }
 
-    /**
-     * Invoked when the link is selected.
-     */
-    private void onDownload() {
-        DownloadHelper.download(_reference);
-    }
 }
