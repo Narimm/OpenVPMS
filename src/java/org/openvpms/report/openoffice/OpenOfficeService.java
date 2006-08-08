@@ -130,7 +130,6 @@ public class OpenOfficeService implements com.sun.star.lang.XEventListener {
                                            XPrinterServer.class);
     }
 
-
     /**
      * Returns a service of the specified type.
      *

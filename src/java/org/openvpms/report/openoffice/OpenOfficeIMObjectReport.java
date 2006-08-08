@@ -21,6 +21,7 @@ package org.openvpms.report.openoffice;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
@@ -79,7 +80,8 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      *
      * @param object the object
      * @return a document containing the report
-     * @throws IMObjectReportException for any error
+     * @throws IMObjectReportException   for any error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(IMObject object) {
         ExpressionEvaluator eval = new ExpressionEvaluator(
@@ -112,24 +114,16 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      *
      * @param doc the document to export
      * @return a new document
-     * @throws OpenOfficeException for any error
+     * @throws OpenOfficeException       for any error
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private Document export(OpenOfficeDocument doc) {
-        boolean isPDF = _mimeType.equals(DocFormats.PDF_TYPE);
-        byte[] content = doc.export(_mimeType);
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-        Document result = (Document) service.create("document.other");
-        doc.close();
-        if (isPDF) {
-            String name = FilenameUtils.removeExtension(_template.getName())
-                    + "." + DocFormats.PDF_EXT;
-            result.setName(name);
-        } else {
-            result.setName(_template.getName());
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        String name = _template.getName();
+        if (!_mimeType.equals(DocFormats.ODT_TYPE)) {
+            name = FilenameUtils.removeExtension(name);
         }
-        result.setContents(content);
-        result.setDocSize(content.length);
-        result.setMimeType(_mimeType);
-        return result;
+        return doc.export(_mimeType, name, service);
     }
 }

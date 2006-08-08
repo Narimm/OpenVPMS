@@ -39,6 +39,8 @@ import com.sun.star.util.XRefreshable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
 import static org.openvpms.report.openoffice.OpenOfficeException.ErrorCode.*;
 
@@ -198,7 +200,6 @@ public class OpenOfficeDocument {
      * @throws OpenOfficeException if the document cannot be exported
      */
     public byte[] export(String mimeType) {
-
         boolean isPDF = mimeType.equals(DocFormats.PDF_TYPE);
         XTextDocument textDocument = (XTextDocument) UnoRuntime.queryInterface(
                 XTextDocument.class, _document);
@@ -226,6 +227,32 @@ public class OpenOfficeDocument {
                                           exception.getMessage());
         }
         return stream.getBuffer();
+    }
+
+    /**
+     * Exports the document.
+     *
+     * @param mimeType the mime-type of the document format to export to
+     * @param name     the document name
+     * @param service  the archetype service
+     * @return the exported document
+     * @throws OpenOfficeException       if the document cannot be exported
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Document export(String mimeType, String name,
+                           IArchetypeService service) {
+        boolean isPDF = mimeType.equals(DocFormats.PDF_TYPE);
+        Document result = (Document) service.create("document.other");
+        byte[] content = export(mimeType);
+        if (isPDF) {
+            result.setName(name + "." + DocFormats.PDF_EXT);
+        } else {
+            result.setName(name);
+        }
+        result.setContents(content);
+        result.setDocSize(content.length);
+        result.setMimeType(mimeType);
+        return result;
     }
 
     /**
