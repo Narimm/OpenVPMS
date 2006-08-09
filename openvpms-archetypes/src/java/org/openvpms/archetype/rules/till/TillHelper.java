@@ -18,7 +18,7 @@
 
 package org.openvpms.archetype.rules.till;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -48,8 +48,8 @@ public class TillHelper {
      * @param till a reference to the till
      * @return the uncleared till balance, or <code>null</code> if none exists
      */
-    public static Act getUnclearedTillBalance(IMObjectReference till) {
-        Act act = null;
+    public static FinancialAct getUnclearedTillBalance(IMObjectReference till) {
+        FinancialAct act = null;
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeQuery query = new ArchetypeQuery(TillRules.TILL_BALANCE,
@@ -67,7 +67,7 @@ public class TillHelper {
         query.add(participations);
         List<IMObject> matches = service.get(query).getRows();
         if (!matches.isEmpty()) {
-            act = (Act) matches.get(0);
+            act = (FinancialAct) matches.get(0);
         }
         return act;
     }
@@ -78,10 +78,11 @@ public class TillHelper {
      * @param till the till
      * @return a new till balance
      */
-    public static Act createTillBalance(IMObjectReference till) {
+    public static FinancialAct createTillBalance(IMObjectReference till) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Act act = (Act) service.create(TillRules.TILL_BALANCE);
+        FinancialAct act = (FinancialAct) service.create(
+                TillRules.TILL_BALANCE);
         ActBean bean = new ActBean(act);
         bean.setStatus(TillRules.UNCLEARED);
         bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
@@ -97,12 +98,12 @@ public class TillHelper {
      *               otherwise its a debit adjustment
      * @return a new till balance adjustment
      */
-    public static Act createTillBalanceAdjustment(IMObjectReference till,
-                                                  BigDecimal amount,
-                                                  boolean credit) {
+    public static FinancialAct createTillBalanceAdjustment(
+            IMObjectReference till, BigDecimal amount, boolean credit) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Act act = (Act) service.create("act.tillBalanceAdjustment");
+        FinancialAct act = (FinancialAct) service.create(
+                "act.tillBalanceAdjustment");
         ActBean bean = new ActBean(act);
         bean.setValue("amount", amount);
         bean.setValue("credit", credit);

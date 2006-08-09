@@ -124,20 +124,23 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         ActBean payment = createPayment();
         ActBean refund = createRefund();
 
-        checkAddToTillBalance(payment, false);
-        checkAddToTillBalance(refund, false);
+        checkAddToTillBalance(payment, false, BigDecimal.ZERO);
+        checkAddToTillBalance(refund, false, BigDecimal.ZERO);
 
         payment.setStatus("Posted");
-        checkAddToTillBalance(payment, false); // payment now updates balance
-        checkAddToTillBalance(refund, true);   // refund not added
+        checkAddToTillBalance(payment, false, BigDecimal.ONE);
+        // payment now updates balance
+        checkAddToTillBalance(refund, true, BigDecimal.ONE);
+        // refund not added
 
         refund.setStatus("Posted");
-        checkAddToTillBalance(refund, true);   // refund now updates balance
+        checkAddToTillBalance(refund, true, BigDecimal.ZERO);
+        // refund now updates balance
 
         // verify that subsequent saves only get don't get added to the balance
         // again
-        checkAddToTillBalance(payment, true);
-        checkAddToTillBalance(refund, true);
+        checkAddToTillBalance(payment, true, BigDecimal.ZERO);
+        checkAddToTillBalance(refund, true, BigDecimal.ZERO);
     }
 
     /**
@@ -210,7 +213,8 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     public void testTransfer() {
         ActBean payment = createPayment();
         payment.setStatus("Posted");
-        Act balance = checkAddToTillBalance(payment, false);
+        FinancialAct balance = checkAddToTillBalance(payment, false,
+                                                     BigDecimal.ONE);
 
         // make sure using the latest version of the act (i.e, with relationship
         // to balance)
@@ -223,15 +227,20 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         TillRules.transfer(balance, act, newTill, service);
 
         // reload the balance and make sure the payment has been removed
-        balance = (Act) get(balance.getObjectReference());
+        balance = (FinancialAct) get(balance.getObjectReference());
         assertEquals(0, countRelationships(balance, payment.getAct()));
 
+        // balance should now be zero.
+        assertTrue(BigDecimal.ZERO.compareTo(balance.getTotal()) == 0);
+
         // make sure the payment has been added to a new balance
-        Act newBalance = TillHelper.getUnclearedTillBalance(
+        FinancialAct newBalance = TillHelper.getUnclearedTillBalance(
                 newTill.getObjectReference());
         assertNotNull(newBalance);
         assertEquals(1, countRelationships(newBalance, payment.getAct()));
         assertEquals("Uncleared", newBalance.getStatus());
+
+        assertTrue(BigDecimal.ONE.compareTo(newBalance.getTotal()) == 0);
     }
 
     /**
@@ -335,7 +344,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
                 = ArchetypeServiceHelper.getArchetypeService();
         ActBean payment = createPayment();
         payment.setStatus("Posted");
-        Act balance = checkAddToTillBalance(payment, false);
+        Act balance = checkAddToTillBalance(payment, false, BigDecimal.ONE);
 
         try {
             TillRules.transfer(balance, payment.getAct(), _till, service);
@@ -364,11 +373,14 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
      * @param act           the act to save
      * @param balanceExists determines if the balance should exist prior to the
      *                      save
+     * @param expectedTotal the expected total balance
      * @return the balance, if it exists
      */
-    private Act checkAddToTillBalance(ActBean act, boolean balanceExists) {
+    private FinancialAct checkAddToTillBalance(ActBean act,
+                                               boolean balanceExists,
+                                               BigDecimal expectedTotal) {
         boolean posted = "Posted".equals(act.getStatus());
-        Act balance = TillHelper.getUnclearedTillBalance(
+        FinancialAct balance = TillHelper.getUnclearedTillBalance(
                 _till.getObjectReference());
         boolean existsPriorToSave = (balance != null);
         if (balanceExists) {
@@ -396,6 +408,8 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
                 assertTrue("Act without Posted status added to till balance",
                            found == 0);
             }
+            BigDecimal total = balance.getTotal();
+            assertTrue(expectedTotal.compareTo(total) == 0);
         }
         return balance;
     }
@@ -414,8 +428,8 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         tillBean.save();
 
         Party account = createAccount();
-        ActBean balance = createBalance("Uncleared");
-        balance.save();
+        ActBean balanceBean = createBalance("Uncleared");
+        balanceBean.save();
 
         // make sure there is no uncleared deposit for the accouunt
         Act deposit = DepositHelper.getUndepositedDeposit(account);
@@ -424,15 +438,16 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         // clear the till
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        TillRules.clearTill(balance.getAct(), newCashFloat, account, service);
+        FinancialAct balance = (FinancialAct) balanceBean.getAct();
+        balance = TillRules.clearTill(balance, newCashFloat, account, service);
 
         // make sure the balance is updated
-        assertEquals("Cleared", balance.getStatus());
+        assertEquals("Cleared", balanceBean.getStatus());
 
         if (initialCashFloat.compareTo(newCashFloat) != 0) {
             // expect a till balance adjustment to have been made
             Set<ActRelationship> rels
-                    = balance.getAct().getSourceActRelationships();
+                    = balance.getSourceActRelationships();
             assertEquals(1, rels.size());
             ActRelationship r = rels.toArray(new ActRelationship[0])[0];
             Act target = (Act) get(r.getTarget());
@@ -446,7 +461,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
             assertEquals(credit, adjBean.getBoolean("credit"));
         } else {
             // no till balance adjustment should have been generated
-            assertTrue(balance.getAct().getSourceActRelationships().isEmpty());
+            assertTrue(balance.getSourceActRelationships().isEmpty());
         }
 
         // make sure the till is updated
@@ -464,7 +479,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         deposit = DepositHelper.getUndepositedDeposit(account);
         assertNotNull(deposit);
         ActBean depBean = new ActBean(deposit);
-        assertNotNull(depBean.getRelationship(balance.getAct()));
+        assertNotNull(depBean.getRelationship(balanceBean.getAct()));
     }
 
     /**
@@ -481,14 +496,15 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create an <em>act.customerAccountPayment</em>, wrapped in a
-     * bean.
+     * Helper to create an <em>act.customerAccountPayment</em> with an amount
+     * value of 1.0, wrapped in a bean.
      *
      * @return a new act
      */
     private ActBean createPayment() {
         ActBean act = createAct("act.customerAccountPayment");
         act.setStatus("In Progress");
+        act.setValue("amount", new BigDecimal("1.0"));
         Party party = createCustomer();
         act.setParticipant("participation.till", _till);
         act.setParticipant("participation.customer", party);
@@ -496,14 +512,15 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create an <em>act.customerAccountRefund</em>, wrapped in a
-     * bean.
+     * Helper to create an <em>act.customerAccountRefund</em> with an amount
+     * value of 1.0, wrapped in a bean.
      *
      * @return a new act
      */
     private ActBean createRefund() {
         ActBean act = createAct("act.customerAccountRefund");
         act.setStatus("In Progress");
+        act.setValue("amount", new BigDecimal("1.0"));
         Party party = createCustomer();
         act.setParticipant("participation.till", _till);
         act.setParticipant("participation.customer", party);
