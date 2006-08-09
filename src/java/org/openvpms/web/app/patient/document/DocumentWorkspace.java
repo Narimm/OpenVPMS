@@ -68,7 +68,7 @@ public class DocumentWorkspace extends PatientActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("patient.document.createtype");
-        return new DocumentCRUDWindow(type, SHORT_NAMES);
+        return new PatientDocumentCRUDWindow(type, SHORT_NAMES);
     }
 
     /**

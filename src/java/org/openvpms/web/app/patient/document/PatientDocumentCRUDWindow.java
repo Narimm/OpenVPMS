@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.patient.document;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -25,29 +25,24 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.app.subsystem.ActCRUDWindow;
-import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
 /**
- * CRUD Window for Patient Acts
- * 
+ *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
  */
 
-public class PatientActCRUDWindow extends ActCRUDWindow {
+public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
 
     /**
-     * Create a new <code>PatientActCRUDWindow</code>.
-     *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * @param type
+     * @param shortNames
      */
-    public PatientActCRUDWindow(String type, ShortNames shortNames) {
+    public PatientDocumentCRUDWindow(String type, String[] shortNames) {
         super(type, shortNames);
     }
 
@@ -75,6 +70,5 @@ public class PatientActCRUDWindow extends ActCRUDWindow {
         }
         super.onCreated(object);
     }
-
 
 }

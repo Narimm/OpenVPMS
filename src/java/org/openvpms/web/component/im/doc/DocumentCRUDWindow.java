@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.document;
+package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
@@ -24,17 +24,16 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.app.patient.PatientActCRUDWindow;
+import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.doc.DocumentActEditor;
-import org.openvpms.web.component.im.doc.DocumentActPrinter;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
@@ -49,7 +48,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DocumentCRUDWindow extends PatientActCRUDWindow {
+public class DocumentCRUDWindow extends ActCRUDWindow {
 
     /**
      * The refresh button.
