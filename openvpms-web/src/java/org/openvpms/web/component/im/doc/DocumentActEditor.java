@@ -16,7 +16,11 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.document;
+package org.openvpms.web.component.im.doc;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -26,7 +30,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -41,10 +44,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 
 /**
  * Editor for <em>act.patientDocument</em> acts.
@@ -52,7 +51,12 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientDocumentActEditor extends AbstractIMObjectEditor {
+public class DocumentActEditor extends AbstractIMObjectEditor {
+
+    /**
+     * The context object 
+     */
+    private final IMObject _object;
 
     /**
      * The last document template.
@@ -76,10 +80,12 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
      * @param context the layout context. May be <code>null</code>.
+     * @param object TODO
      */
-    public PatientDocumentActEditor(DocumentAct act, IMObject parent,
-                                    LayoutContext context) {
+    public DocumentActEditor(DocumentAct act, IMObject parent,
+                                    LayoutContext context, IMObject object) {
         super(act, parent, context);
+        _object = object;
         getEditor(DOC_REFERENCE).addModifiableListener(
                 new ModifiableListener() {
                     public void modified(Modifiable modifiable) {
@@ -155,11 +161,10 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
      */
     private boolean generateDoc(IMObjectReference template) {
         boolean result = false;
-        IMObject patient = Context.getInstance().getPatient();
-        if (patient != null) {
+        if (_object != null) {
             try {
                 ReportGenerator gen = new ReportGenerator(template);
-                Document doc = gen.generate(patient);
+                Document doc = gen.generate(_object);
                 if (SaveHelper.save(doc)) {
                     Property property = getProperty(DOC_REFERENCE);
                     property.setValue(doc.getObjectReference());

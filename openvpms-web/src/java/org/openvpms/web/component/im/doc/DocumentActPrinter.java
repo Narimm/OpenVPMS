@@ -16,20 +16,19 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.document;
+package org.openvpms.web.component.im.doc;
 
+import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReportException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.doc.DocumentException;
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.web.component.im.print.AbstractIMObjectPrinter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -41,16 +40,23 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientDocumentPrinter extends AbstractIMObjectPrinter {
+public class DocumentActPrinter extends AbstractIMObjectPrinter {
+
+    /**
+     * The document context.
+     */
+    private IMObject _context;
 
     /**
      * Constructs a new <code>PatientDocumentPrinter</code>.
      *
      * @param type display name for the types of objects that this may
      *             print
+     * @param context TODO
      */
-    public PatientDocumentPrinter(String type) {
+    public DocumentActPrinter(String type, IMObject context) {
         super(type);
+        _context = context;
     }
 
     /**
@@ -89,12 +95,11 @@ public class PatientDocumentPrinter extends AbstractIMObjectPrinter {
                 act.getDocReference());
         if (doc == null) {
             // need to generate the document
-            IMObject patient = Context.getInstance().getPatient();
-            if (patient == null) {
+            if (_context == null) {
                 throw new DocumentException(NotFound);
             }
             ReportGenerator gen = new ReportGenerator(act);
-            doc = gen.generate(patient, DocFormats.PDF_TYPE);
+            doc = gen.generate(_context, DocFormats.PDF_TYPE);
         }
         return doc;
     }
