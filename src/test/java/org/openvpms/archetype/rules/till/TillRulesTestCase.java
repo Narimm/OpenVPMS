@@ -192,7 +192,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
      */
     public void testClearTillWithCreditAdjustment() {
         final BigDecimal cashFloat = new BigDecimal(40);
-        final BigDecimal newCashFloat = new BigDecimal(100);
+        final BigDecimal newCashFloat = new BigDecimal(20);
         checkClearTill(cashFloat, newCashFloat);
     }
 
@@ -432,7 +432,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         balanceBean.save();
 
         // make sure there is no uncleared deposit for the accouunt
-        Act deposit = DepositHelper.getUndepositedDeposit(account);
+        FinancialAct deposit = DepositHelper.getUndepositedDeposit(account);
         assertNull(deposit);
 
         // clear the till
@@ -442,7 +442,9 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         balance = TillRules.clearTill(balance, newCashFloat, account, service);
 
         // make sure the balance is updated
-        assertEquals("Cleared", balanceBean.getStatus());
+        assertEquals("Cleared", balance.getStatus());
+
+        BigDecimal total = newCashFloat.subtract(initialCashFloat);
 
         if (initialCashFloat.compareTo(newCashFloat) != 0) {
             // expect a till balance adjustment to have been made
@@ -454,15 +456,19 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
             assertTrue(TypeHelper.isA(target, "act.tillBalanceAdjustment"));
             ActBean adjBean = new ActBean(target);
             BigDecimal amount = adjBean.getBigDecimal("amount");
-            BigDecimal expected = newCashFloat.subtract(initialCashFloat).abs();
 
             boolean credit = (newCashFloat.compareTo(initialCashFloat) < 0);
-            assertTrue(expected.compareTo(amount) == 0);
+            BigDecimal adjustmentTotal = total.abs();
+            assertTrue(adjustmentTotal.compareTo(amount) == 0);
             assertEquals(credit, adjBean.getBoolean("credit"));
         } else {
             // no till balance adjustment should have been generated
             assertTrue(balance.getSourceActRelationships().isEmpty());
         }
+
+        // check the till balance.
+        BigDecimal expectedBalance = total.negate();
+        assertTrue(expectedBalance.compareTo(balance.getTotal()) == 0);
 
         // make sure the till is updated
         Party till = (Party) get(_till.getObjectReference());
@@ -480,6 +486,7 @@ public class TillRulesTestCase extends ArchetypeServiceTest {
         assertNotNull(deposit);
         ActBean depBean = new ActBean(deposit);
         assertNotNull(depBean.getRelationship(balanceBean.getAct()));
+        assertTrue(expectedBalance.compareTo(deposit.getTotal()) == 0);
     }
 
     /**

@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.deposit;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -47,7 +48,7 @@ public class DepositHelper {
      * @param account the account
      * @return an <em>act.bankDeposit</code> or <code>null</code> if none exists
      */
-    public static Act getUndepositedDeposit(Entity account) {
+    public static FinancialAct getUndepositedDeposit(Entity account) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeQuery query = new ArchetypeQuery(DepositRules.BANK_DEPOSIT,
@@ -66,23 +67,21 @@ public class DepositHelper {
                 "entity", account.getObjectReference()));
         query.add(participations);
         List<IMObject> matches = service.get(query).getRows();
-        return (!matches.isEmpty()) ? (Act) matches.get(0) : null;
+        return (!matches.isEmpty()) ? (FinancialAct) matches.get(0) : null;
     }
 
     /**
-     * Creates a new bank deposit, associating it with a till balance.
+     * Creates a new bank deposit.
      *
-     * @param balance the till balance
      * @param account the account to deposit to
      * @return a new bank deposit
      */
-    public static Act createBankDeposit(Act balance, Entity account) {
+    public static Act createBankDeposit(Entity account) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         Act act = (Act) service.create(DepositRules.BANK_DEPOSIT);
         ActBean bean = new ActBean(act);
         bean.addParticipation(DepositRules.DEPOSIT_PARTICIPATION, account);
-        bean.addRelationship("actRelationship.bankDepositItem", balance);
         return act;
     }
 }

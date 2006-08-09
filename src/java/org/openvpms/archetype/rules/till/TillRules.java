@@ -171,20 +171,6 @@ public class TillRules {
     }
 
     /**
-     * Updates the balance of an <em>act.tillBalance</em>.
-     *
-     * @param balanceBean
-     * @param service
-     */
-    private static void updateBalance(ActBean balanceBean,
-                                      IArchetypeService service) {
-        List<Act> items = balanceBean.getActs();
-        ActCalculator calc = new ActCalculator(service);
-        BigDecimal total = calc.sum(items, "amount").negate();
-        balanceBean.setValue("balance", total);
-    }
-
-    /**
      * Clears a till.
      *
      * @param balance   the current till balance
@@ -202,8 +188,6 @@ public class TillRules {
         if (till == null) {
             throw new TillRuleException(MissingTill, balance.getUid());
         }
-        balance.setStatus(CLEARED);
-
         IMObjectBean tillBean = new IMObjectBean(till);
         BigDecimal lastCashFloat = tillBean.getBigDecimal("tillFloat",
                                                           BigDecimal.ZERO);
@@ -220,11 +204,16 @@ public class TillRules {
                 throw new TillRuleException(BalanceNotFound);
             }
         }
+        balance.setStatus(CLEARED);
+
 
         Act deposit = DepositHelper.getUndepositedDeposit(account);
         if (deposit == null) {
-            deposit = DepositHelper.createBankDeposit(balance, account);
+            deposit = DepositHelper.createBankDeposit(account);
         }
+        ActBean depositBean = new ActBean(deposit);
+        depositBean.addRelationship("actRelationship.bankDepositItem", balance);
+        updateDepositTotal(depositBean, service);
 
 /*
         todo - commented out as workaround for OBF-114
@@ -318,6 +307,34 @@ public class TillRules {
     }
 
     /**
+     * Updates the balance of an <em>act.tillBalance</em>.
+     *
+     * @param balanceBean the balance bean
+     * @param service     the archetype service
+     */
+    private static void updateBalance(ActBean balanceBean,
+                                      IArchetypeService service) {
+        List<Act> items = balanceBean.getActs();
+        ActCalculator calc = new ActCalculator(service);
+        BigDecimal total = calc.sum(items, "amount").negate();
+        balanceBean.setValue("balance", total);
+    }
+
+    /**
+     * Calculates the total of an <em>act.bankDeposit</em>.
+     *
+     * @param depositBean the deposit bean
+     * @param service     the archetype service
+     */
+    private static void updateDepositTotal(ActBean depositBean,
+                                           IArchetypeService service) {
+        List<Act> items = depositBean.getActs();
+        ActCalculator calc = new ActCalculator(service);
+        BigDecimal total = calc.sum(items, "balance");
+        depositBean.setValue("total", total);
+    }
+
+    /**
      * Reloads an object from the archetype service.
      *
      * @param object  the object to reload
@@ -328,6 +345,5 @@ public class TillRules {
         return ArchetypeQueryHelper.getByObjectReference(
                 service, object.getObjectReference());
     }
-
 
 }
