@@ -256,6 +256,9 @@
                     org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl
                 </value>
                 <value>
+                    org/openvpms/archetype/rules/archetypeService.save.act.tillBalanceAdjustment.after.drl
+                </value>
+                <value>
                     org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
                 </value>
             </list>
