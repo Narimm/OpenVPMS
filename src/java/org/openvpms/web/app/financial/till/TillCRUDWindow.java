@@ -45,7 +45,6 @@ import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
@@ -279,8 +278,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
-     * Invoked when the edit button is pressed for a. This popups up an {@link
-     * EditDialog}.
+     * Invoked when the edit button is pressed This popups up an {@link
+     * EditDialog} if the act is an <em>act.tillBalanceAdjustment</em>.
      */
     @Override
     protected void onEdit() {
@@ -305,18 +304,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void onEditCompleted(IMObjectEditor editor, boolean isNew) {
-        FinancialAct act = (FinancialAct) getObject();
-        if (editor.isSaved()) {
-            if (isNew) {
-                FinancialAct adjustment = (FinancialAct) editor.getObject();
-                ActBean bean = new ActBean(act);
-                bean.addRelationship("actRelationship.tillBalanceItem",
-                                     adjustment);
-                SaveHelper.save(act);
-            }
-        } else if (editor.isDeleted()) {
-            act = (FinancialAct) IMObjectHelper.reload(act);
-        }
+        FinancialAct act = (FinancialAct) IMObjectHelper.reload(getObject());
         setObject(act);
     }
 
