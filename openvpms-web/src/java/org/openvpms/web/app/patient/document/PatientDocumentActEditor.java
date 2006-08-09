@@ -30,6 +30,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
@@ -156,12 +157,12 @@ public class PatientDocumentActEditor extends AbstractIMObjectEditor {
         boolean result = false;
         IMObject patient = Context.getInstance().getPatient();
         if (patient != null) {
-            DocumentAct act = (DocumentAct) getObject();
             try {
                 ReportGenerator gen = new ReportGenerator(template);
                 Document doc = gen.generate(patient);
                 if (SaveHelper.save(doc)) {
-                    act.setDocReference(doc.getObjectReference());
+                    Property property = getProperty(DOC_REFERENCE);
+                    property.setValue(doc.getObjectReference());
                     updateFileProperties(doc);
                     result = true;
                 }
