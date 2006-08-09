@@ -785,6 +785,26 @@
         </properties>
     </style>
 
+    <style name="download.odp" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/odp.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="download.ods" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/ods.gif"/>
+            </property>
+        </properties>
+    </style>
+
     <style name="download.default" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
