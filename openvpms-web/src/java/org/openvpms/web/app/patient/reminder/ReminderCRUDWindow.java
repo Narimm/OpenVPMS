@@ -22,8 +22,16 @@ import nextapp.echo2.app.Row;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.app.patient.PatientActCRUDWindow;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.spring.ServiceHelper;
 
 /**
  * CRUD Window for Reminders and Alerts
@@ -32,7 +40,7 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @version  $LastChangedDate$
  */
 
-public class ReminderCRUDWindow extends PatientActCRUDWindow {
+public class ReminderCRUDWindow extends ActCRUDWindow {
 
     /**
      * Create a new <code>ReminderCRUDWindow</code>.
@@ -73,6 +81,31 @@ public class ReminderCRUDWindow extends PatientActCRUDWindow {
         } else {
             buttons.add(getCreateButton());
         }
+    }
+
+    /**
+     * Invoked when a new object has been created.
+     *
+     * @param object the new object
+     */
+    @Override
+    protected void onCreated(IMObject object) {
+        Act act = (Act) object;
+        Party patient = Context.getInstance().getPatient();
+        if (patient != null) {
+            try {
+                IArchetypeService service
+                        = ServiceHelper.getArchetypeService();
+                Participation participation
+                        = (Participation) service.create("participation.patient");
+                participation.setEntity(new IMObjectReference(patient));
+                participation.setAct(new IMObjectReference(act));
+                act.addParticipation(participation);
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+        super.onCreated(object);
     }
 
 }
