@@ -29,10 +29,13 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.patient.PatientActCRUDWindow;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -66,6 +69,28 @@ public class DocumentCRUDWindow extends PatientActCRUDWindow {
     public DocumentCRUDWindow(String type, String[] shortNames) {
         super(type, new ShortNameList(shortNames));
     }
+
+    /**
+     * Invoked when an object has been successfully printed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void printed(IMObject object) {
+        Act act = (Act) object;
+        try {
+            setPrintStatus(act, true);
+            SaveHelper.save(act);
+            setObject(act);
+            CRUDWindowListener listener = getListener();
+            if (listener != null) {
+                listener.saved(act, false);
+            }
+        } catch (Throwable exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
 
     /**
      * Lays out the buttons.
