@@ -31,7 +31,10 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.patient.PatientActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.doc.DocumentActEditor;
+import org.openvpms.web.component.im.doc.DocumentActPrinter;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
@@ -140,7 +143,7 @@ public class DocumentCRUDWindow extends PatientActCRUDWindow {
     @Override
     protected IMObjectPrinter createPrinter() {
         String type = getTypeDisplayName();
-        IMObjectPrinter printer = new PatientDocumentPrinter(type);
+        IMObjectPrinter printer = new DocumentActPrinter(type, Context.getInstance().getPatient());
         printer.setListener(new IMObjectPrinterListener() {
             public void printed(IMObject object) {
                 DocumentCRUDWindow.this.printed(object);
@@ -194,8 +197,8 @@ public class DocumentCRUDWindow extends PatientActCRUDWindow {
     private boolean refresh() {
         boolean refreshed = false;
         DocumentAct act = (DocumentAct) getObject();
-        PatientDocumentActEditor editor
-                = new PatientDocumentActEditor(act, null, null);
+        DocumentActEditor editor
+                = new DocumentActEditor(act, null, null, null);
         if (editor.refresh()) {
             refreshed = editor.save();
             onSaved(act, false);
