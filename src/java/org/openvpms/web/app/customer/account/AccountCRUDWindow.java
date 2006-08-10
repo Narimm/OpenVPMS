@@ -18,6 +18,16 @@
 
 package org.openvpms.web.app.customer.account;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.customer.CustomerActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -26,18 +36,6 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 
 import java.util.Date;
 
@@ -158,7 +156,9 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
     protected void onReverse() {
         final Act act = (Act) getObject();
         String status = act.getStatus();
-        if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE) && POSTED_STATUS.equals(status)) {
+        if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE,
+                            CLOSING_BALANCE_TYPE) && POSTED_STATUS.equals(
+                status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("customer.account.reverse.title", name);
             String message = Messages.get("customer.account.reverse.message",
@@ -193,7 +193,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
                                "act.customerAccountCreditAdjust",
                                "act.customerAccountInitialBalance",
                                "act.customerAccountBadDebt"};
-        onCreate(Messages.get("customer.account.createType"),
+        onCreate(Messages.get("customer.account.createtype"),
                  new ShortNameList(shortNames));
     }
 

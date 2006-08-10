@@ -18,17 +18,8 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
-import org.openvpms.web.component.im.filter.NamedNodeFilter;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
 import org.openvpms.archetype.rules.discount.DiscountRules;
+import org.openvpms.archetype.rules.tax.TaxRuleException;
 import org.openvpms.archetype.rules.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -38,9 +29,20 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
 
@@ -65,6 +67,7 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
     /**
      * Construct a new <code>CustomerInvoiceItemEditor</code>.
+     * This recalculates the tax amount.
      *
      * @param act     the act to edit
      * @param parent  the parent act
@@ -79,6 +82,9 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
             throw new IllegalArgumentException("Invalid act type:"
                     + act.getArchetypeId().getShortName());
         }
+
+        calculateTax();
+
         // add a listener to update the tax amount when the total changes
         ModifiableListener totalListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -148,18 +154,31 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
 
     /**
      * Calculates the tax amount.
+     *
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws TaxRuleException          for any tax error
+     */
+    protected void calculateTax() {
+        Party customer = (Party) IMObjectHelper.getObject(getCustomer());
+        if (customer != null && getProduct() != null) {
+            FinancialAct act = (FinancialAct) getObject();
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            BigDecimal previousTax = act.getTaxAmount();
+            BigDecimal tax = TaxRules.calculateTax(act, customer, service);
+            if (tax.compareTo(previousTax) != 0) {
+                Property property = getProperty("tax");
+                property.refresh();
+            }
+        }
+    }
+
+    /**
+     * Calculates the tax amount.
      */
     private void updateTaxAmount() {
         try {
-            Party customer = (Party) IMObjectHelper.getObject(getCustomer());
-            if (customer != null && getProduct() != null) {
-                // calculate the tax amount
-                TaxRules.calculateTax((FinancialAct) getObject(), customer,
-                                      ArchetypeServiceHelper.getArchetypeService());
-                Property property = getProperty("tax");
-                property.refresh();
-
-            }
+            calculateTax();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }

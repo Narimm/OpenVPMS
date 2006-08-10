@@ -51,7 +51,7 @@ public interface Property extends Modifiable {
     NodeDescriptor getDescriptor();
 
     /**
-     * Notify any listeners that they need to refresh.
+     * Notify any listeners that they need to refresh and marks this modified.
      */
     void refresh();
 

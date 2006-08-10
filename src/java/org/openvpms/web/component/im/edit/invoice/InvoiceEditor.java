@@ -18,15 +18,16 @@
 
 package org.openvpms.web.component.im.edit.invoice;
 
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -49,6 +50,19 @@ public class InvoiceEditor extends ActEditor {
      */
     public InvoiceEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        recalculateTax();
+    }
+
+    /**
+     * Update the tax amounts for the act.
+     */
+    public void calculateTax() {
+        Property taxAmount = getProperty("tax");
+        if (taxAmount != null) {
+            List<Act> acts = getEditor().getActs();
+            BigDecimal tax = ActHelper.sum(acts, "tax");
+            taxAmount.setValue(tax);
+        }
     }
 
     /**
@@ -59,11 +73,27 @@ public class InvoiceEditor extends ActEditor {
         Property amount = getProperty("amount");
         BigDecimal value = ActHelper.sum(getEditor().getActs(), "total");
         amount.setValue(value);
+        calculateTax();
+    }
 
+    /**
+     * Recalculates all tax amounts. See OVPMS-334.
+     */
+    private void recalculateTax() {
         Property taxAmount = getProperty("tax");
         if (taxAmount != null) {
-            BigDecimal tax = ActHelper.sum(getEditor().getActs(), "tax");
-            taxAmount.setValue(tax);
+            ActRelationshipCollectionEditor items = getEditor();
+            List<Act> acts = items.getActs();
+            for (Act act : acts) {
+                // get the item editor. For CustomerInvoiceItemEditors, this
+                // will recalculate the tax amount
+                items.getEditor(act);
+            }
+            BigDecimal previousTax = (BigDecimal) taxAmount.getValue();
+            BigDecimal tax = ActHelper.sum(acts, "tax");
+            if (tax.compareTo(previousTax) != 0) {
+                taxAmount.setValue(tax);
+            }
         }
     }
 
