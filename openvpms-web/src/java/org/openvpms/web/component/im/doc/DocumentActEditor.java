@@ -54,9 +54,9 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class DocumentActEditor extends AbstractIMObjectEditor {
 
     /**
-     * The context object 
+     * The object used to generate the document 
      */
-    private final IMObject _object;
+    private final IMObject _genobject;
 
     /**
      * The last document template.
@@ -85,7 +85,7 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
     public DocumentActEditor(DocumentAct act, IMObject parent,
                                     LayoutContext context, IMObject object) {
         super(act, parent, context);
-        _object = object;
+        _genobject = object;
         getEditor(DOC_REFERENCE).addModifiableListener(
                 new ModifiableListener() {
                     public void modified(Modifiable modifiable) {
@@ -161,10 +161,10 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
      */
     private boolean generateDoc(IMObjectReference template) {
         boolean result = false;
-        if (_object != null) {
+        if (_genobject != null) {
             try {
                 ReportGenerator gen = new ReportGenerator(template);
-                Document doc = gen.generate(_object);
+                Document doc = gen.generate(_genobject);
                 if (SaveHelper.save(doc)) {
                     Property property = getProperty(DOC_REFERENCE);
                     property.setValue(doc.getObjectReference());
