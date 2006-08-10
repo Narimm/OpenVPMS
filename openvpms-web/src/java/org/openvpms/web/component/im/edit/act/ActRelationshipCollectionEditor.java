@@ -18,14 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -36,6 +28,13 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -77,6 +76,17 @@ public class ActRelationshipCollectionEditor
             result.add((Act) object);
         }
         return result;
+    }
+
+    /**
+     * Returns an editor for an object, creating one if it doesn't exist.
+     *
+     * @param object the object to edit
+     * @return an editor for the object
+     */
+    @Override
+    public IMObjectEditor getEditor(IMObject object) {
+        return super.getEditor(object);
     }
 
     /**

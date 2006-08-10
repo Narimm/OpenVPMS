@@ -18,17 +18,19 @@
 
 package org.openvpms.web.app.customer.account;
 
+import org.openvpms.archetype.rules.tax.TaxRules;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
-import org.openvpms.archetype.rules.tax.TaxRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import java.math.BigDecimal;
 
 
 /**
@@ -51,6 +53,9 @@ public class AdjustmentActEditor extends ActEditor {
     public AdjustmentActEditor(Act act, IMObject parent,
                                LayoutContext context) {
         super(act, parent, context);
+
+        recalculateTax();  // recalculate tax, as per OVPMS-334
+
         Property amount = getProperty("amount");
         amount.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -64,10 +69,20 @@ public class AdjustmentActEditor extends ActEditor {
      */
     @Override
     protected void updateTotals() {
-        TaxRules.calculateTax((FinancialAct) getObject(),
-                              ArchetypeServiceHelper.getArchetypeService());
-        Property property = getProperty("tax");
-        property.refresh();
+        recalculateTax();
+    }
 
+    /**
+     * Recalculates the tax amounts.
+     */
+    private void recalculateTax() {
+        FinancialAct act = (FinancialAct) getObject();
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        BigDecimal previousTax = act.getTaxAmount();
+        BigDecimal tax = TaxRules.calculateTax(act, service);
+        if (tax.compareTo(previousTax) != 0) {
+            Property property = getProperty("tax");
+            property.refresh();
+        }
     }
 }

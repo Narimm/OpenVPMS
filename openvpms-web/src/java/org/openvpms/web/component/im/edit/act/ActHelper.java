@@ -18,26 +18,24 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.web.component.im.query.ActResultSet;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
+import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.im.query.ActResultSet;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 
 /**
@@ -108,12 +106,9 @@ public class ActHelper {
      * @return the summed total
      */
     public static BigDecimal sum(Act act, String node) {
-        List<Act> acts = new ArrayList<Act>();
-        for (ActRelationship relationship : act.getSourceActRelationships()) {
-            Act item = (Act) IMObjectHelper.getObject(relationship.getTarget());
-            acts.add(item);
-        }
-        return sum(acts, node);
+        ActCalculator calc = new ActCalculator(
+                ArchetypeServiceHelper.getArchetypeService());
+        return calc.sum(act, node);
     }
 
     /**
@@ -124,7 +119,9 @@ public class ActHelper {
      * @return the summed total
      */
     public static BigDecimal sum(Collection<Act> acts, String node) {
-        return sum(BigDecimal.ZERO, acts, node);
+        ActCalculator calc = new ActCalculator(
+                ArchetypeServiceHelper.getArchetypeService());
+        return calc.sum(acts, node);
     }
 
     /**
@@ -137,12 +134,9 @@ public class ActHelper {
      */
     public static BigDecimal sum(BigDecimal initial, Collection<Act> acts,
                                  String node) {
-        BigDecimal result = initial;
-        for (Act act : acts) {
-            BigDecimal amount = getAmount(act, node);
-            result = result.add(amount);
-        }
-        return result;
+        ActCalculator calc = new ActCalculator(
+                ArchetypeServiceHelper.getArchetypeService());
+        return calc.sum(initial, acts, node);
     }
 
     /**
@@ -153,24 +147,9 @@ public class ActHelper {
      * @return the amount corresponding to <code>node</code>
      */
     public static BigDecimal getAmount(Act act, String node) {
-        IMObjectBean bean = new IMObjectBean(act);
-        BigDecimal result = BigDecimal.ZERO;
-        if (bean.hasNode(node)) {
-            BigDecimal value = bean.getBigDecimal(node);
-            if (value != null) {
-                boolean credit = false;
-                if (bean.hasNode("credit")) {
-                    credit = bean.getBoolean("credit");
-                }
-                if (credit) {
-                    result = result.subtract(value);
-                } else {
-                    result = result.add(value);
-                }
-            }
-        }
-
-        return result;
+        ActCalculator calc = new ActCalculator(
+                ArchetypeServiceHelper.getArchetypeService());
+        return calc.getAmount(act, node);
     }
 
     /**

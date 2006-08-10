@@ -94,4 +94,27 @@ public class PropertySet {
         return _properties.values();
     }
 
+    /**
+     * Determines if any of the properties have been modified.
+     *
+     * @return <code>true</code> if at least one property has been modified
+     */
+    public boolean isModified() {
+        for (Property property : getProperties()) {
+            if (property.isModified()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Clears the modified status of all properties.
+     */
+    public void clearModified() {
+        for (Property property : getProperties()) {
+            property.clearModified();
+        }
+    }
+
 }

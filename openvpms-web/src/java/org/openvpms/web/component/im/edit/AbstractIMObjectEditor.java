@@ -305,7 +305,8 @@ public abstract class AbstractIMObjectEditor
      * @return <code>true</code> if the object has been changed
      */
     public boolean isModified() {
-        return _editors.isModified() || getObject().isNew();
+        return _editors.isModified() || _properties.isModified()
+                || getObject().isNew();
     }
 
     /**
@@ -313,6 +314,7 @@ public abstract class AbstractIMObjectEditor
      */
     public void clearModified() {
         _editors.clearModified();
+        _properties.clearModified();
     }
 
     /**

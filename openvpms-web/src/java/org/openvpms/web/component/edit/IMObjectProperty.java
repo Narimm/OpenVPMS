@@ -35,10 +35,11 @@
 
 package org.openvpms.web.component.edit;
 
-import org.openvpms.web.component.im.edit.ValidationHelper;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.LazyInitializationException;
+import org.hibernate.SessionFactory;
+import org.hibernate.classic.Session;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -46,12 +47,9 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.LazyInitializationException;
-import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
+import org.openvpms.web.component.im.edit.ValidationHelper;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
@@ -244,9 +242,10 @@ public class IMObjectProperty implements Property, CollectionProperty {
     }
 
     /**
-     * Notify any listeners that they need to refresh.
+     * Notify any listeners that they need to refresh and marks this modified.
      */
     public void refresh() {
+        _dirty = true;
         if (_listeners != null) {
             _listeners.notifyListeners(this);
         }
@@ -337,7 +336,6 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * listeners.
      */
     private void modified() {
-        _dirty = true;
         _errors = null;
         refresh();
     }

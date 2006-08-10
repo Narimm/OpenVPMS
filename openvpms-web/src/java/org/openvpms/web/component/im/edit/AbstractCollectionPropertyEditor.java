@@ -27,6 +27,7 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -166,7 +167,16 @@ public abstract class AbstractCollectionPropertyEditor
      * @return <code>true</code> if the collection has been modified
      */
     public boolean isModified() {
-        return _property.isModified() || !_edited.isEmpty();
+        boolean modified = _property.isModified() || !_edited.isEmpty();
+        if (!modified) {
+            for (IMObjectEditor editor : _editors.values()) {
+                if (editor.isModified()) {
+                    modified = true;
+                    break;
+                }
+            }
+        }
+        return modified;
     }
 
     /**
@@ -174,6 +184,9 @@ public abstract class AbstractCollectionPropertyEditor
      */
     public void clearModified() {
         _property.clearModified();
+        for (IMObjectEditor editor : _editors.values()) {
+            editor.clearModified();
+        }
     }
 
     /**
@@ -279,16 +292,23 @@ public abstract class AbstractCollectionPropertyEditor
      */
     protected boolean doSave() {
         boolean result = false;
-        if (!_edited.isEmpty()) {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
+        if (!_edited.isEmpty() || !_editors.isEmpty()) {
+            for (IMObjectEditor editor : _editors.values()) {
+                result = editor.save();
+                if (result) {
+                    _edited.remove(editor.getObject());
+                    _saved = true;
+                } else {
+                    break;
+                }
+            }
+
+            // now save objects with no associated editor
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
             IMObject[] edited = _edited.toArray(new IMObject[0]);
             for (IMObject object : edited) {
-                IMObjectEditor editor = getEditor(object);
-                if (editor != null) {
-                    result = editor.save();
-                } else {
-                    result = SaveHelper.save(object, service);
-                }
+                result = SaveHelper.save(object, service);
                 if (result) {
                     _edited.remove(object);
                     _saved = true;
