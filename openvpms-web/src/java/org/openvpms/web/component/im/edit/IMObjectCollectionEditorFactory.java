@@ -18,20 +18,17 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ArchetypeHandler;
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
 import java.lang.reflect.Constructor;
-import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -75,16 +72,10 @@ public class IMObjectCollectionEditorFactory {
 
         NodeDescriptor descriptor = collection.getDescriptor();
         String[] shortNames = DescriptorHelper.getShortNames(descriptor);
-        Set<Class> matches = new HashSet<Class>();
-        for (String shortName : shortNames) {
-            Class clazz = getEditors().getHandler(shortName);
-            if (clazz != null) {
-                matches.add(clazz);
-            }
-        }
-        if (matches.size() == 1) {
-            Class clazz = matches.toArray(new Class[0])[0];
-            Constructor ctor = getConstructor(clazz, collection, object,
+        ArchetypeHandler handler = getEditors().getHandler(shortNames);
+        if (handler != null) {
+            Class type = handler.getType();
+            Constructor ctor = getConstructor(type, collection, object,
                                               context);
             if (ctor != null) {
                 try {
@@ -95,7 +86,7 @@ public class IMObjectCollectionEditorFactory {
                 }
             } else {
                 _log.error("No valid constructor found for class: "
-                        + clazz.getName());
+                        + type.getName());
             }
         }
         if (result == null) {

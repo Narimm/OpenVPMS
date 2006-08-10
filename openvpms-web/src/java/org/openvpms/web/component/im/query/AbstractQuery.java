@@ -18,20 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.component.util.TextComponentFactory;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
-import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
-import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
@@ -41,6 +27,18 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,6 +120,11 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     private List<QueryListener> _listeners = new ArrayList<QueryListener>();
 
     /**
+     * The maxmimum no. of rows to return per page.
+     */
+    private int _maxRows = 20;
+
+    /**
      * Type label id.
      */
     private static final String TYPE_ID = "type";
@@ -189,13 +192,30 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     }
 
     /**
-     * Performs the query.
+     * Sets the maximum no. of rows to return per page.
      *
      * @param rows the maxiomum no. of rows per page
+     */
+    public void setMaxRows(int rows) {
+        _maxRows = rows;
+    }
+
+    /**
+     * Returns the maximum no. of rows to return per page.
+     *
+     * @return the maximum no. of rows to return per page
+     */
+    public int getMaxRows() {
+        return _maxRows;
+    }
+
+    /**
+     * Performs the query.
+     *
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
-    public ResultSet<T> query(int rows, SortConstraint[] sort) {
+    public ResultSet<T> query(SortConstraint[] sort) {
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
@@ -208,11 +228,8 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
             archetypes = new ArchetypeShortNameConstraint(type, true,
                                                           activeOnly);
         }
-
-        ResultSet<T> set = new DefaultResultSet<T>(archetypes, name,
-                                                   _constraints, sort, rows,
-                                                   _distinct);
-        return set;
+        return new DefaultResultSet<T>(archetypes, name, _constraints, sort,
+                                       _maxRows, _distinct);
     }
 
     /**

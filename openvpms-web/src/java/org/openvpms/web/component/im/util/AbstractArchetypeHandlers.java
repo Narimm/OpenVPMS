@@ -34,13 +34,13 @@ import java.util.Collection;
 public abstract class AbstractArchetypeHandlers {
 
     /**
-     * Returns a class that can handle an archetype.
+     * Returns a handler that can handle an archetype.
      *
      * @param shortName the archetype short name
      * @return an implemenation that supports <code>shortName</code> or
      *         <code>null</code> if there is no match
      */
-    public abstract Class getHandler(String shortName);
+    public abstract ArchetypeHandler getHandler(String shortName);
 
     /**
      * Finds the most specific wildcarded short name from a collection of

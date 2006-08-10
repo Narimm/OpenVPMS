@@ -18,14 +18,11 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
-
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.lang.reflect.Constructor;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.util.ArchetypeHandler;
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
 
 /**
@@ -83,21 +80,24 @@ public final class QueryFactory {
      */
     public static Query create(String refModelName, String entityName,
                                String conceptName) {
-        Query result;
+        Query result = null;
         String[] shortNames = DescriptorHelper.getShortNames(
                 refModelName, entityName, conceptName);
-        Class clazz = getQueryClass(shortNames);
-        try {
+        ArchetypeHandler handler = getQueries().getHandler(shortNames);
+        if (handler != null) {
             try {
-                Constructor constructor = clazz.getConstructor(
-                        String.class, String.class, String.class);
-                result = (Query) constructor.newInstance(
-                        refModelName, entityName, conceptName);
-            } catch (NoSuchMethodException exception) {
-                result = create(clazz, shortNames);
+                try {
+                    String[] args = {refModelName, entityName, conceptName};
+                    Class[] types = {String.class, String.class, String.class};
+                    result = (Query) handler.create(args, types);
+                } catch (NoSuchMethodException exception) {
+                    result = create(handler, shortNames);
+                }
+            } catch (Throwable throwable) {
+                _log.error(throwable, throwable);
             }
-        } catch (Throwable throwable) {
-            _log.error(throwable, throwable);
+        }
+        if (result == null) {
             result = new DefaultQuery(refModelName, entityName, conceptName);
         }
         return result;
@@ -115,8 +115,11 @@ public final class QueryFactory {
      */
     public static Query create(String[] shortNames) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
-        Class clazz = getQueryClass(shortNames);
-        return create(clazz, shortNames);
+        ArchetypeHandler handler = getQueries().getHandler(shortNames);
+        if (handler == null) {
+            return new DefaultQuery(shortNames);
+        }
+        return create(handler, shortNames);
     }
 
     /**
@@ -124,20 +127,18 @@ public final class QueryFactory {
      * shortNames)</em> constructor; or the default constructor if it doesn't
      * exist.
      *
-     * @param clazz      the {@link Query} implementation
+     * @param handler    the {@link Query} implementation
      * @param shortNames the archerype short names to query on
      * @return a new query implementation
      */
-    private static Query create(Class clazz, String[] shortNames) {
+    private static Query create(ArchetypeHandler handler, String[] shortNames) {
         Query result;
         try {
             try {
-                Constructor constructor = clazz.getConstructor(String[].class);
-                result = (Query) constructor.newInstance(
-                        new Object[]{shortNames});
+                Object[] args = new Object[]{shortNames};
+                result = (Query) handler.create(args);
             } catch (NoSuchMethodException exception) {
-                Constructor constructor = clazz.getConstructor();
-                result = (Query) constructor.newInstance();
+                result = (Query) handler.create();
             }
         } catch (Throwable throwable) {
             _log.error(throwable, throwable);
@@ -147,25 +148,11 @@ public final class QueryFactory {
     }
 
     /**
-     * Returns a query class that can query the supplied short names.
-     *
-     * @param shortNames the archetype short names
-     * @return a query class that can query <code>shortNames</code>
-     */
-    private static Class getQueryClass(String[] shortNames) {
-        Class result = getQueries().getHandler(shortNames);
-        if (result == null) {
-            result = DefaultQuery.class;
-        }
-        return result;
-    }
-
-    /**
      * Returns the query implementations.
      *
      * @return the editors
      */
-    private static synchronized ArchetypeHandlers getQueries() {
+    private static ArchetypeHandlers getQueries() {
         if (_queries == null) {
             _queries = new ArchetypeHandlers("QueryFactory.properties",
                                              Query.class);
