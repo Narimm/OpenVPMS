@@ -43,12 +43,18 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Patient document CRUD window.
+ * Document CRUD window.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class DocumentCRUDWindow extends ActCRUDWindow {
+
+
+    /**
+     * The object used to generate the document 
+     */
+    private final IMObject _genobject;
 
     /**
      * The refresh button.
@@ -68,8 +74,9 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
      *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public DocumentCRUDWindow(String type, String[] shortNames) {
+    public DocumentCRUDWindow(String type, String[] shortNames, IMObject object) {
         super(type, new ShortNameList(shortNames));
+        _genobject = object;
     }
 
     /**
@@ -197,7 +204,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
         boolean refreshed = false;
         DocumentAct act = (DocumentAct) getObject();
         DocumentActEditor editor
-                = new DocumentActEditor(act, null, null, null);
+                = new DocumentActEditor(act, null, null, _genobject);
         if (editor.refresh()) {
             refreshed = editor.save();
             onSaved(act, false);

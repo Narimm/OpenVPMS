@@ -43,7 +43,7 @@ public class PatientDocumentCRUDWindow extends DocumentCRUDWindow {
      * @param shortNames
      */
     public PatientDocumentCRUDWindow(String type, String[] shortNames) {
-        super(type, shortNames);
+        super(type, shortNames,Context.getInstance().getPatient());
     }
 
     /**

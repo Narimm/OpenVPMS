@@ -42,7 +42,7 @@ import org.openvpms.web.resource.util.Messages;
  * @version  $LastChangedDate$
  */
 
-public class DocumentWorkspace extends PatientActWorkspace {
+public class PatientDocumentWorkspace extends PatientActWorkspace {
 
 
     /**
@@ -57,7 +57,7 @@ public class DocumentWorkspace extends PatientActWorkspace {
     /**
      * Construct a new <code>InvoiceWorkspace</code>.
      */
-    public DocumentWorkspace() {
+    public PatientDocumentWorkspace() {
         super("patient", "document", "party", "party", "patient*");
     }
 
