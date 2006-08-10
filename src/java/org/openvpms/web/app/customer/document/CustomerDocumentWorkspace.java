@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.document;
+package org.openvpms.web.app.customer.document;
 
 import java.util.List;
 
@@ -29,7 +29,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-import org.openvpms.web.app.patient.PatientActWorkspace;
+import org.openvpms.web.app.customer.CustomerActWorkspace;
+import org.openvpms.web.app.patient.document.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -42,22 +43,20 @@ import org.openvpms.web.resource.util.Messages;
  * @version  $LastChangedDate$
  */
 
-public class PatientDocumentWorkspace extends PatientActWorkspace {
-
-
-    /**
-     * Patien Document shortnames supported by the workspace.
-     */
-    private static final String[] SHORT_NAMES = {"act.patientDocumentForm",
-                                                 "act.patientDocumentLetter",
-                                                 "act.patientDocumentAttachment",
-                                                 "act.patientDocumentImage"};
+public class CustomerDocumentWorkspace extends CustomerActWorkspace {
 
     /**
-     * Construct a new <code>PatientDocumentWorkspace</code>.
+     * Customer Document shortnames supported by the workspace.
      */
-    public PatientDocumentWorkspace() {
-        super("patient", "document", "party", "party", "patient*");
+    private static final String[] SHORT_NAMES = {"act.customerDocumentForm",
+                                                 "act.customerDocumentLetter",
+                                                 "act.customerDocumentAttachment"};
+
+    /**
+     * Construct a new <code>CustomerDocumentWorkspace</code>.
+     */
+    public CustomerDocumentWorkspace() {
+        super("customer", "document", "party", "party", "customer*");
     }
 
     /**
@@ -66,8 +65,8 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow createCRUDWindow() {
-        String type = Messages.get("patient.document.createtype");
-        return new PatientDocumentCRUDWindow(type, SHORT_NAMES);
+        String type = Messages.get("customer.document.createtype");
+        return new CustomerDocumentCRUDWindow(type, SHORT_NAMES);
     }
 
     /**
@@ -76,14 +75,14 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
      * @param patient the customer to query acts for
      * @return a new query
      */
-    protected ActQuery createQuery(Party patient) {
+    protected ActQuery createQuery(Party customer) {
         IArchetypeService service
             = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
-            = DescriptorHelper.getArchetypeDescriptor("act.patientDocumentLetter");
+            = DescriptorHelper.getArchetypeDescriptor("act.customerDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");    
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        ActQuery query = new ActQuery(patient, "patient", "participation.patient",
+        ActQuery query = new ActQuery(customer, "customer", "participation.customer",
                               SHORT_NAMES, lookups, null);
         return query;
     }
@@ -107,4 +106,5 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
     protected IMObjectTableModel createTableModel() {
         return new ActAmountTableModel(true, false);
     }
+
 }
