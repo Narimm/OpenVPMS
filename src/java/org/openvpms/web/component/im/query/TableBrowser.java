@@ -37,7 +37,7 @@ import org.openvpms.web.component.im.table.PagedIMObjectTable;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class TableBrowser extends AbstractBrowser {
+public class TableBrowser<T extends IMObject> extends AbstractBrowser {
 
     /**
      * The selected action command.
