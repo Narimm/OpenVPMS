@@ -18,16 +18,15 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.component.util.CollectionHelper;
-import org.openvpms.web.component.util.DateFieldFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
-
+import echopointng.DateField;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -39,16 +38,15 @@ import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-
-import echopointng.DateField;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Color;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.list.LookupListCellRenderer;
+import org.openvpms.web.component.im.list.LookupListModel;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.component.util.CollectionHelper;
+import org.openvpms.web.component.util.DateFieldFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -212,7 +210,8 @@ public class ActQuery extends AbstractQuery {
      * @param excludeStatus to exclude. May be <code>null</code>
      */
     public ActQuery(Entity entity, String participant, String participation,
-            String[] shortNames, List<Lookup> statusLookups, String excludeStatus) {
+                    String[] shortNames, List<Lookup> statusLookups,
+                    String excludeStatus) {
         super(shortNames);
         setEntity(entity);
         _participant = participant;
@@ -322,12 +321,11 @@ public class ActQuery extends AbstractQuery {
     /**
      * Performs the query.
      *
-     * @param rows the maxiomum no. of rows per page
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
     @Override
-    public ResultSet query(int rows, SortConstraint[] sort) {
+    public ResultSet query(SortConstraint[] sort) {
         ResultSet<Act> result = null;
 
         if (_entityId != null) {
@@ -352,7 +350,7 @@ public class ActQuery extends AbstractQuery {
             }
             result = new ActResultSet(_entityId, _participant, _participation,
                                       archetypes, startFrom, startTo, statuses,
-                                      exclude, rows, sort);
+                                      exclude, getMaxRows(), sort);
         }
         return result;
     }

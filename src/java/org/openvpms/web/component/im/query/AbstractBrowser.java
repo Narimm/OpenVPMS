@@ -18,20 +18,19 @@
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.RowFactory;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.ActionEvent;
-
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.ColumnFactory;
 
 
 /**
@@ -78,11 +77,6 @@ public abstract class AbstractBrowser<T extends IMObject>
      * Cell spacing row style.
      */
     private static final String CELLSPACING_STYLE = "CellSpacing";
-
-    /**
-     * Maximum no. of rows to display.
-     */
-    private static final int ROWS = 15;
 
 
     /**
@@ -151,7 +145,7 @@ public abstract class AbstractBrowser<T extends IMObject>
      * @return the query result set
      */
     protected ResultSet<T> doQuery() {
-        return _query.query(ROWS, _sort);
+        return _query.query(_sort);
     }
 
     /**

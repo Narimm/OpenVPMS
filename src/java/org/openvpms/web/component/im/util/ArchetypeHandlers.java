@@ -46,9 +46,10 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
             = LogFactory.getLog(ArchetypeHandlers.class);
 
     /**
-     * Map of short names to their correspnding handler class.
+     * Map of short names to their corresponding handlers.
      */
-    private Map<String, Class> _handlers = new HashMap<String, Class>();
+    private Map<String, ArchetypeHandler> _handlers
+            = new HashMap<String, ArchetypeHandler>();
 
 
     /**
@@ -63,25 +64,25 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
     }
 
     /**
-     * Returns a class that can handle an archetype.
+     * Returns a handler that can handle an archetype.
      *
      * @param shortName the archetype short name
      * @return an implemenation that supports <code>shortName</code> or
      *         <code>null</code> if there is no match
      */
     @Override
-    public Class getHandler(String shortName) {
+    public ArchetypeHandler getHandler(String shortName) {
         return getHandler(new String[]{shortName});
     }
 
     /**
-     * Returns a class that can handle a set of archetypes.
+     * Returns a handler that can handle a set of archetypes.
      *
      * @param shortNames the archetype short names
-     * @return an implemenation that supports <code>shortNames</code> or
+     * @return a handler that supports <code>shortNames</code> or
      *         <code>null</code> if there is no match
      */
-    public Class getHandler(String[] shortNames) {
+    public ArchetypeHandler getHandler(String[] shortNames) {
         Set<String> wildcards = _handlers.keySet();
         String match = null;
         int bestDotCount = -1; // more dots in a short name, the more specific
@@ -140,9 +141,19 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
                     _log.warn("Duplicate sbort name=" + key
                             + " from " + getPath() + ": ignoring");
                 } else {
-                    Class clazz = getClass(value);
+                    String[] properties = value.split(",");
+                    if (properties.length == 0) {
+                        _log.warn("Invalid properties for short name=" + key
+                                + ", loaded from path=" + getPath());
+                    }
+                    Class clazz = getClass(properties[0]);
+                    Map<String, String> config = new HashMap<String, String>();
+                    for (int i = 1; i < properties.length; ++i) {
+                        String[] pair = properties[i].split("=");
+                        config.put(pair[0], pair[1]);
+                    }
                     if (clazz != null) {
-                        _handlers.put(key, clazz);
+                        _handlers.put(key, new ArchetypeHandler(clazz, config));
                     }
                 }
             }

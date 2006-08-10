@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
 
 import java.lang.reflect.Constructor;
@@ -76,18 +77,19 @@ public class IMObjectEditorFactory {
                                         LayoutContext context) {
         IMObjectEditor result = null;
 
-        Class clazz;
+        ArchetypeHandler handler;
         if (parent != null) {
             String primary = object.getArchetypeId().getShortName();
             String secondary = parent.getArchetypeId().getShortName();
-            clazz = getEditors().getHandler(primary, secondary);
+            handler = getEditors().getHandler(primary, secondary);
         } else {
             String shortName = object.getArchetypeId().getShortName();
-            clazz = getEditors().getHandler(shortName);
+            handler = getEditors().getHandler(shortName);
         }
 
-        if (clazz != null) {
-            Constructor ctor = getConstructor(clazz, object, parent, context);
+        if (handler != null) {
+            Class type = handler.getType();
+            Constructor ctor = getConstructor(type, object, parent, context);
             if (ctor != null) {
                 try {
                     result = (IMObjectEditor) ctor.newInstance(object, parent,
@@ -97,7 +99,7 @@ public class IMObjectEditorFactory {
                 }
             } else {
                 _log.error("No valid constructor found for class: "
-                        + clazz.getName());
+                        + type.getName());
             }
         }
         if (result == null) {

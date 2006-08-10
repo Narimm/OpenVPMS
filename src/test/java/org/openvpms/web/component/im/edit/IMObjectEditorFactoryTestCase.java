@@ -18,6 +18,9 @@
 
 package org.openvpms.web.component.im.edit;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
@@ -37,10 +40,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
 import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**
@@ -146,10 +145,13 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     public void testCreateCustomerIvoiceItemEditor() {
         checkCreate("act.customerAccountInvoiceItem",
+                    "act.customerAccountChargesInvoice",
                     CustomerInvoiceItemEditor.class);
         checkCreate("act.customerAccountCreditItem",
+                    "act.customerAccountChargesCredit",
                     CustomerInvoiceItemEditor.class);
         checkCreate("act.customerAccountCounterItem",
+                    "act.customerAccountChargesCounter",
                     CustomerInvoiceItemEditor.class);
     }
 

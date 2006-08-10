@@ -30,9 +30,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
+import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ShortNamePairArchetypeHandlers;
-
-import java.lang.reflect.Constructor;
 
 
 /**
@@ -69,19 +68,18 @@ public abstract class AbstractLayoutStrategyFactory
      */
     public IMObjectLayoutStrategy create(IMObject object, IMObject parent) {
         IMObjectLayoutStrategy result = null;
-        Class clazz;
+        ArchetypeHandler handler;
         if (parent != null) {
             String primary = object.getArchetypeId().getShortName();
             String secondary = parent.getArchetypeId().getShortName();
-            clazz = getStrategies().getHandler(primary, secondary);
+            handler = getStrategies().getHandler(primary, secondary);
         } else {
             String shortName = object.getArchetypeId().getShortName();
-            clazz = getStrategies().getHandler(shortName);
+            handler = getStrategies().getHandler(shortName);
         }
-        if (clazz != null) {
+        if (handler != null) {
             try {
-                Constructor ctor = clazz.getConstructor();
-                result = (IMObjectLayoutStrategy) ctor.newInstance();
+                result = (IMObjectLayoutStrategy) handler.create();
             } catch (Throwable throwable) {
                 _log.error(throwable, throwable);
             }

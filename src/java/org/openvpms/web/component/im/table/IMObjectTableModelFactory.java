@@ -18,18 +18,14 @@
 
 package org.openvpms.web.component.im.table;
 
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ArchetypeHandlers;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ArchetypeHandler;
+import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
 
 /**
@@ -81,16 +77,9 @@ public class IMObjectTableModelFactory {
                                             LayoutContext context) {
         IMObjectTableModel result = null;
 
-        Set<Class> matches = new HashSet<Class>();
-        for (String shortName : shortNames) {
-            Class clazz = getTableModels().getHandler(shortName);
-            if (clazz != null) {
-                matches.add(clazz);
-            }
-        }
-        if (matches.size() == 1) {
-            Class clazz = matches.toArray(new Class[0])[0];
-            result = construct(clazz, shortNames, context);
+        ArchetypeHandler handler = getTableModels().getHandler(shortNames);
+        if (handler != null) {
+            result = construct(handler.getType(), shortNames, context);
         }
 
         if (result == null) {

@@ -18,11 +18,11 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.LabelFactory;
-
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,12 +30,10 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
-
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import org.apache.commons.lang.StringUtils;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,16 +108,15 @@ public class PatientQuery extends AbstractQuery {
     /**
      * Performs the query.
      *
-     * @param rows the maxiomum no. of rows per page
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
     @Override
-    public ResultSet query(int rows, SortConstraint[] sort) {
+    public ResultSet query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
         ResultSet result;
         if (_allPatients.isSelected()) {
-            result = super.query(rows, sort);
+            result = super.query(sort);
         } else {
             List<IMObject> objects = null;
             if (_customer != null) {
@@ -128,7 +125,7 @@ public class PatientQuery extends AbstractQuery {
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<IMObject>(objects, rows);
+            result = new PreloadedResultSet<IMObject>(objects, getMaxRows());
             if (sort != null) {
                 result.sort(sort);
             }
