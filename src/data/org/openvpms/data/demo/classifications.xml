@@ -76,9 +76,8 @@
 	<data archetype="classification.reminderGroup" name="Vaccinations" />
 	<data archetype="classification.reminderGroup" name="Desexing" />
 	<data archetype="classification.reminderGroup" name="Worming" />
-	<data archetype="classification.documentGroup" name="Letters" />
-	<data archetype="classification.documentGroup" name="Reports" />
-	<data archetype="classification.documentGroup" name="Forms" />
-	<data archetype="classification.documentGroup" name="Handouts" />
-	<data archetype="classification.documentGroup" name="Certificates" />
+	<data archetype="classification.reminderGroup" name="Other" />
+	<data archetype="classification.documentGroup" name="Customer" />
+	<data archetype="classification.documentGroup" name="Patient" />
+	<data archetype="classification.documentGroup" name="Supplier" />
 </archetype>
