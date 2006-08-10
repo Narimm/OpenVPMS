@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -84,15 +85,19 @@ public class TaxRules {
      *
      * @param act     the financial act to calculate tax for
      * @param service the archetype service
+     * @return the amount of tax for the act
+     * @throws TaxRuleException          if the act is invalid
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    public static void calculateTax(FinancialAct act,
-                                    IArchetypeService service) {
+    public static BigDecimal calculateTax(FinancialAct act,
+                                          IArchetypeService service) {
+        BigDecimal total = BigDecimal.ZERO;
         ActBean bean = new ActBean(act, service);
         Party customer = (Party) bean.getParticipant("participation.customer");
         if (customer == null) {
-            return;
+            act.setTaxAmount(new Money(total));
+            return total;
         }
-        BigDecimal total = BigDecimal.ZERO;
         if (bean.isA(CHARGE_TYPES)) {
             List<Act> items = bean.getActs();
             for (Act item : items) {
@@ -104,13 +109,15 @@ public class TaxRules {
                 }
                 total = total.add(amount);
             }
+            act.setTaxAmount(new Money(total));
         } else if (bean.isA(ADJUSTMENT_TYPES)) {
             List<IMObject> taxRates = getTaxRates(act, customer, service);
-            calculateTaxAmount(act, taxRates, service);
+            total = calculateTaxAmount(act, taxRates, service);
         } else {
             throw new TaxRuleException(InvalidActForTax,
                                        act.getArchetypeId().getShortName());
         }
+        return total;
     }
 
     /**
@@ -124,6 +131,8 @@ public class TaxRules {
      * @param customer the customer
      * @param service  the archetype service
      * @return the amount of tax for the act
+     * @throws TaxRuleException          if the act is invalid
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public static BigDecimal calculateTax(FinancialAct act, Party customer,
                                           IArchetypeService service) {
@@ -136,13 +145,15 @@ public class TaxRules {
     }
 
     /**
-     * Returns the tax rate classifications for an act, excluding any classifiations
-     * associated with the customer.
+     * Returns the tax rate classifications for an act, excluding any
+     * classifiations associated with the customer.
      *
      * @param act      the act
      * @param customer the customer
      * @param service  the archetype service
      * @return a list of tax rate classifications for the act
+     * @throws TaxRuleException          if the act is invalid
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private static List<IMObject> getTaxRates(FinancialAct act, Party customer,
                                               IArchetypeService service) {
@@ -180,9 +191,11 @@ public class TaxRules {
      *
      * @param product the act product
      * @param service the archetype service
+     * @return a list of tax rate classifications
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    private static Collection<IMObject> getChargeTaxRates(Product product,
-                                                          IArchetypeService service) {
+    private static Collection<IMObject> getChargeTaxRates(
+            Product product, IArchetypeService service) {
         Collection<IMObject> taxRates = getProductTaxRates(product, service);
         if (taxRates.isEmpty()) {
             taxRates = getPracticeTaxRates(service);
@@ -191,10 +204,14 @@ public class TaxRules {
     }
 
     /**
-     * Returns the tax rate classifications for a adjustment act (i.e,
+     * Returns the tax rate classifications for an adjustment act (i.e,
      * one of <em>act.customerAccountBadDebt</em>,
      * <em>act.customerAccountCreditAdjust</em>, or
      * <em>act.customerAccountDebitAdjust</em>.
+     *
+     * @param service the archjetype service
+     * @return a list of tax rate classifications
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private static Collection<IMObject> getAdjustmentTaxRates(
             IArchetypeService service) {
@@ -208,6 +225,7 @@ public class TaxRules {
      * @param taxRates the tax rate classifications
      * @param service  the archetype service
      * @return the tax amount for the act
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private static BigDecimal calculateTaxAmount(FinancialAct act,
                                                  List<IMObject> taxRates,
@@ -235,9 +253,10 @@ public class TaxRules {
      * @param customer the customer
      * @param service  the archetype service
      * @return a list fo tax rate classifications for the customer
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    private static List<IMObject> getCustomerTaxRates(Party customer,
-                                                      IArchetypeService service) {
+    private static List<IMObject> getCustomerTaxRates(
+            Party customer, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(customer, service);
         return bean.getValues("taxes");
     }
@@ -250,11 +269,12 @@ public class TaxRules {
      * @param product the product
      * @param service the archetype service
      * @return a list of taxes for the product
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private static Collection<IMObject> getProductTaxRates(
             Product product,
             IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(product);
+        IMObjectBean bean = new IMObjectBean(product, service);
         Set<IMObject> taxes = new HashSet<IMObject>();
         taxes.addAll(bean.getValues("taxes"));
         if (taxes.isEmpty()) {
@@ -281,6 +301,7 @@ public class TaxRules {
      *
      * @param service the archetype service
      * @return a list of taxes for the first practice found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private static List<IMObject> getPracticeTaxRates(
             IArchetypeService service) {
@@ -290,7 +311,7 @@ public class TaxRules {
                 1);
         List<IMObject> practices = page.getRows();
         if (!practices.isEmpty()) {
-            IMObjectBean bean = new IMObjectBean(practices.get(0));
+            IMObjectBean bean = new IMObjectBean(practices.get(0), service);
             taxes = bean.getValues("taxes");
         }
         return taxes;
