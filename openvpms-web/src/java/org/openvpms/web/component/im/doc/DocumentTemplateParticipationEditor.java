@@ -19,6 +19,9 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -28,6 +31,10 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -62,8 +69,47 @@ public class DocumentTemplateParticipationEditor
             act.setValue(parent.getObjectReference());
         }
         Property entity = getProperty("entity");
-        _templateEditor = new IMObjectReferenceEditor(entity, context);
+        _templateEditor = new IMObjectReferenceEditor(entity, context) {
+
+            /**
+             * Pops up a dialog to select an object.
+             */
+            @Override
+            protected void onSelect() {
+                Query query = createQuery();
+                String shortname = null;
+                if(getParent() != null)
+                    shortname = getParent().getArchetypeId().getShortName();
+                   
+                final Browser browser = new DocumentTemplateTableBrowser(query, shortname);
+
+                String title = Messages.get("imobject.select.title",
+                                            getDescriptor().getDisplayName());
+                final BrowserDialog popup = new BrowserDialog(title, browser);
+
+                popup.addWindowPaneListener(new WindowPaneListener() {
+                    public void windowPaneClosing(WindowPaneEvent event) {
+                        IMObject object = popup.getSelected();
+                        if (object != null) {
+                            onSelected(object);
+                        }
+                    }
+                });
+
+                popup.show();
+            }
+        };
+        
         getEditors().add(_templateEditor);
+    }
+
+    /**
+     * Creates a query to select objects.
+     *
+     * @return a new query
+     */
+    protected Query getQuery(Query query) {
+        return query;
     }
 
     /**

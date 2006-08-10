@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
@@ -86,13 +87,16 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
                                     LayoutContext context, IMObject object) {
         super(act, parent, context);
         _genobject = object;
-        getEditor(DOC_REFERENCE).addModifiableListener(
-                new ModifiableListener() {
-                    public void modified(Modifiable modifiable) {
-                        onDocumentUpdate();
+        Editor editor = getEditor(DOC_REFERENCE);
+        if (editor != null) {
+            editor.addModifiableListener(
+                    new ModifiableListener() {
+                        public void modified(Modifiable modifiable) {
+                            onDocumentUpdate();
+                        }
                     }
-                }
-        );
+            );
+        }
         IMObjectCollectionEditor template
                 = (IMObjectCollectionEditor) getEditor(DOC_TEMPLATE);
         if (template != null) {
@@ -237,7 +241,9 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
                 }
             }
             if (!found) {
-                nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
+                NodeDescriptor node = archetype.getNodeDescriptor(DOC_REFERENCE);
+                if (node != null)
+                    nodes.add(archetype.getNodeDescriptor(DOC_REFERENCE));
             }
             return nodes;
         }

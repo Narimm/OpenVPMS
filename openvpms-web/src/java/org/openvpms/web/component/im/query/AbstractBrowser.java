@@ -174,4 +174,11 @@ public abstract class AbstractBrowser<T extends IMObject>
         }
     }
 
+    /**
+     * @return Returns the _query.
+     */
+    public Query<T> getQuery() {
+        return _query;
+    }
+
 }
