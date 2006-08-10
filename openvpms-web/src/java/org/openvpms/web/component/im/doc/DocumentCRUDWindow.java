@@ -149,7 +149,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
     @Override
     protected IMObjectPrinter createPrinter() {
         String type = getTypeDisplayName();
-        IMObjectPrinter printer = new DocumentActPrinter(type, Context.getInstance().getPatient());
+        IMObjectPrinter printer = new DocumentActPrinter(type, _genobject);
         printer.setListener(new IMObjectPrinterListener() {
             public void printed(IMObject object) {
                 DocumentCRUDWindow.this.printed(object);
@@ -181,8 +181,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
      * Invoked when the 'refresh' button is pressed.
      */
     private void onRefresh() {
-        String title = Messages.get("patient.document.refresh.title");
-        String message = Messages.get("patient.document.refresh.message");
+        String title = Messages.get("document.refresh.title");
+        String message = Messages.get("document.refresh.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new WindowPaneListener() {
