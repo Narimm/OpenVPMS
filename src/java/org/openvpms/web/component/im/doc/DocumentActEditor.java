@@ -171,8 +171,10 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
                 Document doc = gen.generate(_genobject);
                 if (SaveHelper.save(doc)) {
                     Property property = getProperty(DOC_REFERENCE);
-                    property.setValue(doc.getObjectReference());
-                    updateFileProperties(doc);
+                    if (property != null) {
+                        property.setValue(doc.getObjectReference());
+                        updateFileProperties(doc);
+                    }
                     result = true;
                 }
             } catch (OpenVPMSException exception) {
