@@ -86,7 +86,7 @@ public class DocumentTemplateTableBrowser<T extends IMObject> extends TableBrows
                     objects.add(object);
                 }
             }
-            result = new PreloadedResultSet<IMObject>(objects, ROWS);
+            result = new PreloadedResultSet<IMObject>(objects, getQuery().getMaxRows());
         }
         
         return result;

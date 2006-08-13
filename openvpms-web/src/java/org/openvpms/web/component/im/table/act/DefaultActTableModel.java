@@ -85,7 +85,7 @@ public class DefaultActTableModel extends DescriptorTableModel {
         } else if (!archetypes.isEmpty()) {
             ArchetypeDescriptor archetype = archetypes.get(0);
             columns = addColumns(new DefaultTableColumnModel(),
-                                 archetype.getAllNodeDescriptors(),
+                                 archetype.getSimpleNodeDescriptors(),
                                  context);
         } else {
             throw new IllegalArgumentException(
