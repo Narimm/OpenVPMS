@@ -18,6 +18,11 @@
 
 package org.openvpms.web.component.im.view.act;
 
+import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -26,13 +31,6 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-
-import nextapp.echo2.app.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,11 +69,12 @@ public class ActRelationshipTableLayoutStrategy
      *
      * @param object     the object to apply
      * @param properties
+     * @param parent
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, PropertySet properties,
-                           LayoutContext context) {
+                           IMObject parent, LayoutContext context) {
         IMObjectTableModel model
                 = IMObjectTableModelFactory.create(_shortNames, context);
         Act act = (Act) object;

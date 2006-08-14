@@ -18,24 +18,22 @@
 
 package org.openvpms.web.component.im.table.act;
 
-import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
-import org.openvpms.web.component.util.DateFormatter;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
+import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -47,8 +45,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActAmountTableModel extends DefaultIMObjectTableModel {
-
+public class ActAmountTableModel extends BaseIMObjectTableModel {
     /**
      * Date column index.
      */

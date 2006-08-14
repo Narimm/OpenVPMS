@@ -173,7 +173,7 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
             public Component apply(IMObject object, PropertySet properties,
-                                   LayoutContext context) {
+                                   IMObject parent, LayoutContext context) {
                 return _selector.getComponent();
             }
         };

@@ -18,6 +18,13 @@
 
 package org.openvpms.web.component.im.view.act;
 
+import echopointng.GroupBox;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
@@ -30,18 +37,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.GridFactory;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
-import echopointng.GroupBox;
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.text.TextComponent;
 
 import java.util.List;
 
@@ -162,7 +157,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
 
-        return strategy.apply(object, properties, context);
+        return strategy.apply(object, properties, null, context);
     }
 
     /**

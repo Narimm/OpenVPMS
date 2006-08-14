@@ -18,25 +18,6 @@
 
 package org.openvpms.web.component.im.layout;
 
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.im.filter.ChainedNodeFilter;
-import org.openvpms.web.component.im.filter.FilterHelper;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.RowFactory;
-import org.openvpms.web.component.util.TabbedPaneFactory;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
 import echopointng.DateField;
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
@@ -50,6 +31,23 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.im.filter.ChainedNodeFilter;
+import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.TabbedPaneFactory;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,11 +87,12 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
+     * @param parent
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, PropertySet properties,
-                           LayoutContext context) {
+                           IMObject parent, LayoutContext context) {
         _components.clear();
         _focusSet = new FocusSet(DescriptorHelper.getDisplayName(object));
         context.getFocusTree().add(_focusSet);
@@ -141,7 +140,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                   LayoutContext context) {
         if (!descriptors.isEmpty()) {
             int size = descriptors.size();
-            Grid grid = null;
+            Grid grid;
             if (size <= 5)
                 grid = GridFactory.create(2);
             else
@@ -272,7 +271,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             }
             components[i] = component;
         }
-        
+
         int rows;
         if (size <= 5)
             rows = size;

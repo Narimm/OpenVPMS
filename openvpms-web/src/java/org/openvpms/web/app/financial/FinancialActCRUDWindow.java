@@ -122,7 +122,7 @@ public class FinancialActCRUDWindow extends CRUDWindow {
                 return paged;
             }
         };
-        return new IMObjectViewer(object, strategy, null);
+        return new IMObjectViewer(object, null, strategy, null);
     }
 
     /**

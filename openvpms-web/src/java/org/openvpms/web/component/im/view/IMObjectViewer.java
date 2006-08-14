@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.view;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 
 /**
@@ -46,9 +45,10 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * Construct a new <code>IMObjectViewer</code>.
      *
      * @param object the object to view.
+     * @param parent the parent object. May be <code>null</code>
      */
-    public IMObjectViewer(IMObject object) {
-        this(object, new DefaultLayoutStrategyFactory().create(object),
+    public IMObjectViewer(IMObject object, IMObject parent) {
+        this(object, parent, new DefaultLayoutStrategyFactory().create(object),
              null);
     }
 
@@ -56,10 +56,12 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * Construct a new <code>IMObjectViewer</code>.
      *
      * @param object  the object to view.
+     * @param parent  the parent object. May be <code>null</code>
      * @param context the layout context. May be <code>null</code>
      */
-    public IMObjectViewer(IMObject object, LayoutContext context) {
-        this(object, new DefaultLayoutStrategyFactory().create(object),
+    public IMObjectViewer(IMObject object, IMObject parent,
+                          LayoutContext context) {
+        this(object, parent, new DefaultLayoutStrategyFactory().create(object),
              context);
     }
 
@@ -67,12 +69,14 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * Construct a new <code>IMObjectViewer</code>.
      *
      * @param object  the object to view.
+     * @param parent
      * @param layout  the layout strategy. May be <code>null</code>
      * @param context the layout context. May be <code>null</code>
      */
-    public IMObjectViewer(IMObject object, IMObjectLayoutStrategy layout,
+    public IMObjectViewer(IMObject object, IMObject parent,
+                          IMObjectLayoutStrategy layout,
                           LayoutContext context) {
-        super(object, new PropertySet(object), layout);
+        super(object, new PropertySet(object), parent, layout);
         if (context == null) {
             _context = new DefaultLayoutContext();
         } else {

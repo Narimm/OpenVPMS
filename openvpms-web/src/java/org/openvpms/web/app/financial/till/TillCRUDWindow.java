@@ -318,7 +318,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         _childAct = child;
         enableButtons(getObject() != null);
         if (child != null) {
-            IMObjectViewer viewer = new IMObjectViewer(child);
+            IMObjectViewer viewer = new IMObjectViewer(child, getObject());
             new IMObjectViewerDialog(viewer);
         }
     }

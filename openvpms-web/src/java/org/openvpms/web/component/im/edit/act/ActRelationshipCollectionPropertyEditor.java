@@ -245,6 +245,7 @@ public class ActRelationshipCollectionPropertyEditor
                     _log.warn("Target act=" + relationship.getTarget()
                             + " no longer exists. Referred to by relationship="
                             + relationship);
+                    getProperty().remove(relationship);
                 }
             }
         }

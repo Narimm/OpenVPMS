@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
@@ -34,7 +34,7 @@ import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
+public class EntityRelationshipTableModel extends BaseIMObjectTableModel {
 
     /**
      * Determines if hypelinks should be created for entities.
@@ -47,7 +47,6 @@ public class EntityRelationshipTableModel extends DefaultIMObjectTableModel {
      * @param context layout context
      */
     public EntityRelationshipTableModel(LayoutContext context) {
-        super(createTableColumnModel());
         _edit = context.isEdit();
     }
 

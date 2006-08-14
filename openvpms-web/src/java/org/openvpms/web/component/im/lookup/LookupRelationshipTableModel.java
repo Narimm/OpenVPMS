@@ -18,16 +18,14 @@
 
 package org.openvpms.web.component.im.lookup;
 
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
-import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-
-import nextapp.echo2.app.Component;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 
 
 /**
@@ -36,12 +34,13 @@ import nextapp.echo2.app.Component;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-04-11 04:09:07Z $
  */
-public class LookupRelationshipTableModel extends DefaultIMObjectTableModel {
+public class LookupRelationshipTableModel extends BaseIMObjectTableModel {
 
     /**
      * Determines if hypelinks should be created for entities.
      */
     private final boolean _edit;
+
 
     /**
      * Construct a new <code>EntityRelationshipTableModel</code>.
@@ -49,7 +48,6 @@ public class LookupRelationshipTableModel extends DefaultIMObjectTableModel {
      * @param context layout context
      */
     public LookupRelationshipTableModel(LayoutContext context) {
-        super(createTableColumnModel());
         _edit = context.isEdit();
     }
 

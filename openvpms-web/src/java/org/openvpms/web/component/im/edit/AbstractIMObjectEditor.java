@@ -500,7 +500,7 @@ public abstract class AbstractIMObjectEditor
     protected IMObjectView createView(IMObject object) {
         IMObjectLayoutStrategy layout = createLayoutStrategy();
         IMObjectView view;
-        view = new AbstractIMObjectView(object, _properties, layout) {
+        view = new AbstractIMObjectView(object, _properties, _parent, layout) {
             @Override
             protected Component createComponent() {
                 _lookups.clear();

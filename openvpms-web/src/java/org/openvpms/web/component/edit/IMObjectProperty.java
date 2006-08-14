@@ -304,7 +304,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
                              minSize);
                 } else if (maxSize != -1 && size > maxSize) {
                     addError("node.error.maxSize", _descriptor.getDisplayName(),
-                             minSize);
+                             maxSize);
                 } else if (size != 0) {
                     IArchetypeService service
                             = ServiceHelper.getArchetypeService();

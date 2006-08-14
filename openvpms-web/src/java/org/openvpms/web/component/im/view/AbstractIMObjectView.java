@@ -21,12 +21,11 @@ package org.openvpms.web.component.im.view;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.focus.FocusGroup;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.focus.FocusGroup;
-import org.openvpms.web.component.edit.PropertySet;
 
 
 /**
@@ -41,6 +40,11 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * The object to display.
      */
     private final IMObject _object;
+
+    /**
+     * The parent object. May be <code>null</code>.
+     */
+    private final IMObject _parent;
 
     /**
      * The object's properties.
@@ -67,21 +71,14 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * Construct a new <code>AbstractIMObjectView</code>.
      *
      * @param object the object to display
-     * @param properties the object's properties
-     */
-    public AbstractIMObjectView(IMObject object, PropertySet properties) {
-        this(object, properties, null);
-    }
-
-    /**
-     * Construct a new <code>AbstractIMObjectView</code>.
-     *
-     * @param object the object to display
+     * @param parent the parent object. May be <code>null</code>
      * @param layout the layout strategy. May be <code>null</code>
      */
-    public AbstractIMObjectView(IMObject object, PropertySet properties,
-                                IMObjectLayoutStrategy layout) {
+    public AbstractIMObjectView(
+            IMObject object, PropertySet properties, IMObject parent,
+            IMObjectLayoutStrategy layout) {
         _object = object;
+        _parent = parent;
         _properties = properties;
         _layout = layout;
     }
@@ -154,7 +151,7 @@ public abstract class AbstractIMObjectView implements IMObjectView {
      * @return a new component
      */
     protected Component createComponent() {
-        return _layout.apply(_object, _properties, getLayoutContext());
+        return _layout.apply(_object, _properties, _parent, getLayoutContext());
     }
 
     /**

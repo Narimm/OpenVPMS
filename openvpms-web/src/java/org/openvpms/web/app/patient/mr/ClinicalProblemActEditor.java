@@ -18,11 +18,10 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.app.Context;
-
-import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
@@ -51,17 +50,17 @@ public class ClinicalProblemActEditor extends ActEditor {
     /**
      * Construct a new <code>ClinicalProblemActEditor</code>.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act. May be <code>null</code>
+     * @param act       the act to edit
+     * @param parent    the parent act. May be <code>null</code>
      * @param editItems if <code>true</code> create an editor for any items node
-     * @param context the layout context. May be <code>null</code>.
+     * @param context   the layout context. May be <code>null</code>.
      */
     public ClinicalProblemActEditor(Act act, Act parent, boolean editItems,
                                     LayoutContext context) {
         super(act, parent, editItems, context);
         // disable editing of the items node if there is a parent act.
 
-        initParticipation("patient", Context.getInstance().getPatient());
+        initParticipant("patient", Context.getInstance().getPatient());
     }
 
     /**

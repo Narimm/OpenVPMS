@@ -18,18 +18,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.ModifiableListener;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -37,10 +26,16 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.text.TextComponent;
+import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
 
@@ -53,7 +48,7 @@ import java.math.BigDecimal;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ActItemEditor extends AbstractIMObjectEditor {
+public abstract class ActItemEditor extends AbstractActEditor {
 
     /**
      * Current node filter. May be <code>null</code>
@@ -91,11 +86,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      *         no product
      */
     public IMObjectReference getProduct() {
-        ProductParticipationEditor editor = getProductEditor();
-        if (editor != null) {
-            return (IMObjectReference) editor.getEntity().getValue();
-        }
-        return null;
+        return getParticipant("product");
     }
 
     /**
@@ -118,11 +109,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      *         has no patient
      */
     public IMObjectReference getPatient() {
-        PatientParticipationEditor editor = getPatientEditor();
-        if (editor != null) {
-            return (IMObjectReference) editor.getEntity().getValue();
-        }
-        return null;
+        return getParticipant("patient");
     }
 
     /**
@@ -170,9 +157,9 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @return the patient editor, or <code>null</code>  if none exists
      */
     protected PatientParticipationEditor getPatientEditor() {
-        Editor product = getEditor("patient");
-        if (product instanceof PatientParticipationEditor) {
-            return (PatientParticipationEditor) product;
+        Editor patient = getEditor("patient");
+        if (patient instanceof PatientParticipationEditor) {
+            return (PatientParticipationEditor) patient;
         }
         return null;
     }
@@ -193,8 +180,17 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
      * @param filter the node filter to use
      */
     protected void changeLayout(NodeFilter filter) {
-        _filter = filter;
+        setFilter(filter);
         onLayout();
+    }
+
+    /**
+     * Sets the node filter, used to lay out the act.
+     *
+     * @param filter the node filter. May be <code>null</code>
+     */
+    protected void setFilter(NodeFilter filter) {
+        _filter = filter;
     }
 
     /**
@@ -228,7 +224,7 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
     /**
      * Act item layout strategy.
      */
-    private class LayoutStrategy extends AbstractLayoutStrategy {
+    protected class LayoutStrategy extends AbstractLayoutStrategy {
 
         /**
          * Apply the layout strategy.
@@ -238,43 +234,29 @@ public abstract class ActItemEditor extends AbstractIMObjectEditor {
          *
          * @param object     the object to apply
          * @param properties the object's properties
+         * @param parent
          * @param context    the layout context
          * @return the component containing the rendered <code>object</code>
          */
         @Override
         public Component apply(IMObject object, PropertySet properties,
-                               LayoutContext context) {
-            Component component = super.apply(object, properties, context);
+                               IMObject parent, LayoutContext context) {
+            Component component = super.apply(object, properties, parent,
+                                              context);
             onLayoutCompleted();
             return component;
         }
 
         /**
-         * Creates a component for a property.
+         * Returns a node filter to filter nodes.
          *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display <code>property</code>
+         * @param context the context
+         * @return a node filter to filter nodes, or <code>null</code> if no
+         *         filterering is required
          */
         @Override
-        protected Component createComponent(Property property, IMObject parent,
-                                            LayoutContext context) {
-            Component component = super.createComponent(property, parent,
-                                                        context);
-            String name = property.getDescriptor().getName();
-            if (name.equals("lowTotal") || name.equals("highTotal")
-                    || name.equals("total")) {
-                // @todo - workaround for OVPMS-211
-                component.setEnabled(false);
-                component.setFocusTraversalParticipant(false);
-                if (component instanceof TextComponent) {
-                    Alignment align = new Alignment(Alignment.RIGHT,
-                                                    Alignment.DEFAULT);
-                    ((TextComponent) component).setAlignment(align);
-                }
-            }
-            return component;
+        protected NodeFilter getNodeFilter(LayoutContext context) {
+            return super.getNodeFilter(context, getFilter());
         }
 
     }

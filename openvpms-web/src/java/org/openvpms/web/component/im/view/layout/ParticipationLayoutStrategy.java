@@ -44,11 +44,12 @@ public class ParticipationLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
+     * @param parent
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
     public Component apply(IMObject object, PropertySet properties,
-                           LayoutContext context) {
+                           IMObject parent, LayoutContext context) {
         Property property = properties.get("entity");
         Component component;
         if (property != null) {

@@ -18,17 +18,16 @@
 
 package org.openvpms.web.component.im.query;
 
-import java.util.List;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+
+import java.util.List;
 
 
 /**

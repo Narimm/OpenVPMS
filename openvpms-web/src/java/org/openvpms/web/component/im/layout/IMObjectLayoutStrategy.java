@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.layout;
 
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.PropertySet;
 
@@ -40,9 +39,10 @@ public interface IMObjectLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
+     * @param parent     the parent object. May be <code>null</code>
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
     Component apply(IMObject object, PropertySet properties,
-                    LayoutContext context);
+                    IMObject parent, LayoutContext context);
 }
