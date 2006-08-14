@@ -461,7 +461,7 @@ public class CRUDWindow {
      * @param object the object to view
      */
     protected IMObjectViewer createViewer(IMObject object) {
-        return new IMObjectViewer(object);
+        return new IMObjectViewer(object, null);
     }
 
     /**

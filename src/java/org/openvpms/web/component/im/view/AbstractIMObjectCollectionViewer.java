@@ -18,17 +18,12 @@
 
 package org.openvpms.web.component.im.view;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import echopointng.GroupBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Insets;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -44,6 +39,10 @@ import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GroupBoxFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -175,7 +174,8 @@ public class AbstractIMObjectCollectionViewer
             _component.remove(_box);
         }
         _component.add(_box);
-        IMObjectViewer viewer = new IMObjectViewer(object, _context);
+        IMObjectViewer viewer = new IMObjectViewer(object, getObject(),
+                                                   _context);
         _box.setTitle(viewer.getTitle());
         _box.add(viewer.getComponent());
     }

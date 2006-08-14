@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.discount.DiscountRules;
 import org.openvpms.archetype.rules.tax.TaxRuleException;
 import org.openvpms.archetype.rules.tax.TaxRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -34,10 +35,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -45,6 +48,7 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 /**
@@ -63,6 +67,13 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
      */
     private static final NodeFilter TEMPLATE_FILTER = new NamedNodeFilter(
             "quantity", "fixedPrice", "unitPrice", "total");
+
+    /**
+     * Node filter, used to hide the dispensing node when a non-medication
+     * product is selected
+     */
+    private static final NodeFilter DISPENSING_FILTER = new NamedNodeFilter(
+            "dispensing");
 
 
     /**
@@ -84,6 +95,19 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         }
 
         calculateTax();
+
+        IMObjectReference ref = getProduct();
+        if (!TypeHelper.isA(ref, "product.medication")) {
+            setFilter(DISPENSING_FILTER);
+        }
+
+        // add a listener to update the dispensing act when the patient changes
+        ModifiableListener patientListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                updatePatient();
+            }
+        };
+        getProperty("patient").addModifiableListener(patientListener);
 
         // add a listener to update the tax amount when the total changes
         ModifiableListener totalListener = new ModifiableListener() {
@@ -115,6 +139,29 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
     }
 
     /**
+     * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    @Override
+    protected boolean doSave() {
+        CollectionProperty dispensing
+                = (CollectionProperty) getProperty("dispensing");
+        if (dispensing != null
+                && !TypeHelper.isA(getProduct(), "product.medication")) {
+            // need to remove any redundant dispensing act, to avoid spurious
+            // results when printing etc.
+            if (!dispensing.getValues().isEmpty()) {
+                Object[] values = dispensing.getValues().toArray();
+                ActRelationship relationship = (ActRelationship) values[0];
+                Act act = (Act) getObject();
+                act.removeActRelationship(relationship);
+            }
+        }
+        return super.doSave();
+    }
+
+    /**
      * Invoked when the participation product is changed, to update prices.
      *
      * @param participation the product participation instance
@@ -134,8 +181,19 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
                 fixedPrice.setValue(BigDecimal.ZERO);
                 unitPrice.setValue(BigDecimal.ZERO);
             } else {
-                if (getFilter() != null) {
-                    changeLayout(null);
+                if (!TypeHelper.isA(product, "product.medication")) {
+                    if (getFilter() != DISPENSING_FILTER) {
+                        changeLayout(DISPENSING_FILTER);
+                    }
+                } else {
+                    PatientMedicationActEditor act
+                            = getPatientMedicationActEditor();
+                    if (act != null) {
+                        act.setProduct(product.getObjectReference());
+                    }
+                    if (getFilter() != null) {
+                        changeLayout(null);
+                    }
                 }
                 Property fixedPrice = getProperty("fixedPrice");
                 Property unitPrice = getProperty("unitPrice");
@@ -218,6 +276,35 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Updates the dispensing act if present with the patient.
+     */
+    private void updatePatient() {
+        PatientMedicationActEditor editor = getPatientMedicationActEditor();
+        if (editor != null) {
+            editor.setPatient(getPatient());
+        }
+    }
+
+    /**
+     * Returns the patient medication act editor.
+     *
+     * @return the patient medication editor, or <code>null</code> if there
+     *         is no dispensing node or dispensing act
+     */
+    private PatientMedicationActEditor getPatientMedicationActEditor() {
+        ActRelationshipCollectionEditor editors =
+                (ActRelationshipCollectionEditor) getEditor("dispensing");
+        if (editors != null) {
+            List<Act> acts = editors.getActs();
+            if (!acts.isEmpty()) {
+                Act act = acts.get(0);
+                return (PatientMedicationActEditor) editors.getEditor(act);
+            }
+        }
+        return null;
     }
 
 }

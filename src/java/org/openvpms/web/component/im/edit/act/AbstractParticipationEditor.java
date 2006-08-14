@@ -19,7 +19,6 @@
 package org.openvpms.web.component.im.edit.act;
 
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -38,7 +37,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor {
+public abstract class AbstractParticipationEditor
+        extends AbstractIMObjectEditor {
 
     /**
      * The entity editor.
@@ -70,7 +70,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
 
     /**
      * Returns the participation.
-     * 
+     *
      * @return the participation
      */
     public Participation getParticipation() {
@@ -94,7 +94,7 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     protected IMObjectReferenceEditor getEditor() {
         return _editor;
     }
-    
+
     /**
      * Creates a new object reference editor.
      *
@@ -115,7 +115,8 @@ public abstract class AbstractParticipationEditor extends AbstractIMObjectEditor
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
             public Component apply(IMObject object,
-                                   PropertySet properties, LayoutContext context) {
+                                   PropertySet properties, IMObject parent,
+                                   LayoutContext context) {
                 return _editor.getComponent();
             }
         };

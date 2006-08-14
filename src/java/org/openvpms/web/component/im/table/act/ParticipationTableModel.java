@@ -22,7 +22,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -34,13 +34,12 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ParticipationTableModel extends DefaultIMObjectTableModel {
+public class ParticipationTableModel extends BaseIMObjectTableModel {
 
     /**
      * Construct a new <code>ParticipationTableModel</code>.
      */
     public ParticipationTableModel() {
-        super(createTableColumnModel());
     }
 
     /**

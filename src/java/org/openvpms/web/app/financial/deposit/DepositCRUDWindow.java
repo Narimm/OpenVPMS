@@ -18,6 +18,17 @@
 
 package org.openvpms.web.app.financial.deposit;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.deposit.DepositRules;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.financial.FinancialActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -26,19 +37,6 @@ import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.archetype.rules.deposit.DepositRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 
 
 /**
@@ -139,7 +137,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      */
     protected void onChildActSelected(FinancialAct child) {
         if (child != null) {
-            IMObjectViewer viewer = new IMObjectViewer(child);
+            IMObjectViewer viewer = new IMObjectViewer(child, getObject());
             new IMObjectViewerDialog(viewer);
         }
     }

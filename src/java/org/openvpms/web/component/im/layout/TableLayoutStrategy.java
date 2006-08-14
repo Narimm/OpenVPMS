@@ -18,22 +18,20 @@
 
 package org.openvpms.web.component.im.layout;
 
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
 import echopointng.table.DefaultPageableSortableTableModel;
 import echopointng.table.PageableSortableTable;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.filter.NodeFilter;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,12 +69,13 @@ public class TableLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
+     * @param parent
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */
     @Override
     public Component apply(IMObject object, PropertySet properties,
-                           LayoutContext context) {
+                           IMObject parent, LayoutContext context) {
         String[] range = _descriptor.getArchetypeRange();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(range[0]);

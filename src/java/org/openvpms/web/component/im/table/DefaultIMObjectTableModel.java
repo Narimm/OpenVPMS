@@ -18,165 +18,20 @@
 
 package org.openvpms.web.component.im.table;
 
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableColumn;
-import nextapp.echo2.app.table.TableColumnModel;
-import nextapp.echo2.app.table.TableModel;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeProperty;
-import org.openvpms.component.system.common.query.ArchetypeSortConstraint;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
-
 
 /**
- * Table model for {@link IMObject}s.
+ * Default {@link IMObjectTableModel}, displaying the <code>IMObject</code>'s
+ * archetype name, name and description.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
- * @see IMObjectTable
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultIMObjectTableModel extends AbstractIMObjectTableModel {
+public class DefaultIMObjectTableModel extends BaseIMObjectTableModel {
 
     /**
-     * Archetype column index.
-     */
-    public static final int ARCHETYPE_INDEX = 0;
-
-    /**
-     * Name column index.
-     */
-    public static final int NAME_INDEX = 1;
-
-    /**
-     * Description column index.
-     */
-    public static final int DESCRIPTION_INDEX = 2;
-
-    /**
-     * Next unused model index.
-     */
-    public static final int NEXT_INDEX = 3;
-
-
-    /**
-     * Table column identifiers.
-     */
-    protected static final String[] COLUMNS = {
-            "table.imobject.archetype", "table.imobject.name",
-            "table.imobject.description"};
-
-
-    /**
-     * Construct an unpopulated <code>DefaultIMObjectTableModel</code>.
+     * Construct a new <code>IMObjectTableModel</code>.
      */
     public DefaultIMObjectTableModel() {
-        this(createTableColumnModel());
+        super();
     }
-
-    /**
-     * Construct a new <code>DefaultIMObjectTableModel</code>.
-     *
-     * @param model the column model
-     */
-    public DefaultIMObjectTableModel(TableColumnModel model) {
-        super(model);
-    }
-
-    /**
-     * Helper to create a new column model.
-     *
-     * @return a new columns model.
-     */
-    public static TableColumnModel createTableColumnModel() {
-        TableColumnModel model = new DefaultTableColumnModel();
-        for (int i = 1; i < COLUMNS.length; ++i) {
-            TableColumn column = new TableColumn(i);
-            String label = Messages.get(COLUMNS[i]);
-
-            column.setHeaderValue(label);
-            model.addColumn(column);
-        }
-        return model;
-    }
-
-    /**
-     * @see TableModel#getColumnName
-     */
-    public String getColumnName(int column) {
-        return Messages.get(COLUMNS[column]);
-    }
-
-    /**
-     * Returns the value found at the given coordinate within the table.
-     *
-     * @param object the object
-     * @param column the column
-     * @param row    the row
-     * @return the value at the given coordinate.
-     */
-    protected Object getValue(IMObject object, int column, int row) {
-        Object result;
-        switch (column) {
-            case ARCHETYPE_INDEX:
-                result = DescriptorHelper.getDisplayName(object);
-                break;
-            case NAME_INDEX:
-                result = object.getName();
-                if (result == null) {
-                    Label label = LabelFactory.create();
-                    label.setText(Messages.get("imobject.none"));
-                    result = label;
-                }
-                break;
-            case DESCRIPTION_INDEX:
-                result = object.getDescription();
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal column=" + column);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if <code>true</code> sort in ascending order; otherwise
-     *                  sort in <code>descending</code> order
-     * @return the sort criteria, or <code>null</code> if the column isn't
-     *         sortable
-     */
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        SortConstraint[] result;
-        switch (column) {
-            case ARCHETYPE_INDEX:
-                SortConstraint refModelName = new ArchetypeSortConstraint(
-                        ArchetypeProperty.ReferenceModelName, ascending);
-                SortConstraint entityName = new ArchetypeSortConstraint(
-                        ArchetypeProperty.EntityName, ascending);
-                SortConstraint conceptName = new ArchetypeSortConstraint(
-                        ArchetypeProperty.ConceptName, ascending);
-                result = new SortConstraint[]{refModelName, entityName,
-                                              conceptName};
-                break;
-            case NAME_INDEX:
-                SortConstraint name = new NodeSortConstraint("name", ascending);
-                result = new SortConstraint[]{name};
-                break;
-            case DESCRIPTION_INDEX:
-                SortConstraint description = new NodeSortConstraint(
-                        "description", ascending);
-                result = new SortConstraint[]{description};
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal column=" + column);
-        }
-        return result;
-    }
-
 }

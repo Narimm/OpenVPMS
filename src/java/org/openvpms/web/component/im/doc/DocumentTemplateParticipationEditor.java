@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.doc;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -78,10 +77,11 @@ public class DocumentTemplateParticipationEditor
             protected void onSelect() {
                 Query query = createQuery();
                 String shortname = null;
-                if(getParent() != null)
+                if (getParent() != null)
                     shortname = getParent().getArchetypeId().getShortName();
-                   
-                final Browser browser = new DocumentTemplateTableBrowser(query, shortname);
+
+                final Browser browser = new DocumentTemplateTableBrowser(query,
+                                                                         shortname);
 
                 String title = Messages.get("imobject.select.title",
                                             getDescriptor().getDisplayName());
@@ -99,7 +99,7 @@ public class DocumentTemplateParticipationEditor
                 popup.show();
             }
         };
-        
+
         getEditors().add(_templateEditor);
     }
 
@@ -121,7 +121,7 @@ public class DocumentTemplateParticipationEditor
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new IMObjectLayoutStrategy() {
             public Component apply(IMObject object, PropertySet properties,
-                                   LayoutContext context) {
+                                   IMObject parent, LayoutContext context) {
                 return _templateEditor.getComponent();
             }
         };

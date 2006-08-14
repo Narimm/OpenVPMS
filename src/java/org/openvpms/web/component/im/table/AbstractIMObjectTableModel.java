@@ -18,15 +18,14 @@
 
 package org.openvpms.web.component.im.table;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -41,18 +40,26 @@ public abstract class AbstractIMObjectTableModel
     /**
      * The column model.
      */
-    private final TableColumnModel _model;
+    private TableColumnModel _model;
 
     /**
      * The objects.
      */
     private List<IMObject> _objects = new ArrayList<IMObject>();
 
-
     /**
      * Construct a new <code>AbstractIMObjectTableModel</code>.
+     * The column model must be set using {@link #setTableColumnModel}.
+     */
+    public AbstractIMObjectTableModel() {
+    }
+
+    /**
+     * Construct a new <code>AbstractIMObjectTableModel</code>, specifying
+     * the column model. If null it must be set using using
+     * {@link #setTableColumnModel}.
      *
-     * @param model the table column model
+     * @param model the table column model. May be <code>null</code>
      */
     public AbstractIMObjectTableModel(TableColumnModel model) {
         _model = model;
@@ -133,12 +140,21 @@ public abstract class AbstractIMObjectTableModel
      * Determines if selection should be enabled.
      *
      * @return <code>true</code> if selection should be enabled; otherwise
-     * <code>false</code>
+     *         <code>false</code>
      */
     public boolean getEnableSelection() {
         return true;
     }
-    
+
+    /**
+     * Sets the column model.
+     *
+     * @param model the column model
+     */
+    protected void setTableColumnModel(TableColumnModel model) {
+        _model = model;
+    }
+
     /**
      * Returns the value found at the given coordinate within the table.
      *
