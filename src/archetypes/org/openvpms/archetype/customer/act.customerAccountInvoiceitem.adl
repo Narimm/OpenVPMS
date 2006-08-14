@@ -50,7 +50,7 @@
         <node name="total" path="/total" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" 
             derived="true" derivedValue="/fixedAmount - /details/attributes/discount + /quantity * /unitAmount"/>
         <node name="dispensing" path="/sourceActRelationships"
-			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="1"
+			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
 			filter="actRelationship.invoiceItemDispensing" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
@@ -63,7 +63,7 @@
 		</node>
         <node name="documents" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.invoiceItemDocument" hidden="true">
+			filter="actRelationship.invoiceItemDocument" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -75,7 +75,7 @@
 		</node>
         <node name="reminders" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.invoiceItemReminder" hidden="true">
+			filter="actRelationship.invoiceItemReminder" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
