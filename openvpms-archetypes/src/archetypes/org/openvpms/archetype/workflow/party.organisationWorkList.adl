@@ -40,17 +40,5 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="taskTypes" path="/classifications" parentChild="false"
-			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*">
-			<assertion name="archetypeRange">
-				<propertyList name="archetypes">
-					<propertyMap name="archetype">
-						<property name="shortName"
-							value="classification.taskType" />
-					</propertyMap>
-				</propertyList>
-				<errorMessage>errorMessage</errorMessage>
-			</assertion>
-		</node>
 	</archetype>
 </archetypes>
