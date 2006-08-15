@@ -197,6 +197,7 @@ public class ActQuery extends AbstractQuery<Act> {
         }
         _selectType = false;
         _statuses = new String[0];
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -231,6 +232,7 @@ public class ActQuery extends AbstractQuery<Act> {
         }
         _selectType = true;
         _statuses = new String[0];
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -254,6 +256,7 @@ public class ActQuery extends AbstractQuery<Act> {
         _statusLookups = null;
         _excludeStatus = null;
         _selectType = true;
+        QueryFactory.initialise(this);
     }
 
     /**
@@ -276,6 +279,7 @@ public class ActQuery extends AbstractQuery<Act> {
         _statusLookups = null;
         _excludeStatus = null;
         _selectType = true;
+        QueryFactory.initialise(this);
     }
 
     /**
