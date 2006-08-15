@@ -29,7 +29,6 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.list.DefaultListModel;
-
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -115,13 +114,17 @@ public class TableNavigator extends Row {
 
         Label page = LabelFactory.create("navigation.page");
 
-        _first = ButtonFactory.create(null, "navigation.first", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+        _first = ButtonFactory.create(
+                null, "navigation.first", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
                 doFirst();
             }
         });
-        _previous = ButtonFactory.create(null, "navigation.previous", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+        _previous = ButtonFactory.create(
+                null, "navigation.previous", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
                 doPrevious();
             }
         });
@@ -137,14 +140,18 @@ public class TableNavigator extends Row {
 
         _pageCount = LabelFactory.create();
 
-        _next = ButtonFactory.create(null, "navigation.next", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+        _next = ButtonFactory.create(
+                null, "navigation.next", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
                 doNext();
             }
         });
 
-        _last = ButtonFactory.create(null, "navigation.last", new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
+        _last = ButtonFactory.create(
+                null, "navigation.last", new ActionListener() {
+            public void actionPerformed(
+                    ActionEvent event) {
                 doLast();
             }
         });
@@ -182,19 +189,18 @@ public class TableNavigator extends Row {
 
     protected void doNext() {
         PageableTableModel model = getModel();
-        int maxPage = model.getRows() / model.getRowsPerPage();
         int page = model.getPage();
-        if (page < maxPage) {
+        if (page < getLastPage()) {
             setCurrentPage(page + 1);
         }
     }
 
     protected void doLast() {
         PageableTableModel model = getModel();
-        int maxPage = model.getRows() / model.getRowsPerPage();
+        int lastPage = getLastPage();
         int page = model.getPage();
-        if (page != maxPage) {
-            setCurrentPage(maxPage);
+        if (page != lastPage) {
+            setCurrentPage(lastPage);
         }
     }
 
@@ -218,6 +224,16 @@ public class TableNavigator extends Row {
 
     protected PageableTableModel getModel() {
         return (PageableTableModel) _table.getModel();
+    }
+
+    /**
+     * Returns the index of the last page.
+     *
+     * @return the index of the last page
+     */
+    private int getLastPage() {
+        int pages = getModel().getPages();
+        return (pages > 0) ? pages - 1 : 0;
     }
 
 }
