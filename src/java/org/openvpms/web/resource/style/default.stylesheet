@@ -419,6 +419,17 @@
         </properties>
     </style>
 
+    <style name="Inset" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="10px 10px"/>
+        </properties>
+    </style>
+
+    <style name="InsetX" type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="insets" value="10px 0px"/>
+        </properties>
+    </style>
 
     <style name="Workspace.Heading" type="nextapp.echo2.app.Row">
         <properties>
@@ -644,7 +655,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.fla" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -654,7 +665,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.gif" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -664,7 +675,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.htm" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -674,7 +685,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.html" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -684,7 +695,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.jpg" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -694,7 +705,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.mp3" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -704,7 +715,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.pdf" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -724,7 +735,7 @@
             </property>
         </properties>
     </style>
-    
+
     <style name="download.swf" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon"
@@ -814,7 +825,7 @@
             </property>
         </properties>
     </style>
-    
+
     <!-- =================================================================== -->
     <!--  Popup window                                                       -->
     <!-- =================================================================== -->
