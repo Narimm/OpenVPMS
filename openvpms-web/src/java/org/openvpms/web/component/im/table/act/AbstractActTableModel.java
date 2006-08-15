@@ -52,8 +52,8 @@ public abstract class AbstractActTableModel extends DescriptorTableModel {
      * @return <code>true</code> if selection should be enabled; otherwise
      *         <code>false</code>
      */
-    @Override
-    public boolean getEnableSelection() {
+    // @Override
+    public boolean xgetEnableSelection() {
         return getLayoutContext().isEdit();
     }
 

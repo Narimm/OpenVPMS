@@ -33,8 +33,6 @@ import org.openvpms.web.app.financial.FinancialActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -128,18 +126,6 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
             }
         });
         dialog.show();
-    }
-
-    /**
-     * Invoked when a child act is selected/deselected.
-     *
-     * @param child the child act. May be <code>null</code>
-     */
-    protected void onChildActSelected(FinancialAct child) {
-        if (child != null) {
-            IMObjectViewer viewer = new IMObjectViewer(child, getObject());
-            new IMObjectViewerDialog(viewer);
-        }
     }
 
     /**

@@ -22,20 +22,16 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTable;
-import org.openvpms.web.component.im.table.PagedIMObjectTable;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
 import org.openvpms.web.component.util.ButtonFactory;
 
 
@@ -86,43 +82,7 @@ public class FinancialActCRUDWindow extends CRUDWindow {
      */
     @Override
     protected IMObjectViewer createViewer(IMObject object) {
-        IMObjectLayoutStrategy strategy = new ActLayoutStrategy() {
-
-            /**
-             * Creates a component to represent the item node.
-             *
-             * @param object     the parent object
-             * @param items      the items node descriptor
-             * @param properties the properties
-             * @param context    the layout context
-             * @return a component to represent the items node
-             */
-            protected Component createItems(IMObject object,
-                                            NodeDescriptor items,
-                                            PropertySet properties,
-                                            LayoutContext context) {
-                Component component = super.createItems(object, items,
-                                                        properties,
-                                                        context);
-                final PagedIMObjectTable paged = (PagedIMObjectTable) component;
-                final IMObjectTable table = paged.getTable();
-                table.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        IMObject selected = table.getSelected();
-                        FinancialAct child = null;
-                        if (selected instanceof ActRelationship) {
-                            ActRelationship relationship
-                                    = (ActRelationship) selected;
-                            child = (FinancialAct) IMObjectHelper.getObject(
-                                    relationship.getTarget());
-                        }
-                        onChildActSelected(child);
-                    }
-                });
-                return paged;
-            }
-        };
-        return new IMObjectViewer(object, null, strategy, null);
+        return new IMObjectViewer(object, null, new LayoutStrategy(), null);
     }
 
     /**
@@ -147,5 +107,57 @@ public class FinancialActCRUDWindow extends CRUDWindow {
      * @param child the child act. May be <code>null</code>
      */
     protected void onChildActSelected(FinancialAct child) {
+    }
+
+    /**
+     * Layout strategy that creates an {@link Viewer} for the items node.
+     */
+    private class LayoutStrategy extends ActLayoutStrategy {
+
+        /**
+         * Creates a component for the items node.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <code>property</code>
+         */
+        @Override
+        protected Component createItems(Property property, IMObject parent,
+                                        LayoutContext context) {
+            Viewer viewer = new Viewer((CollectionProperty) property,
+                                       parent);
+            return viewer.getComponent();
+        }
+    }
+
+    /**
+     * Viewer that invokes <em>onChildActSelected()</em> when an act is
+     * selected.
+     */
+    private class Viewer extends ActRelationshipCollectionViewer {
+
+        /**
+         * Construct a new <code>Viewer</code>.
+         *
+         * @param property the collection to view
+         * @param parent   the parent object
+         */
+        public Viewer(CollectionProperty property, IMObject parent) {
+            super(property, parent);
+        }
+
+
+        /**
+         * Browse an object.
+         *
+         * @param object the object to browse.
+         */
+        @Override
+        protected void browse(IMObject object) {
+            onChildActSelected((FinancialAct) object);
+            super.browse(object);
+        }
+
     }
 }
