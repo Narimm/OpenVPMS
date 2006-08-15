@@ -18,14 +18,14 @@
 
 package org.openvpms.web.component.im.table.act;
 
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
-
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -62,7 +62,7 @@ public class DefaultActRelationshipTableModel
             }
         }
         String[] shortNames = matches.toArray(new String[0]);
-        IMObjectTableModel model
+        IMObjectTableModel<Act> model
                 = IMObjectTableModelFactory.create(shortNames, context);
         setModel(model);
     }

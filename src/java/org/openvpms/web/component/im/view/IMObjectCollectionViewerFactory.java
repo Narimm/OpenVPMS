@@ -41,7 +41,7 @@ public class IMObjectCollectionViewerFactory {
     /**
      * Viewer implementations.
      */
-    private static ArchetypeHandlers _viewers;
+    private static ArchetypeHandlers<IMObjectCollectionViewer> _viewers;
 
     /**
      * The logger.
@@ -96,9 +96,10 @@ public class IMObjectCollectionViewerFactory {
      *
      * @return the Viewers
      */
-    private static synchronized ArchetypeHandlers getViewers() {
+    private static synchronized ArchetypeHandlers<IMObjectCollectionViewer>
+            getViewers() {
         if (_viewers == null) {
-            _viewers = new ArchetypeHandlers(
+            _viewers = new ArchetypeHandlers<IMObjectCollectionViewer>(
                     "IMObjectCollectionViewerFactory.properties",
                     IMObjectCollectionViewer.class);
         }

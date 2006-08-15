@@ -18,13 +18,12 @@
 
 package org.openvpms.web.component.im.table;
 
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.table.PageableTableModel;
-import org.openvpms.web.component.table.SortableTableModel;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.table.PageableTableModel;
+import org.openvpms.web.component.table.SortableTableModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,14 +35,15 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PagedIMObjectTableModel
-        extends DelegatingIMObjectTableModel
-        implements PageableTableModel, SortableTableModel, IMObjectTableModel {
+public class PagedIMObjectTableModel<T extends IMObject>
+        extends DelegatingIMObjectTableModel<T, T>
+        implements PageableTableModel, SortableTableModel,
+                   IMObjectTableModel<T> {
 
     /**
      * The result set.
      */
-    private ResultSet _set;
+    private ResultSet<T> _set;
 
     /**
      * The current page.
@@ -61,7 +61,7 @@ public class PagedIMObjectTableModel
      *
      * @param model the underlying table model.
      */
-    public PagedIMObjectTableModel(IMObjectTableModel model) {
+    public PagedIMObjectTableModel(IMObjectTableModel<T> model) {
         super(model);
     }
 
@@ -70,7 +70,7 @@ public class PagedIMObjectTableModel
      *
      * @param set the result set
      */
-    public void setResultSet(ResultSet set) {
+    public void setResultSet(ResultSet<T> set) {
         _set = set;
         _sortColumn = -1;
         setPage(0);
@@ -82,8 +82,8 @@ public class PagedIMObjectTableModel
      * @param page the page to set
      */
     public void setPage(int page) {
-        List<IMObject> objects = Collections.emptyList();
-        IPage<IMObject> result = _set.getPage(page);
+        List<T> objects = Collections.emptyList();
+        IPage<T> result = _set.getPage(page);
         if (result != null) {
             int rows = result.getTotalNumOfRows();
             if (rows > 0) {
@@ -142,7 +142,7 @@ public class PagedIMObjectTableModel
      *
      * @param objects the objects to display
      */
-    public void setObjects(List<IMObject> objects) {
+    public void setObjects(List<T> objects) {
         throw new UnsupportedOperationException();
     }
 

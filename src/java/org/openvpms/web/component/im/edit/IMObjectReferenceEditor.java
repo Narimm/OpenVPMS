@@ -18,6 +18,17 @@
 
 package org.openvpms.web.component.im.edit;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
@@ -31,19 +42,6 @@ import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 
 
 /**
@@ -165,12 +163,13 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * Pops up a dialog to select an object.
      */
     protected void onSelect() {
-        Query query = createQuery();
-        final Browser browser = new TableBrowser(query);
+        Query<IMObject> query = createQuery();
+        final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
 
         String title = Messages.get("imobject.select.title",
                                     getDescriptor().getDisplayName());
-        final BrowserDialog popup = new BrowserDialog(title, browser);
+        final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                title, browser);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -198,7 +197,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      *
      * @return a new query
      */
-    protected Query createQuery() {
+    protected Query<IMObject> createQuery() {
         String[] shortNames = getDescriptor().getArchetypeRange();
         return QueryFactory.create(shortNames);
     }

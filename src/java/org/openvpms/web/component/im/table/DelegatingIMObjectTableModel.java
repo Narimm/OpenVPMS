@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.table;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.SortConstraint;
-
 import nextapp.echo2.app.event.TableModelEvent;
 import nextapp.echo2.app.event.TableModelListener;
 import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.List;
 
@@ -36,14 +35,15 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class DelegatingIMObjectTableModel
+public abstract class DelegatingIMObjectTableModel<T extends IMObject,
+        K extends IMObject>
         extends AbstractTableModel
-        implements IMObjectTableModel {
+        implements IMObjectTableModel<T> {
 
     /**
      * The model to delegate to.
      */
-    private IMObjectTableModel _model;
+    private IMObjectTableModel<K> _model;
 
     /**
      * Constructs a new <code>DelegatingIMObjectTableModel</code>.
@@ -56,7 +56,7 @@ public abstract class DelegatingIMObjectTableModel
      *
      * @param model the model to delegate to
      */
-    public DelegatingIMObjectTableModel(IMObjectTableModel model) {
+    public DelegatingIMObjectTableModel(IMObjectTableModel<K> model) {
         setModel(model);
     }
 
@@ -133,8 +133,8 @@ public abstract class DelegatingIMObjectTableModel
      *
      * @return the objects being displayed
      */
-    public List<IMObject> getObjects() {
-        return _model.getObjects();
+    public List<T> getObjects() {
+        return convertFrom(_model.getObjects());
     }
 
     /**
@@ -142,8 +142,8 @@ public abstract class DelegatingIMObjectTableModel
      *
      * @param objects the objects to display
      */
-    public void setObjects(List<IMObject> objects) {
-        _model.setObjects(objects);
+    public void setObjects(List<T> objects) {
+        _model.setObjects(convertTo(objects));
     }
 
     /**
@@ -183,7 +183,7 @@ public abstract class DelegatingIMObjectTableModel
      *
      * @param model the model to delegate to
      */
-    protected void setModel(IMObjectTableModel model) {
+    protected void setModel(IMObjectTableModel<K> model) {
         _model = model;
         _model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent event) {
@@ -197,7 +197,7 @@ public abstract class DelegatingIMObjectTableModel
      *
      * @return the model
      */
-    protected IMObjectTableModel getModel() {
+    protected IMObjectTableModel<K> getModel() {
         return _model;
     }
 
@@ -212,6 +212,26 @@ public abstract class DelegatingIMObjectTableModel
         } else {
             fireTableDataChanged();
         }
+    }
+
+    /**
+     * Converts to the delegate type. This implementation does a simple cast.
+     *
+     * @param list the list to convert
+     * @return the converted list
+     */
+    protected List<K> convertTo(List<T> list) {
+        return (List<K>) list;
+    }
+
+    /**
+     * Converts from the delegate type. This implementation does a simple cast.
+     *
+     * @param list the list to convert
+     * @return the converted list
+     */
+    protected List<T> convertFrom(List<K> list) {
+        return (List<T>) list;
     }
 
 }

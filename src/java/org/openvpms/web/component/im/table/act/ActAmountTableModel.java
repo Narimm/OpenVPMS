@@ -45,7 +45,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActAmountTableModel extends BaseIMObjectTableModel {
+public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
     /**
      * Date column index.
      */

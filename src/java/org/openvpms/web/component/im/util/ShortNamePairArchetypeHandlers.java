@@ -36,12 +36,14 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
+public class ShortNamePairArchetypeHandlers<T>
+        extends AbstractArchetypeHandlers<T> {
 
     /**
      * Map of primary short names to their correspnding handler classes.
      */
-    private Map<String, Handlers> _handlers = new HashMap<String, Handlers>();
+    private Map<String, Handlers<T>> _handlers
+            = new HashMap<String, Handlers<T>>();
 
     /**
      * The logger.
@@ -68,7 +70,7 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
      * @return an implemenation that supports <code>shortName</code> or
      *         <code>null</code> if there is no match
      */
-    public ArchetypeHandler getHandler(String shortName) {
+    public ArchetypeHandler<T> getHandler(String shortName) {
         return getHandler(shortName, null);
     }
 
@@ -81,11 +83,11 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
      * @return an implemenation that supports the short names  or
      *         <code>null</code> if there is no match
      */
-    public ArchetypeHandler getHandler(String primary, String secondary) {
-        ArchetypeHandler handler = null;
+    public ArchetypeHandler<T> getHandler(String primary, String secondary) {
+        ArchetypeHandler<T> handler = null;
         String match = getShortName(primary, _handlers.keySet());
         if (match != null) {
-            Handlers handlers = _handlers.get(match);
+            Handlers<T> handlers = _handlers.get(match);
             if (secondary != null) {
                 match = getShortName(secondary, handlers.getShortNames());
                 if (match != null) {
@@ -103,25 +105,25 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
     /**
      * Registers the handlers for a primary short name.
      */
-    private static class Handlers {
+    private static class Handlers<T> {
 
         /**
          * The global handler.
          */
-        private ArchetypeHandler _handler;
+        private ArchetypeHandler<T> _handler;
 
         /**
          * The handlers, keyed on short name.
          */
-        private final Map<String, ArchetypeHandler> _handlers
-                = new HashMap<String, ArchetypeHandler>();
+        private final Map<String, ArchetypeHandler<T>> _handlers
+                = new HashMap<String, ArchetypeHandler<T>>();
 
         /**
          * Sets the primary handler.
          *
          * @param handler the handler
          */
-        public void setHandler(ArchetypeHandler handler) {
+        public void setHandler(ArchetypeHandler<T> handler) {
             _handler = handler;
         }
 
@@ -130,7 +132,7 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          *
          * @return the handler. May be <code>null</code>
          */
-        public ArchetypeHandler getHandler() {
+        public ArchetypeHandler<T> getHandler() {
             return _handler;
         }
 
@@ -140,7 +142,7 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param shortName the secondary short name
          * @param handler   the handler handler
          */
-        public void add(String shortName, ArchetypeHandler handler) {
+        public void add(String shortName, ArchetypeHandler<T> handler) {
             _handlers.put(shortName, handler);
         }
 
@@ -150,7 +152,7 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param shortName the secondary short name
          * @return the handler type
          */
-        public ArchetypeHandler get(String shortName) {
+        public ArchetypeHandler<T> get(String shortName) {
             return _handlers.get(shortName);
         }
 
@@ -187,7 +189,7 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param value the property value
          */
         protected void parse(String key, String value) {
-            Class clazz = getClass(value);
+            Class<T> clazz = (Class<T>) getClass(value);
             if (clazz != null) {
                 String[] pair = key.split(",");
                 if (pair.length == 0 || pair.length > 2) {
@@ -207,16 +209,16 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param shortName the primary short name
          * @param type      the handler type
          */
-        private void addHandler(String shortName, Class type) {
+        private void addHandler(String shortName, Class<T> type) {
             String[] matches = getShortNames(shortName);
             if (matches.length != 0) {
-                Handlers handlers = getHandlers(shortName);
+                Handlers<T> handlers = getHandlers(shortName);
                 if (handlers.getHandler() != null) {
                     _log.warn("Duplicate sbort name=" + shortName
                             + " from " + getPath() + ": ignoring");
 
                 } else {
-                    ArchetypeHandler handler = new ArchetypeHandler(type);
+                    ArchetypeHandler<T> handler = new ArchetypeHandler<T>(type);
                     handlers.setHandler(handler);
                 }
             }
@@ -230,17 +232,17 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param type      the handler type
          */
         private void addHandler(String primary, String secondary,
-                                Class type) {
+                                Class<T> type) {
             String[] primaryMatches = getShortNames(primary);
             String[] secondaryMatches = getShortNames(secondary);
             if (primaryMatches.length != 0 && secondaryMatches.length != 0) {
-                Handlers handlers = getHandlers(primary);
+                Handlers<T> handlers = getHandlers(primary);
                 if (handlers.get(secondary) != null) {
                     _log.warn("Duplicate sbort name=" + secondary
                             + " for primary short name=" + primary
                             + " from " + getPath() + ": ignoring");
                 } else {
-                    handlers.add(secondary, new ArchetypeHandler(type));
+                    handlers.add(secondary, new ArchetypeHandler<T>(type));
                 }
             }
         }
@@ -266,10 +268,10 @@ public class ShortNamePairArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param shortName the short names
          * @return the handlers for <code>shortName</code>
          */
-        private Handlers getHandlers(String shortName) {
-            Handlers handlers = _handlers.get(shortName);
+        private Handlers<T> getHandlers(String shortName) {
+            Handlers<T> handlers = _handlers.get(shortName);
             if (handlers == null) {
-                handlers = new Handlers();
+                handlers = new Handlers<T>();
                 _handlers.put(shortName, handlers);
             }
             return handlers;

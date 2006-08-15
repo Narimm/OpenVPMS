@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.table;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+
 
 /**
  * Default {@link IMObjectTableModel}, displaying the <code>IMObject</code>'s
@@ -26,7 +28,8 @@ package org.openvpms.web.component.im.table;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultIMObjectTableModel extends BaseIMObjectTableModel {
+public class DefaultIMObjectTableModel<T extends IMObject>
+        extends BaseIMObjectTableModel<T> {
 
     /**
      * Construct a new <code>IMObjectTableModel</code>.

@@ -18,14 +18,14 @@
 
 package org.openvpms.web.app.customer.account;
 
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.party.Party;
 
 
 /**
@@ -81,7 +81,7 @@ public class AccountWorkspace extends CustomerActWorkspace {
      * @return a new table model.
      */
     @Override
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(false, true);
     }
 

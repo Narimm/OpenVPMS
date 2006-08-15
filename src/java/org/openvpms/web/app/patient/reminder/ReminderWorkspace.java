@@ -18,8 +18,7 @@
 
 package org.openvpms.web.app.patient.reminder;
 
-import java.util.List;
-
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -36,10 +35,11 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.List;
+
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
 public class ReminderWorkspace extends PatientActWorkspace {
@@ -75,13 +75,15 @@ public class ReminderWorkspace extends PatientActWorkspace {
      */
     protected ActQuery createQuery(Party patient) {
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
-            = DescriptorHelper.getArchetypeDescriptor("act.patientReminder");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");    
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.patientReminder");
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        ActQuery query = new ActQuery(patient, "patient", "participation.patient",
-                              SHORT_NAMES, lookups, null);
+        ActQuery query = new ActQuery(patient, "patient",
+                                      "participation.patient",
+                                      SHORT_NAMES, lookups, null);
         query.setStatus("In Progress");
         return query;
     }
@@ -102,7 +104,7 @@ public class ReminderWorkspace extends PatientActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(true, false);
     }
 

@@ -42,7 +42,7 @@ public class IMObjectCollectionEditorFactory {
     /**
      * Editor implementations.
      */
-    private static ArchetypeHandlers _editors;
+    private static ArchetypeHandlers<IMObjectCollectionEditor> _editors;
 
     /**
      * The logger.
@@ -101,9 +101,10 @@ public class IMObjectCollectionEditorFactory {
      *
      * @return the editors
      */
-    private static synchronized ArchetypeHandlers getEditors() {
+    private static synchronized ArchetypeHandlers<IMObjectCollectionEditor>
+            getEditors() {
         if (_editors == null) {
-            _editors = new ArchetypeHandlers(
+            _editors = new ArchetypeHandlers<IMObjectCollectionEditor>(
                     "IMObjectCollectionEditorFactory.properties",
                     IMObjectCollectionEditor.class);
         }

@@ -34,8 +34,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class AbstractIMObjectTableModel
-        extends AbstractTableModel implements IMObjectTableModel {
+public abstract class AbstractIMObjectTableModel<T extends IMObject>
+        extends AbstractTableModel implements IMObjectTableModel<T> {
 
     /**
      * The column model.
@@ -45,7 +45,7 @@ public abstract class AbstractIMObjectTableModel
     /**
      * The objects.
      */
-    private List<IMObject> _objects = new ArrayList<IMObject>();
+    private List<T> _objects = new ArrayList<T>();
 
     /**
      * Construct a new <code>AbstractIMObjectTableModel</code>.
@@ -88,7 +88,7 @@ public abstract class AbstractIMObjectTableModel
      *
      * @param objects the objects to display
      */
-    public void setObjects(List<IMObject> objects) {
+    public void setObjects(List<T> objects) {
         _objects.clear();
         _objects = objects;
         fireTableDataChanged();
@@ -99,7 +99,7 @@ public abstract class AbstractIMObjectTableModel
      *
      * @return the objects being displayed
      */
-    public List<IMObject> getObjects() {
+    public List<T> getObjects() {
         return _objects;
     }
 
@@ -109,7 +109,7 @@ public abstract class AbstractIMObjectTableModel
      * @param row the row
      * @return the object at <code>row</code>
      */
-    public IMObject getObject(int row) {
+    public T getObject(int row) {
         return _objects.get(row);
     }
 

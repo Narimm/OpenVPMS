@@ -36,7 +36,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class TableBrowser<T extends IMObject> extends AbstractBrowser {
+public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
 
     /**
      * The selected action command.
@@ -46,17 +46,17 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
     /**
      * The paged table.
      */
-    private PagedIMObjectTable _table;
+    private PagedIMObjectTable<T> _table;
 
     /**
      * The model to render results.
      */
-    private IMObjectTableModel _model;
+    private IMObjectTableModel<T> _model;
 
     /**
      * The selected object.
      */
-    private IMObject _selected;
+    private T _selected;
 
 
     /**
@@ -65,7 +65,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
      *
      * @param query the query
      */
-    public TableBrowser(Query query) {
+    public TableBrowser(Query<T> query) {
         this(query, null);
     }
 
@@ -76,8 +76,8 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
      * @param query the query
      * @param sort  the sort criteria. May be <code>null</code>
      */
-    public TableBrowser(Query query, SortConstraint[] sort) {
-        this(query, sort, new DefaultIMObjectTableModel());
+    public TableBrowser(Query<T> query, SortConstraint[] sort) {
+        this(query, sort, new DefaultIMObjectTableModel<T>());
     }
 
     /**
@@ -88,8 +88,8 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
      * @param sort  the sort criteria. May be <code>null</code>
      * @param model the table model
      */
-    public TableBrowser(Query query, SortConstraint[] sort,
-                        IMObjectTableModel model) {
+    public TableBrowser(Query<T> query, SortConstraint[] sort,
+                        IMObjectTableModel<T> model) {
         super(query, sort);
         _model = model;
     }
@@ -100,7 +100,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
      * @return the selected object, or <code>null</code> if none has been
      *         selected.
      */
-    public IMObject getSelected() {
+    public T getSelected() {
         return _selected;
     }
 
@@ -109,7 +109,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
      *
      * @param object the object to select
      */
-    public void setSelected(IMObject object) {
+    public void setSelected(T object) {
         _table.getTable().setSelected(object);
     }
 
@@ -118,7 +118,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
      *
      * @return the objects matcing the query.
      */
-    public List<IMObject> getObjects() {
+    public List<T> getObjects() {
         return _model.getObjects();
     }
 
@@ -128,9 +128,9 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser {
     public void query() {
         Component component = getComponent();
 
-        ResultSet set = doQuery();
+        ResultSet<T> set = doQuery();
         if (_table == null) {
-            _table = new PagedIMObjectTable(_model);
+            _table = new PagedIMObjectTable<T>(_model);
             _table.getTable().addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onSelect();

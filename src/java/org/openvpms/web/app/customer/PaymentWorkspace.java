@@ -35,7 +35,7 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate$
  */
 public class PaymentWorkspace extends CustomerActWorkspace {
-    
+
     /**
      * Payment and refund shortnames supported by the workspace.
      */
@@ -92,7 +92,7 @@ public class PaymentWorkspace extends CustomerActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(true, true);
     }
 

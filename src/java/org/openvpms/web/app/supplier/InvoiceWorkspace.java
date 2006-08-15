@@ -18,13 +18,6 @@
 
 package org.openvpms.web.app.supplier;
 
-import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -33,6 +26,12 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.List;
 
@@ -101,7 +100,7 @@ public class InvoiceWorkspace extends SupplierActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(true, true);
     }
 }

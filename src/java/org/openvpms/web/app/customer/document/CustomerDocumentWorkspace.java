@@ -18,8 +18,7 @@
 
 package org.openvpms.web.app.customer.document;
 
-import java.util.List;
-
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -30,17 +29,17 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
-import org.openvpms.web.app.patient.document.PatientDocumentCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.List;
+
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
 public class CustomerDocumentWorkspace extends CustomerActWorkspace {
@@ -72,19 +71,19 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
     /**
      * Creates a new query.
      *
-     * @param patient the customer to query acts for
+     * @param customer the customer to query acts for
      * @return a new query
      */
     protected ActQuery createQuery(Party customer) {
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
-            = DescriptorHelper.getArchetypeDescriptor("act.customerDocumentLetter");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");    
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.customerDocumentLetter");
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        ActQuery query = new ActQuery(customer, "customer", "participation.customer",
-                              SHORT_NAMES, lookups, null);
-        return query;
+        return new ActQuery(customer, "customer", "participation.customer",
+                            SHORT_NAMES, lookups, null);
     }
 
     /**
@@ -103,7 +102,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(true, false);
     }
 

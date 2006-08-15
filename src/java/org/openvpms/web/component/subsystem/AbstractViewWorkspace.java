@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.subsystem;
 
-import java.util.List;
-
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
@@ -27,23 +25,24 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.List;
 
 
 /**
@@ -245,12 +244,13 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * @param conceptName  the archetype concept name
      * @return a new browser
      */
-    protected Browser createBrowser(String refModelName, String entityName,
-                                    String conceptName) {
-        Query query = QueryFactory.create(refModelName, entityName,
-                                          conceptName);
+    protected Browser<IMObject> createBrowser(String refModelName,
+                                              String entityName,
+                                              String conceptName) {
+        Query<IMObject> query = QueryFactory.create(refModelName, entityName,
+                                                    conceptName);
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
-        return new TableBrowser(query, sort);
+        return new TableBrowser<IMObject>(query, sort);
     }
 
     /**
@@ -258,11 +258,12 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * Browser} to select an object.
      */
     protected void onSelect() {
-        final Browser browser = createBrowser(_refModelName, _entityName,
-                                              _conceptName);
+        final Browser<IMObject> browser
+                = createBrowser(_refModelName, _entityName, _conceptName);
 
         String title = Messages.get("imobject.select.title", _type);
-        final BrowserDialog popup = new BrowserDialog(title, browser);
+        final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                title, browser);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

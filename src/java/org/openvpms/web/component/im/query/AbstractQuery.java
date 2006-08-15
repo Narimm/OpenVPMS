@@ -233,6 +233,15 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     }
 
     /**
+     * The archetype short names being queried.
+     *
+     * @return the short names being queried
+     */
+    public String[] getShortNames() {
+        return _shortNames;
+    }
+
+    /**
      * Determines if the query should be run automatically.
      *
      * @return <code>true</code> if the query should be run automaticaly;
@@ -360,15 +369,6 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      */
     protected boolean includeInactive() {
         return _inactive.isSelected();
-    }
-
-    /**
-     * Returns the archetype short names.
-     *
-     * @return the archetype short names
-     */
-    protected String[] getShortNames() {
-        return _shortNames;
     }
 
     /**

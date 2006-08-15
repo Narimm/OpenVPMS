@@ -18,6 +18,13 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -41,21 +48,11 @@ import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
-
 import java.util.List;
 
 
 /**
- * An editor for {@link LookupRelationship}s.
+ * An editor for relationships.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-17 01:10:40Z $
@@ -183,11 +180,13 @@ public abstract class AbstractRelationshipEditor
      */
     protected void onSelect(final Entity entity) {
         NodeDescriptor descriptor = entity.getDescriptor();
-        Query query = QueryFactory.create(descriptor.getArchetypeRange());
-        final Browser browser = new TableBrowser(query);
+        Query<IMObject> query = QueryFactory.create(
+                descriptor.getArchetypeRange());
+        final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
         String title = Messages.get("imobject.select.title",
                                     descriptor.getDisplayName());
-        final BrowserDialog popup = new BrowserDialog(title, browser, true);
+        final BrowserDialog<IMObject> popup
+                = new BrowserDialog<IMObject>(title, browser, true);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

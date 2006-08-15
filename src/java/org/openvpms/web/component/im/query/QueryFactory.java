@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.query;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
@@ -52,7 +53,7 @@ public final class QueryFactory {
     /**
      * Query implementations.
      */
-    private static ArchetypeHandlers _queries;
+    private static ArchetypeHandlers<Query> _queries;
 
     /**
      * The logger.
@@ -78,18 +79,19 @@ public final class QueryFactory {
      * @param conceptName  the archetype concept name
      * @return a new query
      */
-    public static Query create(String refModelName, String entityName,
-                               String conceptName) {
-        Query result = null;
+    public static <T extends IMObject> Query<T> create(String refModelName,
+                                                       String entityName,
+                                                       String conceptName) {
+        Query<T> result = null;
         String[] shortNames = DescriptorHelper.getShortNames(
                 refModelName, entityName, conceptName);
-        ArchetypeHandler handler = getQueries().getHandler(shortNames);
+        ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
         if (handler != null) {
             try {
                 try {
                     String[] args = {refModelName, entityName, conceptName};
                     Class[] types = {String.class, String.class, String.class};
-                    result = (Query) handler.create(args, types);
+                    result = (Query<T>) handler.create(args, types);
                 } catch (NoSuchMethodException exception) {
                     result = create(handler, shortNames);
                 }
@@ -98,7 +100,7 @@ public final class QueryFactory {
             }
         }
         if (result == null) {
-            result = new DefaultQuery(refModelName, entityName, conceptName);
+            result = new DefaultQuery<T>(refModelName, entityName, conceptName);
         }
         return result;
     }
@@ -113,11 +115,11 @@ public final class QueryFactory {
      *                   wildcards
      * @return a new query
      */
-    public static Query create(String[] shortNames) {
+    public static <T extends IMObject> Query<T> create(String[] shortNames) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
-        ArchetypeHandler handler = getQueries().getHandler(shortNames);
+        ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
         if (handler == null) {
-            return new DefaultQuery(shortNames);
+            return new DefaultQuery<T>(shortNames);
         }
         return create(handler, shortNames);
     }
@@ -131,20 +133,39 @@ public final class QueryFactory {
      * @param shortNames the archerype short names to query on
      * @return a new query implementation
      */
-    private static Query create(ArchetypeHandler handler, String[] shortNames) {
-        Query result;
+    private static <T extends IMObject> Query<T> create(
+            ArchetypeHandler<Query> handler, String[] shortNames) {
+        Query<T> result;
         try {
             try {
                 Object[] args = new Object[]{shortNames};
-                result = (Query) handler.create(args);
+                result = (Query<T>) handler.create(args);
             } catch (NoSuchMethodException exception) {
-                result = (Query) handler.create();
+                result = (Query<T>) handler.create();
             }
         } catch (Throwable throwable) {
             _log.error(throwable, throwable);
-            result = new DefaultQuery(shortNames);
+            result = new DefaultQuery<T>(shortNames);
         }
         return result;
+    }
+
+    /**
+     * Initialise a query.
+     *
+     * @param query the query to initialise
+     */
+    public static <T extends IMObject> void initialise(Query<T> query) {
+        String[] shortNames = DescriptorHelper.getShortNames(
+                query.getShortNames());
+        ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
+        if (handler != null && handler.getType().equals(query.getClass())) {
+            try {
+                handler.initialise(query);
+            } catch (Throwable exception) {
+                _log.error(exception);
+            }
+        }
     }
 
     /**
@@ -152,10 +173,10 @@ public final class QueryFactory {
      *
      * @return the editors
      */
-    private static ArchetypeHandlers getQueries() {
+    private static ArchetypeHandlers<Query> getQueries() {
         if (_queries == null) {
-            _queries = new ArchetypeHandlers("QueryFactory.properties",
-                                             Query.class);
+            _queries = new ArchetypeHandlers<Query>("QueryFactory.properties",
+                                                    Query.class);
         }
         return _queries;
     }

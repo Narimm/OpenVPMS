@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultQuery extends AbstractQuery {
+public class DefaultQuery<T extends IMObject> extends AbstractQuery<T> {
 
     /**
      * Construct a new <code>Browser</code> that queries IMObjects with the

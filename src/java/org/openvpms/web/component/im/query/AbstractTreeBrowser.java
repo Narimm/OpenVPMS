@@ -18,14 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.im.tree.IMObjectTreeNode;
-import org.openvpms.web.component.im.tree.TreeBuilder;
-import org.openvpms.web.component.tree.DefaultTree;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.SortConstraint;
-
 import echopointng.Tree;
 import echopointng.tree.MutableTreeNode;
 import echopointng.tree.TreeNode;
@@ -34,6 +26,12 @@ import echopointng.tree.TreeSelectionEvent;
 import echopointng.tree.TreeSelectionListener;
 import echopointng.tree.TreeSelectionModel;
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.tree.IMObjectTreeNode;
+import org.openvpms.web.component.im.tree.TreeBuilder;
+import org.openvpms.web.component.tree.DefaultTree;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -204,7 +202,7 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
      * Invoked when a node is selected. Notifies any registered listeners.
      */
     protected void onSelected() {
-        IMObject selected = getSelected();
+        T selected = getSelected();
         if (selected != null) {
             notifySelected(selected);
         }

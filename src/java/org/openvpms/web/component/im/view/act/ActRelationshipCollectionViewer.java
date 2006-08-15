@@ -61,7 +61,7 @@ public class ActRelationshipCollectionViewer
      * @return a new table model
      */
     @Override
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<IMObject> createTableModel() {
         NodeDescriptor descriptor = getProperty().getDescriptor();
         Set<String> matches = new HashSet<String>();
         String[] relationshipTypes = DescriptorHelper.getShortNames(descriptor);

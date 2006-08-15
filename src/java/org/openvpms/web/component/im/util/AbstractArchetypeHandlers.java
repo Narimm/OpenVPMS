@@ -31,7 +31,7 @@ import java.util.Collection;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractArchetypeHandlers {
+public abstract class AbstractArchetypeHandlers<T> {
 
     /**
      * Returns a handler that can handle an archetype.
@@ -40,7 +40,7 @@ public abstract class AbstractArchetypeHandlers {
      * @return an implemenation that supports <code>shortName</code> or
      *         <code>null</code> if there is no match
      */
-    public abstract ArchetypeHandler getHandler(String shortName);
+    public abstract ArchetypeHandler<T> getHandler(String shortName);
 
     /**
      * Finds the most specific wildcarded short name from a collection of

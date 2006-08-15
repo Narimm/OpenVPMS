@@ -40,8 +40,8 @@ import org.openvpms.web.resource.util.Messages;
  * @version $LastChangedDate$
  * @see IMObjectTable
  */
-public abstract class BaseIMObjectTableModel
-        extends AbstractIMObjectTableModel {
+public abstract class BaseIMObjectTableModel<T extends IMObject>
+        extends AbstractIMObjectTableModel<T> {
 
     /**
      * Archetype column index.

@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.im.table;
 
+import nextapp.echo2.app.Column;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.table.TableNavigator;
-
-import nextapp.echo2.app.Column;
 
 
 /**
@@ -30,12 +30,12 @@ import nextapp.echo2.app.Column;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PagedIMObjectTable extends Column {
+public class PagedIMObjectTable<T extends IMObject> extends Column {
 
     /**
      * The underlying table.
      */
-    private final IMObjectTable _table;
+    private final IMObjectTable<T> _table;
 
     /**
      * The navigator.
@@ -48,10 +48,10 @@ public class PagedIMObjectTable extends Column {
      *
      * @param model the model to render results
      */
-    public PagedIMObjectTable(IMObjectTableModel model) {
+    public PagedIMObjectTable(IMObjectTableModel<T> model) {
         setStyleName("CellSpacing");
-        IMObjectTableModel paged = new PagedIMObjectTableModel(model);
-        _table = new IMObjectTable(paged);
+        IMObjectTableModel<T> paged = new PagedIMObjectTableModel<T>(model);
+        _table = new IMObjectTable<T>(paged);
         add(_table);
     }
 
@@ -61,7 +61,7 @@ public class PagedIMObjectTable extends Column {
      * @param model the model to render results
      * @param set   the result set
      */
-    public PagedIMObjectTable(IMObjectTableModel model, ResultSet set) {
+    public PagedIMObjectTable(IMObjectTableModel<T> model, ResultSet<T> set) {
         this(model);
         setResultSet(set);
     }
@@ -71,9 +71,9 @@ public class PagedIMObjectTable extends Column {
      *
      * @param set the set
      */
-    public void setResultSet(ResultSet set) {
-        PagedIMObjectTableModel model
-                = (PagedIMObjectTableModel) _table.getModel();
+    public void setResultSet(ResultSet<T> set) {
+        PagedIMObjectTableModel<T> model
+                = (PagedIMObjectTableModel<T>) _table.getModel();
         model.setResultSet(set);
         if (set.hasNext() && set.getPages() > 1) {
             if (_navigator == null) {
@@ -96,7 +96,7 @@ public class PagedIMObjectTable extends Column {
      *
      * @return the underlying table
      */
-    public IMObjectTable getTable() {
+    public IMObjectTable<T> getTable() {
         return _table;
     }
 

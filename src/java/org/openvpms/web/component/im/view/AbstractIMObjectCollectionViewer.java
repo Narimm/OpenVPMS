@@ -62,7 +62,7 @@ public class AbstractIMObjectCollectionViewer
     /**
      * Collection to browse.
      */
-    private PagedIMObjectTable _table;
+    private PagedIMObjectTable<IMObject> _table;
 
     /**
      * The collection property.
@@ -209,7 +209,7 @@ public class AbstractIMObjectCollectionViewer
      *
      * @return the table
      */
-    protected PagedIMObjectTable getTable() {
+    protected PagedIMObjectTable<IMObject> getTable() {
         if (_table == null) {
             _table = createTable();
         }
@@ -221,8 +221,9 @@ public class AbstractIMObjectCollectionViewer
      *
      * @return a new table
      */
-    protected PagedIMObjectTable createTable() {
-        PagedIMObjectTable table = new PagedIMObjectTable(createTableModel());
+    protected PagedIMObjectTable<IMObject> createTable() {
+        PagedIMObjectTable<IMObject> table = new PagedIMObjectTable<IMObject>(
+                createTableModel());
         table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onBrowse();
@@ -236,7 +237,7 @@ public class AbstractIMObjectCollectionViewer
      *
      * @return a new table model
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<IMObject> createTableModel() {
         NodeDescriptor descriptor = _property.getDescriptor();
         return IMObjectTableModelFactory.create(descriptor, _context);
     }
@@ -246,7 +247,8 @@ public class AbstractIMObjectCollectionViewer
      */
     protected void populateTable() {
         List<IMObject> objects = getObjects();
-        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
+        ResultSet<IMObject> set
+                = new PreloadedResultSet<IMObject>(objects, ROWS);
         _table.setResultSet(set);
     }
 
