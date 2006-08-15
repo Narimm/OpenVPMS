@@ -101,13 +101,17 @@ public class CustomerInvoiceItemEditor extends ActItemEditor {
             setFilter(DISPENSING_FILTER);
         }
 
-        // add a listener to update the dispensing act when the patient changes
-        ModifiableListener patientListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updatePatient();
-            }
-        };
-        getProperty("patient").addModifiableListener(patientListener);
+        Property patient = getProperty("patient");
+        if (patient != null) {
+            // add a listener to update the dispensing act when the patient
+            // changes
+            ModifiableListener patientListener = new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    updatePatient();
+                }
+            };
+            patient.addModifiableListener(patientListener);
+        }
 
         // add a listener to update the tax amount when the total changes
         ModifiableListener totalListener = new ModifiableListener() {
