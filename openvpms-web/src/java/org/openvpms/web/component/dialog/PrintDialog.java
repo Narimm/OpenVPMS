@@ -53,6 +53,7 @@ public class PrintDialog extends PopupDialog {
      */
     public PrintDialog(String title) {
         super(title, Buttons.OK_CANCEL);
+        setModal(true);
 
 /*
         Label printer = LabelFactory.create("printdialog.printer");

@@ -18,16 +18,13 @@
 
 package org.openvpms.web.component.dialog;
 
+import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.WindowPane;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.util.ButtonRow;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
-
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.Window;
-import nextapp.echo2.app.WindowPane;
-import nextapp.echo2.app.event.ActionListener;
 
 
 /**
@@ -86,8 +83,7 @@ public abstract class PopupWindow extends WindowPane {
      */
     public void show() {
         if (getParent() == null) {
-            Window root = ApplicationInstance.getActive().getDefaultWindow();
-            root.getContent().add(this);
+            DialogManager.show(this);
         }
     }
 
