@@ -18,13 +18,12 @@
 
 package org.openvpms.web.component.im.table;
 
-import java.util.List;
-
 import nextapp.echo2.app.Table;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
 import org.openvpms.web.component.table.SortableTableHeaderRenderer;
+
+import java.util.List;
 
 
 /**
@@ -33,18 +32,18 @@ import org.openvpms.web.component.table.SortableTableHeaderRenderer;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class IMObjectTable extends Table {
+public class IMObjectTable<T extends IMObject> extends Table {
 
     /**
      * IMObject table model.
      */
-    private final IMObjectTableModel _model;
+    private final IMObjectTableModel<T> _model;
 
     /**
      * Construct a new <code>IMObjectTable</code>.
      */
     public IMObjectTable() {
-        this(new DefaultIMObjectTableModel());
+        this(new DefaultIMObjectTableModel<T>());
     }
 
     /**
@@ -52,7 +51,7 @@ public class IMObjectTable extends Table {
      *
      * @param model the table model
      */
-    public IMObjectTable(IMObjectTableModel model) {
+    public IMObjectTable(IMObjectTableModel<T> model) {
         _model = model;
         setStyleName("default");
         setAutoCreateColumnsFromModel(false);
@@ -69,7 +68,7 @@ public class IMObjectTable extends Table {
      *
      * @param objects the objects to display
      */
-    public void setObjects(List<IMObject> objects) {
+    public void setObjects(List<T> objects) {
         _model.setObjects(objects);
     }
 
@@ -78,7 +77,7 @@ public class IMObjectTable extends Table {
      *
      * @return the object being displayed.
      */
-    public List<IMObject> getObjects() {
+    public List<T> getObjects() {
         return _model.getObjects();
     }
 
@@ -88,11 +87,11 @@ public class IMObjectTable extends Table {
      * @return the selected object, or <code>null</code> if no object is
      *         selected
      */
-    public IMObject getSelected() {
-        IMObject result = null;
+    public T getSelected() {
+        T result = null;
         int index = getSelectionModel().getMinSelectedIndex();
         if (index != -1) {
-            List<IMObject> objects = _model.getObjects();
+            List<T> objects = _model.getObjects();
             if (index < objects.size()) {
                 result = objects.get(index);
             }
@@ -105,7 +104,7 @@ public class IMObjectTable extends Table {
      *
      * @param object the object to select
      */
-    public void setSelected(IMObject object) {
+    public void setSelected(T object) {
         int index = getObjects().indexOf(object);
         if (index != -1) {
             getSelectionModel().setSelectedIndex(index, true);

@@ -92,7 +92,7 @@ public class PaymentWorkspace extends SupplierActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(true, true);
     }
 

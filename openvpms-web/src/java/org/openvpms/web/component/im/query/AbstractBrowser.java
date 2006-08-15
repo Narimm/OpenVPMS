@@ -153,10 +153,11 @@ public abstract class AbstractBrowser<T extends IMObject>
      *
      * @param selected the selected object
      */
-    protected void notifySelected(IMObject selected) {
-        QueryBrowserListener[] listeners
-                = _listeners.toArray(new QueryBrowserListener[0]);
-        for (QueryBrowserListener listener : listeners) {
+    protected void notifySelected(T selected) {
+        QueryBrowserListener<T>[] listeners
+                = (QueryBrowserListener<T>[]) _listeners.toArray(
+                new QueryBrowserListener[0]);
+        for (QueryBrowserListener<T> listener : listeners) {
             listener.selected(selected);
         }
     }

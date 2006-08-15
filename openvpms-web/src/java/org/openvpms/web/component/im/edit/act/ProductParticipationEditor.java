@@ -18,12 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -37,6 +31,11 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -93,8 +92,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
-            protected Query createQuery() {
-                Query query = super.createQuery();
+            protected Query<IMObject> createQuery() {
+                Query<IMObject> query = super.createQuery();
                 return getQuery(query);
             }
         };
@@ -105,7 +104,7 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
      *
      * @return a new query
      */
-    protected Query getQuery(Query query) {
+    protected Query<IMObject> getQuery(Query<IMObject> query) {
         if (_patient != null) {
             IMObjectReference ref = (IMObjectReference) _patient.getValue();
             if (ref != null) {

@@ -75,17 +75,19 @@ public class DocumentTemplateParticipationEditor
              */
             @Override
             protected void onSelect() {
-                Query query = createQuery();
+                Query<IMObject> query = createQuery();
                 String shortname = null;
                 if (getParent() != null)
                     shortname = getParent().getArchetypeId().getShortName();
 
-                final Browser browser = new DocumentTemplateTableBrowser(query,
-                                                                         shortname);
+                final Browser<IMObject> browser
+                        = new DocumentTemplateTableBrowser<IMObject>(
+                        query, shortname);
 
                 String title = Messages.get("imobject.select.title",
                                             getDescriptor().getDisplayName());
-                final BrowserDialog popup = new BrowserDialog(title, browser);
+                final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                        title, browser);
 
                 popup.addWindowPaneListener(new WindowPaneListener() {
                     public void windowPaneClosing(WindowPaneEvent event) {

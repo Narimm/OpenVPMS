@@ -98,12 +98,13 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      */
     @Override
     protected void onSelect() {
-        final Browser browser = createBrowser(getRefModelName(),
-                                              getEntityName(),
-                                              getConceptName());
+        final Browser<IMObject> browser = createBrowser(getRefModelName(),
+                                                        getEntityName(),
+                                                        getConceptName());
 
         String title = Messages.get("imobject.select.title", getType());
-        final BrowserDialog popup = new BrowserDialog(title, browser, true);
+        final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                title, browser, true);
 
         popup.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

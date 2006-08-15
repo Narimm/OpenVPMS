@@ -63,7 +63,7 @@ import java.util.ListIterator;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ActQuery extends AbstractQuery {
+public class ActQuery extends AbstractQuery<Act> {
 
     /**
      * The id of the entity to search for.
@@ -325,7 +325,7 @@ public class ActQuery extends AbstractQuery {
      * @return the query result set
      */
     @Override
-    public ResultSet query(SortConstraint[] sort) {
+    public ResultSet<Act> query(SortConstraint[] sort) {
         ResultSet<Act> result = null;
 
         if (_entityId != null) {

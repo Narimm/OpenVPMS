@@ -24,12 +24,6 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Query;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -41,6 +35,11 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Query;
 
 
 /**
@@ -85,8 +84,8 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
-            protected Query createQuery() {
-                Query query = super.createQuery();
+            protected Query<IMObject> createQuery() {
+                Query<IMObject> query = super.createQuery();
                 addConstraints(query);
                 return query;
             }

@@ -22,6 +22,7 @@ import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
@@ -39,7 +40,7 @@ public class IMObjectTableModelFactory {
     /**
      * Table model implementations.
      */
-    private static ArchetypeHandlers _models;
+    private static ArchetypeHandlers<IMObjectTableModel> _models;
 
     /**
      * The logger.
@@ -60,8 +61,8 @@ public class IMObjectTableModelFactory {
      * @param context    the layout context
      * @return a new tabke model
      */
-    public static IMObjectTableModel create(NodeDescriptor collection,
-                                            LayoutContext context) {
+    public static <T extends IMObject> IMObjectTableModel<T> create(
+            NodeDescriptor collection, LayoutContext context) {
         String[] shortNames = DescriptorHelper.getShortNames(collection);
         return create(shortNames, context);
     }
@@ -73,9 +74,9 @@ public class IMObjectTableModelFactory {
      * @param context    the layout context
      * @return a new tabke model
      */
-    public static IMObjectTableModel create(String[] shortNames,
-                                            LayoutContext context) {
-        IMObjectTableModel result = null;
+    public static <T extends IMObject> IMObjectTableModel<T> create(
+            String[] shortNames, LayoutContext context) {
+        IMObjectTableModel<T> result = null;
 
         ArchetypeHandler handler = getTableModels().getHandler(shortNames);
         if (handler != null) {
@@ -83,7 +84,7 @@ public class IMObjectTableModelFactory {
         }
 
         if (result == null) {
-            result = new DefaultIMObjectTableModel();
+            result = new DefaultIMObjectTableModel<T>();
         }
 
         return result;
@@ -98,15 +99,14 @@ public class IMObjectTableModelFactory {
      * @return a new table model, or <code>null</code> if there is no valid
      *         constructor
      */
-    private static IMObjectTableModel construct(Class clazz,
-                                                String[] shortNames,
-                                                LayoutContext context) {
+    private static <T extends IMObject> IMObjectTableModel<T>
+            construct(Class clazz, String[] shortNames, LayoutContext context) {
         Object[][] methodParams = {{shortNames, context}, {context}, {}};
 
         for (Object[] params : methodParams) {
             try {
-                return (IMObjectTableModel) ConstructorUtils.invokeConstructor(
-                        clazz, params);
+                Object o = ConstructorUtils.invokeConstructor(clazz, params);
+                return (IMObjectTableModel<T>) o;
             } catch (NoSuchMethodException ignore) {
                 // no-op
             } catch (Throwable exception) {
@@ -123,7 +123,7 @@ public class IMObjectTableModelFactory {
      */
     private static synchronized ArchetypeHandlers getTableModels() {
         if (_models == null) {
-            _models = new ArchetypeHandlers(
+            _models = new ArchetypeHandlers<IMObjectTableModel>(
                     "IMObjectTableModelFactory.properties",
                     IMObjectTableModel.class);
         }

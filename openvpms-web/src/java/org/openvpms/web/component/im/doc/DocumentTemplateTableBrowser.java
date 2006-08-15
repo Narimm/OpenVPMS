@@ -18,9 +18,7 @@
 
 package org.openvpms.web.component.im.doc;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -33,29 +31,34 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.TableBrowser;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
- *Documnet Template Table Browser to filter Documenttemplates by archetype name
+ * Document Template Table Browser to filter document templates by archetype
+ * name.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-
-public class DocumentTemplateTableBrowser<T extends IMObject> extends TableBrowser {
-
-    /**
-     * Maximum no. of rows to display.
-     */
-    private static final int ROWS = 15;
+public class DocumentTemplateTableBrowser<T extends IMObject>
+        extends TableBrowser<T> {
 
     /**
-     * The shortname to filter the query too.  If null then no filtering.
+     * The shortname to filter the query on. If null then no filtering.
      */
     private String _shortName;
-    
+
+
     /**
-     * @param query
+     * Creates a new <code>DocumentTemplateTableBrowser</code>.
+     *
+     * @param query     the query
+     * @param shortName the short name to filter the query on. May be
+     *                  <code>null</code>
      */
-    public DocumentTemplateTableBrowser(Query query, String shortName) {
+    public DocumentTemplateTableBrowser(Query<T> query, String shortName) {
         super(query);
         _shortName = shortName;
     }
@@ -68,27 +71,29 @@ public class DocumentTemplateTableBrowser<T extends IMObject> extends TableBrows
      */
     @Override
     protected ResultSet<T> doQuery() {
-        ResultSet result;
-        if(_shortName == null || _shortName.length() == 0)
+        ResultSet<T> result;
+        if (_shortName == null || _shortName.length() == 0)
             result = getQuery().query(null);
         else {
             ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
-                    false, true);
+                                                      false, true);
             query.setFirstRow(0);
             query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> rows = service.get(query).getRows();
-            List<IMObject> objects = new ArrayList<IMObject>();
+            List<T> objects = new ArrayList<T>();
             for (IMObject object : rows) {
                 EntityBean bean = new EntityBean((Entity) object);
                 String archetype = bean.getString("archetype");
-                if (archetype == null || archetype.length() == 0 || TypeHelper.matches(_shortName, archetype)) {
-                    objects.add(object);
+                if (StringUtils.isEmpty(archetype)
+                        || TypeHelper.matches(_shortName, archetype)) {
+                    objects.add((T) object);
                 }
             }
-            result = new PreloadedResultSet<IMObject>(objects, getQuery().getMaxRows());
+            int maxRows = getQuery().getMaxRows();
+            result = new PreloadedResultSet<T>(objects, maxRows);
         }
-        
+
         return result;
     }
 

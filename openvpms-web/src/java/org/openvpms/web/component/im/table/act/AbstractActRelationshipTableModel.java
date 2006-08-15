@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.table.act;
 
-import org.openvpms.web.component.im.table.DelegatingIMObjectTableModel;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.web.component.im.table.DelegatingIMObjectTableModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +39,12 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public abstract class AbstractActRelationshipTableModel
-        extends DelegatingIMObjectTableModel {
+        extends DelegatingIMObjectTableModel<ActRelationship, Act> {
 
     /**
      * The act relationships.
      */
-    private List<IMObject> _relationships;
+    private List<ActRelationship> _relationships;
 
 
     /**
@@ -53,11 +52,11 @@ public abstract class AbstractActRelationshipTableModel
      *
      * @param objects the objects to display
      */
-    public void setObjects(List<IMObject> objects) {
+    public void setObjects(List<ActRelationship> objects) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         _relationships = objects;
-        List<IMObject> acts = new ArrayList<IMObject>();
+        List<Act> acts = new ArrayList<Act>();
         for (IMObject object : objects) {
             ActRelationship relationship = (ActRelationship) object;
             if (relationship.getTarget() != null) {
@@ -68,7 +67,7 @@ public abstract class AbstractActRelationshipTableModel
                 }
             }
         }
-        super.setObjects(acts);
+        getModel().setObjects(acts);
     }
 
     /**
@@ -76,7 +75,7 @@ public abstract class AbstractActRelationshipTableModel
      *
      * @return the objects being displayed
      */
-    public List<IMObject> getObjects() {
+    public List<ActRelationship> getObjects() {
         return _relationships;
     }
 }

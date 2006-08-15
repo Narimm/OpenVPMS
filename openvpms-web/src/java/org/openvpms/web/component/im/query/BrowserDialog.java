@@ -20,7 +20,6 @@ package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.dialog.PopupDialog;
 
@@ -31,7 +30,7 @@ import org.openvpms.web.component.dialog.PopupDialog;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class BrowserDialog extends PopupDialog {
+public class BrowserDialog<T extends IMObject> extends PopupDialog {
 
     /**
      * New button identifier.
@@ -41,7 +40,7 @@ public class BrowserDialog extends PopupDialog {
     /**
      * The selected object.
      */
-    private IMObject _selected;
+    private T _selected;
 
     /**
      * Determines if the user wants to create a new object. Set when the 'New'
@@ -61,7 +60,7 @@ public class BrowserDialog extends PopupDialog {
      * @param title   the dialog title
      * @param browser the editor
      */
-    public BrowserDialog(String title, Browser browser) {
+    public BrowserDialog(String title, Browser<T> browser) {
         this(title, browser, false);
     }
 
@@ -72,7 +71,7 @@ public class BrowserDialog extends PopupDialog {
      * @param browser the editor
      * @param addNew  if <code>true</code> add a 'new' button
      */
-    public BrowserDialog(String title, Browser browser, boolean addNew) {
+    public BrowserDialog(String title, Browser<T> browser, boolean addNew) {
         super(title, STYLE, Buttons.CANCEL);
         setModal(true);
         getLayout().add(browser.getComponent());
@@ -84,11 +83,11 @@ public class BrowserDialog extends PopupDialog {
                 }
             });
         }
-        browser.addQueryListener(new QueryBrowserListener() {
+        browser.addQueryListener(new QueryBrowserListener<T>() {
             public void query() {
             }
 
-            public void selected(IMObject object) {
+            public void selected(T object) {
                 onSelected(object);
             }
         });
@@ -99,7 +98,7 @@ public class BrowserDialog extends PopupDialog {
      *
      * @return the selected object, or <code>null</code> if none was selected
      */
-    public IMObject getSelected() {
+    public T getSelected() {
         return _selected;
     }
 
@@ -118,7 +117,7 @@ public class BrowserDialog extends PopupDialog {
      *
      * @param object the selected object
      */
-    protected void onSelected(IMObject object) {
+    protected void onSelected(T object) {
         _selected = object;
         close();
     }

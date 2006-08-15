@@ -18,8 +18,7 @@
 
 package org.openvpms.web.app.supplier.document;
 
-import java.util.List;
-
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -36,12 +35,14 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
+import java.util.List;
 
+/**
+ * Supplier document workspace.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
 public class SupplierDocumentWorkspace extends SupplierActWorkspace {
 
     /**
@@ -55,9 +56,9 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
      * Construct a new <code>SupplierDocumentWorkspace</code>.
      */
     public SupplierDocumentWorkspace() {
-        super("supplier","document","party","party","supplier*");
+        super("supplier", "document", "party", "party", "supplier*");
     }
-    
+
     /**
      * Creates a new CRUD window for viewing and editing acts.
      *
@@ -71,19 +72,19 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
     /**
      * Creates a new query.
      *
-     * @param patient the customer to query acts for
+     * @param supplier the customer to query acts for
      * @return a new query
      */
     protected ActQuery createQuery(Party supplier) {
         IArchetypeService service
-            = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
-            = DescriptorHelper.getArchetypeDescriptor("act.supplierDocumentLetter");
-        NodeDescriptor statuses = archetype.getNodeDescriptor("status");    
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.supplierDocumentLetter");
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        ActQuery query = new ActQuery(supplier, "supplier", "participation.supplier",
-                              SHORT_NAMES, lookups, null);
-        return query;
+        return new ActQuery(supplier, "supplier", "participation.supplier",
+                            SHORT_NAMES, lookups, null);
     }
 
     /**
@@ -102,7 +103,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(true, false);
     }
 

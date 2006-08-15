@@ -18,13 +18,12 @@
 
 package org.openvpms.web.component.im.table;
 
-import java.util.List;
-
 import nextapp.echo2.app.table.TableColumnModel;
 import nextapp.echo2.app.table.TableModel;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
+
+import java.util.List;
 
 
 /**
@@ -33,21 +32,21 @@ import org.openvpms.component.system.common.query.SortConstraint;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public interface IMObjectTableModel extends TableModel {
+public interface IMObjectTableModel<T extends IMObject> extends TableModel {
 
     /**
      * Returns the objects being displayed.
      *
      * @return the objects being displayed
      */
-    List<IMObject> getObjects();
+    List<T> getObjects();
 
     /**
      * Sets the objects to display.
      *
      * @param objects the objects to display
      */
-    void setObjects(List<IMObject> objects);
+    void setObjects(List<T> objects);
 
     /**
      * Returns the column model.

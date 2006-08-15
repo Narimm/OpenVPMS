@@ -62,6 +62,13 @@ public interface Query<T extends IMObject> {
     ResultSet<T> query(SortConstraint[] sort);
 
     /**
+     * The archetype short names being queried.
+     *
+     * @return the short names being queried
+     */
+    String[] getShortNames();
+
+    /**
      * Determines if the query should be run automatically.
      *
      * @return <code>true</code> if the query should be run automaticaly;

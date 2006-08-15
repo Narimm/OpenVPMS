@@ -36,7 +36,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ArchetypeHandlers extends AbstractArchetypeHandlers {
+public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
 
 
     /**
@@ -48,8 +48,8 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
     /**
      * Map of short names to their corresponding handlers.
      */
-    private Map<String, ArchetypeHandler> _handlers
-            = new HashMap<String, ArchetypeHandler>();
+    private Map<String, ArchetypeHandler<T>> _handlers
+            = new HashMap<String, ArchetypeHandler<T>>();
 
 
     /**
@@ -58,7 +58,7 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
      * @param name the resource name
      * @param type class the each handler must implement/extend
      */
-    public ArchetypeHandlers(String name, Class type) {
+    public ArchetypeHandlers(String name, Class<T> type) {
         Parser parser = new Parser(type);
         parser.parse(name);
     }
@@ -71,7 +71,7 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
      *         <code>null</code> if there is no match
      */
     @Override
-    public ArchetypeHandler getHandler(String shortName) {
+    public ArchetypeHandler<T> getHandler(String shortName) {
         return getHandler(new String[]{shortName});
     }
 
@@ -82,7 +82,7 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
      * @return a handler that supports <code>shortNames</code> or
      *         <code>null</code> if there is no match
      */
-    public ArchetypeHandler getHandler(String[] shortNames) {
+    public ArchetypeHandler<T> getHandler(String[] shortNames) {
         Set<String> wildcards = _handlers.keySet();
         String match = null;
         int bestDotCount = -1; // more dots in a short name, the more specific
@@ -121,7 +121,7 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
          *
          * @param type the type all handler classes must implement
          */
-        public Parser(Class type) {
+        public Parser(Class<T> type) {
             super(type);
         }
 
@@ -131,6 +131,7 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
          * @param key   the property key
          * @param value the property value
          */
+        @SuppressWarnings("unchecked")
         protected void parse(String key, String value) {
             String[] matches = DescriptorHelper.getShortNames(key, false);
             if (matches.length == 0) {
@@ -146,14 +147,15 @@ public class ArchetypeHandlers extends AbstractArchetypeHandlers {
                         _log.warn("Invalid properties for short name=" + key
                                 + ", loaded from path=" + getPath());
                     }
-                    Class clazz = getClass(properties[0]);
+                    Class<T> clazz = (Class<T>) getClass(properties[0]);
                     Map<String, String> config = new HashMap<String, String>();
                     for (int i = 1; i < properties.length; ++i) {
                         String[] pair = properties[i].split("=");
                         config.put(pair[0], pair[1]);
                     }
                     if (clazz != null) {
-                        _handlers.put(key, new ArchetypeHandler(clazz, config));
+                        _handlers.put(key,
+                                      new ArchetypeHandler<T>(clazz, config));
                     }
                 }
             }

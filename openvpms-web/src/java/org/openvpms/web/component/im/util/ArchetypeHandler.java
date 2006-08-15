@@ -32,12 +32,12 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ArchetypeHandler {
+public class ArchetypeHandler<T> {
 
     /**
      * The implementation class.
      */
-    private final Class _type;
+    private final Class<T> _type;
 
     /**
      * Configuration properties.
@@ -50,7 +50,7 @@ public class ArchetypeHandler {
      *
      * @param type the handler implementation class
      */
-    public ArchetypeHandler(Class type) {
+    public ArchetypeHandler(Class<T> type) {
         this(type, null);
     }
 
@@ -60,7 +60,7 @@ public class ArchetypeHandler {
      * @param type       the handler implementation class
      * @param properties configuration properties. May be <code>null</code>
      */
-    public ArchetypeHandler(Class type, Map<String, String> properties) {
+    public ArchetypeHandler(Class<T> type, Map<String, String> properties) {
         _type = type;
         _properties = properties;
     }
@@ -70,7 +70,7 @@ public class ArchetypeHandler {
      *
      * @return the implementation class
      */
-    public Class getType() {
+    public Class<T> getType() {
         return _type;
     }
 
@@ -108,10 +108,10 @@ public class ArchetypeHandler {
      * @throws InvocationTargetException thrown on the constructor's invocation
      * @throws InstantiationException    thrown on the constructor's invocation
      */
-    public Object create() throws NoSuchMethodException,
-                                  IllegalAccessException,
-                                  InvocationTargetException,
-                                  InstantiationException {
+    public T create() throws NoSuchMethodException,
+                             IllegalAccessException,
+                             InvocationTargetException,
+                             InstantiationException {
         return create(new Object[0]);
     }
 
@@ -125,12 +125,13 @@ public class ArchetypeHandler {
      * @throws InvocationTargetException thrown on the constructor's invocation
      * @throws InstantiationException    thrown on the constructor's invocation
      */
-    public Object create(Object[] args) throws NoSuchMethodException,
-                                               IllegalAccessException,
-                                               InvocationTargetException,
-                                               InstantiationException {
-        Object handler = ConstructorUtils.invokeConstructor(_type, args);
-        return init(handler);
+    @SuppressWarnings("unchecked")
+    public T create(Object[] args) throws NoSuchMethodException,
+                                          IllegalAccessException,
+                                          InvocationTargetException,
+                                          InstantiationException {
+        T handler = (T) ConstructorUtils.invokeConstructor(_type, args);
+        return initialise(handler);
     }
 
     /**
@@ -143,11 +144,12 @@ public class ArchetypeHandler {
      * @throws InvocationTargetException thrown on the constructor's invocation
      * @throws InstantiationException    thrown on the constructor's invocation
      */
-    public Object create(Object[] args, Class[] types)
+    @SuppressWarnings("unchecked")
+    public T create(Object[] args, Class[] types)
             throws IllegalAccessException, NoSuchMethodException,
                    InvocationTargetException, InstantiationException {
-        Object handler = ConstructorUtils.invokeConstructor(_type, args, types);
-        return init(handler);
+        T handler = (T) ConstructorUtils.invokeConstructor(_type, args, types);
+        return initialise(handler);
     }
 
     /**
@@ -160,8 +162,8 @@ public class ArchetypeHandler {
      * @throws InvocationTargetException if the property accessor method
      *                                   throws an exception
      */
-    private Object init(Object handler) throws IllegalAccessException,
-                                               InvocationTargetException {
+    public T initialise(T handler) throws IllegalAccessException,
+                                          InvocationTargetException {
         if (_properties != null && _properties.size() != 0) {
             BeanUtils.populate(handler, _properties);
         }

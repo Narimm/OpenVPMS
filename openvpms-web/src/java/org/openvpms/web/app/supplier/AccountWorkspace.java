@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.supplier;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -72,7 +73,7 @@ public class AccountWorkspace extends SupplierActWorkspace {
      * @return a new table model.
      */
     @Override
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel(false, true);
     }
 

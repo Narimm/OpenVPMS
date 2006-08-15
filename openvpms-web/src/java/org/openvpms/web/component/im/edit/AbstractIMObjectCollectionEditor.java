@@ -89,7 +89,7 @@ public abstract class AbstractIMObjectCollectionEditor
     /**
      * Collection to edit.
      */
-    private PagedIMObjectTable _table;
+    private PagedIMObjectTable<IMObject> _table;
 
     /**
      * The component representing this.
@@ -332,7 +332,7 @@ public abstract class AbstractIMObjectCollectionEditor
         Row row = createControls(focus);
         _component.add(row);
 
-        _table = new PagedIMObjectTable(createTableModel(_context));
+        _table = new PagedIMObjectTable<IMObject>(createTableModel(_context));
         _table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onEdit();
@@ -414,7 +414,8 @@ public abstract class AbstractIMObjectCollectionEditor
      * @param context the layout context
      * @return a new table model
      */
-    protected IMObjectTableModel createTableModel(LayoutContext context) {
+    protected IMObjectTableModel<IMObject> createTableModel(
+            LayoutContext context) {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
         return IMObjectTableModelFactory.create(_collection.getArchetypeRange(),
@@ -567,7 +568,8 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected void populateTable() {
         List<IMObject> objects = _collection.getObjects();
-        ResultSet set = new PreloadedResultSet<IMObject>(objects, ROWS);
+        ResultSet<IMObject> set = new PreloadedResultSet<IMObject>(objects,
+                                                                   ROWS);
         _table.setResultSet(set);
     }
 

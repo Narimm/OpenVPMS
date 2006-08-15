@@ -109,6 +109,6 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _handlers = new ArchetypeHandlers(PROPERTIES, Query.class);
+        _handlers = new ArchetypeHandlers<Query>(PROPERTIES, Query.class);
     }
 }

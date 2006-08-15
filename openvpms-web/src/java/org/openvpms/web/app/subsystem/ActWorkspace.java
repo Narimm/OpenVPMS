@@ -18,6 +18,11 @@
 
 package org.openvpms.web.app.subsystem;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
@@ -28,13 +33,6 @@ import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
 
 import java.util.List;
 
@@ -190,7 +188,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return a new browser
      */
     protected Browser<Act> createBrowser(Query<Act> query) {
-        return new TableBrowser(query, null, createTableModel());
+        return new TableBrowser<Act>(query, null, createTableModel());
     }
 
     /**
@@ -198,7 +196,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @return a new table model.
      */
-    protected IMObjectTableModel createTableModel() {
+    protected IMObjectTableModel<Act> createTableModel() {
         return new ActAmountTableModel();
     }
 
