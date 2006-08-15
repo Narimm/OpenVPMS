@@ -50,8 +50,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -317,10 +315,6 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     protected void onChildActSelected(FinancialAct child) {
         _childAct = child;
         enableButtons(getObject() != null);
-        if (child != null) {
-            IMObjectViewer viewer = new IMObjectViewer(child, getObject());
-            new IMObjectViewerDialog(viewer);
-        }
     }
 
     /**

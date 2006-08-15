@@ -18,27 +18,14 @@
 
 package org.openvpms.web.component.im.view.act;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.im.view.TableComponentFactory;
-import org.openvpms.web.component.util.GridFactory;
-
-import java.util.List;
 
 
 /**
@@ -98,66 +85,41 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     }
 
     /**
-     * Lays out each child component in a group box
+     * Creates a component for a property.
      *
-     * @param object      the parent object
-     * @param descriptors the property descriptors
-     * @param properties  the properties
-     * @param container   the container to use
-     * @param context     the layout context
+     * @param property the property
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a component to display <code>property</code>
      */
     @Override
-    protected void doComplexLayout(IMObject object,
-                                   List<NodeDescriptor> descriptors,
-                                   PropertySet properties, Component container,
-                                   LayoutContext context) {
-        Grid grid = GridFactory.create(4);
-        IMObjectComponentFactory factory = context.getComponentFactory();
-        for (NodeDescriptor descriptor : descriptors) {
-            Property property = properties.get(descriptor);
-            Component component = factory.create(property, object);
-            add(grid, property, component, context);
-        }
-
-        container.add(grid);
-
-        ArchetypeDescriptor archetype
-                = DescriptorHelper.getArchetypeDescriptor(object);
-        NodeDescriptor items = archetype.getNodeDescriptor("items");
-        if (items != null && _showItems && !items.isHidden()) {
-            GroupBox box = new GroupBox();
-            box.setTitle(items.getDisplayName());
-
+    protected Component createComponent(Property property, IMObject parent,
+                                        LayoutContext context) {
+        String name = property.getDescriptor().getName();
+        Component component;
+        if (name.equals("items")) {
             if (_editor != null) {
-                box.add(_editor.getComponent());
+                component = _editor.getComponent();
             } else {
-                Component child = createItems(object, items, properties, context
-                );
-                box.add(child);
+                component = createItems(property, parent, context);
             }
-            container.add(box);
+        } else {
+            component = super.createComponent(property, parent, context);
         }
+        return component;
     }
 
     /**
-     * Creates a component to represent the item node.
+     * Creates a component for the items node.
      *
-     * @param object     the parent object
-     * @param items      the items node descriptor
-     * @param properties the properties
-     * @param context    the layout context
-     * @return a component to represent the items node
+     * @param property the property
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a component to display <code>property</code>
      */
-    protected Component createItems(IMObject object, NodeDescriptor items,
-                                    PropertySet properties,
+    protected Component createItems(Property property, IMObject parent,
                                     LayoutContext context) {
-        IMObjectLayoutStrategy strategy
-                = new ActRelationshipTableLayoutStrategy(items);
-
-        context = new DefaultLayoutContext(context);
-        context.setComponentFactory(new TableComponentFactory(context));
-
-        return strategy.apply(object, properties, null, context);
+        return super.createComponent(property, parent, context);
     }
 
     /**
@@ -167,11 +129,15 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
      * @param context the context
      * @return a node filter to filter nodes
      */
-    @Override
+    // @Override
     protected NodeFilter getNodeFilter(LayoutContext context) {
-        NodeFilter filter = new NamedNodeFilter("items");
-        return getNodeFilter(context, filter);
+        NodeFilter filter;
+        if (!_showItems) {
+            filter = new NamedNodeFilter("items");
+        } else {
+            filter = super.getNodeFilter(context);
+        }
+        return filter;
     }
-
 
 }

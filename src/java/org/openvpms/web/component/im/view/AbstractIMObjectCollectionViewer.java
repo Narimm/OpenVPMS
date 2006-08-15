@@ -99,6 +99,7 @@ public class AbstractIMObjectCollectionViewer
     public AbstractIMObjectCollectionViewer(CollectionProperty property,
                                             IMObject parent) {
         _context = new DefaultLayoutContext();
+        _context.setComponentFactory(new TableComponentFactory(_context));
 
         // filter out the uid (aka "id") field
         NodeFilter idFilter = new NamedNodeFilter("uid");
@@ -147,6 +148,15 @@ public class AbstractIMObjectCollectionViewer
         Column column = ColumnFactory.create("WideCellSpacing", getTable());
         populateTable();
         return column;
+    }
+
+    /**
+     * Returns the layout context.
+     *
+     * @return the layout context
+     */
+    protected LayoutContext getLayoutContext() {
+        return _context;
     }
 
     /**
@@ -212,16 +222,23 @@ public class AbstractIMObjectCollectionViewer
      * @return a new table
      */
     protected PagedIMObjectTable createTable() {
-        NodeDescriptor descriptor = _property.getDescriptor();
-        IMObjectTableModel model
-                = IMObjectTableModelFactory.create(descriptor, _context);
-        PagedIMObjectTable table = new PagedIMObjectTable(model);
+        PagedIMObjectTable table = new PagedIMObjectTable(createTableModel());
         table.getTable().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onBrowse();
             }
         });
         return table;
+    }
+
+    /**
+     * Creates a new table model.
+     *
+     * @return a new table model
+     */
+    protected IMObjectTableModel createTableModel() {
+        NodeDescriptor descriptor = _property.getDescriptor();
+        return IMObjectTableModelFactory.create(descriptor, _context);
     }
 
     /**
