@@ -48,5 +48,7 @@
 		</node>
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
+		<node name="schedule" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
+			filter="participation.schedule" hidden="true" />
 	</archetype>
 </archetypes>
