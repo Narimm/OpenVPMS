@@ -49,9 +49,9 @@
     <property name="active" access="property" column="active" type="boolean" />
     <property name="mood" column="mood" type="string" />
     <property name="title" column="title" type="string" />
-    <property name="activityStartTime" column="activity_start_time" type="date"
+    <property name="activityStartTime" column="activity_start_time" type="timestamp"
       index="act_concept_start_time_idx" />
-    <property name="activityEndTime" column="activity_end_time" type="date" />
+    <property name="activityEndTime" column="activity_end_time" type="timestamp" />
     <property name="reason" column="reason" type="string" />
     <property name="repeatNumber" column="repeat_number" type="int" />
     <property name="status" column="status" type="string" />
