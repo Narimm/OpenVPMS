@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.admin;
 
-import org.openvpms.web.app.admin.doc.DocumentTemplateWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 import org.acegisecurity.Authentication;
@@ -46,6 +45,7 @@ public class AdminSubsystem extends AbstractSubsystem {
         addWorkspace(new AccountTypeWorkspace());
         addWorkspace(new ReminderTypeWorkspace());
         addWorkspace(new ProductTypeWorkspace());
+        addWorkspace(new AppointmentTypeWorkspace());
         addWorkspace(new DocumentTemplateWorkspace());
         addWorkspace(new ClassificationWorkspace());
         if (auth != null && "admin".equals(auth.getName())) {

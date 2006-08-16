@@ -21,8 +21,11 @@ package org.openvpms.web.app.financial.deposit;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -103,4 +106,14 @@ public class DepositWorkspace extends ActWorkspace {
      */
     protected void doLayout(Component container) {
     }
+
+    /**
+     * Creates a new table model to display acts.
+     *
+     * @return a new table model.
+     */
+    protected IMObjectTableModel<Act> createTableModel() {
+        return new ActAmountTableModel(true, true);
+    }
+
 }

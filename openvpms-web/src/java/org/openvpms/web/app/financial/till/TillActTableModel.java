@@ -18,7 +18,17 @@
 
 package org.openvpms.web.app.financial.till;
 
+import java.math.BigDecimal;
+
+import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.layout.TableLayoutData;
+
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.NumberFormatter;
 
 
 /**
@@ -35,5 +45,4 @@ public class TillActTableModel extends ActAmountTableModel {
     public TillActTableModel() {
         super(false, true);
     }
-
 }

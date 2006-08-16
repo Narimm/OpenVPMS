@@ -189,7 +189,7 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
      * @param act the act
      * @return the stringified amount
      */
-    private Label getAmount(Act act) {
+    protected Label getAmount(Act act) {
         BigDecimal amount = ActHelper.getAmount(act, "amount");
         String result = NumberFormatter.format(amount);
         Label label = LabelFactory.create();
