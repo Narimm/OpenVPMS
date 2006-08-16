@@ -46,7 +46,7 @@
       type="string" />
     <property name="mimeType" access="property" column="mime_type"
       type="string" />
-    <property name="docSize" access="property" column="doc_size" type="long" />
+    <property name="docSize" access="property" column="doc_size" type="int" />
     <property name="checksum" access="property" column="checksum" type="long" />
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />

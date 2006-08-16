@@ -19,9 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-//openvpms-framework
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -31,9 +29,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectRefArchetypeConstraint;
-
-// log4j
-import org.apache.log4j.Logger;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * Test that ability to create and query on Documentss.
@@ -89,13 +85,13 @@ public class ArchetypeServiceDocumentTestCase extends
     }
     
     /**
-     * Test the creation of a Document using the {@link NodeDescriptors}
+     * Test the creation of a Document using the {@link NodeDescriptor}s
      */
     public void testDocumentCreationThruNodeDescriptors()
     throws Exception {
         Document document = (Document)service.create("document.common");
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor("document.common");
-        NodeDescriptor ndesc = null;
+        NodeDescriptor ndesc;
         
         // set the name
         ndesc = adesc.getNodeDescriptor("name");
@@ -147,7 +143,7 @@ public class ArchetypeServiceDocumentTestCase extends
      */
     public void testMultipleDocumentCreation()
     throws Exception {
-        Document doc = null;
+        Document doc;
         IMObjectReference ref = null;
         
         for (int index = 0; index  < 10; index++) {
@@ -267,7 +263,7 @@ public class ArchetypeServiceDocumentTestCase extends
      *            the contents
      * @return Document                                                            
      */
-    public Document createDocument(String name, String mime, long size, long checksum, byte[] contents) {
+    public Document createDocument(String name, String mime, int size, long checksum, byte[] contents) {
         Document document = (Document)service.create("document.common");
         document.setName(name);
         document.setMimeType(mime);
