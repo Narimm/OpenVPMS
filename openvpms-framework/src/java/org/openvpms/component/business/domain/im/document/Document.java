@@ -21,8 +21,6 @@ package org.openvpms.component.business.domain.im.document;
 
 // openvpms-common
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
@@ -49,7 +47,7 @@ public class Document extends IMObject {
     /**
      * The size of the document
      */
-    private long docSize;
+    private int docSize;
     
     /**
      * The checksum of the contents
@@ -113,14 +111,14 @@ public class Document extends IMObject {
     /**
      * @return Returns the docSize.
      */
-    public long getDocSize() {
+    public int getDocSize() {
         return docSize;
     }
 
     /**
      * @param docSize The docSize to set.
      */
-    public void setDocSize(long docSize) {
+    public void setDocSize(int docSize) {
         this.docSize = docSize;
     }
 
