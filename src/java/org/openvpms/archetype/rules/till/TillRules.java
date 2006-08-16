@@ -317,7 +317,7 @@ public class TillRules {
         List<Act> items = balanceBean.getActs();
         ActCalculator calc = new ActCalculator(service);
         BigDecimal total = calc.sum(items, "amount").negate();
-        balanceBean.setValue("balance", total);
+        balanceBean.setValue("amount", total);
     }
 
     /**
@@ -330,8 +330,8 @@ public class TillRules {
                                            IArchetypeService service) {
         List<Act> items = depositBean.getActs();
         ActCalculator calc = new ActCalculator(service);
-        BigDecimal total = calc.sum(items, "balance");
-        depositBean.setValue("total", total);
+        BigDecimal total = calc.sum(items, "amount");
+        depositBean.setValue("amount", total);
     }
 
     /**

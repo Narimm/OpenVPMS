@@ -77,7 +77,4 @@
 	<data archetype="classification.reminderGroup" name="Desexing" />
 	<data archetype="classification.reminderGroup" name="Worming" />
 	<data archetype="classification.reminderGroup" name="Other" />
-	<data archetype="classification.documentGroup" name="Customer" />
-	<data archetype="classification.documentGroup" name="Patient" />
-	<data archetype="classification.documentGroup" name="Supplier" />
 </archetype>
