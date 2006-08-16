@@ -44,8 +44,8 @@
     <property name="name" access="property" column="name" type="string" />
     <property name="description" access="property" column="description"
       type="string" />
-    <property name="fromDate" access="property" column="start_time" type="date" />
-    <property name="thruDate" access="property" column="end_time" type="date" />
+    <property name="fromDate" access="property" column="start_time" type="timestamp" />
+    <property name="thruDate" access="property" column="end_time" type="timestamp" />
     <property name="fixed" access="property" column="is_fixed" type="boolean" />
     <property name="price" access="property" column="price" type="big_decimal" />
     <property name="active" access="property" column="active" type="boolean" />

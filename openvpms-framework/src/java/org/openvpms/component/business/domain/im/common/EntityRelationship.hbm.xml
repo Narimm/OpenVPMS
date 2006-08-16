@@ -49,9 +49,9 @@
     <property name="sequence" type="int" column="sequence" />
     <property name="reason" type="string" column="reason" />
     <property name="activeStartTime" access="property"
-      column="active_start_time" type="date" />
+      column="active_start_time" type="timestamp" />
     <property name="activeEndTime" access="property" column="active_end_time"
-      type="date" />
+      type="timestamp" />
     <component name="source">
       <component name="archetypeId" access="field">
         <property name="qualifiedName" access="property" type="string"
