@@ -464,7 +464,7 @@
             </properties>
             <url>http://castor.codehaus.org/</url>
             <properties>
-                <war.bundle>false</war.bundle>
+                <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>

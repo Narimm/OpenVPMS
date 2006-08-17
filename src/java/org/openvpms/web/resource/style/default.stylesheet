@@ -1166,6 +1166,25 @@
         </properties>
     </style>
 
+    <style name="button.new" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/new.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="button.select" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/select.gif"/>
+            </property>
+        </properties>
+    </style>
 
     <!-- =================================================================== -->
     <!--  Text component defaults                                            -->

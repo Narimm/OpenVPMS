@@ -141,7 +141,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (!descriptors.isEmpty()) {
             int size = descriptors.size();
             Grid grid;
-            if (size <= 5)
+            if (size <= 4)
                 grid = GridFactory.create(2);
             else
                 grid = GridFactory.create(4);
@@ -273,7 +273,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         }
 
         int rows;
-        if (size <= 5)
+        if (size <= 4)
             rows = size;
         else
             rows = (size / 2) + (size % 2);

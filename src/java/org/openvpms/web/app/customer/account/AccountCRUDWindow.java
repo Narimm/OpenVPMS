@@ -221,7 +221,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
             IMObjectCopier copier
                     = new IMObjectCopier(new CustomerActReversalHandler(act));
             Act reversal = (Act) copier.copy(act);
-            reversal.setStatus(INPROGRESS_STATUS);
+            reversal.setStatus(POSTED_STATUS);
             reversal.setActivityStartTime(new Date());
             setPrintStatus(reversal, false);
             SaveHelper.save(reversal);
