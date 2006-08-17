@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
 
 /**
@@ -31,10 +32,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public class DefaultQuery<T extends IMObject> extends AbstractQuery<T> {
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
+     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
      * specified short names.
      *
      * @param shortNames the short names
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public DefaultQuery(String[] shortNames) {
         super(shortNames);

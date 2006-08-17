@@ -16,26 +16,27 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
-
-import org.openvpms.web.app.subsystem.DummyWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+package org.openvpms.web.app.subsystem;
 
 
 /**
- * Workflow subsystem.
+ * Default implementation of the {@link CRUDWindow} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class WorkflowSubsystem extends AbstractSubsystem {
+public class DefaultCRUDWindow extends AbstractViewCRUDWindow {
 
     /**
-     * Construct a new <code>WorkflowSubsystem</code>.
+     * Create a new <code>DefaultCRUDWindow</code>.
+     *
+     * @param type       display name for the types of objects that this may
+     *                   create
+     * @param shortNames the short names of archetypes that this may create.
+     *                   If <code>null</code> subclass must override
+     *                   {@link #getShortNames}
      */
-    public WorkflowSubsystem() {
-        super("workflow");
-        addWorkspace(new SchedulingWorkspace());
-        addWorkspace(new DummyWorkspace("workflow", "worklist"));
+    public DefaultCRUDWindow(String type, ShortNames shortNames) {
+        super(type, shortNames);
     }
 }

@@ -18,20 +18,19 @@
 
 package org.openvpms.web.component.im.view;
 
-import org.openvpms.web.component.app.ContextApplicationInstance;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -84,7 +83,8 @@ public class IMObjectReferenceViewer {
                         onView(object);
                     }
                 });
-                result = button;
+                // wrap in a row so the button renders to its minimum width
+                result = RowFactory.create(button);
             } else {
                 Label label = LabelFactory.create();
                 label.setText(text);

@@ -63,6 +63,15 @@ public class ShortNameList implements ShortNames {
     }
 
     /**
+     * Creates a new <code>ShortNameList</code>.
+     *
+     * @param shortName the short name
+     */
+    public ShortNameList(String shortName) {
+        _shortNames = new String[]{shortName};
+    }
+
+    /**
      * Returns the archetype short names.
      *
      * @return the archetype short names

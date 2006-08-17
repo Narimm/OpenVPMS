@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
+
 /**
  * Simple query implementation that indicates that the query should be run
  * automatically.
@@ -32,6 +34,8 @@ public class AutoQuery extends AbstractQuery {
      * specified short names.
      *
      * @param shortNames the short names
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public AutoQuery(String[] shortNames) {
         super(shortNames);

@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
@@ -78,6 +79,8 @@ public final class QueryFactory {
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public static <T extends IMObject> Query<T> create(String refModelName,
                                                        String entityName,
@@ -111,9 +114,27 @@ public final class QueryFactory {
      * order: <ul> <li>(String[] shortNames)</li> <li>default constructor</li>
      * </ul>
      *
+     * @param shortName the archetype short name to query on. May contain
+     *                  wildcards
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    public static <T extends IMObject> Query<T> create(String shortName) {
+        return create(new String[]{shortName});
+    }
+
+    /**
+     * Construct a new {@link Query}. Query implementations must provide at
+     * least one constructor accepting the following arguments, invoked in the
+     * order: <ul> <li>(String[] shortNames)</li> <li>default constructor</li>
+     * </ul>
+     *
      * @param shortNames the archetype short names to query on. May contain
      *                   wildcards
      * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public static <T extends IMObject> Query<T> create(String[] shortNames) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
@@ -132,6 +153,8 @@ public final class QueryFactory {
      * @param handler    the {@link Query} implementation
      * @param shortNames the archerype short names to query on
      * @return a new query implementation
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     private static <T extends IMObject> Query<T> create(
             ArchetypeHandler<Query> handler, String[] shortNames) {

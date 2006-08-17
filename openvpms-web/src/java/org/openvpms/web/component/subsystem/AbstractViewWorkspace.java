@@ -28,6 +28,7 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.Browser;
@@ -243,6 +244,8 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      * @return a new browser
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     protected Browser<IMObject> createBrowser(String refModelName,
                                               String entityName,
@@ -258,23 +261,27 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
      * Browser} to select an object.
      */
     protected void onSelect() {
-        final Browser<IMObject> browser
-                = createBrowser(_refModelName, _entityName, _conceptName);
+        try {
+            final Browser<IMObject> browser
+                    = createBrowser(_refModelName, _entityName, _conceptName);
 
-        String title = Messages.get("imobject.select.title", _type);
-        final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                title, browser);
+            String title = Messages.get("imobject.select.title", _type);
+            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                    title, browser);
 
-        popup.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                IMObject object = popup.getSelected();
-                if (object != null) {
-                    onSelected(object);
+            popup.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    IMObject object = popup.getSelected();
+                    if (object != null) {
+                        onSelected(object);
+                    }
                 }
-            }
-        });
+            });
 
-        popup.show();
+            popup.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

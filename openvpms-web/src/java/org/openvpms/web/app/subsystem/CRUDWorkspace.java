@@ -22,8 +22,10 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.subsystem.AbstractViewWorkspace;
 import org.openvpms.web.resource.util.Messages;
@@ -98,29 +100,33 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
      */
     @Override
     protected void onSelect() {
-        final Browser<IMObject> browser = createBrowser(getRefModelName(),
-                                                        getEntityName(),
-                                                        getConceptName());
+        try {
+            final Browser<IMObject> browser = createBrowser(getRefModelName(),
+                                                            getEntityName(),
+                                                            getConceptName());
 
-        String title = Messages.get("imobject.select.title", getType());
-        final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                title, browser, true);
+            String title = Messages.get("imobject.select.title", getType());
+            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                    title, browser, true);
 
-        popup.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (popup.createNew()) {
-                    getCRUDWindow().onCreate();
-                } else {
-                    IMObject object = popup.getSelected();
-                    if (object != null) {
-                        onSelected(object);
+            popup.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    if (popup.createNew()) {
+                        getCRUDWindow().onCreate();
+                    } else {
+                        IMObject object = popup.getSelected();
+                        if (object != null) {
+                            onSelected(object);
+                        }
                     }
                 }
-            }
 
-        });
+            });
 
-        popup.show();
+            popup.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
@@ -173,7 +179,7 @@ public abstract class CRUDWorkspace extends AbstractViewWorkspace {
         ShortNames shortNames = new ShortNameList(getRefModelName(),
                                                   getEntityName(),
                                                   getConceptName());
-        return new CRUDWindow(getType(), shortNames);
+        return new DefaultCRUDWindow(getType(), shortNames);
     }
 
 }

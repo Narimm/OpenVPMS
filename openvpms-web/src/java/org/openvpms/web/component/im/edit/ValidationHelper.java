@@ -18,21 +18,21 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.edit.Modifiable;
-import org.openvpms.web.component.edit.Validator;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.spring.ServiceHelper;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.dialog.ErrorDialog;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.Collection;
 import java.util.List;
@@ -116,15 +116,22 @@ public class ValidationHelper {
                 ValidationError error = errors.get(0);
                 String node = error.getNodeName();
                 IMObject parent = null;
+                NodeDescriptor descriptor = null;
                 if (modifiable instanceof IMObjectEditor) {
                     parent = ((IMObjectEditor) modifiable).getObject();
                 } else if (modifiable instanceof IMObjectCollectionEditor) {
                     parent = ((IMObjectCollectionEditor) modifiable).getObject();
+                } else if (modifiable instanceof Property) {
+                    descriptor = ((Property) modifiable).getDescriptor();
                 }
                 if (parent != null) {
                     String title = DescriptorHelper.getDisplayName(parent,
                                                                    node);
                     ErrorDialog.show(title, error.getErrorMessage());
+                } else if (descriptor != null) {
+                    ErrorDialog.show(descriptor.getDisplayName(),
+                                     error.getErrorMessage());
+
                 } else {
                     ErrorDialog.show(error.getErrorMessage());
                 }

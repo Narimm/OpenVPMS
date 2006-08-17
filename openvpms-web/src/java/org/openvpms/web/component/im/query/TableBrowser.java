@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -139,6 +140,10 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
             component.add(_table);
         }
 
+        if (set == null) {
+            List<T> empty = Collections.emptyList();
+            set = new PreloadedResultSet<T>(empty, getQuery().getMaxRows());
+        }
         _table.setResultSet(set);
     }
 

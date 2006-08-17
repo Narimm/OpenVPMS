@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -71,8 +72,9 @@ public class AccountWorkspace extends CustomerActWorkspace {
                                "act.customerAccountBadDebt"};
         String[] statuses = {"Posted"};
 
-        return new ActQuery(customer, "customer", "participation.customer",
-                            shortNames, statuses);
+        return new DefaultActQuery(customer, "customer",
+                                   "participation.customer",
+                                   shortNames, statuses);
     }
 
     /**

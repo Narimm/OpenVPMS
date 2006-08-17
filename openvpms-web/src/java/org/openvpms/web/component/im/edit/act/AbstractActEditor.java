@@ -38,9 +38,16 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AbstractActEditor extends AbstractIMObjectEditor {
-    public AbstractActEditor(IMObject object, IMObject parent,
-                             LayoutContext context) {
-        super(object, parent, context);
+
+    /**
+     * Constructs a new <code>AbstractActEditor</code>.
+     *
+     * @param act     the act to edit
+     * @param parent  the parent object. May be <code>null</code>
+     * @param context the layout context. May be <code>null</code>
+     */
+    public AbstractActEditor(Act act, IMObject parent, LayoutContext context) {
+        super(act, parent, context);
     }
 
     /**

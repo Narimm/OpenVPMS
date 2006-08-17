@@ -142,7 +142,7 @@ public abstract class AbstractBrowser<T extends IMObject>
     /**
      * Performs the query.
      *
-     * @return the query result set
+     * @return the query result set. May be <code>null</code>
      */
     protected ResultSet<T> doQuery() {
         return _query.query(_sort);

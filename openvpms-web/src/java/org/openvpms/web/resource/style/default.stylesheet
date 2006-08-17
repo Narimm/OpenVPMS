@@ -222,6 +222,14 @@
         </properties>
     </style>
 
+    <style name="SchedulingWorkspace.Layout"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="30px"/>
+        </properties>
+    </style>
+
     <style name="AbstractViewWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>

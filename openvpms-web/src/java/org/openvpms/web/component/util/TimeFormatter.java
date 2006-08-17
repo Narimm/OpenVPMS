@@ -20,49 +20,47 @@ package org.openvpms.web.component.util;
 
 import nextapp.echo2.app.ApplicationInstance;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 
 /**
- * Helper to format dates.
+ * Helper to format times.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-04-11 04:09:07Z $
  */
-public class DateFormatter {
+public class TimeFormatter {
 
     /**
-     * Date edit pattern.
+     * Time edit pattern.
      */
     private static final String EDIT_PATTERN;
 
     /**
-     * Date view pattern.
+     * Time view pattern.
      */
     private static final String VIEW_PATTERN;
 
     /**
      * Format a date.
      *
-     * @param date the date to format
+     * @param time the date to format
      * @param edit if <code>true</code> format the number for editing
      * @return the formatted date
      */
-    public static String format(Date date, boolean edit) {
-        return getFormat(edit).format(date);
+    public static String format(Date time, boolean edit) {
+        return getFormat(edit).format(time);
     }
 
     /**
-     * Returns a date format.
+     * Returns a time format.
      *
-     * @param edit if <code>true</code> return a format for editingl otherwise
+     * @param edit if <code>true</code> return a format for editing otherwise
      *             return a format for viewing dates
      * @return a date format
      */
@@ -74,9 +72,9 @@ public class DateFormatter {
             if (edit) {
                 // specify SHORT style when parsing, so that 2 digit years
                 // are handled correctly
-                format = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+                format = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
             } else {
-                format = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
+                format = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
             }
         } else {
             format = new SimpleDateFormat(pattern, locale);
@@ -84,22 +82,11 @@ public class DateFormatter {
         return format;
     }
 
-    /**
-     * Returns the day/month/year part of a date-time.
-     *
-     * @param datetime the date/time
-     * @return the day/month/year part of the date
-     */
-    public static Date getDayMonthYear(Date datetime) {
-        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
-    }
-
     static {
-        String edit = Messages.get("date.format.edit", true);
+        String edit = Messages.get("time.format.edit", true);
         EDIT_PATTERN = (!StringUtils.isEmpty(edit)) ? edit : null;
 
-        String view = Messages.get("date.format.view", true);
+        String view = Messages.get("time.format.view", true);
         VIEW_PATTERN = (!StringUtils.isEmpty(view)) ? view : null;
     }
-
 }

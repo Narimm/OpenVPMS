@@ -24,7 +24,7 @@ import java.util.EventListener;
 
 
 /**
- * Event listener for {@link CRUDWindow} events.
+ * Event listener for {@link AbstractViewCRUDWindow} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$

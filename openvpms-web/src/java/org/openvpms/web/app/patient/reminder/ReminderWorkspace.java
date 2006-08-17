@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.patient.PatientActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -81,9 +82,9 @@ public class ReminderWorkspace extends PatientActWorkspace {
                 "act.patientReminder");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        ActQuery query = new ActQuery(patient, "patient",
-                                      "participation.patient",
-                                      SHORT_NAMES, lookups, null);
+        DefaultActQuery query = new DefaultActQuery(patient, "patient",
+                                                    "participation.patient",
+                                                    SHORT_NAMES, lookups, null);
         query.setStatus("In Progress");
         return query;
     }
