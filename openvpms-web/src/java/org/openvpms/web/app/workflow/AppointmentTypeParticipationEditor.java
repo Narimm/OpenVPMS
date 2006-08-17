@@ -67,7 +67,7 @@ public class AppointmentTypeParticipationEditor
     /**
      * Sets the schedule, used to constrain appointment types.
      *
-     * @param schedule the patient. May be <code>null</code>
+     * @param schedule the schedule. May be <code>null</code>
      */
     public void setSchedule(Party schedule) {
         _schedule = schedule;
