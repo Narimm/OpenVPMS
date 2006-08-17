@@ -115,6 +115,15 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
     private static final String INVOICE_ITEM_RELATIONSHIP_TYPE
             = "actRelationship.customerAccountInvoiceItem";
 
+    /**
+     * estimation Act Invoiced status type.
+     */
+    protected static final String INVOICED_STATUS = "Invoiced";
+
+    /**
+     * estimation Act Cancelled status type.
+     */
+    protected static final String CANCELLED_STATUS = "Cancelled";
 
     /**
      * Create a new <code>EstimationCRUDWindow</code>.
@@ -204,18 +213,21 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
      */
     protected void onInvoice() {
         final Act act = (Act) getObject();
-        String title = Messages.get("customer.estimation.invoice.title");
-        String message = Messages.get("customer.estimation.invoice.message");
-        final ConfirmationDialog dialog
-                = new ConfirmationDialog(title, message);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent e) {
-                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
-                    invoice(act);
+        if (canInvoice(act)) {
+            String title = Messages.get("customer.estimation.invoice.title");
+            String message = Messages.get("customer.estimation.invoice.message");
+            final ConfirmationDialog dialog
+                    = new ConfirmationDialog(title, message);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent e) {
+                    if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                        invoice(act);
+                    }
                 }
-            }
-        });
-        dialog.show();
+            });
+            dialog.show();
+        }
+        
     }
 
     /**
@@ -233,8 +245,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
             calcAmount(invoice);
             SaveHelper.save(invoice);
 
-            if (!estimation.getStatus().equals(POSTED_STATUS)) {
-                estimation.setStatus(POSTED_STATUS);
+            if (!estimation.getStatus().equals(INVOICED_STATUS)) {
+                estimation.setStatus(INVOICED_STATUS);
                 SaveHelper.save(estimation);
                 setObject(estimation);
                 CRUDWindowListener listener = getListener();
@@ -246,6 +258,58 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
             String title = Messages.get("customer.estimation.invoice.failed");
             ErrorHelper.show(title, exception);
         }
+    }
+
+    /**
+     * Determines if an act can be deleted.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act can be deleted, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean canDelete(Act act) {
+        String status = act.getStatus();
+        return !(POSTED_STATUS.equals(status) || INVOICED_STATUS.equals(status));
+    }
+
+    /**
+     * Determines if an act can be edited.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act can be edited, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean canEdit(Act act) {
+        String status = act.getStatus();
+        return INPROGRESS_STATUS.equals(status)
+                || COMPLETED_STATUS.equals(status) || CANCELLED_STATUS.equals(status);
+    }
+
+
+    /**
+     * Determines if an act can be invoiced.
+     *
+     * @param act the act
+     * @return <code>true</code> if the act can be invoiced, otherwise
+     *         <code>false</code>
+     */
+
+    protected boolean canInvoice(Act act) {
+        String status = act.getStatus();
+        Boolean Result;
+        if (CANCELLED_STATUS.equals(status) || INVOICED_STATUS.equals(status)) {
+            showStatusError(act, "customer.estimation.noinvoice.title", "customer.estimation.noinvoice.message");
+            Result = false;
+        }
+        else if (act.getActivityEndTime().before(new Date())) {
+            showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
+            Result = false;            
+        }
+        else
+            Result = true;
+        return Result;
     }
 
     /**

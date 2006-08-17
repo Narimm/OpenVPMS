@@ -16,24 +16,27 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin.doc;
+package org.openvpms.web.app.admin;
 
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 
-
 /**
- * Document template workspace.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version  $LastChangedDate$
  */
-public class DocumentTemplateWorkspace extends CRUDWorkspace {
+
+public class AppointmentTypeWorkspace extends CRUDWorkspace {
 
     /**
-     * Construct a new <code>DocumentTemplateWorkspace</code>.
+     * @param subsystemId
+     * @param workspaceId
+     * @param refModelName
+     * @param entityName
+     * @param conceptName
      */
-    public DocumentTemplateWorkspace() {
-        super("admin", "documentTemplate", "common", "entity",
-              "documentTemplate");
+    public AppointmentTypeWorkspace() {
+        super("admin", "appointmentType", "common", "entity", "appointmentType");
     }
+
 }
