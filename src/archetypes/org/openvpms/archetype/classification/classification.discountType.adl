@@ -26,8 +26,17 @@
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
+			<node name="type" displayName="Discount Type" path="/details/attributes/type" type="java.lang.String" minCardinality="0" defaultValue="'Percentage'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="Fixed" value="Fixed" />
+						<property name="Percentage" value="Percentage" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
 			<node name="rate" displayName="Percentage %" path="/details/attributes/rate" type="java.math.BigDecimal" minCardinality="1" />
-			<node name="discountFixed" path="/details/attributes/discountFixed" type="java.lang.Boolean" defaultValue="true()" />
+			<node name="discountFixed" displayName="Include Fixed Amount" path="/details/attributes/discountFixed" type="java.lang.Boolean" defaultValue="true()" />
 		</node>		
 	</archetype>
 </archetypes>

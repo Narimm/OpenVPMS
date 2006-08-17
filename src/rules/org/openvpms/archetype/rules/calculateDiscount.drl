@@ -5,7 +5,7 @@
     xs:schemaLocation="http://drools.org/rules rules.xsd
     				   http://drools.org/semantics/java java.xsd">
     				   
-    <rule name="Calculate Tax">
+    <rule name="Calculate Discount">
         <parameter identifier="service">
              <java:class>org.openvpms.component.business.service.archetype.IArchetypeService</java:class>
         </parameter>
@@ -13,7 +13,7 @@
              <java:class>org.openvpms.component.business.domain.im.act.FinancialAct</java:class>
         </parameter>
         <java:consequence>
-            org.openvpms.archetype.rules.tax.TaxRules.calculateTax(act,service);
+            org.openvpms.archetype.rules.discount.DiscountRules.calculateDiscount(act,service);
         </java:consequence>
     </rule>
 </rule-set> 

@@ -36,5 +36,6 @@
 				</assertion>
 			</node>
 		</node-->
+		<node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()" /> 
 	</archetype>
 </archetypes>

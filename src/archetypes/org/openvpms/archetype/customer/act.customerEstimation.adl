@@ -27,15 +27,18 @@
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/title, ' Low Estimate: ',/lowTotal,' High Estimate: ', /highTotal)"/>
-        <node name="startTime" path="/activityStartTime"
+        <node name="startTime" displayName="Date" path="/activityStartTime"
               type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
         <node name="title" path="/title" type="java.lang.String"
               minCardinality="1" maxLength="30"
               defaultValue="'Enter a title ...'"/>
+        <node name="endTime" displayName="Expiry Date" path="/activityEndTime"
+              type="java.util.Date" minCardinality="0" />
         <node name="details" path="/details" hidden="true"
               type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
               minCardinality="1" maxCardinality="1">
+			<node name="notes" displayName="Notes" path="/details/attributes/notes" type="java.lang.String" minCardinality="0" maxLength="300" />
             <node name="lowTotal" path="/details/attributes/lowTotal"
                   type="org.openvpms.component.business.domain.im.datatypes.quantity.Money"
                   defaultValue="'0.0'" minCardinality="1" readOnly="true"/>
@@ -54,6 +57,7 @@
                     <property name="Completed" value="Completed"/>
                     <property name="Cancelled" value="Cancelled"/>
                     <property name="Posted" value="Posted"/>
+                    <property name="Invoiced" value="Invoiced"/>
                 </propertyList>
                 <errorMessage>An error message</errorMessage>
             </assertion>

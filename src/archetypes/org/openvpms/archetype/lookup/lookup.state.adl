@@ -26,7 +26,7 @@
 			derivedValue="/value" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat (/value, ' ', /code)" />
+			derivedValue="concat(/value,lookup:isDefault(/defaultLookup))" />
 		<node name="target" path="/targetLookupRelationships"
 			type="java.util.HashSet" baseName="targetLookupRelationship" minCardinality="0" maxCardinality="1">
 			<assertion name="archetypeRange" filter="lookupRelationship.countryState" >
@@ -39,5 +39,6 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+		<node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()" /> 
 	</archetype>
 </archetypes>
