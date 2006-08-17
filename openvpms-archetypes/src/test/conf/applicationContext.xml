@@ -232,44 +232,16 @@
         </property>
     </bean>
 
-    <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
-    <bean id="ruleSource"
-          class="org.openvpms.archetype.rules.ResourceRuleSource">
-        <property name="ruleResources">
-            <list>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEpisode.after.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEvent.after.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.after.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.save.act.bankDeposit.before.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.after.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.save.act.tillBalanceAdjustment.after.drl
-                </value>
-                <value>
-                    org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl
-                </value>
-            </list>
-        </property>
-        <property name="ruleRuntime">
-            <ref local="ruleRuntime"/>
-        </property>
-        <property name="ruleAdministrator">
-            <ref local="ruleAdministrator"/>
-        </property>
-    </bean>
+  <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
+  <bean id="ruleSource"
+    class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
+    <property name="ruleRuntime">
+      <ref local="ruleRuntime" />
+    </property>
+    <property name="ruleAdministrator">
+      <ref local="ruleAdministrator" />
+    </property>
+  </bean>
 
     <!-- Jsr94Template -->
     <bean id="jsr94Template" class="org.springmodules.jsr94.core.Jsr94Template">
@@ -278,16 +250,16 @@
         </property>
     </bean>
 
-    <!--  The DroolsRuleEngine interceptor -->
-    <bean id="ruleEngineInterceptor"
-          class="org.openvpms.archetype.rules.RuleEngineInterceptor">
-        <constructor-arg index="0">
-            <ref local="ruleSource"/>
-        </constructor-arg>
-        <property name="template">
-            <ref local="jsr94Template"/>
-        </property>
-    </bean>
+  <!--  The DroolsRileEngine interceptor -->
+  <bean id="ruleEngine"
+    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngine">
+    <constructor-arg index="0">
+      <ref local="ruleSource" />
+    </constructor-arg>
+    <property name="template">
+      <ref local="jsr94Template" />
+    </property>
+  </bean>
 
     <!--  Create a proxy for the ArchetypeService bean -->
     <bean id="ruleEngineProxyCreator"
@@ -308,7 +280,7 @@
     <bean id="ruleEngineAdvisor"
           class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
         <property name="advice">
-            <ref local="ruleEngineInterceptor"/>
+            <ref local="ruleEngine"/>
         </property>
         <property name="patterns">
             <list>

@@ -113,15 +113,20 @@ public class DiscountRules {
 
         for (IMObject discount : discounts) {
             IMObjectBean discountBean = new IMObjectBean(discount, service);
+            String discountType = discountBean.getString("type","");
             BigDecimal rate = discountBean.getBigDecimal("rate", BigDecimal.ZERO);
             Boolean discountFixed = discountBean.getBoolean("discountFixed");
             BigDecimal dFixedPrice;
             if (discountFixed)
-                dFixedPrice = calcDiscount(fixedPrice, rate);
+                dFixedPrice = calcDiscount(fixedPrice, rate, discountType);
             else
                 dFixedPrice = new BigDecimal("0.0");
-            BigDecimal dUnitPrice = calcDiscount(unitPrice, rate);
-            BigDecimal amount = quantity.multiply(dUnitPrice).add(dFixedPrice);
+            BigDecimal dUnitPrice = calcDiscount(unitPrice, rate, discountType);
+            BigDecimal amount;
+            if (discountType.equalsIgnoreCase("Percentage"))
+                amount = quantity.multiply(dUnitPrice).add(dFixedPrice);
+            else
+                amount = dUnitPrice.add(dFixedPrice);
             result = result.add(amount);
         }
         return result;
@@ -134,9 +139,13 @@ public class DiscountRules {
      * @param rate   the rate
      * @return amount * discountRate/100
      */
-    private static BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate) {
-        final BigDecimal hundred = new BigDecimal(100);
-        return amount.multiply(rate).divide(hundred, 3, RoundingMode.HALF_UP);
+    private static BigDecimal calcDiscount(BigDecimal amount, BigDecimal rate, String discountType) {
+        if(discountType.equalsIgnoreCase("Percentage")) {
+            final BigDecimal hundred = new BigDecimal(100);           
+            return amount.multiply(rate).divide(hundred, 3, RoundingMode.HALF_UP);
+        }
+        else
+            return rate;
     }
 
     /**

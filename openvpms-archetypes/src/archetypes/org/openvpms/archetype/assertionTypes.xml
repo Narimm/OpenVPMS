@@ -21,6 +21,9 @@
     <actionType name="validate"
       className="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
       methodName="alwaysTrue" />
+    <actionType name="create"
+      className="org.openvpms.component.business.service.archetype.assertion.LookupAssertions"
+      methodName="setDefaultValue" />  
   </assertionType>
   <assertionType name="lookup.local"
     propertyArchetype="openvpms-system-assertion.lookupLocal.1.0">

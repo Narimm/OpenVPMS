@@ -44,6 +44,8 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="reminderCount" displayName="Reminders Sent" path="/details/attributes/reminderCount" type="java.lang.Integer" readOnly="true" defaultValue="0"/>
 		</node>
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+			filter="participation.clinician" />
 		<node displayName="Reminders" name="reminders" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
 			hidden="true" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">

@@ -514,6 +514,12 @@
                 <include>log4j.properties</include>
             </includes>
         </resource>
+        <resource>
+            <directory>${basedir}/src/conf/rules</directory>
+            <includes>
+                <include>rules.xml</include>
+            </includes>
+        </resource>
     </resources>
   </build>
 
