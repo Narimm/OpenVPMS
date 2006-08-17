@@ -133,7 +133,7 @@ public class ActLayoutStrategy extends AbstractLayoutStrategy {
     protected NodeFilter getNodeFilter(LayoutContext context) {
         NodeFilter filter;
         if (!_showItems) {
-            filter = new NamedNodeFilter("items");
+            filter = getNodeFilter(context, new NamedNodeFilter("items"));
         } else {
             filter = super.getNodeFilter(context);
         }
