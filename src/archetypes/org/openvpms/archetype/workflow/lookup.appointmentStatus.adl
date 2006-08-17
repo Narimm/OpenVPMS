@@ -26,5 +26,6 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="/value" />
+		<node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()" /> 
 	</archetype>
 </archetypes>
