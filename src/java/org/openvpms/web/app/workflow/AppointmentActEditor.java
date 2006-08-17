@@ -23,8 +23,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundTimeField;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -34,6 +37,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
+import java.util.Date;
+
 
 /**
  * An editor for <em>act.customerAppointment</em>s.
@@ -42,6 +47,16 @@ import org.openvpms.web.component.util.TimeFieldFactory;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AppointmentActEditor extends AbstractActEditor {
+
+    /**
+     * The appointment slot size.
+     */
+    private int _slotSize;
+
+    /**
+     * The appointment slot units ("minutes" or "hours")
+     */
+    private String _slotUnits;
 
     /**
      * Construct a new <code>AppointmentActEditor</code>.
@@ -54,6 +69,20 @@ public class AppointmentActEditor extends AbstractActEditor {
                                 LayoutContext context) {
         super(act, parent, context);
         initParticipant("schedule", Context.getInstance().getSchedule());
+        IMObjectReference ref = getParticipant("schedule");
+        IMObject schedule = IMObjectHelper.getObject(ref);
+        if (schedule != null) {
+            IMObjectBean bean = new IMObjectBean(schedule);
+            _slotSize = bean.getInt("slotSize");
+            _slotUnits = bean.getString("slotUnits");
+        }
+        Property startTime = getProperty("startTime");
+        startTime.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onStartTimeChanged();
+            }
+        });
+
     }
 
     /**
@@ -66,12 +95,44 @@ public class AppointmentActEditor extends AbstractActEditor {
         return new LayoutStrategy();
     }
 
+    /**
+     * Invoked when the start time changes. Calculates the end time.
+     */
+    private void onStartTimeChanged() {
+        Property startTime = getProperty("startTime");
+        Object value = startTime.getValue();
+        if (value instanceof Date) {
+            Date start = (Date) value;
+            Property endTime = getProperty("endTime");
+            int minutes;
+            if ("hours".equals(_slotUnits)) {
+                minutes = _slotSize * 60;
+            } else {
+                minutes = _slotSize;
+            }
+            int millis = minutes * 60 * 1000;
+            Date end = new Date(start.getTime() + millis);
+            endTime.setValue(end);
+        }
+    }
+
+    /**
+     * Invoked when layout has completed. All editors have been created.
+     */
     private void onLayoutCompleted() {
         IMObjectReference schedule = getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor
-                = (AppointmentTypeParticipationEditor) getEditor(
-                "appointmentType");
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule((Party) IMObjectHelper.getObject(schedule));
+    }
+
+    /**
+     * Returns the appointment type editor.
+     *
+     * @return the appointment type editor
+     */
+    private AppointmentTypeParticipationEditor getAppointmentTypeEditor() {
+        return (AppointmentTypeParticipationEditor) getEditor(
+                "appointmentType");
     }
 
     private class LayoutStrategy extends AbstractLayoutStrategy {
