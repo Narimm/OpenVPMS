@@ -21,13 +21,17 @@ package org.openvpms.web.app.workflow;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundTimeField;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 
@@ -62,7 +66,36 @@ public class AppointmentActEditor extends AbstractActEditor {
         return new LayoutStrategy();
     }
 
+    private void onLayoutCompleted() {
+        IMObjectReference schedule = getParticipant("schedule");
+        AppointmentTypeParticipationEditor editor
+                = (AppointmentTypeParticipationEditor) getEditor(
+                "appointmentType");
+        editor.setSchedule((Party) IMObjectHelper.getObject(schedule));
+    }
+
     private class LayoutStrategy extends AbstractLayoutStrategy {
+
+        /**
+         * Apply the layout strategy.
+         * <p/>
+         * This renders an object in a <code>Component</code>, using a factory
+         * to create the child components.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent
+         * @param context    the layout context
+         * @return the component containing the rendered <code>object</code>
+         */
+        @Override
+        public Component apply(IMObject object, PropertySet properties,
+                               IMObject parent, LayoutContext context) {
+            Component component = super.apply(object, properties, parent,
+                                              context);
+            onLayoutCompleted();
+            return component;
+        }
 
         /**
          * Creates a component for a property. This maintains a cache of created

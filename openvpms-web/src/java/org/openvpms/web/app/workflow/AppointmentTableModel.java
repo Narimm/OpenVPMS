@@ -96,7 +96,7 @@ public class AppointmentTableModel extends DescriptorTableModel<Act> {
         addDescriptor("customer", archetype, result);
         addDescriptor("patient", archetype, result);
         addDescriptor("reason", archetype, result);
-        addDescriptor("notes", archetype, result);
+        addDescriptor("description", archetype, result);
         return result;
     }
 
