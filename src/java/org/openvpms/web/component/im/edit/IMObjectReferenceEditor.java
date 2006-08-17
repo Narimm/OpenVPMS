@@ -29,6 +29,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
@@ -40,6 +42,7 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -163,24 +166,28 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * Pops up a dialog to select an object.
      */
     protected void onSelect() {
-        Query<IMObject> query = createQuery();
-        final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
+        try {
+            Query<IMObject> query = createQuery();
+            final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
 
-        String title = Messages.get("imobject.select.title",
-                                    getDescriptor().getDisplayName());
-        final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                title, browser);
+            String title = Messages.get("imobject.select.title",
+                                        getDescriptor().getDisplayName());
+            final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
+                    title, browser);
 
-        popup.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                IMObject object = popup.getSelected();
-                if (object != null) {
-                    onSelected(object);
+            popup.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    IMObject object = popup.getSelected();
+                    if (object != null) {
+                        onSelected(object);
+                    }
                 }
-            }
-        });
+            });
 
-        popup.show();
+            popup.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**
@@ -196,6 +203,8 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * Creates a query to select objects.
      *
      * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     protected Query<IMObject> createQuery() {
         String[] shortNames = getDescriptor().getArchetypeRange();

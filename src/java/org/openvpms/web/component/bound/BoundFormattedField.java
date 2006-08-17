@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.bound;
 
-import java.text.Format;
-import java.text.ParseException;
-
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
-
 import org.openvpms.web.component.edit.Property;
+
+import java.text.Format;
+import java.text.ParseException;
 
 
 /**
@@ -57,6 +56,24 @@ public class BoundFormattedField extends TextField {
         binder.setField();
     }
 
+    /**
+     * Parses the field value.
+     *
+     * @return the parsed value, or <code>value</code> if it can't be parsed
+     */
+    protected Object parse(String value) {
+        Object result = null;
+        if (value != null) {
+            try {
+                result = _format.parseObject(value);
+            } catch (ParseException exception) {
+                // failed to parse, so return the field unchanged
+                result = value;
+            }
+        }
+        return result;
+    }
+
     private class FormattingBinder extends TextComponentBinder {
 
         /**
@@ -76,17 +93,8 @@ public class BoundFormattedField extends TextField {
          */
         @Override
         protected Object getFieldValue() {
-            Object result = null;
             String value = (String) super.getFieldValue();
-            if (value != null) {
-                try {
-                    result = _format.parseObject(value);
-                } catch (ParseException exception) {
-                    // failed to parse, so return the field unchanged
-                    result = value;
-                }
-            }
-            return result;
+            return parse(value);
         }
 
         /**

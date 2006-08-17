@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
@@ -146,10 +147,12 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
 
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified short names.
+     * Construct a new <code>AbstractQuery</code> that queries IMObjects with
+     * the specified short names.
      *
      * @param shortNames the short names
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public AbstractQuery(String[] shortNames) {
         _shortNames = DescriptorHelper.getShortNames(shortNames);
@@ -160,8 +163,8 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     }
 
     /**
-     * Construct a new <code>Browser</code> that queries IMObjects with the
-     * specified criteria.
+     * Construct a new <code>AbstractQuery</code> that queries IMObjects with
+     * the specified criteria.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
@@ -295,6 +298,15 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      */
     public void setConstraints(IConstraint constraints) {
         _constraints = constraints;
+    }
+
+    /**
+     * Returns query contraints.
+     *
+     * @return the constraints
+     */
+    public IConstraint getConstraints() {
+        return _constraints;
     }
 
     /**

@@ -36,7 +36,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class ActCRUDWindow extends CRUDWindow {
+public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
 
     /**
      * Act in progress status type.

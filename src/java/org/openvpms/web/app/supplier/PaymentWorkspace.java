@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -68,8 +69,9 @@ public class PaymentWorkspace extends SupplierActWorkspace {
      */
     protected ActQuery createQuery(Party customer) {
         String[] statuses = {"In Progress", "On Hold"};
-        return new ActQuery(customer, "supplier", "participation.supplier",
-                            SHORT_NAMES, statuses);
+        return new DefaultActQuery(customer, "supplier",
+                                   "participation.supplier",
+                                   SHORT_NAMES, statuses);
     }
 
     /**

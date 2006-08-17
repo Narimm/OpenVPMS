@@ -18,10 +18,6 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.test.AbstractAppTest;
-import org.openvpms.web.test.TestHelper;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -32,6 +28,9 @@ import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.test.AbstractAppTest;
+import org.openvpms.web.test.TestHelper;
 
 import java.util.Date;
 
@@ -69,10 +68,11 @@ public class ActResultSetTestCase extends AbstractAppTest {
         String[] statuses = {}; // query all statuses
         int rowsPerPage = 20;
         SortConstraint[] sort = null;
-        ActResultSet set = new ActResultSet(
-                party.getObjectReference(), "customer",
-                "participation.customer",
-                archetypes, from, to, statuses, rowsPerPage, sort);
+        ParticipantConstraint participant = new ParticipantConstraint(
+                "customer", "participation.customer",
+                party.getObjectReference());
+        ActResultSet set = new ActResultSet(participant, archetypes, from, to,
+                                            statuses, rowsPerPage, sort);
 
         assertFalse(set.hasNext());
         try {
@@ -114,10 +114,11 @@ public class ActResultSetTestCase extends AbstractAppTest {
         Date to = null;
         String[] statuses = {}; // query all statuses
         SortConstraint[] sort = null;
-        ActResultSet set = new ActResultSet(
-                _customer.getObjectReference(), "customer",
-                "participation.customer",
-                archetypes, from, to, statuses, rowsPerPage, sort);
+        ParticipantConstraint participant = new ParticipantConstraint(
+                "customer", "participation.customer",
+                _customer.getObjectReference());
+        ActResultSet set = new ActResultSet(participant, archetypes, from, to,
+                                            statuses, rowsPerPage, sort);
 
         assertFalse(set.hasPrevious());
         for (int i = 0; i < expectedPages; ++i) {
@@ -149,10 +150,11 @@ public class ActResultSetTestCase extends AbstractAppTest {
         Date to = null;
         String[] statuses = {}; // query all statuses
         SortConstraint[] sort = null;
-        ActResultSet set = new ActResultSet(
-                _customer.getObjectReference(), "customer",
-                "participation.customer",
-                archetypes, from, to, statuses, rowsPerPage, sort);
+        ParticipantConstraint participant = new ParticipantConstraint(
+                "customer", "participation.customer",
+                _customer.getObjectReference());
+        ActResultSet set = new ActResultSet(participant, archetypes, from, to,
+                                            statuses, rowsPerPage, sort);
 
         for (int j = 0; j < 2; ++j) {
             for (int i = 0; i < expectedPages; ++i) {

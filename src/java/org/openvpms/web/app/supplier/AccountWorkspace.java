@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -63,8 +64,8 @@ public class AccountWorkspace extends SupplierActWorkspace {
                                "act.supplierAccountPayment",
                                "act.supplierAccountRefund"};
         String[] statuses = {"Posted"};
-        return new ActQuery(party, "supplier", "participation.supplier",
-                            shortNames, statuses);
+        return new DefaultActQuery(party, "supplier", "participation.supplier",
+                                   shortNames, statuses);
     }
 
     /**

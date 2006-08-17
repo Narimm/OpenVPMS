@@ -165,7 +165,6 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
                                        window.getComponent());
     }
 
-
     /**
      * Creates a new CRUD window for viewing and editing acts.
      *
@@ -187,7 +186,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param query the query
      * @return a new browser
      */
-    protected Browser<Act> createBrowser(Query<Act> query) {
+    protected Browser<Act> createBrowser(ActQuery query) {
         return new TableBrowser<Act>(query, null, createTableModel());
     }
 

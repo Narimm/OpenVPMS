@@ -16,26 +16,30 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.component.util;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.web.component.bound.BoundTimeField;
+import org.openvpms.web.component.edit.Property;
 
 
 /**
- * Workflow subsystem.
+ * Factory for {@link BoundTimeField}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class WorkflowSubsystem extends AbstractSubsystem {
+public class TimeFieldFactory extends ComponentFactory {
 
     /**
-     * Construct a new <code>WorkflowSubsystem</code>.
+     * Creates a new bound time field with the default style.
+     *
+     * @param property the property to bind
+     * @return a new bound time field
      */
-    public WorkflowSubsystem() {
-        super("workflow");
-        addWorkspace(new SchedulingWorkspace());
-        addWorkspace(new DummyWorkspace("workflow", "worklist"));
+    public static BoundTimeField create(Property property) {
+        BoundTimeField field = new BoundTimeField(property);
+        setDefaultStyle(field);
+        return field;
     }
+
 }

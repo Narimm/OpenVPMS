@@ -18,17 +18,17 @@
 
 package org.openvpms.web.app.customer;
 
-import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.List;
 
@@ -73,7 +73,8 @@ public class EstimationWorkspace extends CustomerActWorkspace {
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(
                 ServiceHelper.getArchetypeService(), descriptor);
-        return new ActQuery(customer, "customer", "participation.customer",
-                            "act", "customerEstimation", lookups);
+        return new DefaultActQuery(customer, "customer",
+                                   "participation.customer",
+                                   "act", "customerEstimation", lookups);
     }
 }

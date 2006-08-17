@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.query.ActResultSet;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
@@ -87,9 +88,10 @@ public class ActHelper {
         String[] statuses = {"Posted"};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
-        ActResultSet set = new ActResultSet(entity, participant, participation,
-                                            archetypes, null, null, statuses,
-                                            50, null);
+        ParticipantConstraint constraint = new ParticipantConstraint(
+                participant, participation, entity);
+        ActResultSet set = new ActResultSet(constraint, archetypes, null, null,
+                                            statuses, 50, null);
         BigDecimal balance = BigDecimal.ZERO;
         while (set.hasNext()) {
             IPage<Act> acts = set.next();

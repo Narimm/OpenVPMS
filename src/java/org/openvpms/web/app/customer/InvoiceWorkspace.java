@@ -28,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -75,9 +76,10 @@ public class InvoiceWorkspace extends CustomerActWorkspace {
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(
                 ServiceHelper.getArchetypeService(), descriptor);
-        return new ActQuery(customer, "customer", "participation.customer",
-                            "act", "customerAccountCharges*", lookups,
-                            "Posted");
+        return new DefaultActQuery(customer, "customer",
+                                   "participation.customer",
+                                   "act", "customerAccountCharges*", lookups,
+                                   "Posted");
     }
 
     /**

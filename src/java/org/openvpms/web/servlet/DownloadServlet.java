@@ -111,7 +111,7 @@ public class DownloadServlet extends HttpServlet {
                                    "inline; filename=\"" + doc.getName()
                                            + "\"");
                 response.setContentType(doc.getMimeType());
-                response.setContentLength((int) doc.getDocSize());
+                response.setContentLength(doc.getDocSize());
                 response.getOutputStream().write(doc.getContents());
 
                 if (_tempDocs.remove(ref)) {

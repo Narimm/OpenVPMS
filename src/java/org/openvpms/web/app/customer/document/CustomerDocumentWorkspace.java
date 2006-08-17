@@ -31,6 +31,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
@@ -82,8 +83,9 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
                 "act.customerDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        return new ActQuery(customer, "customer", "participation.customer",
-                            SHORT_NAMES, lookups, null);
+        return new DefaultActQuery(customer, "customer",
+                                   "participation.customer",
+                                   SHORT_NAMES, lookups, null);
     }
 
     /**

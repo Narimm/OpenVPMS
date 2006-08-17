@@ -57,7 +57,7 @@ public interface Query<T extends IMObject> {
      * Performs the query.
      *
      * @param sort the sort constraint. May be <code>null</code>
-     * @return the query result set
+     * @return the query result set. May be <code>null</code>
      */
     ResultSet<T> query(SortConstraint[] sort);
 

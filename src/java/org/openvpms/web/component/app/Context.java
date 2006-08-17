@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.app;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -26,7 +27,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Date;
 
 
 /**
@@ -71,6 +72,16 @@ public class Context {
      * The current clinician.
      */
     private User _clinician;
+
+    /**
+     * The current schedule.
+     */
+    private Party _schedule;
+
+    /**
+     * The current schedule date.
+     */
+    private Date _scheduleDate;
 
 
     /**
@@ -214,6 +225,42 @@ public class Context {
     }
 
     /**
+     * Sets the current schedule.
+     *
+     * @param schedule the current schedule
+     */
+    public void setSchedule(Party schedule) {
+        _schedule = schedule;
+    }
+
+    /**
+     * Returns the current schedule.
+     *
+     * @return the current schedule
+     */
+    public Party getSchedule() {
+        return _schedule;
+    }
+
+    /**
+     * The current schedule date.
+     *
+     * @return the current schedule date
+     */
+    public Date getScheduleDate() {
+        return _scheduleDate;
+    }
+
+    /**
+     * Sets the current schedule date.
+     *
+     * @param date the current schedule date
+     */
+    public void setScheduleDate(Date date) {
+        _scheduleDate = date;
+    }
+
+    /**
      * Returns a context object that matches the specified archetype range.
      *
      * @param range the archetype range
@@ -277,7 +324,7 @@ public class Context {
      */
     protected IMObject[] getObjects() {
         return new IMObject[]{_current, _customer, _patient, _supplier,
-                              _product};
+                              _product, _till, _clinician, _schedule};
     }
 
 }

@@ -46,18 +46,6 @@ public abstract class AbstractActTableModel extends DescriptorTableModel {
     }
 
     /**
-     * Determines if selection should be enabled. This implementation returns
-     * <code>true</code> if in edit mode.
-     *
-     * @return <code>true</code> if selection should be enabled; otherwise
-     *         <code>false</code>
-     */
-    // @Override
-    public boolean xgetEnableSelection() {
-        return getLayoutContext().isEdit();
-    }
-
-    /**
      * Returns a filtered list of descriptors for an archetype.
      *
      * @param archetype the archetype
@@ -69,20 +57,5 @@ public abstract class AbstractActTableModel extends DescriptorTableModel {
                                                   LayoutContext context) {
         return filter(archetype.getSimpleNodeDescriptors(), context);
     }
-
-    /**
-     * Filters descriptors using the context's default node filter.
-     *
-     * @param descriptors the column descriptors
-     * @param context     the layout context
-     * @return the filtered descriptors
-     */
-    /*  @Override
-    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors,
-                                          LayoutContext context) {
-        NodeFilter filter = FilterHelper.chain(new NamedNodeFilter("items"),
-                                               context.getDefaultNodeFilter());
-        return FilterHelper.filter(null, filter, descriptors);
-    }*/
 
 }

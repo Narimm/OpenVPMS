@@ -23,13 +23,13 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -63,9 +63,10 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
         if (customer != null) {
             try {
                 IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
+                        = ArchetypeServiceHelper.getArchetypeService();
                 Participation participation
-                        = (Participation) service.create("participation.customer");
+                        = (Participation) service.create(
+                        "participation.customer");
                 participation.setEntity(new IMObjectReference(customer));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);

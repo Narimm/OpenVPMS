@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -45,6 +46,7 @@ import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -180,28 +182,32 @@ public abstract class AbstractRelationshipEditor
      */
     protected void onSelect(final Entity entity) {
         NodeDescriptor descriptor = entity.getDescriptor();
-        Query<IMObject> query = QueryFactory.create(
-                descriptor.getArchetypeRange());
-        final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
-        String title = Messages.get("imobject.select.title",
-                                    descriptor.getDisplayName());
-        final BrowserDialog<IMObject> popup
-                = new BrowserDialog<IMObject>(title, browser, true);
+        try {
+            Query<IMObject> query = QueryFactory.create(
+                    descriptor.getArchetypeRange());
+            final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
+            String title = Messages.get("imobject.select.title",
+                                        descriptor.getDisplayName());
+            final BrowserDialog<IMObject> popup
+                    = new BrowserDialog<IMObject>(title, browser, true);
 
-        popup.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                if (popup.createNew()) {
-                    onCreate(entity);
-                } else {
-                    IMObject object = popup.getSelected();
-                    if (object != null) {
-                        entity.setObject(object);
+            popup.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    if (popup.createNew()) {
+                        onCreate(entity);
+                    } else {
+                        IMObject object = popup.getSelected();
+                        if (object != null) {
+                            entity.setObject(object);
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        popup.show();
+            popup.show();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
     /**

@@ -18,6 +18,13 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -25,17 +32,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.util.SplitPaneFactory;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.NodeSortConstraint;
-import org.openvpms.component.system.common.query.SortConstraint;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SplitPane;
 
 
 /**
@@ -142,7 +140,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new query
      */
     protected ActQuery createQuery(Party party) {
-        ActQuery query = createQuery(party, _clinicalEventItems);
+        DefaultActQuery query = createQuery(party, _clinicalEventItems);
         String[] required = {CLINICAL_EPISODE, CLINICAL_EVENT};
         query.setRequiredShortNames(required);
         return query;
@@ -155,7 +153,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new browser
      */
     @Override
-    protected Browser<Act> createBrowser(Query<Act> query) {
+    protected Browser<Act> createBrowser(ActQuery query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         RecordBrowser browser = new RecordBrowser(query, createProblemsQuery(),
                                                   sort);
@@ -196,7 +194,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      *
      * @return a new query
      */
-    private ActQuery createProblemsQuery() {
+    private DefaultActQuery createProblemsQuery() {
         Party patient = (Party) getObject();
         String[] shortNames = {CLINICAL_PROBLEM};
         return createQuery(patient, shortNames);
@@ -209,10 +207,10 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @param shortNames the act short names
      * @return a new query
      */
-    private ActQuery createQuery(Party patient, String[] shortNames) {
+    private DefaultActQuery createQuery(Party patient, String[] shortNames) {
         String[] statuses = {};
-        return new ActQuery(patient, "patient", "participation.patient",
-                            shortNames, statuses);
+        return new DefaultActQuery(patient, "patient", "participation.patient",
+                                   shortNames, statuses);
     }
 
 }

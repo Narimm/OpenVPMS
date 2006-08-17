@@ -24,7 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
@@ -42,7 +42,7 @@ import org.openvpms.web.component.util.ButtonFactory;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class FinancialActCRUDWindow extends CRUDWindow {
+public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
 
     /**
      * The summary button.

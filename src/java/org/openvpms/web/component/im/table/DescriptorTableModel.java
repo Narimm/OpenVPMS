@@ -46,7 +46,8 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public abstract class DescriptorTableModel extends BaseIMObjectTableModel {
+public abstract class DescriptorTableModel<T extends IMObject>
+        extends BaseIMObjectTableModel<T> {
 
     /**
      * The layout context.
@@ -134,16 +135,28 @@ public abstract class DescriptorTableModel extends BaseIMObjectTableModel {
     @Override
     protected Object getValue(IMObject object, int column, int row) {
         TableColumn c = getColumn(column);
-        IMObjectComponentFactory factory = _context.getComponentFactory();
         Object result;
         if (c instanceof DescriptorTableColumn) {
-            DescriptorTableColumn col = (DescriptorTableColumn) c;
-            NodeDescriptor descriptor = col.getDescriptor();
-            Property property = new IMObjectProperty(object, descriptor);
-            result = factory.create(property, object);
+            result = getValue(object, (DescriptorTableColumn) c);
         } else {
             result = super.getValue(object, column, row);
         }
+        return result;
+    }
+
+    /**
+     * Returns a value for a given column.
+     *
+     * @param object the object to operate on
+     * @param column the column
+     * @return the value for the column
+     */
+    protected Object getValue(IMObject object, DescriptorTableColumn column) {
+        Object result;
+        IMObjectComponentFactory factory = _context.getComponentFactory();
+        NodeDescriptor descriptor = column.getDescriptor();
+        Property property = new IMObjectProperty(object, descriptor);
+        result = factory.create(property, object);
         return result;
     }
 

@@ -18,13 +18,7 @@
 
 package org.openvpms.web.app.financial.till;
 
-import org.openvpms.web.app.subsystem.ActWorkspace;
-import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.resource.util.Messages;
-
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -35,8 +29,13 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-
-import nextapp.echo2.app.Component;
+import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.im.query.ActQuery;
+import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -93,8 +92,9 @@ public class TillWorkspace extends ActWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor("act.tillBalance");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
         List<Lookup> lookups = LookupHelper.get(service, statuses);
-        ActQuery query = new ActQuery(till, "till", "participation.till",
-                                      "act", "tillBalance", lookups, null);
+        ActQuery query = new DefaultActQuery(
+                till, "till", "participation.till", "act", "tillBalance",
+                lookups, null);
         query.setStatus("Uncleared");
         return query;
     }

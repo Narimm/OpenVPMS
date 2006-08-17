@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
@@ -99,6 +100,8 @@ public class PatientQuery extends AbstractQuery {
      *
      * @param shortNames the patient archetype short names
      * @param customer   the customer. May be <code>null</code>
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
     public PatientQuery(String[] shortNames, Party customer) {
         super(shortNames);
