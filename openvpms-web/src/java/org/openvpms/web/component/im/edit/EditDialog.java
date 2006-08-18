@@ -18,15 +18,14 @@
 
 package org.openvpms.web.component.im.edit;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.web.component.dialog.PopupWindow;
 import org.openvpms.web.component.im.layout.LayoutContext;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 
 /**
@@ -108,6 +107,15 @@ public class EditDialog extends PopupWindow {
                 onCancel();
             }
         });
+    }
+
+    /**
+     * Returns the editor.
+     *
+     * @return the editor
+     */
+    protected IMObjectEditor getEditor() {
+        return _editor;
     }
 
     /**
