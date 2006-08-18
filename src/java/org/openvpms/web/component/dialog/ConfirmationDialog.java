@@ -19,7 +19,6 @@
 package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Label;
-
 import org.openvpms.web.component.util.LabelFactory;
 
 
@@ -52,6 +51,7 @@ public class ConfirmationDialog extends PopupDialog {
         Label prompt = LabelFactory.create(null, LABEL_STYLE);
         prompt.setText(message);
         getLayout().add(prompt);
+        setModal(true);
     }
 
 }
