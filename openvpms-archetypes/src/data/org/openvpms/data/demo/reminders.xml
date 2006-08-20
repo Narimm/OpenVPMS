@@ -1,6 +1,6 @@
 <archetype>
-<data id="VACREMINDER" archetype="entity.reminderType" name="Vaccination Reminder"  />
-<data id="OTHREMINDER" archetype="entity.reminderType" name="Other Reminder"  />
+<data id="VACREMINDER" archetype="entity.reminderType" name="Vaccination Reminder" defaultInterval="1" defaultUnits="years" />
+<data id="OTHREMINDER" archetype="entity.reminderType" name="Other Reminder"  defaultInterval="1" defaultUnits="years" />
 <data id="REM1" archetype="act.patientReminder" startTime="27/05/2004" endTime="25/05/2005" status="In Progress"  />
 <data archetype="participation.patient" entity="id:A3" act="id:REM1"  />
 <data archetype="participation.reminderType" entity="id:VACREMINDER" act="id:REM1"  />

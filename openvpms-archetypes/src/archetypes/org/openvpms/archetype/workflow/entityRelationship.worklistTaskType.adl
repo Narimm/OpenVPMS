@@ -16,37 +16,43 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-party-party.organisationWorkList.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.party.Party"  displayName="WorkList" >
+	<archetype name="openvpms-common-entityRelationship.worklistTaskType.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.common.EntityRelationship" displayName="Worklist Task Type" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1" />
-		<node name="description" type="java.lang.String" path="/description" />
+		<node name="name" type="java.lang.String" path="/name"
+			hidden="true" minCardinality="1" derived="true"
+			derivedValue="'Worklist Task Type'" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" derived="true"
+			derivedValue="concat('No of Slots : ',/details/attributes/noSlots)" />
+		<node name="activeStartTime" path="/activeStartTime"
+			type="java.util.Date" minCardinality="1"
+			hidden="true" defaultValue="java.util.Date.new()" />
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="maxSlots" path="/details/attributes/maximumSlots" type="java.lang.Integer" defaultValue="'100'" minCardinality="1" />
-		</node>
-		<node name="locations" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
-			filter="entityRelationship.locationSchedule" >
+			<node name="noSlots" displayName="No of Slots" path="/details/attributes/noSlots" type="java.lang.Integer"	minCardinality="1" />
+		</node>		
+		<node name="source" displayName="Schedule" path="/source"
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.locationSchedule" />
+							value="party.organisationWorkList" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="taskTypes" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
-			filter="entityRelationship.worklistTaskType" >
+		<node name="target" displayName="Task Type" path="/target"
+			type="org.openvpms.component.business.domain.im.common.IMObjectReference">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.worklistTaskType" />
+							value="entity.taskType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
