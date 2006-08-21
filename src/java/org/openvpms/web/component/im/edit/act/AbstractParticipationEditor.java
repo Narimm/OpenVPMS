@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.edit.act;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -29,6 +30,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -82,8 +84,26 @@ public abstract class AbstractParticipationEditor
      *
      * @return the participation entity property
      */
-    public Property getEntity() {
+    public Property getProperty() {
         return _editor.getProperty();
+    }
+
+    /**
+     * Returns the participation entity reference.
+     *
+     * @return the participation entity reference. May be <code>null</code>
+     */
+    public IMObjectReference getEntityRef() {
+        return (IMObjectReference) getProperty().getValue();
+    }
+
+    /**
+     * Returns the participation entity.
+     *
+     * @return the participation entity. May be <code>null</code>
+     */
+    public Entity getEntity() {
+        return (Entity) IMObjectHelper.getObject(getEntityRef());
     }
 
     /**

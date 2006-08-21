@@ -226,7 +226,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
         _acts = browser;
         _acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
-                selectFirst();
+                onQuery();
             }
 
             public void selected(IMObject object) {
@@ -291,7 +291,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     protected void initQuery(Party party) {
         _query.setEntity(party);
         _acts.query();
-        selectFirst();
+        onQuery();
     }
 
     /**
@@ -301,6 +301,13 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      */
     protected SplitPane getWorkspace() {
         return _workspace;
+    }
+
+    /**
+     * Invoked when acts are queried. Selects the first available act, if any.
+     */
+    protected void onQuery() {
+        selectFirst();
     }
 
     /**

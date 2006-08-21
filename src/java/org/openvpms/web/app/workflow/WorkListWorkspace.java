@@ -38,19 +38,19 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Scheduling workspace.
+ * Work list workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SchedulingWorkspace extends ActWorkspace {
+public class WorkListWorkspace extends ActWorkspace {
 
     /**
      * Construct a new <code>SchedulingWorkspace</code>.
      */
-    public SchedulingWorkspace() {
-        super("workflow", "scheduling", "party", "party",
-              "organisationSchedule");
+    public WorkListWorkspace() {
+        super("workflow", "worklist", "party", "party",
+              "organisationWorkList");
     }
 
     /**
@@ -65,6 +65,10 @@ public class SchedulingWorkspace extends ActWorkspace {
         Party party = (Party) object;
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
+        AppointmentQuery query = (AppointmentQuery) getQuery();
+        if (query != null) {
+            Context.getInstance().setScheduleDate(query.getDate());
+        }
     }
 
     /**
@@ -78,7 +82,7 @@ public class SchedulingWorkspace extends ActWorkspace {
         Component acts = getActs(browser);
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "WorklflowWorkspace.Layout", window.getComponent(), acts);
+                "WorkflowWorkspace.Layout", window.getComponent(), acts);
     }
 
     /**
@@ -100,18 +104,6 @@ public class SchedulingWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party party) {
         return new AppointmentQuery(party);
-    }
-
-    /**
-     * Invoked when acts are queried. Selects the first available act, if any.
-     */
-    @Override
-    protected void onQuery() {
-        super.onQuery();
-        AppointmentQuery query = (AppointmentQuery) getQuery();
-        if (query != null) {
-            Context.getInstance().setScheduleDate(query.getDate());
-        }
     }
 
     /**

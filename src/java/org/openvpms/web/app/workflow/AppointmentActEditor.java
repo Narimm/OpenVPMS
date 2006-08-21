@@ -19,21 +19,28 @@
 package org.openvpms.web.app.workflow;
 
 import nextapp.echo2.app.Component;
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.bound.BoundTimeField;
+import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.edit.TimePropertyTransformer;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
@@ -69,20 +76,21 @@ public class AppointmentActEditor extends AbstractActEditor {
                                 LayoutContext context) {
         super(act, parent, context);
         initParticipant("schedule", Context.getInstance().getSchedule());
-        IMObjectReference ref = getParticipant("schedule");
-        IMObject schedule = IMObjectHelper.getObject(ref);
+        EntityBean schedule = getSchedule();
         if (schedule != null) {
-            IMObjectBean bean = new IMObjectBean(schedule);
-            _slotSize = bean.getInt("slotSize");
-            _slotUnits = bean.getString("slotUnits");
+            _slotSize = schedule.getInt("slotSize");
+            _slotUnits = schedule.getString("slotUnits");
         }
+
         Property startTime = getProperty("startTime");
+        if (startTime.getValue() == null) {
+            startTime.setValue(Context.getInstance().getScheduleDate());
+        }
         startTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onStartTimeChanged();
             }
         });
-
     }
 
     /**
@@ -99,20 +107,29 @@ public class AppointmentActEditor extends AbstractActEditor {
      * Invoked when the start time changes. Calculates the end time.
      */
     private void onStartTimeChanged() {
-        Property startTime = getProperty("startTime");
-        Object value = startTime.getValue();
-        if (value instanceof Date) {
-            Date start = (Date) value;
-            Property endTime = getProperty("endTime");
-            int minutes;
-            if ("hours".equals(_slotUnits)) {
-                minutes = _slotSize * 60;
-            } else {
-                minutes = _slotSize;
+        try {
+            Property startTime = getProperty("startTime");
+            Object value = startTime.getValue();
+            AppointmentTypeParticipationEditor editor
+                    = getAppointmentTypeEditor();
+            IMObjectReference appointmentType = editor.getEntityRef();
+            if (value instanceof Date && appointmentType != null) {
+                Date start = (Date) value;
+                int noSlots = getSlots(appointmentType);
+                Property endTime = getProperty("endTime");
+                int minutes;
+                int time = _slotSize * noSlots;
+                if ("hours".equals(_slotUnits)) {
+                    minutes = time * 60;
+                } else {
+                    minutes = time;
+                }
+                int millis = minutes * DateUtils.MILLIS_IN_MINUTE;
+                Date end = new Date(start.getTime() + millis);
+                endTime.setValue(end);
             }
-            int millis = minutes * 60 * 1000;
-            Date end = new Date(start.getTime() + millis);
-            endTime.setValue(end);
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 
@@ -120,9 +137,9 @@ public class AppointmentActEditor extends AbstractActEditor {
      * Invoked when layout has completed. All editors have been created.
      */
     private void onLayoutCompleted() {
-        IMObjectReference schedule = getParticipant("schedule");
+        Party schedule = (Party) getParticipant("schedule");
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        editor.setSchedule((Party) IMObjectHelper.getObject(schedule));
+        editor.setSchedule(schedule);
     }
 
     /**
@@ -133,6 +150,38 @@ public class AppointmentActEditor extends AbstractActEditor {
     private AppointmentTypeParticipationEditor getAppointmentTypeEditor() {
         return (AppointmentTypeParticipationEditor) getEditor(
                 "appointmentType");
+    }
+
+    /**
+     * Helper to return the no. of slots for an appointment type.
+     *
+     * @param appointmentType the appointment type
+     * @return the no. of slots, or <code>0</code> if unknown
+     */
+    private int getSlots(IMObjectReference appointmentType) {
+        int noSlots = 0;
+        EntityBean schedule = getSchedule();
+        EntityRelationship relationship = schedule.getRelationship(
+                appointmentType);
+        if (relationship != null) {
+            IMObjectBean bean = new IMObjectBean(relationship);
+            noSlots = bean.getInt("noSlots");
+        }
+        return noSlots;
+    }
+
+    /**
+     * Helper to return the schedule, wrapped in a bean.
+     *
+     * @return the schedule, or <code>null</code> if none is available
+     */
+    private EntityBean getSchedule() {
+        IMObjectReference ref = getParticipantRef("schedule");
+        Entity schedule = (Entity) IMObjectHelper.getObject(ref);
+        if (schedule != null) {
+            return new EntityBean(schedule);
+        }
+        return null;
     }
 
     private class LayoutStrategy extends AbstractLayoutStrategy {
@@ -174,9 +223,13 @@ public class AppointmentActEditor extends AbstractActEditor {
             Component component;
             String name = property.getDescriptor().getName();
             if (name.equals("startTime") || name.equals("endTime")) {
-                BoundTimeField field = TimeFieldFactory.create(property);
-                field.setDate(Context.getInstance().getScheduleDate());
-                component = field;
+                IMObjectProperty timeProperty = (IMObjectProperty) property;
+                TimePropertyTransformer transformer
+                        = new TimePropertyTransformer(parent,
+                                                      property.getDescriptor());
+                transformer.setDate(Context.getInstance().getScheduleDate());
+                timeProperty.setTransformer(transformer);
+                component = TimeFieldFactory.create(property);
             } else {
                 component = super.createComponent(property, parent, context);
             }

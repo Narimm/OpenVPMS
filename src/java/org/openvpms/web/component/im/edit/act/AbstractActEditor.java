@@ -29,6 +29,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -119,18 +120,28 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
     }
 
     /**
-     * Returns a participant.
+     * Returns a participant reference.
      *
      * @param name the participation property name
-     * @return the participant. May be <code>null</code>
+     * @return a reference to the participant. May be <code>null</code>
      */
-    protected IMObjectReference getParticipant(String name) {
+    protected IMObjectReference getParticipantRef(String name) {
         Property property = getProperty(name);
         Participation participant = getParticipation(property);
         if (participant != null) {
             return participant.getEntity();
         }
         return null;
+    }
+
+    /**
+     * Returns a prticipant.
+     *
+     * @param name the participation property name
+     * @return the participant. May be <code>null</code>
+     */
+    protected IMObject getParticipant(String name) {
+        return IMObjectHelper.getObject(getParticipantRef(name));
     }
 
     /**

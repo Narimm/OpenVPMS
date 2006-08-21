@@ -222,7 +222,7 @@
         </properties>
     </style>
 
-    <style name="SchedulingWorkspace.Layout"
+    <style name="WorkflowWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>

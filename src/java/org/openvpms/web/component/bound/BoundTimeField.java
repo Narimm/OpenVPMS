@@ -19,16 +19,11 @@
 package org.openvpms.web.component.bound;
 
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.TimeFormatter;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
- * .
+ * Bound time field.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -36,12 +31,7 @@ import java.util.GregorianCalendar;
 public class BoundTimeField extends BoundFormattedField {
 
     /**
-     * The date component of the time. May be <code>null</code>.
-     */
-    private Date _date;
-
-    /**
-     * Construct a new <code>BoundFormattedField</code>.
+     * Construct a new <code>BoundTimeField</code>.
      *
      * @param property the property to bind
      */
@@ -49,37 +39,4 @@ public class BoundTimeField extends BoundFormattedField {
         super(property, 5, TimeFormatter.getFormat(true));
     }
 
-    /**
-     * Sets the date part of the time.
-     *
-     * @param date the date
-     */
-    public void setDate(Date date) {
-        _date = DateFormatter.getDayMonthYear(date);
-    }
-
-    /**
-     * Parses the field value.
-     *
-     * @return the parsed value, or <code>value</code> if it can't be parsed
-     */
-    @Override
-    protected Object parse(String value) {
-        Object parsed = super.parse(value);
-        if (parsed instanceof Date && _date != null) {
-            parsed = getAbsoluteDate((Date) parsed);
-        }
-        return parsed;
-    }
-
-    private Date getAbsoluteDate(Date time) {
-        GregorianCalendar dateCal = new GregorianCalendar();
-        dateCal.setTime(_date);
-        GregorianCalendar timeCal = new GregorianCalendar();
-        timeCal.setTime(time);
-
-        dateCal.add(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
-        dateCal.add(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
-        return dateCal.getTime();
-    }
 }

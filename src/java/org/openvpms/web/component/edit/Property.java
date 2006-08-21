@@ -33,8 +33,9 @@ public interface Property extends Modifiable {
      * Set the value of the property.
      *
      * @param value the property value
+     * @return <code>true</code> if the value was set
      */
-    void setValue(Object value);
+    boolean setValue(Object value);
 
     /**
      * Returns the value of the property.
