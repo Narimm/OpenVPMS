@@ -93,10 +93,21 @@ public class EntityBean extends IMObjectBean {
      *         target or <code>null</code> if none is found
      */
     public EntityRelationship getRelationship(Entity target) {
+        return getRelationship(target.getObjectReference());
+    }
+
+    /**
+     * Returns the first entity relationship with the specified entity as a
+     * target.
+     *
+     * @param target the target entity
+     * @return the first entity relationship with <code>target</code> as its
+     *         target or <code>null</code> if none is found
+     */
+    public EntityRelationship getRelationship(IMObjectReference target) {
         Entity entity = getEntity();
-        IMObjectReference ref = target.getObjectReference();
         for (EntityRelationship r : entity.getEntityRelationships()) {
-            if (ref.equals(r.getTarget())) {
+            if (target.equals(r.getTarget())) {
                 return r;
             }
         }
