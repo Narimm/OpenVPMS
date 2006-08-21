@@ -18,17 +18,18 @@
 
 package org.openvpms.web.component.im.list;
 
+import java.util.Arrays;
 import java.util.List;
 
 import nextapp.echo2.app.list.AbstractListModel;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.spring.ServiceHelper;
 import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -101,6 +102,7 @@ public class ArchetypeShortNameListModel extends AbstractListModel {
     public ArchetypeShortNameListModel(String[] shortNames,
                                        boolean all,
                                        IArchetypeService service) {
+        Arrays.sort(shortNames);
         int size = shortNames.length;
         int index = 0;
         if (all) {
