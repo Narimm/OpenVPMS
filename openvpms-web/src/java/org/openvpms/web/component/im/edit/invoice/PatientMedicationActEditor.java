@@ -75,7 +75,7 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      * @return the product refereence. May be <code>null</code>
      */
     public IMObjectReference getProduct() {
-        return getParticipant("product");
+        return getParticipantRef("product");
     }
 
     /**
@@ -93,7 +93,7 @@ public class PatientMedicationActEditor extends AbstractActEditor {
      * @return the patient reference. May be <code>null</code>
      */
     public IMObjectReference getPatient() {
-        return getParticipant("patient");
+        return getParticipantRef("patient");
     }
 
 }

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.bound;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
@@ -81,7 +82,13 @@ abstract class Binder {
      * @param property the propery to update
      */
     protected void setProperty(Property property) {
-        property.setValue(getFieldValue());
+        Object fieldValue = getFieldValue();
+        if (property.setValue(fieldValue)) {
+            Object propertyValue = _property.getValue();
+            if (!ObjectUtils.equals(fieldValue, propertyValue)) {
+                setField();
+            }
+        }
     }
 
     /**

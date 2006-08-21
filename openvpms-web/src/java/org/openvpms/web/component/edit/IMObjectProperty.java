@@ -41,6 +41,7 @@ import org.hibernate.LazyInitializationException;
 import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
+import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -159,16 +160,22 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * Set the value of the property.
      *
      * @param value the property value
+     * @return <code>true</code> if the value was set
      */
-    public void setValue(Object value) {
+    public boolean setValue(Object value) {
+        boolean set = false;
         checkReadOnly();
         try {
-            value = getHandler().apply(value);
+            value = getTransformer().apply(value);
             _descriptor.setValue(_object, value);
+            set = true;
             modified();
+        } catch (DescriptorException exception) {
+            invalidate(exception);
         } catch (ValidationException exception) {
             invalidate(exception);
         }
+        return set;
     }
 
     /**
@@ -179,7 +186,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
     public void add(Object value) {
         checkReadOnly();
         try {
-            value = getHandler().apply(value);
+            value = getTransformer().apply(value);
             _descriptor.addChildToCollection(_object, value);
             modified();
         } catch (ValidationException exception) {
@@ -195,7 +202,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
     public void remove(Object value) {
         checkReadOnly();
         try {
-            value = getHandler().apply(value);
+            value = getTransformer().apply(value);
             _descriptor.removeChildFromCollection(_object, value);
             modified();
         } catch (ValidationException exception) {
@@ -317,7 +324,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
                     }
                 }
             } else {
-                PropertyTransformer transformer = getHandler();
+                PropertyTransformer transformer = getTransformer();
                 try {
                     transformer.apply(getValue());
                 } catch (ValidationException exception) {
@@ -329,6 +336,29 @@ public class IMObjectProperty implements Property, CollectionProperty {
             validator.add(this, _errors);
         }
         return (_errors != null);
+    }
+
+    /**
+     * Sets the property transformer.
+     *
+     * @param transformer the property transformer. May be <code>null</code>
+     */
+    public void setTransformer(PropertyTransformer transformer) {
+        _transformer = transformer;
+    }
+
+    /**
+     * Returns the property transformer.
+     * If none has been set, creates one using
+     * {@link PropertyTransformerFactory#create}.
+     *
+     * @return the property transformer
+     */
+    public PropertyTransformer getTransformer() {
+        if (_transformer == null) {
+            _transformer = PropertyTransformerFactory.create(_descriptor);
+        }
+        return _transformer;
     }
 
     /**
@@ -345,13 +375,37 @@ public class IMObjectProperty implements Property, CollectionProperty {
      *
      * @param exception the reason for the failure
      */
+    private void invalidate(DescriptorException exception) {
+        if (_errors != null && !_errors.isEmpty()) {
+            _errors.clear();
+        }
+        addError(exception.getMessage());
+    }
+
+    /**
+     * Invoked when an update fails. Marks this as invalid.
+     *
+     * @param exception the reason for the failure
+     */
     private void invalidate(ValidationException exception) {
         _errors = exception.getErrors();
         if (_errors.isEmpty()) {
-            ValidationError error = new ValidationError(_descriptor.getName(),
-                                                        exception.getMessage());
-            _errors.add(error);
+            addError(exception.getMessage());
         }
+    }
+
+    /**
+     * Adds a validation error.
+     *
+     * @param message the error message
+     */
+    private void addError(String message) {
+        ValidationError error = new ValidationError(_descriptor.getName(),
+                                                    message);
+        if (_errors == null) {
+            _errors = new ArrayList<ValidationError>();
+        }
+        _errors.add(error);
     }
 
     /**
@@ -361,23 +415,8 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * @param args    an array of arguments to be inserted into the message
      */
     private void addError(String message, Object ... args) {
-        if (_errors == null) {
-            _errors = new ArrayList<ValidationError>();
-        }
         message = Messages.get(message, args);
-        _errors.add(new ValidationError(_descriptor.getName(), message));
-    }
-
-    /**
-     * Returns the property handler.
-     *
-     * @return the property handler
-     */
-    private PropertyTransformer getHandler() {
-        if (_transformer == null) {
-            _transformer = PropertyTransformerFactory.create(_descriptor);
-        }
-        return _transformer;
+        addError(message);
     }
 
     /**

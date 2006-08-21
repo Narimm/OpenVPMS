@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow;
 
-import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
@@ -36,6 +35,6 @@ public class WorkflowSubsystem extends AbstractSubsystem {
     public WorkflowSubsystem() {
         super("workflow");
         addWorkspace(new SchedulingWorkspace());
-        addWorkspace(new DummyWorkspace("workflow", "worklist"));
+        addWorkspace(new WorkListWorkspace());
     }
 }

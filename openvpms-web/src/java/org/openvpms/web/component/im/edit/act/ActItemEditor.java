@@ -86,7 +86,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         no product
      */
     public IMObjectReference getProduct() {
-        return getParticipant("product");
+        return getParticipantRef("product");
     }
 
     /**
@@ -97,7 +97,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     public void setProduct(IMObjectReference product) {
         ProductParticipationEditor editor = getProductEditor();
         if (editor != null) {
-            Property entity = editor.getEntity();
+            Property entity = editor.getProperty();
             entity.setValue(product);
         }
     }
@@ -109,7 +109,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
      *         has no patient
      */
     public IMObjectReference getPatient() {
-        return getParticipant("patient");
+        return getParticipantRef("patient");
     }
 
     /**
@@ -217,7 +217,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
             });
         }
         if (product != null && patient != null) {
-            product.setPatient(patient.getEntity());
+            product.setPatient(patient.getProperty());
         }
     }
 
