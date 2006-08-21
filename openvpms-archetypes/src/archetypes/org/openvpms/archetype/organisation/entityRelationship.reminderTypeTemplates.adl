@@ -32,19 +32,8 @@
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="sequence" displayName="Reminder Number" path="/details/attributes/sequence" type="java.lang.String" minCardinality="1" >
-				<assertion name="lookup.local">
-					<propertyList name="entries">
-						<property name="1st" value="1st" />
-						<property name="2nd" value="2nd" />
-						<property name="3rd" value="3rd" />
-						<property name="4th" value="4th" />
-					</propertyList>
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
-			</node>
-			<node name="interval" displayName="Reminder Interval" path="/details/attributes/interval" type="java.lang.Integer" minCardinality="0" />			
-			<node name="units" displayName="Interval Units" path="/details/attributes/units" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
+			<node name="interval" displayName="Overdue Interval" path="/details/attributes/interval" type="java.lang.Integer" minCardinality="0" />			
+			<node name="units" displayName="Overdue Units" path="/details/attributes/units" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="days" value="days" />

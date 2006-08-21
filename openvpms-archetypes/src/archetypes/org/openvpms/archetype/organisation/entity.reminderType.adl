@@ -22,6 +22,34 @@
 		<node name="name" type="java.lang.String" path="/name" minCardinality="1" />
 		<node name="description" type="java.lang.String" path="/description" />
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="details" path="/details" hidden="true"
+			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+			minCardinality="1" maxCardinality="1">
+			<node name="defaultInterval" displayName="Reminder Interval" path="/details/attributes/interval" type="java.lang.Integer" minCardinality="1" />			
+			<node name="defaultUnits" displayName="Interval Units" path="/details/attributes/units" type="java.lang.String" minCardinality="1" defaultValue="'years'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="days" value="days" />
+						<property name="weeks" value="weeks" />
+						<property name="months" value="months" />
+						<property name="years" value="years" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
+			<node name="cancelInterval" displayName="Cancel Interval" path="/details/attributes/cancelInterval" type="java.lang.Integer" minCardinality="0" />			
+			<node name="cancelUnits" displayName="Cancel Units" path="/details/attributes/cancelUnits" type="java.lang.String" minCardinality="0" defaultValue="'years'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="days" value="days" />
+						<property name="weeks" value="weeks" />
+						<property name="months" value="months" />
+						<property name="years" value="years" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
+		</node>		
 		<node name="templates" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
 			filter="entityRelationship.reminderTypeTemplates" >
