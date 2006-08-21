@@ -42,18 +42,14 @@ public class AdminSubsystem extends AbstractSubsystem {
                 = SecurityContextHolder.getContext().getAuthentication();
 
         addWorkspace(new OrganisationWorkspace());
-        addWorkspace(new AccountTypeWorkspace());
-        addWorkspace(new ReminderTypeWorkspace());
-        addWorkspace(new ProductTypeWorkspace());
-        addWorkspace(new AppointmentTypeWorkspace());
-        addWorkspace(new TaskTypeWorkspace());
+        addWorkspace(new TypeWorkspace());
         addWorkspace(new DocumentTemplateWorkspace());
         addWorkspace(new ClassificationWorkspace());
+        addWorkspace(new LookupWorkspace());
         if (auth != null && "admin".equals(auth.getName())) {
             addWorkspace(new UserWorkspace());
             addWorkspace(new RoleWorkspace());
             addWorkspace(new AuthorityWorkspace());
-            addWorkspace(new LookupWorkspace());
             addWorkspace(new ArchetypeWorkspace());
         }
 
