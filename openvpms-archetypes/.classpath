@@ -57,7 +57,6 @@
 	<classpathentry kind="var" path="MAVEN_REPO/acegisecurity/jars/acegi-security-1.0.0-RC1.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/ognl/jars/ognl-2.6.5.jar"/>
 	<classpathentry kind="var" path="MAVEN_REPO/oro/jars/oro-2.0.8.jar"/>
-	<classpathentry kind="lib" path="target/openvpms-archetypes-0.5-SNAPSHOT.jar"/>
 	<classpathentry sourcepath="/OPENVPMS-FRAMEWORK-SRC" kind="var" path="MAVEN_REPO/org.openvpms/jars/openvpms-framework-0.8-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>
