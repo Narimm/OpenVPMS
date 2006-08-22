@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
@@ -30,6 +31,19 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class ParticipantConstraint extends CollectionNodeConstraint {
+
+    /**
+     * Constructs a new <code>ParticipantConstraint</code>.
+     *
+     * @param nodeName  the the participant node name
+     * @param shortName the participation short name
+     * @param entity    the participant
+     */
+    public ParticipantConstraint(String nodeName, String shortName,
+                                 Entity entity) {
+        super(nodeName, shortName, true, true);
+        add(new ObjectRefNodeConstraint("entity", entity.getObjectReference()));
+    }
 
     /**
      * Constructs a new <code>ParticipantConstraint</code>.
