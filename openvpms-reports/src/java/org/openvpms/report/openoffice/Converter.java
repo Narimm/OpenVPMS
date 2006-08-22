@@ -98,11 +98,9 @@ public class Converter {
      */
     public Document convert(Document document, String mimeType) {
         OpenOfficeDocument doc = new OpenOfficeDocument(document, _service);
-        try {
-            Thread.sleep(1000);   // todo - hack to avoid document corruption.
-        } catch (InterruptedException ignore) {
-            // no-op
-        }
+        doc.refresh();   // workaround to avoid corruption of generated doc
+                         // when the source document contains user fields.
+                         // Alternative approach is to do a Thread.sleep(1000).
         try {
             return doc.export(mimeType, document.getName(), _archetypeService);
         } finally {
