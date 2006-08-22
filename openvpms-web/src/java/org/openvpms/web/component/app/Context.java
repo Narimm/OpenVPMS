@@ -88,6 +88,11 @@ public class Context {
      */
     private Party _workList;
 
+    /**
+     * The current work list date.
+     */
+    private Date _workListDate;
+
 
     /**
      * Restrict construction.
@@ -281,6 +286,24 @@ public class Context {
      */
     public Party getWorkList() {
         return _workList;
+    }
+
+    /**
+     * Sets the current work list date.
+     *
+     * @param date the current schedule date
+     */
+    public void setWorkListDate(Date date) {
+        _workListDate = date;
+    }
+
+    /**
+     * Returns the current work lsit date.
+     *
+     * @return the current work lsit date
+     */
+    public Date getWorkListDate() {
+        return _workListDate;
     }
 
     /**

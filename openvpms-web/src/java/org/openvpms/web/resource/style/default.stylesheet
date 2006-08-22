@@ -580,6 +580,60 @@
 
 
     <!-- =================================================================== -->
+    <!--  Date selector                                                      -->
+    <!-- =================================================================== -->
+
+    <style name="date.previousWeek" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/first.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="date.previousDay" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/previous.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="date.currentDay" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/current.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="date.nextDay" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/next.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="date.nextWeek" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/navigation/last.png"/>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
     <!--  Navigation                                                         -->
     <!-- =================================================================== -->
 

@@ -73,7 +73,7 @@ public class WorkListWorkspace extends ActWorkspace {
         initQuery(party);
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
-            Context.getInstance().setScheduleDate(query.getDate());
+            Context.getInstance().setWorkListDate(query.getDate());
         }
     }
 
@@ -111,6 +111,18 @@ public class WorkListWorkspace extends ActWorkspace {
      */
     protected ActQuery createQuery(Party party) {
         return new TaskQuery(party);
+    }
+
+    /**
+     * Invoked when acts are queried. Selects the first available act, if any.
+     */
+    @Override
+    protected void onQuery() {
+        super.onQuery();
+        TaskQuery query = (TaskQuery) getQuery();
+        if (query != null) {
+            Context.getInstance().setWorkListDate(query.getDate());
+        }
     }
 
     /**
