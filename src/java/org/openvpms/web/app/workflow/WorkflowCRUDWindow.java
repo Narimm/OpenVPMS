@@ -82,7 +82,5 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
             String message = Messages.get("act.nodelete.message", name, status);
             ErrorDialog.show(title, message);
         }
-
-        super.onDelete();
     }
 }
