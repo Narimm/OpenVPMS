@@ -47,6 +47,16 @@ import java.util.ListIterator;
 public abstract class ActQuery extends AbstractQuery<Act> {
 
     /**
+     * The participant node name.
+     */
+    private final String _participant;
+
+    /**
+     * The entity participation short name;
+     */
+    private final String _participation;
+
+    /**
      * The id of the entity to search for.
      */
     private IMObjectReference _entityId;
@@ -76,15 +86,20 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * Construct a new <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
      * @param entityName    the act entity name
      * @param conceptName   the act concept name
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <code>null</code>
      */
-    public ActQuery(Entity entity, String entityName, String conceptName,
+    public ActQuery(Entity entity, String participant, String participation,
+                    String entityName, String conceptName,
                     List<Lookup> statusLookups, String excludeStatus) {
         super(null, entityName, conceptName);
         setEntity(entity);
+        _participant = participant;
+        _participation = participation;
         _excludeStatus = excludeStatus;
         if (_excludeStatus != null) {
             _statusLookups = new ArrayList<Lookup>(statusLookups);
@@ -106,14 +121,19 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * Construct a new <code>ActQuery</code>.
      *
      * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
      * @param shortNames    the act short names
      * @param statusLookups the act status lookups
      * @param excludeStatus to exclude. May be <code>null</code>
      */
-    public ActQuery(Entity entity, String[] shortNames,
-                    List<Lookup> statusLookups, String excludeStatus) {
+    public ActQuery(Entity entity, String participant, String participation,
+                    String[] shortNames, List<Lookup> statusLookups,
+                    String excludeStatus) {
         super(shortNames);
         setEntity(entity);
+        _participant = participant;
+        _participation = participation;
         _excludeStatus = excludeStatus;
         if (_excludeStatus != null) {
             _statusLookups = new ArrayList<Lookup>(statusLookups);
@@ -135,15 +155,19 @@ public abstract class ActQuery extends AbstractQuery<Act> {
      * Construct a new <code>ActQuery</code> to query acts for a
      * specific status.
      *
-     * @param entity      the entity to search for
-     * @param entityName  the act entity name
-     * @param conceptName the act concept name
-     * @param status      the act status
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param entityName    the act entity name
+     * @param conceptName   the act concept name
+     * @param status        the act status
      */
-    public ActQuery(Entity entity, String entityName, String conceptName,
-                    String status) {
+    public ActQuery(Entity entity, String participant, String participation,
+                    String entityName, String conceptName, String status) {
         super(null, entityName, conceptName);
         setEntity(entity);
+        _participant = participant;
+        _participation = participation;
         _statuses = new String[]{status};
         _statusLookups = null;
         _excludeStatus = null;
@@ -153,14 +177,19 @@ public abstract class ActQuery extends AbstractQuery<Act> {
     /**
      * Construct a new  <code>ActQuery</code>.
      *
-     * @param entity     the entity to search for
-     * @param shortNames the act short names
-     * @param statuses   the act statuses to search on. May be
-     *                   <code>empty</code>
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param shortNames    the act short names
+     * @param statuses      the act statuses to search on. May be
+     *                      <code>empty</code>
      */
-    public ActQuery(Entity entity, String[] shortNames, String[] statuses) {
+    public ActQuery(Entity entity, String participant, String participation,
+                    String[] shortNames, String[] statuses) {
         super(shortNames);
         setEntity(entity);
+        _participant = participant;
+        _participation = participation;
         _statuses = statuses;
         _statusLookups = null;
         _excludeStatus = null;
@@ -279,6 +308,16 @@ public abstract class ActQuery extends AbstractQuery<Act> {
             archetypes = getArchetypeConstraint(type);
         }
         return archetypes;
+    }
+
+    /**
+     * Returns the participant constraint.
+     *
+     * @return the participant constraint
+     */
+    protected ParticipantConstraint getParticipantConstraint() {
+        return new ParticipantConstraint(_participant, _participation,
+                                         getEntityId());
     }
 
     /**

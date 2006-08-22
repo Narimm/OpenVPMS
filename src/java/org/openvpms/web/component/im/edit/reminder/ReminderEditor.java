@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.im.edit.reminder;
 
-import nextapp.echo2.app.Component;
-
 import org.openvpms.archetype.rules.patient.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,24 +29,23 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 
 /**
  * An editor for {@link Act}s which have an archetype of
  * <em>act.patientReminder</em>.
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
 public class ReminderEditor extends AbstractActEditor {
 
     /**
      * Construct a new <code>ReminderEditor</code>.
+     *
      * @param act
      * @param parent
      * @param context
@@ -60,22 +57,13 @@ public class ReminderEditor extends AbstractActEditor {
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
     }
-    
-    /**
-     * Creates the layout strategy.
-     *
-     * @return a new layout strategy
-     */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new LayoutStrategy();
-    }
 
     /**
      * Invoked when layout has completed. All editors have been created.
      */
-    private void onLayoutCompleted() {
-        Editor editor = getEditor("reminderType"); 
+    @Override
+    protected void onLayoutCompleted() {
+        Editor editor = getEditor("reminderType");
 
         // add a listener to update the due date when the reminder type is modified
         ModifiableListener listener = new ModifiableListener() {
@@ -84,46 +72,21 @@ public class ReminderEditor extends AbstractActEditor {
             }
         };
         if (editor != null)
-          editor.addModifiableListener(listener);
+            editor.addModifiableListener(listener);
     }
 
     /**
      * Updates the Due Date based on the reminderType reminder interval.
      */
     private void onReminderTypeChanged() {
-        try {   
+        try {
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-            ReminderRules.calculateReminderDueDate((Act)getObject(), service);
+            ReminderRules.calculateReminderDueDate((Act) getObject(), service);
             Property property = getProperty("endTime");
             property.refresh();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
-    }
-
-    private class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Apply the layout strategy.
-         * <p/>
-         * This renders an object in a <code>Component</code>, using a factory
-         * to create the child components.
-         *
-         * @param object     the object to apply
-         * @param properties the object's properties
-         * @param parent
-         * @param context    the layout context
-         * @return the component containing the rendered <code>object</code>
-         */
-        @Override
-        public Component apply(IMObject object, PropertySet properties,
-                               IMObject parent, LayoutContext context) {
-            Component component = super.apply(object, properties, parent,
-                                              context);
-            onLayoutCompleted();
-            return component;
-        }
-
     }
 
 }

@@ -83,6 +83,11 @@ public class Context {
      */
     private Date _scheduleDate;
 
+    /**
+     * The current work list.
+     */
+    private Party _workList;
+
 
     /**
      * Restrict construction.
@@ -261,6 +266,24 @@ public class Context {
     }
 
     /**
+     * Sets the current work list.
+     *
+     * @param workList the current work list
+     */
+    public void setWorkList(Party workList) {
+        _workList = workList;
+    }
+
+    /**
+     * Returns the current work list.
+     *
+     * @return the current work list
+     */
+    public Party getWorkList() {
+        return _workList;
+    }
+
+    /**
      * Returns a context object that matches the specified archetype range.
      *
      * @param range the archetype range
@@ -324,7 +347,8 @@ public class Context {
      */
     protected IMObject[] getObjects() {
         return new IMObject[]{_current, _customer, _patient, _supplier,
-                              _product, _till, _clinician, _schedule};
+                              _product, _till, _clinician, _schedule,
+                              _workList};
     }
 
 }

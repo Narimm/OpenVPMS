@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -43,7 +43,7 @@ import java.util.List;
 public class AppointmentTableModel extends DescriptorTableModel<Act> {
 
     /**
-     * Creates a new <code>AbstractActTableModel</code>.
+     * Creates a new <code>AppointmentTableModel</code>.
      *
      * @param context the layout context
      */

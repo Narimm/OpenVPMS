@@ -19,6 +19,7 @@
 package org.openvpms.web.component.bound;
 
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.TimePropertyTransformer;
 import org.openvpms.web.component.util.TimeFormatter;
 
 
@@ -39,4 +40,14 @@ public class BoundTimeField extends BoundFormattedField {
         super(property, 5, TimeFormatter.getFormat(true));
     }
 
+    /**
+     * Parses the field value. This implementation is a no-op, as field
+     * parsing is handled via {@link TimePropertyTransformer}.
+     *
+     * @return the parsed value, or <code>value</code> if it can't be parsed
+     */
+    @Override
+    protected Object parse(String value) {
+        return value;
+    }
 }

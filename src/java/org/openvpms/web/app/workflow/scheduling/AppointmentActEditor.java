@@ -16,32 +16,26 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
-import org.apache.commons.lang.time.DateUtils;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.edit.TimePropertyTransformer;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 import java.util.Date;
@@ -56,16 +50,6 @@ import java.util.Date;
 public class AppointmentActEditor extends AbstractActEditor {
 
     /**
-     * The appointment slot size.
-     */
-    private int _slotSize;
-
-    /**
-     * The appointment slot units ("minutes" or "hours")
-     */
-    private String _slotUnits;
-
-    /**
      * Construct a new <code>AppointmentActEditor</code>.
      *
      * @param act     the act to edit
@@ -76,12 +60,6 @@ public class AppointmentActEditor extends AbstractActEditor {
                                 LayoutContext context) {
         super(act, parent, context);
         initParticipant("schedule", Context.getInstance().getSchedule());
-        EntityBean schedule = getSchedule();
-        if (schedule != null) {
-            _slotSize = schedule.getInt("slotSize");
-            _slotUnits = schedule.getString("slotUnits");
-        }
-
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
             startTime.setValue(Context.getInstance().getScheduleDate());
@@ -104,42 +82,64 @@ public class AppointmentActEditor extends AbstractActEditor {
     }
 
     /**
+     * Invoked when layout has completed. All editors have been created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        Party schedule = (Party) getParticipant("schedule");
+        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
+        editor.setSchedule(schedule);
+        editor.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onAppointmentTypeChanged();
+            }
+        });
+    }
+
+    /**
      * Invoked when the start time changes. Calculates the end time.
      */
     private void onStartTimeChanged() {
         try {
-            Property startTime = getProperty("startTime");
-            Object value = startTime.getValue();
-            AppointmentTypeParticipationEditor editor
-                    = getAppointmentTypeEditor();
-            IMObjectReference appointmentType = editor.getEntityRef();
-            if (value instanceof Date && appointmentType != null) {
-                Date start = (Date) value;
-                int noSlots = getSlots(appointmentType);
-                Property endTime = getProperty("endTime");
-                int minutes;
-                int time = _slotSize * noSlots;
-                if ("hours".equals(_slotUnits)) {
-                    minutes = time * 60;
-                } else {
-                    minutes = time;
-                }
-                int millis = minutes * DateUtils.MILLIS_IN_MINUTE;
-                Date end = new Date(start.getTime() + millis);
-                endTime.setValue(end);
-            }
+            calculateEndTime();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
     }
 
     /**
-     * Invoked when layout has completed. All editors have been created.
+     * Invoked when the appointment type changes. Calculates the end time
+     * if the start time is set.
      */
-    private void onLayoutCompleted() {
+    private void onAppointmentTypeChanged() {
+        try {
+            calculateEndTime();
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
+    }
+
+    /**
+     * Calculates the end time if the start time and appointment type are set.
+     *
+     * @throws OpenVPMSException for any error
+     */
+    private void calculateEndTime() {
+        Property startTime = getProperty("startTime");
+        Object value = startTime.getValue();
         Party schedule = (Party) getParticipant("schedule");
-        AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        editor.setSchedule(schedule);
+        AppointmentTypeParticipationEditor editor
+                = getAppointmentTypeEditor();
+        Entity appointmentType = editor.getEntity();
+        if (value instanceof Date && schedule != null
+                && appointmentType != null) {
+            Date start = (Date) value;
+            Date end = AppointmentRules.calculateEndTime(start,
+                                                         schedule,
+                                                         appointmentType);
+            Property endTime = getProperty("endTime");
+            endTime.setValue(end);
+        }
     }
 
     /**
@@ -152,60 +152,7 @@ public class AppointmentActEditor extends AbstractActEditor {
                 "appointmentType");
     }
 
-    /**
-     * Helper to return the no. of slots for an appointment type.
-     *
-     * @param appointmentType the appointment type
-     * @return the no. of slots, or <code>0</code> if unknown
-     */
-    private int getSlots(IMObjectReference appointmentType) {
-        int noSlots = 0;
-        EntityBean schedule = getSchedule();
-        EntityRelationship relationship = schedule.getRelationship(
-                appointmentType);
-        if (relationship != null) {
-            IMObjectBean bean = new IMObjectBean(relationship);
-            noSlots = bean.getInt("noSlots");
-        }
-        return noSlots;
-    }
-
-    /**
-     * Helper to return the schedule, wrapped in a bean.
-     *
-     * @return the schedule, or <code>null</code> if none is available
-     */
-    private EntityBean getSchedule() {
-        IMObjectReference ref = getParticipantRef("schedule");
-        Entity schedule = (Entity) IMObjectHelper.getObject(ref);
-        if (schedule != null) {
-            return new EntityBean(schedule);
-        }
-        return null;
-    }
-
     private class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Apply the layout strategy.
-         * <p/>
-         * This renders an object in a <code>Component</code>, using a factory
-         * to create the child components.
-         *
-         * @param object     the object to apply
-         * @param properties the object's properties
-         * @param parent
-         * @param context    the layout context
-         * @return the component containing the rendered <code>object</code>
-         */
-        @Override
-        public Component apply(IMObject object, PropertySet properties,
-                               IMObject parent, LayoutContext context) {
-            Component component = super.apply(object, properties, parent,
-                                              context);
-            onLayoutCompleted();
-            return component;
-        }
 
         /**
          * Creates a component for a property. This maintains a cache of created
