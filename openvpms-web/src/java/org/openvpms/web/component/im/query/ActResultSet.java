@@ -63,9 +63,9 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     private final IConstraint _statuses;
 
     /**
-     * The start-time criteria. May be <code>null</code>.
+     * The time criteria. May be <code>null</code>.
      */
-    private final NodeConstraint _startTime;
+    private final IConstraint _times;
 
     /**
      * The logger.
@@ -135,6 +135,29 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
                         String[] statuses, boolean exclude,
                         IConstraint constraints, int rows,
                         SortConstraint[] sort) {
+        this(participants, archetypes, createTimeConstraint(from, to),
+             statuses, exclude, constraints, rows, sort);
+    }
+
+    /**
+     * Construct a new <code>ActResultSet</code>.
+     *
+     * @param participants the participant constraints
+     * @param archetypes   the act archetype constraint
+     * @param times        the time constraints. May be <code>null</code>
+     * @param statuses     the act statuses. If empty, indicates all acts
+     * @param exclude      if <code>true</code> exclude acts with status in
+     *                     <code>statuses</code>; otherwise include them.
+     * @param constraints  additional query constraints. May be
+     *                     <code<null</code>
+     * @param rows         the maximum no. of rows per page
+     * @param sort         the sort criteria. May be <code>null</code>
+     */
+    public ActResultSet(ParticipantConstraint[] participants,
+                        BaseArchetypeConstraint archetypes,
+                        IConstraint times, String[] statuses, boolean exclude,
+                        IConstraint constraints, int rows,
+                        SortConstraint[] sort) {
         super(constraints, rows, sort);
         _participants = participants;
         _archetypes = archetypes;
@@ -162,13 +185,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
         } else {
             _statuses = null;
         }
-
-        if (from != null && to != null) {
-            _startTime = new NodeConstraint("startTime", RelationalOp.BTW, from,
-                                            to);
-        } else {
-            _startTime = null;
-        }
+        _times = times;
     }
 
     /**
@@ -212,8 +229,8 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
         if (_statuses != null) {
             query.add(_statuses);
         }
-        if (_startTime != null) {
-            query.add(_startTime);
+        if (_times != null) {
+            query.add(_times);
         }
 
         for (ParticipantConstraint participant : _participants) {
@@ -225,6 +242,22 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             query.add(constraints);
         }
         return query;
+    }
+
+    /**
+     * Helper to create a constraint on startTime, if the from and to dates
+     * are non-null.
+     *
+     * @param from the act start-from date. May be <code>null</code>
+     * @param to   the act start-to date. May be <code>null</code>
+     * @return a new constraint, if both dates are non-null, otherwise
+     *         <code>null</code>
+     */
+    private static NodeConstraint createTimeConstraint(Date from, Date to) {
+        if (from != null && to != null) {
+            return new NodeConstraint("startTime", RelationalOp.BTW, from, to);
+        }
+        return null;
     }
 
 }

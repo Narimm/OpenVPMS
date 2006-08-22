@@ -50,7 +50,7 @@ public class RelationshipHelper {
             if (object instanceof EntityRelationship) {
                 EntityRelationship relationship = (EntityRelationship) object;
                 Date end = relationship.getActiveEndTime();
-                if (end == null || end.compareTo(date) >= 0) {
+                if (end == null || end.getTime() >= date.getTime()) {
                     result.add(relationship);
                 }
             }
