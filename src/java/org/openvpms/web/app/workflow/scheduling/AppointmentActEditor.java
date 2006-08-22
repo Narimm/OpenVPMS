@@ -50,6 +50,12 @@ import java.util.Date;
 public class AppointmentActEditor extends AbstractActEditor {
 
     /**
+     * Listener for modifications to the endTime property.
+     */
+    private final ModifiableListener _endTimeListener;
+
+
+    /**
      * Construct a new <code>AppointmentActEditor</code>.
      *
      * @param act     the act to edit
@@ -69,6 +75,14 @@ public class AppointmentActEditor extends AbstractActEditor {
                 onStartTimeChanged();
             }
         });
+
+        Property endTime = getProperty("endTime");
+        _endTimeListener = new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onEndTimeChanged();
+            }
+        };
+        endTime.addModifiableListener(_endTimeListener);
     }
 
     /**
@@ -108,6 +122,23 @@ public class AppointmentActEditor extends AbstractActEditor {
     }
 
     /**
+     * Invoked when the end time changes. Sets the value to start time if
+     * end time < start time.
+     */
+    private void onEndTimeChanged() {
+        Object startValue = getProperty("startTime").getValue();
+        Property end = getProperty("endTime");
+        Object endValue = end.getValue();
+        if (startValue instanceof Date && endValue instanceof Date) {
+            Date startTime = (Date) startValue;
+            Date endTime = (Date) endValue;
+            if (endTime.compareTo(startTime) < 0) {
+                end.setValue(startTime);
+            }
+        }
+    }
+
+    /**
      * Invoked when the appointment type changes. Calculates the end time
      * if the start time is set.
      */
@@ -138,7 +169,9 @@ public class AppointmentActEditor extends AbstractActEditor {
                                                          schedule,
                                                          appointmentType);
             Property endTime = getProperty("endTime");
+            endTime.removeModifiableListener(_endTimeListener);
             endTime.setValue(end);
+            endTime.addModifiableListener(_endTimeListener);
         }
     }
 

@@ -22,9 +22,13 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+
+import java.util.Date;
 
 
 /**
@@ -46,14 +50,32 @@ public class TaskActEditor extends AbstractActEditor {
                          LayoutContext context) {
         super(act, parent, context);
         initParticipant("worklist", Context.getInstance().getWorkList());
+
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
             startTime.setValue(Context.getInstance().getScheduleDate());
         }
+        startTime.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onStartTimeChanged();
+            }
+        });
+
         Property endTime = getProperty("endTime");
         if (endTime.getValue() == null) {
             endTime.setValue(Context.getInstance().getScheduleDate());
         }
+        endTime.addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onEndTimeChanged();
+            }
+        });
+
+        getProperty("status").addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onStatusChanged();
+            }
+        });
     }
 
     /**
@@ -73,6 +95,69 @@ public class TaskActEditor extends AbstractActEditor {
      */
     private TaskTypeParticipationEditor getTaskTypeEditor() {
         return (TaskTypeParticipationEditor) getEditor("taskType");
+    }
+
+    /**
+     * Invoked when the status changes. Sets the end time to today if the
+     * status is 'Completed' or 'Cancelled'.
+     */
+    private void onStatusChanged() {
+        Property status = getProperty("status");
+        String value = (String) status.getValue();
+        if ("Completed".equals(value) || "Cancelled".equals(value)) {
+            Property endTime = getProperty("endTime");
+            endTime.setValue(new Date());
+        }
+    }
+
+    /**
+     * Invoked when the start time changes. Sets the value to end time if
+     * start time > end time.
+     */
+    private void onStartTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (start.compareTo(end) > 0) {
+                getProperty("startTime").setValue(end);
+            }
+        }
+    }
+
+    /**
+     * Invoked when the end time changes. Sets the value to start time if
+     * end time < start time.
+     */
+    private void onEndTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (end.compareTo(start) < 0) {
+                getProperty("endTime").setValue(start);
+            }
+        }
+    }
+
+    /**
+     * Returns the start time.
+     *
+     * @return the start time. May be <code>null</code>
+     */
+    private Date getStartTime() {
+        Property property = getProperty("startTime");
+        Object value = property.getValue();
+        return (value instanceof Date) ? (Date) value : null;
+    }
+
+    /**
+     * Returns the end time.
+     *
+     * @return the end time. May be <code>null</code>
+     */
+    private Date getEndTime() {
+        Property property = getProperty("endTime");
+        Object value = property.getValue();
+        return (value instanceof Date) ? (Date) value : null;
     }
 
 }

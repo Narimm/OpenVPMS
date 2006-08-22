@@ -223,7 +223,8 @@ public abstract class WorkflowQuery extends ActQuery {
      */
     @Override
     protected Date getStartTo() {
-        long end = getStartFrom().getTime() + DateUtils.MILLIS_IN_DAY;
+        long end = getStartFrom().getTime() + DateUtils.MILLIS_IN_DAY
+                - DateUtils.MILLIS_IN_SECOND;
         return new Date(end);
     }
 
@@ -235,6 +236,19 @@ public abstract class WorkflowQuery extends ActQuery {
      */
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
+        ParticipantConstraint[] participants = getParticipantConstraints();
+        return new ActResultSet(participants, getArchetypes(), getStartFrom(),
+                                getStartTo(), getStatuses(), excludeStatuses(),
+                                getConstraints(), ArchetypeQuery.ALL_ROWS,
+                                sort);
+    }
+
+    /**
+     * Returns the participant constraints.
+     *
+     * @return the participant constraints
+     */
+    protected ParticipantConstraint[] getParticipantConstraints() {
         ParticipantConstraint[] participants;
         ParticipantConstraint participation = getParticipantConstraint();
 
@@ -246,10 +260,7 @@ public abstract class WorkflowQuery extends ActQuery {
         } else {
             participants = new ParticipantConstraint[]{participation};
         }
-        return new ActResultSet(participants, getArchetypes(), getStartFrom(),
-                                getStartTo(), getStatuses(), excludeStatuses(),
-                                getConstraints(), ArchetypeQuery.ALL_ROWS,
-                                sort);
+        return participants;
     }
 
     /**
