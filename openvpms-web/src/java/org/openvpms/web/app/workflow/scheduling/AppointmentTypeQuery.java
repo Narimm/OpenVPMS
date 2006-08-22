@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.scheduling;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -49,8 +49,8 @@ public class AppointmentTypeQuery extends AbstractQuery<IMObject> {
 
 
     /**
-     * Construct a new <code>AppointmentQuery</code> that queries IMObjects with
-     * the specified criteria.
+     * Construct a new <code>AppointmentTypeQuery</code> that queries IMObjects
+     * with the specified criteria.
      *
      * @param schedule the schedule. May be <code>null</code>
      */
@@ -96,10 +96,10 @@ public class AppointmentTypeQuery extends AbstractQuery<IMObject> {
     }
 
     /**
-     * Filter patients associated with a customer.
+     * Filter appointment types associated with a schedule.
      *
-     * @return a list of patients associated with the customer that matches the
-     *         specified criteria
+     * @return a list of appointment types associated with the schedule that
+     *         matches the specified criteria
      */
     private List<IMObject> filterForSchedule() {
         List<IMObject> types = getAppointmentTypes(_schedule);

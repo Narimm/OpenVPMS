@@ -511,7 +511,9 @@ public abstract class AbstractIMObjectEditor
             @Override
             protected Component createComponent() {
                 _lookups.clear();
-                return super.createComponent();
+                Component component = super.createComponent();
+                onLayoutCompleted();
+                return component;
             }
 
             protected LayoutContext getLayoutContext() {
@@ -566,6 +568,18 @@ public abstract class AbstractIMObjectEditor
         firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);
     }
 
+    /**
+     * Invoked when layout has completed. This can be used to perform
+     * processing that requires all editors to be created.
+     */
+    protected void onLayoutCompleted() {
+    }
+
+    /**
+     * Invoked to update derived fields.
+     *
+     * @param modified the modified object.
+     */
     protected void updateDerivedFields(Modifiable modified) {
         if (modified instanceof Property) {
             _editors.removeModifiableListener(_derivedFieldRefresher);

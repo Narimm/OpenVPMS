@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,33 +31,31 @@ import org.openvpms.web.component.im.query.Query;
 
 
 /**
- * Participation editor for appointment types.
+ * Participation editor for task types.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-08-15 06:42:15Z $
  */
-public class AppointmentTypeParticipationEditor
-        extends AbstractParticipationEditor {
+public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
 
     /**
-     * The schedule, used to constrain appointment types. Nay be
+     * The work list, used to constrain task types types. Nay be
      * <code>null</code>.
      */
-    private Party _schedule;
+    private Party _workList;
 
 
     /**
-     * Construct a new <code>PatientParticipationEditor</code>.
+     * Construct a new <code>TaskTypeParticipationEditor</code>.
      *
      * @param participation the object to edit
      * @param parent        the parent act
      * @param context       the layout context. May be <code>null</code>
      */
-    public AppointmentTypeParticipationEditor(Participation participation,
-                                              Act parent,
-                                              LayoutContext context) {
+    public TaskTypeParticipationEditor(Participation participation,
+                                       Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (!TypeHelper.isA(participation, "participation.appointmentType")) {
+        if (!TypeHelper.isA(participation, "participation.taskType")) {
             throw new IllegalArgumentException(
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
@@ -65,12 +63,12 @@ public class AppointmentTypeParticipationEditor
     }
 
     /**
-     * Sets the schedule, used to constrain appointment types.
+     * Sets the work list, used to constrain task types.
      *
-     * @param schedule the schedule. May be <code>null</code>
+     * @param workList the work list. May be <code>null</code>
      */
-    public void setSchedule(Party schedule) {
-        _schedule = schedule;
+    public void setWorkList(Party workList) {
+        _workList = workList;
     }
 
     /**
@@ -86,7 +84,7 @@ public class AppointmentTypeParticipationEditor
 
             @Override
             protected Query<IMObject> createQuery() {
-                return new AppointmentTypeQuery(_schedule);
+                return new TaskTypeQuery(_workList);
             }
         };
     }

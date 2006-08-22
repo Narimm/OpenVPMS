@@ -56,16 +56,6 @@ import java.util.List;
 public class DefaultActQuery extends ActQuery {
 
     /**
-     * The participant short name.
-     */
-    private final String _participant;
-
-    /**
-     * The entity participation short name;
-     */
-    private final String _participation;
-
-    /**
      * Determines if acts should be filtered on type.
      */
     private final boolean _selectType;
@@ -145,11 +135,9 @@ public class DefaultActQuery extends ActQuery {
                            String participation, String entityName,
                            String conceptName, List<Lookup> statusLookups,
                            String excludeStatus) {
-        super(entity, entityName, conceptName,
+        super(entity, participant, participation, entityName, conceptName,
               statusLookups, excludeStatus);
         _selectType = false;
-        _participant = participant;
-        _participation = participation;
     }
 
     /**
@@ -167,10 +155,9 @@ public class DefaultActQuery extends ActQuery {
     public DefaultActQuery(Entity entity, String participant,
                            String participation, String[] shortNames,
                            List<Lookup> statusLookups, String excludeStatus) {
-        super(entity, shortNames, statusLookups, excludeStatus);
+        super(entity, participant, participation, shortNames, statusLookups,
+              excludeStatus);
         _selectType = true;
-        _participant = participant;
-        _participation = participation;
     }
 
     /**
@@ -187,9 +174,8 @@ public class DefaultActQuery extends ActQuery {
     public DefaultActQuery(Entity entity, String participant,
                            String participation, String entityName,
                            String conceptName, String status) {
-        super(entity, entityName, conceptName, status);
-        _participant = participant;
-        _participation = participation;
+        super(entity, participant, participation, entityName, conceptName,
+              status);
         _selectType = true;
     }
 
@@ -206,9 +192,7 @@ public class DefaultActQuery extends ActQuery {
     public DefaultActQuery(Entity entity, String participant,
                            String participation, String[] shortNames,
                            String[] statuses) {
-        super(entity, shortNames, statuses);
-        _participant = participant;
-        _participation = participation;
+        super(entity, participant, participation, shortNames, statuses);
         _selectType = true;
     }
 
@@ -333,11 +317,10 @@ public class DefaultActQuery extends ActQuery {
      * @return a new result set
      */
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        ParticipantConstraint participant = new ParticipantConstraint(
-                _participant, _participation, getEntityId());
-        return new ActResultSet(participant, getArchetypes(), getStartFrom(),
-                                getStartTo(), getStatuses(), excludeStatuses(),
-                                getConstraints(), getMaxRows(), sort);
+        return new ActResultSet(getParticipantConstraint(), getArchetypes(),
+                                getStartFrom(), getStartTo(), getStatuses(),
+                                excludeStatuses(), getConstraints(),
+                                getMaxRows(), sort);
     }
 
 

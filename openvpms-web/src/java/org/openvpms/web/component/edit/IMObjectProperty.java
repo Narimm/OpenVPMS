@@ -400,8 +400,8 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * @param message the error message
      */
     private void addError(String message) {
-        ValidationError error = new ValidationError(_descriptor.getName(),
-                                                    message);
+        ValidationError error = new ValidationError(
+                _descriptor.getDisplayName(), message);
         if (_errors == null) {
             _errors = new ArrayList<ValidationError>();
         }

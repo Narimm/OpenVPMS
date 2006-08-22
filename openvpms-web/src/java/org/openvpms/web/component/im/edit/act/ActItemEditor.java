@@ -18,9 +18,7 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -30,7 +28,6 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -205,6 +202,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
     /**
      * Invoked when layout has completed.
      */
+    @Override
     protected void onLayoutCompleted() {
         final ProductParticipationEditor product = getProductEditor();
         PatientParticipationEditor patient = getPatientEditor();
@@ -225,27 +223,6 @@ public abstract class ActItemEditor extends AbstractActEditor {
      * Act item layout strategy.
      */
     protected class LayoutStrategy extends AbstractLayoutStrategy {
-
-        /**
-         * Apply the layout strategy.
-         * <p/>
-         * This renders an object in a <code>Component</code>, using a factory
-         * to create the child components.
-         *
-         * @param object     the object to apply
-         * @param properties the object's properties
-         * @param parent
-         * @param context    the layout context
-         * @return the component containing the rendered <code>object</code>
-         */
-        @Override
-        public Component apply(IMObject object, PropertySet properties,
-                               IMObject parent, LayoutContext context) {
-            Component component = super.apply(object, properties, parent,
-                                              context);
-            onLayoutCompleted();
-            return component;
-        }
 
         /**
          * Returns a node filter to filter nodes.

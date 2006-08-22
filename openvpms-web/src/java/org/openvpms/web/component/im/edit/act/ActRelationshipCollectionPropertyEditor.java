@@ -101,7 +101,7 @@ public class ActRelationshipCollectionPropertyEditor
         // @todo - no support for multiple relationship archetypes
         NodeDescriptor descriptor = property.getDescriptor();
         _act = act;
-        _relationshipType = descriptor.getArchetypeRange()[0];
+        _relationshipType = DescriptorHelper.getShortNames(descriptor)[0];
     }
 
     /**

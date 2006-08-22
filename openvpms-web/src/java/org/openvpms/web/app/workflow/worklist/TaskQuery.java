@@ -16,27 +16,28 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.worklist;
 
-import org.openvpms.web.app.workflow.scheduling.SchedulingWorkspace;
-import org.openvpms.web.app.workflow.worklist.WorkListWorkspace;
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.workflow.WorkflowQuery;
 
 
 /**
- * Workflow subsystem.
+ * Queries <em>act.customerTask</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class WorkflowSubsystem extends AbstractSubsystem {
+public class TaskQuery extends WorkflowQuery {
 
     /**
-     * Construct a new <code>WorkflowSubsystem</code>.
+     * Construct a new <code>AppointmentQuery</code>.
+     *
+     * @param schedule the schedule
      */
-    public WorkflowSubsystem() {
-        super("workflow");
-        addWorkspace(new SchedulingWorkspace());
-        addWorkspace(new WorkListWorkspace());
+    public TaskQuery(Party schedule) {
+        super(schedule, "worklist", "participation.worklist",
+              new String[]{"act.customerTask"}, new String[0]);
     }
+
 }

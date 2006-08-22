@@ -24,22 +24,19 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Appointment CRUD window.
+ * Workflow CRUD window.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentCRUDWindow extends AbstractCRUDWindow {
+public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
 
     /**
-     * Constructs a new <code>AbstractCRUDWindow</code>.
+     * Constructs a new <code>WorkflowCRUDWindow</code>.
      *
      * @param type       display name for the types of objects that this may
      *                   create
@@ -47,20 +44,8 @@ public class AppointmentCRUDWindow extends AbstractCRUDWindow {
      *                   If <code>null</code> subclass must override
      *                   {@link #getShortNames}
      */
-    public AppointmentCRUDWindow(String type, ShortNames shortNames) {
+    public WorkflowCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
-    }
-
-    /**
-     * Creates a new edit dialog.
-     *
-     * @param editor  the editor
-     * @param context the layout context
-     */
-    @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor,
-                                          LayoutContext context) {
-        return new AppointmentEditDialog(editor, context);
     }
 
     /**

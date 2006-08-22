@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
@@ -78,7 +78,7 @@ public class SchedulingWorkspace extends ActWorkspace {
         Component acts = getActs(browser);
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "WorklflowWorkspace.Layout", window.getComponent(), acts);
+                "WorkflowWorkspace.Layout", window.getComponent(), acts);
     }
 
     /**

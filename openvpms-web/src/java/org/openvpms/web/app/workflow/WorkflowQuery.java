@@ -32,9 +32,9 @@ import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -66,12 +66,12 @@ import java.util.List;
 
 
 /**
- * Queries <em>act.customerAppointment</em> acts.
+ * Query for workflow acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentQuery extends ActQuery {
+public abstract class WorkflowQuery extends ActQuery {
 
     /**
      * The date.
@@ -101,12 +101,18 @@ public class AppointmentQuery extends ActQuery {
 
 
     /**
-     * Construct a new <code>AppointmentQuery</code>.
+     * Constructs a new <code>WorkflowQuery</code>.
      *
-     * @param schedule the schedule
+     * @param entity        the entity to search for
+     * @param participant   the partcipant node name
+     * @param participation the entity participation short name
+     * @param shortNames    the act short names
+     * @param statuses      the act statuses to search on. May be empty
      */
-    public AppointmentQuery(Party schedule) {
-        super(schedule, new String[]{"act.customerAppointment"}, new String[0]);
+    public WorkflowQuery(Entity entity, String participant,
+                         String participation, String[] shortNames,
+                         String[] statuses) {
+        super(entity, participant, participation, shortNames, statuses);
     }
 
     /**
@@ -230,14 +236,15 @@ public class AppointmentQuery extends ActQuery {
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
         ParticipantConstraint[] participants;
-        ParticipantConstraint schedule = new ParticipantConstraint(
-                "schedule", "participation.schedule", getEntityId());
+        ParticipantConstraint participation = getParticipantConstraint();
+
         if (_clinician != null) {
             ParticipantConstraint clinician = new ParticipantConstraint(
                     "clinician", "participation.clinician", _clinician);
-            participants = new ParticipantConstraint[]{schedule, clinician};
+            participants = new ParticipantConstraint[]{participation,
+                                                       clinician};
         } else {
-            participants = new ParticipantConstraint[]{schedule};
+            participants = new ParticipantConstraint[]{participation};
         }
         return new ActResultSet(participants, getArchetypes(), getStartFrom(),
                                 getStartTo(), getStatuses(), excludeStatuses(),

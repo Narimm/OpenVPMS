@@ -16,13 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -34,7 +35,6 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -46,7 +46,13 @@ import org.openvpms.web.resource.util.Messages;
 public class WorkListWorkspace extends ActWorkspace {
 
     /**
-     * Construct a new <code>SchedulingWorkspace</code>.
+     * Short name of acts that this may create.
+     */
+    private static final String ACT_SHORTNAME = "act.customerTask";
+
+
+    /**
+     * Construct a new <code>WorkListWorkspace</code>.
      */
     public WorkListWorkspace() {
         super("workflow", "worklist", "party", "party",
@@ -61,11 +67,11 @@ public class WorkListWorkspace extends ActWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        Context.getInstance().setSchedule((Party) object);
+        Context.getInstance().setWorkList((Party) object);
         Party party = (Party) object;
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
-        AppointmentQuery query = (AppointmentQuery) getQuery();
+        TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
             Context.getInstance().setScheduleDate(query.getDate());
         }
@@ -78,6 +84,7 @@ public class WorkListWorkspace extends ActWorkspace {
      * @param window  the CRUD window
      * @return a new workspace split pane
      */
+    @Override
     protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
         Component acts = getActs(browser);
         return SplitPaneFactory.create(
@@ -91,9 +98,9 @@ public class WorkListWorkspace extends ActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow createCRUDWindow() {
-        String type = Messages.get("workflow.scheduling.createtype");
-        ShortNameList shortNames = new ShortNameList("act.customerAppointment");
-        return new AppointmentCRUDWindow(type, shortNames);
+        String type = DescriptorHelper.getDisplayName(ACT_SHORTNAME);
+        ShortNameList shortNames = new ShortNameList(ACT_SHORTNAME);
+        return new TaskCRUDWindow(type, shortNames);
     }
 
     /**
@@ -103,7 +110,7 @@ public class WorkListWorkspace extends ActWorkspace {
      * @return a new query
      */
     protected ActQuery createQuery(Party party) {
-        return new AppointmentQuery(party);
+        return new TaskQuery(party);
     }
 
     /**
@@ -117,7 +124,7 @@ public class WorkListWorkspace extends ActWorkspace {
         LayoutContext context = new DefaultLayoutContext();
         TableComponentFactory factory = new TableComponentFactory(context);
         context.setComponentFactory(factory);
-        return new AppointmentTableModel(context);
+        return new TaskTableModel(context);
     }
 
     /**

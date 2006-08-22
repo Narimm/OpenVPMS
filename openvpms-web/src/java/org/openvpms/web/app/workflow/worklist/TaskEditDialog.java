@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
@@ -44,12 +44,12 @@ import java.util.List;
 
 
 /**
- * Edit dialog for appointment acts.
+ * Edit dialog for task acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentEditDialog extends EditDialog {
+public class TaskEditDialog extends EditDialog {
 
     /**
      * Construct a new <code>AppointmentEditDialog</code>.
@@ -57,7 +57,7 @@ public class AppointmentEditDialog extends EditDialog {
      * @param editor  the editor
      * @param context the layout context
      */
-    public AppointmentEditDialog(IMObjectEditor editor, LayoutContext context) {
+    public TaskEditDialog(IMObjectEditor editor, LayoutContext context) {
         super(editor, context);
     }
 
@@ -66,7 +66,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onApply() {
-        if (!checkForOverlappingAppointment(false)) {
+        if (!checkForOverlappingTask(false)) {
             super.onApply();
         }
     }
@@ -76,7 +76,7 @@ public class AppointmentEditDialog extends EditDialog {
      */
     @Override
     protected void onOK() {
-        if (!checkForOverlappingAppointment(true)) {
+        if (!checkForOverlappingTask(true)) {
             super.onOK();
         }
     }
@@ -92,7 +92,7 @@ public class AppointmentEditDialog extends EditDialog {
      * @return <code>true</code> if there are overlapping appointments, otherwise
      *         <code>false</code>
      */
-    private boolean checkForOverlappingAppointment(final boolean close) {
+    private boolean checkForOverlappingTask(final boolean close) {
         final IMObjectEditor editor = getEditor();
         IMObject object = editor.getObject();
         ActBean appointment = new ActBean((Act) object);

@@ -124,6 +124,7 @@ public class TimePropertyTransformer extends PropertyTransformer {
     private Date parse(String value) throws ValidationException {
         Date result;
         DateFormat format = TimeFormatter.getFormat(true);
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
         try {
             result = format.parse(value);
         } catch (ParseException exception) {
