@@ -53,7 +53,7 @@ public class TaskActEditor extends AbstractActEditor {
 
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
-            startTime.setValue(Context.getInstance().getScheduleDate());
+            startTime.setValue(Context.getInstance().getWorkListDate());
         }
         startTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -63,7 +63,7 @@ public class TaskActEditor extends AbstractActEditor {
 
         Property endTime = getProperty("endTime");
         if (endTime.getValue() == null) {
-            endTime.setValue(Context.getInstance().getScheduleDate());
+            endTime.setValue(Context.getInstance().getWorkListDate());
         }
         endTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {

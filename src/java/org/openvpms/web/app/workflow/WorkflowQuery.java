@@ -18,10 +18,12 @@
 
 package org.openvpms.web.app.workflow;
 
+import echopointng.DateChooser;
 import echopointng.DateField;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -58,10 +60,15 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 
@@ -147,12 +154,49 @@ public abstract class WorkflowQuery extends ActQuery {
      */
     @Override
     protected void doLayout(Component container) {
+        Button prevWeek = ButtonFactory.create(
+                null, "date.previousWeek", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDays(-7);
+            }
+        });
+        Button prevDay = ButtonFactory.create(
+                null, "date.previousDay", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDays(-1);
+            }
+        });
         _date = DateFieldFactory.create();
+        Button currentDay = ButtonFactory.create(
+                null, "date.currentDay", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDays(0);
+            }
+        });
+        Button nextDay = ButtonFactory.create(
+                null, "date.nextDay", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDays(1);
+            }
+        });
+        Button nextWeek = ButtonFactory.create(
+                null, "date.nextWeek", new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                addDays(7);
+            }
+        });
+        _date.getDateChooser().addPropertyChangeListener(
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent event) {
+                        onDateChanged();
+                    }
+                });
+
         Label label = LabelFactory.create("clinician");
         _name = TextComponentFactory.create();
         _nameListener = new DocumentListener() {
             public void documentUpdate(DocumentEvent event) {
-                onNameUpdated();
+                onNameChanged();
             }
         };
         _name.getDocument().addDocumentListener(_nameListener);
@@ -169,7 +213,9 @@ public abstract class WorkflowQuery extends ActQuery {
             }
         });
         select.setText(ShortcutHelper.getLocalisedText("button.select"));
-        container.add(_date);
+        Row row = RowFactory.create("CellSpacing", prevWeek, prevDay, _date,
+                                    currentDay, nextDay, nextWeek);
+        container.add(row);
         container.add(label);
         container.add(_name);
         container.add(select);
@@ -264,9 +310,34 @@ public abstract class WorkflowQuery extends ActQuery {
     }
 
     /**
+     * Invoked to change the selected date.
+     *
+     * @param days the no. of days to add. <code>0</code> indicates current date
+     */
+    private void addDays(int days) {
+        DateChooser dateChooser = _date.getDateChooser();
+        Calendar calendar;
+        if (days == 0) {
+            calendar = new GregorianCalendar();
+            calendar.setTime(new Date());
+        } else {
+            calendar = dateChooser.getSelectedDate();
+            calendar.add(Calendar.DAY_OF_MONTH, days);
+        }
+        _date.getDateChooser().setSelectedDate(calendar);
+    }
+
+    /**
+     * Invoked when the date is updated.
+     */
+    private void onDateChanged() {
+        onQuery();
+    }
+
+    /**
      * Invoked when the clinician name is updated.
      */
-    private void onNameUpdated() {
+    private void onNameChanged() {
         String name = _name.getText();
         if (StringUtils.isEmpty(name)) {
             _clinician = null;
@@ -292,6 +363,7 @@ public abstract class WorkflowQuery extends ActQuery {
                 ErrorHelper.show(exception);
             }
         }
+        onQuery();
     }
 
     /**
@@ -308,6 +380,9 @@ public abstract class WorkflowQuery extends ActQuery {
             _clinician = null;
             name = null;
         }
+        _name.getDocument().removeDocumentListener(_nameListener);
         _name.setText(name);
+        _name.getDocument().addDocumentListener(_nameListener);
+        onQuery();
     }
 }
