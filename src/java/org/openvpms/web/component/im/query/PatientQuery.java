@@ -38,6 +38,7 @@ import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -254,7 +255,9 @@ public class PatientQuery extends AbstractQuery {
         for (EntityRelationship relationship : relationships) {
             if (TypeHelper.isA(relationship,
                                "entityRelationship.patientOwner")) {
-                if (source.equals(relationship.getSource())) {
+                if (source.equals(relationship.getSource()) &&
+                        ((relationship.getActiveEndTime() == null) ||
+                         (relationship.getActiveEndTime().after(new Date(System.currentTimeMillis()))))) {
                     IMObject object = IMObjectHelper.getObject(
                             relationship.getTarget());
                     if (object != null) {
