@@ -35,6 +35,12 @@
 
 package org.openvpms.web.component.edit;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LazyInitializationException;
@@ -52,11 +58,6 @@ import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 import org.springframework.context.ApplicationContext;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -190,6 +191,8 @@ public class IMObjectProperty implements Property, CollectionProperty {
             _descriptor.addChildToCollection(_object, value);
             modified();
         } catch (ValidationException exception) {
+            invalidate(exception);
+        } catch (DescriptorException exception) {
             invalidate(exception);
         }
     }
@@ -379,7 +382,11 @@ public class IMObjectProperty implements Property, CollectionProperty {
         if (_errors != null && !_errors.isEmpty()) {
             _errors.clear();
         }
-        addError(exception.getMessage());
+        Throwable cause = ExceptionUtils.getRootCause(exception);
+        if (cause != null)
+            addError(cause.getMessage());
+        else
+            addError(exception.getMessage());
     }
 
     /**
