@@ -74,10 +74,10 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
 
     /**
      * Constructs a new <code>BaseIMObjectTableModel</code>, using
-     * a new column model created by {@link #createTableColumnModel()}.
+     * a new column model created by {@link #createTableColumnModel}.
      */
     public BaseIMObjectTableModel() {
-        setTableColumnModel(createTableColumnModel());
+        setTableColumnModel(createTableColumnModel(false));
     }
 
     /**
@@ -92,11 +92,13 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
     /**
      * Creates a new column model.
      *
+     * @param showArchetype if <code>true</code> show the archetype
      * @return a new column model
      */
-    protected TableColumnModel createTableColumnModel() {
+    protected TableColumnModel createTableColumnModel(boolean showArchetype) {
         TableColumnModel model = new DefaultTableColumnModel();
-        for (int i = 1; i < COLUMNS.length; ++i) {
+        int index = (showArchetype) ? 0 : 1;
+        for (int i = index; i < COLUMNS.length; ++i) {
             TableColumn column = new TableColumn(i);
             String label = Messages.get(COLUMNS[i]);
 
