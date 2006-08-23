@@ -99,14 +99,17 @@ public class TaskActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the status changes. Sets the end time to today if the
-     * status is 'Completed' or 'Cancelled'.
+     * status is 'Completed' or 'Cancelled', or <code>null</code> if it is
+     * 'Pending'
      */
     private void onStatusChanged() {
         Property status = getProperty("status");
+        Property endTime = getProperty("endTime");
         String value = (String) status.getValue();
         if ("Completed".equals(value) || "Cancelled".equals(value)) {
-            Property endTime = getProperty("endTime");
             endTime.setValue(new Date());
+        } else if ("Pending".equals(value)) {
+            endTime.setValue(null);
         }
     }
 

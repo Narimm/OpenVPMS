@@ -45,15 +45,25 @@ public class BoundFormattedField extends TextField {
      * Construct a new <code>BoundFormattedField</code>.
      *
      * @param property the property to bind
+     * @param format   the formatter
+     */
+    public BoundFormattedField(Property property, Format format) {
+        _format = format;
+        Binder binder = new FormattingBinder(this, property);
+        binder.setField();
+    }
+
+    /**
+     * Construct a new <code>BoundFormattedField</code>.
+     *
+     * @param property the property to bind
      * @param columns  the no. of columns to display.
      * @param format   the formatter
      */
     public BoundFormattedField(Property property, int columns,
                                Format format) {
+        this(property, format);
         setWidth(new Extent(columns, Extent.EX));
-        _format = format;
-        Binder binder = new FormattingBinder(this, property);
-        binder.setField();
     }
 
     /**
@@ -72,6 +82,15 @@ public class BoundFormattedField extends TextField {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the format.
+     *
+     * @return the format
+     */
+    protected Format getFormat() {
+        return _format;
     }
 
     private class FormattingBinder extends TextComponentBinder {

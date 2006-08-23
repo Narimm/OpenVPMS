@@ -18,10 +18,9 @@
 
 package org.openvpms.web.component.util;
 
+import echopointng.DateField;
 import org.openvpms.web.component.bound.BoundDateField;
 import org.openvpms.web.component.edit.Property;
-
-import echopointng.DateField;
 
 import java.text.DateFormat;
 import java.text.FieldPosition;
@@ -68,8 +67,8 @@ public class DateFieldFactory extends ComponentFactory {
      */
     private static DateField init(DateField date) {
         setDefaultStyle(date.getDateChooser());
-        DateFormat edit = DateFormatter.getFormat(true);
-        DateFormat view = DateFormatter.getFormat(false);
+        DateFormat edit = DateFormatter.getDateFormat(true);
+        DateFormat view = DateFormatter.getDateFormat(false);
         DateFormat format = new DelegatingDateFormat(edit, view);
         date.setDateFormat(format);
         date.setPopUpAlwaysOnTop(true);

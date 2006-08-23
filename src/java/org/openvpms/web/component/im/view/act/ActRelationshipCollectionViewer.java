@@ -74,7 +74,18 @@ public class ActRelationshipCollectionViewer
             }
         }
         String[] shortNames = matches.toArray(new String[0]);
+        return createTableModel(shortNames);
+    }
 
+    /**
+     * Creates a new table model.
+     *
+     * @param shortNames the short names of the archetypes to create the model
+     *                   for
+     * @return a new table model
+     */
+    protected IMObjectTableModel<IMObject> createTableModel(
+            String[] shortNames) {
         return IMObjectTableModelFactory.create(shortNames, getLayoutContext());
     }
 

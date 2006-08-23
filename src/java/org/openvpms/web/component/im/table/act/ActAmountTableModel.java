@@ -154,7 +154,7 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
             case DATE_INDEX:
                 Date date = act.getActivityStartTime();
                 if (date != null) {
-                    result = DateFormatter.format(date, false);
+                    result = DateFormatter.formatDate(date, false);
                 }
                 break;
             case STATUS_INDEX:

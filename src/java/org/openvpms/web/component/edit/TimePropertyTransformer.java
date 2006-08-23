@@ -27,7 +27,6 @@ import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import static org.openvpms.component.business.service.archetype.ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype;
 import org.openvpms.web.component.util.DateFormatter;
-import org.openvpms.web.component.util.TimeFormatter;
 import org.openvpms.web.resource.util.Messages;
 
 import java.text.DateFormat;
@@ -123,7 +122,7 @@ public class TimePropertyTransformer extends PropertyTransformer {
      */
     private Date parse(String value) throws ValidationException {
         Date result;
-        DateFormat format = TimeFormatter.getFormat(true);
+        DateFormat format = DateFormatter.getTimeFormat(true);
         format.setTimeZone(TimeZone.getTimeZone("GMT"));
         try {
             result = format.parse(value);

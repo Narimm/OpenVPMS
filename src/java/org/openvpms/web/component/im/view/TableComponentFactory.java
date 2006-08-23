@@ -84,7 +84,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
         label.setText(value);
         TableLayoutData layout = new TableLayoutData();
         Alignment right = new Alignment(Alignment.RIGHT,
-                Alignment.DEFAULT);
+                                        Alignment.DEFAULT);
         layout.setAlignment(right);
         label.setLayoutData(layout);
         return label;
@@ -120,7 +120,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
         }
         if (value != null) {
             return NumberFormatter.format(value, property.getDescriptor(),
-                    false);
+                                          false);
         }
         return null;
     }
@@ -133,7 +133,7 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      */
     protected String getDateValue(Property property) {
         Date value = (Date) property.getValue();
-        return (value != null) ? DateFormatter.format(value, false) : null;
+        return (value != null) ? DateFormatter.formatDate(value, false) : null;
     }
 
 }

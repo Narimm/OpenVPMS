@@ -26,8 +26,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
+import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.TimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,7 +67,7 @@ public class AppointmentTableModel extends DescriptorTableModel<Act> {
             Date time = (Date) descriptor.getValue(object);
             String text = null;
             if (time != null) {
-                text = TimeFormatter.format(time, false);
+                text = DateFormatter.formatTime(time, false);
             }
             Label label = LabelFactory.create();
             label.setText(text);
