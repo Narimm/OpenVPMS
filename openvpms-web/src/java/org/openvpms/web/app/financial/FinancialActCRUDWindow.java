@@ -22,6 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
@@ -29,8 +30,6 @@ import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
@@ -112,18 +111,6 @@ public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
     }
 
     /**
-     * Creates a new table model.
-     *
-     * @param shortNames the short names of the archetypes to create the
-     *                   model for
-     * @return a new table model
-     */
-    protected IMObjectTableModel<IMObject> createItemsTableModel(
-            String[] shortNames, LayoutContext context) {
-        return IMObjectTableModelFactory.create(shortNames, context);
-    }
-
-    /**
      * Layout strategy that creates an {@link Viewer} for the items node.
      */
     private class LayoutStrategy extends ActLayoutStrategy {
@@ -162,28 +149,15 @@ public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
         }
 
         /**
-         * Browse an object.
+         * Browse an act.
          *
-         * @param object the object to browse.
+         * @param act the act to browse
          */
         @Override
-        protected void browse(IMObject object) {
-            onChildActSelected((FinancialAct) object);
-            super.browse(object);
+        protected void browse(Act act) {
+            onChildActSelected((FinancialAct) act);
+            super.browse(act);
         }
 
-
-        /**
-         * Creates a new table model.
-         *
-         * @param shortNames the short names of the archetypes to create the
-         *                   model for
-         * @return a new table model
-         */
-        @Override
-        protected IMObjectTableModel<IMObject> createTableModel(
-                String[] shortNames) {
-            return createItemsTableModel(shortNames, getLayoutContext());
-        }
     }
 }

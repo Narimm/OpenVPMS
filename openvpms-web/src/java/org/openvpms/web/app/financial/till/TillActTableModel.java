@@ -38,7 +38,7 @@ public class TillActTableModel extends ActAmountTableModel {
      * Construct a new <code>TillActTableModel</code>.
      */
     public TillActTableModel() {
-        super(false, true);
+        super(false, true, true);
     }
 
     /**

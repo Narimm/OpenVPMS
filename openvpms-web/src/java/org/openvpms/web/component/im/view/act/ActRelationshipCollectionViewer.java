@@ -18,21 +18,12 @@
 
 package org.openvpms.web.component.im.view.act;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Viewer for collections of {@link ActRelationship}s.
@@ -56,57 +47,25 @@ public class ActRelationshipCollectionViewer
     }
 
     /**
-     * Creates a new table model.
+     * Browse an object.
      *
-     * @return a new table model
+     * @param object the object to browse.
      */
     @Override
-    protected IMObjectTableModel<IMObject> createTableModel() {
-        NodeDescriptor descriptor = getProperty().getDescriptor();
-        Set<String> matches = new HashSet<String>();
-        String[] relationshipTypes = DescriptorHelper.getShortNames(descriptor);
-        for (String relationshipType : relationshipTypes) {
-            ArchetypeDescriptor relationship
-                    = DescriptorHelper.getArchetypeDescriptor(relationshipType);
-            NodeDescriptor target = relationship.getNodeDescriptor("target");
-            for (String shortName : target.getArchetypeRange()) {
-                matches.add(shortName);
-            }
+    protected void browse(IMObject object) {
+        ActRelationship relationship = (ActRelationship) object;
+        Act act = (Act) IMObjectHelper.getObject(relationship.getTarget());
+        if (act != null) {
+            browse(act);
         }
-        String[] shortNames = matches.toArray(new String[0]);
-        return createTableModel(shortNames);
     }
 
     /**
-     * Creates a new table model.
+     * Browse an act.
      *
-     * @param shortNames the short names of the archetypes to create the model
-     *                   for
-     * @return a new table model
+     * @param act the act to browse
      */
-    protected IMObjectTableModel<IMObject> createTableModel(
-            String[] shortNames) {
-        return IMObjectTableModelFactory.create(shortNames, getLayoutContext());
+    protected void browse(Act act) {
+        super.browse(act);
     }
-
-    /**
-     * Returns the objects to display.
-     *
-     * @return the objects to display
-     */
-    @Override
-    protected List<IMObject> getObjects() {
-        List<IMObject> objects = super.getObjects();
-        List<IMObject> result = new ArrayList<IMObject>();
-        for (IMObject object : objects) {
-            ActRelationship relationship = (ActRelationship) object;
-            IMObject target = IMObjectHelper.getObject(
-                    relationship.getTarget());
-            if (target != null) {
-                result.add(target);
-            }
-        }
-        return result;
-    }
-
 }
