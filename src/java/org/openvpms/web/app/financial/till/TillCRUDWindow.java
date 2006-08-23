@@ -48,7 +48,6 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -316,20 +315,6 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     protected void onChildActSelected(FinancialAct child) {
         _childAct = child;
         enableButtons(getObject() != null);
-    }
-
-    /**
-     * Creates a new table model.
-     *
-     * @param shortNames the short names of the archetypes to create the
-     *                   model for
-     * @return a new table model
-     */
-    @Override
-    protected IMObjectTableModel<IMObject> createItemsTableModel(
-            String[] shortNames, LayoutContext context) {
-        IMObjectTableModel model = new TillActTableModel();
-        return (IMObjectTableModel<IMObject>) model;
     }
 
     /**

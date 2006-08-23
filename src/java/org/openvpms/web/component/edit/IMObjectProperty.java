@@ -35,11 +35,6 @@
 
 package org.openvpms.web.component.edit;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +53,11 @@ import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 import org.springframework.context.ApplicationContext;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -301,7 +301,9 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * @param validator thhe validator
      */
     public boolean validate(Validator validator) {
+        List<ValidationError> errors = null;
         if (_errors == null) {
+            // determine if this is valid
             int minSize = getMinCardinality();
             if (minSize == 1 && getValue() == null) {
                 addError("node.error.required", _descriptor.getDisplayName());
@@ -316,12 +318,15 @@ public class IMObjectProperty implements Property, CollectionProperty {
                     addError("node.error.maxSize", _descriptor.getDisplayName(),
                              maxSize);
                 } else if (size != 0) {
+                    // don't cache any validation errors from collection objects
+                    // as these may be corrected without updating the status
+                    // of this property
                     IArchetypeService service
                             = ServiceHelper.getArchetypeService();
                     for (Object value : getValues()) {
                         IMObject object = (IMObject) value;
-                        _errors = ValidationHelper.validate(object, service);
-                        if (_errors != null) {
+                        errors = ValidationHelper.validate(object, service);
+                        if (errors != null) {
                             break;
                         }
                     }
@@ -336,9 +341,12 @@ public class IMObjectProperty implements Property, CollectionProperty {
             }
         }
         if (_errors != null) {
-            validator.add(this, _errors);
+            errors = _errors;
         }
-        return (_errors != null);
+        if (errors != null) {
+            validator.add(this, errors);
+        }
+        return (errors != null);
     }
 
     /**

@@ -127,9 +127,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      */
     protected IMObjectReference getParticipantRef(String name) {
         Property property = getProperty(name);
-        Participation participant = getParticipation(property);
-        if (participant != null) {
-            return participant.getEntity();
+        if (property != null) {
+            Participation participant = getParticipation(property);
+            if (participant != null) {
+                return participant.getEntity();
+            }
         }
         return null;
     }
