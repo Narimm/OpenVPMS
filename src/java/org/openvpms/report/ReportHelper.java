@@ -89,34 +89,41 @@ public class ReportHelper {
 
     /**
      * Helper to return a the value of a node, handling collection nodes.
+     * If the node doesn't exist, a localised message indicating this will
+     * be returned.
      *
      * @param name     the node name
      * @param resolver the node resolver
      * @return the node value
      */
     public static Object getValue(String name, NodeResolver resolver) {
-        NodeResolver.State state = resolver.resolve(name);
-        Object value = state.getValue();
         Object result = null;
-        if (value != null) {
-            if (state.getLeafNode() != null
-                    && state.getLeafNode().isCollection()) {
-                if (value instanceof Collection) {
-                    Collection<IMObject> values = (Collection<IMObject>) value;
-                    StringBuffer descriptions = new StringBuffer();
-                    for (IMObject object : values) {
-                        descriptions.append(ReportHelper.getValue(object));
-                        descriptions.append('\n');
+        try {
+            NodeResolver.State state = resolver.resolve(name);
+            Object value = state.getValue();
+            if (value != null) {
+                if (state.getLeafNode() != null
+                        && state.getLeafNode().isCollection()) {
+                    if (value instanceof Collection) {
+                        Collection<IMObject> values
+                                = (Collection<IMObject>) value;
+                        StringBuffer descriptions = new StringBuffer();
+                        for (IMObject object : values) {
+                            descriptions.append(ReportHelper.getValue(object));
+                            descriptions.append('\n');
+                        }
+                        result = descriptions.toString();
+                    } else {
+                        // single value collection.
+                        IMObject object = (IMObject) value;
+                        result = ReportHelper.getValue(object);
                     }
-                    result = descriptions.toString();
                 } else {
-                    // single value collection.
-                    IMObject object = (IMObject) value;
-                    result = ReportHelper.getValue(object);
+                    result = value;
                 }
-            } else {
-                result = value;
             }
+        } catch (IMObjectReportException exception) {
+            return exception.getLocalizedMessage();
         }
         return result;
     }

@@ -87,6 +87,7 @@ public class OpenOfficeIMObjectReportTestCase
         assertEquals("J", fields.get("firstName"));
         assertEquals("Zoo", fields.get("lastName"));
         assertEquals("2.00", fields.get("expression"));
+        assertEquals("Invalid node name: invalid", fields.get("invalid"));
     }
 
     /**
