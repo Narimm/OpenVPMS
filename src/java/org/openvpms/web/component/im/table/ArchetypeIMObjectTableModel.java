@@ -22,18 +22,19 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Default {@link IMObjectTableModel}, displaying the <code>IMObject</code>'s
- * name and description.
+ * {@link IMObjectTableModel}, displaying the <code>IMObject</code>'s
+ * archetype, name and description.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DefaultIMObjectTableModel<T extends IMObject>
+public class ArchetypeIMObjectTableModel<T extends IMObject>
         extends BaseIMObjectTableModel<T> {
 
     /**
-     * Construct a new <code>DefaultIMObjectTableModel</code>.
+     * Construct a new <code>ArchetypeIMObjectTableModel</code>.
      */
-    public DefaultIMObjectTableModel() {
+    public ArchetypeIMObjectTableModel() {
+        setTableColumnModel(createTableColumnModel(true));
     }
 }
