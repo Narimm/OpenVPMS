@@ -29,6 +29,8 @@ import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.im.view.act.ActRelationshipCollectionViewer;
@@ -110,6 +112,18 @@ public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
     }
 
     /**
+     * Creates a new table model.
+     *
+     * @param shortNames the short names of the archetypes to create the
+     *                   model for
+     * @return a new table model
+     */
+    protected IMObjectTableModel<IMObject> createItemsTableModel(
+            String[] shortNames, LayoutContext context) {
+        return IMObjectTableModelFactory.create(shortNames, context);
+    }
+
+    /**
      * Layout strategy that creates an {@link Viewer} for the items node.
      */
     private class LayoutStrategy extends ActLayoutStrategy {
@@ -147,7 +161,6 @@ public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
             super(property, parent);
         }
 
-
         /**
          * Browse an object.
          *
@@ -159,5 +172,18 @@ public class FinancialActCRUDWindow extends AbstractViewCRUDWindow {
             super.browse(object);
         }
 
+
+        /**
+         * Creates a new table model.
+         *
+         * @param shortNames the short names of the archetypes to create the
+         *                   model for
+         * @return a new table model
+         */
+        @Override
+        protected IMObjectTableModel<IMObject> createTableModel(
+                String[] shortNames) {
+            return createItemsTableModel(shortNames, getLayoutContext());
+        }
     }
 }

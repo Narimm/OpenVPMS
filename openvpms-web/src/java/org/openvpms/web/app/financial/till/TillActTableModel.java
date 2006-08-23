@@ -18,17 +18,12 @@
 
 package org.openvpms.web.app.financial.till;
 
-import java.math.BigDecimal;
-
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.layout.TableLayoutData;
-
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.NumberFormatter;
+import org.openvpms.web.component.util.DateFormatter;
+
+import java.util.Date;
 
 
 /**
@@ -44,5 +39,27 @@ public class TillActTableModel extends ActAmountTableModel {
      */
     public TillActTableModel() {
         super(false, true);
+    }
+
+    /**
+     * Returns the value found at the given coordinate within the table.
+     *
+     * @param object the object the object
+     * @param column
+     * @param row    the table row
+     */
+    @Override
+    protected Object getValue(IMObject object, int column, int row) {
+        Object result = null;
+        if (column == DATE_INDEX) {
+            Act act = (Act) object;
+            Date date = act.getActivityStartTime();
+            if (date != null) {
+                result = DateFormatter.formatDateTime(date, false);
+            }
+        } else {
+            result = super.getValue(object, column, row);
+        }
+        return result;
     }
 }

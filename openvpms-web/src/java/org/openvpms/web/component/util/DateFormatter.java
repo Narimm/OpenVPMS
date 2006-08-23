@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 
 
@@ -41,12 +42,27 @@ public class DateFormatter {
     /**
      * Date edit pattern.
      */
-    private static final String EDIT_PATTERN;
+    private static final String DATE_EDIT_PATTERN;
 
     /**
      * Date view pattern.
      */
-    private static final String VIEW_PATTERN;
+    private static final String DATE_VIEW_PATTERN;
+
+    /**
+     * Time edit pattern.
+     */
+    private static final String TIME_EDIT_PATTERN;
+
+    /**
+     * Time view pattern.
+     */
+    private static final String TIME_VIEW_PATTERN;
+
+    /**
+     * Date/time to generate a maximum width (in en locales).
+     */
+    private static final Date WIDE_DATE;
 
     /**
      * Format a date.
@@ -55,8 +71,8 @@ public class DateFormatter {
      * @param edit if <code>true</code> format the number for editing
      * @return the formatted date
      */
-    public static String format(Date date, boolean edit) {
-        return getFormat(edit).format(date);
+    public static String formatDate(Date date, boolean edit) {
+        return getDateFormat(edit).format(date);
     }
 
     /**
@@ -66,10 +82,10 @@ public class DateFormatter {
      *             return a format for viewing dates
      * @return a date format
      */
-    public static DateFormat getFormat(boolean edit) {
+    public static DateFormat getDateFormat(boolean edit) {
         DateFormat format;
         Locale locale = ApplicationInstance.getActive().getLocale();
-        String pattern = (edit) ? EDIT_PATTERN : VIEW_PATTERN;
+        String pattern = (edit) ? DATE_EDIT_PATTERN : DATE_VIEW_PATTERN;
         if (pattern == null) {
             if (edit) {
                 // specify SHORT style when parsing, so that 2 digit years
@@ -94,12 +110,102 @@ public class DateFormatter {
         return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
     }
 
-    static {
-        String edit = Messages.get("date.format.edit", true);
-        EDIT_PATTERN = (!StringUtils.isEmpty(edit)) ? edit : null;
+    /**
+     * Format a time.
+     *
+     * @param time the time to format
+     * @param edit if <code>true</code> format the number for editing
+     * @return the formatted date
+     */
+    public static String formatTime(Date time, boolean edit) {
+        return getTimeFormat(edit).format(time);
+    }
 
-        String view = Messages.get("date.format.view", true);
-        VIEW_PATTERN = (!StringUtils.isEmpty(view)) ? view : null;
+    /**
+     * Returns a time format.
+     *
+     * @param edit if <code>true</code> return a format for editing otherwise
+     *             return a format for viewing dates
+     * @return a date format
+     */
+    public static DateFormat getTimeFormat(boolean edit) {
+        DateFormat format;
+        Locale locale = ApplicationInstance.getActive().getLocale();
+        String pattern = (edit) ? TIME_EDIT_PATTERN : TIME_VIEW_PATTERN;
+        if (pattern == null) {
+            if (edit) {
+                // specify SHORT style when parsing, so that 2 digit years
+                // are handled correctly
+                format = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
+            } else {
+                format = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
+            }
+        } else {
+            format = new SimpleDateFormat(pattern, locale);
+        }
+        return format;
+    }
+
+    /**
+     * Returns a date-time format.
+     *
+     * @param edit if <code>true</code> return a format for editing otherwise
+     *             return a format for viewing date-times.
+     * @return a date-time format
+     */
+    public static DateFormat getDateTimeFormat(boolean edit) {
+        DateFormat format;
+        Locale locale = ApplicationInstance.getActive().getLocale();
+        if (edit) {
+            // specify SHORT style for dates when parsing, so that 2 digit years
+            // are handled correctly
+            format = DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                                                    DateFormat.SHORT, locale);
+        } else {
+            format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
+                                                    DateFormat.SHORT, locale);
+        }
+        return format;
+    }
+
+    /**
+     * Format a date-time.
+     *
+     * @param dateTime the date-time to format
+     * @param edit     if <code>true</code> format the date-time for editing
+     * @return the formatted date
+     */
+    public static String formatDateTime(Date dateTime, boolean edit) {
+        return getDateTimeFormat(edit).format(dateTime);
+    }
+
+    /**
+     * Helper to determine the no. of characters to display a date format.
+     *
+     * @param format the format
+     * @return the (approximate) no. of characters required to display a date
+     *         in the format
+     */
+    public static int getLength(DateFormat format) {
+        return format.format(WIDE_DATE).length();
+    }
+
+
+    static {
+        String dateEdit = Messages.get("date.format.edit", true);
+        DATE_EDIT_PATTERN = (!StringUtils.isEmpty(dateEdit)) ? dateEdit : null;
+
+        String dateView = Messages.get("date.format.view", true);
+        DATE_VIEW_PATTERN = (!StringUtils.isEmpty(dateView)) ? dateView : null;
+
+        String timeEdit = Messages.get("time.format.edit", true);
+        TIME_EDIT_PATTERN = (!StringUtils.isEmpty(timeEdit)) ? timeEdit : null;
+
+        String timeView = Messages.get("time.format.view", true);
+        TIME_VIEW_PATTERN = (!StringUtils.isEmpty(timeView)) ? timeView : null;
+
+        Calendar calendar = new GregorianCalendar(2006, 12, 30, 12, 59, 59);
+        WIDE_DATE = calendar.getTime();
     }
 
 }

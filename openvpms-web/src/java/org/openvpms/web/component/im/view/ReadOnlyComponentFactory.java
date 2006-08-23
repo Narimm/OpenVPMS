@@ -18,13 +18,9 @@
 
 package org.openvpms.web.component.im.view;
 
-import java.text.DateFormat;
-import java.text.Format;
-
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -32,6 +28,9 @@ import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.NumberFormatter;
 import org.openvpms.web.component.util.TextComponentFactory;
+
+import java.text.DateFormat;
+import java.text.Format;
 
 
 /**
@@ -85,8 +84,8 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
      * @return a component to display the datge
      */
     protected Component getDate(Property property) {
-        int maxColumns = 10;
-        DateFormat format = DateFormatter.getFormat(false);
+        DateFormat format = DateFormatter.getDateFormat(false);
+        int maxColumns = DateFormatter.getLength(format);
         return TextComponentFactory.create(property, maxColumns, format);
     }
 
