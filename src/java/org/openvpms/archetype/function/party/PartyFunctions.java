@@ -18,14 +18,15 @@
 
 package org.openvpms.archetype.function.party;
 
+import java.util.List;
+
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-
-import java.util.List;
 
 
 /**
@@ -114,6 +115,39 @@ public class PartyFunctions {
                     result.append(", ");
                 }
                 result.append(bean.getString(node));
+            }
+        }
+        return result.toString();
+    }
+    /**
+     * Returns a stringfield form of a party's identities.
+     *
+     * @param context the expression context. Expected to reference a party.
+     * @return the stringified form of the party's identities or
+     *         <code>null</code>
+     */
+    public static String identities(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+
+        StringBuffer result = new StringBuffer();
+
+        Party party = (Party) pointer.getValue();
+        for (EntityIdentity identity : party.getIdentities()) {
+            IMObjectBean bean = new IMObjectBean(identity);
+            if (bean.hasNode("name")) {
+                String name = bean.getString("name");
+                String displayName = bean.getDisplayName();
+                if (name != null) {
+                    if (result.length() != 0) {
+                        result.append(", ");
+                    }
+                    result.append(displayName);
+                    result.append(": ");
+                    result.append(name);
+                }
             }
         }
         return result.toString();

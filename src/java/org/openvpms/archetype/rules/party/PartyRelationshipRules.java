@@ -19,6 +19,8 @@
 package org.openvpms.archetype.rules.party;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -44,8 +46,8 @@ public class PartyRelationshipRules {
     
 
     /**
-     * Check the ownership and location records for a Patient and make sure they are valid 
-     * and only one is active.
+     * Check the relationship records for a Patient and make sure they are valid 
+     * and only one is active for each relationship type.
      * 
      * @param service
      *            the archetype service
@@ -58,16 +60,18 @@ public class PartyRelationshipRules {
         if (logger.isDebugEnabled()) {
             logger.debug("Executing PartyRelationship.checkPatientRelationships");
         }
+        Map<String, EntityRelationship> currentActives = new HashMap<String, EntityRelationship>();
         EntityRelationship currentActive = null;
         
-        // Loop through all the patient owner relationships.
-        // If one is new then assume it is the active ownership and set the ActiveEndTime on any others.
+        // Loop through all the patient relationships.
+        // If one is new then assume it is the active and set the ActiveEndTime on any others.
         // If more than 1 is new then set active to youngest activeStartTime. 
-        // If no new ownership and more than one active ownership relationship then set the one with the youngest 
+        // If no new relationship and more than one active relationship of same type then set the one with the youngest 
         // ActiveStartTime as Active. 
         for (EntityRelationship rel : party.getEntityRelationships()) {
-            if (rel.getArchetypeId().getShortName().equals("entityRelationship.patientOwner") &&
-                    (rel.getActiveEndTime() == null)) {
+            if (rel.getActiveEndTime() == null) {
+                String shortname = rel.getArchetypeId().getShortName();
+                currentActive = currentActives.get(shortname);
                 if (rel.isNew()) {
                     if (currentActive == null)
                         currentActive = rel;
@@ -85,40 +89,17 @@ public class PartyRelationshipRules {
                 else {
                     if (currentActive == null)
                         currentActive = rel;
-                    else if (!currentActive.isNew() && rel.getActiveStartTime().after(currentActive.getActiveStartTime())) {
+                    else if (currentActive.isNew())
+                        rel.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));                                               
+                    else if (rel.getActiveStartTime().after(currentActive.getActiveStartTime())) {
                         currentActive.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));
                         currentActive = rel;                        
                     }
-                }
-            }
-        }
-
-        // Loop through all the patient location relationships.
-        for (EntityRelationship rel : party.getEntityRelationships()) {
-            if (rel.getArchetypeId().getShortName().equals("entityRelationship.patientLocation") &&
-                    (rel.getActiveEndTime() == null)) {
-                if (rel.isNew()) {
-                    if (currentActive == null)
-                        currentActive = rel;
-                    else if (currentActive.isNew()) {
-                        if (rel.getActiveStartTime().after(currentActive.getActiveStartTime())) {
-                            currentActive.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));
-                            currentActive = rel;
-                        }
-                    }
-                    else {
-                        currentActive.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));
-                        currentActive = rel;
+                    else if (currentActive.getActiveStartTime().after(rel.getActiveStartTime())) {
+                        rel.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));                        
                     }
                 }
-                else {
-                    if (currentActive == null)
-                        currentActive = rel;
-                    else if (!currentActive.isNew() && rel.getActiveStartTime().after(currentActive.getActiveStartTime())) {
-                        currentActive.setActiveEndTime( new Date(System.currentTimeMillis() - 1000));
-                        currentActive = rel;                        
-                    }
-                }
+                currentActives.put(shortname,currentActive);
             }
         }
     }

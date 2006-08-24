@@ -28,14 +28,14 @@
 		<node name="taskType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.taskType" />
 		<node displayName="Started" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" />
-		<node displayName="Completed" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" />
+		<node displayName="Completed" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" />
 		<node displayName="Notes" name="description" type="java.lang.String" path="/description" />
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'Unresolved'">
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" >
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
-				<property name="source" value="lookup.appointmentStatus" />
+				<property name="source" value="lookup.taskStatus" />
 				<errorMessage>An error message</errorMessage>
 			</assertion>
 		</node>
