@@ -18,7 +18,7 @@
 <archetypes>
 	<archetype name="openvpms-common-entityIdentity.microchip.1.0" 
 		latest="true" primary="false"
-		type="org.openvpms.component.business.domain.im.common.EntityIdentity" displayName="Identity(Microchip)" >
+		type="org.openvpms.component.business.domain.im.common.EntityIdentity" displayName="Microchip" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
 		<node name="microchip" path="/identity" type="java.lang.String"
 			minCardinality="1" maxlength="15"/>
@@ -26,7 +26,6 @@
 			hidden="true" minCardinality="1" derived="true"
 			derivedValue="/identity" />
 		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" minCardinality="1" derived="true"
-			derivedValue="/identity" />
+			path="/description" minCardinality="0" />
 	</archetype>
 </archetypes>

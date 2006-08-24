@@ -39,7 +39,7 @@
 		<node displayName="Notes" name="description" type="java.lang.String" path="/description" />
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'Unresolved'">
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" >
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
 				<property name="source" value="lookup.appointmentStatus" />
