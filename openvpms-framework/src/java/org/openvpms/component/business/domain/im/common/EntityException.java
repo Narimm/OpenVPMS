@@ -46,7 +46,8 @@ public class EntityException extends OpenVPMSException {
         FailedToAddEntityRelationship,
         FailedToRemoveEntityRelationship,
         FailedToAddActRelationship,
-        FailedToRemoveActRelationship
+        FailedToRemoveActRelationship,
+        DuplicateEntityRelationship
     }
 
     /**
