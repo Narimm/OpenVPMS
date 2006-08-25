@@ -24,12 +24,12 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationError;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.spring.ServiceHelper;
@@ -97,15 +97,13 @@ public abstract class AbstractCollectionPropertyEditor
 
     /**
      * Returns the range of archetypes that the collection may contain.
+     * Any wildcards are expanded.
      *
      * @return the range of archetypes
      */
     public String[] getArchetypeRange() {
         NodeDescriptor descriptor = _property.getDescriptor();
-        if (!StringUtils.isEmpty(descriptor.getFilter())) {
-            return new String[]{descriptor.getFilter()};
-        }
-        return descriptor.getArchetypeRange();
+        return DescriptorHelper.getShortNames(descriptor);
     }
 
     /**

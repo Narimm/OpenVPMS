@@ -92,8 +92,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery() {
-                Query<IMObject> query = super.createQuery();
+            protected Query<IMObject> createQuery(String name) {
+                Query<IMObject> query = super.createQuery(name);
                 return getQuery(query);
             }
         };

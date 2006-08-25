@@ -20,6 +20,7 @@ package org.openvpms.web.component.subsystem;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
@@ -39,6 +40,7 @@ import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
@@ -171,8 +173,10 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
                 "AbstractViewWorkspace.Layout");
         Component heading = super.doLayout();
         Component selector = _selector.getComponent();
+        Row wrapper = RowFactory.create("AbstractViewWorkspace.Selector",
+                                        selector);
 
-        Column top = ColumnFactory.create(heading, selector);
+        Column top = ColumnFactory.create(heading, wrapper);
         _root.add(top);
         doLayout(_root);
         return _root;

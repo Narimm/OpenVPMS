@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.create.IMObjectCreator;
@@ -47,6 +48,8 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -65,12 +68,12 @@ public abstract class AbstractRelationshipEditor
     /**
      * Editor for the source of the relationship.
      */
-    private IMObjectReferenceEditor _source;
+    private Entity _source;
 
     /**
      * Editor for the target of the relationship.
      */
-    private IMObjectReferenceEditor _target;
+    private Entity _target;
 
 
     /**
@@ -89,8 +92,8 @@ public abstract class AbstractRelationshipEditor
         NodeDescriptor sourceDesc = getSourceDescriptor();
         NodeDescriptor targetDesc = getTargetDescriptor();
 
-        source = Entity.getObject(getSource(), sourceDesc);
-        target = Entity.getObject(getTarget(), targetDesc);
+        source = IMObjectHelper.getObject(getSource(), sourceDesc);
+        target = IMObjectHelper.getObject(getTarget(), targetDesc);
 
         IMObject edited = Context.getInstance().getCurrent();
         boolean srcReadOnly = true;
@@ -161,27 +164,12 @@ public abstract class AbstractRelationshipEditor
     }
 
     /**
-     * Returns an editor for one side of the relationship.
-     *
-     * @param descriptor the descriptor of the node to edit
-     * @param readOnly   determines if the node is read-only
-     * @param context    the layout context
-     */
-    protected IMObjectReferenceEditor getEditor(NodeDescriptor descriptor,
-                                                boolean readOnly,
-                                                LayoutContext context) {
-
-        Property property = getProperty(descriptor.getName());
-        return new Entity(property, readOnly, context);
-    }
-
-    /**
      * Pops up a dialog to select an entity.
      *
      * @param entity the entity wrapper
      */
     protected void onSelect(final Entity entity) {
-        NodeDescriptor descriptor = entity.getDescriptor();
+        NodeDescriptor descriptor = entity.getProperty().getDescriptor();
         try {
             Query<IMObject> query = QueryFactory.create(
                     descriptor.getArchetypeRange());
@@ -222,11 +210,37 @@ public abstract class AbstractRelationshipEditor
             }
         };
 
-        NodeDescriptor descriptor = entity.getDescriptor();
+        NodeDescriptor descriptor = entity.getProperty().getDescriptor();
         IMObjectCreator.create(descriptor.getDisplayName(),
                                descriptor.getArchetypeRange(), listener);
     }
 
+    /**
+     * Invoked when the editor is closed.
+     *
+     * @param editor the editor
+     * @param entity the entity to associate the object with
+     */
+    protected void onEditCompleted(IMObjectEditor editor,
+                                   AbstractRelationshipEditor.Entity entity) {
+        if (!editor.isCancelled() && !editor.isDeleted()) {
+            entity.setObject(editor.getObject());
+        }
+    }
+
+    /**
+     * Returns an editor for one side of the relationship.
+     *
+     * @param descriptor the descriptor of the node to edit
+     * @param readOnly   determines if the node is read-only
+     * @param context    the layout context
+     */
+    private Entity getEditor(NodeDescriptor descriptor, boolean readOnly,
+                             LayoutContext context) {
+
+        Property property = getProperty(descriptor.getName());
+        return new Entity(property, readOnly, context);
+    }
 
     /**
      * Invoked when an object is created. Pops up an editor to edit it.
@@ -248,19 +262,6 @@ public abstract class AbstractRelationshipEditor
         });
 
         dialog.show();
-    }
-
-    /**
-     * Invoked when the editor is closed.
-     *
-     * @param editor the editor
-     * @param entity the entity to associate the object with
-     */
-    protected void onEditCompleted(IMObjectEditor editor,
-                                   AbstractRelationshipEditor.Entity entity) {
-        if (!editor.isCancelled() && !editor.isDeleted()) {
-            entity.setObject(editor.getObject());
-        }
     }
 
     /**
@@ -309,7 +310,17 @@ public abstract class AbstractRelationshipEditor
     /**
      * Editor for a source/target entity in a relationship.
      */
-    private class Entity extends IMObjectReferenceEditor {
+    private class Entity extends AbstractPropertyEditor {
+
+        /**
+         * The viewer.
+         */
+        private IMObjectReferenceViewer _viewer;
+
+        /**
+         * The editor.
+         */
+        private IMObjectReferenceEditor _editor;
 
         /**
          * Construct a new <code>Entity</code>.
@@ -320,15 +331,45 @@ public abstract class AbstractRelationshipEditor
          */
         public Entity(Property property, boolean readOnly,
                       LayoutContext context) {
-            super(property, readOnly, context);
+            super(property);
+            if (readOnly) {
+                IMObjectReference ref = (IMObjectReference) property.getValue();
+                _viewer = new IMObjectReferenceViewer(ref, false);
+            } else {
+                _editor = new IMObjectReferenceEditor(property, context) {
+                    protected void onSelect() {
+                        // override default behaviour to enable creation of objects.
+                        Entity.this.onSelect();
+                    }
+                };
+            }
+        }
+
+        /**
+         * Sets the value of the reference to the supplied object.
+         *
+         * @param object the object. May  be <code>null</code>
+         */
+        public void setObject(IMObject object) {
+            if (_editor != null) {
+                _editor.setObject(object);
+            }
+        }
+
+        /**
+         * Returns the edit component.
+         *
+         * @return the edit component
+         */
+        public Component getComponent() {
+            return (_editor != null) ? _editor.getComponent() :
+                    _viewer.getComponent();
         }
 
         /**
          * Pops up a dialog to select an object.
          */
-        @Override
         protected void onSelect() {
-            // override default behaviour to enable creation of objects.
             AbstractRelationshipEditor.this.onSelect(this);
         }
 

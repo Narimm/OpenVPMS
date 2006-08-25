@@ -69,6 +69,20 @@ public interface Query<T extends IMObject> {
     String[] getShortNames();
 
     /**
+     * Sets the name to query on.
+     *
+     * @param name the name. May contain wildcards, or be <code>null</code>
+     */
+    void setName(String name);
+
+    /**
+     * Returns the name being queried on.
+     *
+     * @return the name. May contain wildcards, or be <code>null</code>
+     */
+    String getName();
+
+    /**
      * Determines if the query should be run automatically.
      *
      * @return <code>true</code> if the query should be run automaticaly;

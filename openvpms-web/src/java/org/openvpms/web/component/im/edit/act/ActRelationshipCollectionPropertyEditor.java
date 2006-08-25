@@ -115,6 +115,7 @@ public class ActRelationshipCollectionPropertyEditor
 
     /**
      * Returns the range of archetypes that the collection may contain.
+     * Any wildcards are expanded.
      *
      * @return the range of archetypes
      */
@@ -123,7 +124,7 @@ public class ActRelationshipCollectionPropertyEditor
         ArchetypeDescriptor relationship
                 = DescriptorHelper.getArchetypeDescriptor(_relationshipType);
         NodeDescriptor target = relationship.getNodeDescriptor("target");
-        return target.getArchetypeRange();
+        return DescriptorHelper.getShortNames(target);
     }
 
     /**

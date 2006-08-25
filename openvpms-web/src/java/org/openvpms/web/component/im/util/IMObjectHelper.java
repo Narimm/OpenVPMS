@@ -20,6 +20,7 @@ package org.openvpms.web.component.im.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -68,6 +69,28 @@ public class IMObjectHelper {
                     _log.error(error, error);
                 }
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns an object given its reference and descriptor. If the reference is
+     * null, determines if the descriptor matches that of the current object
+     * being viewed/edited and returns that instead.
+     *
+     * @param reference  the object reference. May be <code>null</code>
+     * @param descriptor the node descriptor
+     * @return the object matching <code>reference</code>, or
+     *         <code>descriptor</code>, or <code>null</code> if there is no
+     *         matches
+     */
+    public static IMObject getObject(IMObjectReference reference,
+                                     NodeDescriptor descriptor) {
+        IMObject result;
+        if (reference == null) {
+            result = match(descriptor);
+        } else {
+            result = getObject(reference);
         }
         return result;
     }
@@ -122,6 +145,28 @@ public class IMObjectHelper {
             if (TypeHelper.isA(object, shortName)) {
                 result = object;
                 break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the current object being edited matches archetype range of
+     * the specified descriptor.
+     *
+     * @param descriptor the node descriptor
+     * @return the current object being edited, or <code>null</code> if its type
+     *         doesn't matches the specified descriptor's archetype range
+     */
+    private static IMObject match(NodeDescriptor descriptor) {
+        IMObject result = null;
+        IMObject object = Context.getInstance().getCurrent();
+        if (object != null) {
+            for (String shortName : descriptor.getArchetypeRange()) {
+                if (TypeHelper.matches(object.getArchetypeId(), shortName)) {
+                    result = object;
+                    break;
+                }
             }
         }
         return result;

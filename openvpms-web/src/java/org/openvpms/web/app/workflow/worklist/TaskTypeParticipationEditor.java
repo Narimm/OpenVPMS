@@ -83,8 +83,11 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery() {
-                return new TaskTypeQuery(_workList);
+            protected Query<IMObject> createQuery(String name) {
+                Query<IMObject> query = new TaskTypeQuery(_workList);
+                query.setName(name);
+                return query;
+
             }
         };
     }

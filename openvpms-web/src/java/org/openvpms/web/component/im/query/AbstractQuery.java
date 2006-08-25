@@ -245,6 +245,35 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     }
 
     /**
+     * Sets the name to query on.
+     *
+     * @param name the name. May contain wildcards, or be <code>null</code>
+     */
+    public void setName(String name) {
+        getComponent();
+        _instanceName.setText(name);
+    }
+
+    /**
+     * Returns the name being queried on.
+     *
+     * @return the name. May contain wildcards, or be <code>null</code>
+     */
+    public String getName() {
+        getComponent();
+        final String wildcard = "*";
+        String name = _instanceName.getText();
+        if (!StringUtils.isEmpty(name)) {
+            // if entered name contains a wildcard then leave alone else
+            // add one to end
+            if (!name.contains(wildcard)) {
+                name = name + wildcard;
+            }
+        }
+        return name;
+    }
+
+    /**
      * Determines if the query should be run automatically.
      *
      * @return <code>true</code> if the query should be run automaticaly;
@@ -343,34 +372,6 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      */
     public String getConceptName() {
         return _conceptName;
-    }
-
-    /**
-     * Sets the archetype instance name to query.
-     *
-     * @param name the archetype instance name. If <code>null</code> indicates
-     *             to query all instances
-     */
-    protected void setName(String name) {
-        _instanceName.setText(name);
-    }
-
-    /**
-     * Returns the archetype instance name, including wildcards.
-     *
-     * @return the archetype instance name. Nay be <code>null</code>
-     */
-    protected String getName() {
-        final String wildcard = "*";
-        String name = _instanceName.getText();
-        if (!StringUtils.isEmpty(name)) {
-            // if entered name contains a wildcard then leave alone else
-            // add one to end
-            if (!name.contains(wildcard)) {
-                name = name + wildcard;
-            }
-        }
-        return name;
     }
 
     /**

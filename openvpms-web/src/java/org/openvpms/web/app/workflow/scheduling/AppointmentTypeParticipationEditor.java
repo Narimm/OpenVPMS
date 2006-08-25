@@ -85,8 +85,10 @@ public class AppointmentTypeParticipationEditor
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
 
             @Override
-            protected Query<IMObject> createQuery() {
-                return new AppointmentTypeQuery(_schedule);
+            protected Query<IMObject> createQuery(String name) {
+                Query<IMObject> query = new AppointmentTypeQuery(_schedule);
+                query.setName(name);
+                return query;
             }
         };
     }

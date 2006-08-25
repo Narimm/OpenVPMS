@@ -107,6 +107,14 @@ public abstract class AbstractParticipationEditor
     }
 
     /**
+     * Determines if the participation entity is null.
+     * This takes into account if a name has been entered but does not match.
+     */
+    public boolean isNull() {
+        return getEditor().isNull();
+    }
+
+    /**
      * Returns the editor.
      *
      * @return the editor
