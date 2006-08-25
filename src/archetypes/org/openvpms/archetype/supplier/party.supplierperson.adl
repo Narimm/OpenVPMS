@@ -41,14 +41,6 @@
 			<node name="initials" path="/details/attributes/initials" type="java.lang.String" maxLength="15" />
 			<node name="lastName" path="/details/attributes/lastName" type="java.lang.String"
 				minCardinality="1" maxLength="30" />
-			<node name="accountType" path="/details/attributes/accountType" type="java.lang.String"
-				minCardinality="1" maxLength="15" defaultValue="'Normal'">
-				<assertion name="lookup">
-					<property name="type" value="lookup" />
-					<property name="source" value="lookup.supplierAccountType" />
-					<errorMessage>An error message</errorMessage>
-				</assertion>
-			</node>
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="contacts" path="/contacts"
@@ -70,6 +62,19 @@
 					<propertyMap name="archetype">
 						<property name="shortName"
 							value="contact.faxNumber" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
+		<node name="type" displayName="Account Type" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1" 
+			filter="classification.supplierAccountType">
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="classification.supplierAccountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

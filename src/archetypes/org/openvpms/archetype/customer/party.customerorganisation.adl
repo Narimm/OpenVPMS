@@ -23,6 +23,7 @@
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
 			derivedValue="concat(/name, ' - ',party:contacts())" />
+		<node name="code" path="/code" type="java.lang.String" maxLength="10" />
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="patients" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
@@ -91,14 +92,14 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="Type" path="/entityRelationships"
-			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-			filter="entityRelationship.customerAccountType" >
+		<node name="type" displayName="Account Type" path="/classifications" parentChild="false"
+			type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1" 
+			filter="classification.customerAccountType">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.customerAccountType" />
+							value="classification.customerAccountType" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

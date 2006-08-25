@@ -16,12 +16,13 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-common-entity.customerAccountType.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.common.Entity" displayName="Customer Account Type" >
+	<archetype name="openvpms-common-classification.customerAccountType.1.0"
+		latest="true"
+		type="org.openvpms.component.business.domain.im.common.Classification" displayName="Customer Account Type" >
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="name" displayName="Account Type" type="java.lang.String" path="/name" minCardinality="1" />
-		<node name="description" type="java.lang.String" path="/description" />
-		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
+		<node name="name" path="/name" type="java.lang.String" minCardinality="1" />
+		<node name="description" type="java.lang.String"
+			path="/description" hidden="true" minCardinality="0" />
 		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
 			<node name="creditLimit" path="/details/attributes/creditLimit" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
 			<node name="paymentTerms" path="/details/attributes/paymentTerms" type="java.lang.Integer" minCardinality="0" />
