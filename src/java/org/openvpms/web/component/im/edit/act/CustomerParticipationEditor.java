@@ -71,9 +71,10 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
+
             @Override
-            protected void onSelected(IMObject object) {
-                super.onSelected(object);
+            public void setObject(IMObject object) {
+                super.setObject(object);
                 Party customer = (Party) object;
                 Context.getInstance().setCustomer(customer);
                 Context.getInstance().setPatient(null);

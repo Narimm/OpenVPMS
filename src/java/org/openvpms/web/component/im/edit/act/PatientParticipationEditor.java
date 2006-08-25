@@ -18,16 +18,15 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -72,8 +71,8 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
             Property property) {
         return new IMObjectReferenceEditor(property, getLayoutContext()) {
             @Override
-            protected void onSelected(IMObject object) {
-                super.onSelected(object);
+            public void setObject(IMObject object) {
+                super.setObject(object);
                 Party patient = (Party) object;
                 Context.getInstance().setPatient(patient);
             }

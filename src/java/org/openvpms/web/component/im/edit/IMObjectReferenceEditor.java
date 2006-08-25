@@ -240,7 +240,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
         TextField text = _selector.getText();
         String name = text.getText();
         if (StringUtils.isEmpty(name)) {
-            updateProperty(null);
+            setObject(null);
         } else {
             try {
                 Query<IMObject> query = createQuery(name);
@@ -250,11 +250,10 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
                     List<IMObject> rows = page.getRows();
                     int size = rows.size();
                     if (size == 0) {
-                        updateProperty(null);
+                        setObject(null);
                     } else if (size == 1) {
                         IMObject object = rows.get(0);
-                        updateProperty(object);
-                        updateSelector(object);
+                        setObject(object);
                     } else {
                         onSelect(query, true);
                     }

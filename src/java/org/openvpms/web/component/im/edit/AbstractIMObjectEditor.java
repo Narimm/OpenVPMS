@@ -355,7 +355,9 @@ public abstract class AbstractIMObjectEditor
     public boolean validate(Validator validator) {
         if (validator.validate(_editors)) {
             for (Property property : _properties.getProperties()) {
-                validator.validate(property);
+                if (!validator.validate(property)) {
+                    break;
+                }
             }
         }
         return validator.isValid();
