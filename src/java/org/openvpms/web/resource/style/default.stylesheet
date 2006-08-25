@@ -238,6 +238,13 @@
         </properties>
     </style>
 
+    <style name="AbstractViewWorkspace.Selector" base-name="ControlRow"
+           type="nextapp.echo2.app.Row">
+        <properties>
+            <property name="background" value="#e1e1e1"/>
+        </properties>
+    </style>
+
     <style name="AbstractViewWorkspace.Layout-1024x768"
            base-name="AbstractViewWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
@@ -468,13 +475,6 @@
     </style>
 
 
-    <style name="Selector.ControlRow" base-name="ControlRow"
-           type="nextapp.echo2.app.Row">
-        <properties>
-            <property name="background" value="#e1e1e1"/>
-        </properties>
-    </style>
-
     <style name="Selector.Deactivated" type="nextapp.echo2.app.Label">
         <properties>
             <property name="foreground" value="#ff0000"/>
@@ -677,10 +677,25 @@
         </properties>
     </style>
 
+
+    <!-- =================================================================== -->
+    <!--  Select Button                                                      -->
+    <!-- =================================================================== -->
+
+    <style name="select" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/select.gif"/>
+            </property>
+        </properties>
+    </style>
+
+
     <!-- =================================================================== -->
     <!--  Hyperlink Button                                                   -->
     <!-- =================================================================== -->
-
 
     <style name="hyperlink" type="nextapp.echo2.app.button.AbstractButton">
         <properties>
@@ -693,10 +708,10 @@
         </properties>
     </style>
 
+
     <!-- =================================================================== -->
     <!--  Download Buttons                                                   -->
     <!-- =================================================================== -->
-
 
     <style name="download.avi" type="nextapp.echo2.app.Button">
         <properties>

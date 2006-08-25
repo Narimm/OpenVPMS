@@ -29,8 +29,8 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -48,7 +48,7 @@ import java.util.List;
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
 public class ActRelationshipCollectionEditor
-        extends AbstractIMObjectCollectionEditor {
+        extends IMObjectTableCollectionEditor {
 
 
     /**

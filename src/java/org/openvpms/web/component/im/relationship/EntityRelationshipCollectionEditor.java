@@ -18,21 +18,19 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.focus.FocusSet;
-import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.im.edit.IMObjectTableCollectionEditor;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -42,7 +40,7 @@ import nextapp.echo2.app.event.ActionListener;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class EntityRelationshipCollectionEditor
-        extends AbstractIMObjectCollectionEditor {
+        extends IMObjectTableCollectionEditor {
 
     /**
      * Determines if inactive relationships should be displayed.

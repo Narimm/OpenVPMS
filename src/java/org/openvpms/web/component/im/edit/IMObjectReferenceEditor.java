@@ -19,19 +19,20 @@
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.DocumentEvent;
+import nextapp.echo2.app.event.DocumentListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.focus.FocusSet;
@@ -40,11 +41,14 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.select.Selector;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
+
+import java.util.List;
 
 
 /**
@@ -56,50 +60,56 @@ import org.openvpms.web.spring.ServiceHelper;
 public class IMObjectReferenceEditor extends AbstractPropertyEditor {
 
     /**
+     * The object name listener.
+     */
+    private final DocumentListener _nameListener;
+
+    /**
      * The selector.
      */
     private Selector _selector;
 
 
     /**
-     * Construct a new <code>IMObjectReferenceEditor</code>.
+     * Constructs a new <code>IMObjectReferenceEditor</code>.
      *
      * @param property the reference property
      * @param context  the layout context
      */
     public IMObjectReferenceEditor(Property property, LayoutContext context) {
-        this(property, false, context);
-    }
-
-    /**
-     * Construct a new <code>IMObjectReferenceEditor</code>.
-     *
-     * @param property the reference property
-     * @param readOnly if <code>true</code> the reference cannot be edited
-     * @param context  the layout context
-     */
-    public IMObjectReferenceEditor(Property property, boolean readOnly,
-                                   LayoutContext context) {
         super(property);
-        if (readOnly) {
-            _selector = new Selector(Selector.ButtonStyle.HIDE);
-        } else {
-            _selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL);
-            FocusSet set = new FocusSet("IMObjectReferenceEditor");
-            set.add(_selector.getSelect());
-            context.getFocusTree().add(set);
-            _selector.getSelect().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onSelect();
-                }
-            });
-        }
+        _selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL, true);
         _selector.setFormat(Selector.Format.NAME);
+        FocusSet set = new FocusSet("IMObjectReferenceEditor");
+        set.add(_selector.getComponent());
+        context.getFocusTree().add(set);
+        _selector.getSelect().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                onSelect();
+            }
+        });
         IMObjectReference reference = (IMObjectReference) property.getValue();
         if (reference != null) {
             NodeDescriptor descriptor = property.getDescriptor();
-            _selector.setObject(getObject(reference, descriptor));
+            _selector.setObject(
+                    IMObjectHelper.getObject(reference, descriptor));
         }
+
+        TextField text = _selector.getText();
+        _nameListener = new DocumentListener() {
+            public void documentUpdate(DocumentEvent event) {
+                onNameChanged();
+            }
+        };
+        text.getDocument().addDocumentListener(_nameListener);
+
+        // Register an action listener to ensure document update events
+        // are triggered in a timely fashion
+        text.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                // no-op.
+            }
+        });
     }
 
     /**
@@ -108,10 +118,8 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * @param object the object. May  be <code>null</code>
      */
     public void setObject(IMObject object) {
-        IMObjectReference reference
-                = (object != null) ? new IMObjectReference(object) : null;
-        getProperty().setValue(reference);
-        _selector.setObject(object);
+        updateProperty(object);
+        updateSelector(object);
     }
 
     /**
@@ -133,30 +141,18 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     }
 
     /**
-     * Returns an object given its reference and descriptor. If the reference is
-     * null, determines if the descriptor matches that of the current object
-     * being viewed/edited and returns that instead.
+     * Determines if the reference is null.
+     * This treats an entered but incorrect name as being non-null.
      *
-     * @param reference  the object reference. May be <code>null</code>
-     * @param descriptor the node descriptor
-     * @return the object matching <code>reference</code>, or
-     *         <code>descriptor</code>, or <code>null</code> if there is no
-     *         matches
+     * @return <code>true</code>  if the reference is null; otherwise
+     *         <code>false</code>
      */
-    public static IMObject getObject(IMObjectReference reference,
-                                     NodeDescriptor descriptor) {
-        IMObject result = null;
-        if (reference == null) {
-            result = match(descriptor);
-        } else {
-            IMObject edit = Context.getInstance().getCurrent();
-            if (edit != null && edit.getObjectReference().equals(reference)) {
-                result = edit;
-            }
-            if (result == null) {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
-                result = ArchetypeQueryHelper.getByObjectReference(service,
-                                                                   reference);
+    public boolean isNull() {
+        boolean result = false;
+        if (getProperty().getValue() == null) {
+            TextField text = _selector.getText();
+            if (text == null || StringUtils.isEmpty(text.getText())) {
+                result = true;
             }
         }
         return result;
@@ -166,14 +162,26 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * Pops up a dialog to select an object.
      */
     protected void onSelect() {
+        onSelect(createQuery(), false);
+    }
+
+    /**
+     * Pop up a dialog to select an object.
+     *
+     * @param query    the query
+     * @param runQuery if <code>true</code> run the query
+     */
+    protected void onSelect(Query<IMObject> query, boolean runQuery) {
         try {
-            Query<IMObject> query = createQuery();
             final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
 
             String title = Messages.get("imobject.select.title",
                                         getDescriptor().getDisplayName());
             final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
                     title, browser);
+            if (runQuery && !query.isAuto()) {
+                browser.query();
+            }
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
@@ -191,7 +199,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     }
 
     /**
-     * Invoked when an object is selcted.
+     * Invoked when an object is selected.
      *
      * @param object the selected object
      */
@@ -203,34 +211,75 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * Creates a query to select objects.
      *
      * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
      */
     protected Query<IMObject> createQuery() {
-        String[] shortNames = getDescriptor().getArchetypeRange();
-        return QueryFactory.create(shortNames);
+        String name = _selector.getText().getText();
+        return createQuery(name);
     }
 
     /**
-     * Determines if the current object being edited matches archetype range of
-     * the specified descriptor.
+     * Creates a query to select objects.
      *
-     * @param descriptor the node descriptor
-     * @return the current object being edited, or <code>null</code> if its type
-     *         doesn't matches the specified descriptor's archetype range
+     * @param name a name to filter on. May be <code>null</code>
+     * @param name
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
-    private static IMObject match(NodeDescriptor descriptor) {
-        IMObject result = null;
-        IMObject object = Context.getInstance().getCurrent();
-        if (object != null) {
-            for (String shortName : descriptor.getArchetypeRange()) {
-                if (TypeHelper.matches(object.getArchetypeId(), shortName)) {
-                    result = object;
-                    break;
+    protected Query<IMObject> createQuery(String name) {
+        String[] shortNames = getDescriptor().getArchetypeRange();
+        Query<IMObject> query = QueryFactory.create(shortNames);
+        query.setName(name);
+        return query;
+    }
+
+    /**
+     * Invoked when the name is updated.
+     */
+    private void onNameChanged() {
+        TextField text = _selector.getText();
+        String name = text.getText();
+        if (StringUtils.isEmpty(name)) {
+            updateProperty(null);
+        } else {
+            try {
+                Query<IMObject> query = createQuery(name);
+                ResultSet<IMObject> set = query.query(null);
+                if (set != null && set.hasNext()) {
+                    IPage<IMObject> page = set.next();
+                    List<IMObject> rows = page.getRows();
+                    int size = rows.size();
+                    if (size == 0) {
+                        updateProperty(null);
+                    } else if (size == 1) {
+                        IMObject object = rows.get(0);
+                        updateProperty(object);
+                        updateSelector(object);
+                    } else {
+                        onSelect(query, true);
+                    }
                 }
+            } catch (OpenVPMSException exception) {
+                updateProperty(null);
+                ErrorHelper.show(exception);
             }
         }
-        return result;
+    }
+
+    private void updateProperty(IMObject object) {
+        Property property = getProperty();
+        if (object != null) {
+            property.setValue(object.getObjectReference());
+        } else {
+            property.setValue(null);
+        }
+    }
+
+    private void updateSelector(IMObject object) {
+        TextField text = _selector.getText();
+        text.getDocument().removeDocumentListener(_nameListener);
+        _selector.setObject(object);
+        text.getDocument().addDocumentListener(_nameListener);
     }
 
 }

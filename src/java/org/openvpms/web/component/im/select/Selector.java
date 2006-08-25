@@ -23,12 +23,13 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
+import org.openvpms.web.component.util.TextComponentFactory;
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -58,19 +59,24 @@ public class Selector {
     private Button _select;
 
     /**
-     * Selected object's summary.
+     * Selected object's label. Null if the selector is editable.
      */
-    private Label _summary;
+    private Label _objectLabel;
 
     /**
-     * Deactivated label.
+     * Selected object's text. Null if the selector is not editable.
      */
-    private Label _deactivated;
+    private TextField _objectText;
 
     /**
      * Determines the layout of the 'select' button.
      */
-    private ButtonStyle _buttonStyle;
+    private final ButtonStyle _buttonStyle;
+
+    /**
+     * Determines if the selector may be edited.
+     */
+    private final boolean _editable;
 
     /**
      * The presentation format.
@@ -80,25 +86,27 @@ public class Selector {
     /**
      * The component.
      */
-    private Row _component;
+    private Component _component;
 
 
     /**
      * Construct a new <code>Selector</code>.
      */
     public Selector() {
-        this(ButtonStyle.LEFT);
+        this(ButtonStyle.LEFT, false);
     }
 
     /**
      * Construct a new <code>Selector</code>.
      *
-     * @param style determines the layout of the 'select' button
+     * @param style    determines the layout of the 'select' button
+     * @param editable determines if the selector is editable
      */
-    public Selector(ButtonStyle style) {
+    public Selector(ButtonStyle style, boolean editable) {
         _buttonStyle = style;
+        _editable = editable;
+        _component = RowFactory.create();
     }
-
 
     /**
      * Returns the selector component.
@@ -106,8 +114,9 @@ public class Selector {
      * @return the selector component
      */
     public Component getComponent() {
-        if (_component == null) {
-            doLayout();
+        if (_component.getComponentCount() == 0) {
+            Component layout = doLayout(null, null);
+            _component.add(layout);
         }
         return _component;
     }
@@ -118,8 +127,25 @@ public class Selector {
      * @return the 'select' button
      */
     public Button getSelect() {
-        getComponent();
+        if (_select == null) {
+            if (_buttonStyle == ButtonStyle.LEFT_NO_ACCEL
+                    || _buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+                _select = ButtonFactory.create(null, "select");
+            } else {
+                _select = ButtonFactory.create("select");
+            }
+        }
         return _select;
+    }
+
+    /**
+     * Returns the editable text field.
+     *
+     * @return the editable text field. Null if this is not an editable selector
+     */
+    public TextField getText() {
+        getObject();
+        return _objectText;
     }
 
     /**
@@ -128,29 +154,26 @@ public class Selector {
      * @param object the object. May be <code>null</code>
      */
     public void setObject(IMObject object) {
-        getComponent(); // layout component if required.
+        String text = null;
+        String deactivated = null;
         if (object != null) {
-            String value = null;
             if (_format == Format.NAME) {
-                value = Messages.get("imobject.name", object.getName());
+                text = Messages.get("imobject.name", object.getName());
             } else if (_format == Format.DESCRIPTION) {
-                value = Messages.get("imobject.description",
-                                     object.getDescription());
+                text = Messages.get("imobject.description",
+                                    object.getDescription());
             } else if (_format == Format.SUMMARY) {
-                value = Messages.get("imobject.summary", object.getName(),
-                                     object.getDescription());
+                text = Messages.get("imobject.summary", object.getName(),
+                                    object.getDescription());
             }
 
-            _summary.setText(value);
             if (!object.isActive()) {
-                _deactivated.setText(Messages.get("imobject.deactivated"));
-            } else {
-                _deactivated.setText(null);
+                deactivated = Messages.get("imobject.deactivated");
             }
-        } else {
-            _summary.setText(null);
-            _deactivated.setText(null);
         }
+        _component.removeAll();
+        Component layout = doLayout(text, deactivated);
+        _component.add(layout);
     }
 
     /**
@@ -164,82 +187,78 @@ public class Selector {
 
     /**
      * Create the component.
-     */
-    protected void doLayout() {
-        _component = RowFactory.create("Selector.ControlRow");
-        doLayout(_component);
-    }
-
-    /**
-     * Lay out the component.
      *
-     * @param container the container
+     * @param text        the object text. May be <code>null</code>
+     * @param deactivated the deactivated text. May be <code>null</code>
+     * @return the component
      */
-    protected void doLayout(Row container) {
-        if (_buttonStyle == ButtonStyle.RIGHT
-                || _buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+    protected Component doLayout(String text, String deactivated) {
+        Component component;
+        if (_buttonStyle == ButtonStyle.RIGHT) {
             // button on the right. The 'wrapper' forces the summary+deactivated
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
-            // Seems more successful than using aligments
-            Row wrapper = RowFactory.create(getSummary(), getDeactivated());
+            // Seems more successful than using alignments
+            Row wrapper = RowFactory.create("CellSpacing", getObject());
+            if (deactivated != null) {
+                addDeactivated(wrapper, deactivated);
+            }
             RowLayoutData layout = new RowLayoutData();
             layout.setWidth(new Extent(100, Extent.PERCENT));
             wrapper.setLayoutData(layout);
-            Button button = getButton();
-            container.add(wrapper);
-            container.add(button);
+            Button button = getSelect();
+            component = RowFactory.create(wrapper, button);
+        } else if (_buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
+            Row wrapper = RowFactory.create(getObject(), getSelect());
+            if (deactivated != null) {
+                component = RowFactory.create("CellSpacing", wrapper);
+                addDeactivated(component, deactivated);
+            } else {
+                component = wrapper;
+            }
         } else {
-            container.add(getSummary());
-            container.add(getDeactivated());
+            component = RowFactory.create("CellSpacing", getObject());
+            if (deactivated != null) {
+                addDeactivated(component, deactivated);
+            }
             if (_buttonStyle == ButtonStyle.LEFT
                     || _buttonStyle == ButtonStyle.LEFT_NO_ACCEL) {
-                container.add(getButton(), 0);
+                component.add(getSelect(), 0);
             }
         }
+        if (_objectText != null) {
+            _objectText.setText(text);
+        } else {
+            _objectLabel.setText(text);
+        }
+        return component;
     }
 
     /**
-     * Returns the 'select' button, creating it if needed.
+     * Returns the object component, creating it if needed.
      *
-     * @return the select button
+     * @return the object component
      */
-    protected Button getButton() {
-        if (_select == null) {
-            if (_buttonStyle == ButtonStyle.LEFT_NO_ACCEL
-                    || _buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
-                String text = ShortcutHelper.getLocalisedText("button.select");
-                _select = ButtonFactory.create();
-                _select.setText(text);
-            } else {
-                _select = ButtonFactory.create("select");
+    protected Component getObject() {
+        Component component;
+        if (_editable) {
+            if (_objectText == null) {
+                _objectText = TextComponentFactory.create();
             }
+            component = _objectText;
+        } else {
+            if (_objectLabel == null) {
+                _objectLabel = LabelFactory.create();
+            }
+            component = _objectLabel;
         }
-        return _select;
+        return component;
     }
 
-    /**
-     * Returns the summary label, creating it if needed.
-     *
-     * @return the summary label
-     */
-    protected Label getSummary() {
-        if (_summary == null) {
-            _summary = LabelFactory.create();
-        }
-        return _summary;
-    }
-
-    /**
-     * Returns the 'deactivated' label, creating it if needed.
-     *
-     * @return the deactivated label
-     */
-    protected Label getDeactivated() {
-        if (_deactivated == null) {
-            _deactivated = LabelFactory.create(null, "Selector.Deactivated");
-        }
-        return _deactivated;
+    private void addDeactivated(Component container, String deactivated) {
+        Label label = LabelFactory.create(null, "Selector.Deactivated");
+        label.setText(deactivated);
+        container.add(label);
     }
 
 }

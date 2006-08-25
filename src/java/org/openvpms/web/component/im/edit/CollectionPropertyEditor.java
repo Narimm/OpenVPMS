@@ -49,6 +49,7 @@ public interface CollectionPropertyEditor extends Saveable {
 
     /**
      * Returns the range of archetypes that the collection may contain.
+     * Any wildcards are expanded.
      *
      * @return the range of archetypes
      */
