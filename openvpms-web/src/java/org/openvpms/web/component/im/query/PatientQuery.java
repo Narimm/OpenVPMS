@@ -224,12 +224,27 @@ public class PatientQuery extends AbstractQuery {
             if (!TypeHelper.matches(id, shortName)) {
                 continue;
             }
-            if (!StringUtils.isEmpty(name)) {
-                if (name.startsWith(wildcard) || name.endsWith(wildcard)) {
+            String objName = object.getName();
+            if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(objName)) {
+                boolean start = name.startsWith(wildcard);
+                boolean end = name.endsWith(wildcard);
+                if (start || end) {
                     name = StringUtils.strip(name, wildcard);
                 }
-                if (StringUtils.indexOf(object.getName(), name) == -1) {
-                    continue;
+                name = name.toLowerCase();
+                objName = objName.toLowerCase();
+                if (start && end) {
+                    if (objName.indexOf(name) == -1) {
+                        continue;
+                    }
+                } else if (start) {
+                    if (!objName.endsWith(name)) {
+                        continue;
+                    }
+                } else {
+                    if (!objName.startsWith(name)) {
+                        continue;
+                    }
                 }
             }
             if (activeOnly && !object.isActive()) {
@@ -257,7 +272,9 @@ public class PatientQuery extends AbstractQuery {
                                "entityRelationship.patientOwner")) {
                 if (source.equals(relationship.getSource()) &&
                         ((relationship.getActiveEndTime() == null) ||
-                         (relationship.getActiveEndTime().after(new Date(System.currentTimeMillis()))))) {
+                                (relationship.getActiveEndTime().after(
+                                        new Date(System.currentTimeMillis())))))
+                {
                     IMObject object = IMObjectHelper.getObject(
                             relationship.getTarget());
                     if (object != null) {
