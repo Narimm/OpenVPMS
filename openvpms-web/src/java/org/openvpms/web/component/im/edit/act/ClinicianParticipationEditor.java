@@ -90,9 +90,8 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                 return query;
             }
 
-            @Override
-            protected void onSelected(IMObject object) {
-                super.onSelected(object);
+            public void setObject(IMObject object) {
+                super.setObject(object);
                 User user = (User) object;
                 Context.getInstance().setClinician(user);
             }

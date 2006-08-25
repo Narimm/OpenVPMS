@@ -18,19 +18,20 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
+import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -46,12 +47,6 @@ import java.util.List;
  */
 public class SingleParticipationCollectionEditor
         extends AbstractIMObjectCollectionEditor {
-
-    /**
-     * Inline editing container.
-     */
-    private Column _container;
-
 
     /**
      * Constructs a new <code>SingleParticipationCollectionEditor</code>.
@@ -73,10 +68,17 @@ public class SingleParticipationCollectionEditor
      * @return the component
      */
     protected Component doLayout(LayoutContext context) {
-        _container = ColumnFactory.create();
         Component component = createComponent();
-        _container.add(component);
-        return _container;
+        AbstractParticipationEditor editor = getParticipationEditor();
+        if (editor != null) {
+            Property property = editor.getProperty();
+            property.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onParticipantChanged();
+                }
+            });
+        }
+        return component;
     }
 
     /**
@@ -90,14 +92,9 @@ public class SingleParticipationCollectionEditor
     public boolean validate(Validator validator) {
         boolean valid;
         AbstractParticipationEditor editor = getParticipationEditor();
-        if (editor != null && getCollection().getMinCardinality() == 0) {
-            if (!editor.isNull()) {
-                valid = editor.validate(validator);
-            } else {
-                // entity is null. Exclude the participation from validation
-                // as it will be removed on save
-                valid = true;
-            }
+        if (editor != null && getCollection().getMinCardinality() == 0
+                && editor.isNull()) {
+            valid = true;
         } else {
             valid = super.validate(validator);
         }
@@ -117,11 +114,8 @@ public class SingleParticipationCollectionEditor
         AbstractParticipationEditor editor = getParticipationEditor();
         if (editor != null && getCollection().getMinCardinality() == 0
                 && editor.isNull()) {
-            getCollectionPropertyEditor().remove(editor.getObject());
-            setCurrentEditor(null);
-            saved = super.doSave();
-            _container.removeAll();
-            _container.add(createComponent());
+            // save the collection, excluding the current editor
+            saved = getCollectionPropertyEditor().save();
         } else {
             saved = super.doSave();
         }
@@ -138,6 +132,19 @@ public class SingleParticipationCollectionEditor
         IMObjectEditor editor = getCurrentEditor();
         return (editor instanceof AbstractParticipationEditor) ?
                 (AbstractParticipationEditor) editor : null;
+    }
+
+    /**
+     * Invoked when the participant changes. If the participant is null and
+     * the min cardinality is zero, removes the participation from the
+     * collection.
+     */
+    private void onParticipantChanged() {
+        AbstractParticipationEditor editor = getParticipationEditor();
+        if (editor != null && getCollection().getMinCardinality() == 0 &&
+                editor.isNull()) {
+            getCollectionPropertyEditor().remove(editor.getObject());
+        }
     }
 
     private Component createComponent() {
