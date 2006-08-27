@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -29,9 +30,13 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.component.app.Context;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 
 /**
@@ -145,6 +150,35 @@ public class IMObjectHelper {
             if (TypeHelper.isA(object, shortName)) {
                 result = object;
                 break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a list of objects with matching name.
+     * Names are treated as case-insensitive.
+     *
+     * @param name    the name. May contain wildcards. If null or empty,
+     *                indicates no filtering.
+     * @param objects the objects to filter
+     */
+    public static <T extends IMObject> List<T> findByName(
+            String name, Collection<T> objects) {
+        List<T> result = new ArrayList<T>();
+        if (StringUtils.isEmpty(name)) {
+            result.addAll(objects);
+        } else {
+            try {
+                String regex = StringUtilities.toRegEx(name.toLowerCase());
+                for (T object : objects) {
+                    String value = object.getName();
+                    if (value != null && value.toLowerCase().matches(regex)) {
+                        result.add(object);
+                    }
+                }
+            } catch (PatternSyntaxException exception) {
+                _log.warn(exception);
             }
         }
         return result;

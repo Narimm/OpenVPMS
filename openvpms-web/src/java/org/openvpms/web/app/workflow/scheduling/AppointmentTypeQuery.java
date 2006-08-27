@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -104,30 +103,11 @@ public class AppointmentTypeQuery extends AbstractQuery<IMObject> {
     private List<IMObject> filterForSchedule() {
         List<IMObject> types = getAppointmentTypes(_schedule);
         String name = getName();
-        return filter(types, name);
-    }
-
-    /**
-     * Filter a list of objects.
-     *
-     * @param objects the objects to filter
-     * @param name    the object instance name to matches on
-     * @return a list of objects that matches the specified criteria
-     */
-    private List<IMObject> filter(List<IMObject> objects, String name) {
-        final String wildcard = "*";
+        types = IMObjectHelper.findByName(name, types);
         List<IMObject> result = new ArrayList<IMObject>();
-        for (IMObject object : objects) {
-            if (!StringUtils.isEmpty(name)) {
-                if (name.startsWith(wildcard) || name.endsWith(wildcard)) {
-                    name = StringUtils.strip(name, wildcard);
-                }
-                if (StringUtils.indexOf(object.getName(), name) == -1) {
-                    continue;
-                }
-            }
-            if (object.isActive()) {
-                result.add(object);
+        for (IMObject type : types) {
+            if (type.isActive()) {
+                result.add(type);
             }
         }
         return result;
