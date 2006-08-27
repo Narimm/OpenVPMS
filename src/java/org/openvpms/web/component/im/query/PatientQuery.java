@@ -22,7 +22,6 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -217,35 +216,13 @@ public class PatientQuery extends AbstractQuery {
      */
     private List<IMObject> filter(List<IMObject> objects, String shortName,
                                   String name, boolean activeOnly) {
-        final String wildcard = "*";
+        objects = IMObjectHelper.findByName(name, objects);
+
         List<IMObject> result = new ArrayList<IMObject>();
         for (IMObject object : objects) {
             ArchetypeId id = object.getArchetypeId();
             if (!TypeHelper.matches(id, shortName)) {
                 continue;
-            }
-            String objName = object.getName();
-            if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(objName)) {
-                boolean start = name.startsWith(wildcard);
-                boolean end = name.endsWith(wildcard);
-                if (start || end) {
-                    name = StringUtils.strip(name, wildcard);
-                }
-                name = name.toLowerCase();
-                objName = objName.toLowerCase();
-                if (start && end) {
-                    if (objName.indexOf(name) == -1) {
-                        continue;
-                    }
-                } else if (start) {
-                    if (!objName.endsWith(name)) {
-                        continue;
-                    }
-                } else {
-                    if (!objName.startsWith(name)) {
-                        continue;
-                    }
-                }
             }
             if (activeOnly && !object.isActive()) {
                 continue;
