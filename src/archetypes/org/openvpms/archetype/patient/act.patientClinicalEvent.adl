@@ -32,6 +32,13 @@
         <node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
 			filter="participation.clinician" />
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
+			<assertion name="lookup">
+				<property name="type" value="lookup" />
+				<property name="source" value="lookup.eventStatus" />
+				<errorMessage>An error message</errorMessage>
+			</assertion>
+		</node>
 		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 
 			minCardinality="0" maxCardinality="*" hidden="true" >
 			<assertion name="archetypeRange">

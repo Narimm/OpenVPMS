@@ -42,6 +42,8 @@
 	<data archetype="lookup.paymentStatus" status="Posted" defaultLookup="true"/>
 	<data archetype="lookup.episodeStatus" status="In Progress" defaultLookup="true"/>
 	<data archetype="lookup.episodeStatus" status="Completed" />
+	<data archetype="lookup.eventStatus" status="In Progress" defaultLookup="true"/>
+	<data archetype="lookup.eventStatus" status="Completed" />
 	<data archetype="lookup.appointmentStatus" status="Pending" defaultLookup="true" />
 	<data archetype="lookup.appointmentStatus" status="Cancelled" />
 	<data archetype="lookup.appointmentStatus" status="Checked-In" />
