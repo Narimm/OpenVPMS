@@ -94,7 +94,7 @@ public class AppointmentActEditor extends AbstractActEditor {
      * @return the default time
      */
     private Date getDefaultTime() {
-        int slotSize = 15;
+        int slotSize = 0;
         Party schedule = (Party) getParticipant("schedule");
         if (schedule != null) {
             slotSize = AppointmentRules.getSlotSize(schedule);
