@@ -86,14 +86,29 @@ public abstract class AbstractRelationshipEditor
     public AbstractRelationshipEditor(IMObject relationship,
                                       IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
+        IMObjectReference sourceRef;
+        IMObjectReference targetRef;
         IMObject source;
         IMObject target;
 
-        NodeDescriptor sourceDesc = getSourceDescriptor();
-        NodeDescriptor targetDesc = getTargetDescriptor();
+        Property sourceProp = getSource();
+        Property targetProp = getTarget();
 
-        source = IMObjectHelper.getObject(getSource(), sourceDesc);
-        target = IMObjectHelper.getObject(getTarget(), targetDesc);
+        sourceRef = (IMObjectReference) sourceProp.getValue();
+        targetRef = (IMObjectReference) targetProp.getValue();
+
+        source = IMObjectHelper.getObject(sourceRef,
+                                          sourceProp.getDescriptor());
+        target = IMObjectHelper.getObject(targetRef,
+                                          targetProp.getDescriptor());
+
+        // initialise the properties if null
+        if (sourceRef == null && source != null) {
+            sourceProp.setValue(source.getObjectReference());
+        }
+        if (targetRef == null && target != null) {
+            targetProp.setValue(target.getObjectReference());
+        }
 
         IMObject edited = Context.getInstance().getCurrent();
         boolean srcReadOnly = true;
@@ -101,56 +116,32 @@ public abstract class AbstractRelationshipEditor
             srcReadOnly = false;
         }
 
-        _source = getEditor(sourceDesc, srcReadOnly, context);
-        if (source != null && getSource() == null) {
-            _source.setObject(source);
-        }
+        _source = new Entity(sourceProp, srcReadOnly, context);
 
         boolean targetReadOnly = true;
         if (target == null || !target.equals(edited) || target.equals(source)) {
             targetReadOnly = false;
         }
 
-        _target = getEditor(targetDesc, targetReadOnly, context);
-        if (target != null && getTarget() == null) {
-            _target.setObject(target);
-        }
+        _target = new Entity(targetProp, targetReadOnly, context);
     }
 
     /**
-     * Returns the source descriptor.
+     * Returns the source property.
      *
-     * @return the source descriptor
+     * @return the source property
      */
-    protected NodeDescriptor getSourceDescriptor() {
-        return getArchetypeDescriptor().getNodeDescriptor("source");
+    protected Property getSource() {
+        return getProperty("source");
     }
 
     /**
-     * Returns the target descriptor.
+     * Returns the target property.
      *
-     * @return the target descriptor
+     * @return the target property
      */
-    protected NodeDescriptor getTargetDescriptor() {
-        return getArchetypeDescriptor().getNodeDescriptor("target");
-    }
-
-    /**
-     * Returns the source of the relationship.
-     *
-     * @return the source of the relationship
-     */
-    protected IMObjectReference getSource() {
-        return (IMObjectReference) getSourceDescriptor().getValue(getObject());
-    }
-
-    /**
-     * Returns the target of the relationship.
-     *
-     * @return the target of the relationship
-     */
-    protected IMObjectReference getTarget() {
-        return (IMObjectReference) getTargetDescriptor().getValue(getObject());
+    protected Property getTarget() {
+        return getProperty("target");
     }
 
     /**
@@ -226,20 +217,6 @@ public abstract class AbstractRelationshipEditor
         if (!editor.isCancelled() && !editor.isDeleted()) {
             entity.setObject(editor.getObject());
         }
-    }
-
-    /**
-     * Returns an editor for one side of the relationship.
-     *
-     * @param descriptor the descriptor of the node to edit
-     * @param readOnly   determines if the node is read-only
-     * @param context    the layout context
-     */
-    private Entity getEditor(NodeDescriptor descriptor, boolean readOnly,
-                             LayoutContext context) {
-
-        Property property = getProperty(descriptor.getName());
-        return new Entity(property, readOnly, context);
     }
 
     /**
