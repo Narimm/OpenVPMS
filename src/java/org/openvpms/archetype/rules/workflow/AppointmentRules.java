@@ -49,6 +49,18 @@ import java.util.List;
 public class AppointmentRules {
 
     /**
+     * Returns the schedule slot size in minutes.
+     *
+     * @param schedule the schedule
+     * @return the schedule slot size in minutes
+     * @throws OpenVPMSException for any error
+     */
+    public static int getSlotSize(Party schedule) {
+        EntityBean bean = new EntityBean(schedule);
+        return getSlotSize(bean);
+    }
+
+    /**
      * Calculates an appointment end time, given the start time, schedule and
      * appointment type.
      *
@@ -61,16 +73,8 @@ public class AppointmentRules {
     public static Date calculateEndTime(Date startTime, Party schedule,
                                         Entity appointmentType) {
         EntityBean schedBean = new EntityBean(schedule);
-        int slotSize = schedBean.getInt("slotSize");
-        String slotUnits = schedBean.getString("slotUnits");
         int noSlots = getSlots(schedBean, appointmentType);
-        int minutes;
-        int time = slotSize * noSlots;
-        if ("hours".equals(slotUnits)) {
-            minutes = time * 60;
-        } else {
-            minutes = time;
-        }
+        int minutes = getSlotSize(schedBean) * noSlots;
         int millis = minutes * DateUtils.MILLIS_IN_MINUTE;
         return new Date(startTime.getTime() + millis);
     }
@@ -146,6 +150,25 @@ public class AppointmentRules {
         and.add(new NodeConstraint("startTime", RelationalOp.LT, time));
         and.add(new NodeConstraint("endTime", RelationalOp.GT, time));
         return and;
+    }
+
+    /**
+     * Returns the schedule slot size in minutes.
+     *
+     * @param schedule the schedule
+     * @return the schedule slot size in minutes
+     * @throws OpenVPMSException for any error
+     */
+    private static int getSlotSize(EntityBean schedule) {
+        int slotSize = schedule.getInt("slotSize");
+        String slotUnits = schedule.getString("slotUnits");
+        int result;
+        if ("hours".equals(slotUnits)) {
+            result = slotSize * 60;
+        } else {
+            result = slotSize;
+        }
+        return result;
     }
 
     /**
