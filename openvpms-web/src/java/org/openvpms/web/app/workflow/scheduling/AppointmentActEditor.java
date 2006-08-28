@@ -38,7 +38,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 /**
@@ -68,7 +70,7 @@ public class AppointmentActEditor extends AbstractActEditor {
         initParticipant("schedule", Context.getInstance().getSchedule());
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
-            startTime.setValue(Context.getInstance().getScheduleDate());
+            startTime.setValue(getDefaultTime());
         }
         startTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -83,6 +85,23 @@ public class AppointmentActEditor extends AbstractActEditor {
             }
         };
         endTime.addModifiableListener(_endTimeListener);
+    }
+
+    /**
+     * Calculates the default time as 'now' rounded to the next nearest 15
+     * minute interval.
+     *
+     * @return the default time
+     */
+    private Date getDefaultTime() {
+        Calendar calendar = new GregorianCalendar();
+        int mins = calendar.get(Calendar.MINUTE);
+        mins = ((mins / 15) * 15) + 15;
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.MINUTE, mins);
+        return calendar.getTime();
     }
 
     /**
