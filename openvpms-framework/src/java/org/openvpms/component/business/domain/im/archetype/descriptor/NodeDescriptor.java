@@ -19,16 +19,6 @@
 package org.openvpms.component.business.domain.im.archetype.descriptor;
 
 // java core
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-// commons-lang
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathTypeConversionException;
@@ -36,12 +26,8 @@ import org.apache.commons.jxpath.util.TypeConverter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.NumberUtils;
-
-// log4j
 import org.apache.log4j.Logger;
 import org.apache.oro.text.perl.Perl5Util;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -54,8 +40,17 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -63,7 +58,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * The default display length if one is not defined in the node definition
      */
-    public static final int DEFAULT_DISPLAY_LENGTH = 50; 
+    public static final int DEFAULT_DISPLAY_LENGTH = 50;
 
     /**
      * The default maximum Length if one is not defined in the node definition
@@ -100,11 +95,11 @@ public class NodeDescriptor extends Descriptor {
      * Type converter.
      */
     private static final TypeConverter CONVERTER = new OpenVPMSTypeConverter();
-    
+
     /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
-    private Map<String, AssertionDescriptor> assertionDescriptors = 
+    private Map<String, AssertionDescriptor> assertionDescriptors =
         new LinkedHashMap<String, AssertionDescriptor>();
 
     /**
@@ -164,7 +159,7 @@ public class NodeDescriptor extends Descriptor {
      * Indicates whether the descriptor is readOnly
      */
     private boolean isReadOnly = false;
-    
+
     /**
      * Indicates whether the node value represents an array
      */
@@ -205,12 +200,12 @@ public class NodeDescriptor extends Descriptor {
      * The fully qualified class name that defines the node type
      */
     private String type;
-    
+
     /**
-     * The filter is only valid for collections and defines the subset of 
+     * The filter is only valid for collections and defines the subset of
      * the collection that this node refers too.  The filter is an archetype
      * shortName, which can also be in the form of a regular expression
-     * 
+     *
      * The modeFilter is a regex compliant filter
      */
     private String filter;
@@ -225,7 +220,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Add an assertion descriptor to this node
-     * 
+     *
      * @param descriptor
      */
     public void addAssertionDescriptor(AssertionDescriptor descriptor) {
@@ -236,12 +231,12 @@ public class NodeDescriptor extends Descriptor {
      * Add a child object to this node descriptor using the specified
      * {@link IMObject} as the context. If this node descriptor is not of type
      * collection, or the context object is null it will raise an exception.
-     * 
+     *
      * @param context
      *            the context object, which will be the target of the add
      * @param child
      *            the child element to add
-     * @thorws DescriptorException if it fails to complete this request
+     * @throws DescriptorException if it fails to complete this request
      */
     public void addChildToCollection(IMObject context, Object child) {
         if (context == null) {
@@ -255,10 +250,10 @@ public class NodeDescriptor extends Descriptor {
                     DescriptorException.ErrorCode.FailedToAddChildElement,
                     new Object[] { getName() });
         }
-        
+
         // retrieve the value at that node
         Object obj = JXPathHelper.newContext(context).getValue(getPath());
-        
+
         try {
             if (StringUtils.isEmpty(baseName)) {
                 // no base name specified look at the type to determine
@@ -296,10 +291,10 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Add a child node descriptor
-     * 
+     *
      * @param child
      *            the child node descriptor to add
-     * @throws            
+     * @throws DescriptorException if the node is a duplicate
      */
     public void addNodeDescriptor(NodeDescriptor child) {
         if (nodeDescriptors.containsKey(child.getName())) {
@@ -333,7 +328,7 @@ public class NodeDescriptor extends Descriptor {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.domain.im.archetype.descriptor.Descriptor#clone()
      */
     @Override
@@ -364,7 +359,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Check whether this assertion type is defined for this node
-     * 
+     *
      * @param type
      *            the assertion type
      * @return boolean
@@ -372,17 +367,17 @@ public class NodeDescriptor extends Descriptor {
     public boolean containsAssertionType(String type) {
         return assertionDescriptors.containsKey(type);
     }
-    
+
     /**
      * Derive the node value for the specified {@link NodeDescriptor}. If the
      * node does not support derived value or the value cannot be derived then
      * raise an exception.
-     * 
+     *
      * @param imobj
      *            the {@link IMObject}
      * @throws FailedToDeriveValueException
      *            if the node is not declared to support dervied value or
-     *            the value cannot be derived correctly.            
+     *            the value cannot be derived correctly.
      */
     public void deriveValue(IMObject imobj) {
         if (!isDerived()) {
@@ -390,10 +385,10 @@ public class NodeDescriptor extends Descriptor {
                     FailedToDeriveValueException.ErrorCode.DerivedValueUnsupported,
                     new Object[] {getName()});
         }
-        
+
         // attempt to derive the value
         try {
-            JXPathContext context = JXPathHelper.newContext(imobj);   
+            JXPathContext context = JXPathHelper.newContext(imobj);
             Object value = context.getValue(this.getDerivedValue());
             context.getPointer(this.getPath()).setValue(value);
         } catch (Exception exception) {
@@ -407,7 +402,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Return the archetype names associated with a particular object reference
      * or collection.
-     * 
+     *
      * @return String pattern
      */
     @SuppressWarnings("unchecked")
@@ -433,10 +428,10 @@ public class NodeDescriptor extends Descriptor {
      * Return an array of short names or short name regular expression that are
      * associated with the archetypeRange assertion. If the node does not have
      * such an assertion then return a zero length string array
-     * 
+     *
      * TODO Should we more this into a utility class TODO Change return type to
      * List
-     * 
+     *
      * @return String[] the array of short names
      */
     public String[] getArchetypeRange() {
@@ -461,7 +456,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Retrieve the assertion descriptor with the specified type or null if one
      * does not exist.
-     * 
+     *
      * @param type
      *            the type of the assertion descriptor
      * @return AssertionDescriptor
@@ -472,21 +467,21 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Return the assertion descriptors as a map
-     * 
+     *
      * @return Returns the assertionDescriptors.
      */
     public Map<String, AssertionDescriptor> getAssertionDescriptors() {
         return assertionDescriptors;
     }
-    
+
     /**
      * Return the assertion descriptors in index order
      */
     public List<AssertionDescriptor> getAssertionDescriptorsInIndexOrder() {
-        List<AssertionDescriptor> adescs =  
+        List<AssertionDescriptor> adescs =
             new ArrayList<AssertionDescriptor>(assertionDescriptors.values());
         Collections.sort(adescs, new AssertionDescriptorIndexComparator());
-        
+
         return adescs;
     }
 
@@ -509,7 +504,7 @@ public class NodeDescriptor extends Descriptor {
      * Return a list of candiate children for the specified node. This is only
      * applicable for collection nodes that have a candidateChildren assertion
      * defined.
-     * 
+     *
      * @param context
      *            the context object
      * @return List a list of candiate children, which can also be an empty list
@@ -520,7 +515,7 @@ public class NodeDescriptor extends Descriptor {
         AssertionDescriptor descriptor = assertionDescriptors
                 .get("candidateChildren");
 
-        if ((descriptor == null) || 
+        if ((descriptor == null) ||
             (descriptor.getPropertyMap().getProperties().containsKey("path") == false)) {
             return result;
         }
@@ -547,18 +542,18 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * Return the children {@link IMObject} instances that are part of 
+     * Return the children {@link IMObject} instances that are part of
      * a collection. If the NodeDescriptor does not denote a collection then
      * a null list is returned.
      * <p>
      * Furthermore if this is a collection and the filter attribute has been
-     * specified then return a subset of the children; those matching the 
+     * specified then return a subset of the children; those matching the
      * filter.
-     * 
+     *
      * @param target
      *            the target object.
      * @return List<IMObject>
-     *            the list of children, an empty list or  null            
+     *            the list of children, an empty list or  null
      */
     @SuppressWarnings("unchecked")
     public List<IMObject> getChildren(IMObject target) {
@@ -575,7 +570,7 @@ public class NodeDescriptor extends Descriptor {
                 } else if (obj instanceof Map) {
                     children = new ArrayList<IMObject>(((Map)obj).values());
                 }
-                
+
                 // filter the children
                 children = filterChildren(children);
             } catch (Exception exception) {
@@ -586,16 +581,16 @@ public class NodeDescriptor extends Descriptor {
             }
 
             return children;
-            
+
         }
-        
+
         return children;
     }
-    
+
     /**
      * Filter the children in the list and return only those that comply with
      * the filter term
-     * 
+     *
      * @param children
      *            the initial list of children
      * @return List<IMObject>
@@ -606,23 +601,22 @@ public class NodeDescriptor extends Descriptor {
         if (StringUtils.isEmpty(filter)) {
             return children;
         }
-        
-        // otherwise filter on 
+
+        // otherwise filter on
         List<IMObject> filteredSet = new ArrayList<IMObject>();
         for (IMObject obj : children) {
             if (obj.getArchetypeId().getShortName().matches(modFilter)) {
                 filteredSet.add(obj);
             }
         }
-        
+
         return filteredSet;
     }
 
     /**
-     * Return the class for the specified type
-     * 
-     * @param Class
-     *            The class
+     * Returns the class for the specified type.
+     *
+     * @return the class
      */
     public Class getClazz() {
         if (clazz == null) {
@@ -661,7 +655,7 @@ public class NodeDescriptor extends Descriptor {
      * Return the length of the displayed field. Not currently defined in
      * archetype so set to minimum of maxlength or DEFAULT_DISPLAY_LENGTH. Used
      * for Strings or Numerics.
-     * 
+     *
      * @return int the display length
      */
     public int getDisplayLength() {
@@ -699,7 +693,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * The getter that returns the max cardinality as a string
-     * 
+     *
      * @return String
      */
     public String getMaxCardinalityAsString() {
@@ -720,7 +714,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Return the maximum value of the node. If no maximum defined for node then
      * return 0. Only valid for numeric nodes.
-     * 
+     *
      * @return Number the minimum value
      * @throws DescriptorException
      *             a runtim exception
@@ -761,7 +755,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Return the minimum value of the node. If no minimum defined for node then
      * return 0. Only valid for numeric nodes.
-     * 
+     *
      * @return Number the minimum value
      * @throws DescriptorException
      *             a runtim exception
@@ -787,7 +781,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Return the number of children node descriptors
-     * 
+     *
      * @return int
      */
     public int getNodeDescriptorCount() {
@@ -797,7 +791,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Return the {@link NodeDescriptor} instances as a map of name and
      * descriptor
-     * 
+     *
      * @return Returns the nodeDescriptors.
      */
     public Map<String, NodeDescriptor> getNodeDescriptors() {
@@ -822,7 +816,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Return the regular expression associated with the node. Only valid for
      * string nodes.
-     * 
+     *
      * @return String regular expression pattern
      */
     public String getStringPattern() {
@@ -854,7 +848,7 @@ public class NodeDescriptor extends Descriptor {
      * This will return the node value for the supplied {@link IMObject}. If
      * the node is derived then it will return the derived value. If the node is
      * not dervied then it will use the path to return the value.
-     * 
+     *
      * @param context
      *            the context object to work from
      * @return Object the returned object
@@ -870,17 +864,17 @@ public class NodeDescriptor extends Descriptor {
                 value = JXPathHelper.newContext(context).getValue(getPath());
             }
         }
-        
+
         return value;
     }
-    
+
     /**
-     * This will return the value of this node given the specified {@link Context}.
-     * 
+     * Returns the value of this node given the specified context.
+     *
      * @param context
      *            the context to use
      * @return Object
-     *            the returned object           
+     *            the returned object
      */
     public Object getValue(JXPathContext context) {
         Object value = null;
@@ -895,13 +889,13 @@ public class NodeDescriptor extends Descriptor {
                 }
             }
         }
-        
+
         return value;
     }
 
     /**
      * Check whether this node is a boolean type.
-     * 
+     *
      * @return boolean
      */
     public boolean isBoolean() {
@@ -915,7 +909,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Check whether this node is a collection
-     * 
+     *
      * @return boolean
      */
     public boolean isCollection() {
@@ -930,21 +924,21 @@ public class NodeDescriptor extends Descriptor {
             return false;
         }
     }
-    
+
     /**
      * Cast the input value as a collection. If this can't be done then
      * throw and exception
-     * 
+     *
      * @param object
      *            the object to cast
      * @return Collection
      *            the returned collection object
-     * @throws ArchetypeDescriptorException
-     *            if the cast cannot be made                       
+     * @throws DescriptorException
+     *            if the cast cannot be made
      */
     public Collection toCollection(Object object) {
         Collection collection = null;
-        
+
         if (object == null) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.CannotCastToCollection,
@@ -956,7 +950,7 @@ public class NodeDescriptor extends Descriptor {
         } else if (object instanceof Map) {
             collection = ((Map)object).values();
         }
-            
+
         return collection;
     }
 
@@ -964,7 +958,7 @@ public class NodeDescriptor extends Descriptor {
      * Indicates if this node is acomplex node. If the node has an
      * archetypeRange assertion or the node has a cardinality > 1 then the node
      * is deemed to be a complex node
-     * 
+     *
      * @return boolean true if complex
      */
     public boolean isComplexNode() {
@@ -975,7 +969,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Check whether this node a date type.
-     * 
+     *
      * @return boolean
      */
     public boolean isDate() {
@@ -1007,7 +1001,7 @@ public class NodeDescriptor extends Descriptor {
      * identifier. This will allow the id to be displayed when viewing or
      * editing the Archetyped object even though the Id is not definined as a
      * real node in the Archetype.
-     * 
+     *
      * @return boolean
      */
     public boolean isIdentifier() {
@@ -1020,7 +1014,7 @@ public class NodeDescriptor extends Descriptor {
      * string nodes where the display length > DEFAULT_DISPLAY_LENGTH.
      * Presentation layer will utilise this to decide whether to display as
      * TextField or TextArea.
-     * 
+     *
      * @return boolean
      */
     public boolean isLarge() {
@@ -1029,7 +1023,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Check whether this node is a lookup
-     * 
+     *
      * @return boolean
      */
     public boolean isLookup() {
@@ -1044,23 +1038,23 @@ public class NodeDescriptor extends Descriptor {
         return result;
 
     }
-    
+
     /**
      * Check whether this ia a money type
-     * 
+     *
      * @return boolean
      */
     public boolean isMoney() {
         if (getClazz() == Money.class) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Check whether this node is a numeric type.
-     * 
+     *
      * @return boolean
      */
     public boolean isNumeric() {
@@ -1079,7 +1073,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Check whether this node is an object reference. An object reference is a
      * node that references another oject subclassed from IMObject.
-     * 
+     *
      * @return boolean
      */
     public boolean isObjectReference() {
@@ -1094,7 +1088,7 @@ public class NodeDescriptor extends Descriptor {
      * This is a convenience method that checks whether there is a parent child
      * relationship within this node. A parent child relationship only
      * applicable for node descriptors that reference a collection.
-     * 
+     *
      * @return boolean
      */
     public boolean isParentChild() {
@@ -1104,7 +1098,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * This method indicates that this node descriptor is readOnly and a call to
      * {@link #setValue(IMObject, Object) will throw an exception.
-     * 
+     *
      * @return boolean
      */
     public boolean isReadOnly() {
@@ -1113,7 +1107,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Check whether this node is mandatory.
-     * 
+     *
      * @return boolean
      */
     public boolean isRequired() {
@@ -1122,7 +1116,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Check whether this node is a string
-     * 
+     *
      * @return boolean
      */
     public boolean isString() {
@@ -1133,20 +1127,20 @@ public class NodeDescriptor extends Descriptor {
 
         return false;
     }
-    
+
     /**
      * A helper method that checks to see if the specified {@link IMObject}
      * matches the specified filter. This is only  relevant for collection
      * nodes
-     * 
+     *
      * @param imobj
      *            the object to check
      * @return boolean
-     *            true if it matches the filter            
+     *            true if it matches the filter
      */
     public boolean matchesFilter(IMObject imobj) {
         boolean matches = false;
-        
+
         if (isCollection()) {
             if (StringUtils.isEmpty(filter)) {
                 matches = true;
@@ -1154,14 +1148,14 @@ public class NodeDescriptor extends Descriptor {
                 matches = imobj.getArchetypeId().getShortName().matches(modFilter);
             }
         }
-        
+
         return matches;
     }
 
     /**
      * Delete the specified assertion descriptor
-     * 
-     * @param assertion
+     *
+     * @param descriptor
      *            the assertion to delete
      */
     public void removeAssertionDescriptor(AssertionDescriptor descriptor) {
@@ -1170,7 +1164,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Delete the assertion descriptor with the specified type
-     * 
+     *
      * @param type
      *            the type name
      */
@@ -1184,12 +1178,12 @@ public class NodeDescriptor extends Descriptor {
      * <p>
      * If this node descriptor is not of type collection, or the context object
      * is null it will raise an exception.
-     * 
+     *
      * @param context
      *            the root context object
      * @param child
      *            the child element to remove
-     * @thorws DescriptorException if it fails to complete this request
+     * @throws DescriptorException if it fails to complete this request
      */
     public void removeChildFromCollection(IMObject context, Object child) {
         if (context == null) {
@@ -1204,17 +1198,17 @@ public class NodeDescriptor extends Descriptor {
                     new Object[] { getName() });
         }
 
+        Object obj = JXPathHelper.newContext(context).getValue(getPath());
+
         try {
             if (StringUtils.isEmpty(baseName)) {
                 // no base name specified look at the type to determine
                 // what method to call
                 Class tClass = getClazz();
                 if (Collection.class.isAssignableFrom(tClass)) {
-                    MethodUtils
-                            .invokeMethod(getValue(context), "remove", child);
+                    MethodUtils.invokeMethod(obj, "remove", child);
                 } else if (Map.class.isAssignableFrom(tClass)) {
-                    MethodUtils
-                            .invokeMethod(getValue(context), "remove", child);
+                    MethodUtils.invokeMethod(obj, "remove", child);
                 } else {
                     throw new DescriptorException(
                             DescriptorException.ErrorCode.FailedToRemoveChildElement,
@@ -1225,11 +1219,8 @@ public class NodeDescriptor extends Descriptor {
                 // base name and excute the derived method on contxt object
                 String methodName = "remove" + StringUtils.capitalize(baseName);
 
-                // TODO This is a tempoaray fix until we resolve the discrepency
-                // with collections.
-                if (getValue(context) instanceof IMObject) {
-                    MethodUtils.invokeMethod(getValue(context), methodName,
-                            child);
+                if (obj instanceof IMObject) {
+                    MethodUtils.invokeMethod(obj, methodName, child);
                 } else {
                     MethodUtils.invokeMethod(context, methodName, child);
                 }
@@ -1342,7 +1333,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * This setter enabled the user to specify an unbounded maximum collection
      * using '*'.
-     * 
+     *
      * @param maxCardinality
      *            The maxCardinality to set.
      */
@@ -1388,7 +1379,7 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * @param nodeDescriptors
+     * @param nodes
      *            The nodeDescriptors to set.
      */
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
@@ -1418,7 +1409,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Set the value of the readOnly attribute
-     * 
+     *
      * @param value
      */
     public void setReadOnly(boolean value) {
@@ -1444,7 +1435,7 @@ public class NodeDescriptor extends Descriptor {
 
     /**
      * Set the node value for the specified {@link IMObject}.
-     * 
+     *
      * @param context
      *            the context object, which will be the target of the set
      * @param value
@@ -1459,7 +1450,7 @@ public class NodeDescriptor extends Descriptor {
 //                    DescriptorException.ErrorCode.CannotSetValueForReadOnlyNode,
 //                    new Object[] { getName() });
 //        }
-        
+
         if (context == null) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.NullContextForSetValue,
@@ -1481,7 +1472,7 @@ public class NodeDescriptor extends Descriptor {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.domain.im.common.IMObject#toString()
      */
     @Override
@@ -1503,18 +1494,18 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * This is a helper method that will attempt to convert a string to the 
-     * type specified by this node descriptor. If the node descriptor is of 
+     * This is a helper method that will attempt to convert a string to the
+     * type specified by this node descriptor. If the node descriptor is of
      * type string then it will simply return the same string otherwise it
-     * will search for a constructor of that type that takes a string and 
+     * will search for a constructor of that type that takes a string and
      * return the transformed object.
-     * 
+     *
      * @param value
      *            the string value
      * @return Object
-     *            the transformed object                            
+     *            the transformed object
      */
-    private Object transform(Object value) 
+    private Object transform(Object value)
     throws Exception {
         if ((value == null) ||
             (this.isCollection()) ||
@@ -1530,11 +1521,11 @@ public class NodeDescriptor extends Descriptor {
                 new Object[] {value.getClass().getName(), getClazz().getName()});
         }
     }
-    
+
     /**
      * This method will uncamel case the speified string and return it to the
      * caller
-     * 
+     *
      * @param name
      *            the camel cased strig
      * @return String
@@ -1571,7 +1562,7 @@ class AssertionDescriptorIndexComparator implements Comparator<AssertionDescript
         if (no1 == no2) {
             return 0;
         }
-        
+
         if (no1.getIndex() == no2.getIndex()) {
             return 0;
         } else if (no1.getIndex() >  no2.getIndex()) {

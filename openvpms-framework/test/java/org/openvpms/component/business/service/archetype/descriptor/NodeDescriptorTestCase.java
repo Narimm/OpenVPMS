@@ -19,237 +19,317 @@
 
 package org.openvpms.component.business.service.archetype.descriptor;
 
-// java core 
-import java.io.InputStreamReader;
-import java.util.Hashtable;
-
-// castor 
+import junit.log4j.LoggedTestCase;
+import org.apache.commons.lang.StringUtils;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
-
-// commons-lang
-import org.apache.commons.lang.StringUtils;
-
-// sax
-import org.xml.sax.InputSource;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.system.common.test.BaseTestCase;
+import org.openvpms.component.business.domain.im.common.Classification;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.xml.sax.InputSource;
+
+import java.io.InputStreamReader;
+import java.util.List;
 
 
 /**
- * Test the all the archetype related descriptors.
+ * Tests the {@link NodeDescriptor} class.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class NodeDescriptorTestCase extends BaseTestCase {
+public class NodeDescriptorTestCase extends LoggedTestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(NodeDescriptorTestCase.class);
+    /**
+     * The archetype descriptors.
+     */
+    private ArchetypeDescriptors _archetypes;
+
+    /**
+     * The mapping path.
+     */
+    private static final String MAPPING
+            = "org/openvpms/component/business/domain/im/archetype/descriptor/archetype-mapping-file.xml";
+
+    /**
+     * The archetype descriptors path.
+     */
+    private static final String ARCHETYPES
+            = "org/openvpms/component/business/service/archetype/descriptor/archetypes.xml";
+
+
+    /**
+     * Tests the {@link NodeDescriptor#getDisplayName()} method.
+     */
+    public void testDisplayName() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+
+        // node with display name specified
+        NodeDescriptor uid = archetype.getNodeDescriptor("uid");
+        assertNotNull(uid);
+        assertEquals("id", uid.getDisplayName());
+
+        // node with no display name specified
+        NodeDescriptor firstName = archetype.getNodeDescriptor("firstName");
+        assertNotNull(firstName);
+        assertEquals("First Name", firstName.getDisplayName());
+
+        // iterate through the top level nodes and enusre that the
+        // display name is not null
+        for (NodeDescriptor node : archetype.getNodeDescriptorsAsArray()) {
+            assertFalse(StringUtils.isEmpty(node.getDisplayName()));
+        }
     }
 
     /**
-     * Constructor for DescriptorTestCase.
-     * @param name
+     * Tests the {@link NodeDescriptor#getMaxLength()} method.
      */
-    public NodeDescriptorTestCase(String name) {
-        super(name);
+    public void testDefaultMaxLength() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+
+        // no max length specified, should be default
+        NodeDescriptor title = archetype.getNodeDescriptor("title");
+        assertNotNull(title);
+        assertEquals(NodeDescriptor.DEFAULT_MAX_LENGTH, title.getMaxLength());
+
+        // max length specified
+        NodeDescriptor firstName = archetype.getNodeDescriptor("firstName");
+        assertNotNull(firstName);
+        assertEquals(30, firstName.getMaxLength());
     }
 
-    /*
-     * @see BaseTestCase#setUp()
+    /**
+     * Tests the {@link NodeDescriptor#isLookup()} method.
      */
+    public void testIsLookup() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+
+        // lookup node
+        NodeDescriptor title = archetype.getNodeDescriptor("title");
+        assertNotNull(title);
+        assertTrue(title.isLookup());
+
+        // non-lookup node
+        NodeDescriptor lastName = archetype.getNodeDescriptor("lastName");
+        assertNotNull(lastName);
+        assertFalse(lastName.isLookup());
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#isLookup()} method.
+     */
+    public void testIsHidden() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+
+        // hidden node
+        NodeDescriptor details = archetype.getNodeDescriptor("details");
+        assertNotNull(details);
+        assertTrue(details.isHidden());
+
+        // non-hidden node
+        NodeDescriptor firstName = archetype.getNodeDescriptor("firstName");
+        assertNotNull(firstName);
+        assertFalse(firstName.isHidden());
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#getArchetypeRange()} method.
+     */
+    public void testArchetypeRange() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+        NodeDescriptor node = archetype.getNodeDescriptor("classifications");
+        assertTrue(node != null);
+        String[] range = node.getArchetypeRange();
+        assertNotNull(range);
+        assertTrue(range.length == 2);
+        assertEquals("classification.personType", range[0]);
+        assertEquals("classification.staff", range[1]);
+
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#getMinCardinality()} and
+     * {@link NodeDescriptor#getMaxCardinality()} methods.
+     */
+    public void testCardinality() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+
+        // simple node with unspecified cardinality
+        NodeDescriptor initials = archetype.getNodeDescriptor("initials");
+        assertNotNull(initials);
+        assertEquals(0, initials.getMinCardinality());
+        assertEquals(1, initials.getMaxCardinality());
+
+        // simple node with specified cardinality
+        NodeDescriptor firstName = archetype.getNodeDescriptor("firstName");
+        assertNotNull(firstName);
+        assertEquals(1, firstName.getMinCardinality());
+        assertEquals(1, firstName.getMaxCardinality());
+
+        // collection node with unspecified cardinality
+        NodeDescriptor classifications = archetype.getNodeDescriptor(
+                "classifications");
+        assertNotNull(classifications);
+        assertEquals(0, classifications.getMinCardinality());
+        assertEquals(1, classifications.getMaxCardinality());
+
+        // collection node with specified cardinality
+        NodeDescriptor contacts = archetype.getNodeDescriptor("contacts");
+        assertNotNull(contacts);
+        assertEquals(1, contacts.getMinCardinality());
+        assertEquals(NodeDescriptor.UNBOUNDED, contacts.getMaxCardinality());
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#isParentChild()} method.
+     */
+    public void testParentChildAttribute() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+
+        // parent-child node
+        NodeDescriptor contacts = archetype.getNodeDescriptor("contacts");
+        assertTrue(contacts != null);
+        assertTrue(contacts.isParentChild());
+
+        // non parent-child node
+        NodeDescriptor identities = archetype.getNodeDescriptor("identities");
+        assertTrue(identities != null);
+        assertFalse(identities.isParentChild());
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#addChildToCollection} and
+     * {@link NodeDescriptor#removeChildFromCollection} method, when
+     * a baseName is specified on the descriptor.
+     */
+    public void testCollectionAddRemove() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+        Party party = new Party();
+        NodeDescriptor node = archetype.getNodeDescriptor("contacts");
+        assertNotNull(node);
+        assertNotNull(node.getBaseName());
+
+        // add a contact
+        Contact contact = new Contact();
+        node.addChildToCollection(party, contact);
+
+        // verify it was added
+        List<IMObject> values = node.getChildren(party);
+        assertNotNull(values);
+        assertEquals(1, values.size());
+        IMObject value = values.get(0);
+        assertEquals(contact, value);
+
+        // remove the contact
+        node.removeChildFromCollection(party, contact);
+
+        // verify it was removed
+        values = node.getChildren(party);
+        assertNotNull(values);
+        assertTrue(values.isEmpty());
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#addChildToCollection} and
+     * {@link NodeDescriptor#removeChildFromCollection} method, when
+     * no baseName is specified on the descriptor.
+     */
+    public void testCollectionAddRemoveNoBaseName() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+        Party party = new Party();
+        NodeDescriptor node = archetype.getNodeDescriptor("classifications");
+        assertNotNull(node);
+        assertNull(node.getBaseName());
+
+        // add a classification
+        Classification classification = new Classification();
+        node.addChildToCollection(party, classification);
+
+        // verify it was added
+        List<IMObject> values = node.getChildren(party);
+        assertNotNull(values);
+        assertEquals(1, values.size());
+        IMObject value = values.get(0);
+        assertEquals(classification, value);
+
+        // remove the classification
+        node.removeChildFromCollection(party, classification);
+
+        // verify it was removed
+        values = node.getChildren(party);
+        assertNotNull(values);
+        assertTrue(values.isEmpty());
+    }
+
+    /**
+     * Tests the {@link NodeDescriptor#removeChildFromCollection} method, when
+     * no baseName is specified on the descriptor.
+     */
+    public void testRemoveChildFromCollectionNoBaseName() {
+        ArchetypeDescriptor archetype = getArchetype("person.person");
+        Party party = new Party();
+
+        Classification classification = new Classification();
+        NodeDescriptor node = archetype.getNodeDescriptor("classifications");
+        assertNotNull(node);
+        assertNull(node.getBaseName());
+        node.addChildToCollection(party, classification);
+
+        // verify it was added
+        List<IMObject> values = node.getChildren(party);
+        assertNotNull(values);
+        assertEquals(1, values.size());
+        IMObject value = values.get(0);
+        assertEquals(classification, value);
+    }
+
+
+    /**
+     * Sets up the test case.
+     *
+     * @throws Exception for any error
+     */
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-    }
-
-    /*
-     * @see BaseTestCase#tearDown()
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
+        _archetypes = getArchetypeDescriptors();
     }
 
     /**
-     * Test that the display name for the archetype and node default to the
-     * name of those elements
+     * Returns the named archetype descriptor.
+     *
+     * @param shortName the archetype short name
+     * @return the archetype descriptor corresponding to <code>shortName</code>
      */
-    public void testDefaultDisplayName()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        
-        // load the archetypes
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        // test that the archetype display name defaults to the name
-        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptorsAsArray()[0];
-        assertTrue(descriptor.getDisplayName().equals(descriptor.getShortName()));
-        
-        // iterate through the top level nodes and enusre that the 
-        // display name is not null
-        for (NodeDescriptor node : descriptor.getNodeDescriptorsAsArray()) {
-            assertTrue(StringUtils.isEmpty(node.getDisplayName()) == false);
-        }
+    private ArchetypeDescriptor getArchetype(String shortName) {
+        ArchetypeDescriptor archetype
+                = _archetypes.getArchetypeDescriptors().get(shortName);
+        assertNotNull(archetype);
+        return archetype;
     }
 
     /**
-     * Test that the max length defaults to the appropriate value for a node
+     * Loads the archetype descriptors.
+     *
+     * @return the archetype descriptors
+     * @throws Exception if the descriptors can't be loaded
      */
-    public void testDefaultMaxLength()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        
-        // load the archetypes
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        // test that the archetype display name defaults to the name
-        ArchetypeDescriptor descriptor = (ArchetypeDescriptor)descriptors
-                    .getArchetypeDescriptorsAsArray()[0];
-        
-        // iterate through the top level nodes and enusre that the 
-        // display name defaults to the name
-        for (NodeDescriptor node : descriptor.getNodeDescriptorsAsArray()) {
-            assertTrue(node.getMaxLength() == NodeDescriptor.DEFAULT_MAX_LENGTH);
-        }
-    }
-    
-    /**
-     * Test that IsLookup works for a specified node
-     */
-    public void testIsLookup()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testIsLookup", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        NodeDescriptor ndesc = descriptors.getArchetypeDescriptorsAsArray()[0]
-                         .getNodeDescriptor(nodeName);
-        assertTrue(ndesc.isLookup());
-        
-    }
-    
-    /**
-     * Test that the isHidden method works
-     */
-    public void testIsHidden()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)gparams.get("archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testIsHidden", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
-        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.isHidden());
-    }
-    
-    /**
-     * Test the archetype range helper method.
-     */
-    public void testArchetypeRange()
-    throws Exception {
-        
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testArchetypeRange", "normal", "archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testArchetypeRange", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
-        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.getArchetypeRange().length == 2);
-    }
-    
-    /**
-     * Test that maxCardinality works 
-     */
-    public void testMaxCardinality()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testMaxCardinality", "normal", "archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testMaxCardinality", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
-        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.getMaxCardinality() == NodeDescriptor.UNBOUNDED);
-    }
-    
-    /**
-     * Test that the parent child node attribute works correctly 
-     */
-    public void testParentChildAttribute()
-    throws Exception {
-        Hashtable gparams = getTestData().getGlobalParams();
-        String mfile = (String)gparams.get("mappingFile");
-        String afile = (String)this.getTestData().getTestCaseParameter(
-                "testParentChildAttribute", "normal", "archetypeFile");
-        String nodeName = (String)this.getTestData().getTestCaseParameter(
-                "testParentChildAttribute", "normal", "nodeName");
-        
-        ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        
-        ArchetypeDescriptor adesc = descriptors.getArchetypeDescriptorsAsArray()[0];
-        NodeDescriptor ndesc  = adesc.getNodeDescriptor(nodeName);
-        assertTrue(ndesc != null);
-        assertTrue(ndesc.isParentChild() == false);
-    }
-    
-    /**
-     * Get archetype descriptors
-     * 
-     * @param mfile
-     *            the mapping file
-     * @param afile
-     *            the archetype descriptor file            
-     * @return ArchetypeDescriptors
-     * @throws Exception
-     */
-    private ArchetypeDescriptors getArchetypeDescriptors(String mfile, String afile)
-    throws Exception {
+    private ArchetypeDescriptors getArchetypeDescriptors()
+            throws Exception {
         Mapping mapping = new Mapping();
         mapping.loadMapping(new InputSource(new InputStreamReader(
                 Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(mfile))));
-        
+                        .getResourceAsStream(MAPPING))));
+
         // set up the unmarshaller
         Unmarshaller unmarshaller = new Unmarshaller(mapping);
-        return  (ArchetypeDescriptors)unmarshaller.unmarshal(
+        return (ArchetypeDescriptors) unmarshaller.unmarshal(
                 new InputSource(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(afile))));
+                        Thread.currentThread().getContextClassLoader()
+                                .getResourceAsStream(ARCHETYPES))));
     }
 }

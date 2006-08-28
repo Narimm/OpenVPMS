@@ -20,23 +20,18 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // java core
-import java.io.InputStreamReader;
-import java.util.Hashtable;
-import java.util.List;
-
-// castor 
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.xml.Unmarshaller;
-
-// sax
-import org.xml.sax.InputSource;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptors;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.system.common.test.BaseTestCase;
+import org.xml.sax.InputSource;
+
+import java.io.InputStreamReader;
+import java.util.Hashtable;
+import java.util.List;
 
 
 /**
@@ -148,12 +143,12 @@ public class ArchetypeDescriptorTestCase extends BaseTestCase {
                 "testGetNodeDescriptorMethods", "normal", "archetypeFile");
         
         ArchetypeDescriptors descriptors = getArchetypeDescriptors(mfile, afile);
-        assertTrue(descriptors.getArchetypeDescriptors().size() == 1);
-        ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptorsAsArray()[0];
-        assertTrue(descriptor.getType().getShortName().equals("person.person"));
-        assertTrue(descriptor.getAllNodeDescriptors().size() == 10);
-        assertTrue(descriptor.getSimpleNodeDescriptors().size() == 7);
-        assertTrue(descriptor.getComplexNodeDescriptors().size() == 3);
+        assertEquals(2, descriptors.getArchetypeDescriptors().size());
+        ArchetypeDescriptor descriptor = descriptors.getArchetypeDescriptors().get("person.person");
+        assertEquals("person.person", descriptor.getType().getShortName());
+        assertEquals(12, descriptor.getAllNodeDescriptors().size());
+        assertEquals(8, descriptor.getSimpleNodeDescriptors().size());
+        assertEquals(4, descriptor.getComplexNodeDescriptors().size());
     }
     
     /**
