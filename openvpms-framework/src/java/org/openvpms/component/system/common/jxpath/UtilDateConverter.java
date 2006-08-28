@@ -99,6 +99,12 @@ public final class UtilDateConverter implements Converter {
 
         try {
             if (value instanceof String) {
+                // Temporay fix for OBF-125.  Need to use locale instead
+                if (((String)value).indexOf(':') == -1)
+                    formatter = new SimpleDateFormat("dd/MM/yyyy");
+                else
+                    formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");                    
+                   
                 return (Date)formatter.parse((String)value);
             }
             
