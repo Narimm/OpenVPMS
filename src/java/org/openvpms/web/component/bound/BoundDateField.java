@@ -18,16 +18,15 @@
 
 package org.openvpms.web.component.bound;
 
+import echopointng.DateField;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.edit.Property;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.Date;
-
-import echopointng.DateField;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-
-import org.openvpms.web.component.edit.Property;
 
 
 /**
@@ -80,15 +79,16 @@ public class BoundDateField extends DateField {
             protected void setFieldValue(Object value) {
                 getDateChooser().removePropertyChangeListener(_listener);
                 Date date = (Date) value;
+                Calendar calendar = null;
                 if (date != null) {
-                    Calendar calendar = Calendar.getInstance();
+                    calendar = Calendar.getInstance();
                     calendar.setTime(date);
-                    getDateChooser().setSelectedDate(calendar);
                 }
+                getDateChooser().setSelectedDate(calendar);
                 getDateChooser().addPropertyChangeListener(_listener);
             }
         };
         _binder.setField();
     }
-    
+
 }

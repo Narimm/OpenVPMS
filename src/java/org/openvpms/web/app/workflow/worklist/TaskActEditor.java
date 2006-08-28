@@ -62,9 +62,6 @@ public class TaskActEditor extends AbstractActEditor {
         });
 
         Property endTime = getProperty("endTime");
-        if (endTime.getValue() == null) {
-            endTime.setValue(Context.getInstance().getWorkListDate());
-        }
         endTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
                 onEndTimeChanged();
@@ -108,7 +105,7 @@ public class TaskActEditor extends AbstractActEditor {
         String value = (String) status.getValue();
         if ("Completed".equals(value) || "Cancelled".equals(value)) {
             endTime.setValue(new Date());
-        } else if ("Pending".equals(value)) {
+        } else {
             endTime.setValue(null);
         }
     }
