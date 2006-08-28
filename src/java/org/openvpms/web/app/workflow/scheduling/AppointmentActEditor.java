@@ -94,13 +94,20 @@ public class AppointmentActEditor extends AbstractActEditor {
      * @return the default time
      */
     private Date getDefaultTime() {
+        int slotSize = 15;
+        Party schedule = (Party) getParticipant("schedule");
+        if (schedule != null) {
+            slotSize = AppointmentRules.getSlotSize(schedule);
+        }
         Calendar calendar = new GregorianCalendar();
-        int mins = calendar.get(Calendar.MINUTE);
-        mins = ((mins / 15) * 15) + 15;
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        calendar.add(Calendar.MINUTE, mins);
+        if (slotSize != 0) {
+            int mins = calendar.get(Calendar.MINUTE);
+            mins = ((mins / slotSize) * slotSize) + slotSize;
+            calendar.add(Calendar.MINUTE, mins);
+        }
         return calendar.getTime();
     }
 
