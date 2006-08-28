@@ -43,6 +43,7 @@
 </data>
 <data id="A5" archetype="party.patientpet" name="Muffett" species="Canine" breed="Chihuahua (smooth)" colour="Black Tan White" sex="Male" dateOfBirth="18/04/1985" desexed="True" deceased="False" Active="True" >
 <data collection="identities" archetype="entityIdentity.microchip" microchip="97345612"  />
+<data collection="identities" archetype="entityIdentity.petTag" petTag="123456"  />
 </data>
 <data archetype="entityRelationship.patientOwner" source="id:C3" target="id:A5"  />
 <data id="C4" archetype="party.customerperson" title="Ms" firstName="Susy" initials="S" lastName="Smith" code="SMIT5656" >
