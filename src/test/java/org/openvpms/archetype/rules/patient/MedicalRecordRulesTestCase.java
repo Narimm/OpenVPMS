@@ -188,6 +188,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     protected Act createProblem() {
         Act act = createAct("act.patientClinicalProblem");
         addParticipation(act, _patient, "participation.patient");
+        addParticipation(act, _clinician, "participation.clinician");
         return act;
     }
 
