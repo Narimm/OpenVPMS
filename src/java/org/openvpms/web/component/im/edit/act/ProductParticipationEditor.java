@@ -149,9 +149,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
         IConstraint hasNoSpeciesClassification = new ArchetypeNodeConstraint(
                 ArchetypeProperty.ConceptName, RelationalOp.NE, "species");
 
-        // @todo revisit on completion of OBF-40
         CollectionNodeConstraint constraint
-                = new CollectionNodeConstraint("species", false);
+                = new CollectionNodeConstraint("species");
         constraint.setJoinType(CollectionNodeConstraint.JoinType.LeftOuterJoin);
         constraint.add(isActive);
         constraint.add(new OrConstraint()

@@ -23,8 +23,8 @@ import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -50,7 +50,7 @@ import java.util.Set;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientQuery extends AbstractQuery {
+public class PatientQuery extends AbstractEntityQuery {
 
     /**
      * The customer to limit the search to. If <code>null</code>, indicates to
@@ -115,20 +115,20 @@ public class PatientQuery extends AbstractQuery {
      * @return the query result set
      */
     @Override
-    public ResultSet query(SortConstraint[] sort) {
+    public ResultSet<Entity> query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
-        ResultSet result;
+        ResultSet<Entity> result;
         if (_allPatients.isSelected()) {
             result = super.query(sort);
         } else {
-            List<IMObject> objects = null;
+            List<Entity> objects = null;
             if (_customer != null) {
                 objects = filterForCustomer();
             }
             if (objects == null) {
                 objects = Collections.emptyList();
             }
-            result = new PreloadedResultSet<IMObject>(objects, getMaxRows());
+            result = new PreloadedResultSet<Entity>(objects, getMaxRows());
             if (sort != null) {
                 result.sort(sort);
             }
@@ -182,16 +182,16 @@ public class PatientQuery extends AbstractQuery {
      * @return a list of patients associated with the customer that matches the
      *         specified criteria
      */
-    private List<IMObject> filterForCustomer() {
-        List<IMObject> result = null;
-        List<IMObject> patients = getPatients(_customer);
+    private List<Entity> filterForCustomer() {
+        List<Entity> result = null;
+        List<Entity> patients = getPatients(_customer);
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();
 
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             for (String shortName : getShortNames()) {
-                List<IMObject> matches
+                List<Entity> matches
                         = filter(patients, shortName, name, activeOnly);
                 if (result == null) {
                     result = matches;
@@ -214,12 +214,12 @@ public class PatientQuery extends AbstractQuery {
      * @param activeOnly if <code>true</code>, only include active objects
      * @return a list of objects that matches the specified criteria
      */
-    private List<IMObject> filter(List<IMObject> objects, String shortName,
-                                  String name, boolean activeOnly) {
+    private List<Entity> filter(List<Entity> objects, String shortName,
+                                String name, boolean activeOnly) {
         objects = IMObjectHelper.findByName(name, objects);
 
-        List<IMObject> result = new ArrayList<IMObject>();
-        for (IMObject object : objects) {
+        List<Entity> result = new ArrayList<Entity>();
+        for (Entity object : objects) {
             ArchetypeId id = object.getArchetypeId();
             if (!TypeHelper.matches(id, shortName)) {
                 continue;
@@ -238,8 +238,8 @@ public class PatientQuery extends AbstractQuery {
      * @param customer the customer
      * @return a list of patients associated with <code>nustomer</code>
      */
-    private List<IMObject> getPatients(Party customer) {
-        List<IMObject> result = new ArrayList<IMObject>();
+    private List<Entity> getPatients(Party customer) {
+        List<Entity> result = new ArrayList<Entity>();
         Set<EntityRelationship> relationships
                 = customer.getEntityRelationships();
         IMObjectReference source = new IMObjectReference(customer);
@@ -252,7 +252,7 @@ public class PatientQuery extends AbstractQuery {
                                 (relationship.getActiveEndTime().after(
                                         new Date(System.currentTimeMillis())))))
                 {
-                    IMObject object = IMObjectHelper.getObject(
+                    Entity object = (Entity) IMObjectHelper.getObject(
                             relationship.getTarget());
                     if (object != null) {
                         result.add(object);

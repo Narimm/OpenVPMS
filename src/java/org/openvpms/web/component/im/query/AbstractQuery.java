@@ -87,6 +87,11 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     private IConstraint _constraints;
 
     /**
+     * Determines if the query should be run automatically.
+     */
+    private boolean _auto;
+
+    /**
      * Determines if duplicate rows should be filtered.
      */
     private boolean _distinct;
@@ -276,11 +281,21 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
+     * @param auto if <code>true</code> the query should be run automatically
+     */
+    public void setAuto(boolean auto) {
+        _auto = auto;
+    }
+
+
+    /**
+     * Determines if the query should be run automatically.
+     *
      * @return <code>true</code> if the query should be run automaticaly;
-     *         otherwie <code>false</code>
+     *         otherwise <code>false</code>
      */
     public boolean isAuto() {
-        return false;
+        return _auto;
     }
 
     /**

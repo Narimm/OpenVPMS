@@ -18,29 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.spring.ServiceHelper;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
-import org.openvpms.component.system.common.query.IPage;
-import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -49,23 +30,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultResultSet<T extends IMObject>
-        extends AbstractArchetypeServiceResultSet<T> {
-
-    /**
-     * The archetypes to query.
-     */
-    private final BaseArchetypeConstraint _archetypes;
-
-    /**
-     * The instance name.
-     */
-    private final String _instanceName;
-
-    /**
-     * The logger.
-     */
-    private final Log _log = LogFactory.getLog(DefaultResultSet.class);
+public class DefaultResultSet<T extends IMObject> extends NameResultSet<T> {
 
 
     /**
@@ -82,105 +47,7 @@ public class DefaultResultSet<T extends IMObject>
     public DefaultResultSet(BaseArchetypeConstraint archetypes,
                             String instanceName, IConstraint constraints,
                             SortConstraint[] sort, int rows, boolean distinct) {
-        super(constraints, rows, sort);
-        _archetypes = archetypes;
-        _instanceName = instanceName;
-        setDistinct(distinct);
-        reset();
+        super(archetypes, instanceName, constraints, sort, rows, distinct);
     }
-
-    /**
-     * Returns the specified page.
-     *
-     * @param firstRow the first row of the page to retrieve
-     * @param maxRows  the maximun no of rows in the page
-     * @return the page corresponding to <code>firstRow</code>, or
-     *         <code>null</code> if none exists
-     */
-    protected IPage<T> getPage(int firstRow, int maxRows) {
-        IPage<IMObject> result = null;
-        try {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            ArchetypeQuery query = new ArchetypeQuery(_archetypes);
-            if (!StringUtils.isEmpty(_instanceName)) {
-                query.add(new NodeConstraint("name", _instanceName));
-            }
-            IConstraint constraints = getConstraints();
-            if (constraints != null) {
-                query.add(constraints);
-            }
-            for (SortConstraint sort : getSortConstraints()) {
-                query.add(sort);
-            }
-            query.setFirstRow(firstRow);
-            query.setNumOfRows(maxRows);
-            query.setDistinct(isDistinct());
-            result = service.get(query);
-        } catch (OpenVPMSException exception) {
-            _log.error(exception, exception);
-        }
-        return convert(result);
-    }
-
-    /**
-     * Determines if a node can be sorted on.
-     *
-     * @param node the node
-     * @return <code>true</code> if the node can be sorted on, otherwise
-     *         <code>false</code>
-     */
-    private boolean isValidSortNode(String node) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        List<ArchetypeDescriptor> archetypes = getArchetypes(service);
-        NodeDescriptor descriptor;
-
-        for (ArchetypeDescriptor archetype : archetypes) {
-            descriptor = archetype.getNodeDescriptor(node);
-            if (descriptor == null) {
-                _log.warn("Can't sort results on node=" + node
-                        + ". Node not supported by archetype="
-                        + archetype.getName());
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns all archetypes matching the reference model, entity and concept
-     * names.
-     *
-     * @param service the archetype service
-     * @return the archetypes matching the names
-     */
-    private List<ArchetypeDescriptor> getArchetypes(IArchetypeService service) {
-        String[] shortNames;
-        if (_archetypes instanceof ArchetypeLongNameConstraint) {
-            ArchetypeLongNameConstraint constraint
-                    = (ArchetypeLongNameConstraint) _archetypes;
-            shortNames = DescriptorHelper.getShortNames(
-                    constraint.getRmName(), constraint.getEntityName(),
-                    constraint.getConceptName());
-        } else if (_archetypes instanceof ArchetypeShortNameConstraint) {
-            ArchetypeShortNameConstraint constraint
-                    = (ArchetypeShortNameConstraint) _archetypes;
-            shortNames = DescriptorHelper.getShortNames(
-                    constraint.getShortNames());
-        } else {
-            shortNames = new String[0];
-        }
-        List<ArchetypeDescriptor> archetypes
-                = new ArrayList<ArchetypeDescriptor>(shortNames.length);
-        for (String shortName : shortNames) {
-            ArchetypeDescriptor archetype = service.getArchetypeDescriptor(
-                    shortName);
-            if (archetype != null) {
-                archetypes.add(archetype);
-            }
-        }
-
-        return archetypes;
-    }
-
 
 }
