@@ -43,20 +43,13 @@ import org.openvpms.web.resource.util.Messages;
 public class DocumentActPrinter extends AbstractIMObjectPrinter {
 
     /**
-     * The document context.
-     */
-    private IMObject _context;
-
-    /**
      * Constructs a new <code>PatientDocumentPrinter</code>.
      *
      * @param type display name for the types of objects that this may
      *             print
-     * @param context TODO
      */
-    public DocumentActPrinter(String type, IMObject context) {
+    public DocumentActPrinter(String type) {
         super(type);
-        _context = context;
     }
 
     /**
@@ -94,12 +87,8 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter {
         Document doc = (Document) IMObjectHelper.getObject(
                 act.getDocReference());
         if (doc == null) {
-            // need to generate the document
-            if (_context == null) {
-                throw new DocumentException(NotFound);
-            }
             ReportGenerator gen = new ReportGenerator(act);
-            doc = gen.generate(_context, DocFormats.PDF_TYPE);
+            doc = gen.generate(act, DocFormats.PDF_TYPE);
         }
         return doc;
     }

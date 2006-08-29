@@ -40,7 +40,8 @@ public class PatientDocumentActEditor extends DocumentActEditor {
      */
     public PatientDocumentActEditor(DocumentAct act, IMObject parent,
             LayoutContext context) {
-        super(act, parent, context, Context.getInstance().getPatient());
+        super(act, parent, context);
+        initParticipant("patient",Context.getInstance().getPatient());
     }
 
 }

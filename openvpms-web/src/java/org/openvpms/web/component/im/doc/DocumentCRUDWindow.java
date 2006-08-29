@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
@@ -52,11 +51,6 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
 
 
     /**
-     * The object used to generate the document 
-     */
-    private final IMObject _genobject;
-
-    /**
      * The refresh button.
      */
     private Button _refresh;
@@ -74,9 +68,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
      *                   create
      * @param shortNames the short names of archetypes that this may create
      */
-    public DocumentCRUDWindow(String type, String[] shortNames, IMObject object) {
+    public DocumentCRUDWindow(String type, String[] shortNames) {
         super(type, new ShortNameList(shortNames));
-        _genobject = object;
     }
 
     /**
@@ -149,7 +142,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
     @Override
     protected IMObjectPrinter createPrinter() {
         String type = getTypeDisplayName();
-        IMObjectPrinter printer = new DocumentActPrinter(type, _genobject);
+        IMObjectPrinter printer = new DocumentActPrinter(type);
         printer.setListener(new IMObjectPrinterListener() {
             public void printed(IMObject object) {
                 DocumentCRUDWindow.this.printed(object);
@@ -204,7 +197,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
         boolean refreshed = false;
         DocumentAct act = (DocumentAct) getObject();
         DocumentActEditor editor
-                = new DocumentActEditor(act, null, null, _genobject);
+                = new DocumentActEditor(act, null, null);
         if (editor.refresh()) {
             refreshed = editor.save();
             onSaved(act, false);
