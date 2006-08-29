@@ -35,9 +35,9 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -52,12 +52,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentActEditor extends AbstractIMObjectEditor {
-
-    /**
-     * The object used to generate the document 
-     */
-    private final IMObject _genobject;
+public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * The last document template.
@@ -81,12 +76,10 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
      * @param context the layout context. May be <code>null</code>.
-     * @param object TODO
      */
     public DocumentActEditor(DocumentAct act, IMObject parent,
-                                    LayoutContext context, IMObject object) {
+                                    LayoutContext context) {
         super(act, parent, context);
-        _genobject = object;
         Editor editor = getEditor(DOC_REFERENCE);
         if (editor != null) {
             editor.addModifiableListener(
@@ -165,21 +158,19 @@ public class DocumentActEditor extends AbstractIMObjectEditor {
      */
     private boolean generateDoc(IMObjectReference template) {
         boolean result = false;
-        if (_genobject != null) {
-            try {
-                ReportGenerator gen = new ReportGenerator(template);
-                Document doc = gen.generate(_genobject);
-                if (SaveHelper.save(doc)) {
-                    Property property = getProperty(DOC_REFERENCE);
-                    if (property != null) {
-                        property.setValue(doc.getObjectReference());
-                        updateFileProperties(doc);
-                    }
-                    result = true;
+        try {
+            ReportGenerator gen = new ReportGenerator(template);
+            Document doc = gen.generate(getObject());
+            if (SaveHelper.save(doc)) {
+                Property property = getProperty(DOC_REFERENCE);
+                if (property != null) {
+                    property.setValue(doc.getObjectReference());
+                    updateFileProperties(doc);
                 }
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
+                result = true;
             }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
         return result;
     }

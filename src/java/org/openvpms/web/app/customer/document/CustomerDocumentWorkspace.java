@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.customer.document;
 
+import java.util.List;
+
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -30,13 +32,12 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -66,7 +67,7 @@ public class CustomerDocumentWorkspace extends CustomerActWorkspace {
      */
     protected CRUDWindow createCRUDWindow() {
         String type = Messages.get("customer.document.createtype");
-        return new CustomerDocumentCRUDWindow(type, SHORT_NAMES);
+        return new DocumentCRUDWindow(type, SHORT_NAMES);
     }
 
     /**

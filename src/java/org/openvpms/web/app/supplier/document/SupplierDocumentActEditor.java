@@ -29,7 +29,8 @@ public class SupplierDocumentActEditor extends DocumentActEditor {
 
     public SupplierDocumentActEditor(DocumentAct act, IMObject parent,
             LayoutContext context) {
-        super(act, parent, context, Context.getInstance().getSupplier());
+        super(act, parent, context);
+        initParticipant("supplier",Context.getInstance().getSupplier());
     }
 
 }

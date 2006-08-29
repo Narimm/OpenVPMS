@@ -40,7 +40,8 @@ public class CustomerDocumentActEditor extends DocumentActEditor {
      */
     public CustomerDocumentActEditor(DocumentAct act, IMObject parent,
             LayoutContext context) {
-        super(act, parent, context, Context.getInstance().getCustomer());
+        super(act, parent, context);
+        initParticipant("customer",Context.getInstance().getCustomer());
     }
 
 }
