@@ -484,6 +484,12 @@
         </unitTest>
     <resources>
       <resource>
+        <directory>${basedir}/src/java</directory>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+      <resource>
         <directory>${basedir}/src/archetypes</directory>
         <includes>
           <include>**/*.adl</include>
