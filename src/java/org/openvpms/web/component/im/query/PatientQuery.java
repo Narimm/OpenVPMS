@@ -216,7 +216,7 @@ public class PatientQuery extends AbstractEntityQuery {
      */
     private List<Entity> filter(List<Entity> objects, String shortName,
                                 String name, boolean activeOnly) {
-        objects = IMObjectHelper.findByName(name, objects);
+        objects = IMObjectHelper.findEntityByName(name, objects);
 
         List<Entity> result = new ArrayList<Entity>();
         for (Entity object : objects) {
