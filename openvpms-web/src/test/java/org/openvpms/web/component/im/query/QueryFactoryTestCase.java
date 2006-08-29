@@ -18,11 +18,10 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.test.AbstractAppTest;
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.List;
 
@@ -40,15 +39,15 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      * specified.
      */
     public void testDefaultQuery() {
-        checkCreate("party.customerperson", DefaultQuery.class);
+        checkCreate("classification.*", DefaultQuery.class);
     }
 
     /**
-     * Verifies that a {@link AutoQuery} is returned for <em>lookup.*</em> short
-     * names.
+     * Verifies that a {@link EntityQuery} is returned for
+     * <em>party.customer*</em> short names.
      */
-    public void testLookupsAutoQuery() {
-        checkCreate("lookup.*", AutoQuery.class);
+    public void testCustomerEntityQuery() {
+        checkCreate("party.customer*", EntityQuery.class);
     }
 
     /**
@@ -68,11 +67,11 @@ public class QueryFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link AutoQuery} is returned for
+     * Verifies that a {@link EntityQuery} is returned for
      * <em>party.supplier*</em> short names.
      */
-    public void testSupplierAutoQuery() {
-        checkCreate("party.supplier*", AutoQuery.class);
+    public void testSupplierEntityQuery() {
+        checkCreate("party.supplier*", EntityQuery.class);
     }
 
     /**
