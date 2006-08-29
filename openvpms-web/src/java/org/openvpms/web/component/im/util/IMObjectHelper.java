@@ -22,6 +22,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -185,6 +187,36 @@ public class IMObjectHelper {
     }
 
     /**
+     * Returns a list of entities with matching name, code or identity.
+     * All strings are treated as case-insensitive.
+     *
+     * @param name    the name. May contain wildcards. If null or empty,
+     *                indicates no filtering.
+     * @param objects the objects to filter
+     */
+    public static <T extends Entity> List<T> findEntityByName(
+            String name, Collection<T> objects) {
+        List<T> result = new ArrayList<T>();
+        if (StringUtils.isEmpty(name)) {
+            result.addAll(objects);
+        } else {
+            try {
+                String regex = StringUtilities.toRegEx(name.toLowerCase());
+                for (T object : objects) {
+                    if (matches(object.getName(), regex)
+                            || matches(object.getCode(), regex)
+                            || identityMatches(object, regex)) {
+                        result.add(object);
+                    }
+                }
+            } catch (PatternSyntaxException exception) {
+                _log.warn(exception);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Determines if the current object being edited matches archetype range of
      * the specified descriptor.
      *
@@ -204,6 +236,37 @@ public class IMObjectHelper {
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if an entity has any identities that match a regular
+     * expression.
+     *
+     * @param object the entity
+     * @param regex  the regular expression
+     * @return <code>true</code> if there is at least one match;
+     *         otherwise <code>false</code>
+     * @throws PatternSyntaxException if the expression is invalid
+     */
+    private static boolean identityMatches(Entity object, String regex) {
+        for (EntityIdentity identityh : object.getIdentities()) {
+            if (matches(identityh.getIdentity(), regex)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if string matches a regular expression.
+     *
+     * @param value  the value. May be <code>null</code>
+     * @param regexp the regular expression
+     * @return <code>true</code> if it matches; otherwise <code>false</code>
+     * @throws PatternSyntaxException if the expression is invalid
+     */
+    private static boolean matches(String value, String regexp) {
+        return (value != null && value.toLowerCase().matches(regexp));
     }
 
 }
