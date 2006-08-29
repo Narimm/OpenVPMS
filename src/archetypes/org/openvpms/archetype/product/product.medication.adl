@@ -55,6 +55,13 @@
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>				
+			<node name="dispensingUnits" displayName="Dispensing Units" path="/details/attributes/dispensingUnits" type="java.lang.String" minCardinality="0" >
+				<assertion name="lookup">
+					<property name="type" value="lookup" />
+					<property name="source" value="lookup.uom" />
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>				
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"
