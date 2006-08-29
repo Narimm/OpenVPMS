@@ -18,41 +18,41 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
 
 /**
- * Query implementation that queries {@link IMObject} instances on short name,
+ * Query implementation that queries {@link Entity} instances on short name,
  * instance name, and active/inactive status.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-08-17 06:51:11Z $
  */
-public class DefaultQuery<T extends IMObject> extends AbstractQuery<T> {
+public class EntityQuery extends AbstractEntityQuery {
 
     /**
-     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
-     * specified short names.
+     * Construct a new <code>EntityQuery</code> that queries entities
+     * with the specified short names.
      *
      * @param shortNames the short names
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public DefaultQuery(String[] shortNames) {
+    public EntityQuery(String[] shortNames) {
         super(shortNames);
     }
 
     /**
-     * Construct a new <code>DefaultQuery</code> that queries IMObjects with the
-     * specified criteria.
+     * Construct a new <code>EntityQuery</code> that queries entities
+     * with the specified criteria.
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
      */
-    public DefaultQuery(String refModelName, String entityName,
-                        String conceptName) {
+    public EntityQuery(String refModelName, String entityName,
+                       String conceptName) {
         super(refModelName, entityName, conceptName);
     }
 
