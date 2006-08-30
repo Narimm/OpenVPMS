@@ -16,27 +16,29 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.worklist;
+package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 
 
 /**
- * Task table model.
+ * Table model for <em>act.patientClinicalEvent</em>e.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskTableModel extends AbstractActTableModel {
+public class PatientClinicalEventActTableModel extends AbstractActTableModel {
 
     /**
-     * Creates a new <code>TaskTableModel</code>.
+     * Creates a new <code>PatientClinicalEventActTableModel</code>.
      *
-     * @param context the layout context
+     * @param shortNames the act archetype short names
+     * @param context    the layout context
      */
-    public TaskTableModel(LayoutContext context) {
-        super(new String[]{"act.customerTask"}, context);
+    public PatientClinicalEventActTableModel(String[] shortNames,
+                                             LayoutContext context) {
+        super(shortNames, context);
     }
 
     /**
@@ -46,8 +48,7 @@ public class TaskTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getDescriptorNames() {
-        return new String[]{"status", "taskType", "customer", "patient",
-                            "reason", "description"};
+        return new String[]{"startTime", "completeTime", "status", "clinician",
+                            "reason"};
     }
-
 }

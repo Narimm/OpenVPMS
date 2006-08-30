@@ -25,11 +25,11 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -45,18 +45,10 @@ import org.openvpms.web.component.util.SplitPaneFactory;
 public class PatientRecordWorkspace extends ActWorkspace {
 
     /**
-     * Clinical event item short names.
-     */
-    private final String[] _clinicalEventItems;
-
-
-    /**
      * Construct a new <code>PatientRecordWorkspace</code>.
      */
     public PatientRecordWorkspace() {
         super("patient", "record", "party", "party", "patient*");
-        _clinicalEventItems = ActHelper.getTargetShortNames(
-                RELATIONSHIP_CLINICAL_EVENT_ITEM);
     }
 
     /**
@@ -140,10 +132,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new query
      */
     protected ActQuery createQuery(Party party) {
-        DefaultActQuery query = createQuery(party, _clinicalEventItems);
-        String[] required = {CLINICAL_EPISODE, CLINICAL_EVENT};
-        query.setRequiredShortNames(required);
-        return query;
+        return createQuery(party, new String[]{CLINICAL_EVENT});
     }
 
     /**

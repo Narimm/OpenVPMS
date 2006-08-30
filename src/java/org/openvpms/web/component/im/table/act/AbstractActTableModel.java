@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -46,6 +47,17 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
     }
 
     /**
+     * Returns a list of descriptor names to include in the table.
+     * This implementation returns <code>null</code> to indicate that the
+     * intersection should be calculated from all descriptors.
+     *
+     * @return the list of descriptor names to include in the table
+     */
+    protected String[] getDescriptorNames() {
+        return null;
+    }
+
+    /**
      * Returns a filtered list of descriptors for an archetype.
      *
      * @param archetype the archetype
@@ -55,7 +67,20 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
     @Override
     protected List<NodeDescriptor> getDescriptors(ArchetypeDescriptor archetype,
                                                   LayoutContext context) {
-        return filter(archetype.getSimpleNodeDescriptors(), context);
+        List<NodeDescriptor> result;
+        String[] names = getDescriptorNames();
+        if (names != null) {
+            result = new ArrayList<NodeDescriptor>();
+            for (String name : names) {
+                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+                if (name != null) {
+                    result.add(descriptor);
+                }
+            }
+        } else {
+            result = filter(archetype.getSimpleNodeDescriptors(), context);
+        }
+        return result;
     }
 
 }
