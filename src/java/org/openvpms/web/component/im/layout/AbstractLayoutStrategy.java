@@ -87,7 +87,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
      *
      * @param object     the object to apply
      * @param properties the object's properties
-     * @param parent
+     * @param parent     the parent object. May be <code>null</code>
      * @param context    the layout context
      * @return the component containing the rendered <code>object</code>
      */

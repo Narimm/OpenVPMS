@@ -28,11 +28,6 @@ package org.openvpms.web.app.patient.mr;
 public interface PatientRecordTypes {
 
     /**
-     * Clinical episode act short name.
-     */
-    String CLINICAL_EPISODE = "act.patientClinicalEpisode";
-
-    /**
      * Clinical event act short name.
      */
     String CLINICAL_EVENT = "act.patientClinicalEvent";
@@ -41,12 +36,6 @@ public interface PatientRecordTypes {
      * Clinical problem act short name.
      */
     String CLINICAL_PROBLEM = "act.patientClinicalProblem";
-
-    /**
-     * Clinical episode event act relationship short name.
-     */
-    String RELATIONSHIP_CLINICAL_EPISODE_EVENT
-            = "actRelationship.patientClinicalEpisodeEvent";
 
     /**
      * Clinical event item act relationship short name,
