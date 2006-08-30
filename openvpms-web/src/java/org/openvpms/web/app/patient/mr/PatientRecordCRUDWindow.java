@@ -18,6 +18,18 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Row;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -29,20 +41,6 @@ import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.Row;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -57,11 +55,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
      * Clinical event item short names.
      */
     private final String[] _clinicalEventItems;
-
-    /**
-     * The short names that this may create.
-     */
-    private ShortNameResolver _shortNames;
 
     /**
      * The act used to determine the short names of the archetypes that
@@ -81,11 +74,10 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
      *
      * @param shortNames the short names of archetypes that this may create
      */
-    public PatientRecordCRUDWindow(RecordShortNames shortNames) {
-        super(Messages.get("patient.record.createtype"), null);
+    public PatientRecordCRUDWindow(ShortNames shortNames) {
+        super(Messages.get("patient.record.createtype"), shortNames);
         _clinicalEventItems = ActHelper.getTargetShortNames(
                 RELATIONSHIP_CLINICAL_EVENT_ITEM);
-        _shortNames = new ShortNameResolver(shortNames);
     }
 
     /**
@@ -107,16 +99,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
     public void setObject(IMObject object) {
         super.setObject(object);
         _act = (Act) object;
-    }
-
-    /**
-     * Returns the short names of the archetypes that this may create.
-     *
-     * @return the short names
-     */
-    @Override
-    protected ShortNames getShortNames() {
-        return _shortNames;
     }
 
     /**
@@ -277,33 +259,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
             String message = Messages.get("patient.record.create.noparent",
                                           name);
             ErrorHelper.show(message);
-        }
-    }
-
-    private class ShortNameResolver implements ShortNames {
-
-        /**
-         * The short names to delegate to.
-         */
-        private RecordShortNames _shortNames;
-
-        /**
-         * Construct a new <code>ShortNameResolver</code>.
-         *
-         * @param shortNames the short names to delegate to
-         */
-        public ShortNameResolver(RecordShortNames shortNames) {
-            _shortNames = shortNames;
-        }
-
-        /**
-         * Returns the archetype short names.
-         *
-         * @return the archetype short names
-         */
-        public String[] getShortNames() {
-            _shortNames.setAct(_act);
-            return _shortNames.getShortNames();
         }
     }
 

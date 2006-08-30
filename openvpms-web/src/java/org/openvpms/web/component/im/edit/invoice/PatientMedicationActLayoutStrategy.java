@@ -27,9 +27,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.PropertySet;
+import org.openvpms.web.component.im.filter.NamedNodeFilter;
+import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
@@ -43,6 +47,37 @@ import org.openvpms.web.component.util.RowFactory;
  * the act.
  */
 public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
+
+    /**
+     * Determines if the product node should be displayed. False if
+     * the parent act has a product.
+     */
+    private boolean _showProduct;
+
+    /**
+     * Apply the layout strategy.
+     * <p/>
+     * This renders an object in a <code>Component</code>, using a factory to
+     * create the child components.
+     *
+     * @param object     the object to apply
+     * @param properties the object's properties
+     * @param parent     the parent object. May be <code>null</code>
+     * @param context    the layout context
+     * @return the component containing the rendered <code>object</code>
+     */
+    @Override
+    public Component apply(IMObject object, PropertySet properties,
+                           IMObject parent, LayoutContext context) {
+
+        if (parent instanceof Act) {
+            ActBean bean = new ActBean((Act) parent);
+            _showProduct = !bean.hasNode("product");
+        } else {
+            _showProduct = true;
+        }
+        return super.apply(object, properties, parent, context);
+    }
 
     /**
      * Lay out out the object in the specified container.
@@ -73,6 +108,26 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
         row.setLayoutData(columnLayout);
         container.add(row);
         super.doLayout(object, properties, container, context);
+    }
+
+    /**
+     * Returns a node filter to filter nodes. This implementation return {@link
+     * LayoutContext#getDefaultNodeFilter()}.
+     *
+     * @param context the context
+     * @return a node filter to filter nodes, or <code>null</code> if no
+     *         filterering is required
+     */
+    @Override
+    protected NodeFilter getNodeFilter(LayoutContext context) {
+        NodeFilter filter;
+        if (!_showProduct) {
+            filter = super.getNodeFilter(context,
+                                         new NamedNodeFilter("product"));
+        } else {
+            filter = super.getNodeFilter(context);
+        }
+        return filter;
     }
 
     /**

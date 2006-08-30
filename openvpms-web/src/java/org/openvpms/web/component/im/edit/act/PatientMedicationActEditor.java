@@ -16,13 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.invoice;
+package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -50,12 +49,15 @@ public class PatientMedicationActEditor extends AbstractActEditor {
         }
 
         ActBean bean = new ActBean(parent);
-        IMObjectReference product
-                = bean.getParticipantRef("participation.product");
-        if (TypeHelper.isA(product, "product.medication")) {
-            setProduct(product);
-        } else {
-            setProduct(null);
+        if (bean.hasNode("product")) {
+            // update the product from the parent
+            IMObjectReference product
+                    = bean.getParticipantRef("participation.product");
+            if (TypeHelper.isA(product, "product.medication")) {
+                setProduct(product);
+            } else {
+                setProduct(null);
+            }
         }
         setPatient(bean.getParticipantRef("participation.patient"));
     }

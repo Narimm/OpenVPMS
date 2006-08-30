@@ -18,14 +18,14 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
-import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 
 
 /**
@@ -46,7 +46,7 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
      * Create a new <code>ProblemRecordCRUDWindow</code>.
      */
     public ProblemRecordCRUDWindow() {
-        super(new ProblemRecordShortNames());
+        super(new ShortNameList(CLINICAL_PROBLEM));
         _clinicalProblemItems = ActHelper.getTargetShortNames(
                 RELATIONSHIP_CLINICAL_PROBLEM_ITEM);
     }
