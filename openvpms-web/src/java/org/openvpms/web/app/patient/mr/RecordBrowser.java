@@ -18,24 +18,18 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.DefaultTreeBrowser;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryBrowserListener;
-import org.openvpms.web.component.im.query.TreeBrowser;
-import org.openvpms.web.component.im.tree.ActTreeBuilder;
-import org.openvpms.web.component.im.tree.BottomUpActTreeBuilder;
-import org.openvpms.web.component.im.tree.TreeBuilder;
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.TabbedPaneFactory;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.query.SortConstraint;
-
 import echopointng.TabbedPane;
 import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryBrowserListener;
+import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.TabbedPaneFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -58,12 +52,12 @@ public class RecordBrowser implements Browser<Act> {
     /**
      * The visits browser.
      */
-    private TreeBrowser<Act> _visits;
+    private TableBrowser<Act> _visits;
 
     /**
      * The problems browser.
      */
-    private TreeBrowser<Act> _problems;
+    private TableBrowser<Act> _problems;
 
     /**
      * The event listener.
@@ -86,11 +80,8 @@ public class RecordBrowser implements Browser<Act> {
      */
     public RecordBrowser(Query<Act> visits, Query<Act> problems,
                          SortConstraint[] sort) {
-        String[] excludes = {PatientRecordTypes.CLINICAL_PROBLEM};
-        TreeBuilder<Act> visitBuilder = new BottomUpActTreeBuilder(excludes);
-        _visits = new DefaultTreeBrowser<Act>(visits, sort, visitBuilder);
-        _problems = new DefaultTreeBrowser<Act>(problems, sort,
-                                                new ActTreeBuilder());
+        _visits = new TableBrowser<Act>(visits, sort);
+        _problems = new TableBrowser<Act>(problems, sort);
     }
 
     /**
@@ -188,7 +179,7 @@ public class RecordBrowser implements Browser<Act> {
      *
      * @return the selected browser
      */
-    private TreeBrowser<Act> getCurrent() {
+    private TableBrowser<Act> getCurrent() {
         return (_selected == 0) ? _visits : _problems;
     }
 

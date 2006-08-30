@@ -19,19 +19,15 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Label;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
-import org.openvpms.web.component.im.table.DescriptorTableModel;
+import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.util.DateFormatter;
 import org.openvpms.web.component.util.LabelFactory;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -40,7 +36,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AppointmentTableModel extends DescriptorTableModel<Act> {
+public class AppointmentTableModel extends AbstractActTableModel {
 
     /**
      * Creates a new <code>AppointmentTableModel</code>.
@@ -79,40 +75,14 @@ public class AppointmentTableModel extends DescriptorTableModel<Act> {
     }
 
     /**
-     * Returns a filtered list of descriptors for an archetype.
+     * Returns a list of descriptor names to include in the table.
      *
-     * @param archetype the archetype
-     * @param context   the layout context
-     * @return a filtered list of descriptors for the archetype
+     * @return the list of descriptor names to include in the table
      */
     @Override
-    protected List<NodeDescriptor> getDescriptors(
-            ArchetypeDescriptor archetype, LayoutContext context) {
-        List<NodeDescriptor> result = new ArrayList<NodeDescriptor>();
-        addDescriptor("startTime", archetype, result);
-        addDescriptor("endTime", archetype, result);
-        addDescriptor("status", archetype, result);
-        addDescriptor("appointmentType", archetype, result);
-        addDescriptor("customer", archetype, result);
-        addDescriptor("patient", archetype, result);
-        addDescriptor("reason", archetype, result);
-        addDescriptor("description", archetype, result);
-        return result;
-    }
-
-    /**
-     * Helper to add a node descriptor to a list of descriptors.
-     *
-     * @param node        the node name
-     * @param archetype   the archetype
-     * @param descriptors the descriptors to add to
-     */
-    private void addDescriptor(String node, ArchetypeDescriptor archetype,
-                               List<NodeDescriptor> descriptors) {
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-        if (descriptor != null) {
-            descriptors.add(descriptor);
-        }
+    protected String[] getDescriptorNames() {
+        return new String[]{"startTime", "endTime", "status", "appointmentType",
+                            "customer", "patient", "reason", "description"};
     }
 
 }

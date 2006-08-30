@@ -23,9 +23,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.table.DefaultIMObjectTableModel;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +82,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * @param sort  the sort criteria. May be <code>null</code>
      */
     public TableBrowser(Query<T> query, SortConstraint[] sort) {
-        this(query, sort, new DefaultIMObjectTableModel<T>());
+        this(query, sort, createTableModel(query));
     }
 
     /**
@@ -156,6 +160,15 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
         if (_selected != null) {
             notifySelected(_selected);
         }
+    }
+
+    private static <T extends IMObject> IMObjectTableModel<T>
+            createTableModel(Query<T> query) {
+        LayoutContext context = new DefaultLayoutContext();
+        IMObjectComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        return IMObjectTableModelFactory.create(query.getShortNames(),
+                                                context);
     }
 
 }
