@@ -29,10 +29,9 @@ import org.openvpms.component.business.domain.im.security.User;
 
 /**
  * Tests the {@link MedicalRecordRules} class when invoked by the
- * <em>archetypeService.remove.act.patientClinicalEpisode.after.drl</em>
- * and <em>archetypeService.remove.act.patientClinicalEvent.after.drl</em> '
- * rules. In order for these tests to be successful, the archetype service
- * must be configured to trigger the above rules.
+ * <em>archetypeService.remove.act.patientClinicalEvent.after.drl</em> '
+ * rule. In order for these tests to be successful, the archetype service
+ * must be configured to trigger the above rule.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -51,59 +50,24 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Verifies that deletion of an <em>act.patientClinicalEpisode</em>
-     * deletes all of the children.
-     */
-    public void testDeleteClinicalEpisode() {
-        Act episode = createEpisode();
-        Act event = createEvent();
-        Act problem = createProblem();
-        addActRelationship(episode, event,
-                           "actRelationship.patientClinicalEpisodeEvent");
-        addActRelationship(event, problem,
-                           "actRelationship.patientClinicalEventItem");
-        save(episode);
-        save(event);
-        save(problem);
-
-        // make sure each of the objects can be retrieved
-        assertNotNull(get(episode.getObjectReference()));
-        assertNotNull(get(event.getObjectReference()));
-        assertNotNull(get(problem.getObjectReference()));
-
-        remove(episode);  // remove should cascade
-
-        // make sure none of the objects can be retrieved
-        assertNull(get(episode.getObjectReference()));
-        assertNull(get(event.getObjectReference()));
-        assertNull(get(problem.getObjectReference()));
-    }
-
-    /**
      * Verifies that deletion of an <em>act.patientClinicalEvent</em>
      * deletes all of the children.
      */
     public void testDeleteClinicalEvent() {
-        Act episode = createEpisode();
         Act event = createEvent();
         Act problem = createProblem();
-        addActRelationship(episode, event,
-                           "actRelationship.patientClinicalEpisodeEvent");
         addActRelationship(event, problem,
                            "actRelationship.patientClinicalEventItem");
-        save(episode);
         save(event);
         save(problem);
 
         // make sure each of the objects can be retrieved
-        assertNotNull(get(episode.getObjectReference()));
         assertNotNull(get(event.getObjectReference()));
         assertNotNull(get(problem.getObjectReference()));
 
         remove(event);  // remove should cascade to delete problem
 
-        // make sure the episode, but none of the child acts can be retrieved
-        assertNotNull(get(episode.getObjectReference()));
+        // make sure the event, but none of the child acts can be retrieved
         assertNull(get(event.getObjectReference()));
         assertNull(get(problem.getObjectReference()));
     }
@@ -113,32 +77,26 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * doesn't affect its children.
      */
     public void testDeleteClinicalProblem() {
-        Act episode = createEpisode();
         Act event = createEvent();
         Act problem = createProblem();
         Act note = createNote();
-        addActRelationship(episode, event,
-                           "actRelationship.patientClinicalEpisodeEvent");
         addActRelationship(event, problem,
                            "actRelationship.patientClinicalEventItem");
         addActRelationship(event, note,
                            "actRelationship.patientClinicalEventItem");
         addActRelationship(problem, note,
                            "actRelationship.patientClinicalProblemItem");
-        save(episode);
         save(event);
         save(problem);
         save(note);
 
         // make sure each of the objects can be retrieved
-        assertNotNull(get(episode.getObjectReference()));
         assertNotNull(get(event.getObjectReference()));
         assertNotNull(get(problem.getObjectReference()));
 
         remove(problem);  // remove shouldn't cascade to delete note
 
         // make sure the all but the problem can be retrieved
-        assertNotNull(get(episode.getObjectReference()));
         assertNotNull(get(event.getObjectReference()));
         assertNull(get(problem.getObjectReference()));
         assertNotNull(get(note.getObjectReference()));
