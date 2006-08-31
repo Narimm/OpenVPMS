@@ -58,11 +58,6 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      */
     private IMObjectTableModel<T> _model;
 
-    /**
-     * The selected object.
-     */
-    private T _selected;
-
 
     /**
      * Construct a new <code>Browser</code> that queries IMObjects using the
@@ -106,7 +101,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      *         selected.
      */
     public T getSelected() {
-        return _selected;
+        return (_table != null) ? _table.getTable().getSelected() : null;
     }
 
     /**
@@ -115,6 +110,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * @param object the object to select
      */
     public void setSelected(T object) {
+        getComponent();
         _table.getTable().setSelected(object);
     }
 
@@ -156,9 +152,9 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
      * listeners.
      */
     private void onSelect() {
-        _selected = _table.getTable().getSelected();
-        if (_selected != null) {
-            notifySelected(_selected);
+        T selected = _table.getTable().getSelected();
+        if (selected != null) {
+            notifySelected(selected);
         }
     }
 

@@ -47,7 +47,7 @@ public class TaskTableModel extends AbstractActTableModel {
     @Override
     protected String[] getDescriptorNames() {
         return new String[]{"status", "taskType", "customer", "patient",
-                            "reason", "description"};
+                            "description"};
     }
 
 }

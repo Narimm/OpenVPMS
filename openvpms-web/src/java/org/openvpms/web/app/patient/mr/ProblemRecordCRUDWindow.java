@@ -18,14 +18,21 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import nextapp.echo2.app.Row;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.*;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.util.List;
 
 
 /**
@@ -37,9 +44,9 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
 
     /**
-     * Clinical problem item short names.
+     * The current act.patientClinicalEvent.
      */
-    private final String[] _clinicalProblemItems;
+    private Act _event;
 
 
     /**
@@ -47,8 +54,34 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
      */
     public ProblemRecordCRUDWindow() {
         super(new ShortNameList(CLINICAL_PROBLEM));
-        _clinicalProblemItems = ActHelper.getTargetShortNames(
-                RELATIONSHIP_CLINICAL_PROBLEM_ITEM);
+    }
+
+    /**
+     * Sets the current patient clinical event.
+     *
+     * @param event the current event
+     */
+    public void setEvent(Act event) {
+        _event = event;
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param enable determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(boolean enable) {
+        Row buttons = getButtons();
+        buttons.removeAll();
+        if (enable) {
+            buttons.add(getEditButton());
+            buttons.add(getCreateButton());
+            buttons.add(getDeleteButton());
+            buttons.add(getPrintButton());
+        } else if (_event != null) {
+            buttons.add(getCreateButton());
+        }
     }
 
     /**
@@ -59,30 +92,78 @@ public class ProblemRecordCRUDWindow extends PatientRecordCRUDWindow {
      */
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
-        if (isNew) {
-            if (TypeHelper.isA(object, _clinicalProblemItems)) {
-                addActRelationship((Act) object, CLINICAL_PROBLEM,
-                                   RELATIONSHIP_CLINICAL_PROBLEM_ITEM);
-            }
-            if (TypeHelper.isA(object, getClinicalEventItemShortNames())) {
+        Act event = (Act) IMObjectHelper.reload(_event);
+        if (event != null) {
+            try {
+                boolean save = false;
                 Act act = (Act) object;
-                addActRelationship(act, CLINICAL_EVENT,
-                                   RELATIONSHIP_CLINICAL_EVENT_ITEM);
-                // add relationships for child acts
-                for (ActRelationship relationship :
-                        act.getSourceActRelationships()) {
-                    Act target = (Act) IMObjectHelper.getObject(
-                            relationship.getTarget());
-                    if (TypeHelper.isA(target,
-                                       getClinicalEventItemShortNames())) {
-                        addActRelationship(target, CLINICAL_EVENT,
-                                           RELATIONSHIP_CLINICAL_EVENT_ITEM);
+                ActBean bean = new ActBean(act);
+                ActBean eventBean = new ActBean(event);
 
+                // if the problem has no parent event, add it
+                if (!hasTargetRelationship(act,
+                                           RELATIONSHIP_CLINICAL_EVENT_ITEM)) {
+                    eventBean.addRelationship(RELATIONSHIP_CLINICAL_EVENT_ITEM,
+                                              act);
+                    save = true;
+                }
+
+                // for each of the problem's child acts, link them to the
+                // parent event
+                List<Act> acts = bean.getActs();
+                String[] shortNames = getClinicalEventItemShortNames();
+                for (Act child : acts) {
+                    if (TypeHelper.isA(child, shortNames)
+                            && !hasTargetRelationship(child, event)) {
+                        eventBean.addRelationship(
+                                RELATIONSHIP_CLINICAL_EVENT_ITEM, child);
+                        save = true;
                     }
                 }
+                if (save) {
+                    eventBean.save();
+                }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
             }
+
         }
         super.onSaved(object, isNew);
+    }
+
+    /**
+     * Determines if an act is a target in an act relationship.
+     *
+     * @param act  the target act
+     * @param type relationship type
+     * @return <code>true</code> if there is an act relationship of the specified
+     *         type with the act as the target
+     */
+    protected boolean hasTargetRelationship(Act act, String type) {
+        for (ActRelationship rel : act.getTargetActRelationships()) {
+            if (TypeHelper.isA(rel, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if an act is a target in an act relationship.
+     *
+     * @param target the target act
+     * @param source the source act
+     * @return <code>true</code> if there is an act relationship between source
+     *         and target with target as the target act
+     */
+    protected boolean hasTargetRelationship(Act target, Act source) {
+        IMObjectReference sourceRef = source.getObjectReference();
+        for (ActRelationship rel : target.getTargetActRelationships()) {
+            if (rel.getSource().equals(sourceRef)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

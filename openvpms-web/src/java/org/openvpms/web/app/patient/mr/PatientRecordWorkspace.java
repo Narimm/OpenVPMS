@@ -23,6 +23,7 @@ import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
@@ -155,23 +156,34 @@ public class PatientRecordWorkspace extends ActWorkspace {
     }
 
     /**
+     * Invoked when the object has been deleted.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onDeleted(IMObject object) {
+        super.onDeleted(object);
+    }
+
+    /**
      * Changes the CRUD window depending on the current browser view.
      */
     private void changeCRUDWindow() {
         RecordBrowser browser = (RecordBrowser) getBrowser();
         PatientRecordCRUDWindow current
                 = (PatientRecordCRUDWindow) getCRUDWindow();
-        Act selected = (Act) current.getObject();
         PatientRecordCRUDWindow window;
         if (browser.isVisit()) {
             window = new VisitRecordCRUDWindow();
         } else {
-            window = new ProblemRecordCRUDWindow();
+            Act selected = (Act) current.getObject();
+            ProblemRecordCRUDWindow problems = new ProblemRecordCRUDWindow();
+            if (TypeHelper.isA(selected, CLINICAL_EVENT)) {
+                problems.setEvent(selected);
+            }
+            window = problems;
         }
-        // use the current window's act to filter act short names.
-        // If there is a selection in the browser view, this will be overriden
-        window.setAct(selected);
-        selected = browser.getSelected();
+        Act selected = browser.getSelected();
         if (selected != null) {
             window.setObject(selected);
         }
