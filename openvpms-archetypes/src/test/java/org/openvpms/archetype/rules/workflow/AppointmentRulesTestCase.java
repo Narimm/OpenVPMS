@@ -80,22 +80,39 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     public void testHasOverlappingAppointments() {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
-        Act appointment = createAppointment(start, end);
+
+        Entity appointmentType = createAppointmentType();
+        Party schedule1 = createSchedule(15, "minutes", 2, appointmentType);
+        Party schedule2 = createSchedule(15, "minutes", 2, appointmentType);
+        save(schedule1);
+        save(schedule2);
+
+        Act appointment = createAppointment(start, end, schedule1);
         assertFalse(AppointmentRules.hasOverlappingAppointments(appointment));
         save(appointment);
         assertFalse(AppointmentRules.hasOverlappingAppointments(appointment));
 
-        Act exactOverlap = createAppointment(start, end);
+        Act exactOverlap = createAppointment(start, end, schedule1);
         assertTrue(AppointmentRules.hasOverlappingAppointments(exactOverlap));
 
-        Act overlap = createAppointment(createTime(9, 5), createTime(9, 10));
+        Act overlap = createAppointment(createTime(9, 5), createTime(9, 10),
+                                        schedule1);
         assertTrue(AppointmentRules.hasOverlappingAppointments(overlap));
 
-        Act after = createAppointment(createTime(9, 15), createTime(9, 30));
+        Act after = createAppointment(createTime(9, 15), createTime(9, 30),
+                                      schedule1);
         assertFalse(AppointmentRules.hasOverlappingAppointments(after));
 
-        Act before = createAppointment(createTime(8, 45), createTime(9, 0));
+        Act before = createAppointment(createTime(8, 45), createTime(9, 0),
+                                       schedule1);
         assertFalse(AppointmentRules.hasOverlappingAppointments(before));
+
+        // now verify there are no overlaps for the same time but different
+        // schedule
+        Act appointment2 = createAppointment(start, end, schedule2);
+        assertFalse(AppointmentRules.hasOverlappingAppointments(appointment2));
+        save(appointment2);
+        assertFalse(AppointmentRules.hasOverlappingAppointments(appointment2));
     }
 
     /**
@@ -105,7 +122,9 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     public void testHasOverlappingAppointmentsForEmptyAct() {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
-        Act appointment = createAppointment(start, end);
+        Entity appointmentType = createAppointmentType();
+        Party schedule = createSchedule(15, "minutes", 2, appointmentType);
+        Act appointment = createAppointment(start, end, schedule);
         save(appointment);
 
         Act empty = createAct("act.customerAppointment");
@@ -131,15 +150,16 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      *
      * @param startTime the act start time
      * @param endTime   the act end time
+     * @param schedule the schedule
      * @return a new act
      */
-    protected Act createAppointment(Date startTime, Date endTime) {
+    protected Act createAppointment(Date startTime, Date endTime,
+                                    Party schedule) {
         Act act = createAct("act.customerAppointment");
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
         Party customer = (Party) create("party.customerperson");
-        Party schedule = (Party) create("party.organisationSchedule");
         Entity appointmentType = (Entity) create("entity.appointmentType");
         bean.setParticipant("participation.customer", customer);
         bean.setParticipant("participation.schedule", schedule);
@@ -181,6 +201,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                                    int noSlots, Entity appointmentType) {
         Party schedule = (Party) create("party.organisationSchedule");
         EntityBean bean = new EntityBean(schedule);
+        bean.setValue("name", "XSchedule");
         bean.setValue("slotSize", slotSize);
         bean.setValue("slotUnits", slotUnits);
         EntityRelationship relationship = (EntityRelationship) create(
