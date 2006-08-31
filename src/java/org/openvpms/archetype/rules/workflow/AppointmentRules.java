@@ -23,16 +23,20 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
@@ -88,11 +92,15 @@ public class AppointmentRules {
      */
     public static boolean hasOverlappingAppointments(Act appointment) {
         long uid = appointment.getUid();
+        ActBean bean = new ActBean(appointment);
+        IMObjectReference schedule
+                = bean.getParticipantRef("participation.schedule");
         Date startTime = appointment.getActivityStartTime();
         Date endTime = appointment.getActivityEndTime();
 
-        if (startTime != null && endTime != null) {
-            return hasOverlappingAppointments(uid, startTime, endTime);
+        if (startTime != null && endTime != null && schedule != null) {
+            return hasOverlappingAppointments(uid, startTime, endTime,
+                                              schedule);
         }
         return false;
     }
@@ -103,11 +111,13 @@ public class AppointmentRules {
      * @param uid       the appointment id
      * @param startTime the appointment start time
      * @param endTime   the appointment end time
+     * @param schedule  the schedule
      * @return a list of acts that overlap with the appointment
      * @throws OpenVPMSException for any error
      */
     private static boolean hasOverlappingAppointments(long uid, Date startTime,
-                                                      Date endTime) {
+                                                      Date endTime,
+                                                      IMObjectReference schedule) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeQuery query = new ArchetypeQuery(
@@ -117,10 +127,15 @@ public class AppointmentRules {
 
         // Create the query:
         //   act.uid != uid
+        //   && act.schedule = schedule
         //   && ((act.startTime < startTime && act.endTime > startTime)
         //   || (act.startTime < endTime && act.endTime > endTime)
         //   || (act.startTime >= startTime && act.endTime <= endTime))
         query.add(new NodeConstraint("uid", RelationalOp.NE, uid));
+        CollectionNodeConstraint participations = new CollectionNodeConstraint(
+                "schedule", "participation.schedule", false, true)
+                .add(new ObjectRefNodeConstraint("entity", schedule));
+        query.add(participations);
         OrConstraint or = new OrConstraint();
         IConstraint overlapStart = createOverlapConstraint(startTime);
         IConstraint overlapEnd = createOverlapConstraint(endTime);
