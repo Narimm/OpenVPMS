@@ -74,7 +74,7 @@ public class SingleParticipationCollectionEditor
             Property property = editor.getProperty();
             property.addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
-                    onParticipantChanged();
+                    mapParticipant();
                 }
             });
         }
@@ -91,9 +91,7 @@ public class SingleParticipationCollectionEditor
     @Override
     public boolean validate(Validator validator) {
         boolean valid;
-        AbstractParticipationEditor editor = getParticipationEditor();
-        if (editor != null && getCollection().getMinCardinality() == 0
-                && editor.isNull()) {
+        if (isNull()) {
             valid = true;
         } else {
             valid = super.validate(validator);
@@ -111,9 +109,7 @@ public class SingleParticipationCollectionEditor
     @Override
     protected boolean doSave() {
         boolean saved;
-        AbstractParticipationEditor editor = getParticipationEditor();
-        if (editor != null && getCollection().getMinCardinality() == 0
-                && editor.isNull()) {
+        if (isNull()) {
             // save the collection, excluding the current editor
             saved = getCollectionPropertyEditor().save();
         } else {
@@ -135,18 +131,38 @@ public class SingleParticipationCollectionEditor
     }
 
     /**
-     * Invoked when the participant changes. If the participant is null and
-     * the min cardinality is zero, removes the participation from the
-     * collection.
+     * Adds/removes the participant to/from the collection.
+     * If the participant is null and the min cardinality is zero, removes the
+     * participation from the collection otherwise adds it.
      */
-    private void onParticipantChanged() {
+    private void mapParticipant() {
         AbstractParticipationEditor editor = getParticipationEditor();
-        if (editor != null && getCollection().getMinCardinality() == 0 &&
-                editor.isNull()) {
-            getCollectionPropertyEditor().remove(editor.getObject());
+        if (editor != null) {
+            if (isNull()) {
+                getCollectionPropertyEditor().remove(editor.getObject());
+            } else {
+                getCollectionPropertyEditor().add(editor.getObject());
+            }
         }
     }
 
+    /**
+     * Determines if the participation is null. This returns true if
+     * the participation entity is null and the participation is optional.
+     *
+     * @return <code>true</code> if the participation is null
+     */
+    private boolean isNull() {
+        AbstractParticipationEditor editor = getParticipationEditor();
+        return editor != null && getCollection().getMinCardinality() == 0
+                && editor.isNull();
+    }
+
+    /**
+     * Creates the component.
+     *
+     * @return the component
+     */
     private Component createComponent() {
         Component component;
         CollectionPropertyEditor collection = getCollectionPropertyEditor();
@@ -163,6 +179,7 @@ public class SingleParticipationCollectionEditor
             IMObjectEditor editor = getEditor(object);
             setCurrentEditor(editor);
             component = editor.getComponent();
+            mapParticipant();
         } else {
             String message = Messages.get("imobject.create.failed",
                                           shortName);

@@ -152,8 +152,8 @@ public class RecordBrowser implements Browser<Act> {
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
-        _visits.query();
-        _problems.query();
+        query(_visits);
+        query(_problems);
     }
 
     /**
@@ -181,6 +181,17 @@ public class RecordBrowser implements Browser<Act> {
      */
     private TableBrowser<Act> getCurrent() {
         return (_selected == 0) ? _visits : _problems;
+    }
+
+    /**
+     * Queries a browser, preserving the selected act (if possible).
+     *
+     * @param browser the browser
+     */
+    private void query(TableBrowser<Act> browser) {
+        Act selected = browser.getSelected();
+        browser.query();
+        browser.setSelected(selected);
     }
 
     /**

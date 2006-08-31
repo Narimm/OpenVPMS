@@ -19,28 +19,12 @@
 package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.RELATIONSHIP_CLINICAL_EVENT_ITEM;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.dialog.ErrorDialog;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 
 /**
@@ -56,18 +40,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
      */
     private final String[] _clinicalEventItems;
 
-    /**
-     * The act used to determine the short names of the archetypes that
-     * may be created.
-     */
-    private Act _act;
-
-    /**
-     * The logger.
-     */
-    private static final Log _log
-            = LogFactory.getLog(PatientRecordCRUDWindow.class);
-
 
     /**
      * Create a new <code>PatientRecordCRUDWindow</code>.
@@ -81,70 +53,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
     }
 
     /**
-     * Sets the act used to determine the short names of the archetypes that
-     * may be created.
-     *
-     * @param act the act. May be <code>null</code>
-     */
-    public void setAct(Act act) {
-        _act = act;
-    }
-
-    /**
-     * Sets the object.
-     *
-     * @param object the object. May be <code>null</code>
-     */
-    @Override
-    public void setObject(IMObject object) {
-        super.setObject(object);
-        _act = (Act) object;
-    }
-
-    /**
-     * Invoked when the 'new' button is pressed.
-     *
-     * @param type       localised type display name
-     * @param shortNames the short names
-     */
-    @Override
-    protected void onCreate(String type, ShortNames shortNames) {
-        String[] names = shortNames.getShortNames();
-        if (names.length == 0) {
-            // haven't got a current event for the view
-            ErrorDialog.show(Messages.get("patient.record.create.noevent"));
-        } else {
-            super.onCreate(type, shortNames);
-        }
-    }
-
-    /**
-     * Invoked when a new object has been created.
-     *
-     * @param object the new object
-     */
-    @Override
-    protected void onCreated(IMObject object) {
-        Act act = (Act) object;
-        Party patient = Context.getInstance().getPatient();
-        if (patient != null) {
-            try {
-                IArchetypeService service
-                        = ServiceHelper.getArchetypeService();
-                Participation participation
-                        = (Participation) service.create(
-                        "participation.patient");
-                participation.setEntity(new IMObjectReference(patient));
-                participation.setAct(new IMObjectReference(act));
-                act.addParticipation(participation);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-        super.onCreated(object);
-    }
-
-    /**
      * Determines if an act can be edited.
      *
      * @param act the act
@@ -155,17 +63,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
     protected boolean canEdit(Act act) {
         // @todo fix when statuses are sorted out
         return true;
-    }
-
-    /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    @Override
-    protected void onDeleted(IMObject object) {
-        _act = null;
-        super.onDeleted(object);
     }
 
     /**
@@ -208,58 +105,6 @@ public abstract class PatientRecordCRUDWindow extends ActCRUDWindow {
      */
     protected String[] getClinicalEventItemShortNames() {
         return _clinicalEventItems;
-    }
-
-    /**
-     * Adds a relationship between two acts.
-     *
-     * @param parent the parent act
-     * @param child  the child act
-     */
-    protected void addActRelationship(Act parent, Act child,
-                                      String relationshipType) {
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        try {
-            ActRelationship relationship
-                    = (ActRelationship) IMObjectCreator.create(
-                    relationshipType);
-            if (relationship != null) {
-                relationship.setSource(parent.getObjectReference());
-                relationship.setTarget(child.getObjectReference());
-                parent.addActRelationship(relationship);
-                SaveHelper.save(parent, service);
-                child.addActRelationship(relationship);
-                // no need to save. Propagated by parent. SaveHelper.save(child, service);
-            } else {
-                _log.error("No act relation defined with shortname="
-                        + relationshipType);
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Adds a relationship between two acts.
-     *
-     * @param act              the act
-     * @param parentType       the type of the parent act
-     * @param relationshipType the type of the relationship to add
-     */
-    protected void addActRelationship(Act act, String parentType,
-                                      String relationshipType) {
-        Act parent = ActHelper.getActOrParent(_act, parentType);
-        if (parent == null) {
-            parent = ActHelper.getActOrChild(_act, parentType);
-        }
-        if (parent != null) {
-            addActRelationship(parent, act, relationshipType);
-        } else {
-            String name = DescriptorHelper.getDisplayName(act);
-            String message = Messages.get("patient.record.create.noparent",
-                                          name);
-            ErrorHelper.show(message);
-        }
     }
 
 }

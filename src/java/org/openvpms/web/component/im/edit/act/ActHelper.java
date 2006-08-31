@@ -20,20 +20,17 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -152,60 +149,6 @@ public class ActHelper {
         ActCalculator calc = new ActCalculator(
                 ArchetypeServiceHelper.getArchetypeService());
         return calc.getAmount(act, node);
-    }
-
-    /**
-     * Returns an act or one of its parents that has a particular short name.
-     *
-     * @param act       the act
-     * @param shortName the archetype shortname
-     * @return the act or a parent, or <code>null</code> if none was found
-     */
-    public static Act getActOrParent(Act act, String shortName) {
-        Act result = null;
-        if (act != null) {
-            if (TypeHelper.isA(act, shortName)) {
-                result = act;
-            } else {
-                for (ActRelationship relationship :
-                        act.getTargetActRelationships()) {
-                    Act source = (Act) IMObjectHelper.getObject(
-                            relationship.getSource());
-                    result = getActOrParent(source, shortName);
-                    if (result != null) {
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns an act or one of its children that has a particular short name.
-     *
-     * @param act       the ct
-     * @param shortName the archetype shortname
-     * @return the act or a child, or <code>null</code> if none was found
-     */
-    public static Act getActOrChild(Act act, String shortName) {
-        Act result = null;
-        if (act != null) {
-            if (TypeHelper.isA(act, shortName)) {
-                result = act;
-            } else {
-                for (ActRelationship relationship :
-                        act.getSourceActRelationships()) {
-                    Act target = (Act) IMObjectHelper.getObject(
-                            relationship.getTarget());
-                    result = getActOrChild(target, shortName);
-                    if (result != null) {
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     /**

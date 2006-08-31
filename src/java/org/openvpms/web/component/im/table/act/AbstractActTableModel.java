@@ -73,7 +73,7 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
             result = new ArrayList<NodeDescriptor>();
             for (String name : names) {
                 NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-                if (name != null) {
+                if (descriptor != null) {
                     result.add(descriptor);
                 }
             }
