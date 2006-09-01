@@ -42,7 +42,7 @@
 			</assertion>
 		</node>
 		<node displayName="Resolved Date" name="endTime" path="/activityEndTime" type="java.util.Date" />
-        <node name="items" path="/sourceActRelationships"
+        <node displayName'="Records" name="items" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
