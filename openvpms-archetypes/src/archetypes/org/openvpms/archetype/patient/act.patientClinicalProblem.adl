@@ -23,7 +23,7 @@
 			derivedValue="'Problem'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true" 
 			derivedValue="concat(/details/attributes/problem,' (',/status,')')" />
-		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
+		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
@@ -42,7 +42,7 @@
 			</assertion>
 		</node>
 		<node displayName="Resolved Date" name="endTime" path="/activityEndTime" type="java.util.Date" />
-        <node displayName'="Records" name="items" path="/sourceActRelationships"
+        <node displayName="Records" name="items" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
