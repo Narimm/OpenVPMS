@@ -123,6 +123,7 @@ public abstract class NameResultSet<T extends IMObject>
     protected ArchetypeQuery getQuery(BaseArchetypeConstraint archetypes,
                                       String name) {
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        query.setDistinct(isDistinct());
         if (!StringUtils.isEmpty(name)) {
             query.add(new NodeConstraint("name", name));
         }

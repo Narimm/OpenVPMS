@@ -83,6 +83,9 @@ public class EntityResultSet extends NameResultSet<Entity> {
                     identities = false;
                 }
             }
+            if (code || identities) {
+                setDistinct(true);
+            }
             _hasCode = code;
             _hasIdentities = identities;
         } else {
