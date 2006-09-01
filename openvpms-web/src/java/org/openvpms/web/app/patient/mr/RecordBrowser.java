@@ -60,6 +60,11 @@ public class RecordBrowser implements Browser<Act> {
     private TableBrowser<Act> _problems;
 
     /**
+     * The medication browser.
+     */
+    private TableBrowser<Act> _medication;
+
+    /**
      * The event listener.
      */
     private RecordBrowserListener _listener;
@@ -69,19 +74,29 @@ public class RecordBrowser implements Browser<Act> {
      */
     private int _selected = 0;
 
+    /**
+     * The browser view.
+     */
+    public enum View {
+        VISITS, PROBLEMS, MEDICATION
+    }
+
 
     /**
      * Construct a new <code>RecordBrowser</code> that queries IMObjects using
      * the specified query.
      *
-     * @param visits   query for visists
-     * @param problems query for problems
-     * @param sort     the sort criteria. May be <code>null</code>
+     * @param visits     query for visists
+     * @param problems   query for problems
+     * @param medication query for medication
+     * @param sort       the sort criteria. May be <code>null</code>
      */
     public RecordBrowser(Query<Act> visits, Query<Act> problems,
+                         Query<Act> medication,
                          SortConstraint[] sort) {
         _visits = new TableBrowser<Act>(visits, sort);
         _problems = new TableBrowser<Act>(problems, sort);
+        _medication = new TableBrowser<Act>(medication, sort);
     }
 
     /**
@@ -94,6 +109,7 @@ public class RecordBrowser implements Browser<Act> {
             DefaultTabModel model = new DefaultTabModel();
             addTab("button.visit", model, _visits);
             addTab("button.problem", model, _problems);
+            addTab("button.medication", model, _medication);
             _tab = TabbedPaneFactory.create(model);
             _tab.setSelectedIndex(_selected);
 
@@ -146,6 +162,7 @@ public class RecordBrowser implements Browser<Act> {
     public void addQueryListener(QueryBrowserListener listener) {
         _visits.addQueryListener(listener);
         _problems.addQueryListener(listener);
+        _medication.addQueryListener(listener);
     }
 
     /**
@@ -154,15 +171,48 @@ public class RecordBrowser implements Browser<Act> {
     public void query() {
         query(_visits);
         query(_problems);
+        query(_medication);
     }
 
     /**
-     * Determines if the current view is 'visits'.
+     * Returns the browser for the specified view.
      *
-     * @return <code>true</code> if the current view is visits view
+     * @param view the view
+     * @return the browser for the view
      */
-    public boolean isVisit() {
-        return (getCurrent() == _visits);
+    public Browser<Act> getBrowser(View view) {
+        Browser<Act> result;
+        switch (view) {
+            case VISITS:
+                result = _visits;
+                break;
+            case PROBLEMS:
+                result = _problems;
+                break;
+            default:
+                result = _medication;
+        }
+        return result;
+    }
+
+    /**
+     * Determines the current view.
+     *
+     * @return the current view
+     */
+    public View getView() {
+        View result;
+        switch (_selected) {
+            case 0:
+                result = View.VISITS;
+                break;
+            case 1:
+                result = View.PROBLEMS;
+                break;
+            default:
+                result = View.MEDICATION;
+        }
+        return result;
     }
 
     /**
@@ -180,7 +230,18 @@ public class RecordBrowser implements Browser<Act> {
      * @return the selected browser
      */
     private TableBrowser<Act> getCurrent() {
-        return (_selected == 0) ? _visits : _problems;
+        TableBrowser<Act> result;
+        switch (_selected) {
+            case 0:
+                result = _visits;
+                break;
+            case 1:
+                result = _problems;
+                break;
+            default:
+                result = _medication;
+        }
+        return result;
     }
 
     /**

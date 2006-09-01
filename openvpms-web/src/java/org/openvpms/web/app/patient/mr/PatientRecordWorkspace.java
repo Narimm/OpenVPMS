@@ -34,6 +34,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 
@@ -146,6 +147,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
     protected Browser<Act> createBrowser(ActQuery query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         RecordBrowser browser = new RecordBrowser(query, createProblemsQuery(),
+                                                  createMedicationQuery(),
                                                   sort);
         browser.setListener(new RecordBrowserListener() {
             public void onViewChanged() {
@@ -170,18 +172,20 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     private void changeCRUDWindow() {
         RecordBrowser browser = (RecordBrowser) getBrowser();
-        PatientRecordCRUDWindow current
-                = (PatientRecordCRUDWindow) getCRUDWindow();
-        PatientRecordCRUDWindow window;
-        if (browser.isVisit()) {
+        CRUDWindow window;
+        RecordBrowser.View view = browser.getView();
+        if (view == RecordBrowser.View.VISITS) {
             window = new VisitRecordCRUDWindow();
-        } else {
-            Act selected = (Act) current.getObject();
+        } else if (view == RecordBrowser.View.PROBLEMS) {
+            Browser<Act> visit = browser.getBrowser(RecordBrowser.View.VISITS);
             ProblemRecordCRUDWindow problems = new ProblemRecordCRUDWindow();
+            Act selected = visit.getSelected();
             if (TypeHelper.isA(selected, CLINICAL_EVENT)) {
                 problems.setEvent(selected);
             }
             window = problems;
+        } else {
+            window = new MedicationRecordCRUDWindow();
         }
         Act selected = browser.getSelected();
         if (selected != null) {
@@ -198,6 +202,17 @@ public class PatientRecordWorkspace extends ActWorkspace {
     private DefaultActQuery createProblemsQuery() {
         Party patient = (Party) getObject();
         String[] shortNames = {CLINICAL_PROBLEM};
+        return createQuery(patient, shortNames);
+    }
+
+    /**
+     * Creates a new query, for the medication view.
+     *
+     * @return a new query
+     */
+    private Query<Act> createMedicationQuery() {
+        Party patient = (Party) getObject();
+        String[] shortNames = {"act.patientMedication"};
         return createQuery(patient, shortNames);
     }
 
