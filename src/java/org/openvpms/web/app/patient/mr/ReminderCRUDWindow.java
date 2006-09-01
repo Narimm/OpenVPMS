@@ -16,10 +16,9 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.reminder;
+package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -31,26 +30,30 @@ import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
 
-/**
- * CRUD Window for Reminders and Alerts
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
+/**
+ * CRUD Window for Reminders and Alerts.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
 public class ReminderCRUDWindow extends ActCRUDWindow {
 
     /**
-     * Create a new <code>ReminderCRUDWindow</code>.
-     *
-     * @param type       display name for the types of objects that this may
-     *                   create
-     * @param shortNames the short names of archetypes that this may create
+     * Reminder and alert shortnames supported by the workspace.
      */
-    public ReminderCRUDWindow(String type, String[] shortNames) {
-        super(type, new ShortNameList(shortNames));
+    private static final String[] SHORT_NAMES = {"act.patientReminder",
+                                                 "act.patientAlert"};
+
+    /**
+     * Create a new <code>ReminderCRUDWindow</code>.
+     */
+    public ReminderCRUDWindow() {
+        super(Messages.get("patient.reminder.createtype"),
+              new ShortNameList(SHORT_NAMES));
     }
 
     /**
@@ -97,7 +100,8 @@ public class ReminderCRUDWindow extends ActCRUDWindow {
                 IArchetypeService service
                         = ServiceHelper.getArchetypeService();
                 Participation participation
-                        = (Participation) service.create("participation.patient");
+                        = (Participation) service.create(
+                        "participation.patient");
                 participation.setEntity(new IMObjectReference(patient));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);

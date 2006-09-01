@@ -21,8 +21,15 @@ package org.openvpms.web.app.patient.mr;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -36,6 +43,8 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.util.SplitPaneFactory;
+
+import java.util.List;
 
 
 /**
@@ -148,6 +157,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         RecordBrowser browser = new RecordBrowser(query, createProblemsQuery(),
                                                   createMedicationQuery(),
+                                                  createReminderAlertQuery(),
                                                   sort);
         browser.setListener(new RecordBrowserListener() {
             public void onViewChanged() {
@@ -184,8 +194,10 @@ public class PatientRecordWorkspace extends ActWorkspace {
                 problems.setEvent(selected);
             }
             window = problems;
-        } else {
+        } else if (view == RecordBrowser.View.MEDICATION) {
             window = new MedicationRecordCRUDWindow();
+        } else {
+            window = new ReminderCRUDWindow();
         }
         Act selected = browser.getSelected();
         if (selected != null) {
@@ -214,6 +226,28 @@ public class PatientRecordWorkspace extends ActWorkspace {
         Party patient = (Party) getObject();
         String[] shortNames = {"act.patientMedication"};
         return createQuery(patient, shortNames);
+    }
+
+    /**
+     * Creates a new query, for the reminder/alert view.
+     *
+     * @return a new query
+     */
+    private Query<Act> createReminderAlertQuery() {
+        String[] shortNames = {"act.patientReminder", "act.patientAlert"};
+        Party patient = (Party) getObject();
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.patientReminder");
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
+        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        DefaultActQuery query = new DefaultActQuery(patient, "patient",
+                                                    "participation.patient",
+                                                    shortNames, lookups, null);
+        query.setStatus("In Progress");
+        return query;
     }
 
     /**
