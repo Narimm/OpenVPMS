@@ -23,10 +23,15 @@ import echopointng.tabbedpane.DefaultTabModel;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -103,7 +108,16 @@ public class RecordBrowser implements Browser<Act> {
         _visits = new TableBrowser<Act>(visits, sort);
         _problems = new TableBrowser<Act>(problems, sort);
         _medication = new TableBrowser<Act>(medication, sort);
-        _reminderAlert = new TableBrowser<Act>(reminderAlert, sort);
+
+        // todo - should be able to register ReminderActTableModel in
+        // IMObjectTableFactory.properties for act.patientReminder and
+        // act.patientAlert
+        LayoutContext context = new DefaultLayoutContext();
+        IMObjectComponentFactory factory = new TableComponentFactory(context);
+        context.setComponentFactory(factory);
+        IMObjectTableModel<Act> model = new ReminderActTableModel(
+                reminderAlert.getShortNames(), context);
+        _reminderAlert = new TableBrowser<Act>(reminderAlert, sort, model);
     }
 
     /**

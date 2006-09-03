@@ -19,36 +19,37 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 
 
 /**
- * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
- * acts.
+ * Table model for patient record acts. Displays the archetype in the second
+ * column.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReminderActTableModel extends PatientRecordActTableModel {
+public class PatientRecordActTableModel extends AbstractActTableModel {
 
     /**
-     * Creates a new <code>PatientMedicationActTableModel</code>.
+     * Constructs a new <code>PatientRecordActTableModel</code>.
      *
      * @param shortNames the act archetype short names
      * @param context    the layout context
      */
-    public ReminderActTableModel(String[] shortNames,
-                                 LayoutContext context) {
+    public PatientRecordActTableModel(String[] shortNames,
+                                      LayoutContext context) {
         super(shortNames, context);
     }
 
     /**
-     * Returns a list of descriptor names to include in the table.
+     * Returns the index to insert the archetype column.
      *
-     * @return the list of descriptor names to include in the table
+     * @return the index to insert the archetype column, or <code>-1<code>
+     *         if it should not be inserted
      */
     @Override
-    protected String[] getDescriptorNames() {
-        return new String[]{"endTime", "status", "description"};
+    protected int getArchetypeColumnIndex() {
+        return 1;
     }
-
 }

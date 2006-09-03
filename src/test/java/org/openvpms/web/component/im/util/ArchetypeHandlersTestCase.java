@@ -102,6 +102,34 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that the correct handler is returned if multiple handlers
+     * are registered with the same implementation type.
+     */
+    public void testSameHandlerImplementationType() {
+
+        // make sure the AutoQuery class is returned for lookup.*,
+        // classification.*
+        ArchetypeHandler handler = _handlers.getHandler(
+                new String[]{"lookup.*", "classification.*"});
+        assertNotNull(handler);
+        assertEquals(handler.getType(), AutoQuery.class);
+
+        // make sure the AutoQuery class is returned for party.organisation*
+        ArchetypeHandler org = _handlers.getHandler(
+                new String[]{"party.organisation*"});
+        assertNotNull(org);
+        assertEquals(org.getType(), AutoQuery.class);
+
+        // make sure no handleris returned for lookup.*, classification.*,
+        // party.organisation* as the party.organisation* line has a different
+        // configuration
+        handler = _handlers.getHandler(
+                new String[]{"lookup.*", "classification.*",
+                             "party.organisation*"});
+        assertNull(handler);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error

@@ -22,22 +22,24 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
- * acts.
+ * Table model for <em>act.patientClinicalProblem</em>,
+ * <em>act.patientClinicalMedication</em>, <em>act.patientClinicalNote</em> and
+ * <em>act.patientWeight</em>s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReminderActTableModel extends PatientRecordActTableModel {
+public class PatientClinicalEventItemActTableModel
+        extends PatientRecordActTableModel {
 
     /**
-     * Creates a new <code>PatientMedicationActTableModel</code>.
+     * Creates a new <code>PatientClinicalEventItemActTableModel</code>.
      *
      * @param shortNames the act archetype short names
      * @param context    the layout context
      */
-    public ReminderActTableModel(String[] shortNames,
-                                 LayoutContext context) {
+    public PatientClinicalEventItemActTableModel(String[] shortNames,
+                                                 LayoutContext context) {
         super(shortNames, context);
     }
 
@@ -48,7 +50,6 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
      */
     @Override
     protected String[] getDescriptorNames() {
-        return new String[]{"endTime", "status", "description"};
+        return new String[]{"startTime", "clinician"};
     }
-
 }

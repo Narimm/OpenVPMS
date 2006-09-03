@@ -42,7 +42,7 @@ public class ArchetypeHandler<T> {
     /**
      * Configuration properties.
      */
-    private Map<String, String> _properties;
+    private final Map<String, String> _properties;
 
 
     /**
@@ -170,4 +170,12 @@ public class ArchetypeHandler<T> {
         return handler;
     }
 
+    /**
+     * Returns the configuration properties.
+     *
+     * @return the configuration properties. May be <code>null</code>
+     */
+    public Map<String, String> getProperties() {
+        return _properties;
+    }
 }

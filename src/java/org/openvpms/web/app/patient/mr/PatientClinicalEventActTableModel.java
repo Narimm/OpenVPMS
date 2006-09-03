@@ -19,16 +19,16 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 
 
 /**
- * Table model for <em>act.patientClinicalEvent</em>e.
+ * Table model for <em>act.patientClinicalEvent</em>s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class PatientClinicalEventActTableModel extends AbstractActTableModel {
+public class PatientClinicalEventActTableModel
+        extends PatientRecordActTableModel {
 
     /**
      * Creates a new <code>PatientClinicalEventActTableModel</code>.
