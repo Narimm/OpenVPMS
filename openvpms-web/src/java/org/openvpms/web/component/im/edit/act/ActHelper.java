@@ -34,6 +34,8 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -152,22 +154,24 @@ public class ActHelper {
     }
 
     /**
-     * Returns the valid short names for the target of an act relationship.
+     * Returns the valid short names for the target of a set of act
+     * relationships.
      *
-     * @param relationshipType the relationship type
-     * @return the short names, or an empty list if the relationship or
-     *         target node doesn't exist
+     * @param relationshipTypes the relationship types
      */
-    public static String[] getTargetShortNames(String relationshipType) {
-        ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(
-                relationshipType);
-        if (archetype != null) {
-            NodeDescriptor target = archetype.getNodeDescriptor("target");
+    public static String[] getTargetShortNames(String ... relationshipTypes) {
+        Set<String> matches = new HashSet<String>();
+        for (String relationshipType : relationshipTypes) {
+            ArchetypeDescriptor relationship
+                    = DescriptorHelper.getArchetypeDescriptor(relationshipType);
+            NodeDescriptor target = relationship.getNodeDescriptor("target");
             if (target != null) {
-                return DescriptorHelper.getShortNames(target);
+                for (String shortName : target.getArchetypeRange()) {
+                    matches.add(shortName);
+                }
             }
         }
-        return new String[0];
+        return matches.toArray(new String[0]);
     }
 
 }

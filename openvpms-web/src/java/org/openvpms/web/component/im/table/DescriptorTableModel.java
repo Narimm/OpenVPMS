@@ -199,8 +199,8 @@ public abstract class DescriptorTableModel<T extends IMObject>
     /**
      * Creates a column model for one or more archetypes.
      * If there are multiple archetypes, the intersection of the descriptors
-     * will be used, and the first column will display the archetype and the
-     * last the description.
+     * will be used, and the archetype will be inserted at the column indicated
+     * by {@link #getArchetypeColumnIndex}.
      *
      * @param archetypes the archetypes
      * @param context    the layout context
@@ -213,9 +213,12 @@ public abstract class DescriptorTableModel<T extends IMObject>
         TableColumnModel columns = new DefaultTableColumnModel();
 
         if (archetypes.size() > 1) {
-            columns.addColumn(new TableColumn(ARCHETYPE_INDEX));
             addColumns(descriptors, columns);
-            columns.addColumn(new TableColumn(DESCRIPTION_INDEX));
+            int index = getArchetypeColumnIndex();
+            if (index != -1) {
+                columns.addColumn(new TableColumn(ARCHETYPE_INDEX));
+                columns.moveColumn(columns.getColumnCount() - 1, index);
+            }
         } else {
             addColumns(descriptors, columns);
         }
@@ -278,6 +281,16 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected List<NodeDescriptor> getDescriptors(ArchetypeDescriptor archetype,
                                                   LayoutContext context) {
         return filter(archetype.getAllNodeDescriptors(), context);
+    }
+
+    /**
+     * Returns the index to insert the archetype column.
+     *
+     * @return the index to insert the archetype column, or <code>-1<code>
+     *         if it should not be inserted
+     */
+    protected int getArchetypeColumnIndex() {
+        return 0;
     }
 
     /**

@@ -18,37 +18,31 @@
 
 package org.openvpms.web.app.patient.mr;
 
+import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.act.AbstractActRelationshipTableModel;
 
 
 /**
- * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
- * acts.
+ * Table model for <em>actRelationship.patientClinicalEventItems</em>.
+ * This displays all related acts in a
+ * {@link PatientClinicalEventItemActTableModel}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class ReminderActTableModel extends PatientRecordActTableModel {
+public class PatientClinicalEventActRelationshipTableModel
+        extends AbstractActRelationshipTableModel {
 
     /**
-     * Creates a new <code>PatientMedicationActTableModel</code>.
+     * Constructs a new <code>PatientClinicalEventActRelationshipTableModel</code>
      *
-     * @param shortNames the act archetype short names
+     * @param shortNames the act relationship short names
      * @param context    the layout context
      */
-    public ReminderActTableModel(String[] shortNames,
-                                 LayoutContext context) {
-        super(shortNames, context);
+    public PatientClinicalEventActRelationshipTableModel(String[] shortNames,
+                                                         LayoutContext context) {
+        String[] targets = ActHelper.getTargetShortNames(shortNames);
+        setModel(new PatientClinicalEventItemActTableModel(targets, context));
     }
-
-    /**
-     * Returns a list of descriptor names to include in the table.
-     *
-     * @return the list of descriptor names to include in the table
-     */
-    @Override
-    protected String[] getDescriptorNames() {
-        return new String[]{"endTime", "status", "description"};
-    }
-
 }

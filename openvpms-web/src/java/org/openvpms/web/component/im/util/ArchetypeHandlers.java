@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.util;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,35 +84,69 @@ public class ArchetypeHandlers<T> extends AbstractArchetypeHandlers<T> {
      *         <code>null</code> if there is no match
      */
     public ArchetypeHandler<T> getHandler(String[] shortNames) {
+        ArchetypeHandler<T> result = null;
         Set<String> wildcards = _handlers.keySet();
-        String match = null;
-        int bestDotCount = -1; // more dots in a short name, the more specific
-        int bestWildCardCount = -1; // less wildcards, the more specific
+
+        // generate a map of matching wildcards, keyed on short name
+        Map<String, String> matches = new HashMap<String, String>();
         for (String wildcard : wildcards) {
-            boolean found = true;
             for (String shortName : shortNames) {
-                if (!TypeHelper.matches(shortName, wildcard)) {
-                    found = false;
-                    break;
-                }
-            }
-            if (found) {
-                if (match == null) {
-                    match = wildcard;
-                    bestDotCount = StringUtils.countMatches(wildcard, ".");
-                    bestWildCardCount = StringUtils.countMatches(wildcard, "*");
-                } else {
-                    int dotCount = StringUtils.countMatches(wildcard, ".");
-                    int wildcardCount = StringUtils.countMatches(wildcard, "*");
-                    if (dotCount > bestDotCount ||
-                            (dotCount == bestDotCount
-                                    && wildcardCount < bestWildCardCount)) {
-                        match = wildcard;
+                if (TypeHelper.matches(shortName, wildcard)) {
+                    String match = matches.get(shortName);
+                    if (match == null) {
+                        matches.put(shortName, wildcard);
+                    } else {
+                        if (moreSpecific(wildcard, match)) {
+                            matches.put(shortName, wildcard);
+                        }
                     }
+                    matches.put(shortName, wildcard);
                 }
             }
         }
-        return (match != null) ? _handlers.get(match) : null;
+        if (matches.size() == shortNames.length) {
+            // found a match for each short name. Make sure the implementation
+            // class is the same, with the same configuration
+            for (String match : matches.values()) {
+                ArchetypeHandler<T> handler = _handlers.get(match);
+                if (result == null) {
+                    result = handler;
+                } else if (!result.getType().equals(handler.getType())) {
+                    result = null;
+                    break;
+                } else if (!ObjectUtils.equals(result.getProperties(),
+                                               handler.getProperties())) {
+                    result = null;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if one short name is more specific than another.
+     * A short name is more specific than another if it has:
+     * <ul>
+     * <li>more dots</li>
+     * <li>the same no of dots, but fewer wildcards</li>
+     * </ul>
+     *
+     * @param shortName1 the first short name
+     * @param shortName2 the second short name
+     * @return <code>true</code> if shortName1 is more specific than shortName2
+     */
+    private boolean moreSpecific(String shortName1, String shortName2) {
+        boolean result = false;
+        int dotCount1 = StringUtils.countMatches(shortName1, ".");
+        int wildcardCount1 = StringUtils.countMatches(shortName1, "*");
+        int dotCount2 = StringUtils.countMatches(shortName2, ".");
+        int wildCardCount2 = StringUtils.countMatches(shortName2, "*");
+        if (dotCount1 > dotCount2 ||
+                (dotCount1 == dotCount2 && wildcardCount1 < wildCardCount2)) {
+            result = true;
+        }
+        return result;
     }
 
     class Parser extends ArchetypePropertiesParser {
