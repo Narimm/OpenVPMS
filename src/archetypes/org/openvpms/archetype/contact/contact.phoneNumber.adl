@@ -31,10 +31,6 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="areaCode" path="/details/attributes/areaCode"
 				type="java.lang.String" minCardinality="0" >
-				<assertion name="regularExpression">
-					<property name="expression" value="[0-9]*" />
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
 			</node>
 			<node name="telephoneNumber" path="/details/attributes/telephoneNumber"
 				type="java.lang.String" minCardinality="0" >
