@@ -66,7 +66,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
         }
-        if (participation.isNew() && participation.getEntity() == null) {
+        if (participation.getEntity() == null && parent.isNew()) {
             IMObject clinician = Context.getInstance().getClinician();
             getEditor().setObject(clinician);
         }
