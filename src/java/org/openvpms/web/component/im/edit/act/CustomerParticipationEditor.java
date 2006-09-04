@@ -55,7 +55,7 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
                     "Invalid participation type:"
                             + participation.getArchetypeId().getShortName());
         }
-        if (participation.isNew() && participation.getEntity() == null) {
+        if (participation.getEntity() == null && parent.isNew()) {
             IMObject customer = Context.getInstance().getCustomer();
             getEditor().setObject(customer);
         }
