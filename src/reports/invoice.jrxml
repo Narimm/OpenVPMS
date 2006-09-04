@@ -23,7 +23,7 @@
 	<import value="net.sf.jasperreports.engine.*" />
 	<import value="net.sf.jasperreports.engine.data.*" />
 	<import value="org.openvpms.component.business.domain.im.party.Party" />
-	<import value="org.openvpms.report.jasper.PartyHelper" />
+	<import value="org.openvpms.archetype.function.party.PartyFunctions" />
 
 	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.IMObjectDataSource"/>
 
@@ -63,7 +63,7 @@
 					<textElement>
 						<font/>
 					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[PartyHelper.getFormattedBillingAddress($F{customer.entity})]]></textFieldExpression>
+				<textFieldExpression   class="java.lang.String"><![CDATA[PartyFunctions.billingAddress($F{customer.entity})]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement

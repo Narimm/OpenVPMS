@@ -21,7 +21,6 @@ package org.openvpms.report.openoffice;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -87,6 +86,7 @@ public class OpenOfficeIMObjectReportTestCase
         assertEquals("J", fields.get("firstName"));
         assertEquals("Zoo", fields.get("lastName"));
         assertEquals("2.00", fields.get("expression"));
+        assertEquals("1234 Foo St Melbourne 3001", fields.get("address"));
         assertEquals("Invalid node name: invalid", fields.get("invalid"));
     }
 
@@ -170,9 +170,11 @@ public class OpenOfficeIMObjectReportTestCase
         IMObjectBean bean = createBean("party.customerperson");
         bean.setValue("firstName", "J");
         bean.setValue("lastName", "Zoo");
-        Contact contact = (Contact) create("contact.phoneNumber");
-        assertNotNull(contact);
-        bean.addValue("contacts", contact);
+        IMObjectBean contact = createBean("contact.location");
+        contact.setValue("address", "1234 Foo St");
+        contact.setValue("suburb", "Melbourne");
+        contact.setValue("postcode", "3001");
+        bean.addValue("contacts", contact.getObject());
         bean.save();
         return (Party) bean.getObject();
     }
