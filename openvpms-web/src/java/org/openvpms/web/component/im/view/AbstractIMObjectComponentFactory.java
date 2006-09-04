@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.view;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.text.TextComponent;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.edit.Property;
@@ -116,9 +115,10 @@ public abstract class AbstractIMObjectComponentFactory
         NodeDescriptor descriptor = property.getDescriptor();
         if (descriptor.getMaxLength() > 255) {
             if (descriptor.getMaxLength() < 500)
-                result = TextComponentFactory.createTextArea(property, columns, 5);
+                result = TextComponentFactory.createTextArea(property, columns,
+                                                             5);
             else
-                result = TextComponentFactory.createTextArea(property, 100, 15);
+                result = TextComponentFactory.createTextArea(property, 90, 15);
         } else {
             result = TextComponentFactory.create(property, columns);
         }
