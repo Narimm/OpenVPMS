@@ -33,7 +33,7 @@
   <bean id="linkIdCache" 
     class="org.springframework.cache.ehcache.EhCacheFactoryBean">
     <property name="cacheManager"><ref local="cacheManager"/></property>
-    <property name="diskPersistent"><value>true</value></property>
+    <property name="diskPersistent"><value>false</value></property>
     <property name="cacheName"><value>linkIdCache</value></property>
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
@@ -44,7 +44,7 @@
     class="org.springframework.cache.ehcache.EhCacheFactoryBean">
     <property name="cacheManager"><ref local="cacheManager"/></property>
     <property name="cacheName"><value>idCache</value></property>
-    <property name="diskPersistent"><value>true</value></property>
+    <property name="diskPersistent"><value>false</value></property>
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
     <property name="eternal"><value>true</value></property>
@@ -54,7 +54,7 @@
     class="org.springframework.cache.ehcache.EhCacheFactoryBean">
     <property name="cacheManager"><ref local="cacheManager"/></property>
     <property name="cacheName"><value>unprocessedElementCache</value></property>
-    <property name="diskPersistent"><value>true</value></property>
+    <property name="diskPersistent"><value>false</value></property>
     <property name="maxElementsInMemory"><value>40000</value></property>
     <property name="overflowToDisk"><value>true</value></property>
     <property name="eternal"><value>true</value></property>
