@@ -78,11 +78,10 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that a {@link DefaultParticipationEditor} is returned for
-     * <em>participation.customer and participation.author</em>
+     * participation.author</em>
      */
     public void testCreateDefaultParticipationEditor() {
-        String[] shortNames = {"participation.customer",
-                               "participation.author"};
+        String[] shortNames = {"participation.author"};
         for (String shortName : shortNames) {
             checkCreate(shortName, "act.customerEstimationItem",
                         DefaultParticipationEditor.class);
