@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.function.party;
 
-import java.util.List;
-
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -27,6 +25,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+
+import java.util.List;
 
 
 /**
@@ -38,11 +38,10 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 public class PartyFunctions {
 
     /**
-     * Returns a stringfield form of a party's contacts.
+     * Returns a formatted list of contacts for a party.
      *
      * @param context the expression context. Expected to reference a party.
-     * @return the stringified form of the party's contacts or
-     *         <code>null</code>
+     * @return a formatted list of contacts. May be <code>null</code>
      */
     public static String contacts(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -50,25 +49,75 @@ public class PartyFunctions {
             return null;
         }
 
-        StringBuffer result = new StringBuffer();
+        return contacts((Party) pointer.getValue());
+    }
 
-        Party party = (Party) pointer.getValue();
-        for (Contact contact : party.getContacts()) {
-            IMObjectBean bean = new IMObjectBean(contact);
-            if (bean.hasNode("preferred")) {
-                boolean preferred = bean.getBoolean("preferred");
-                if (preferred) {
-                    String description = getContactDescription(bean);
-                    if (description != null) {
-                        if (result.length() != 0) {
-                            result.append(", ");
+    /**
+     * Returns a formatted list of contacts for a party.
+     *
+     * @param party the party
+     * @return a formatted list of contacts
+     */
+    public static String contacts(Party party) {
+        StringBuffer result = new StringBuffer();
+        if (party != null) {
+            for (Contact contact : party.getContacts()) {
+                IMObjectBean bean = new IMObjectBean(contact);
+                if (bean.hasNode("preferred")) {
+                    boolean preferred = bean.getBoolean("preferred");
+                    if (preferred) {
+                        String description = getContactDescription(bean);
+                        if (description != null) {
+                            if (result.length() != 0) {
+                                result.append(", ");
+                            }
+                            result.append(description);
                         }
-                        result.append(description);
                     }
                 }
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Returns a formatted billing address for a party.
+     *
+     * @param context the expression context. Expected to reference a party.
+     * @return a formatted billing address, or <code>null</code>
+     */
+
+    public static String billingAddress(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        if (pointer == null || !(pointer.getValue() instanceof Party)) {
+            return null;
+        }
+        return billingAddress((Party) pointer.getValue());
+    }
+
+    /**
+     * Returns a formatted billing address for a party.
+     *
+     * @param party the party
+     * @return a formatted billing address
+     */
+    public static String billingAddress(Party party) {
+        String result = "";
+        if (party != null) {
+            Contact mail = null;
+            for (Contact contact : party.getContacts()) {
+                if (mail == null) {
+                    mail = contact;
+                } else if (contact.getArchetypeId().getShortName().equals(
+                        "contact.location")) {
+                    mail = contact;
+                }
+            }
+            if (mail != null) {
+                result = mail.getDescription();
+            }
+        }
+        return result;
     }
 
     /**
@@ -119,6 +168,7 @@ public class PartyFunctions {
         }
         return result.toString();
     }
+
     /**
      * Returns a stringfield form of a party's identities.
      *
