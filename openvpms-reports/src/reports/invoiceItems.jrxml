@@ -23,7 +23,6 @@
 	<import value="net.sf.jasperreports.engine.*" />
 	<import value="net.sf.jasperreports.engine.data.*" />
 	<import value="org.openvpms.component.business.domain.im.party.Party" />
-	<import value="org.openvpms.report.jasper.PartyHelper" />
 
 
 	<field name="target.patient.entity.name" class="java.lang.String"/>
