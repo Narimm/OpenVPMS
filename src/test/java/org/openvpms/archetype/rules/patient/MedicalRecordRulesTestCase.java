@@ -115,18 +115,6 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create an <em>act.patientClinicalEpisode</em>.
-     *
-     * @return a new act
-     */
-    protected Act createEpisode() {
-        Act act = createAct("act.patientClinicalEpisode");
-        addParticipation(act, _patient, "participation.patient");
-        addParticipation(act, _clinician, "participation.clinician");
-        return act;
-    }
-
-    /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
      *
      * @return a new act
