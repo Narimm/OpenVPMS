@@ -18,14 +18,12 @@
 
 package org.openvpms.web.component.edit;
 
-import org.openvpms.web.test.AbstractAppTest;
-
+import junit.framework.Assert;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-
-import junit.framework.Assert;
+import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
 
@@ -126,7 +124,7 @@ public class NumericPropertyTransformerTestCase
         super.onSetUp();
 
         // get the node descriptors
-        _intNode = getDescriptor("classification.appointmentType", "noSlots");
+        _intNode = getDescriptor("party.organisationSchedule", "slotSize");
         Assert.assertEquals(Integer.class, _intNode.getClazz());
 
         _decNode = getDescriptor("act.patientWeight", "weight");

@@ -24,12 +24,15 @@
  */
 package org.openvpms.web.component.im.edit;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.test.TestHelper;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.test.TestHelper;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -50,10 +53,11 @@ public class DefaultCollectionPropertyEditorTestCase
         CollectionPropertyEditor editor = createEditor(property, parent);
         String[] range = editor.getArchetypeRange();
         assertEquals(4, range.length);
-        assertEquals("contact.location", range[0]);
-        assertEquals("contact.phoneNumber", range[1]);
-        assertEquals("contact.email", range[2]);
-        assertEquals("contact.faxNumber", range[3]);
+        Set<String> set = new HashSet<String>(Arrays.asList(range));
+        assertTrue(set.contains("contact.location"));
+        assertTrue(set.contains("contact.phoneNumber"));
+        assertTrue(set.contains("contact.email"));
+        assertTrue(set.contains("contact.faxNumber"));
     }
 
     /**
