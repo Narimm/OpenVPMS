@@ -68,6 +68,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Context.getInstance().setPatient((Party) object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**

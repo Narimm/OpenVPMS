@@ -35,6 +35,15 @@ public class PatientRecordActTableModel extends AbstractActTableModel {
      * Constructs a new <code>PatientRecordActTableModel</code>.
      *
      * @param shortNames the act archetype short names
+     */
+    public PatientRecordActTableModel(String[] shortNames) {
+        super(shortNames);
+    }
+
+    /**
+     * Constructs a new <code>PatientRecordActTableModel</code>.
+     *
+     * @param shortNames the act archetype short names
      * @param context    the layout context
      */
     public PatientRecordActTableModel(String[] shortNames,

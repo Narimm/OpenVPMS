@@ -33,6 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.app.patient.PatientSummary;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.subsystem.ActWorkspace;
@@ -74,6 +75,18 @@ public class PatientRecordWorkspace extends ActWorkspace {
         Context.getInstance().setPatient(party);
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Renders the workspace summary.
+     *
+     * @return the component representing the workspace summary, or
+     *         <code>null</code> if there is no summary
+     */
+    @Override
+    public Component getSummary() {
+        return PatientSummary.getSummary((Party) getObject());
     }
 
     /**

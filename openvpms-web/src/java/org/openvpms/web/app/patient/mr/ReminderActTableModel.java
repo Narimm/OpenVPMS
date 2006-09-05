@@ -18,9 +18,6 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import org.openvpms.web.component.im.layout.LayoutContext;
-
-
 /**
  * Table model for <em>act.patientReminder</em> and <em>act.patientAlert</em>
  * acts.
@@ -34,11 +31,9 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
      * Creates a new <code>PatientMedicationActTableModel</code>.
      *
      * @param shortNames the act archetype short names
-     * @param context    the layout context
      */
-    public ReminderActTableModel(String[] shortNames,
-                                 LayoutContext context) {
-        super(shortNames, context);
+    public ReminderActTableModel(String[] shortNames) {
+        super(shortNames);
     }
 
     /**
