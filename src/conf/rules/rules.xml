@@ -1,10 +1,13 @@
 <rules>
-  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEvent.after.drl" />
-  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.after.drl" />
   <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.bankDeposit.before.drl" />
+  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountChargesInvoice.before.drl" />
+  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountInvoiceItem.after.drl" />
+  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.remove.act.customerAccountInvoiceItem.after.drl" />
+  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountPayment.after.drl" />
   <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.customerAccountRefund.after.drl" />
   <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.tillBalance.before.drl" />
   <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.act.tillBalanceAdjustment.after.drl" />
+  <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.remove.act.patientClinicalEvent.after.drl" />
   <rule source="classpath"  path="org/openvpms/archetype/rules/archetypeService.save.party.patientPet.before.drl" />
   <rule source="classpath"  path="org/openvpms/archetype/rules/calculateTax.drl" />
 </rules>

@@ -18,8 +18,6 @@
 
 package org.openvpms.archetype.test;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -94,22 +92,6 @@ public abstract class ArchetypeServiceTest
      */
     protected void remove(IMObject object) {
         _service.remove(object);
-    }
-
-    /**
-     * Helper to set a value on an object.
-     *
-     * @param object the object
-     * @param node   the node name
-     * @param value  the value to set
-     */
-    protected void setValue(IMObject object, String node, Object value) {
-        ArchetypeDescriptor archetype = _service.getArchetypeDescriptor(
-                object.getArchetypeId());
-        assertNotNull(archetype);
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
-        assertNotNull(descriptor);
-        descriptor.setValue(object, value);
     }
 
     /**
