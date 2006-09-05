@@ -18,65 +18,99 @@
 
 package org.openvpms.archetype.rules.patient;
 
-import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.InvalidTillArchetype;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
-import org.openvpms.archetype.rules.tax.TaxRuleException;
-import org.openvpms.archetype.rules.till.TillRuleException;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 
 /**
- * Reminder Rules
- * 
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * Reminder rules.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-
 public class ReminderRules {
 
     /**
-     * Till balance act short name.
+     * Patient reminder act short name.
      */
     public static final String PATIENT_REMINDER = "act.patientReminder";
 
     /**
-     * Calculate the due date for a reminder using the reminders start date
+     * Reminder type participation short name.
+     */
+    public static final String REMINDER_TYPE = "participation.reminderType";
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService _service;
+
+
+    /**
+     * Creates a new <code>ReminderRules</code>.
+     *
+     * @param service the archetype service
+     */
+    public ReminderRules(IArchetypeService service) {
+        _service = service;
+    }
+
+    /**
+     * Calculate the due date for a reminder using the reminder's start date
      * plus the default interval and units from the associated reminder type.
      *
-     * @param act     the financial act to calculate tax for
-     * @param service the archetype service
-     * @return the amount of tax for the act
-     * @throws TaxRuleException          if the act is invalid
+     * @param act the act
      * @throws ArchetypeServiceException for any archetype service error
      */
 
-     public static void calculateReminderDueDate(Act act, IArchetypeService service) {
-        ActBean reminderbean = new ActBean(act, service);
-        if (reminderbean.isA(PATIENT_REMINDER)) {
-            Entity reminderType = (Entity) reminderbean.getParticipant("participation.reminderType");
-            IMObjectBean remtypebean = new IMObjectBean(reminderType);
-            GregorianCalendar sdatecal = new GregorianCalendar();
-            sdatecal.setTime(reminderbean.getDate("startTime"));
-            Integer interval = remtypebean.getInt("defaultInterval");
-            String units = remtypebean.getString("defaultUnits");
-            if (units.equalsIgnoreCase("years"))
-                sdatecal.add(Calendar.YEAR, interval);
-            else if (units.equalsIgnoreCase("months"))
-                sdatecal.add(Calendar.MONTH, interval);
-            else if (units.equalsIgnoreCase("weeks"))
-                    sdatecal.add(Calendar.DAY_OF_YEAR, interval*7);
-            else if (units.equalsIgnoreCase("days"))
-                sdatecal.add(Calendar.DAY_OF_YEAR, interval);
-            reminderbean.setValue("endTime", sdatecal.getTime());
-         }
-     }
+    public void calculateReminderDueDate(Act act) {
+        ActBean bean = new ActBean(act, _service);
+        if (bean.isA(PATIENT_REMINDER)) {
+            Date startTime = act.getActivityStartTime();
+            Entity reminderType = bean.getParticipant(REMINDER_TYPE);
+            Date endTime = null;
+            if (startTime != null && reminderType != null) {
+                endTime = calculateReminderDueDate(startTime, reminderType);
+            }
+            act.setActivityEndTime(endTime);
+        }
+    }
+
+    /**
+     * Calculates the due date for a reminder.
+     *
+     * @param startTime    the start time
+     * @param reminderType the reminder type
+     * @return the end time for a reminder
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public Date calculateReminderDueDate(Date startTime, Entity reminderType) {
+        EntityBean bean = new EntityBean(reminderType, _service);
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTime(startTime);
+        int interval = bean.getInt("defaultInterval");
+        String units = bean.getString("defaultUnits");
+        if (units != null) {
+            units = units.toLowerCase();
+            if (units.equals("years")) {
+                calendar.add(Calendar.YEAR, interval);
+            } else if (units.equals("months")) {
+                calendar.add(Calendar.MONTH, interval);
+            } else if (units.equals("weeks")) {
+                calendar.add(Calendar.DAY_OF_YEAR, interval * 7);
+            } else if (units.equals("days")) {
+                calendar.add(Calendar.DAY_OF_YEAR, interval);
+            }
+        }
+        return calendar.getTime();
+    }
 
 }
