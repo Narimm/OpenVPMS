@@ -63,7 +63,7 @@
 		</node>
         <node name="documents" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.invoiceItemDocument" >
+			filter="actRelationship.invoiceItemDocument" hidden="true" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
@@ -75,7 +75,7 @@
 		</node>
         <node name="reminders" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-			filter="actRelationship.invoiceItemReminder" >
+			filter="actRelationship.invoiceItemReminder" hidden="true" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
