@@ -49,6 +49,18 @@
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
+			<node name="sensitivityInterval" displayName="Sensitivity Interval" path="/details/attributes/sensitivityInterval" type="java.lang.Integer" minCardinality="0" />			
+			<node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/attributes/sensitivityUnits" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="days" value="days" />
+						<property name="weeks" value="weeks" />
+						<property name="months" value="months" />
+						<property name="years" value="years" />
+					</propertyList>
+					<errorMessage>errorMessage</errorMessage>
+				</assertion>
+			</node>
 		</node>		
 		<node name="templates" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
