@@ -83,6 +83,31 @@ public class ActBeanTestCase
     }
 
     /**
+     * Tests the {@link ActBean#getActs(String)} method.
+     */
+    public void testGetActsByShortName() {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        final String relName = "actRelationship.customerEstimationItem";
+        ActBean bean = createBean("act.customerEstimation");
+        Act[] expected = new Act[3];
+        for (int i = 0; i < 3; ++i) {
+            Act target = (Act) create("act.customerEstimationItem");
+            service.save(target);
+            bean.addRelationship(relName, target);
+            expected[i] = target;
+        }
+        List<Act> acts = bean.getActs("act.customerEstimationItem");
+        assertEquals(expected.length, acts.size());
+        for (Act exp : expected) {
+            assertTrue(acts.contains(exp));
+        }
+
+        acts = bean.getActs("act.customerAccountInvoiceItem");
+        assertTrue(acts.isEmpty());
+    }
+
+    /**
      * Tests the {@link ActBean#addParticipation),
      * {@link ActBean#getParticipation(String),
      * {@link ActBean#removeParticipation} and

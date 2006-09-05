@@ -143,9 +143,35 @@ public class ActBean extends IMObjectBean {
         List<Act> result = new ArrayList<Act>();
         Act act = getAct();
         for (ActRelationship r : act.getSourceActRelationships()) {
-            IArchetypeService service = getArchetypeService();
             IMObjectReference target = r.getTarget();
             if (target != null) {
+                IArchetypeService service = getArchetypeService();
+                Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
+                        service, target);
+                if (child != null) {
+                    result.add(child);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Resolves and returns a list of the child acts with the specified short
+     * name.
+     *
+     * @param shortName the act short name
+     * @return a list of the child acts
+     * @throws ArchetypeServiceException for any archetype service
+     */
+    public List<Act> getActs(String shortName) {
+        List<Act> result = new ArrayList<Act>();
+        Act act = getAct();
+        for (ActRelationship r : act.getSourceActRelationships()) {
+            IMObjectReference target = r.getTarget();
+            if (target != null && target.getArchetypeId().getShortName().equals(
+                    shortName)) {
+                IArchetypeService service = getArchetypeService();
                 Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
                         service, target);
                 if (child != null) {
