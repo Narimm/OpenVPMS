@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 
 
@@ -32,11 +31,9 @@ public class TaskTableModel extends AbstractActTableModel {
 
     /**
      * Creates a new <code>TaskTableModel</code>.
-     *
-     * @param context the layout context
      */
-    public TaskTableModel(LayoutContext context) {
-        super(new String[]{"act.customerTask"}, context);
+    public TaskTableModel() {
+        super(new String[]{"act.customerTask"});
     }
 
     /**

@@ -19,7 +19,6 @@
 package org.openvpms.web.app.customer;
 
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
@@ -50,6 +49,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Context.getInstance().setCustomer((Party) object);
+        firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
     /**

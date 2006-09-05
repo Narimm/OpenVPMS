@@ -21,7 +21,6 @@ package org.openvpms.web.app.workflow.scheduling;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.util.DateFormatter;
@@ -40,11 +39,9 @@ public class AppointmentTableModel extends AbstractActTableModel {
 
     /**
      * Creates a new <code>AppointmentTableModel</code>.
-     *
-     * @param context the layout context
      */
-    public AppointmentTableModel(LayoutContext context) {
-        super(new String[]{"act.customerAppointment"}, context);
+    public AppointmentTableModel() {
+        super(new String[]{"act.customerAppointment"});
     }
 
     /**

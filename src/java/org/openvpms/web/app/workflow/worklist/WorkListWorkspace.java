@@ -28,12 +28,9 @@ import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 
@@ -133,10 +130,7 @@ public class WorkListWorkspace extends ActWorkspace {
     @Override
     protected IMObjectTableModel<Act> createTableModel() {
         // todo - replace this method with call to IMObjectTableModelFactory
-        LayoutContext context = new DefaultLayoutContext();
-        TableComponentFactory factory = new TableComponentFactory(context);
-        context.setComponentFactory(factory);
-        return new TaskTableModel(context);
+        return new TaskTableModel();
     }
 
     /**

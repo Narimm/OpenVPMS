@@ -31,8 +31,10 @@ import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
+import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,6 +56,18 @@ public abstract class DescriptorTableModel<T extends IMObject>
      */
     private final LayoutContext _context;
 
+
+    /**
+     * Creates a new <code>DescriptorTableModel</code>.
+     *
+     * @param shortNames the archetype short names
+     */
+    public DescriptorTableModel(String[] shortNames) {
+        _context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(_context);
+        _context.setComponentFactory(factory);
+        setTableColumnModel(createColumnModel(shortNames, _context));
+    }
 
     /**
      * Creates a new <code>DescriptorTableModel</code>.
