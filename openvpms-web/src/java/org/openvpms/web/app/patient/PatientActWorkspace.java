@@ -19,16 +19,15 @@
 package org.openvpms.web.app.patient;
 
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.component.app.Context;
 
 /**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 
 public abstract class PatientActWorkspace extends ActWorkspace {
@@ -41,9 +40,11 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      * @param conceptName
      */
     public PatientActWorkspace(String subsystemId, String workspaceId,
-            String refModelName, String entityName, String conceptName) {
+                               String refModelName, String entityName,
+                               String conceptName) {
         super(subsystemId, workspaceId, refModelName, entityName, conceptName);
     }
+
     /**
      * Sets the current object.
      *
