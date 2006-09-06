@@ -36,6 +36,9 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.clinician" />
         <node name="quantity" path="/quantity" type="java.math.BigDecimal" defaultValue="1.0"/>
         <node name="fixedPrice" path="/fixedAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
         <node name="unitPrice" path="/unitAmount" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"/>
