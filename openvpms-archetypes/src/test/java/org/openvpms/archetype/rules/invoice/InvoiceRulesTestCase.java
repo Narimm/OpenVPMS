@@ -113,7 +113,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         ActBean docBean = new ActBean(document);
         assertEquals(_patient, docBean.getParticipant("participation.patient"));
         assertEquals(_template,
-                     docBean.getParticipant("participation.document"));
+                     docBean.getParticipant("participation.documentTemplate"));
 
         // change the product participation to one without a reminder.
         // The invoice should no longer have any associated reminders or
