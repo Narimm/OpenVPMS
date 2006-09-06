@@ -54,6 +54,9 @@
         <node name="author" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.author" hidden="true"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.clinician" />
         <node name="items" path="/sourceActRelationships"
 			type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
