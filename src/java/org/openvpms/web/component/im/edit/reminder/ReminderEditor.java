@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.patient.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
@@ -80,8 +79,9 @@ public class ReminderEditor extends AbstractActEditor {
      */
     private void onReminderTypeChanged() {
         try {
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
-            ReminderRules.calculateReminderDueDate((Act) getObject(), service);
+            ReminderRules rules = new ReminderRules(
+                    ArchetypeServiceHelper.getArchetypeService());
+            rules.calculateReminderDueDate((Act) getObject());
             Property property = getProperty("endTime");
             property.refresh();
         } catch (OpenVPMSException exception) {
