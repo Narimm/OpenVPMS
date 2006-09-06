@@ -291,7 +291,8 @@ public class InvoiceRules {
             IMObjectReference patient = item.getParticipantRef(
                     "participation.patient");
             documentAct.addParticipation("participation.patient", patient);
-            documentAct.addParticipation("participation.document", document);
+            documentAct.addParticipation("participation.documentTemplate",
+                                         document);
             documentAct.save();
             item.addRelationship("actRelationship.invoiceItemDocument",
                                  documentAct.getAct());
