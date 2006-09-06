@@ -36,7 +36,9 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBeanExce
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -135,24 +137,43 @@ public class InvoiceRules {
      */
     private boolean addReminders(ActBean item, EntityBean product) {
         boolean save = false;
-        List<Act> acts = item.getActsForNode("reminders");
+        List<Act> reminders = item.getActsForNode("reminders");
+
+        Set<IMObjectReference> actReminders         // reminderTypes referenced
+                = new HashSet<IMObjectReference>(); // by the acts
+
+        Set<IMObjectReference> productReminders     // reminderTypes referenced
+                = new HashSet<IMObjectReference>(); // by the product
+
+        // get the set of references to entity.reminderTypes for the product
+        if (product != null && product.hasNode("reminders")) {
+            for (IMObject object : product.getValues("reminders")) {
+                EntityRelationship r = (EntityRelationship) object;
+                if (r.getTarget() != null) {
+                    productReminders.add(r.getTarget());
+                }
+            }
+        }
 
         // remove any existing reminders not referenced by the current product
-        for (Act act : acts) {
-            if (product == null || !hasProduct(act, product)) {
-                ActRelationship r = item.getRelationship(act);
+        for (Act reminder : reminders) {
+            ActBean bean = new ActBean(reminder, _service);
+            IMObjectReference type
+                    = bean.getParticipantRef("participation.reminderType");
+            if (type == null || !productReminders.contains(type)) {
+                ActRelationship r = item.getRelationship(reminder);
                 item.removeRelationship(r);
                 save = true;
+            } else {
+                actReminders.add(type);
             }
         }
 
         // add any reminders associated with the current product
-        if (product != null && product.hasNode("reminders")) {
-            List<IMObject> reminders = product.getValues("reminders");
-            for (IMObject object : reminders) {
-                EntityRelationship rel = (EntityRelationship) object;
-                Entity reminderType = (Entity) getObject(rel.getTarget());
-                if (reminderType != null && !hasReminder(acts, reminderType)) {
+        for (IMObjectReference reminderRef : productReminders) {
+            if (!actReminders.contains(reminderRef)) {
+                Entity reminderType = (Entity) getObject(reminderRef);
+                if (reminderType != null) {
                     addReminder(item, reminderType);
                     save = true;
                 }
@@ -171,25 +192,44 @@ public class InvoiceRules {
      */
     private boolean addDocuments(ActBean item, EntityBean product) {
         boolean save = false;
-        List<Act> acts = item.getActsForNode("documents");
+        List<Act> documents = item.getActsForNode("documents");
+
+        Set<IMObjectReference> actDocs              // entity.documentTemplates
+                = new HashSet<IMObjectReference>(); // referenced by the acts
+
+        Set<IMObjectReference> productDocs          // entity.documentTemplates
+                = new HashSet<IMObjectReference>(); // referenced by the product
+
+        // get the set of references to entity.documentTemplates for the product
+        if (product != null && product.hasNode("documents")) {
+            for (IMObject object : product.getValues("documents")) {
+                EntityRelationship r = (EntityRelationship) object;
+                if (r.getTarget() != null) {
+                    productDocs.add(r.getTarget());
+                }
+            }
+        }
 
         // remove any existing documents not referenced by the current product
-        for (Act act : acts) {
-            if (product == null || !hasProduct(act, product)) {
-                ActRelationship r = item.getRelationship(act);
+        for (Act document : documents) {
+            ActBean bean = new ActBean(document, _service);
+            IMObjectReference template
+                    = bean.getParticipantRef("participation.documentTemplate");
+            if (template == null || !productDocs.contains(template)) {
+                ActRelationship r = item.getRelationship(document);
                 item.removeRelationship(r);
                 save = true;
+            } else {
+                actDocs.add(template);
             }
         }
 
         // add any documents associated with the current product
-        if (product != null && product.hasNode("documents")) {
-            List<IMObject> documents = product.getValues("documents");
-            for (IMObject object : documents) {
-                EntityRelationship rel = (EntityRelationship) object;
-                Entity document = (Entity) getObject(rel.getTarget());
-                if (document != null && !hasDocument(acts, document)) {
-                    addDocument(item, document);
+        for (IMObjectReference templateRef : productDocs) {
+            if (!actDocs.contains(templateRef)) {
+                Entity template = (Entity) getObject(templateRef);
+                if (template != null) {
+                    addDocument(item, template);
                     save = true;
                 }
             }
@@ -297,65 +337,6 @@ public class InvoiceRules {
             item.addRelationship("actRelationship.invoiceItemDocument",
                                  documentAct.getAct());
         }
-    }
-
-    /**
-     * Determines if an act references a product.
-     *
-     * @param act     the act
-     * @param product the product
-     * @return <code>true</code> if the act references <code>product</code>;
-     *         otherwise <code>false</code>
-     */
-    private boolean hasProduct(Act act, EntityBean product) {
-        ActBean bean = new ActBean(act, _service);
-        IMObjectReference productRef = product.getObject().getObjectReference();
-        IMObjectReference ref = bean.getParticipantRef("participation.product");
-        return ref != null && productRef.equals(ref);
-    }
-
-    /**
-     * Determines if a document template is referenced by a set of
-     * <em>act.patientReminder</em>s.
-     *
-     * @param documents        the <em>act.patientDocument*</em>s
-     * @param documentTemplate the document template
-     * @return <code>true</code> if at least one act references the reminder
-     *         type; otherwise <code>false</code>
-     */
-    private boolean hasDocument(List<Act> documents, Entity documentTemplate) {
-        IMObjectReference reminderRef = documentTemplate.getObjectReference();
-        for (Act act : documents) {
-            ActBean bean = new ActBean(act, _service);
-            IMObjectReference ref
-                    = bean.getParticipantRef("participation.documentTemplate");
-            if (ref != null && reminderRef.equals(ref)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Determines if a document act is referenced by a set of
-     * <em>act.patientReminder</em>s.
-     *
-     * @param reminders    the <em>act.patientReminder</em>s
-     * @param reminderType the reminder type
-     * @return <code>true</code> if at least one act references the reminder
-     *         type; otherwise <code>false</code>
-     */
-    private boolean hasReminder(List<Act> reminders, Entity reminderType) {
-        IMObjectReference reminderRef = reminderType.getObjectReference();
-        for (Act act : reminders) {
-            ActBean bean = new ActBean(act, _service);
-            IMObjectReference ref
-                    = bean.getParticipantRef("participation.reminderType");
-            if (ref != null && reminderRef.equals(ref)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

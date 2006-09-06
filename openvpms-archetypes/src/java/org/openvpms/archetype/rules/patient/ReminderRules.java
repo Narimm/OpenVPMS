@@ -94,10 +94,23 @@ public class ReminderRules {
      */
     public Date calculateReminderDueDate(Date startTime, Entity reminderType) {
         EntityBean bean = new EntityBean(reminderType, _service);
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime(startTime);
         int interval = bean.getInt("defaultInterval");
         String units = bean.getString("defaultUnits");
+        return calculateDate(startTime, interval, units);
+    }
+
+    /**
+     * Calculates a date for a reminder.
+     *
+     * @param startTime the start time
+     * @param interval  the time interval. May be negative to calculate a date
+     *                  in the past
+     * @param units     the interval units
+     * @return the date for a reminder
+     */
+    public Date calculateDate(Date startTime, int interval, String units) {
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTime(startTime);
         if (units != null) {
             units = units.toLowerCase();
             if (units.equals("years")) {
