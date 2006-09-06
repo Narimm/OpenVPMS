@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.patient.summary;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
 import org.openvpms.web.component.im.view.IMObjectViewer;
@@ -120,6 +121,8 @@ public class PatientSummary {
     private static void onShowReminders(Party patient) {
         PagedIMObjectTable<Act> table = new PagedIMObjectTable<Act>(
                 new ReminderTableModel(), getReminders(patient));
+        table.getTable().setDefaultRenderer(Object.class,
+                                            new ReminderTableCellRenderer());
         new ViewerDialog(Messages.get("patient.summary.reminders"), table);
     }
 
@@ -129,7 +132,7 @@ public class PatientSummary {
      * @param set the result set
      * @return the no. of rows in the set
      */
-    private static int getRows(ActResultSet set) {
+    private static int getRows(ResultSet<Act> set) {
         IPage<Act> page = set.getPage(0);
         return (page != null) ? page.getTotalNumOfRows() : 0;
     }
@@ -163,7 +166,7 @@ public class PatientSummary {
      * @param patient the patient
      * @return the set of outstanding reminders for the patient
      */
-    private static ActResultSet getReminders(Party patient) {
+    private static ResultSet<Act> getReminders(Party patient) {
         String[] shortNames = {"act.patientReminder"};
         String[] statuses = {"In Progress"};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
@@ -172,8 +175,8 @@ public class PatientSummary {
                 new ParticipantConstraint("patient", "participation.patient",
                                           patient)
         };
-        return new ActResultSet(participants, archetypes, null, statuses,
-                                false, null, 5, null);
+        return new ActResultSet(participants, archetypes, null,
+                                statuses, false, null, 10, null);
     }
 
     /**

@@ -18,8 +18,6 @@
 
 package org.openvpms.web.component.table;
 
-import java.util.Iterator;
-
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
@@ -28,6 +26,8 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.apache.commons.beanutils.BeanUtils;
+
+import java.util.Iterator;
 
 
 /**
@@ -53,7 +53,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
     public Component getTableCellRendererComponent(Table table, Object value,
                                                    int column, int row) {
         Component component = getComponent(value);
-        String style = getStyle(column, row);
+        String style = getStyle(table, value, column, row);
         mergeStyle(component, style);
         return component;
     }
@@ -61,11 +61,16 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
     /**
      * Returns the style name for a column and row.
      *
+     * @param table  the <code>Table</code> for which the rendering is
+     *               occurring
+     * @param value  the value retrieved from the <code>TableModel</code> for
+     *               the specified coordinate
      * @param column the column
      * @param row    the row
      * @return a style name for the given column and row.
      */
-    protected abstract String getStyle(int column, int row);
+    protected abstract String getStyle(Table table, Object value, int column,
+                                       int row);
 
     /**
      * Returns a component for a value.
@@ -97,7 +102,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
      */
     protected void mergeStyle(Component component, String styleName) {
         if (component.getLayoutData() == null
-            && component.getStyleName() == null) {
+                && component.getStyleName() == null) {
             component.setStyleName(styleName);
         } else {
             Style style = ApplicationInstance.getActive().getStyle(
@@ -119,7 +124,7 @@ public abstract class AbstractTableCellRenderer implements TableCellRenderer {
         while (names.hasNext()) {
             String name = (String) names.next();
             if (name.equals("layoutData")
-                && component.getLayoutData() != null) {
+                    && component.getLayoutData() != null) {
                 TableLayoutData from;
                 TableLayoutData to;
 

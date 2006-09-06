@@ -18,8 +18,11 @@
 
 package org.openvpms.web.component.table;
 
+import nextapp.echo2.app.Table;
+
+
 /**
- * <code>TableCellRender<code> that assigns a style to a cell. *
+ * <code>TableCellRender<code> that assigns a style to a cell.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -31,8 +34,9 @@ public class StyleTableCellRenderer extends AbstractTableCellRenderer {
      */
     private final String _style;
 
+
     /**
-     * Construct a new <coe>StyleTableCellRenderer</code>.
+     * Construct a new <code>StyleTableCellRenderer</code>.
      */
     public StyleTableCellRenderer(String style) {
         _style = style;
@@ -41,11 +45,15 @@ public class StyleTableCellRenderer extends AbstractTableCellRenderer {
     /**
      * Returns the style name for a column and row.
      *
+     * @param table  the <code>Table</code> for which the rendering is
+     *               occurring
+     * @param value  the value retrieved from the <code>TableModel</code> for
+     *               the specified coordinate
      * @param column the column
      * @param row    the row
      * @return a style name for the given column and row.
      */
-    protected String getStyle(int column, int row) {
+    protected String getStyle(Table table, Object value, int column, int row) {
         return _style;
     }
 

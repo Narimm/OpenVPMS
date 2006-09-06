@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.table;
 
+import nextapp.echo2.app.Table;
+
 
 /**
  * TableCellRender that assigns even and odd rows a different style.
@@ -30,11 +32,15 @@ public class EvenOddTableCellRenderer extends AbstractTableCellRenderer {
     /**
      * Returns the style name for a column and row.
      *
+     * @param table  the <code>Table</code> for which the rendering is
+     *               occurring
+     * @param value  the value retrieved from the <code>TableModel</code> for
+     *               the specified coordinate
      * @param column the column
      * @param row    the row
      * @return a style name for the given column and row.
      */
-    protected String getStyle(int column, int row) {
+    protected String getStyle(Table table, Object value, int column, int row) {
         return (row % 2 == 0) ? "Table.EvenRow" : "Table.OddRow";
     }
 
