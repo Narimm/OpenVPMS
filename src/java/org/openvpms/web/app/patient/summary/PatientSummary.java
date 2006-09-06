@@ -29,8 +29,10 @@ import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,9 +41,9 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.PagedIMObjectTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -110,7 +112,8 @@ public class PatientSummary {
     private static void onShowAlerts(Party patient) {
         PagedIMObjectTable<Act> table = new PagedIMObjectTable<Act>(
                 new AlertTableModel(), getAlerts(patient));
-        new ViewerDialog(Messages.get("patient.summary.alerts"), table);
+        new ViewerDialog(Messages.get("patient.summary.alerts"),
+                         "PatientSummary.AlertDialog", table);
     }
 
     /**
@@ -123,7 +126,8 @@ public class PatientSummary {
                 new ReminderTableModel(), getReminders(patient));
         table.getTable().setDefaultRenderer(Object.class,
                                             new ReminderTableCellRenderer());
-        new ViewerDialog(Messages.get("patient.summary.reminders"), table);
+        new ViewerDialog(Messages.get("patient.summary.reminders"),
+                         "PatientSummary.ReminderDialog", table);
     }
 
     /**
@@ -155,9 +159,10 @@ public class PatientSummary {
         OrConstraint time = new OrConstraint();
         time.add(new NodeConstraint("endTime", RelationalOp.GT, new Date()));
         time.add(new NodeConstraint("endTime", RelationalOp.IsNULL));
+        SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
 
         return new ActResultSet(participants, archetypes, time, statuses,
-                                false, null, 5, null);
+                                false, null, 5, sort);
     }
 
     /**
@@ -175,8 +180,9 @@ public class PatientSummary {
                 new ParticipantConstraint("patient", "participation.patient",
                                           patient)
         };
+        SortConstraint[] sort = {new NodeSortConstraint("endTime", true)};
         return new ActResultSet(participants, archetypes, null,
-                                statuses, false, null, 10, null);
+                                statuses, false, null, 10, sort);
     }
 
     /**
@@ -193,7 +199,7 @@ public class PatientSummary {
     }
 
     /**
-     * Displays an {@link IMObjectViewer} in popup window.
+     * Displays a table in popup window.
      *
      * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
      * @version $LastChangedDate: 2006-04-11 04:09:07Z $
@@ -201,14 +207,16 @@ public class PatientSummary {
     private static class ViewerDialog extends PopupDialog {
 
         /**
-         * Construct a new <code>IMObjectViewerDialog</code>.
+         * Construct a new <code>ViewerDialog</code>.
          *
          * @param table the table to display
+         * @param style the window style
          */
-        public ViewerDialog(String title, PagedIMObjectTable<Act> table) {
-            super(title, Buttons.OK);
+        public ViewerDialog(String title, String style,
+                            PagedIMObjectTable<Act> table) {
+            super(title, style, Buttons.OK);
             setModal(true);
-            getLayout().add(table);
+            getLayout().add(ColumnFactory.create("Inset", table));
             show();
         }
     }

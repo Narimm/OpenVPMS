@@ -222,7 +222,23 @@
         </properties>
     </style>
 
-    <style name="PatientSummary.Alert.Overdue"
+    <style name="PatientSummary.ReminderDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="500px"/>
+            <property name="height" value="350px"/>
+        </properties>
+    </style>
+
+    <style name="PatientSummary.AlertDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="500px"/>
+            <property name="height" value="350px"/>
+        </properties>
+    </style>
+
+    <style name="PatientSummary.Reminder.Overdue"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
@@ -237,7 +253,7 @@
         </properties>
     </style>
 
-    <style name="PatientSummary.Alert.Remind"
+    <style name="PatientSummary.Reminder.Remind"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">
@@ -252,7 +268,7 @@
         </properties>
     </style>
 
-    <style name="PatientSummary.Alert.Normal"
+    <style name="PatientSummary.Reminder.Normal"
            type="nextapp.echo2.app.Component">
         <properties>
             <property name="layoutData">

@@ -48,17 +48,20 @@ public class ReminderTableCellRenderer extends AbstractTableCellRenderer {
     /**
      * The default row style.
      */
-    private static final String DEFAULT_STYLE = "PatientSummary.Alert.Normal";
+    private static final String DEFAULT_STYLE
+            = "PatientSummary.Reminder.Normal";
 
     /**
      * The style for overdue reminders.
      */
-    private static final String OVERDUE_STYLE = "PatientSummary.Alert.Overdue";
+    private static final String OVERDUE_STYLE
+            = "PatientSummary.Reminder.Overdue";
 
     /**
      * The style for reminders.
      */
-    private static final String REMIND_STYLE = "PatientSummary.Alert.Remind";
+    private static final String REMIND_STYLE
+            = "PatientSummary.Reminder.Remind";
 
     /**
      * The logger.
