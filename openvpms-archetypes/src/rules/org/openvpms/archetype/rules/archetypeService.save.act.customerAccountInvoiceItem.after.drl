@@ -32,7 +32,7 @@
         <java:consequence>
             import org.openvpms.archetype.rules.invoice.InvoiceRules;
             InvoiceRules rules = new InvoiceRules(service);
-            rules.addReminders(act);
+            rules.saveInvoiceItem(act);
         </java:consequence>
     </rule>
 
