@@ -64,7 +64,7 @@
 <data id="HI20" archetype="act.patientClinicalEvent" startTime="07/05/1991" completeTime="07/05/1991" reason="Consultation"  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI20"  />
 <data archetype="participation.clinician" entity="id:VET1" act="id:HI20"  />
-<data id="HI21" archetype="act.patientMedication" startTime="07/05/1991" label="DRENCH &amp; FLOAT TEETH (Qty:     1.00) -  "  />
+<data id="HI21" archetype="act.patientMedication" startTime="07/05/1991" label="DRENCH   FLOAT TEETH (Qty:     1.00) -  "  />
 <data archetype="participation.product" entity="id:P238" act="id:HI21"  />
 <data archetype="participation.patient" entity="id:A10" act="id:HI21"  />
 <data archetype="actRelationship.patientClinicalEventItem" source="id:HI20" target="id:HI21"  />

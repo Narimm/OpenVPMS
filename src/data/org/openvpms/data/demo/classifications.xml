@@ -64,9 +64,6 @@
 	<data archetype="classification.supplierType" name="Manufacturer" />
 	<data archetype="classification.supplierType" name="Retail" />
 	<data archetype="classification.supplierType" name="Other" />
-	<data id="Clinician" archetype="classification.userType" name="Clinician" />
-	<data id="Nurse" archetype="classification.userType" name="Nurse" />
-	<data id="Receptionist" archetype="classification.userType" name="Receptionist" />
 	<data id="Normal" archetype="classification.customerType" name="Normal"  />
 	<data id="Valued" archetype="classification.customerType" name="Valued"  />
 	<data id="Bad" archetype="classification.customerType" name="Bad"  />
