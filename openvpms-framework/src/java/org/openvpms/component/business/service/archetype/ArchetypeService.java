@@ -465,12 +465,19 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
+     */
+    public void save(IMObject entity) {
+        save(entity, true);
+    }
+
     /*
      * (non-Javadoc)
      * 
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void save(IMObject entity) {
+    public void save(IMObject entity, boolean validate) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.save: Saving object of type "  
                     + entity.getArchetypeId().getShortName()
@@ -484,7 +491,8 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[] {});
         }
 
-        validateObject(entity);
+        if (validate)
+            validateObject(entity);
         try {
             dao.save(entity);
              

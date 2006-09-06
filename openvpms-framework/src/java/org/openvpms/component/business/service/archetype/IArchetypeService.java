@@ -198,6 +198,21 @@ public interface IArchetypeService {
     public void save(IMObject entity);
     
     /**
+     * Save or upadate the specified entity
+     * 
+     * @param entity
+     *            the entity to insert or update
+     * @param validate
+     *            whether to validate or not
+     * @throws ArchetypeServiceException
+     *            if the service cannot save the specified entity
+     * @throws ValidationException
+     *            if the specified entity cannot be validated                        
+     */
+    
+    public void save(IMObject entity, boolean validate);
+    
+    /**
      * Save a collection of {@link IMObject} instances
      * 
      * @param entities
