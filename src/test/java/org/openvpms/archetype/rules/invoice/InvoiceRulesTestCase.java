@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
 import java.util.List;
@@ -59,18 +60,25 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      */
     private Entity _reminder;
 
+    /**
+     * The document template.
+     */
+    private Entity _template;
+
 
     /**
-     * Verifies that <em>act.patientReminder</em>s are associated with an
-     * invoice item when it is saved.
+     * Verifies that <em>act.patientReminder</em> and
+     * <em>act.patientDocument*</em>s are associated with an invoice item when
+     * it is saved.
      */
-    public void testAddReminders() {
+    public void testSaveInvoiceItem() {
         ActBean item = createInvoiceItem();
         item.addParticipation("participation.product", createProduct(true));
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActs("act.patientReminder");
+        // make sure a reminder has been added
+        List<Act> reminders = item.getActsForNode("reminders");
         assertEquals(1, reminders.size());
         Act reminder = reminders.get(0);
 
@@ -84,33 +92,57 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
                 item.getAct().getActivityStartTime(), _reminder);
         assertEquals(endTime, reminder.getActivityEndTime());
 
-        // check participations
-        ActBean bean = new ActBean(reminder);
-        assertEquals(_patient, bean.getParticipant("participation.patient"));
+        // make sure a document has been added
+        List<Act> documents = item.getActsForNode("documents");
+        assertEquals(1, documents.size());
+        Act document = documents.get(0);
+        assertTrue(TypeHelper.isA(document, "act.patientDocumentAttachment"));
+
+        // verify the start time is the same as the invoice item start time
+        assertEquals(item.getAct().getActivityStartTime(),
+                     document.getActivityStartTime());
+
+        // check reminder participations
+        ActBean reminderBean = new ActBean(reminder);
+        assertEquals(_patient,
+                     reminderBean.getParticipant("participation.patient"));
         assertEquals(_reminder,
-                     bean.getParticipant("participation.reminderType"));
+                     reminderBean.getParticipant("participation.reminderType"));
+
+        // check document participations
+        ActBean docBean = new ActBean(document);
+        assertEquals(_patient, docBean.getParticipant("participation.patient"));
+        assertEquals(_template,
+                     docBean.getParticipant("participation.document"));
 
         // change the product participation to one without a reminder.
-        // The invoice should no longer have any associated reminders
+        // The invoice should no longer have any associated reminders or
+        // documents
         item.setParticipant("participation.product", createProduct(false));
         item.save();
         item = reload(item);
-        reminders = item.getActs("act.patientReminder");
+        reminders = item.getActsForNode("reminders");
         assertTrue(reminders.isEmpty());
+
+        documents = item.getActsForNode("documents");
+        assertTrue(documents.isEmpty());
     }
 
     /**
      * Verifies that reminders that don't have status 'Completed' are removed
      * when an invoice item is deleted.
      */
-    public void testRemoveIncompleteReminders() {
+    public void testRemoveInvoiceItemIncompleteActs() {
         ActBean item = createInvoiceItem();
         item.addParticipation("participation.product", createProduct(true));
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActs("act.patientReminder");
+        List<Act> reminders = item.getActsForNode("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> documents = item.getActsForNode("documents");
+        assertEquals(1, documents.size());
 
         // remove the item and verify it can't be retrieved
         IMObjectReference actRef = item.getAct().getObjectReference();
@@ -121,25 +153,38 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         for (Act reminder : reminders) {
             assertNull(get(reminder.getObjectReference()));
         }
+
+        // verify the documents have been removed
+        for (Act document : documents) {
+            assertNull(get(document.getObjectReference()));
+        }
     }
 
     /**
-     * Verifies that reminders that don't have status 'Completed' aren't removed
-     * when an invoice item is deleted.
+     * Verifies that reminders and documents that don't have status 'Completed'
+     * or 'Posted' aren't removed when an invoice item is deleted.
      */
-    public void testNoRemoveCompleteReminders() {
+    public void testRemoveInvoiceItemCompleteActs() {
         ActBean item = createInvoiceItem();
         item.addParticipation("participation.product", createProduct(true));
         item.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActs("act.patientReminder");
+        List<Act> reminders = item.getActsForNode("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> documents = item.getActsForNode("documents");
+        assertEquals(1, documents.size());
 
         // set the reminder status to 'Completed'
         Act reminder = reminders.get(0);
         reminder.setStatus("Completed");
         save(reminder);
+
+        // set the document status to 'Posted'
+        Act document = documents.get(0);
+        document.setStatus("Posted");
+        save(document);
 
         item = reload(item); // reload to ensure the item has saved correctly
 
@@ -148,15 +193,16 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         remove(item.getAct());
         assertNull(get(actRef));
 
-        // verify the reminder hasn't been removed
+        // verify the reminder and document haven't been removed
         assertNotNull(get(reminder.getObjectReference()));
+        assertNotNull(get(document.getObjectReference()));
     }
 
     /**
-     * Verifies that reminders that don't have status 'Completed' are removed
-     * when an invoice is deleted.
+     * Verifies that reminders and documents that don't have status 'Completed'
+     * are removed when an invoice is deleted.
      */
-    public void testRemoveIncompleteRemindersForInvoice() {
+    public void testRemoveInvoiceIncompleteActs() {
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
         item.addParticipation("participation.product", createProduct(true));
@@ -166,8 +212,11 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActs("act.patientReminder");
+        List<Act> reminders = item.getActsForNode("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> documents = item.getActsForNode("documents");
+        assertEquals(1, documents.size());
 
         // remove the invoice and verify it can't be retrieved
         IMObjectReference actRef = invoice.getAct().getObjectReference();
@@ -178,13 +227,18 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         for (Act reminder : reminders) {
             assertNull(get(reminder.getObjectReference()));
         }
+
+        // verify the documents have been removed
+        for (Act document : documents) {
+            assertNull(get(document.getObjectReference()));
+        }
     }
 
     /**
-     * Verifies that reminders that have status 'Completed' are not removed
-     * when an invoice is deleted.
+     * Verifies that reminders and documents that have status
+     * 'Completed' are not removed when an invoice is deleted.
      */
-    public void testNoRemoveCompleteRemindersForInvoice() {
+    public void testRemoveInvoiceCompleteActs() {
         ActBean invoice = createInvoice();
         ActBean item = createInvoiceItem();
         item.addParticipation("participation.product", createProduct(true));
@@ -194,21 +248,30 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         invoice.save();
         item = reload(item); // reload to ensure the item has saved correctly
 
-        List<Act> reminders = item.getActs("act.patientReminder");
+        List<Act> reminders = item.getActsForNode("reminders");
         assertEquals(1, reminders.size());
+
+        List<Act> documents = item.getActsForNode("documents");
+        assertEquals(1, documents.size());
 
         // set the reminder status to 'Completed'
         Act reminder = reminders.get(0);
         reminder.setStatus("Completed");
         save(reminder);
 
+        // set the document status to 'Completed'
+        Act document = documents.get(0);
+        document.setStatus("Completed");
+        save(document);
+
         // remove the invoice and verify it can't be retrieved
         IMObjectReference actRef = invoice.getAct().getObjectReference();
         remove(invoice.getAct());
         assertNull(get(actRef));
 
-        // verify the reminder hasn't been removed
+        // verify the reminder and document haven't been removed
         assertNotNull(get(reminder.getObjectReference()));
+        assertNotNull(get(document.getObjectReference()));
     }
 
     /**
@@ -222,6 +285,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         _clinician = createClinician();
         _patient = createPatient();
         _reminder = createReminder();
+        _template = createDocumentTemplate();
     }
 
     /**
@@ -305,18 +369,37 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Creates and saves a new document template.
+     *
+     * @return a new document template
+     */
+    private Entity createDocumentTemplate() {
+        Entity template = (Entity) create("entity.documentTemplate");
+        EntityBean bean = new EntityBean(template);
+        bean.setValue("name", "XDocumentTemplate");
+        bean.setValue("archetype", "act.patientDocumentAttachment");
+        Act document = createAct("act.documentTemplate");
+        bean.addParticipation("participation.document", document);
+        bean.save();
+
+        return template;
+    }
+
+    /**
      * Creates and saves a new product.
      *
-     * @param reminder if <code>true</code> add a reminder
+     * @param reminderDoc if <code>true</code> add a reminder and document
      * @return a new product
      */
-    private Product createProduct(boolean reminder) {
+    private Product createProduct(boolean reminderDoc) {
         Product product = (Product) create("product.medication");
         EntityBean bean = new EntityBean(product);
         bean.setValue("name", "XProduct");
-        if (reminder) {
+        if (reminderDoc) {
             bean.addRelationship("entityRelationship.productReminder",
                                  _reminder);
+            bean.addRelationship("entityRelationship.productDocument",
+                                 _template);
         }
         bean.save();
         return product;
