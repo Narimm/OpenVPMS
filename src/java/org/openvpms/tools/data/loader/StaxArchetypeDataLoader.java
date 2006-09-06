@@ -354,6 +354,8 @@ public class StaxArchetypeDataLoader {
                 break;
             }
         }
+        // At end of file flush Batch Save cache
+        flushBatchSaveCache();
     }
 
     /**
@@ -523,8 +525,19 @@ public class StaxArchetypeDataLoader {
             } else {
                 // childId is defined then we need to retrieve that object. We 
                 // need to force a flush first though
-                flushBatchSaveCache();
+                // Removed flush as was causing speed issues.  Don't need to flush if childId's are 
+                // in separate files and already flushed.  Need to assume so get performance.
+                //TODO This is a kludge to get users loaded using batch process.  Needs investigation as to why get
+                // Staleobject exception.
+                if(parent.getArchetypeId().getShortName().equalsIgnoreCase("security.user"))
+                    flushBatchSaveCache();
                 object = getObjectForId(reader.getAttributeValue(null, "childId"), validateOnly);
+                if (object == null) {
+                    // If failed first time may be due to object still being in cache so flush
+                    // and try again.
+                    flushBatchSaveCache();
+                    object = getObjectForId(reader.getAttributeValue(null, "childId"), validateOnly);
+                }
             }
 
             // check whether there is a collection attribute specified. If it is
@@ -654,7 +667,13 @@ public class StaxArchetypeDataLoader {
                 // Ok one of the batch failed so nothing saved.  Try again one by one logging each error.
                 for (Object object : batchSaveCache) {
                     try {
-                       archetypeService.save((IMObject)object);
+                        // Jump through some extra hoops for act participation
+                        // TODO Temporay fix for problem with participations and act relationships that have a mincardinality
+                        // of 1 and fail validation during data load. see OBF-116
+                        if (TypeHelper.isA((IMObject)object,"act.*"))
+                            archetypeService.save((IMObject)object, false);
+                        else
+                            archetypeService.save((IMObject)object);
                     } catch (OpenVPMSException e) {
                         logger.error("Failed to save object\n" +
                                 object.toString(), e);
@@ -669,10 +688,7 @@ public class StaxArchetypeDataLoader {
      * For a flush on the batchSaveCache
      */
     private void flushBatchSaveCache() {
-        if (batchSaveCache.size() > 0) {
-            archetypeService.save(batchSaveCache, false);
-            batchSaveCache.clear();
-        }
+        batchSaveEntity(null, true);
     }
 
     /**
