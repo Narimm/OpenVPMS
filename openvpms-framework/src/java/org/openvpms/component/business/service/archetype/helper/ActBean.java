@@ -21,6 +21,7 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -160,17 +161,42 @@ public class ActBean extends IMObjectBean {
      * Resolves and returns a list of the child acts with the specified short
      * name.
      *
-     * @param shortName the act short name
+     * @param shortName the act short name. May contain wildcards
      * @return a list of the child acts
-     * @throws ArchetypeServiceException for any archetype service
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public List<Act> getActs(String shortName) {
         List<Act> result = new ArrayList<Act>();
         Act act = getAct();
         for (ActRelationship r : act.getSourceActRelationships()) {
             IMObjectReference target = r.getTarget();
-            if (target != null && target.getArchetypeId().getShortName().equals(
-                    shortName)) {
+            if (TypeHelper.isA(target, shortName)) {
+                IArchetypeService service = getArchetypeService();
+                Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
+                        service, target);
+                if (child != null) {
+                    result.add(child);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Resolves and returns a list of the child acts for the specified node.
+     *
+     * @param name the node name
+     * @return a list of the child acts
+     * @throws ArchetypeServiceException for any archetype service error
+     * @throws IMObjectBeanException     if the node does't exist
+     */
+    public List<Act> getActsForNode(String name) {
+        List<IMObject> relationships = getValues(name);
+        List<Act> result = new ArrayList<Act>();
+        for (IMObject object : relationships) {
+            ActRelationship r = (ActRelationship) object;
+            IMObjectReference target = r.getTarget();
+            if (target != null) {
                 IArchetypeService service = getArchetypeService();
                 Act child = (Act) ArchetypeQueryHelper.getByObjectReference(
                         service, target);
