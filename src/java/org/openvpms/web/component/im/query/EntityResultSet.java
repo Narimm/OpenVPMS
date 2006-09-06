@@ -42,12 +42,6 @@ import java.util.List;
 public class EntityResultSet extends NameResultSet<Entity> {
 
     /**
-     * Determines if queries on name should include the 'code' node.
-     * True if all archetypes have a 'code' node.
-     */
-    private final boolean _hasCode;
-
-    /**
      * Determines if queries on name should include the 'identities' node.
      * True if all archetypes have a 'identities' node.
      */
@@ -73,23 +67,18 @@ public class EntityResultSet extends NameResultSet<Entity> {
         super(archetypes, instanceName, constraints, sort, rows, distinct);
         List<ArchetypeDescriptor> matches = getArchetypes(archetypes);
         if (!StringUtils.isEmpty(instanceName)) {
-            boolean code = true;
             boolean identities = true;
             for (ArchetypeDescriptor archetype : matches) {
-                if (archetype.getNodeDescriptor("code") == null) {
-                    code = false;
-                }
                 if (archetype.getNodeDescriptor("identities") == null) {
                     identities = false;
+                    break;
                 }
             }
-            if (code || identities) {
+            if (identities) {
                 setDistinct(true);
             }
-            _hasCode = code;
             _hasIdentities = identities;
         } else {
-            _hasCode = false;
             _hasIdentities = false;
         }
     }
@@ -105,22 +94,17 @@ public class EntityResultSet extends NameResultSet<Entity> {
     protected ArchetypeQuery getQuery(BaseArchetypeConstraint archetypes,
                                       String name) {
         ArchetypeQuery query;
-        if (_hasCode || _hasIdentities) {
+        if (_hasIdentities) {
             query = new ArchetypeQuery(archetypes);
-
             OrConstraint or = new OrConstraint();
             or.add(new NodeConstraint("name", name));
-            if (_hasCode) {
-                or.add(new NodeConstraint("code", name));
-            }
-            if (_hasIdentities) {
-                CollectionNodeConstraint constraint
-                        = new CollectionNodeConstraint("identities");
-                constraint.setJoinType(LeftOuterJoin);
-                constraint.add(new NodeConstraint("name", name));
-                or.add(constraint);
-            }
+            CollectionNodeConstraint constraint
+                    = new CollectionNodeConstraint("identities");
+            constraint.setJoinType(LeftOuterJoin);
+            constraint.add(new NodeConstraint("name", name));
+            or.add(constraint);
             query.add(or);
+
             IConstraint constraints = getConstraints();
             if (constraints != null) {
                 query.add(constraints);
