@@ -85,6 +85,10 @@
 						<property name="shortName"
 							value="entityIdentity.barcode" />
 					</propertyMap>
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityIdentity.code" />
+					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>

@@ -61,6 +61,19 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
+		<node name="identities" path="/identities"
+			type="java.util.HashSet" baseName="Identity" minCardinality="0"
+			maxCardinality="*" >
+			<assertion name="archetypeRange">
+				<propertyList name="archetypes">
+					<propertyMap name="archetype">
+						<property name="shortName"
+							value="entityIdentity.code" />
+					</propertyMap>
+				</propertyList>
+				<errorMessage>errorMessage</errorMessage>
+			</assertion>
+		</node>
 		<node name="reminders" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
 			filter="entityRelationship.productReminder" >
