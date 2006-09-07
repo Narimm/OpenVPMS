@@ -22,6 +22,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -150,15 +151,20 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
      *
      * @param startTime the act start time
      * @param endTime   the act end time
-     * @param schedule the schedule
+     * @param schedule  the schedule
      * @return a new act
      */
     protected Act createAppointment(Date startTime, Date endTime,
                                     Party schedule) {
         Act act = createAct("act.customerAppointment");
+        Lookup reason = createLookup("lookup.appointmentReason", "XReason");
+        Lookup status = createLookup("lookup.appointmentStatus", "XStatus");
+
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
+        bean.setValue("reason", reason);
+        bean.setValue("status", status);
         Party customer = (Party) create("party.customerperson");
         Entity appointmentType = (Entity) create("entity.appointmentType");
         bean.setParticipant("participation.customer", customer);
@@ -224,6 +230,19 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     private Date createTime(int hour, int minutes) {
         Calendar calendar = new GregorianCalendar(2006, 8, 22, hour, minutes);
         return calendar.getTime();
+    }
+
+    /**
+     * Creates a lookup.
+     *
+     * @param shortName the lookup short name
+     * @param code      the lookup code
+     * @return a new lookup
+     */
+    private Lookup createLookup(String shortName, String code) {
+        Lookup lookup = (Lookup) create(shortName);
+        lookup.setCode(code);
+        return lookup;
     }
 
     /**
