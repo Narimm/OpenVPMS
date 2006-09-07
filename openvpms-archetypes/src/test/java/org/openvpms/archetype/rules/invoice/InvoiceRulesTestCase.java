@@ -295,6 +295,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      */
     private ActBean createInvoice() {
         Act act = createAct("act.customerAccountChargesInvoice");
+        act.setStatus("In Progress");
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.patient", _patient);
         bean.addParticipation("participation.clinician", _clinician);
