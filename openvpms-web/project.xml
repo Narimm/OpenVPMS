@@ -819,6 +819,12 @@
                         <include>**/*.*</include>
                     </includes>
                 </resource>
+                <resource>
+                    <directory>${basedir}/src/test/java</directory>
+                    <includes>
+                        <include>**/*.properties</include>
+                    </includes>
+                </resource>
             </resources>
         </unitTest>
         <resources>
