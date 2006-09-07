@@ -21,7 +21,7 @@
             <property name="width" value="300px"/>
             <property name="height" value="150px"/>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
@@ -73,7 +73,7 @@
            type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
@@ -107,6 +107,13 @@
     <style name="MainPane-1024x768" base-name="MainPane"
            type="nextapp.echo2.app.SplitPane">
         <properties>
+            <property name="separatorPosition" value="180px"/>
+        </properties>
+    </style>
+
+    <style name="MainPane-800x600" base-name="MainPane"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
             <property name="separatorPosition" value="128px"/>
         </properties>
     </style>
@@ -134,6 +141,10 @@
     </style>
 
     <style name="MainPane.Left.Menu" base-name="WideCellSpacing"
+           type="nextapp.echo2.app.Column">
+    </style>
+
+    <style name="MainPane.Left.Menu-1024x768" base-name="CellSpacing"
            type="nextapp.echo2.app.Column">
     </style>
 
@@ -196,6 +207,26 @@
             </property>
             <property name="rolloverBorder">
                 <border style="none"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MainPane.Menu.Button-1024x768"
+           base-name="MainPane.Menu.Button"
+           type="org.openvpms.web.component.button.ShortcutButton">
+        <properties>
+            <property name="font">
+                <font size="7px"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MainPane.Menu.Button-800x600"
+           base-name="MainPane.Menu.Button"
+           type="org.openvpms.web.component.button.ShortcutButton">
+        <properties>
+            <property name="font">
+                <font size="6px"/>
             </property>
         </properties>
     </style>
@@ -310,7 +341,7 @@
            base-name="AbstractViewWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
-            <property name="separatorPosition" value="56px"/>
+            <property name="separatorPosition" value="60px"/>
         </properties>
     </style>
 
@@ -364,6 +395,23 @@
         </properties>
     </style>
 
+    <style name="ButtonRow.Button-1024x768"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="7pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="ButtonRow.Button-800x600"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
+        </properties>
+    </style>
 
     <style name="EditDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
@@ -384,7 +432,7 @@
             <property name="width" value="700px"/>
             <property name="height" value="525px"/>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
@@ -420,7 +468,7 @@
             <property name="width" value="700px"/>
             <property name="height" value="525px"/>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
@@ -507,30 +555,29 @@
         </properties>
     </style>
 
-    <style name="Workspace.Heading" type="nextapp.echo2.app.Row">
+    <style name="Workspace.Heading" type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
                 <font size="14pt" bold="true"/>
             </property>
-            <property name="insets" value="10px 2px"/>
         </properties>
     </style>
 
     <style name="Workspace.Heading-1024x768" base-name="Workspace.Heading"
-           type="nextapp.echo2.app.Row">
+           type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="10pt"/>
+                <font size="10pt" bold="true"/>
             </property>
         </properties>
     </style>
 
     <style name="Workspace.Heading-800x600"
            base-name="Workspace.Heading-1024x768"
-           type="nextapp.echo2.app.Row">
+           type="nextapp.echo2.app.Label">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="8pt" bold="true"/>
             </property>
         </properties>
     </style>
@@ -1200,7 +1247,7 @@
            type="nextapp.echo2.app.list.AbstractListComponent">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
@@ -1232,6 +1279,23 @@
         </properties>
     </style>
 
+    <style name="default-1024x768" base-name="default"
+           type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="font">
+                <font size="7pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-800x600" base-name="default"
+           type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
+        </properties>
+    </style>
 
     <!-- =================================================================== -->
     <!--  Grid defaults                                                      -->
@@ -1252,6 +1316,24 @@
         <properties>
             <property name="foreground" value="#000000"/>
             <!-- black -->
+        </properties>
+    </style>
+
+    <style name="default-1024x768" base-name="default"
+           type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="7pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-800x600" base-name="default"
+           type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
         </properties>
     </style>
 
@@ -1291,6 +1373,24 @@
             <property name="rolloverEnabled" value="true"/>
             <property name="rolloverForeground" value="#ffb6c1"/>
             <property name="insets" value="20px 3px"/>
+        </properties>
+    </style>
+
+    <style name="default-1024x768" base-name="default"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="7pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="default-800x600" base-name="default-1024x768"
+           type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="font">
+                <font size="6pt"/>
+            </property>
         </properties>
     </style>
 
@@ -1350,7 +1450,7 @@
            type="nextapp.echo2.app.TextArea">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
@@ -1381,7 +1481,7 @@
            type="nextapp.echo2.app.text.TextComponent">
         <properties>
             <property name="font">
-                <font size="8pt"/>
+                <font size="7pt"/>
             </property>
         </properties>
     </style>
