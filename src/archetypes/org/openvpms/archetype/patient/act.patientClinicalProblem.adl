@@ -54,7 +54,7 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
 	</archetype>
 </archetypes>
