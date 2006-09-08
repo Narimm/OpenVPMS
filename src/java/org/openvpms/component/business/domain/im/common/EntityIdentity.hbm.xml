@@ -42,7 +42,7 @@
       <property name="version" access="property" column="arch_version"
         type="string" length="100" />
     </component>
-    <property name="name" access="property" column="name" type="string" />
+    <property name="name" access="property" column="name" type="string" index="entity_identity_name_idx"/>
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
