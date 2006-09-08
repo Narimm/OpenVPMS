@@ -18,11 +18,10 @@
 
 package org.openvpms.web.component.util;
 
-import org.openvpms.web.component.button.ShortcutButton;
-import org.openvpms.web.resource.util.Messages;
-
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.web.component.button.ShortcutButton;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -104,7 +103,7 @@ public final class ButtonFactory extends ComponentFactory {
      */
     public static Button create(String key, String style) {
         Button button = create(key);
-        button.setStyleName(style);
+        setStyle(button, style);
         return button;
     }
 

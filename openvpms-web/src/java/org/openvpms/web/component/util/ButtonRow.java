@@ -18,16 +18,15 @@
 
 package org.openvpms.web.component.util;
 
-import java.util.EventListener;
-
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.EventListenerList;
-
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.focus.FocusTree;
+
+import java.util.EventListener;
 
 
 /**
@@ -56,7 +55,7 @@ public class ButtonRow extends Row {
     /**
      * The button style.
      */
-    private static final String BUTTON_STYLE = "ButtonRow.Button";
+    private static final String BUTTON_STYLE = "default";
 
 
     /**
