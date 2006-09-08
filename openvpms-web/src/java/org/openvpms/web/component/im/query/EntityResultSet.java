@@ -94,16 +94,13 @@ public class EntityResultSet extends NameResultSet<Entity> {
     protected ArchetypeQuery getQuery(BaseArchetypeConstraint archetypes,
                                       String name) {
         ArchetypeQuery query;
-        if (_hasIdentities) {
+        if (_hasIdentities && name.matches(".*\\d+.*")) {
             query = new ArchetypeQuery(archetypes);
-            OrConstraint or = new OrConstraint();
-            or.add(new NodeConstraint("name", name));
             CollectionNodeConstraint constraint
                     = new CollectionNodeConstraint("identities");
             constraint.setJoinType(LeftOuterJoin);
             constraint.add(new NodeConstraint("name", name));
-            or.add(constraint);
-            query.add(or);
+            query.add(constraint);
 
             IConstraint constraints = getConstraints();
             if (constraints != null) {
