@@ -86,7 +86,7 @@ public class OpenOfficeIMObjectReportTestCase
         assertEquals("J", fields.get("firstName"));
         assertEquals("Zoo", fields.get("lastName"));
         assertEquals("2.00", fields.get("expression"));
-        assertEquals("1234 Foo St Melbourne 3001", fields.get("address"));
+        assertEquals("1234 Foo St\nMelbourne Victoria 3001", fields.get("address"));
         assertEquals("Invalid node name: invalid", fields.get("invalid"));
     }
 
@@ -174,6 +174,7 @@ public class OpenOfficeIMObjectReportTestCase
         contact.setValue("address", "1234 Foo St");
         contact.setValue("suburb", "Melbourne");
         contact.setValue("postcode", "3001");
+        contact.setValue("preferred", "true");
         bean.addValue("contacts", contact.getObject());
         bean.save();
         return (Party) bean.getObject();
