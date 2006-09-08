@@ -18,15 +18,16 @@
 
 package org.openvpms.archetype.function.party;
 
+import java.util.List;
+
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-
-import java.util.List;
 
 
 /**
@@ -104,22 +105,64 @@ public class PartyFunctions {
     public static String billingAddress(Party party) {
         String result = "";
         if (party != null) {
-            Contact mail = null;
+            Contact billingContact = null;
             for (Contact contact : party.getContacts()) {
-                if (mail == null) {
-                    mail = contact;
-                } else if (contact.getArchetypeId().getShortName().equals(
-                        "contact.location")) {
-                    mail = contact;
+                //We are only interested in location contacts
+                if (contact.getArchetypeId().getShortName().equals("contact.location")) {
+                    IMObjectBean bean = new IMObjectBean(contact);
+                    // If has  a Billing contact purpose this is our contact.
+                    if (hasContactPurpose(contact, "Billing")) {
+                        billingContact = contact;
+                        break;
+                    }
+                    // If preferred location save but keep searching just in case we have one with billing
+                    // purpose or another preferred.
+                    if (bean.hasNode("preferred") && bean.getBoolean("preferred"))
+                        billingContact = contact;
                 }
             }
-            if (mail != null) {
-                result = mail.getDescription();
+
+            if (billingContact != null) {
+                result = formatAddress(billingContact);
             }
         }
         return result;
+        
     }
 
+    /**
+     * Indicates if a contact has a particular purpose 
+     * 
+     * @param contact the contact
+     * @param contact purpose string
+     * @return True or False
+     */
+    
+    private static Boolean hasContactPurpose(Contact contact, String contactPurpose) {
+        for (Classification classification : contact.getClassifications()) {
+            if (classification.getName().equalsIgnoreCase(contactPurpose))
+                return true;
+        }
+        return false;
+        
+    }
+
+    /**
+     * Format Address
+     * 
+     * @param contact contact 
+     * @return String Formatted address string
+     */
+    
+    private static String formatAddress(Contact contact) {
+        IMObjectBean bean = new IMObjectBean(contact);
+        String address = bean.getString("address");
+        String suburb = bean.getString("suburb");
+        String state = bean.getString("state");
+        String postcode = bean.getString("postcode");
+        return address + "\n" + suburb + " " + state + " " + postcode;
+        
+    }
     /**
      * Returns the description of a contact.
      *
