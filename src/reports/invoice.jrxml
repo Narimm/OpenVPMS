@@ -38,54 +38,24 @@
 			</band>
 		</background>
 		<title>
-			<band height="79"  isSplitAllowed="true" >
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="0"
-						y="2"
-						width="253"
-						height="19"
-						key="textField-1"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$F{customer.entity.name}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="0"
-						y="23"
-						width="289"
-						height="18"
-						key="textField-2"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[PartyFunctions.billingAddress($F{customer.entity})]]></textFieldExpression>
-				</textField>
+			<band height="125"  isSplitAllowed="true" >
 				<staticText>
 					<reportElement
-						x="0"
-						y="47"
-						width="399"
+						x="292"
+						y="3"
+						width="236"
 						height="29"
 						key="staticText-1"/>
 					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font pdfFontName="Helvetica-Bold" size="12" isBold="true"/>
+					<textElement textAlignment="Right">
+						<font pdfFontName="Helvetica-Bold" size="18" isBold="true"/>
 					</textElement>
-				<text><![CDATA[Invoice for Professional Services]]></text>
+				<text><![CDATA[Tax Invoice]]></text>
 				</staticText>
-			</band>
-		</title>
-		<pageHeader>
-			<band height="69"  isSplitAllowed="true" >
 				<textField isStretchWithOverflow="false" pattern="dd/MM/yyyy" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="91"
-						y="3"
+						x="385"
+						y="39"
 						width="148"
 						height="16"
 						key="textField-3"/>
@@ -97,8 +67,8 @@
 				</textField>
 				<staticText>
 					<reportElement
-						x="0"
-						y="23"
+						x="294"
+						y="59"
 						width="81"
 						height="16"
 						key="staticText-2"/>
@@ -110,8 +80,8 @@
 				</staticText>
 				<staticText>
 					<reportElement
-						x="0"
-						y="3"
+						x="294"
+						y="39"
 						width="81"
 						height="16"
 						key="staticText-3"/>
@@ -123,8 +93,8 @@
 				</staticText>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="91"
-						y="23"
+						x="385"
+						y="59"
 						width="148"
 						height="16"
 						key="textField-4"/>
@@ -136,8 +106,8 @@
 				</textField>
 				<staticText>
 					<reportElement
-						x="0"
-						y="45"
+						x="293"
+						y="81"
 						width="81"
 						height="16"
 						key="staticText-4"/>
@@ -149,8 +119,8 @@
 				</staticText>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="91"
-						y="45"
+						x="384"
+						y="81"
 						width="148"
 						height="16"
 						key="textField-5"/>
@@ -159,6 +129,114 @@
 						<font/>
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$F{author.entity.name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement
+						x="5"
+						y="0"
+						width="280"
+						height="36"
+						key="staticText-5"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font size="18"/>
+					</textElement>
+				<text><![CDATA[OpenVPMS Veterinary Practice]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="8"
+						y="47"
+						width="265"
+						height="15"
+						key="staticText-6"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[181 Boronia Road]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="7"
+						y="66"
+						width="265"
+						height="15"
+						key="staticText-7"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[BORONIA    VIC  3154]]></text>
+				</staticText>
+				<staticText>
+					<reportElement
+						x="8"
+						y="87"
+						width="265"
+						height="15"
+						key="staticText-8"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<text><![CDATA[Phone:  (03) 97623177]]></text>
+				</staticText>
+			</band>
+		</title>
+		<pageHeader>
+			<band height="93"  isSplitAllowed="true" >
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="47"
+						y="14"
+						width="253"
+						height="19"
+						key="textField-1"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[$F{customer.entity.name}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="47"
+						y="35"
+						width="289"
+						height="18"
+						key="textField-2"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA[PartyFunctions.billingAddress($F{customer.entity})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="333"
+						y="2"
+						width="100"
+						height="18"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement textAlignment="Right">
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Report" hyperlinkType="None"  hyperlinkTarget="Self" >
+					<reportElement
+						x="433"
+						y="2"
+						width="100"
+						height="18"
+						key="textField"/>
+					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
+					<textElement>
+						<font/>
+					</textElement>
+				<textFieldExpression   class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
 				</textField>
 			</band>
 		</pageHeader>
@@ -170,7 +248,7 @@
 			<band height="50"  isSplitAllowed="true" >
 				<subreport  isUsingCache="true">
 					<reportElement
-						x="4"
+						x="2"
 						y="9"
 						width="530"
 						height="31"
