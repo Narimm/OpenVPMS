@@ -216,7 +216,7 @@
            type="org.openvpms.web.component.button.ShortcutButton">
         <properties>
             <property name="font">
-                <font size="7px"/>
+                <font size="7pt" bold="true"/>
             </property>
         </properties>
     </style>
@@ -226,7 +226,7 @@
            type="org.openvpms.web.component.button.ShortcutButton">
         <properties>
             <property name="font">
-                <font size="6px"/>
+                <font size="6pt" bold="true"/>
             </property>
         </properties>
     </style>
