@@ -30,7 +30,7 @@
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 
 			filter="participation.author" hidden="true" />
         <node name="reason" path="/reason" type="java.lang.String" maxLength="50"/>
-        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
 		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
 			<assertion name="lookup">
