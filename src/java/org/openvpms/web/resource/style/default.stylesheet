@@ -818,6 +818,34 @@
 
 
     <!-- =================================================================== -->
+    <!--  Alert Button                                                       -->
+    <!-- =================================================================== -->
+
+    <style name="alert" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/alert.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
+    <!--  Reminder Button                                                    -->
+    <!-- =================================================================== -->
+
+    <style name="reminder" type="nextapp.echo2.app.Button">
+        <properties>
+            <property name="icon"
+                      type="nextapp.echo2.app.ResourceImageReference">
+                <resource-image-reference
+                        resource="/org/openvpms/web/resource/image/buttons/reminder.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
     <!--  Download Buttons                                                   -->
     <!-- =================================================================== -->
 

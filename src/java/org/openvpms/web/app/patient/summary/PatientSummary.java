@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.patient.summary;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
@@ -75,13 +74,12 @@ public class PatientSummary {
             if (alerts == 0) {
                 alertCount = LabelFactory.create("patient.noreminders");
             } else {
-                Button button = ButtonFactory.create(new ActionListener() {
+                alertCount = ButtonFactory.create(
+                        null, "alert", new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         onShowAlerts(patient);
                     }
                 });
-                button.setText(Integer.toString(alerts));
-                alertCount = button;
             }
 
             Label reminderTitle = LabelFactory.create("patient.reminders");
@@ -90,13 +88,12 @@ public class PatientSummary {
             if (reminders == 0) {
                 reminderCount = LabelFactory.create("patient.noreminders");
             } else {
-                Button button = ButtonFactory.create(new ActionListener() {
+                reminderCount = ButtonFactory.create(
+                        null, "reminder", new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         onShowReminders(patient);
                     }
                 });
-                button.setText(Integer.toString(reminders));
-                reminderCount = button;
             }
             result = GridFactory.create(2, alertTitle, alertCount,
                                         reminderTitle, reminderCount);
