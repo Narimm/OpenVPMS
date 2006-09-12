@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.bound;
 
-import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.util.DateFieldImpl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -35,7 +35,7 @@ import java.util.Date;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class BoundDateField extends DateField {
+public class BoundDateField extends DateFieldImpl {
 
     /**
      * The bound property.
