@@ -75,8 +75,7 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
      */
     protected boolean canEdit(Act act) {
         String status = act.getStatus();
-        return INPROGRESS_STATUS.equals(status)
-                || COMPLETED_STATUS.equals(status);
+        return !POSTED_STATUS.equals(status);
     }
 
     /**
