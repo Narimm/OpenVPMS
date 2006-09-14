@@ -30,7 +30,6 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
@@ -134,8 +133,7 @@ public class PatientMedicationActLayoutStrategy extends AbstractLayoutStrategy {
      * Invoked when the 'Print Label' button is pressed.
      */
     private void onPrintLabel(IMObject object) {
-        String type = DescriptorHelper.getDisplayName(object);
-        IMObjectPrinter printer = new IMObjectReportPrinter(type);
+        IMObjectPrinter printer = new IMObjectReportPrinter();
         printer.print(object);
     }
 

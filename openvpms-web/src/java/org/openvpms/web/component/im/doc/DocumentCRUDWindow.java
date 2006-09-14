@@ -24,7 +24,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -34,8 +33,6 @@ import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.print.IMObjectPrinter;
-import org.openvpms.web.component.im.print.IMObjectPrinterListener;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -132,23 +129,6 @@ public class DocumentCRUDWindow extends ActCRUDWindow {
         } else {
             buttons.add(getCreateButton());
         }
-    }
-
-    /**
-     * Creates a new printer.
-     *
-     * @return a new printer.
-     */
-    @Override
-    protected IMObjectPrinter createPrinter() {
-        String type = getTypeDisplayName();
-        IMObjectPrinter printer = new DocumentActPrinter(type);
-        printer.setListener(new IMObjectPrinterListener() {
-            public void printed(IMObject object) {
-                DocumentCRUDWindow.this.printed(object);
-            }
-        });
-        return printer;
     }
 
     /**

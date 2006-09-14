@@ -1,0 +1,128 @@
+/*
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $Id$
+ */
+
+package org.openvpms.web.component.workflow;
+
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.create.IMObjectCreatorListener;
+
+import java.util.HashMap;
+import java.util.Map;
+
+
+/**
+ * Task to create an {@link IMObject}.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ */
+public class CreateIMObjectTask extends AbstractTask {
+
+    /**
+     * The short names to select from.
+     */
+    private final String[] shortNames;
+
+    /**
+     * Properties to populate the created object with.
+     */
+    private final Map<String, Object> properties;
+
+
+    /**
+     * Constructs a new <code>CreateIMObjectTask</code>.
+     *
+     * @param shortName the short name of the object to create. May contain
+     *                  wildcards
+     */
+    public CreateIMObjectTask(String shortName) {
+        this(new String[]{shortName});
+    }
+
+    /**
+     * Constructs a new <code>CreateIMObjectTask</code>.
+     *
+     * @param shortName  the short name of the object to create. May contain
+     *                   wildcards
+     * @param properties properties to populate the created object
+     */
+    public CreateIMObjectTask(String shortName,
+                              Map<String, Object> properties) {
+        this(new String[]{shortName}, properties);
+    }
+
+    /**
+     * Constructs a new <code>CreateIMObjectTask</code>.
+     *
+     * @param shortNames the short names to select from. Short names may contain
+     *                   wildcards
+     */
+    public CreateIMObjectTask(String[] shortNames) {
+        this(shortNames, new HashMap<String, Object>());
+    }
+
+    /**
+     * Constructs a new <code>CreateIMObjectTask</code>.
+     *
+     * @param shortNames the short names to select from. Short names may contain
+     *                   wildcards
+     * @param properties properties to populate the created object
+     */
+    public CreateIMObjectTask(String[] shortNames,
+                              Map<String, Object> properties) {
+        this.shortNames = shortNames;
+        this.properties = properties;
+    }
+
+    /**
+     * Starts the task.
+     * <p/>
+     * The registered {@link TaskListener} will be notified on completion or
+     * failure.
+     *
+     * @param context the task context
+     */
+    public void start(final TaskContext context) {
+        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
+            public void created(IMObject object) {
+                onCreated(object, context);
+            }
+
+            public void cancelled() {
+                notifyCancelled();
+            }
+        };
+
+        IMObjectCreator.create(getType(shortNames), shortNames, listener);
+    }
+
+    /**
+     * Invoked when an object is created. Populates the object, adds it to
+     * the context and notifies the listener.
+     *
+     * @param object  the new object
+     * @param context the task context
+     */
+    protected void onCreated(IMObject object, TaskContext context) {
+        populate(object, properties, context);
+        context.addObject(object);
+        notifyCompleted();
+    }
+
+}

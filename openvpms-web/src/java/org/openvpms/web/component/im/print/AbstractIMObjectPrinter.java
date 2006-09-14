@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.util.ErrorHelper;
@@ -38,25 +39,10 @@ import org.openvpms.web.servlet.DownloadServlet;
 public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
 
     /**
-     * Localised type display name (e.g, Customer, Product).
-     */
-    private final String _type;
-
-    /**
      * The print listener. May be <code>null</code>.
      */
     private IMObjectPrinterListener _listener;
 
-
-    /**
-     * Constructs a new <code>AbstractIMObjectPrinter</code>.
-     *
-     * @param type display name for the types of objects that this may
-     *             print
-     */
-    public AbstractIMObjectPrinter(String type) {
-        _type = type;
-    }
 
     /**
      * Pops up a {@link PrintDialog} prompting if printing of an object
@@ -66,7 +52,8 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      * @param object the object to print
      */
     public void print(final IMObject object) {
-        String title = Messages.get("imobject.print.title", _type);
+        String title = Messages.get("imobject.print.title",
+                                    DescriptorHelper.getDisplayName(object));
         final PrintDialog dialog = new PrintDialog(title);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
@@ -88,15 +75,6 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      */
     public void setListener(IMObjectPrinterListener listener) {
         _listener = listener;
-    }
-
-    /**
-     * Returns the display name for the types of objects that this may print.
-     *
-     * @return the type display name
-     */
-    protected String getType() {
-        return _type;
     }
 
     /**

@@ -16,29 +16,38 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.create;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
+package org.openvpms.web.component.workflow;
 
 
 /**
- * Listener for {@link IMObjectCreator} events.
+ * A collection of {@link Task}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectCreatorListener {
+public class Tasks extends AbstractTask {
+
+    private WorkflowImpl workflow = new WorkflowImpl();
 
     /**
-     * Notifies that a new object has been created.
+     * Adds a task to execute.
      *
-     * @param object the new object
+     * @param task the task to execute
      */
-    void created(IMObject object);
+    public void addTask(Task task) {
+        workflow.addTask(task);
+    }
 
     /**
-     * Notifies that the creation was cancelled or failed.
+     * Starts the task.
+     * <p/>
+     * The registered {@link TaskListener} will be notified on completion or
+     * failure.
+     *
+     * @param context the task context
      */
-    void cancelled();
-
+    public void start(TaskContext context) {
+        workflow.setTaskListener(getTaskListener());
+        workflow.start(context);
+    }
 }

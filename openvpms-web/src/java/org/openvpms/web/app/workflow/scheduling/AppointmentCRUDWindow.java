@@ -18,11 +18,20 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.app.workflow.CheckInWorkflow;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 
 
 /**
@@ -32,6 +41,17 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
+
+    /**
+     * The check-in button.
+     */
+    private Button checkIn;
+
+    /**
+     * Check-in button identifier.
+     */
+    private static final String CHECKIN_ID = "checkin";
+
 
     /**
      * Constructs a new <code>AppointmentCRUDWindow</code>.
@@ -47,6 +67,46 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     }
 
     /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(Row buttons) {
+        super.layoutButtons(buttons);
+        if (checkIn == null) {
+            checkIn = ButtonFactory.create(CHECKIN_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onCheckIn();
+                }
+            });
+        }
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param enable determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(boolean enable) {
+        super.enableButtons(enable);
+        Row buttons = getButtons();
+        if (enable) {
+            Act act = (Act) getObject();
+            if ("Pending".equals(act.getStatus())) {
+                if (buttons.indexOf(checkIn) == -1) {
+                    buttons.add(checkIn);
+                }
+            } else {
+                buttons.remove(checkIn);
+            }
+        } else {
+            buttons.remove(checkIn);
+        }
+    }
+
+    /**
      * Creates a new edit dialog.
      *
      * @param editor  the editor
@@ -58,4 +118,16 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         return new AppointmentEditDialog(editor, context);
     }
 
+    /**
+     * Invoked when the 'check-in' button is pressed.
+     */
+    private void onCheckIn() {
+        CheckInWorkflow workflow = new CheckInWorkflow((Act) getObject());
+        workflow.setTaskListener(new TaskListener() {
+            public void taskEvent(TaskEvent event) {
+                onRefresh(getObject());
+            }
+        });
+        workflow.start();
+    }
 }

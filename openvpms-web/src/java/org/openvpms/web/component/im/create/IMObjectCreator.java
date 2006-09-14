@@ -61,7 +61,7 @@ public final class IMObjectCreator {
             if (result == null) {
                 String title = Messages.get("imobject.create.failed.title");
                 String message = Messages.get("imobject.create.noarchetype",
-                        shortName);
+                                              shortName);
                 ErrorHelper.show(title, message);
 
             }
@@ -91,8 +91,8 @@ public final class IMObjectCreator {
         if (shortNames.isEmpty()) {
             String title = Messages.get("imobject.create.failed.title");
             String message = Messages.get("imobject.noarchetype",
-                    refModelName, entityName,
-                    conceptName);
+                                          refModelName, entityName,
+                                          conceptName);
             ErrorHelper.show(title, message);
         } else {
             create(type, shortNames, listener);
@@ -122,6 +122,7 @@ public final class IMObjectCreator {
                               final IMObjectCreatorListener listener) {
         if (shortNames.length == 0) {
             ErrorHelper.show("imobject.create.noshortnames", type);
+            listener.cancelled();
         } else if (shortNames.length > 1) {
             final ArchetypeShortNameListModel model
                     = new ArchetypeShortNameListModel(shortNames, false);
@@ -136,6 +137,8 @@ public final class IMObjectCreator {
                         IMObject object = create(model.getShortName(selected));
                         if (object != null) {
                             listener.created(object);
+                        } else {
+                            listener.cancelled();
                         }
                     }
                 }
@@ -146,6 +149,8 @@ public final class IMObjectCreator {
             IMObject object = create(shortNames[0]);
             if (object != null) {
                 listener.created(object);
+            } else {
+                listener.cancelled();
             }
         }
     }

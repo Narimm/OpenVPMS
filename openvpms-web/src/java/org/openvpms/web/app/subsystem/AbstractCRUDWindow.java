@@ -43,7 +43,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
+import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -368,6 +368,10 @@ public class AbstractCRUDWindow implements CRUDWindow {
             public void created(IMObject object) {
                 onCreated(object);
             }
+
+            public void cancelled() {
+                // ignore
+            }
         };
 
         IMObjectCreator.create(type, shortNames.getShortNames(), listener);
@@ -431,8 +435,9 @@ public class AbstractCRUDWindow implements CRUDWindow {
      * Invoked when the 'print' button is pressed.
      */
     protected void onPrint() {
-        IMObjectPrinter printer = createPrinter();
-        printer.print(getObject());
+        IMObject object = getObject();
+        IMObjectPrinter printer = createPrinter(object);
+        printer.print(object);
     }
 
     /**
@@ -523,10 +528,12 @@ public class AbstractCRUDWindow implements CRUDWindow {
     /**
      * Creates a new printer.
      *
-     * @return a new printer.
+     * @param object the object to print
+     * @return a new printer
      */
-    protected IMObjectPrinter createPrinter() {
-        return new IMObjectReportPrinter(_type);
+    protected IMObjectPrinter createPrinter(IMObject object) {
+        return IMObjectPrinterFactory.create(
+                object.getArchetypeId().getShortName());
     }
 
     /**

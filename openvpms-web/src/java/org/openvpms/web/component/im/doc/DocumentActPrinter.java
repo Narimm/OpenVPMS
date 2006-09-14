@@ -18,14 +18,13 @@
 
 package org.openvpms.web.component.im.doc;
 
-import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
-
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
@@ -35,22 +34,12 @@ import org.openvpms.web.resource.util.Messages;
 
 
 /**
- * Patient document printer.
+ * {@link DocumentAct} printer.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class DocumentActPrinter extends AbstractIMObjectPrinter {
-
-    /**
-     * Constructs a new <code>PatientDocumentPrinter</code>.
-     *
-     * @param type display name for the types of objects that this may
-     *             print
-     */
-    public DocumentActPrinter(String type) {
-        super(type);
-    }
 
     /**
      * Pops up a {@link ConfirmationDialog} prompting if printing of an object
@@ -60,7 +49,8 @@ public class DocumentActPrinter extends AbstractIMObjectPrinter {
      */
     @Override
     public void print(final IMObject object) {
-        String title = Messages.get("imobject.print.title", getType());
+        String title = Messages.get("imobject.print.title",
+                                    DescriptorHelper.getDisplayName(object));
         final ConfirmationDialog dialog = new ConfirmationDialog(title, "");
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {

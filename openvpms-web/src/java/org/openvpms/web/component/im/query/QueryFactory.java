@@ -194,7 +194,7 @@ public final class QueryFactory {
     /**
      * Returns the query implementations.
      *
-     * @return the editors
+     * @return the queries
      */
     private static ArchetypeHandlers<Query> getQueries() {
         if (_queries == null) {

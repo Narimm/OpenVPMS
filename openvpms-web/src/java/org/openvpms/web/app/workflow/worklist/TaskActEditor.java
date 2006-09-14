@@ -49,6 +49,8 @@ public class TaskActEditor extends AbstractActEditor {
     public TaskActEditor(Act act, IMObject parent,
                          LayoutContext context) {
         super(act, parent, context);
+        initParticipant("customer", Context.getInstance().getCustomer());
+        initParticipant("patient", Context.getInstance().getPatient());
         initParticipant("worklist", Context.getInstance().getWorkList());
 
         Property startTime = getProperty("startTime");
