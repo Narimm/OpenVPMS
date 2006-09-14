@@ -16,29 +16,39 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.create;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
+package org.openvpms.web.component.workflow;
 
 
 /**
- * Listener for {@link IMObjectCreator} events.
+ * Workflow task.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectCreatorListener {
+public interface Task {
 
     /**
-     * Notifies that a new object has been created.
+     * Registers a listener to be notified of task events.
      *
-     * @param object the new object
+     * @param listener the listener
      */
-    void created(IMObject object);
+    void setTaskListener(TaskListener listener);
 
     /**
-     * Notifies that the creation was cancelled or failed.
+     * Starts the task.
+     * <p/>
+     * The registered {@link TaskListener} will be notified on completion or
+     * failure.
+     *
+     * @param context the task context
      */
-    void cancelled();
+    void start(TaskContext context);
 
+    /**
+     * Determines if this is a required or an optional task.
+     *
+     * @return <code>true</code> if this is a required task; <code>false</code>
+     *         if it is an optional task
+     */
+    boolean isRequired();
 }

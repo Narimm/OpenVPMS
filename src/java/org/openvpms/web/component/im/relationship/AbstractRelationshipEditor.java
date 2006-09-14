@@ -199,6 +199,10 @@ public abstract class AbstractRelationshipEditor
             public void created(IMObject object) {
                 onCreated(object, entity);
             }
+
+            public void cancelled() {
+                // ignore
+            }
         };
 
         NodeDescriptor descriptor = entity.getProperty().getDescriptor();

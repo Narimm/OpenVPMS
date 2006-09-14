@@ -123,14 +123,19 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
     /**
      * Creates a new printer.
      *
-     * @return a new printer.
+     * @param object the object to print
+     * @return a new printer
      */
     @Override
-    protected IMObjectPrinter createPrinter() {
-        IMObjectPrinter printer = super.createPrinter();
+    protected IMObjectPrinter createPrinter(IMObject object) {
+        IMObjectPrinter printer = super.createPrinter(object);
         printer.setListener(new IMObjectPrinterListener() {
             public void printed(IMObject object) {
                 ActCRUDWindow.this.printed(object);
+            }
+
+            public void cancelled(IMObject object) {
+                // no-op
             }
         });
         return printer;

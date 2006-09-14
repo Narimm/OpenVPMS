@@ -16,29 +16,24 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.create;
+package org.openvpms.web.component.workflow;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
+import java.util.EventListener;
 
 
 /**
- * Listener for {@link IMObjectCreator} events.
+ * Event listener for {@link Task} events.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate:2006-02-21 03:48:29Z $
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectCreatorListener {
+public interface TaskListener extends EventListener {
 
     /**
-     * Notifies that a new object has been created.
+     * Invoked when a task event occurs.
      *
-     * @param object the new object
+     * @param event the event
      */
-    void created(IMObject object);
-
-    /**
-     * Notifies that the creation was cancelled or failed.
-     */
-    void cancelled();
+    void taskEvent(TaskEvent event);
 
 }

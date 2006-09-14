@@ -37,16 +37,6 @@ import org.openvpms.report.IMObjectReportFactory;
 public class IMObjectReportPrinter extends AbstractIMObjectPrinter {
 
     /**
-     * Constructs a new <code>IMObjectReportPrinter</code>.
-     *
-     * @param type display name for the types of objects that this may
-     *             print
-     */
-    public IMObjectReportPrinter(String type) {
-        super(type);
-    }
-
-    /**
      * Returns a document for an object.
      *
      * @param object the object

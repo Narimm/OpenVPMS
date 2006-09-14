@@ -26,6 +26,7 @@ import nextapp.echo2.app.event.DocumentEvent;
 import nextapp.echo2.app.event.DocumentListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -68,6 +69,11 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * The selector.
      */
     private Selector _selector;
+
+    /**
+     * The previous selector text, to avoid spurious updates.
+     */
+    private String _prevText;
 
 
     /**
@@ -239,28 +245,30 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     private void onNameChanged() {
         TextField text = _selector.getText();
         String name = text.getText();
-        if (StringUtils.isEmpty(name)) {
-            setObject(null);
-        } else {
-            try {
-                Query<IMObject> query = createQuery(name);
-                ResultSet<IMObject> set = query.query(null);
-                if (set != null && set.hasNext()) {
-                    IPage<IMObject> page = set.next();
-                    List<IMObject> rows = page.getRows();
-                    int size = rows.size();
-                    if (size == 0) {
-                        setObject(null);
-                    } else if (size == 1) {
-                        IMObject object = rows.get(0);
-                        setObject(object);
-                    } else {
-                        onSelect(query, true);
+        if (!ObjectUtils.equals(name, _prevText)) {
+            if (StringUtils.isEmpty(name)) {
+                setObject(null);
+            } else {
+                try {
+                    Query<IMObject> query = createQuery(name);
+                    ResultSet<IMObject> set = query.query(null);
+                    if (set != null && set.hasNext()) {
+                        IPage<IMObject> page = set.next();
+                        List<IMObject> rows = page.getRows();
+                        int size = rows.size();
+                        if (size == 0) {
+                            setObject(null);
+                        } else if (size == 1) {
+                            IMObject object = rows.get(0);
+                            setObject(object);
+                        } else {
+                            onSelect(query, true);
+                        }
                     }
+                } catch (OpenVPMSException exception) {
+                    updateProperty(null);
+                    ErrorHelper.show(exception);
                 }
-            } catch (OpenVPMSException exception) {
-                updateProperty(null);
-                ErrorHelper.show(exception);
             }
         }
     }
@@ -279,6 +287,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
         text.getDocument().removeDocumentListener(_nameListener);
         _selector.setObject(object);
         text.getDocument().addDocumentListener(_nameListener);
+        _prevText = _selector.getText().getText();
     }
 
 }

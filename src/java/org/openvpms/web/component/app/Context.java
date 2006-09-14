@@ -28,6 +28,10 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -41,57 +45,74 @@ public class Context {
     /**
      * The object being viewed/edited.
      */
-    private IMObject _current;
+    private IMObject current;
 
     /**
-     * The current customer.
+     * The context objects, keyed on shortname.
      */
-    private Party _customer;
+    private final Map<String, IMObject> objects
+            = new HashMap<String, IMObject>();
 
     /**
-     * The current patient.
+     * Customer short name.
      */
-    private Party _patient;
+    private static final String CUSTOMER_SHORTNAME = "party.customer*";
 
     /**
-     * The current supplier.
+     * Patient short name.
      */
-    private Party _supplier;
+    private static final String PATIENT_SHORT_NAME = "party.patient*";
 
     /**
-     * The current product.
+     * Supplier short name.
      */
-    private Product _product;
+    private static final String SUPPLIER_SHORT_NAME = "party.supplier*";
 
     /**
-     * The current till.
+     * Product short name.
      */
-    private Party _till;
+    private static final String PRODUCT_SHORT_NAME = "product.*";
 
     /**
-     * The current clinician.
+     * Till short name.
      */
-    private User _clinician;
+    private static final String TILL_SHORT_NAME = "party.organisationTill";
 
     /**
-     * The current schedule.
+     * Clinician short name.
      */
-    private Party _schedule;
+    private static final String CLINICIAN_SHORT_NAME = "security.user";
+
+    /**
+     * Schedule short name.
+     */
+    private static final String SCHEDULE_SHORT_NAME
+            = "party.organisationSchedule";
+
+    /**
+     * Work list short name.
+     */
+    private static final String WORKLIST_SHORT_NAME
+            = "party.organisationWorkList";
+
+    /**
+     * Set of recognised short names.
+     */
+    private static final String[] SHORT_NAMES = {
+            CUSTOMER_SHORTNAME, PATIENT_SHORT_NAME, SUPPLIER_SHORT_NAME,
+            PRODUCT_SHORT_NAME, TILL_SHORT_NAME, CLINICIAN_SHORT_NAME,
+            SCHEDULE_SHORT_NAME, WORKLIST_SHORT_NAME};
+
 
     /**
      * The current schedule date.
      */
-    private Date _scheduleDate;
-
-    /**
-     * The current work list.
-     */
-    private Party _workList;
+    private Date scheduleDate;
 
     /**
      * The current work list date.
      */
-    private Date _workListDate;
+    private Date workListDate;
 
 
     /**
@@ -107,7 +128,7 @@ public class Context {
      *               <code>null</code>
      */
     public void setCurrent(IMObject object) {
-        _current = object;
+        current = object;
     }
 
     /**
@@ -117,7 +138,7 @@ public class Context {
      *         no current object
      */
     public IMObject getCurrent() {
-        return _current;
+        return current;
     }
 
     /**
@@ -126,7 +147,7 @@ public class Context {
      * @param customer the current customer. May be <code>null</code>
      */
     public void setCustomer(Party customer) {
-        _customer = customer;
+        setObject(CUSTOMER_SHORTNAME, customer);
     }
 
     /**
@@ -136,7 +157,7 @@ public class Context {
      *         customer
      */
     public Party getCustomer() {
-        return _customer;
+        return (Party) objects.get(CUSTOMER_SHORTNAME);
     }
 
     /**
@@ -145,7 +166,7 @@ public class Context {
      * @param patient the current patient. May be <code>null</code>
      */
     public void setPatient(Party patient) {
-        _patient = patient;
+        setObject(PATIENT_SHORT_NAME, patient);
     }
 
     /**
@@ -155,7 +176,7 @@ public class Context {
      *         patient
      */
     public Party getPatient() {
-        return _patient;
+        return (Party) objects.get(PATIENT_SHORT_NAME);
     }
 
     /**
@@ -164,7 +185,7 @@ public class Context {
      * @param supplier the current supplier. May be <code>null</code>
      */
     public void setSupplier(Party supplier) {
-        _supplier = supplier;
+        setObject(SUPPLIER_SHORT_NAME, supplier);
     }
 
     /**
@@ -174,7 +195,7 @@ public class Context {
      *         supplier
      */
     public Party getSupplier() {
-        return _supplier;
+        return (Party) objects.get(SUPPLIER_SHORT_NAME);
     }
 
     /**
@@ -183,7 +204,7 @@ public class Context {
      * @param product the current product.
      */
     public void setProduct(Product product) {
-        _product = product;
+        setObject(PRODUCT_SHORT_NAME, product);
     }
 
     /**
@@ -193,7 +214,7 @@ public class Context {
      *         product
      */
     public Product getProduct() {
-        return _product;
+        return (Product) objects.get(PRODUCT_SHORT_NAME);
     }
 
     /**
@@ -202,7 +223,7 @@ public class Context {
      * @param till the current till.
      */
     public void setTill(Party till) {
-        _till = till;
+        setObject(TILL_SHORT_NAME, till);
     }
 
     /**
@@ -212,7 +233,7 @@ public class Context {
      *         till
      */
     public Party getTill() {
-        return _till;
+        return (Party) objects.get(TILL_SHORT_NAME);
     }
 
     /**
@@ -221,7 +242,7 @@ public class Context {
      * @param clinician the current clinician.
      */
     public void setClinician(User clinician) {
-        _clinician = clinician;
+        setObject(CLINICIAN_SHORT_NAME, clinician);
     }
 
     /**
@@ -231,7 +252,7 @@ public class Context {
      *         clinician
      */
     public User getClinician() {
-        return _clinician;
+        return (User) objects.get(CLINICIAN_SHORT_NAME);
     }
 
     /**
@@ -240,7 +261,7 @@ public class Context {
      * @param schedule the current schedule
      */
     public void setSchedule(Party schedule) {
-        _schedule = schedule;
+        setObject(SCHEDULE_SHORT_NAME, schedule);
     }
 
     /**
@@ -249,7 +270,7 @@ public class Context {
      * @return the current schedule
      */
     public Party getSchedule() {
-        return _schedule;
+        return (Party) objects.get(SCHEDULE_SHORT_NAME);
     }
 
     /**
@@ -258,7 +279,7 @@ public class Context {
      * @return the current schedule date
      */
     public Date getScheduleDate() {
-        return _scheduleDate;
+        return scheduleDate;
     }
 
     /**
@@ -267,7 +288,7 @@ public class Context {
      * @param date the current schedule date
      */
     public void setScheduleDate(Date date) {
-        _scheduleDate = date;
+        scheduleDate = date;
     }
 
     /**
@@ -276,7 +297,7 @@ public class Context {
      * @param workList the current work list
      */
     public void setWorkList(Party workList) {
-        _workList = workList;
+        setObject(WORKLIST_SHORT_NAME, workList);
     }
 
     /**
@@ -285,7 +306,7 @@ public class Context {
      * @return the current work list
      */
     public Party getWorkList() {
-        return _workList;
+        return (Party) objects.get(WORKLIST_SHORT_NAME);
     }
 
     /**
@@ -294,7 +315,7 @@ public class Context {
      * @param date the current schedule date
      */
     public void setWorkListDate(Date date) {
-        _workListDate = date;
+        workListDate = date;
     }
 
     /**
@@ -303,7 +324,36 @@ public class Context {
      * @return the current work lsit date
      */
     public Date getWorkListDate() {
-        return _workListDate;
+        return workListDate;
+    }
+
+    /**
+     * Adds an object to the context.
+     *
+     * @param object the object to add.
+     */
+    public void addObject(IMObject object) {
+        ArchetypeId id = object.getArchetypeId();
+        String match = null;
+        for (String shortName : SHORT_NAMES) {
+            if (TypeHelper.matches(id, shortName)) {
+                match = shortName;
+                break;
+            }
+        }
+        if (match == null) {
+            match = id.getShortName();
+        }
+        setObject(match, object);
+    }
+
+    /**
+     * Removes an object from the context.
+     *
+     * @param object the object to remove
+     */
+    public void removeObject(IMObject object) {
+        objects.values().remove(object);
     }
 
     /**
@@ -364,14 +414,29 @@ public class Context {
     }
 
     /**
+     * Sets a context object.
+     *
+     * @param key    the context key
+     * @param object the object
+     */
+    protected void setObject(String key, IMObject object) {
+        if (key == null) {
+            objects.remove(key);
+        } else {
+            objects.put(key, object);
+        }
+    }
+
+    /**
      * Helper to return the context objects in an array.
      *
      * @return the a list of the context objects
      */
     protected IMObject[] getObjects() {
-        return new IMObject[]{_current, _customer, _patient, _supplier,
-                              _product, _till, _clinician, _schedule,
-                              _workList};
+        Set<IMObject> result = new HashSet<IMObject>();
+        result.addAll(objects.values());
+        result.add(current);
+        return result.toArray(new IMObject[0]);
     }
 
 }
