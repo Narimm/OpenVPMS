@@ -51,6 +51,20 @@ public interface Context {
     IMObject getCurrent();
 
     /**
+     * Sets the current user.
+     *
+     * @param user the current user
+     */
+    void setUser(User user);
+
+    /**
+     * Returns the current user.
+     *
+     * @return the current user
+     */
+    User getUser();
+
+    /**
      * Sets the current customer.
      *
      * @param customer the current customer. May be <code>null</code>

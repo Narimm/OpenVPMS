@@ -33,18 +33,24 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
- * Add description here.
+ * Abstract implementation of the {@link Context} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class AbstractContext implements Context {
+public abstract class AbstractContext implements Context {
 
     /**
      * The object being viewed/edited.
      */
     private IMObject current;
+
+    /**
+     * The current user.
+     */
+    private User user;
 
     /**
      * The context objects.
@@ -130,6 +136,26 @@ public class AbstractContext implements Context {
      */
     public IMObject getCurrent() {
         return current;
+    }
+
+    /**
+     * Sets the current user.
+     *
+     * @param user the current user
+     */
+    public void setUser(User user) {
+        // don't add the current user to 'objects' as it would clash with
+        // clinician.
+        this.user = user;
+    }
+
+    /**
+     * Returns the current user.
+     *
+     * @return the current user
+     */
+    public User getUser() {
+        return user;
     }
 
     /**
@@ -427,6 +453,7 @@ public class AbstractContext implements Context {
         Set<IMObject> result = new HashSet<IMObject>();
         result.addAll(objects.values());
         result.add(current);
+        result.add(user);
         return result.toArray(new IMObject[0]);
     }
 

@@ -19,6 +19,7 @@
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -55,6 +56,35 @@ public class LocalContext extends AbstractContext {
      */
     public LocalContext(Context parent) {
         this.parent = parent;
+    }
+
+    /**
+     * Returns the current object being viewed/edited.
+     *
+     * @return the object being viewed/edited, or <code>null</code> if there is
+     *         no current object
+     */
+    @Override
+    public IMObject getCurrent() {
+        IMObject current = super.getCurrent();
+        if (current == null) {
+            current = parent.getCurrent();
+        }
+        return current;
+    }
+
+    /**
+     * Returns the current user.
+     *
+     * @return the current user
+     */
+    @Override
+    public User getUser() {
+        User user = super.getUser();
+        if (user == null) {
+            user = parent.getUser();
+        }
+        return user;
     }
 
     /**
