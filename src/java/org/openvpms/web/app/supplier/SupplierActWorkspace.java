@@ -19,11 +19,10 @@
 package org.openvpms.web.app.supplier;
 
 import nextapp.echo2.app.Component;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -58,7 +57,7 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party party = (Party) object;
-        Context.getInstance().setSupplier(party);
+        GlobalContext.getInstance().setSupplier(party);
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -84,7 +83,7 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party supplier = Context.getInstance().getSupplier();
+        Party supplier = GlobalContext.getInstance().getSupplier();
         return (supplier != getObject());
     }
 
@@ -95,7 +94,7 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
      */
     @Override
     protected void doLayout(Component container) {
-        Party supplier = Context.getInstance().getSupplier();
+        Party supplier = GlobalContext.getInstance().getSupplier();
         if (supplier != getObject()) {
             setObject(supplier);
         }

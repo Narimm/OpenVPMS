@@ -21,12 +21,22 @@ package org.openvpms.web.app.workflow.worklist;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 
@@ -44,18 +54,18 @@ public class TaskActEditor extends AbstractActEditor {
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param context the layout context
      */
     public TaskActEditor(Act act, IMObject parent,
                          LayoutContext context) {
         super(act, parent, context);
-        initParticipant("customer", Context.getInstance().getCustomer());
-        initParticipant("patient", Context.getInstance().getPatient());
-        initParticipant("worklist", Context.getInstance().getWorkList());
+        initParticipant("customer", context.getContext().getCustomer());
+        initParticipant("patient", context.getContext().getPatient());
+        initParticipant("worklist", context.getContext().getWorkList());
 
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
-            startTime.setValue(Context.getInstance().getWorkListDate());
+            startTime.setValue(context.getContext().getWorkListDate());
         }
         startTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -75,6 +85,19 @@ public class TaskActEditor extends AbstractActEditor {
                 onStatusChanged();
             }
         });
+    }
+
+    /**
+     * Save any edits.
+     *
+     * @return <code>true</code> if the save was successful
+     */
+    @Override
+    public boolean save() {
+        if (checkMaxSlots()) {
+            return super.save();
+        }
+        return false;
     }
 
     /**
@@ -161,5 +184,66 @@ public class TaskActEditor extends AbstractActEditor {
         Object value = property.getValue();
         return (value instanceof Date) ? (Date) value : null;
     }
+
+    /**
+     * Determines if the task overlaps an existing appointment.
+     * If so, and double scheduling is allowed, a confirmation dialog is shown
+     * prompting to save or continue editing. If double scheduling is not
+     * allowed, an error dialog is shown and no save is performed.
+     *
+     * @return <code>true</code> if there are less than maxSlots tasks, otherwise
+     *         <code>false</code>
+     */
+    private boolean checkMaxSlots() {
+        IMObject object = getObject();
+        boolean result = true;
+        if (isValid()) {
+            Act act = (Act) object;
+            if (tooManyTasks(act)) {
+                String title = Messages.get(
+                        "workflow.worklist.toomanytasks.title");
+                String message = Messages.get(
+                        "workflow.worklist.toomanytasks.message");
+                ErrorDialog.show(title, message);
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines there are too many outstanding tasks.
+     *
+     * @return <code>true</code> if there are too many outstanding tasks;
+     *         otherwise <code>false</code>
+     */
+    private boolean tooManyTasks(Act act) {
+        boolean result = false;
+        ActBean actBean = new ActBean(act);
+        Party workList = (Party) actBean.getParticipant(
+                "participation.worklist");
+        if (workList != null) {
+            IMObjectBean bean = new IMObjectBean(workList);
+            int maxSlots = bean.getInt("maxSlots");
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            ArchetypeQuery query
+                    = new ArchetypeQuery("act.customerTask", false, true);
+            query.add(new ParticipantConstraint("worklist",
+                                                "participation.worklist",
+                                                workList));
+            query.add(new NodeConstraint("uid", RelationalOp.NE, act.getUid()));
+            query.add(
+                    new NodeConstraint("status", RelationalOp.NE, "Cancelled"));
+            query.setFirstRow(0);
+            query.setNumOfRows(1);
+            IPage<IMObject> page = service.get(query);
+            if (page.getTotalNumOfRows() >= maxSlots) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
 
 }

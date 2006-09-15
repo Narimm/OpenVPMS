@@ -22,7 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -110,7 +110,7 @@ public class EditIMObjectTask extends AbstractTask {
             object = context.getObject(shortName);
         }
         if (object != null) {
-            edit(object);
+            edit(object, context);
         } else {
             notifyCancelled();
         }
@@ -119,17 +119,19 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Edits an object.
      *
-     * @param object the object to edit
+     * @param object  the object to edit
+     * @param context the task context
      */
-    protected void edit(IMObject object) {
+    protected void edit(IMObject object, TaskContext context) {
         try {
             LayoutContext layout = new DefaultLayoutContext(true);
+            layout.setContext(context);
             final IMObjectEditor editor
                     = IMObjectEditorFactory.create(object, layout);
-            Context.getInstance().setCurrent(object);
+            GlobalContext.getInstance().setCurrent(object);
             if (background) {
                 editor.getComponent();
-                Context.getInstance().setCurrent(null);
+                GlobalContext.getInstance().setCurrent(null);
                 notifyCompleted();
             } else {
                 EditDialog dialog = new EditDialog(editor, layout);
@@ -152,7 +154,7 @@ public class EditIMObjectTask extends AbstractTask {
      * @param editor the editor
      */
     protected void onEditCompleted(IMObjectEditor editor) {
-        Context.getInstance().setCurrent(null);
+        GlobalContext.getInstance().setCurrent(null);
         if (editor.isDeleted() || editor.isCancelled()) {
             notifyCancelled();
         } else {

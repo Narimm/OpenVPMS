@@ -35,7 +35,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -67,7 +67,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            IMObject clinician = Context.getInstance().getClinician();
+            IMObject clinician = context.getContext().getClinician();
             getEditor().setObject(clinician);
         }
     }
@@ -93,7 +93,7 @@ public class ClinicianParticipationEditor extends AbstractParticipationEditor {
             public void setObject(IMObject object) {
                 super.setObject(object);
                 User user = (User) object;
-                Context.getInstance().setClinician(user);
+                GlobalContext.getInstance().setClinician(user);
             }
         };
     }

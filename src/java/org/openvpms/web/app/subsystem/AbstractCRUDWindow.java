@@ -32,7 +32,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.dialog.ConfirmationDialog;
 import org.openvpms.web.component.dialog.ErrorDialog;
 import org.openvpms.web.component.im.create.IMObjectCreator;
@@ -186,7 +186,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
      */
     public void setObject(IMObject object) {
         _object = object;
-        Context.getInstance().setCurrent(object);
+        GlobalContext.getInstance().setCurrent(object);
         getComponent();
         if (object != null) {
             enableButtons(true);
@@ -475,7 +475,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
         } else if (editor.isSaved()) {
             onSaved(editor.getObject(), isNew);
         } else {
-            Context.getInstance().setCurrent(null);
+            GlobalContext.getInstance().setCurrent(null);
         }
     }
 
@@ -566,7 +566,7 @@ public class AbstractCRUDWindow implements CRUDWindow {
                 }
             });
 
-            Context.getInstance().setCurrent(object);
+            GlobalContext.getInstance().setCurrent(object);
             dialog.show();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

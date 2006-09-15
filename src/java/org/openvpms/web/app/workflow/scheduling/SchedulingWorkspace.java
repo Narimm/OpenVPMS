@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -58,7 +58,7 @@ public class SchedulingWorkspace extends ActWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        Context.getInstance().setSchedule((Party) object);
+        GlobalContext.getInstance().setSchedule((Party) object);
         Party party = (Party) object;
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
@@ -107,7 +107,7 @@ public class SchedulingWorkspace extends ActWorkspace {
         super.onQuery();
         AppointmentQuery query = (AppointmentQuery) getQuery();
         if (query != null) {
-            Context.getInstance().setScheduleDate(query.getDate());
+            GlobalContext.getInstance().setScheduleDate(query.getDate());
         }
     }
 

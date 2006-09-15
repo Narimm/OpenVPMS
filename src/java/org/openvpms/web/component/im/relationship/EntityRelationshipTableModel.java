@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -92,7 +92,7 @@ public class EntityRelationshipTableModel extends BaseIMObjectTableModel {
      */
     protected Component getEntity(EntityRelationship relationship) {
         IMObjectReference entity;
-        IMObject current = Context.getInstance().getCurrent();
+        IMObject current = GlobalContext.getInstance().getCurrent();
         if (current == null) {
             entity = relationship.getTarget();
         } else {

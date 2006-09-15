@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
@@ -94,7 +94,7 @@ public class ReminderCRUDWindow extends ActCRUDWindow {
     @Override
     protected void onCreated(IMObject object) {
         Act act = (Act) object;
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         if (patient != null) {
             try {
                 IArchetypeService service

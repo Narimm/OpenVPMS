@@ -19,15 +19,21 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.AbstractParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.IMObjectHelper;
+
+import java.util.List;
 
 
 /**
@@ -64,11 +70,30 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
 
     /**
      * Sets the work list, used to constrain task types.
+     * If the task type is null, sets it to the default task type associated
+     * with the work list, if present.
      *
      * @param workList the work list. May be <code>null</code>
      */
     public void setWorkList(Party workList) {
         _workList = workList;
+        if (_workList != null && getEntityRef() == null) {
+            EntityBean workListBean = new EntityBean(_workList);
+            List<IMObject> relationships = workListBean.getValues("taskTypes");
+            for (IMObject object : relationships) {
+                IMObjectBean bean = new IMObjectBean(object);
+                if (bean.getBoolean("default")) {
+                    EntityRelationship relationship
+                            = (EntityRelationship) object;
+                    IMObject taskType = IMObjectHelper.getObject(
+                            relationship.getTarget());
+                    if (taskType != null) {
+                        getEditor().setObject(object);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /**

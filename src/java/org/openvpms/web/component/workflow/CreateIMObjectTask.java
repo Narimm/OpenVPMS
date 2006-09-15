@@ -22,9 +22,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * Task to create an {@link IMObject}.
@@ -40,9 +37,9 @@ public class CreateIMObjectTask extends AbstractTask {
     private final String[] shortNames;
 
     /**
-     * Properties to populate the created object with.
+     * Properties to populate the created object with. May be <code>null</code>
      */
-    private final Map<String, Object> properties;
+    private final TaskProperties properties;
 
 
     /**
@@ -60,10 +57,11 @@ public class CreateIMObjectTask extends AbstractTask {
      *
      * @param shortName  the short name of the object to create. May contain
      *                   wildcards
-     * @param properties properties to populate the created object
+     * @param properties properties to populate the created object.
+     *                   May be <code>null</code>
      */
     public CreateIMObjectTask(String shortName,
-                              Map<String, Object> properties) {
+                              TaskProperties properties) {
         this(new String[]{shortName}, properties);
     }
 
@@ -74,7 +72,7 @@ public class CreateIMObjectTask extends AbstractTask {
      *                   wildcards
      */
     public CreateIMObjectTask(String[] shortNames) {
-        this(shortNames, new HashMap<String, Object>());
+        this(shortNames, null);
     }
 
     /**
@@ -82,10 +80,10 @@ public class CreateIMObjectTask extends AbstractTask {
      *
      * @param shortNames the short names to select from. Short names may contain
      *                   wildcards
-     * @param properties properties to populate the created object
+     * @param properties properties to populate the created object.
+     *                   May be <code>null</code>
      */
-    public CreateIMObjectTask(String[] shortNames,
-                              Map<String, Object> properties) {
+    public CreateIMObjectTask(String[] shortNames, TaskProperties properties) {
         this.shortNames = shortNames;
         this.properties = properties;
     }
@@ -120,7 +118,9 @@ public class CreateIMObjectTask extends AbstractTask {
      * @param context the task context
      */
     protected void onCreated(IMObject object, TaskContext context) {
-        populate(object, properties, context);
+        if (properties != null) {
+            populate(object, properties, context);
+        }
         context.addObject(object);
         notifyCompleted();
     }

@@ -20,28 +20,29 @@ package org.openvpms.web.app.customer.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
-/**
- *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
- */
 
+/**
+ * Editor for <em>act.customerDocument*</em> acts.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
+ */
 public class CustomerDocumentActEditor extends DocumentActEditor {
 
     /**
-     * @param act
-     * @param parent
-     * @param context
-     * @param object
+     * Creates a new <code>CustomerDocumentActEditor</code>.
+     *
+     * @param act     the act
+     * @param parent  the parent
+     * @param context the layout context
      */
     public CustomerDocumentActEditor(DocumentAct act, IMObject parent,
-            LayoutContext context) {
+                                     LayoutContext context) {
         super(act, parent, context);
-        initParticipant("customer",Context.getInstance().getCustomer());
+        initParticipant("customer", context.getContext().getCustomer());
     }
 
 }

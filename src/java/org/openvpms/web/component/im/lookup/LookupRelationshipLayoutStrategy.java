@@ -18,20 +18,17 @@
 
 package org.openvpms.web.component.im.lookup;
 
-import org.openvpms.web.component.app.Context;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Grid;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.GridFactory;
-
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Grid;
 
 
 /**
@@ -59,7 +56,7 @@ public class LookupRelationshipLayoutStrategy extends AbstractLayoutStrategy {
         boolean srcLink = false;
         boolean tgtLink = false;
 
-        IMObject current = Context.getInstance().getCurrent();
+        IMObject current = context.getContext().getCurrent();
         if (current == null) {
             srcLink = true;
             tgtLink = true;

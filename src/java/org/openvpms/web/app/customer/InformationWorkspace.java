@@ -22,7 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -48,7 +48,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        Context.getInstance().setCustomer((Party) object);
+        GlobalContext.getInstance().setCustomer((Party) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -72,7 +72,7 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party customer = Context.getInstance().getCustomer();
+        Party customer = GlobalContext.getInstance().getCustomer();
         return (customer != getObject());
     }
 
@@ -84,7 +84,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Party customer = Context.getInstance().getCustomer();
+        Party customer = GlobalContext.getInstance().getCustomer();
         if (customer != getObject()) {
             setObject(customer);
         }

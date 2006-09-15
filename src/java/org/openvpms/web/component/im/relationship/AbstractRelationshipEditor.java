@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -110,7 +109,7 @@ public abstract class AbstractRelationshipEditor
             targetProp.setValue(target.getObjectReference());
         }
 
-        IMObject edited = Context.getInstance().getCurrent();
+        IMObject edited = context.getContext().getCurrent();
         boolean srcReadOnly = true;
         if (source == null || !source.equals(edited)) {
             srcReadOnly = false;

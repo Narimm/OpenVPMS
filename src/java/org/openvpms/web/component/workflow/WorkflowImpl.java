@@ -41,7 +41,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     /**
      * The task context.
      */
-    private TaskContext context;
+    private TaskContext initial;
 
     /**
      * Iterator over the tasks.
@@ -97,7 +97,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     public void start(TaskContext context) {
         cancel = false;
         taskIterator = tasks.iterator();
-        this.context = context;
+        this.initial = context;
         next();
     }
 
@@ -112,7 +112,7 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
 
             try {
                 task.setTaskListener(taskListener);
-                task.start(context);
+                task.start(initial);
             } catch (Throwable throwable) {
                 cancel = true;
                 ErrorHelper.show(throwable);

@@ -16,17 +16,32 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.workflow;
-
-import org.openvpms.web.component.app.LocalContext;
+package org.openvpms.web.component.app;
 
 
 /**
- * Default implementation of the {@link TaskContext} interface.
+ * Application context information.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @version $LastChangedDate$
  */
-public class TaskContextImpl extends LocalContext implements TaskContext {
+public class GlobalContext extends AbstractContext {
+
+
+    /**
+     * Restrict construction.
+     */
+    protected GlobalContext() {
+    }
+
+    /**
+     * Returns the context associated with the current thread.
+     *
+     * @return the context associated with the current thread, or
+     *         <code>null</code>
+     */
+    public static GlobalContext getInstance() {
+        return ContextApplicationInstance.getInstance().getContext();
+    }
 
 }

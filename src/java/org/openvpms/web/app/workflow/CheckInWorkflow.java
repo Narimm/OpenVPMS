@@ -22,18 +22,21 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.workflow.AddActRelationshipTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.PrintIMObjectTask;
 import org.openvpms.web.component.workflow.SelectIMObjectTask;
+import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.component.workflow.TaskContextImpl;
+import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.resource.util.Messages;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
 
 
 /**
@@ -43,6 +46,12 @@ import java.util.Map;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class CheckInWorkflow extends WorkflowImpl {
+
+    /**
+     * The initial context.
+     */
+    private TaskContext initial;
+
 
     /**
      * Constructs a new <code>CheckInWorkflow</code>.
@@ -55,10 +64,11 @@ public class CheckInWorkflow extends WorkflowImpl {
         Party patient = (Party) bean.getParticipant("participation.patient");
         final User clinician
                 = (User) bean.getParticipant("participation.clinician");
-        Context context = Context.getInstance();
-        context.setCustomer(customer);
-        context.setPatient(patient);
-        context.setClinician(clinician);
+        initial = new TaskContextImpl();
+        initial.setCustomer(customer);
+        initial.setPatient(patient);
+        initial.setClinician(clinician);
+        initial.setWorkListDate(new Date());
 
         String workList = "party.organisationWorkList";
         String task = "act.customerTask";
@@ -67,11 +77,13 @@ public class CheckInWorkflow extends WorkflowImpl {
         String weight = "act.patientWeight";
 
         // select a worklist
-        addTask(new SelectIMObjectTask<Party>(workList, true));
+        addTask(new SelectIMObjectTask<Party>(workList));
 
         // create and edit an act.customerTask
-        addTask(new CreateIMObjectTask(task));
-        addTask(new EditIMObjectTask(task));
+        TaskProperties taskProps = new TaskProperties();
+        taskProps.add("description", getTaskDescription(appointment));
+        addTask(new CreateIMObjectTask(task, taskProps));
+        addTask(new EditIMObjectTask(task, true));
 
         // otionally select and print an act.patientDocumentForm
         SelectIMObjectTask<Act> docTask = new SelectIMObjectTask<Act>(document);
@@ -82,9 +94,9 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(selectAndPrint);
 
         // create a new act.patientClinicalEvent
-        Map<String, Object> taskProps = new HashMap<String, Object>();
-        taskProps.put("reason", "Appointment");
-        addTask(new CreateIMObjectTask(event, taskProps));
+        TaskProperties eventProps = new TaskProperties();
+        eventProps.add("reason", "Appointment");
+        addTask(new CreateIMObjectTask(event, eventProps));
         addTask(new EditIMObjectTask(event, true));
 
         // prompt for a patient weight.
@@ -94,9 +106,30 @@ public class CheckInWorkflow extends WorkflowImpl {
                 event, weight, "actRelationship.patientClinicalEventItem"));
 
         // update the appointment status
-        Map<String, Object> appProps = new HashMap<String, Object>();
-        appProps.put("status", "Checked In");
+        TaskProperties appProps = new TaskProperties();
+        appProps.add("status", "Checked In");
         addTask(new UpdateIMObjectTask(appointment, appProps));
+    }
+
+    /**
+     * Starts the workflow.
+     */
+    @Override
+    public void start() {
+        super.start(initial);
+    }
+
+    /**
+     * Returns the description for the task.
+     *
+     * @param appointment the appointment to derive the description from
+     * @return the description for the task
+     */
+    private String getTaskDescription(Act appointment) {
+        IMObjectBean bean = new IMObjectBean(appointment);
+        String reason = bean.getString("reason", "");
+        String notes = bean.getString("description", "");
+        return Messages.get("workflow.checkin.task.description", reason, notes);
     }
 
 }

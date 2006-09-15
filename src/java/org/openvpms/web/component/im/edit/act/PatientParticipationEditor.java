@@ -23,14 +23,14 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Participation editor for patients. This updates {@link Context#setPatient}
+ * Participation editor for patients. This updates {@link GlobalContext#setPatient}
  * when a patient is selected.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -55,7 +55,7 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            IMObject patient = Context.getInstance().getPatient();
+            IMObject patient = context.getContext().getPatient();
             getEditor().setObject(patient);
         }
     }
@@ -74,7 +74,7 @@ public class PatientParticipationEditor extends AbstractParticipationEditor {
             public void setObject(IMObject object) {
                 super.setObject(object);
                 Party patient = (Party) object;
-                Context.getInstance().setPatient(patient);
+                GlobalContext.getInstance().setPatient(patient);
             }
         };
     }

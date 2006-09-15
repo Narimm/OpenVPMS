@@ -28,7 +28,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 
 
@@ -59,7 +59,7 @@ public abstract class CustomerActCRUDWindow extends ActCRUDWindow {
     @Override
     protected void onCreated(IMObject object) {
         Act act = (Act) object;
-        Party customer = Context.getInstance().getCustomer();
+        Party customer = GlobalContext.getInstance().getCustomer();
         if (customer != null) {
             try {
                 IArchetypeService service

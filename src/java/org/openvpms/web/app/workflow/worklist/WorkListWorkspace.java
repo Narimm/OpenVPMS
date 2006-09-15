@@ -27,7 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
@@ -64,13 +64,13 @@ public class WorkListWorkspace extends ActWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        Context.getInstance().setWorkList((Party) object);
+        GlobalContext.getInstance().setWorkList((Party) object);
         Party party = (Party) object;
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
-            Context.getInstance().setWorkListDate(query.getDate());
+            GlobalContext.getInstance().setWorkListDate(query.getDate());
         }
     }
 
@@ -118,7 +118,7 @@ public class WorkListWorkspace extends ActWorkspace {
         super.onQuery();
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
-            Context.getInstance().setWorkListDate(query.getDate());
+            GlobalContext.getInstance().setWorkListDate(query.getDate());
         }
     }
 
