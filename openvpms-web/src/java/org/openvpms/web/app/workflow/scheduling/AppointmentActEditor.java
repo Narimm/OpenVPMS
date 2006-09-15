@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
@@ -62,12 +61,12 @@ public class AppointmentActEditor extends AbstractActEditor {
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param context the layout context
      */
     public AppointmentActEditor(Act act, IMObject parent,
                                 LayoutContext context) {
         super(act, parent, context);
-        initParticipant("schedule", Context.getInstance().getSchedule());
+        initParticipant("schedule", context.getContext().getSchedule());
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
             startTime.setValue(getDefaultTime());
@@ -233,7 +232,7 @@ public class AppointmentActEditor extends AbstractActEditor {
                 TimePropertyTransformer transformer
                         = new TimePropertyTransformer(parent,
                                                       property.getDescriptor());
-                transformer.setDate(Context.getInstance().getScheduleDate());
+                transformer.setDate(context.getContext().getScheduleDate());
                 timeProperty.setTransformer(transformer);
                 component = TimeFieldFactory.create(property);
             } else {

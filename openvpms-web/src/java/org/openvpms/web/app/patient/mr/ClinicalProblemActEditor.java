@@ -19,7 +19,6 @@
 package org.openvpms.web.app.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -60,7 +59,7 @@ public class ClinicalProblemActEditor extends ActEditor {
         super(act, parent, editItems, context);
         // disable editing of the items node if there is a parent act.
 
-        initParticipant("patient", Context.getInstance().getPatient());
+        initParticipant("patient", context.getContext().getPatient());
     }
 
     /**

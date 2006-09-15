@@ -27,7 +27,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.subsystem.ActCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -59,13 +59,14 @@ public abstract class SupplierActCRUDWindow extends ActCRUDWindow {
     @Override
     protected void onCreated(IMObject object) {
         Act act = (Act) object;
-        Party supplier = Context.getInstance().getSupplier();
+        Party supplier = GlobalContext.getInstance().getSupplier();
         if (supplier != null) {
             try {
                 IArchetypeService service
                         = ServiceHelper.getArchetypeService();
                 Participation participation
-                        = (Participation) service.create("participation.supplier");
+                        = (Participation) service.create(
+                        "participation.supplier");
                 participation.setEntity(new IMObjectReference(supplier));
                 participation.setAct(new IMObjectReference(act));
                 act.addParticipation(participation);

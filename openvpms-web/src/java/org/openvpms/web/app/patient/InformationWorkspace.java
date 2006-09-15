@@ -29,7 +29,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.util.Messages;
@@ -68,7 +68,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        Context.getInstance().setPatient((Party) object);
+        GlobalContext.getInstance().setPatient((Party) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -93,7 +93,7 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         return (patient != getObject());
     }
 
@@ -105,7 +105,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         if (patient != getObject()) {
             setObject(patient);
         }
@@ -121,7 +121,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     protected void onSaved(IMObject object, boolean isNew) {
         super.onSaved(object, isNew);
         Party patient = (Party) object;
-        Context context = Context.getInstance();
+        GlobalContext context = GlobalContext.getInstance();
         Party customer = context.getCustomer();
         IArchetypeService service = ServiceHelper.getArchetypeService();
         if (customer != null && isNew) {

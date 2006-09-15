@@ -20,17 +20,29 @@ package org.openvpms.web.app.supplier.document;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
+/**
+ * Editor for <em>act.supplierDocument*</em> acts.
+ *
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate: 2006-05-01 02:19:12Z $
+ */
 public class SupplierDocumentActEditor extends DocumentActEditor {
 
+    /**
+     * Creates a new <code>SupplierDocumentActEditor</code>.
+     *
+     * @param act     the act
+     * @param parent  the parent
+     * @param context the layout context
+     */
     public SupplierDocumentActEditor(DocumentAct act, IMObject parent,
-            LayoutContext context) {
+                                     LayoutContext context) {
         super(act, parent, context);
-        initParticipant("supplier",Context.getInstance().getSupplier());
+        initParticipant("supplier", context.getContext().getSupplier());
     }
 
 }

@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -81,7 +81,7 @@ public class PatientQuery extends AbstractEntityQuery {
     public PatientQuery(String refModelName, String entityName,
                         String conceptName) {
         super(refModelName, entityName, conceptName);
-        _customer = Context.getInstance().getCustomer();
+        _customer = GlobalContext.getInstance().getCustomer();
     }
 
     /**
@@ -91,7 +91,7 @@ public class PatientQuery extends AbstractEntityQuery {
      * @param shortNames the patient archetype short names
      */
     public PatientQuery(String[] shortNames) {
-        this(shortNames, Context.getInstance().getCustomer());
+        this(shortNames, GlobalContext.getInstance().getCustomer());
     }
 
     /**

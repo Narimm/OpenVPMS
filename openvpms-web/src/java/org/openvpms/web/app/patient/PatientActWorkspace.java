@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 
 /**
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -54,7 +54,7 @@ public abstract class PatientActWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party party = (Party) object;
-        Context.getInstance().setPatient(party);
+        GlobalContext.getInstance().setPatient(party);
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -80,7 +80,7 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         return (patient != getObject());
     }
 
@@ -90,7 +90,7 @@ public abstract class PatientActWorkspace extends ActWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         if (patient != getObject()) {
             setObject(patient);
         }

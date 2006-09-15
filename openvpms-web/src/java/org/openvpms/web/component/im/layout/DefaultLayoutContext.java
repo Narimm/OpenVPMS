@@ -18,12 +18,14 @@
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.BasicNodeFilter;
 import org.openvpms.web.component.im.filter.ChainedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.filter.ValueNodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.focus.FocusTree;
 
 /**
  * Default implmentation of the {@link LayoutContext} interface.
@@ -32,6 +34,11 @@ import org.openvpms.web.component.focus.FocusTree;
  * @version $LastChangedDate$
  */
 public class DefaultLayoutContext implements LayoutContext {
+
+    /**
+     * The context.
+     */
+    private Context _context;
 
     /**
      * Determines if this is an edit context.
@@ -79,7 +86,7 @@ public class DefaultLayoutContext implements LayoutContext {
      */
     public DefaultLayoutContext(IMObjectComponentFactory factory) {
         _factory = factory;
-        NodeFilter id = new ValueNodeFilter("uid", new Long(-1));
+        NodeFilter id = new ValueNodeFilter("uid", -1);
         NodeFilter showOptional = new BasicNodeFilter(true);
         _filter = new ChainedNodeFilter(id, showOptional);
         _focus = new FocusTree("root");
@@ -100,6 +107,27 @@ public class DefaultLayoutContext implements LayoutContext {
         root.add(_focus);
 
         _edit = context.isEdit();
+    }
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    public Context getContext() {
+        if (_context == null) {
+            _context = ContextApplicationInstance.getInstance().getContext();
+        }
+        return _context;
+    }
+
+    /**
+     * Sets the context.
+     *
+     * @param context the context
+     */
+    public void setContext(Context context) {
+        _context = context;
     }
 
     /**

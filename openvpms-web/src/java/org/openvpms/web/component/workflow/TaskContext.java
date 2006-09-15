@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.workflow;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 
 
@@ -28,42 +27,6 @@ import org.openvpms.web.component.app.Context;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface TaskContext {
-
-    /**
-     * Adds an object to the context.
-     *
-     * @param object the object to add
-     */
-    void addObject(IMObject object);
-
-    /**
-     * Adds an object to the context.
-     *
-     * @param object the object to add
-     * @param global if <code>true</code> update the global {@link Context}
-     *               as well
-     */
-    void addObject(IMObject object, boolean global);
-
-    /**
-     * Retrieves the object with the specified short name from the context.
-     *
-     * @param shortName the short name
-     * @return the object corresponding to <code>shortName</code>;
-     *         otherwise <code>null</code>
-     */
-    IMObject getObject(String shortName);
-
-    /**
-     * Retrieves the object with the specified short name from the context.
-     *
-     * @param shortName the short name
-     * @param global    if <code>true</code> and the object is not found in the
-     *                  local context, looks in the global context
-     * @return the object corresponding to <code>shortName</code>;
-     *         otherwise <code>null</code>
-     */
-    IMObject getObject(String shortName, boolean global);
+public interface TaskContext extends Context {
 
 }

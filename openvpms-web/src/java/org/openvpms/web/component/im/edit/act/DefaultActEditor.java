@@ -26,7 +26,6 @@ package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -43,12 +42,12 @@ public class DefaultActEditor extends ActEditor {
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
-     * @param context the layout context. May be <code>null</code>
+     * @param context the layout context
      */
     public DefaultActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
 
-        initParticipant("patient", Context.getInstance().getPatient());
+        initParticipant("patient", context.getContext().getPatient());
     }
 
     /**

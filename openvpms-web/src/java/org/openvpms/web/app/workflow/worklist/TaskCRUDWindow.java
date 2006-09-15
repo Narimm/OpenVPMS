@@ -20,9 +20,6 @@ package org.openvpms.web.app.workflow.worklist;
 
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
@@ -44,18 +41,6 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
      */
     public TaskCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
-    }
-
-    /**
-     * Creates a new edit dialog.
-     *
-     * @param editor  the editor
-     * @param context the layout context
-     */
-    @Override
-    protected EditDialog createEditDialog(IMObjectEditor editor,
-                                          LayoutContext context) {
-        return new TaskEditDialog(editor, context);
     }
 
 }

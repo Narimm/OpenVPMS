@@ -19,13 +19,12 @@
 package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.spring.SpringApplicationInstance;
 
 
 /**
- * An <code>ApplicationInstance</code> associated with a {@link Context}.
+ * An <code>ApplicationInstance</code> associated with a {@link GlobalContext}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -36,7 +35,7 @@ public abstract class ContextApplicationInstance
     /**
      * Application context.
      */
-    private Context _context = new Context();
+    private GlobalContext _context = new GlobalContext();
 
 
     /**
@@ -53,7 +52,7 @@ public abstract class ContextApplicationInstance
      *
      * @return the current context
      */
-    public Context getContext() {
+    public GlobalContext getContext() {
         return _context;
     }
 
@@ -68,6 +67,6 @@ public abstract class ContextApplicationInstance
      * Clears the current context.
      */
     protected void clearContext() {
-        _context = new Context();
+        _context = new GlobalContext();
     }
 }

@@ -18,15 +18,13 @@
 
 package org.openvpms.web.component.im.edit.payment;
 
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.math.BigDecimal;
 
@@ -61,7 +59,7 @@ public class SupplierPaymentItemEditor extends AbstractIMObjectEditor {
         if (act.isNew() &&
                 TypeHelper.isA(act, "act.supplierAccountPayment*")) {
             // Default the amount to the outstanding balance
-            Party supplier = Context.getInstance().getSupplier();
+            Party supplier = context.getContext().getSupplier();
             if (supplier != null) {
                 BigDecimal diff = ActHelper.sum(parent, "amount");
                 BigDecimal current = ActHelper.getSupplierAccountBalance(

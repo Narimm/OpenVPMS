@@ -33,7 +33,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.StringUtilities;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,7 +65,7 @@ public class IMObjectHelper {
     public static IMObject getObject(IMObjectReference reference) {
         IMObject result = null;
         if (reference != null) {
-            result = Context.getInstance().getObject(reference);
+            result = GlobalContext.getInstance().getObject(reference);
             if (result == null) {
                 try {
                     IArchetypeService service
@@ -226,7 +226,7 @@ public class IMObjectHelper {
      */
     private static IMObject match(NodeDescriptor descriptor) {
         IMObject result = null;
-        IMObject object = Context.getInstance().getCurrent();
+        IMObject object = GlobalContext.getInstance().getCurrent();
         if (object != null) {
             for (String shortName : descriptor.getArchetypeRange()) {
                 if (TypeHelper.matches(object.getArchetypeId(), shortName)) {

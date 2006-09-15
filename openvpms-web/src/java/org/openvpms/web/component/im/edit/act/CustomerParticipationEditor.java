@@ -23,15 +23,15 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
 /**
- * Participation editor for customer. This updates {@link Context#setCustomer}
- * when a customer is selected, and invokes {@link Context#setPatient} with
+ * Participation editor for customer. This updates {@link GlobalContext#setCustomer}
+ * when a customer is selected, and invokes {@link GlobalContext#setPatient} with
  * null.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
@@ -56,7 +56,7 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
                             + participation.getArchetypeId().getShortName());
         }
         if (participation.getEntity() == null && parent.isNew()) {
-            IMObject customer = Context.getInstance().getCustomer();
+            IMObject customer = context.getContext().getCustomer();
             getEditor().setObject(customer);
         }
     }
@@ -76,8 +76,8 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
             public void setObject(IMObject object) {
                 super.setObject(object);
                 Party customer = (Party) object;
-                Context.getInstance().setCustomer(customer);
-                Context.getInstance().setPatient(null);
+                GlobalContext.getInstance().setCustomer(customer);
+                GlobalContext.getInstance().setPatient(null);
             }
         };
     }

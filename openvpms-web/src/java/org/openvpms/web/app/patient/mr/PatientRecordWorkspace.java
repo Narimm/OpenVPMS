@@ -38,7 +38,7 @@ import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLE
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -72,7 +72,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party party = (Party) object;
-        Context.getInstance().setPatient(party);
+        GlobalContext.getInstance().setPatient(party);
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -98,7 +98,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         return (patient != getObject());
     }
 
@@ -108,7 +108,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        Party patient = Context.getInstance().getPatient();
+        Party patient = GlobalContext.getInstance().getPatient();
         if (patient != getObject()) {
             setObject(patient);
         }

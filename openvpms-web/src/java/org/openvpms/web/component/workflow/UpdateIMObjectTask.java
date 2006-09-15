@@ -21,8 +21,6 @@ package org.openvpms.web.component.workflow;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 
-import java.util.Map;
-
 
 /**
  * Task to update an {@link IMObject}.
@@ -43,9 +41,10 @@ public class UpdateIMObjectTask extends AbstractTask {
     private IMObject object;
 
     /**
-     * Properties to populate the object with.
+     * Properties to populate the created object with.
      */
-    private final Map<String, Object> properties;
+    private final TaskProperties properties;
+
 
     /**
      * Determines if the object should be saved.
@@ -60,8 +59,7 @@ public class UpdateIMObjectTask extends AbstractTask {
      * @param shortName  the short name of the object to update
      * @param properties properties to populate the object with
      */
-    public UpdateIMObjectTask(String shortName,
-                              Map<String, Object> properties) {
+    public UpdateIMObjectTask(String shortName, TaskProperties properties) {
         this(shortName, properties, true);
     }
 
@@ -72,8 +70,7 @@ public class UpdateIMObjectTask extends AbstractTask {
      * @param properties properties to populate the object with
      * @param save       determines if the object should be saved
      */
-    public UpdateIMObjectTask(String shortName,
-                              Map<String, Object> properties,
+    public UpdateIMObjectTask(String shortName, TaskProperties properties,
                               boolean save) {
         this.shortName = shortName;
         this.properties = properties;
@@ -87,8 +84,7 @@ public class UpdateIMObjectTask extends AbstractTask {
      * @param object     the object to update
      * @param properties properties to populate the object with
      */
-    public UpdateIMObjectTask(IMObject object,
-                              Map<String, Object> properties) {
+    public UpdateIMObjectTask(IMObject object, TaskProperties properties) {
         this(object, properties, true);
     }
 
@@ -99,8 +95,8 @@ public class UpdateIMObjectTask extends AbstractTask {
      * @param properties properties to populate the object with
      * @param save       determines if the object should be saved
      */
-    public UpdateIMObjectTask(IMObject object,
-                              Map<String, Object> properties, boolean save) {
+    public UpdateIMObjectTask(IMObject object, TaskProperties properties,
+                              boolean save) {
         this.object = object;
         this.properties = properties;
         this.save = save;

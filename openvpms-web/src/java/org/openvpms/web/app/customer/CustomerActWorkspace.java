@@ -19,11 +19,10 @@
 package org.openvpms.web.app.customer;
 
 import nextapp.echo2.app.Component;
-
-import org.openvpms.web.app.subsystem.ActWorkspace;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -58,7 +57,7 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party party = (Party) object;
-        Context.getInstance().setCustomer(party);
+        GlobalContext.getInstance().setCustomer(party);
         layoutWorkspace(party, getRootComponent());
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -84,7 +83,7 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
      */
     @Override
     protected boolean refreshWorkspace() {
-        Party customer = Context.getInstance().getCustomer();
+        Party customer = GlobalContext.getInstance().getCustomer();
         return (customer != getObject());
     }
 
@@ -94,7 +93,7 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
      * @param container the container
      */
     protected void doLayout(Component container) {
-        Party customer = Context.getInstance().getCustomer();
+        Party customer = GlobalContext.getInstance().getCustomer();
         if (customer != getObject()) {
             setObject(customer);
         }

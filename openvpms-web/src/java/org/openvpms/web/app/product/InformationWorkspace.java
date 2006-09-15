@@ -19,12 +19,10 @@
 package org.openvpms.web.app.product;
 
 import nextapp.echo2.app.Component;
-
-import org.openvpms.web.app.subsystem.CRUDWorkspace;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
@@ -50,7 +48,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        Context.getInstance().setProduct((Product) object);
+        GlobalContext.getInstance().setProduct((Product) object);
     }
 
     /**
@@ -61,7 +59,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        Product product = Context.getInstance().getProduct();
+        Product product = GlobalContext.getInstance().getProduct();
         if (product != getObject()) {
             setObject(product);
         }

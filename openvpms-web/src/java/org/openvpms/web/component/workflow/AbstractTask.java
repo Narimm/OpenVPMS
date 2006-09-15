@@ -22,7 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
-import java.util.Map;
+import java.util.Collection;
 
 
 /**
@@ -35,7 +35,7 @@ public abstract class AbstractTask implements Task {
 
     /**
      * The task listener to notify on completion or failure of the task. May
-     * be <code>null</code>
+     * be <code>null</code>.
      */
     private TaskListener listener;
 
@@ -124,15 +124,17 @@ public abstract class AbstractTask implements Task {
     /**
      * Populates an object.
      *
-     * @param object  the object to populate
-     * @param context the task context
+     * @param object     the object to populate
+     * @param properties the properties
+     * @param context    the task context
      */
-    protected void populate(IMObject object, Map<String, Object> properties,
+    protected void populate(IMObject object, TaskProperties properties,
                             TaskContext context) {
-        if (!properties.isEmpty()) {
+        Collection<TaskProperty> list = properties.getProperties();
+        if (!list.isEmpty()) {
             IMObjectBean bean = new IMObjectBean(object);
-            for (Map.Entry<String, Object> entry : properties.entrySet()) {
-                bean.setValue(entry.getKey(), entry.getValue());
+            for (TaskProperty property : list) {
+                bean.setValue(property.getName(), property.getValue(context));
             }
         }
     }

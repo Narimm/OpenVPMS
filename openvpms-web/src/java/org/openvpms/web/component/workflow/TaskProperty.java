@@ -18,15 +18,27 @@
 
 package org.openvpms.web.component.workflow;
 
-import org.openvpms.web.component.app.LocalContext;
-
 
 /**
- * Default implementation of the {@link TaskContext} interface.
+ * Task property.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TaskContextImpl extends LocalContext implements TaskContext {
+public interface TaskProperty {
 
+    /**
+     * Returns the property name.
+     *
+     * @return the property name
+     */
+    String getName();
+
+    /**
+     * Returns the property value.
+     *
+     * @param context the task context
+     * @return the property value
+     */
+    Object getValue(TaskContext context);
 }

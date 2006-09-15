@@ -18,9 +18,10 @@
 
 package org.openvpms.web.component.im.layout;
 
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.focus.FocusTree;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.focus.FocusTree;
 
 
 /**
@@ -30,6 +31,20 @@ import org.openvpms.web.component.focus.FocusTree;
  * @version $LastChangedDate$
  */
 public interface LayoutContext {
+
+    /**
+     * Returns the context.
+     *
+     * @return the context
+     */
+    Context getContext();
+
+    /**
+     * Sets the context.
+     *
+     * @param context the context
+     */
+    void setContext(Context context);
 
     /**
      * Determines if this is an edit context.

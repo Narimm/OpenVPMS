@@ -47,34 +47,15 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      */
     private final Query<T> query;
 
-    /**
-     * Determines if the selected object should update the global or local
-     * context.
-     */
-    private final boolean global;
-
 
     /**
      * Constructs a new <code>SelectIMObjectTask</code>.
-     * The selected object updates the local context.
      *
      * @param shortName the short name to query on. May contain wildcards
      */
     public SelectIMObjectTask(String shortName) {
-        this(shortName, false);
-    }
-
-    /**
-     * Constructs a new <code>SelectIMObjectTask</code>.
-     *
-     * @param shortName the short name to query on. May contain wildcards
-     * @param global    if <code>true</code> update the global context;
-     *                  othwerwise update the local context
-     */
-    public SelectIMObjectTask(String shortName, boolean global) {
         query = QueryFactory.create(shortName);
         type = getType(query.getShortNames());
-        this.global = global;
     }
 
     /**
@@ -84,32 +65,18 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      * @param query the query
      */
     public SelectIMObjectTask(Query<T> query) {
-        this(getType(query.getShortNames()), query, false);
+        this(getType(query.getShortNames()), query);
     }
 
     /**
      * Constructs a new <code>SelectIMObjectTask</code>.
      *
-     * @param query  the query
-     * @param global if <code>true</code> update the global context; othwerwise
-     *               update the local context
+     * @param type  the collective noun for the types this may select
+     * @param query the query
      */
-    public SelectIMObjectTask(Query<T> query, boolean global) {
-        this(getType(query.getShortNames()), query, global);
-    }
-
-    /**
-     * Constructs a new <code>SelectIMObjectTask</code>.
-     *
-     * @param type   the collective noun for the types this may select
-     * @param query  the query
-     * @param global if <code>true</code> update the global context;
-     *               othwerwise update the local context
-     */
-    public SelectIMObjectTask(String type, Query<T> query, boolean global) {
+    public SelectIMObjectTask(String type, Query<T> query) {
         this.type = type;
         this.query = query;
-        this.global = global;
     }
 
     /**
@@ -129,7 +96,7 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
             public void windowPaneClosing(WindowPaneEvent event) {
                 T selected = dialog.getSelected();
                 if (selected != null) {
-                    context.addObject(selected, global);
+                    context.addObject(selected);
                     notifyCompleted();
                 } else {
                     notifyCancelled();
