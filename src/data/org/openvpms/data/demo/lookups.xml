@@ -47,12 +47,14 @@
 	<data archetype="lookup.appointmentStatus" status="Pending" defaultLookup="true" />
 	<data archetype="lookup.appointmentStatus" status="Cancelled" />
 	<data archetype="lookup.appointmentStatus" status="Checked-In" />
+	<data archetype="lookup.appointmentStatus" status="In Progress" />
 	<data archetype="lookup.appointmentStatus" status="Completed" />
 	<data archetype="lookup.appointmentReason" reason="Checkup" defaultLookup="true" />
 	<data archetype="lookup.appointmentReason" reason="Vaccination" />
 	<data archetype="lookup.appointmentReason" reason="Other" />
 	<data archetype="lookup.taskStatus" status="Pending" defaultLookup="true" />
 	<data archetype="lookup.taskStatus" status="Cancelled" />
+	<data archetype="lookup.taskStatus" status="In Progress" />
 	<data archetype="lookup.taskStatus" status="Completed" />
 	<data archetype="lookup.uom" uom="Unit" defaultLookup="true"/>
 	<data archetype="lookup.uom" uom="Bottle" />
