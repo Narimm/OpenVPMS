@@ -30,7 +30,7 @@ import nextapp.echo2.app.CheckBox;
 public class CheckBoxFactory extends ComponentFactory {
 
     /**
-     * Create a new check box.
+     * Creates a new check box.
      *
      * @return a new check box
      */
@@ -39,7 +39,7 @@ public class CheckBoxFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new check box with localised label.
+     * Creates a new check box with localised label.
      *
      * @param key the resource bundle key. May be <code>null</code>
      * @return a new check box
@@ -53,7 +53,7 @@ public class CheckBoxFactory extends ComponentFactory {
     }
 
     /**
-     * Create a new check box with localised label and initial value.
+     * Creates a new check box with localised label and initial value.
      *
      * @param key   the resource bundle key. May be <code>null</code>
      * @param value the initial value
@@ -65,5 +65,16 @@ public class CheckBoxFactory extends ComponentFactory {
         return box;
     }
 
+    /**
+     * Creates a new check box with initial value.
+     *
+     * @param value the initial value
+     * @return a new check box
+     */
+    public static CheckBox create(boolean value) {
+        CheckBox box = create();
+        box.setSelected(value);
+        return box;
+    }
 
 }

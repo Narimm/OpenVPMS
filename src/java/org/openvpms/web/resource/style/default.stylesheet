@@ -342,6 +342,21 @@
            type="nextapp.echo2.app.WindowPane">
     </style>
 
+    <style name="StatementWorkspace.Layout"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="30px"/>
+        </properties>
+    </style>
+
+    <style name="StatementWorkspace.AccountTypes"
+           type="nextapp.echo2.app.ListBox">
+        <properties>
+            <property name="height" value="15em"/>
+        </properties>
+    </style>
+
     <style name="AbstractViewWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
@@ -1394,6 +1409,31 @@
         </properties>
     </style>
 
+    <style name="bold" base-name="default" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font bold="true"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="bold-1024x768" base-name="default-1024x768"
+           type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font bold="true"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="bold-800x600" base-name="default-800x600"
+           type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="font">
+                <font bold="true"/>
+            </property>
+        </properties>
+    </style>
 
     <!-- =================================================================== -->
     <!--  Button defaults                                                    -->
