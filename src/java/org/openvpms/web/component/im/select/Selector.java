@@ -144,7 +144,7 @@ public class Selector {
      * @return the editable text field. Null if this is not an editable selector
      */
     public TextField getText() {
-        getObject();
+        getObjectComponent();
         return _objectText;
     }
 
@@ -199,7 +199,8 @@ public class Selector {
             // labels to take up as much space as possible, ensuring that the
             // button is displayed hard on the right.
             // Seems more successful than using alignments
-            Row wrapper = RowFactory.create("CellSpacing", getObject());
+            Row wrapper = RowFactory.create("CellSpacing",
+                                            getObjectComponent());
             if (deactivated != null) {
                 addDeactivated(wrapper, deactivated);
             }
@@ -209,7 +210,7 @@ public class Selector {
             Button button = getSelect();
             component = RowFactory.create(wrapper, button);
         } else if (_buttonStyle == ButtonStyle.RIGHT_NO_ACCEL) {
-            Row wrapper = RowFactory.create(getObject(), getSelect());
+            Row wrapper = RowFactory.create(getObjectComponent(), getSelect());
             if (deactivated != null) {
                 component = RowFactory.create("CellSpacing", wrapper);
                 addDeactivated(component, deactivated);
@@ -217,7 +218,7 @@ public class Selector {
                 component = wrapper;
             }
         } else {
-            component = RowFactory.create("CellSpacing", getObject());
+            component = RowFactory.create("CellSpacing", getObjectComponent());
             if (deactivated != null) {
                 addDeactivated(component, deactivated);
             }
@@ -239,7 +240,7 @@ public class Selector {
      *
      * @return the object component
      */
-    protected Component getObject() {
+    protected Component getObjectComponent() {
         Component component;
         if (_editable) {
             if (_objectText == null) {

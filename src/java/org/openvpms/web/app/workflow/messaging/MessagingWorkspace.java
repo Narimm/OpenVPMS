@@ -18,27 +18,24 @@
 
 package org.openvpms.web.app.workflow.messaging;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
-import org.openvpms.web.app.subsystem.DefaultCRUDWindow;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
-import org.openvpms.web.component.util.GroupBoxFactory;
+import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 import java.util.List;
@@ -73,11 +70,6 @@ public class MessagingWorkspace extends AbstractWorkspace {
     private CRUDWindow window;
 
     /**
-     * The query.
-     */
-    private ActQuery query;
-
-    /**
      * The act browser.
      */
     private Browser<Act> browser;
@@ -88,17 +80,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
      */
     public MessagingWorkspace() {
         super("workflow", "messaging");
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        List<IMObject> rows = ArchetypeQueryHelper.get(
-                service, "system", "security", "user", auth.getName(),
-                true, 0, 1).getRows();
-        if (!rows.isEmpty()) {
-            user = (User) rows.get(0);
-            GlobalContext.getInstance().setUser(user);
-        }
+        user = GlobalContext.getInstance().getUser();
     }
 
     /**
@@ -142,7 +124,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
     protected Component doLayout() {
         root = SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL,
-                "AbstractViewWorkspace.Layout");
+                "MessagingWorkspace.MainLayout");
         Component heading = super.doLayout();
         root.add(heading);
         if (user != null) {
@@ -152,45 +134,122 @@ public class MessagingWorkspace extends AbstractWorkspace {
     }
 
     /**
+     * Determines if the workspace should be refreshed. This implementation
+     * returns true if the current user has changed.
+     *
+     * @return <code>true</code> if the workspace should be refreshed, otherwise
+     *         <code>false</code>
+     */
+    @Override
+    protected boolean refreshWorkspace() {
+        User user = GlobalContext.getInstance().getUser();
+        return (user != getObject());
+    }
+
+    /**
      * Lays out the workspace.
      *
      * @param user      the user
      * @param container the container
      */
     protected void layoutWorkspace(User user, Component container) {
-        query = createQuery(user);
+        ActQuery query = createQuery(user);
         browser = createBrowser(query);
+        browser.addQueryListener(new QueryBrowserListener() {
+            public void query() {
+                selectFirst();
+            }
+
+            public void selected(IMObject object) {
+                window.setObject(object);
+            }
+        });
+
         window = createCRUDWindow();
+        window.setListener(new CRUDWindowListener() {
+            public void saved(IMObject object, boolean isNew) {
+                browser.query();
+            }
+
+            public void deleted(IMObject object) {
+                browser.query();
+            }
+
+            public void refresh(IMObject object) {
+                browser.query();
+            }
+        });
         if (workspace != null) {
             container.remove(workspace);
         }
         workspace = createWorkspace(browser, window);
         container.add(workspace);
+        if (!query.isAuto()) {
+            browser.query();
+        }
     }
 
+    /**
+     * Creates the workspace.
+     *
+     * @param browser the act browser
+     * @param window  the CRUD window
+     * @return a new split pane representing the workspace
+     */
     private SplitPane createWorkspace(Browser<Act> browser, CRUDWindow window) {
-        Component acts = GroupBoxFactory.create(browser.getComponent());
+        Column acts = ColumnFactory.create("Inset", browser.getComponent());
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
                                        "MessagingWorkspace.Layout", acts,
                                        window.getComponent());
     }
 
+    /**
+     * Creates the CRUD window.
+     *
+     * @return a new CRUD window
+     */
     private CRUDWindow createCRUDWindow() {
-        return new DefaultCRUDWindow(
+        return new MessagingCRUDWindow(
                 DescriptorHelper.getDisplayName("act.userMessage"),
                 new ShortNameList("act.userMessage"));
     }
 
+    /**
+     * Creates the act browser.
+     *
+     * @param query the act query
+     * @return a new act browser
+     */
     private TableBrowser<Act> createBrowser(ActQuery query) {
         return new TableBrowser<Act>(query, null);
     }
 
+    /**
+     * Creates a new query.
+     *
+     * @param user the user to query
+     * @return a new query
+     */
     private ActQuery createQuery(User user) {
         String[] shortNames = {"act.userMessage"};
         String[] statuses = {};
 
-        return new DefaultActQuery(user, "user", "participation.user",
+        return new DefaultActQuery(user, "to", "participation.user",
                                    shortNames, statuses);
+    }
+
+    /**
+     * Selects the first available message.
+     */
+    private void selectFirst() {
+        List<Act> objects = browser.getObjects();
+        if (!objects.isEmpty()) {
+            Act current = objects.get(0);
+            browser.setSelected(current);
+            window.setObject(current);
+        } else {
+            window.setObject(null);
+        }
     }
 
 }
