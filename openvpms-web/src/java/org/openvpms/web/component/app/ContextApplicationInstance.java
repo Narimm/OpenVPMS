@@ -19,8 +19,16 @@
 package org.openvpms.web.component.app;
 
 import nextapp.echo2.app.ApplicationInstance;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.web.spring.SpringApplicationInstance;
+
+import java.util.List;
 
 
 /**
@@ -37,6 +45,25 @@ public abstract class ContextApplicationInstance
      */
     private GlobalContext _context = new GlobalContext();
 
+
+    /**
+     * Constructs a new <code>ContextApplicationInstance</code>.
+     */
+    public ContextApplicationInstance() {
+        Authentication auth
+                = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            List<IMObject> rows = ArchetypeQueryHelper.get(
+                    service, "system", "security", "user", auth.getName(),
+                    true, 0, 1).getRows();
+            if (!rows.isEmpty()) {
+                User user = (User) rows.get(0);
+                _context.setUser(user);
+            }
+        }
+    }
 
     /**
      * Returns the instance associated with the current thread.

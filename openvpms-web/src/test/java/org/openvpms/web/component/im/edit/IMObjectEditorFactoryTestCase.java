@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
+import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
@@ -251,6 +252,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     AdjustmentActEditor.class);
         checkCreate("act.customerAccountDebitAdjust",
                     AdjustmentActEditor.class);
+    }
+
+    /**
+     * Verifies that an {@link UserMessageActEditor} is created for
+     * <em>act.userMessage</em>
+     */
+    public void testCreateUserMessageActEditor() {
+        checkCreate("act.userMessage", UserMessageActEditor.class);
     }
 
     /**
