@@ -19,6 +19,7 @@
 package org.openvpms.web.app.financial.statement;
 
 import echopointng.DateField;
+import echopointng.GroupBox;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Color;
@@ -48,6 +49,7 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.CheckBoxFactory;
 import org.openvpms.web.component.util.DateFieldFactory;
 import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.ListBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
@@ -208,14 +210,11 @@ public class StatementWorkspace extends AbstractWorkspace {
             createRow(allCustomers,
                       createRow(customerFromLabel, customerFrom),
                       createRow(customerToLabel, customerTo)));
-        container.add(grid);
+
+        GroupBox box = GroupBoxFactory.create(grid);
+        container.add(box);
 
         onAllCustomersChanged(); // initialise customer components
-    }
-
-    private void add(Grid grid, String key, Component component) {
-        grid.add(LabelFactory.create(key));
-        grid.add(component);
     }
 
     /**
@@ -269,6 +268,18 @@ public class StatementWorkspace extends AbstractWorkspace {
      */
     private Row createRow(Component ... components) {
         return RowFactory.create("CellSpacing", components);
+    }
+
+    /**
+     * Helper to add a label and component to a grid.
+     *
+     * @param grid      the grid
+     * @param key       the label key
+     * @param component the component
+     */
+    private void add(Grid grid, String key, Component component) {
+        grid.add(LabelFactory.create(key));
+        grid.add(component);
     }
 
 }
