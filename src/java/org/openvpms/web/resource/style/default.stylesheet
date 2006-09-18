@@ -314,6 +314,21 @@
         </properties>
     </style>
 
+    <style name="ReminderWorkspace.Layout"
+           type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="30px"/>
+        </properties>
+    </style>
+
+    <style name="ReminderWorkspace.ReminderTypes"
+           type="nextapp.echo2.app.ListBox">
+        <properties>
+            <property name="height" value="15em"/>
+        </properties>
+    </style>
+
     <style name="WorkflowWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>
