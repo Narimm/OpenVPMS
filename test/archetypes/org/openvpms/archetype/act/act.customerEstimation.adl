@@ -46,7 +46,13 @@
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>
 		</node>
-		<node name="participants" path="/participations" parentChild="true"
+        <node name="customer" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.customer" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet"
+              minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="participants" path="/participations" parentChild="true"
 			type="java.util.HashSet" baseName="Participation" minCardinality="0" maxCardinality="*">
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">

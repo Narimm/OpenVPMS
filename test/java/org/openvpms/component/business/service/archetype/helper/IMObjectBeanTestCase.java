@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.*;
+import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.NodeDescriptorNotFound;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 import java.math.BigDecimal;
@@ -94,7 +94,7 @@ public class IMObjectBeanTestCase
 
         // verify shortname is returned when no display name is present
         IMObjectBean customer = createBean("party.customerperson");
-        assertEquals("party.customerperson", customer.getDisplayName());
+        assertEquals("Customer(Person)", customer.getDisplayName());
     }
 
     /**
