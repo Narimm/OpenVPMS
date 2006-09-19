@@ -18,7 +18,6 @@
 
 package org.openvpms.web.component.edit;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
 
 
@@ -28,16 +27,7 @@ import org.openvpms.component.business.service.archetype.ValidationException;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class DefaultPropertyTransformer extends PropertyTransformer {
-
-    /**
-     * Construct a new <code>DefaultPropertyTransformer</code>.
-     *
-     * @param descriptor the node descriptor.
-     */
-    public DefaultPropertyTransformer(NodeDescriptor descriptor) {
-        super(descriptor);
-    }
+public class DefaultPropertyTransformer implements PropertyTransformer {
 
     /**
      * Transform an object to the required type, performing validation.

@@ -367,7 +367,8 @@ public class IMObjectProperty implements Property, CollectionProperty {
      */
     public PropertyTransformer getTransformer() {
         if (_transformer == null) {
-            _transformer = PropertyTransformerFactory.create(_descriptor);
+            _transformer = PropertyTransformerFactory.create(_object,
+                                                             _descriptor);
         }
         return _transformer;
     }

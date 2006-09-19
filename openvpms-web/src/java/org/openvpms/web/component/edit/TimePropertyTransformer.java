@@ -45,17 +45,12 @@ import java.util.TimeZone;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 04:38:04Z $
  */
-public class TimePropertyTransformer extends PropertyTransformer {
-
-    /**
-     * The parent object archetype id.
-     */
-    private ArchetypeId _id;
+public class TimePropertyTransformer extends AbstractPropertyTransformer {
 
     /**
      * The date component of the time. May be <code>null</code>.
      */
-    private Date _date;
+    private Date date;
 
 
     /**
@@ -65,8 +60,7 @@ public class TimePropertyTransformer extends PropertyTransformer {
      * @param descriptor the node descriptor
      */
     public TimePropertyTransformer(IMObject object, NodeDescriptor descriptor) {
-        super(descriptor);
-        _id = object.getArchetypeId();
+        super(object, descriptor);
     }
 
     /**
@@ -75,7 +69,7 @@ public class TimePropertyTransformer extends PropertyTransformer {
      * @param date the date
      */
     public void setDate(Date date) {
-        _date = DateFormatter.getDayMonthYear(date);
+        this.date = DateFormatter.getDayMonthYear(date);
     }
 
     /**
@@ -135,7 +129,7 @@ public class TimePropertyTransformer extends PropertyTransformer {
                 throw getException(exception);
             }
         }
-        if (_date != null) {
+        if (date != null) {
             result = addDate(result);
         }
         return result;
@@ -198,7 +192,7 @@ public class TimePropertyTransformer extends PropertyTransformer {
      */
     private Date addDate(Date time) {
         GregorianCalendar dateCal = new GregorianCalendar();
-        dateCal.setTime(_date);
+        dateCal.setTime(date);
         GregorianCalendar timeCal = new GregorianCalendar(
                 TimeZone.getTimeZone("GMT"));
         timeCal.setTime(time);
@@ -224,11 +218,12 @@ public class TimePropertyTransformer extends PropertyTransformer {
         errors.add(error);
         ValidationException.ErrorCode code
                 = FailedToValidObjectAgainstArchetype;
+        ArchetypeId id = getParent().getArchetypeId();
         if (exception != null) {
-            return new ValidationException(errors, code, new Object[]{_id},
+            return new ValidationException(errors, code, new Object[]{id},
                                            exception);
         }
-        return new ValidationException(errors, code, new Object[]{_id});
+        return new ValidationException(errors, code, new Object[]{id});
     }
 
 }

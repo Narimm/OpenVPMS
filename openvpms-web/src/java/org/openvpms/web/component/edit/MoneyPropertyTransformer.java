@@ -18,12 +18,11 @@
 
 package org.openvpms.web.component.edit;
 
-import org.openvpms.web.resource.util.Messages;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,15 +37,21 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-30 04:38:04Z $
  */
-public class MoneyPropertyTransformer extends PropertyTransformer {
+public class MoneyPropertyTransformer implements PropertyTransformer {
 
     /**
-     * Construct a new <code>NumericPropertyTransformer</code>.
+     * The node descriptor.
+     */
+    private final NodeDescriptor descriptor;
+
+
+    /**
+     * Constructs a new <code>NumericPropertyTransformer</code>.
      *
-     * @param descriptor the node descriptor.
+     * @param descriptor the node descriptor
      */
     public MoneyPropertyTransformer(NodeDescriptor descriptor) {
-        super(descriptor);
+        this.descriptor = descriptor;
     }
 
     /**
@@ -83,10 +88,9 @@ public class MoneyPropertyTransformer extends PropertyTransformer {
     }
 
     private ValidationException getException(Throwable exception) {
-        NodeDescriptor node = getDescriptor();
         String message = Messages.get("node.error.invalidnumeric",
-                                      node.getDisplayName());
-        ValidationError error = new ValidationError(node.getName(),
+                                      descriptor.getDisplayName());
+        ValidationError error = new ValidationError(descriptor.getName(),
                                                     message);
         List<ValidationError> errors = new ArrayList<ValidationError>();
         errors.add(error);

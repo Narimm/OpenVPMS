@@ -19,10 +19,11 @@
 package org.openvpms.web.component.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 
 
 /**
- * Factory for {@link PropertyTransformer} instances.
+ * Factory for {@link AbstractPropertyTransformer} instances.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -32,16 +33,20 @@ public class PropertyTransformerFactory {
     /**
      * Creates a new property transformer.
      *
+     * @param parent     the parent object
      * @param descriptor the node descriptor
      */
-    public static PropertyTransformer create(NodeDescriptor descriptor) {
+    public static PropertyTransformer create(IMObject parent,
+                                             NodeDescriptor descriptor) {
         PropertyTransformer result;
-        if (descriptor.isMoney()) {
+        if (descriptor.isString()) {
+            result = new StringPropertyTransformer(parent, descriptor);
+        } else if (descriptor.isMoney()) {
             result = new MoneyPropertyTransformer(descriptor);
         } else if (descriptor.isNumeric()) {
             result = new NumericPropertyTransformer(descriptor);
         } else {
-            result = new DefaultPropertyTransformer(descriptor);
+            result = new DefaultPropertyTransformer();
         }
         return result;
     }

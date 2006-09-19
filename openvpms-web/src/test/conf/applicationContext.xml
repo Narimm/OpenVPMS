@@ -150,6 +150,21 @@
         </constructor-arg>
     </bean>
 
+    <!-- The JXPathHelper class, used to register extension functions -->
+    <bean id="jxpathHelper"
+          class="org.openvpms.component.system.common.jxpath.JXPathHelper">
+        <constructor-arg index="0">
+            <props>
+                <prop key="openvpms">
+                    org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions</prop>
+                <prop key="party">
+                    org.openvpms.archetype.function.party.PartyFunctions</prop>
+                <prop key="lookup">
+                    org.openvpms.archetype.function.lookup.LookupFunctions</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+
     <!-- The app -->
     <bean id="openVPMSApp" class="org.openvpms.web.app.OpenVPMSApp"
           singleton="false"/>
