@@ -19,45 +19,36 @@
 
 package org.openvpms.component.business.service.archetype;
 
-// java core
-import java.util.ArrayList;
-import java.util.List;
-
-// openvpms-framework
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
- * This class provides a list of helper functions for using the 
+ * This class provides a list of helper functions for using the
  * archetype service.
- * <p>
- * A reference to the {@link IArchetypeService} is used during 
- * construction. The reference is cached in a class attribute.
- * <p>
+ * <p/>
  * These functions can then be used as JXPath extension functions.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class ArchetypeServiceFunctions {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceFunctions.class);
-    
+
     /**
      * This will take a list of {@link IMObjectReference} instances and return
-     * a list of the corresponding {@link IMObject} instances
-     * 
-     * @param references
-     *            a list of references
+     * a list of the corresponding {@link IMObject} instances.
+     *
+     * @param references a list of references
      * @return List<IMObject>
      */
-    public static List<IMObject> resolveRefs(List<IMObjectReference> references) {
+    public static List<IMObject> resolveRefs(
+            List<IMObjectReference> references) {
         List<IMObject> objects = new ArrayList<IMObject>();
         for (IMObjectReference ref : references) {
             objects.add(ArchetypeQueryHelper.getByObjectReference(
@@ -66,16 +57,31 @@ public class ArchetypeServiceFunctions {
 
         return objects;
     }
-    
+
     /**
-     * Return the {@link IMObject} given a reference
-     * 
-     * @param reference
-     *            the reference
-     * @return IMObject            
+     * Return the {@link IMObject} given a reference.
+     *
+     * @param reference the reference
+     * @return IMObject
      */
     public static IMObject resolve(IMObjectReference reference) {
         return ArchetypeQueryHelper.getByObjectReference(
                 ArchetypeServiceHelper.getArchetypeService(), reference);
     }
+
+    /**
+     * Resolves the value at the specified node.
+     *
+     * @param object the expression context
+     * @param node   the node name
+     * @return the value at the specified node
+     * @throws NodeResolverException if the name is invalid
+     * @see NodeResolver
+     */
+    public static Object get(IMObject object, String node) {
+        NodeResolver resolver = new NodeResolver(
+                object, ArchetypeServiceHelper.getArchetypeService());
+        return resolver.getObject(node);
+    }
+
 }

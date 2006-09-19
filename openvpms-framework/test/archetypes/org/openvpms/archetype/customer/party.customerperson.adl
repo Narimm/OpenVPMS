@@ -1,6 +1,6 @@
 <archetypes>
 	<archetype name="openvpms-party-party.customerperson.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.party.Party">
+		type="org.openvpms.component.business.domain.im.party.Party" displayName="Customer(Person)">
 		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
 		<node name="name" type="java.lang.String" path="/name"
 			hidden="true" minCardinality="1" derived="true"
