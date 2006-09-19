@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.patient.info;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -28,7 +28,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.patient.summary.PatientSummary;
+import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -52,6 +55,7 @@ public class InformationWorkspace extends CRUDWorkspace {
      */
     private static final String PATIENT_OWNER
             = "entityRelationship.patientOwner";
+
 
     /**
      * Construct a new <code>InformationWorkspace</code>.
@@ -82,7 +86,6 @@ public class InformationWorkspace extends CRUDWorkspace {
     public Component getSummary() {
         return PatientSummary.getSummary((Party) getObject());
     }
-
 
     /**
      * Determines if the workspace should be refreshed. This implementation
@@ -132,6 +135,19 @@ public class InformationWorkspace extends CRUDWorkspace {
                 context.setCustomer(customer);
             }
         }
+    }
+
+    /**
+     * Creates a new CRUD window.
+     *
+     * @return a new CRUD window
+     */
+    @Override
+    protected CRUDWindow createCRUDWindow() {
+        ShortNames shortNames = new ShortNameList(getRefModelName(),
+                                                  getEntityName(),
+                                                  getConceptName());
+        return new InformationCRUDWindow(getType(), shortNames);
     }
 
     /**
