@@ -106,6 +106,7 @@ public abstract class AbstractIMObjectCollectionEditor
                 _listeners.notifyListeners(modifiable);
             }
         };
+        _collection.getProperty().addModifiableListener(_broadcaster);
     }
 
     /**
