@@ -84,7 +84,7 @@ abstract class Binder {
     protected void setProperty(Property property) {
         Object fieldValue = getFieldValue();
         if (property.setValue(fieldValue)) {
-            Object propertyValue = _property.getValue();
+            Object propertyValue = property.getValue();
             if (!ObjectUtils.equals(fieldValue, propertyValue)) {
                 setField();
             }

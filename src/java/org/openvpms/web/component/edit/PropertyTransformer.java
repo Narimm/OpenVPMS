@@ -18,33 +18,17 @@
 
 package org.openvpms.web.component.edit;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ValidationException;
 
 
 /**
- * PropertyTransformer is responsible for processing user input prior to it being
- * set on {@link Property}.
+ * A <code>PropertyTransformer</code> is responsible for processing user input
+ * prior to it being set on {@link Property}.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class PropertyTransformer {
-
-    /**
-     * The node descriptor.
-     */
-    private final NodeDescriptor _descriptor;
-
-
-    /**
-     * Construct a new <code>PropertyTransformer</code>.
-     *
-     * @param descriptor the node descriptor.
-     */
-    public PropertyTransformer(NodeDescriptor descriptor) {
-        _descriptor = descriptor;
-    }
+public interface PropertyTransformer {
 
     /**
      * Transform an object to the required type, performing validation.
@@ -54,15 +38,6 @@ public abstract class PropertyTransformer {
      *         transformation is required
      * @throws ValidationException if the object is invalid
      */
-    public abstract Object apply(Object object) throws ValidationException;
-
-    /**
-     * Returns the node descriptor.
-     *
-     * @return the node descriptor
-     */
-    public NodeDescriptor getDescriptor() {
-        return _descriptor;
-    }
+    Object apply(Object object) throws ValidationException;
 
 }

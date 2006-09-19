@@ -49,7 +49,7 @@ public class NumericPropertyTransformerTestCase
 
 
     /**
-     * Tests {@link PropertyTransformer#apply} for an integer node.
+     * Tests {@link NumericPropertyTransformer#apply} for an integer node.
      */
     public void testIntegerApply() {
         final Integer one = 1;
@@ -80,7 +80,7 @@ public class NumericPropertyTransformerTestCase
     }
 
     /**
-     * Tests {@link PropertyTransformer#apply} for a BigDecimal node.
+     * Tests {@link NumericPropertyTransformer#apply} for a BigDecimal node.
      */
     public void testDecimalApply() {
         final BigDecimal one = new BigDecimal("1.0");

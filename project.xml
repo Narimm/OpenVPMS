@@ -733,7 +733,7 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>0.9</version>
+            <version>0.9.1-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
             <properties>
                 <war.bundle>true</war.bundle>
