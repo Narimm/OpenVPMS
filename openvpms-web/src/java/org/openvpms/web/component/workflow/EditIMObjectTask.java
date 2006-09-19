@@ -132,19 +132,22 @@ public class EditIMObjectTask extends AbstractTask {
             if (background) {
                 editor.getComponent();
                 GlobalContext.getInstance().setCurrent(null);
-                notifyCompleted();
-            } else {
-                EditDialog dialog = new EditDialog(editor, layout);
-                dialog.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent event) {
-                        onEditCompleted(editor);
+                if (editor.isValid()) {
+                    if (editor.save()) {
+                        notifyCompleted();
+                    } else {
+                        notifyCancelled();
                     }
-                });
-                dialog.show();
+                } else {
+                    // editor invalid. Pop up a dialog.
+                    show(editor, layout);
+                }
+            } else {
+                show(editor, layout);
             }
-
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
+            notifyCancelled();
         }
     }
 
@@ -160,6 +163,22 @@ public class EditIMObjectTask extends AbstractTask {
         } else {
             notifyCompleted();
         }
+    }
+
+    /**
+     * Shows the editor in an edit dialog.
+     *
+     * @param editor the editor
+     * @param layout the layout context
+     */
+    private void show(final IMObjectEditor editor, LayoutContext layout) {
+        EditDialog dialog = new EditDialog(editor, layout);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                onEditCompleted(editor);
+            }
+        });
+        dialog.show();
     }
 
 }
