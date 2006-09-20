@@ -56,6 +56,8 @@
 	<data archetype="lookup.taskStatus" status="Cancelled" />
 	<data archetype="lookup.taskStatus" status="In Progress" />
 	<data archetype="lookup.taskStatus" status="Completed" />
+	<data archetype="lookup.messageStatus" status="Pending" defaultLookup="true" />
+	<data archetype="lookup.messageStatus" status="Completed" />
 	<data archetype="lookup.uom" uom="Unit" defaultLookup="true"/>
 	<data archetype="lookup.uom" uom="Bottle" />
 	<data archetype="lookup.uom" uom="Syringe" />
