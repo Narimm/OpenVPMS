@@ -41,8 +41,6 @@ public class IMObjectReportException extends OpenVPMSException {
     public enum ErrorCode {
         FailedToCreateReport,
         FailedToGenerateReport,
-        InvalidNode,
-        InvalidObject,
         UnsupportedMimeTypes
     }
 

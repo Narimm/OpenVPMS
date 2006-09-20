@@ -25,6 +25,8 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.business.service.archetype.helper.NodeResolver;
+import org.openvpms.component.business.service.archetype.helper.NodeResolverException;
 
 import java.util.Collection;
 
@@ -122,7 +124,7 @@ public class ReportHelper {
                     result = value;
                 }
             }
-        } catch (IMObjectReportException exception) {
+        } catch (NodeResolverException exception) {
             return exception.getLocalizedMessage();
         }
         return result;
