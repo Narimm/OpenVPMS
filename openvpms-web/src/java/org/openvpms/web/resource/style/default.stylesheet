@@ -645,6 +645,10 @@
         </properties>
     </style>
 
+    <style name="PrintDialog" base-name="PopupWindow"
+           type="nextapp.echo2.app.WindowPane">
+    </style>
+
     <style name="ConfirmationDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
     </style>
