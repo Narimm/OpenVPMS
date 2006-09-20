@@ -18,8 +18,13 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
+import org.openvpms.web.component.util.ButtonFactory;
 
 
 /**
@@ -29,6 +34,17 @@ import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class TaskCRUDWindow extends WorkflowCRUDWindow {
+
+    /**
+     * The check-out button.
+     */
+    private Button checkOut;
+
+    /**
+     * Check-out button identifier.
+     */
+    private static final String CHECKOUT_ID = "checkout";
+
 
     /**
      * Constructs a new <code>TaskCRUDWindow</code>.
@@ -41,6 +57,40 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
      */
     public TaskCRUDWindow(String type, ShortNames shortNames) {
         super(type, shortNames);
+    }
+
+    /**
+     * Lays out the buttons.
+     *
+     * @param buttons the button row
+     */
+    @Override
+    protected void layoutButtons(Row buttons) {
+        super.layoutButtons(buttons);
+        if (checkOut == null) {
+            checkOut = ButtonFactory.create(CHECKOUT_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                }
+            });
+        }
+    }
+
+    /**
+     * Enables/disables the buttons that require an object to be selected.
+     *
+     * @param enable determines if buttons should be enabled
+     */
+    @Override
+    protected void enableButtons(boolean enable) {
+        super.enableButtons(enable);
+        Row buttons = getButtons();
+        if (enable) {
+            if (buttons.indexOf(checkOut) == -1) {
+                buttons.add(checkOut);
+            }
+        } else {
+            buttons.remove(checkOut);
+        }
     }
 
 }
