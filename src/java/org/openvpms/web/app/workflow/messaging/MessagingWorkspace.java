@@ -22,9 +22,15 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -231,11 +237,17 @@ public class MessagingWorkspace extends AbstractWorkspace {
      * @return a new query
      */
     private ActQuery createQuery(User user) {
-        String[] shortNames = {"act.userMessage"};
-        String[] statuses = {};
-
-        return new DefaultActQuery(user, "to", "participation.user",
-                                   shortNames, statuses);
+        String shortName = "act.userMessage";
+        String[] shortNames = {shortName};
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(shortName);
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
+        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        return new DefaultActQuery(user, "to",
+                                   "participation.user",
+                                   shortNames, lookups, null);
     }
 
     /**

@@ -69,7 +69,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
     /**
      * The statuses to query on.
      */
-    protected String[] _statuses;
+    private String[] _statuses;
 
     /**
      * The act status lookups.
@@ -229,10 +229,14 @@ public abstract class ActQuery extends AbstractQuery<Act> {
     /**
      * Sets the initial status to query on.
      *
-     * @param status the status to query on
+     * @param status the status to query on. May be <code>null</code>
      */
     public void setStatus(String status) {
-        _statuses = new String[]{status};
+        if (status == null) {
+            _statuses = new String[0];
+        } else {
+            _statuses = new String[]{status};
+        }
     }
 
     /**

@@ -18,19 +18,17 @@
 
 package org.openvpms.web.component.im.list;
 
-import org.openvpms.web.spring.ServiceHelper;
-
+import nextapp.echo2.app.list.AbstractListModel;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.list.AbstractListModel;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,7 +147,7 @@ public class LookupListModel extends AbstractListModel {
     public int indexOf(String lookup) {
         int result = -1;
         for (int i = 0; i < _lookups.size(); ++i) {
-            if (StringUtils.equals(lookup, _lookups.get(i).getCode())) {
+            if (StringUtils.equals(lookup, _lookups.get(i).getValue())) {
                 result = i;
                 break;
             }

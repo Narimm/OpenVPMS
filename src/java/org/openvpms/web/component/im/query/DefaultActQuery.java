@@ -229,8 +229,16 @@ public class DefaultActQuery extends ActQuery {
                     onStatusChanged();
                 }
             });
-            if (_statuses.length == 1) {
-                updateStatusSelector(_statuses[0]);
+            String[] statuses = getStatuses();
+            if (statuses.length != 0 && !excludeStatuses()) {
+                updateStatusSelector(statuses[0]);
+            } else {
+                for (Lookup lookup : lookups) {
+                    if (lookup.isDefaultLookup()) {
+                        updateStatusSelector(lookup.getValue());
+                        break;
+                    }
+                }
             }
         }
 
@@ -278,7 +286,7 @@ public class DefaultActQuery extends ActQuery {
      */
     private void onStatusChanged() {
         String value = (String) _statusSelector.getSelectedItem();
-        _statuses = (value != null) ? new String[]{value} : new String[0];
+        super.setStatus(value);
     }
 
     /**
