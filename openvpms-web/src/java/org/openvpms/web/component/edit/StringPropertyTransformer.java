@@ -18,14 +18,10 @@
 
 package org.openvpms.web.component.edit;
 
-import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.web.component.util.Macros;
+import org.openvpms.web.component.util.MacroEvaluator;
 
 
 /**
@@ -35,12 +31,6 @@ import org.openvpms.web.component.util.Macros;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class StringPropertyTransformer extends AbstractPropertyTransformer {
-
-    /**
-     * The logger.
-     */
-    private static final Log log
-            = LogFactory.getLog(StringPropertyTransformer.class);
 
     /**
      * Construct a new <code>StringTransformer</code>.
@@ -64,19 +54,7 @@ public class StringPropertyTransformer extends AbstractPropertyTransformer {
     public Object apply(Object object) throws ValidationException {
         String result = null;
         if (object instanceof String) {
-            String value = (String) object;
-            String macro = Macros.getMacro(value.trim());
-            if (macro != null) {
-                try {
-                    JXPathContext ctx = JXPathHelper.newContext(getParent());
-                    object = ctx.getValue(macro);
-                } catch (Throwable exception) {
-                    log.warn(exception);
-                }
-            }
-        }
-        if (object instanceof String) {
-            result = (String) object;
+            result = MacroEvaluator.evaluate((String) object, getParent());
         } else if (object != null) {
             result = object.toString();
         }

@@ -67,16 +67,19 @@ public class StringPropertyTransformerTestCase
         Object text2 = handler.apply("@macro2");
         assertEquals("onetwothree", text2);
 
-        Object text3 = handler.apply("@displayName");
-        assertEquals("Customer(Person)", text3);
+        Object text3 = handler.apply("@macro1 @macro2");
+        assertEquals("macro 1 text onetwothree", text3);
+
+        Object text4 = handler.apply("@displayName");
+        assertEquals("Customer(Person)", text4);
 
         // verifies that invalid macros don't expand
-        Object text4 = handler.apply("@invalidNode");
-        assertEquals("@invalidNode", text4);
+        Object text5 = handler.apply("@invalidNode");
+        assertEquals("@invalidNode", text5);
 
         // verifies that non-existent macros don't expand
-        Object text5 = handler.apply("@non existent");
-        assertEquals("@non existent", text5);
+        Object text6 = handler.apply("@non existent");
+        assertEquals("@non existent", text6);
     }
 
     /**
