@@ -22,6 +22,7 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import java.util.Date;
@@ -50,22 +51,22 @@ public class ExpressionEvaluator {
     /**
      * The object.
      */
-    private final IMObject _object;
+    private final IMObject object;
 
     /**
      * The archetype service.
      */
-    private final IArchetypeService _service;
+    private final IArchetypeService service;
 
     /**
      * The JXPath context.
      */
-    private JXPathContext _context;
+    private JXPathContext context;
 
     /**
      * The node resolver.
      */
-    private NodeResolver _resolver;
+    private NodeResolver resolver;
 
 
     /**
@@ -75,8 +76,8 @@ public class ExpressionEvaluator {
      * @param service the archetype service
      */
     public ExpressionEvaluator(IMObject object, IArchetypeService service) {
-        _object = object;
-        _service = service;
+        this.object = object;
+        this.service = service;
     }
 
     /**
@@ -126,10 +127,10 @@ public class ExpressionEvaluator {
      * @return the value of the expression
      */
     protected Object evaluate(String expression) {
-        if (_context == null) {
-            _context = JXPathHelper.newContext(_object);
+        if (context == null) {
+            context = JXPathHelper.newContext(object);
         }
-        return _context.getValue(expression);
+        return context.getValue(expression);
     }
 
     /**
@@ -139,10 +140,10 @@ public class ExpressionEvaluator {
      * @return the node value
      */
     protected Object getNodeValue(String name) {
-        if (_resolver == null) {
-            _resolver = new NodeResolver(_object, _service);
+        if (resolver == null) {
+            resolver = new NodeResolver(object, service);
         }
-        return ReportHelper.getValue(name, _resolver);
+        return ReportHelper.getValue(name, resolver);
     }
 
 }

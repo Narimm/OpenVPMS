@@ -25,7 +25,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.NodeResolver;
+import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.report.ReportHelper;
 
 

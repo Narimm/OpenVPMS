@@ -34,14 +34,11 @@ public class IMObjectReportExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     5, IMObjectReportException.ErrorCode.values().length);
+                     3, IMObjectReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
                        "foo");
-        checkException(InvalidNode, "Invalid node name: foo", "foo");
-        checkException(InvalidObject,
-                       "Node does not refer to a valid object: foo", "foo");
         checkException(UnsupportedMimeTypes,
                        "Mime types not supported by report");
     }
