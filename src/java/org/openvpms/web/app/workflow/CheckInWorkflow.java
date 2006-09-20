@@ -193,10 +193,12 @@ public class CheckInWorkflow extends WorkflowImpl {
         }
 
         /**
-         * Returns the appointment types associated with a work list.
+         * Returns the default task type associated with a work list.
          *
          * @param workList the work list
-         * @return a list of task types associated with <code>workList</code>
+         * @return a the default task types associated with
+         *         <code>workList</code>, or <code>null</code> if there is no
+         *         default task type
          */
         private Entity getDefaultTaskType(Party workList) {
             Entity type = null;

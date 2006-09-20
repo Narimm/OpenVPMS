@@ -437,7 +437,7 @@ public abstract class AbstractContext implements Context {
      * @param object the object
      */
     public void setObject(String key, IMObject object) {
-        if (key == null) {
+        if (object == null) {
             objects.remove(key);
         } else {
             objects.put(key, object);

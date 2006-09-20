@@ -22,8 +22,11 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.IMObjectProperty;
 import org.openvpms.web.component.edit.Modifiable;
@@ -35,11 +38,13 @@ import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.TimeFieldFactory;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 
 /**
@@ -67,6 +72,16 @@ public class AppointmentActEditor extends AbstractActEditor {
                                 LayoutContext context) {
         super(act, parent, context);
         initParticipant("schedule", context.getContext().getSchedule());
+
+        Entity appointmentType = (Entity) getParticipant("appointmentType");
+        if (appointmentType == null) {
+            // set the appointment type to the default for the schedule
+            Party schedule = (Party) getParticipant("schedule");
+            if (schedule != null) {
+                appointmentType = getDefaultAppointmentType(schedule);
+                setParticipant("appointmentType", appointmentType);
+            }
+        }
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
             startTime.setValue(getDefaultTime());
@@ -208,6 +223,31 @@ public class AppointmentActEditor extends AbstractActEditor {
     private AppointmentTypeParticipationEditor getAppointmentTypeEditor() {
         return (AppointmentTypeParticipationEditor) getEditor(
                 "appointmentType");
+    }
+
+    /**
+     * Returns the default appointment type associated with a schedule.
+     *
+     * @param schedule the schedule
+     * @return a default appointment associated with <code>schedule</code>,
+     *         or <code>null</code> if there is no default appointment type
+     */
+    private Entity getDefaultAppointmentType(Party schedule) {
+        Entity type = null;
+        EntityBean bean = new EntityBean(schedule);
+        List<IMObject> relationships = bean.getValues("appointmentTypes");
+        for (IMObject object : relationships) {
+            EntityRelationship relationship = (EntityRelationship) object;
+            IMObjectBean relBean = new IMObjectBean(relationship);
+            if (relBean.getBoolean("default")) {
+                type = (Entity) IMObjectHelper.getObject(
+                        relationship.getTarget());
+                if (type != null) {
+                    break;
+                }
+            }
+        }
+        return type;
     }
 
     private class LayoutStrategy extends AbstractLayoutStrategy {
