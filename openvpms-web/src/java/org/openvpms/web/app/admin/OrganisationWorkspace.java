@@ -18,11 +18,15 @@
 
 package org.openvpms.web.app.admin;
 
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.app.GlobalContext;
 
 
 /**
- * User workspace.
+ * Organisation workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -30,10 +34,31 @@ import org.openvpms.web.app.subsystem.CRUDWorkspace;
 public class OrganisationWorkspace extends CRUDWorkspace {
 
     /**
-     * Construct a new <code>ClassificationWorkspace</code>.
+     * Constructs a new <code>OrganisationWorkspace</code>.
      */
     public OrganisationWorkspace() {
         super("admin", "organisation", "party", "party", "organisation*");
+    }
+
+    /**
+     * Sets the current object.
+     *
+     * @param object the object. May be <code>null</code>
+     */
+    @Override
+    public void setObject(IMObject object) {
+        super.setObject(object);
+        // need to update the global context in case organisations have changed.
+        // May need to refine this so that the context is only updated if the
+        // organisation is a newer version of that currently in the context
+        // (i,e don't change for different organisations).
+        if (TypeHelper.isA(object, "party.organisationSchedule")) {
+            GlobalContext.getInstance().setSchedule((Party) object);
+        } else if (TypeHelper.isA(object, "party.organisationWorkList")) {
+            GlobalContext.getInstance().setWorkList((Party) object);
+        } else if (TypeHelper.isA(object, "party.organisationTill")) {
+            GlobalContext.getInstance().setTill((Party) object);
+        }
     }
 
 }
