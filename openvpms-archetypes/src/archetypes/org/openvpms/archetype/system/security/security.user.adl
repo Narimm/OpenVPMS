@@ -26,6 +26,7 @@
 		<node name="description" path="/description" type="java.lang.String" displayName="Description"/>
 		<node name="password" path="/password" type="java.lang.String" displayName="Password"
 			minCardinality="1" />
+		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="roles" path="/roles" type="java.util.HashSet" displayName="Roles"
 			minCardinality="0" maxCardinality="*" parentChild="false" baseName="Role">
 			<assertion name="archetypeRange">
