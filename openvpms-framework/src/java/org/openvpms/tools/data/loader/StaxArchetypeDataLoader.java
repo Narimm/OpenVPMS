@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -238,8 +239,9 @@ public class StaxArchetypeDataLoader {
         String[] extensions = { extension };
         Collection collection = FileUtils.listFiles(new File(dir), extensions,
                 subdir);
-
-        for (Object obj : collection) {
+        ArrayList sortedFiles = new ArrayList(collection);
+        Collections.sort(sortedFiles);
+        for (Object obj : sortedFiles) {
             File file = (File) obj;
             processFile(file.getAbsolutePath());
         }
