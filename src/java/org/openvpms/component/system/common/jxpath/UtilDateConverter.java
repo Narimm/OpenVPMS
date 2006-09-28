@@ -17,16 +17,14 @@
  */
 
 
-
 package org.openvpms.component.system.common.jxpath;
 
-// java core
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-// commons-beanutils
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
+import org.apache.commons.lang.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 /**
@@ -49,7 +47,7 @@ public final class UtilDateConverter implements Converter {
      * Should we return the default value on conversion errors?
      */
     private boolean useDefault = true;
-    
+
     /**
      * THe date formatter.
      */
@@ -69,8 +67,7 @@ public final class UtilDateConverter implements Converter {
      * Create a {@link Converter} that will return the specified default value
      * if a conversion error occurs.
      *
-     * @param defaultValue 
-     *            the default value to be returned
+     * @param defaultValue the default value to be returned
      */
     public UtilDateConverter(Object defaultValue) {
         this.defaultValue = defaultValue;
@@ -81,48 +78,44 @@ public final class UtilDateConverter implements Converter {
      * Convert the specified input object into an output object of the
      * specified type.
      *
-     * @param type  
-     *            the type to which this value should be converted
-     * @param value 
-     *            the input value to be converted
-     * @throws ConversionException 
-     *            if conversion cannot be performed successfully
+     * @param type  the type to which this value should be converted
+     * @param value the input value to be converted
+     * @throws ConversionException if conversion cannot be performed successfully
      */
     public Object convert(Class type, Object value) {
         if (value == null) {
-            if (useDefault) {
-                return (defaultValue);
+            return (useDefault) ? defaultValue : null;
+        } else if (value instanceof String) {
+            String str = (String) value;
+            if (StringUtils.isEmpty(str)) {
+                return (useDefault) ? defaultValue : null;
             } else {
-                throw new ConversionException("No value specified");
+                try {
+                    // Temporay fix for OBF-125.  Need to use locale instead
+                    if (str.indexOf(':') == -1) {
+                        formatter = new SimpleDateFormat("dd/MM/yyyy");
+                    } else {
+                        formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    }
+                    return formatter.parse(str);
+                } catch (Exception exception) {
+                    if (useDefault) {
+                        return (defaultValue);
+                    } else {
+                        throw new ConversionException(
+                                "Cannot convert " + value
+                                        + " to type java.util.Date. Must use ["
+                                        + formatter.toPattern()
+                                        + "] for this locale.", exception);
+                    }
+                }
             }
+        } else if (value instanceof java.sql.Date) {
+            return (Date) value;
         }
 
-        try {
-            if (value instanceof String) {
-                // Temporay fix for OBF-125.  Need to use locale instead
-                if (((String)value).indexOf(':') == -1)
-                    formatter = new SimpleDateFormat("dd/MM/yyyy");
-                else
-                    formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");                    
-                   
-                return (Date)formatter.parse((String)value);
-            }
-            
-            if (value instanceof java.sql.Date) {
-                return (Date)value;
-            }
-        } catch (Exception exception) {
-            if (useDefault) {
-                return (defaultValue);
-            } else {
-                throw new ConversionException("Cannot convert " + value + 
-                        " to type java.util.Date. Must use [" + formatter.toPattern() +
-                        "] for this locale.", exception);
-            }
-        }
-        
         // if we get here then throw an exception
-        throw new ConversionException("Cannot convert " + value + 
+        throw new ConversionException("Cannot convert " + value +
                 " to type java.util.Date.");
     }
 }
