@@ -25,7 +25,7 @@
 			derivedValue="concat('Product Document', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Product Document','(',/activeStartTime, ' - ',/activeEndTime,')')" />
+			derivedValue="concat('Product Document', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')" />
 		<node name="activeStartTime" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
 			hidden="true" defaultValue="java.util.Date.new()" />

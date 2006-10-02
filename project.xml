@@ -10,7 +10,7 @@
   <inceptionYear>2006</inceptionYear>
   <name>openvpms</name>
   <artifactId>openvpms-archetypes</artifactId>
-  <currentVersion>0.6</currentVersion>
+  <currentVersion>0.7-SNAPSHOT</currentVersion>
   <package>org.openvpms</package>
   <url>http://www.openvpms.org/${pom.artifactId}</url>
   <issueTrackingUrl>
@@ -460,7 +460,7 @@
     <dependency>
       <groupId>org.openvpms</groupId>
       <artifactId>openvpms-framework</artifactId>
-      <version>0.9</version>
+      <version>0.9.1-SNAPSHOT</version>
       <url>http://www.openvpms.org</url>
     </dependency>
   </dependencies>

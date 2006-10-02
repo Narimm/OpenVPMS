@@ -25,7 +25,7 @@
 			derivedValue="concat('Location Deposit Account', '')" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat('Location Deposit Account','(',/activeStartTime, ' - ',/activeEndTime,')')" />
+			derivedValue="concat('Location Deposit Account', '(', date:formatDate(/activeStartTime), ' - ', date:formatDate(/activeEndTime), ')')" />
 		<node name="activeStartTime" path="/activeStartTime"
 			type="java.util.Date" minCardinality="1"
 			hidden="true" defaultValue="java.util.Date.new()" />
