@@ -209,6 +209,8 @@
                     org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions</prop>
                 <prop key="party">
                     org.openvpms.archetype.function.party.PartyFunctions</prop>
+                <prop key="date">
+                    org.openvpms.component.system.common.jxpath.DateFunctions</prop>
             </props>
         </constructor-arg>
     </bean>
