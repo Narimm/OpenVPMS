@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Reminder'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat('Due Date : ', /activityEndTime, ' Reminders Sent : ', /details/attributes/reminderCount)" />
+			derivedValue="concat('Due Date : ', date:formatDate(/activityEndTime), ' Reminders Sent : ', /details/attributes/reminderCount)" />
 		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="reminderType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.reminderType" />
