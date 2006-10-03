@@ -39,10 +39,10 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public class InvoiceEditor extends ActEditor {
+public abstract class InvoiceEditor extends ActEditor {
 
     /**
-     * Construct a new <code>ActEditor</code>.
+     * Construct a new <code>InvoiceEditor</code>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>

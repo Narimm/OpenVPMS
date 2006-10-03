@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.Column;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.table.SortableTableHeaderRenderer;
 import org.openvpms.web.component.table.TableNavigator;
 
 
@@ -52,6 +53,7 @@ public class PagedIMObjectTable<T extends IMObject> extends Column {
         setStyleName("CellSpacing");
         IMObjectTableModel<T> paged = new PagedIMObjectTableModel<T>(model);
         _table = new IMObjectTable<T>(paged);
+        _table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
         add(_table);
     }
 

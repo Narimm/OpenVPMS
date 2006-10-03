@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow;
+package org.openvpms.web.app.workflow.checkin;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -93,7 +93,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // update the appointment status
         TaskProperties appProps = new TaskProperties();
-        appProps.add("status", "Checked In");
+        appProps.add("status", "Checked-In");
         addTask(new UpdateIMObjectTask(appointment, appProps));
     }
 
@@ -146,12 +146,10 @@ public class CheckInWorkflow extends WorkflowImpl {
         // create a new act.patientClinicalEvent
         TaskProperties eventProps = new TaskProperties();
         eventProps.add("reason", "Appointment");
-        addTask(new CreateIMObjectTask(event, eventProps));
-        addTask(new EditIMObjectTask(event, true));
+        addTask(new EditIMObjectTask(event, eventProps, true));
 
         // prompt for a patient weight.
-        addTask(new CreateIMObjectTask(weight));
-        addTask(new EditIMObjectTask(weight));
+        addTask(new EditIMObjectTask(weight, true));
         addTask(new AddActRelationshipTask(
                 event, weight, "actRelationship.patientClinicalEventItem"));
     }
@@ -172,7 +170,7 @@ public class CheckInWorkflow extends WorkflowImpl {
          * @param shortName the object short name
          */
         public EditCustomerTask(String shortName) {
-            super(shortName, true);
+            super(shortName, false, true);
         }
 
         /**

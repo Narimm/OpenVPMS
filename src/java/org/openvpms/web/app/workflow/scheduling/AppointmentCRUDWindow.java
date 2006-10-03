@@ -24,8 +24,9 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.app.workflow.CheckInWorkflow;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
+import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
+import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -48,9 +49,19 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
     private Button checkIn;
 
     /**
+     * The check-out button.
+     */
+    private Button checkOut;
+
+    /**
      * Check-in button identifier.
      */
     private static final String CHECKIN_ID = "checkin";
+
+    /**
+     * Check-out button identifier.
+     */
+    private static final String CHECKOUT_ID = "checkout";
 
 
     /**
@@ -81,6 +92,13 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
                 }
             });
         }
+        if (checkOut == null) {
+            checkOut = ButtonFactory.create(CHECKOUT_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onCheckOut();
+                }
+            });
+        }
     }
 
     /**
@@ -94,15 +112,22 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         Row buttons = getButtons();
         if (enable) {
             Act act = (Act) getObject();
-            if ("Pending".equals(act.getStatus())) {
+            String status = act.getStatus();
+            if ("Pending".equals(status)) {
                 if (buttons.indexOf(checkIn) == -1) {
                     buttons.add(checkIn);
                 }
             } else {
                 buttons.remove(checkIn);
+                if ("Checked-In".equals(status)) {
+                    if (buttons.indexOf(checkOut) == -1) {
+                        buttons.add(checkOut);
+                    }
+                }
             }
         } else {
             buttons.remove(checkIn);
+            buttons.remove(checkOut);
         }
     }
 
@@ -123,6 +148,19 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
      */
     private void onCheckIn() {
         CheckInWorkflow workflow = new CheckInWorkflow((Act) getObject());
+        workflow.setTaskListener(new TaskListener() {
+            public void taskEvent(TaskEvent event) {
+                onRefresh(getObject());
+            }
+        });
+        workflow.start();
+    }
+
+    /**
+     * Invoked when the 'check-out' button is pressed.
+     */
+    private void onCheckOut() {
+        CheckOutWorkflow workflow = new CheckOutWorkflow((Act) getObject());
         workflow.setTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 onRefresh(getObject());

@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
-import org.openvpms.web.app.workflow.CheckInWorkflow;
+import org.openvpms.web.app.workflow.checkin.CheckInWorkflow;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -48,7 +48,7 @@ public class InformationCRUDWindow extends AbstractViewCRUDWindow {
 
 
     /**
-     * Create a new <code>DefaultCRUDWindow</code>.
+     * Creates a new <code>InformationCRUDWindow</code>.
      *
      * @param type       display name for the types of objects that this may
      *                   create

@@ -16,48 +16,34 @@
  *  $Id$
  */
 
-package org.openvpms.web.component.im.edit.payment;
+package org.openvpms.web.component.im.edit.invoice;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.edit.Property;
-import org.openvpms.web.component.im.edit.act.ActEditor;
-import org.openvpms.web.component.im.edit.act.ActHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
-
-import java.math.BigDecimal;
 
 
 /**
  * An editor for {@link Act}s which have an archetype of
- * <em>act.customerAccountPayment</em>, <em>act.customerAccountRefund</em>,
- * <em>act.supplierAccountPayment</em> or <em>act.supplierAccountRefund</em>.
+ * <em>act.customerAccountChargesInvoice</em>, <em>act.customerAccountChargesCredit</em>
+ * or <em>act.customerAccountChargesCounter</em>.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate:2006-02-21 03:48:29Z $
  */
-public abstract class PaymentEditor extends ActEditor {
+public class CustomerInvoiceEditor extends InvoiceEditor {
 
     /**
-     * Construct a new <code>PaymentEditor</code>.
+     * Constructs a new <code>CustomerInvoiceEditor</code>.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be <code>null</code>
      * @param context the layout context
      */
-    public PaymentEditor(Act act, IMObject parent,
-                         LayoutContext context) {
+    public CustomerInvoiceEditor(Act act, IMObject parent,
+                                 LayoutContext context) {
         super(act, parent, context);
-    }
-
-    /**
-     * Update totals when an act item changes.
-     */
-    protected void updateTotals() {
-        // @todo - workaround for OVPMS-211
-        Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum(getEditor().getActs(), "amount");
-        amount.setValue(value);
+        initParticipant("customer", context.getContext().getCustomer());
     }
 
 }
