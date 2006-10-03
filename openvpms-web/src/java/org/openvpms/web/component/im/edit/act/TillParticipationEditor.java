@@ -73,6 +73,7 @@ public class TillParticipationEditor extends AbstractParticipationEditor {
 
             @Override
             public void setObject(IMObject object) {
+                super.setObject(object);
                 Party till = (Party) object;
                 GlobalContext.getInstance().setTill(till);
             }
