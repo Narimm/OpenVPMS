@@ -21,13 +21,12 @@ package org.openvpms.web.component.im.table;
 import nextapp.echo2.app.Table;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.table.EvenOddTableCellRenderer;
-import org.openvpms.web.component.table.SortableTableHeaderRenderer;
 
 import java.util.List;
 
 
 /**
- * Paged, sortable table of {@link IMObject}s.
+ * Table of {@link IMObject}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -60,7 +59,6 @@ public class IMObjectTable<T extends IMObject> extends Table {
         setModel(model);
         setColumnModel(model.getColumnModel());
         setDefaultRenderer(Object.class, new EvenOddTableCellRenderer());
-        setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
     }
 
     /**

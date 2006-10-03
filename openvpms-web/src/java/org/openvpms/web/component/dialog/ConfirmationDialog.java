@@ -42,12 +42,25 @@ public class ConfirmationDialog extends PopupDialog {
 
 
     /**
-     * Construct a new <code>ConfirmationDialog</code>
+     * Constructs a new <code>ConfirmationDialog</code>
      *
-     * @param title the window title
+     * @param title   the window title
+     * @param message the message
      */
     public ConfirmationDialog(String title, String message) {
-        super(title, STYLE, Buttons.OK_CANCEL);
+        this(title, message, Buttons.OK_CANCEL);
+    }
+
+    /**
+     * Construct a new <code>ConfirmationDialog</code>
+     *
+     * @param title   the window title
+     * @param message the message
+     * @param buttons the buttons to display
+     */
+    public ConfirmationDialog(String title, String message,
+                              Buttons buttons) {
+        super(title, STYLE, buttons);
         Label prompt = LabelFactory.create(null, LABEL_STYLE);
         prompt.setText(message);
         getLayout().add(prompt);

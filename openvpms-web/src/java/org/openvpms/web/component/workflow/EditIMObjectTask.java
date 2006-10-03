@@ -50,13 +50,24 @@ public class EditIMObjectTask extends AbstractTask {
     private String shortName;
 
     /**
+     * Determines if the object should be created.
+     */
+    private boolean create;
+
+    /**
+     * Properties to create the object with.
+     */
+    private TaskProperties createProperties;
+
+    /**
      * Determines if the object should be edited without displaying a UI.
      */
     private final boolean background;
 
 
     /**
-     * Constructs a new <code>EditIMObjectTask</code>.
+     * Constructs a new <code>EditIMObjectTask</code> to edit an object
+     * in the {@link TaskContext}.
      *
      * @param shortName the short name of the object to edit
      */
@@ -65,14 +76,47 @@ public class EditIMObjectTask extends AbstractTask {
     }
 
     /**
-     * Constructs a new <code>EditIMObjectTask</code>.
+     * Constructs a new <code>EditIMObjectTask</code>, to edit an object
+     * in the {@link TaskContext} or create and edit a new one.
+     *
+     * @param shortName the object short name
+     * @param create    if <code>true</code>, create the object
+     */
+    public EditIMObjectTask(String shortName, boolean create) {
+        this(shortName, create, false);
+    }
+
+    /**
+     * Constructs a new <code>EditIMObjectTask</code>, to edit an object
+     * in the {@link TaskContext} or create and edit a new one.
      *
      * @param shortName  the object short name
+     * @param create     if <code>true</code>, create the object
      * @param background the if <code>true</code> create an editor but don't
      *                   display it
      */
-    public EditIMObjectTask(String shortName, boolean background) {
+    public EditIMObjectTask(String shortName, boolean create,
+                            boolean background) {
         this.shortName = shortName;
+        this.create = create;
+        this.background = background;
+    }
+
+    /**
+     * Constructs a new <code>EditIMObjectTask</code> to create and edit
+     * a new <code>IMObject</code>
+     *
+     * @param shortName        the object short name
+     * @param createProperties the properties to create the object with.
+     *                         May be <code>null</code>
+     * @param background       the if <code>true</code> create an editor but don't
+     *                         display it
+     */
+    public EditIMObjectTask(String shortName, TaskProperties createProperties,
+                            boolean background) {
+        this.shortName = shortName;
+        create = true;
+        this.createProperties = createProperties;
         this.background = background;
     }
 
@@ -107,14 +151,43 @@ public class EditIMObjectTask extends AbstractTask {
      */
     public void start(final TaskContext context) {
         if (object == null) {
-            object = context.getObject(shortName);
+            if (create) {
+                CreateIMObjectTask creator
+                        = new CreateIMObjectTask(shortName, createProperties);
+                creator.setTaskListener(new TaskListener() {
+                    public void taskEvent(TaskEvent event) {
+                        switch (event.getType()) {
+                            case CANCELLED:
+                                notifyCancelled();
+                                break;
+                            case COMPLETED:
+                                edit(context);
+                        }
+                    }
+                });
+                creator.start(context);
+            } else {
+                edit(context);
+            }
+        } else {
+            edit(object, context);
         }
+    }
+
+    /**
+     * Edits an object located in the context.
+     *
+     * @param context the task context
+     */
+    protected void edit(TaskContext context) {
+        IMObject object = context.getObject(shortName);
         if (object != null) {
             edit(object, context);
         } else {
             notifyCancelled();
         }
     }
+
 
     /**
      * Edits an object.

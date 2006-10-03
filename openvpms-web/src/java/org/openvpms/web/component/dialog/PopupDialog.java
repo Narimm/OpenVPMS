@@ -41,12 +41,23 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String CANCEL_ID = "cancel";
 
     /**
+     * Yes button identifier.
+     */
+    public static final String YES_ID = "yes";
+
+    /**
+     * No button identifier.
+     */
+    public static final String NO_ID = "no";
+
+    /**
      * Used to indicate which buttons to display.
      */
     public static enum Buttons {
         OK,
         CANCEL,
-        OK_CANCEL
+        OK_CANCEL,
+        YES_NO_CANCEL
     }
 
     /**
@@ -83,6 +94,23 @@ public abstract class PopupDialog extends PopupWindow {
             });
         }
         if (buttons == Buttons.CANCEL || buttons == Buttons.OK_CANCEL) {
+            addButton(CANCEL_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onCancel();
+                }
+            });
+        }
+        if (buttons == Buttons.YES_NO_CANCEL) {
+            addButton(YES_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onYes();
+                }
+            });
+            addButton(NO_ID, new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    onNo();
+                }
+            });
             addButton(CANCEL_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     onCancel();
@@ -127,4 +155,21 @@ public abstract class PopupDialog extends PopupWindow {
         close();
     }
 
+    /**
+     * Invoked when the yes button is pressed. This sets the action and closes
+     * the window.
+     */
+    protected void onYes() {
+        setAction(YES_ID);
+        close();
+    }
+
+    /**
+     * Invoked when the no button is pressed. This sets the action and closes
+     * the window.
+     */
+    protected void onNo() {
+        setAction(NO_ID);
+        close();
+    }
 }

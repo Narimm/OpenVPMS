@@ -111,6 +111,15 @@ public class CreateIMObjectTask extends AbstractTask {
     }
 
     /**
+     * Returns the short names to select from.
+     *
+     * @return the short names to select from
+     */
+    public String[] getShortNames() {
+        return shortNames;
+    }
+
+    /**
      * Invoked when an object is created. Populates the object, adds it to
      * the context and notifies the listener.
      *

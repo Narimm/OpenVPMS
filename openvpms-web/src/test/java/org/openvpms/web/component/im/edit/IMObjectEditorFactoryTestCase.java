@@ -28,13 +28,15 @@ import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationEditor;
 import org.openvpms.web.component.im.edit.estimation.EstimationItemEditor;
+import org.openvpms.web.component.im.edit.invoice.CustomerInvoiceEditor;
 import org.openvpms.web.component.im.edit.invoice.CustomerInvoiceItemEditor;
-import org.openvpms.web.component.im.edit.invoice.InvoiceEditor;
+import org.openvpms.web.component.im.edit.invoice.SupplierInvoiceEditor;
 import org.openvpms.web.component.im.edit.invoice.SupplierInvoiceItemEditor;
 import org.openvpms.web.component.im.edit.order.OrderEditor;
 import org.openvpms.web.component.im.edit.order.OrderItemEditor;
+import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentItemEditor;
-import org.openvpms.web.component.im.edit.payment.PaymentEditor;
+import org.openvpms.web.component.im.edit.payment.SupplierPaymentEditor;
 import org.openvpms.web.component.im.edit.payment.SupplierPaymentItemEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -125,17 +127,18 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link InvoiceEditor} is returned for
+     * Verifies that a {@link CustomerInvoiceEditor} is returned for
      * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
      * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
      * act.supplierAccountChargesCredit</em>
      */
     public void testCreateInvoiceEditor() {
-        checkCreate("act.customerAccountChargesInvoice", InvoiceEditor.class);
-        checkCreate("act.customerAccountChargesCredit", InvoiceEditor.class);
-        checkCreate("act.customerAccountChargesCounter", InvoiceEditor.class);
-        checkCreate("act.supplierAccountChargesInvoice", InvoiceEditor.class);
-        checkCreate("act.supplierAccountChargesCredit", InvoiceEditor.class);
+        checkCreate("act.customerAccountChargesInvoice",
+                    CustomerInvoiceEditor.class);
+        checkCreate("act.customerAccountChargesCredit",
+                    CustomerInvoiceEditor.class);
+        checkCreate("act.customerAccountChargesCounter",
+                    CustomerInvoiceEditor.class);
     }
 
     /**
@@ -156,15 +159,25 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verfies that a {@link PaymentEditor} is created for
-     * <em>act.customerAccountPayment, act.customerAccountRefund,
-     * act.supplierAccountPayment and act.supplierAccountRefund</em>
+     * Verifies that a {@link SupplierInvoiceEditor} is returned for
+     * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
+     * act.customerAccountChargesCounter, act.supplierAccountChargesInvoice, and
+     * act.supplierAccountChargesCredit</em>
+     */
+    public void testCreateSupplierInvoiceEditor() {
+        checkCreate("act.supplierAccountChargesInvoice",
+                    SupplierInvoiceEditor.class);
+        checkCreate("act.supplierAccountChargesCredit",
+                    SupplierInvoiceEditor.class);
+    }
+
+    /**
+     * Verfies that a {@link CustomerPaymentEditor} is created for
+     * <em>act.customerAccountPayment and act.customerAccountRefund.
      */
     public void testCreatePaymentEditor() {
-        checkCreate("act.customerAccountPayment", PaymentEditor.class);
-        checkCreate("act.customerAccountRefund", PaymentEditor.class);
-        checkCreate("act.supplierAccountPayment", PaymentEditor.class);
-        checkCreate("act.supplierAccountRefund", PaymentEditor.class);
+        checkCreate("act.customerAccountPayment", CustomerPaymentEditor.class);
+        checkCreate("act.customerAccountRefund", CustomerPaymentEditor.class);
     }
 
     /**
@@ -188,6 +201,15 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     CustomerPaymentItemEditor.class);
         checkCreate("act.customerAccountRefundEFT",
                     CustomerPaymentItemEditor.class);
+    }
+
+    /**
+     * Verfies that a {@link SupplierPaymentEditor} is created for
+     * act.supplierAccountPayment and act.supplierAccountRefund</em>
+     */
+    public void testCreateSupplierPaymentEditor() {
+        checkCreate("act.supplierAccountPayment", SupplierPaymentEditor.class);
+        checkCreate("act.supplierAccountRefund", SupplierPaymentEditor.class);
     }
 
     /**

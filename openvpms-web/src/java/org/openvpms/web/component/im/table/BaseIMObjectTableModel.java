@@ -97,6 +97,18 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      */
     protected TableColumnModel createTableColumnModel(boolean showArchetype) {
         TableColumnModel model = new DefaultTableColumnModel();
+        return createTableColumnModel(showArchetype, model);
+    }
+
+    /**
+     * Adds columns to an existing model.
+     *
+     * @param showArchetype if <code>true</code> show the archetype
+     * @param model         the column model
+     * @return the column model
+     */
+    protected TableColumnModel createTableColumnModel(boolean showArchetype,
+                                                      TableColumnModel model) {
         int index = (showArchetype) ? 0 : 1;
         for (int i = index; i < COLUMNS.length; ++i) {
             TableColumn column = new TableColumn(i);
@@ -125,7 +137,8 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      */
     protected Object getValue(IMObject object, int column, int row) {
         Object result;
-        switch (column) {
+        TableColumn col = getColumn(column);
+        switch (col.getModelIndex()) {
             case ARCHETYPE_INDEX:
                 result = DescriptorHelper.getDisplayName(object);
                 break;
