@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Alert'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/alertType, ' - ', /reason,' End Date : ', /activityEndTime)" />
+			derivedValue="concat(/details/attributes/alertType, ' - ', /reason,' End Date : ', date:formatDate(/activityEndTime))" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" hidden="true" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
