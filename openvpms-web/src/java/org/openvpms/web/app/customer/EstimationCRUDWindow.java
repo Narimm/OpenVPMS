@@ -303,9 +303,13 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
             showStatusError(act, "customer.estimation.noinvoice.title", "customer.estimation.noinvoice.message");
             Result = false;
         }
-        else if (act.getActivityEndTime().before(new Date())) {
-            showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
-            Result = false;            
+        else if (act.getActivityEndTime() != null) { 
+            if (act.getActivityEndTime().before(new Date())) {
+                showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
+                Result = false;
+            }
+            else
+                Result = true;
         }
         else
             Result = true;
