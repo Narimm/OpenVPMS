@@ -43,7 +43,18 @@ public class ReminderActTableModel extends PatientRecordActTableModel {
      */
     @Override
     protected String[] getDescriptorNames() {
-        return new String[]{"endTime", "status", "description"};
+        return new String[]{"startTime", "endTime", "status", "description"};
+    }
+
+    /**
+     * Returns the index to insert the archetype column.
+     *
+     * @return the index to insert the archetype column, or <code>-1<code>
+     *         if it should not be inserted
+     */
+    @Override
+    protected int getArchetypeColumnIndex() {
+        return 2;
     }
 
 }

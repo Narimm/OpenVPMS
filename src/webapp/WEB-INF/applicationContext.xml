@@ -228,6 +228,8 @@
                     org.openvpms.archetype.function.party.PartyFunctions</prop>
                 <prop key="lookup">
                     org.openvpms.archetype.function.lookup.LookupFunctions</prop>
+                <prop key="date">
+                    org.openvpms.component.system.common.jxpath.DateFunctions</prop>
             </props>
         </constructor-arg>
     </bean>
@@ -263,16 +265,16 @@
         </property>
     </bean>
 
-  <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
-  <bean id="ruleSource"
-    class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
-    <property name="ruleRuntime">
-      <ref local="ruleRuntime" />
-    </property>
-    <property name="ruleAdministrator">
-      <ref local="ruleAdministrator" />
-    </property>
-  </bean>
+    <!-- the ruleSource. There can be many ruleSource beans for each ruleAdministrator/ruleRuntime. -->
+    <bean id="ruleSource"
+          class="org.openvpms.component.business.service.ruleengine.RuleDescriptorRuleSource">
+        <property name="ruleRuntime">
+            <ref local="ruleRuntime"/>
+        </property>
+        <property name="ruleAdministrator">
+            <ref local="ruleAdministrator"/>
+        </property>
+    </bean>
 
     <!-- Jsr94Template -->
     <bean id="jsr94Template" class="org.springmodules.jsr94.core.Jsr94Template">
@@ -281,16 +283,16 @@
         </property>
     </bean>
 
-  <!--  The DroolsRileEngine interceptor -->
-  <bean id="ruleEngine"
-    class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngine">
-    <constructor-arg index="0">
-      <ref local="ruleSource" />
-    </constructor-arg>
-    <property name="template">
-      <ref local="jsr94Template" />
-    </property>
-  </bean>
+    <!--  The DroolsRileEngine interceptor -->
+    <bean id="ruleEngine"
+          class="org.openvpms.component.business.service.ruleengine.DroolsRuleEngine">
+        <constructor-arg index="0">
+            <ref local="ruleSource"/>
+        </constructor-arg>
+        <property name="template">
+            <ref local="jsr94Template"/>
+        </property>
+    </bean>
 
     <!--  Create a proxy for the ArchetypeService bean -->
     <bean id="ruleEngineProxyCreator"
