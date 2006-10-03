@@ -30,10 +30,6 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="emailAddress" path="/details/attributes/emailAddress"
 				type="java.lang.String" minCardinality="1">
-				<assertion name="regularExpression">
-					<property name="expression" value="*" />
-					<errorMessage>errorMessage</errorMessage>
-				</assertion>
 			</node>
 		</node>
 		<node name="startDate" path="/activeStartTime"
