@@ -1,0 +1,48 @@
+<archetype>
+	<data id="Clinician" archetype="classification.userType" name="Clinician" />
+	<data id="Nurse" archetype="classification.userType" name="Nurse" />
+	<data id="Receptionist" archetype="classification.userType" name="Receptionist" />
+	<data id="AUTH1" archetype="security.archetypeAuthority" name="save.all" description="Authority to Save All Archetypes"
+		serviceName="archetypeService" method="save" archetypeShortName="*" />
+	<data id="AUTH2" archetype="security.archetypeAuthority" name="remove.all" description="Authority to Remove All Archetypes"
+		serviceName="archetypeService" method="remove" archetypeShortName="*" />
+	<data id="ROLE1" archetype="security.role" name="Administration" >
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH1" />
+		<data collection="authorities" archetype="security.archetypeAuthority"  childId="id:AUTH2" />
+	</data>
+	<data archetype="security.user" name="admin" password="admin">
+		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
+	</data>
+	<data id="VET1" archetype="security.user" name="vet" password="vet">
+		<data collection="roles" archetype="security.role" childId="id:ROLE1" />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician" />    
+	</data>
+	<data id="AT" archetype="security.user" name="Andrew Turner" password="At"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+	<data id="CB" archetype="security.user" name="Chris Barton" password="Cb"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+	<data id="JG" archetype="security.user" name="Joseph Galbally" password="Jg"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+	<data id="JM" archetype="security.user" name="John Moody" password="Jm"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+	<data id="RC" archetype="security.user" name="Routine Consultations" password="Rc"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+	<data id="RH" archetype="security.user" name="Hospital Appointments" password="Rh"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+	<data id="SC" archetype="security.user" name="Susanne Craddock" password="Sc"  >
+		<data collection="roles" archetype="security.role" childId="id:ROLE1"  />
+		<data collection="classifications" archetype="classification.userType" childId="id:Clinician"  />
+	</data>
+</archetype>
