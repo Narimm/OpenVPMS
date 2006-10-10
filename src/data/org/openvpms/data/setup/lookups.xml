@@ -1,0 +1,98 @@
+<!--
+ *  Version: 1.0
+ *
+ *  The contents of this file are subject to the OpenVPMS License Version
+ *  1.0 (the 'License'); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  http://www.openvpms.org/license/
+ *
+ *  Software distributed under the License is distributed on an 'AS IS' basis,
+ *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing rights and limitations under the
+ *  License.
+ *
+ *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *
+ *  $$Id$$
+-->
+<archetype>
+	<data id="CTY1" archetype="lookup.country" country="Australia" isoCode="AU" defaultLookup="true"/>
+	<data id="ST1" archetype="lookup.state" state="Victoria" defaultLookup="true"/>
+	<data id="ST2" archetype="lookup.state" state="New South Wales" />
+	<data id="ST3" archetype="lookup.state" state="Western Australia" />
+	<data id="ST4" archetype="lookup.state" state="South Australia" />
+	<data id="ST5" archetype="lookup.state" state="Northern Territory" />
+	<data id="ST6" archetype="lookup.state" state="Tasmania" />
+	<data id="ST7" archetype="lookup.state" state="Australian Capital Territory" />
+	<data id="ST8" archetype="lookup.state" state="Queensland" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST1" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST2" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST3" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST4" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST5" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
+	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
+	<data archetype="lookup.chargeStatus" status="In Progress" />
+	<data archetype="lookup.chargeStatus" status="Completed" defaultLookup="true"/>
+	<data archetype="lookup.chargeStatus" status="On Hold" />
+	<data archetype="lookup.chargeStatus" status="Posted" />
+	<data archetype="lookup.paymentStatus" status="In Progress" />
+	<data archetype="lookup.paymentStatus" status="On Hold" />
+	<data archetype="lookup.paymentStatus" status="Posted" defaultLookup="true"/>
+	<data archetype="lookup.episodeStatus" status="In Progress" defaultLookup="true"/>
+	<data archetype="lookup.episodeStatus" status="Completed" />
+	<data archetype="lookup.eventStatus" status="In Progress" defaultLookup="true"/>
+	<data archetype="lookup.eventStatus" status="Completed" />
+	<data archetype="lookup.appointmentStatus" status="Pending" defaultLookup="true" />
+	<data archetype="lookup.appointmentStatus" status="Cancelled" />
+	<data archetype="lookup.appointmentStatus" status="Checked-In" />
+	<data archetype="lookup.appointmentStatus" status="In Progress" />
+	<data archetype="lookup.appointmentStatus" status="Completed" />
+	<data archetype="lookup.appointmentReason" reason="Checkup" defaultLookup="true" />
+	<data archetype="lookup.appointmentReason" reason="Vaccination" />
+	<data archetype="lookup.appointmentReason" reason="Other" />
+	<data archetype="lookup.taskStatus" status="Pending" defaultLookup="true" />
+	<data archetype="lookup.taskStatus" status="Cancelled" />
+	<data archetype="lookup.taskStatus" status="In Progress" />
+	<data archetype="lookup.taskStatus" status="Completed" />
+	<data archetype="lookup.messageStatus" status="Pending" defaultLookup="true" />
+	<data archetype="lookup.messageStatus" status="Completed" />
+	<data archetype="lookup.uom" uom="Unit" defaultLookup="true"/>
+	<data archetype="lookup.uom" uom="Bottle" />
+	<data archetype="lookup.uom" uom="Syringe" />
+	<data archetype="lookup.uom" uom="Tablet" />
+	<data archetype="lookup.uom" uom="Packet" />
+	<data archetype="lookup.uom" uom="Vial" />
+	<data archetype="lookup.uom" uom="Box" />
+	<data archetype="lookup.uom" uom="Grams" />
+	<data archetype="lookup.uom" uom="Litres" />
+	<data archetype="lookup.uom" uom="Ampoule" />
+	<data archetype="lookup.uom" uom="Mls" />
+	<data archetype="lookup.uom" uom="Tube" />
+	<data archetype="lookup.uom" uom="Packet" />
+	<data id="Kilogram" archetype="lookup.uom" uom="Kilogram" />
+	<data id="Pounds" archetype="lookup.uom" uom="Pounds" />
+    <data id="Weight" archetype="lookup.uomGroup" uomGroup="Weight"/>
+	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
+	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
+	<data archetype="lookup.bank" bank="National" />
+	<data archetype="lookup.bank" bank="Commonwealth" />
+	<data archetype="lookup.bank" bank="ANZ" />
+	<data archetype="lookup.bank" bank="WestPac" />
+	<data archetype="lookup.bank" bank="St George" />
+	<data archetype="lookup.bank" bank="Bank West" />
+	<data archetype="lookup.bank" bank="State SA" />
+	<data archetype="lookup.bank" bank="Bendigo" />
+	<data archetype="lookup.creditcard" creditcard="Visa" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" creditcard="Mastercard" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" creditcard="American Express" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" creditcard="Diners" floorLimit="500.00" />
+	<data archetype="lookup.personTitle" title="Mr" defaultLookup="true"/>
+	<data archetype="lookup.personTitle" title="Mrs" />
+	<data archetype="lookup.personTitle" title="Ms" />
+	<data archetype="lookup.personTitle" title="Dr" />
+	<data archetype="lookup.alertType" alertType="Allergy" />
+	<data archetype="lookup.alertType" alertType="Agression" />
+	<data archetype="lookup.alertType" alertType="Other" defaultLookup="true"/>
+</archetype>
