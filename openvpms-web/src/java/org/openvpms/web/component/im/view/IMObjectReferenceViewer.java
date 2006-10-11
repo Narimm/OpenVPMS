@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ButtonFactory;
@@ -44,7 +45,7 @@ public class IMObjectReferenceViewer {
     /**
      * The reference to view.
      */
-    private final IMObjectReference _reference;
+    private final IMObjectReference reference;
 
     /**
      * Determines if a hyperlink should be created, to launch a view of the
@@ -60,7 +61,7 @@ public class IMObjectReferenceViewer {
      * @param link      if <code>true</code> enable an hyperlink to the object
      */
     public IMObjectReferenceViewer(IMObjectReference reference, boolean link) {
-        _reference = reference;
+        this.reference = reference;
         _link = link;
     }
 
@@ -71,16 +72,16 @@ public class IMObjectReferenceViewer {
      */
     public Component getComponent() {
         Component result;
-        final IMObject object = IMObjectHelper.getObject(_reference);
-        if (object != null) {
-            String text = Messages.get("imobject.name", object.getName());
+        final NodeSet nodes = IMObjectHelper.getNodes(reference, "name");
+        if (nodes != null) {
+            String text = Messages.get("imobject.name", nodes.getValue("name"));
             if (_link) {
                 Button button = ButtonFactory.create();
                 button.setStyleName("hyperlink");
                 button.setText(text);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
-                        onView(object);
+                        onView();
                     }
                 });
                 // wrap in a row so the button renders to its minimum width
@@ -102,8 +103,11 @@ public class IMObjectReferenceViewer {
     /**
      * Views the object.
      */
-    protected void onView(IMObject object) {
-        ContextApplicationInstance.getInstance().switchTo(object);
+    protected void onView() {
+        IMObject object = IMObjectHelper.getObject(reference);
+        if (object != null) {
+            ContextApplicationInstance.getInstance().switchTo(object);
+        }
     }
 
 }

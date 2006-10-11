@@ -31,11 +31,15 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.util.StringUtilities;
 import org.openvpms.web.component.app.GlobalContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
@@ -52,7 +56,7 @@ public class IMObjectHelper {
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(IMObjectHelper.class);
+    private static final Log log = LogFactory.getLog(IMObjectHelper.class);
 
 
     /**
@@ -73,8 +77,36 @@ public class IMObjectHelper {
                     result = ArchetypeQueryHelper.getByObjectReference(
                             service, reference);
                 } catch (OpenVPMSException error) {
-                    _log.error(error, error);
+                    log.error(error, error);
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns nodes for an object, given its reference.
+     *
+     * @param reference the object reference. May be <code>null</code>
+     * @param nodes     the nodes to return
+     * @return the nodes of the object corresponding to <code>reference</code>
+     *         or<code>null</code> if none exists
+     */
+    public static NodeSet getNodes(IMObjectReference reference,
+                                   String ... nodes) {
+        NodeSet result = null;
+        if (reference != null) {
+            try {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                ArchetypeQuery query = new ArchetypeQuery(reference);
+                IPage<NodeSet> page = service.get(Arrays.asList(nodes),
+                                                  query);
+                if (page.getRows().size() == 1) {
+                    result = page.getRows().get(0);
+                }
+            } catch (OpenVPMSException error) {
+                log.error(error, error);
             }
         }
         return result;
@@ -117,7 +149,7 @@ public class IMObjectHelper {
                 result = ArchetypeQueryHelper.getByObjectReference(
                         service, object.getObjectReference());
             } catch (OpenVPMSException error) {
-                _log.error(error, error);
+                log.error(error, error);
             }
         }
         return result;
@@ -180,7 +212,7 @@ public class IMObjectHelper {
                     }
                 }
             } catch (PatternSyntaxException exception) {
-                _log.warn(exception);
+                log.warn(exception);
             }
         }
         return result;
@@ -210,7 +242,7 @@ public class IMObjectHelper {
                     }
                 }
             } catch (PatternSyntaxException exception) {
-                _log.warn(exception);
+                log.warn(exception);
             }
         }
         return result;
