@@ -49,7 +49,7 @@
 			defaultValue="false()" readOnly="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
         <node name="customer" path="/participations" type="java.util.HashSet"
-              minCardinality="0" maxCardinality="1"
+              minCardinality="1" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"

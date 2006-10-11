@@ -23,11 +23,13 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
@@ -44,6 +46,11 @@ import java.util.List;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class InvoiceRulesTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The customer.
+     */
+    private Party _customer;
 
     /**
      * The patient.
@@ -282,6 +289,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
+        _customer = createCustomer();
         _clinician = createClinician();
         _patient = createPatient();
         _reminder = createReminder();
@@ -297,6 +305,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act act = createAct("act.customerAccountChargesInvoice");
         act.setStatus("In Progress");
         ActBean bean = new ActBean(act);
+        bean.addParticipation("participation.customer", _customer);
         bean.addParticipation("participation.patient", _patient);
         bean.addParticipation("participation.clinician", _clinician);
         return bean;
@@ -325,6 +334,23 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act act = (Act) create(shortName);
         assertNotNull(act);
         return act;
+    }
+
+       /**
+     * Helper to create and save a customer.
+     *
+     * @return a new customer
+     */
+    private Party createCustomer() {
+        Party customer = (Party) create("party.customerperson");
+        IMObjectBean bean = new IMObjectBean(customer);
+        bean.setValue("firstName", "J");
+        bean.setValue("lastName", "Zoo");
+        Contact contact = (Contact) create("contact.phoneNumber");
+        assertNotNull(contact);
+        customer.addContact(contact);
+        save(customer);
+        return customer;
     }
 
     /**
