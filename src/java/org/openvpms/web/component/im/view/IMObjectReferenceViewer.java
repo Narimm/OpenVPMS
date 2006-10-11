@@ -74,7 +74,7 @@ public class IMObjectReferenceViewer {
         Component result;
         final NodeSet nodes = IMObjectHelper.getNodes(reference, "name");
         if (nodes != null) {
-            String text = Messages.get("imobject.name", nodes.getValue("name"));
+            String text = Messages.get("imobject.name", nodes.get("name"));
             if (_link) {
                 Button button = ButtonFactory.create();
                 button.setStyleName("hyperlink");
