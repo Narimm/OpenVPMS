@@ -1,6 +1,7 @@
 package org.openvpms.component.business.service.archetype.query;
 
 // java core
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.service.archetype.query.QueryBuilder.DistinctTypesResultSet;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
@@ -9,10 +10,11 @@ import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 /**
- * This class holds the state of the HQL as it is beign built
+ * This class holds the state of the HQL as it is being built.
  */
 public class QueryContext {
     /**
@@ -20,56 +22,62 @@ public class QueryContext {
      */
     private StringBuffer selectClause = new StringBuffer("select ");
     private int initSelectClauseLen = selectClause.length();
-    
+
     /**
      * The from clause part of the hql query
      */
     private StringBuffer fromClause = new StringBuffer("from ");
     private int initFromClauseLen = fromClause.length();
-    
+
     /**
      * The where clause part of the hql query
      */
     private StringBuffer whereClause = new StringBuffer("where ");
     private int initWhereClauseLen = whereClause.length();
-    
+
     /**
      * The ordered clause part of the hql query
      */
     private StringBuffer orderedClause = new StringBuffer("order by ");
     private int initOrderedClauseLen = orderedClause.length();
-    
+
     /**
      * a stack of types while processing the {@link ArchetypeQuery}
      */
     private Stack<DistinctTypesResultSet> typeStack = new Stack<DistinctTypesResultSet>();
-    
+
     /**
      * a stack of parameters while processing the {@link ArchetypeQuery}
      */
     private  Stack<String> varStack = new Stack<String>();
-    
+
     /**
      * A stack of the current logical operator
      */
     private Stack<LogicalOpCounter> opStack = new Stack<LogicalOpCounter>();
-    
+
     /**
      * Holds a reference to the parameters and the values used to process
      */
     private Map<String, Object> params = new HashMap<String, Object>();
-    
-    
+
+
     /**
      * Used to manage dynamic variable names
      */
     private String varName = "var";
-    
+
     /**
      * The index that is appended to the varName
      */
     private int varIndex = 0;
-    
+
+    /**
+     * The archetypes being queried.
+     */
+    private Set<ArchetypeDescriptor> descriptors;
+
+
     /**
      * Default constructor. Initialize the operational stack
      */
@@ -88,14 +96,14 @@ public class QueryContext {
             initSelectClauseLen = selectClause.length();
         }
     }
-    
+
     /**
      * Retrieve a new variable name
      */
     String getVariableName() {
         return varName + Integer.toString(varIndex++);
     }
-    
+
     /**
      * Push a logical operator on the stack
      * 
@@ -104,12 +112,12 @@ public class QueryContext {
      */
     QueryContext pushLogicalOperator(LogicalOperator op) {
         appendLogicalOperator();
-        
+
         whereClause.append(" (");
         opStack.push(new LogicalOpCounter(op));
         return this;
     }
-    
+
     /**
      * Pop the logical operator on the stack
      * 
@@ -119,7 +127,7 @@ public class QueryContext {
         whereClause.append(") ");
         return ((LogicalOpCounter)opStack.pop()).operator;
     }
-    
+
     /**
      * Push the distinct types
      * 
@@ -128,23 +136,24 @@ public class QueryContext {
      */
     QueryContext pushDistinctTypes(DistinctTypesResultSet types) {
         String varName = getVariableName();
-        
+
         // check the select clause
         if (typeStack.size() == 0) {
             selectClause.append(varName)
                 .append(" ");
-            
+
             fromClause.append(types.type)
             .append("  as ")
             .append(varName)
             .append(" ");
+            descriptors = types.descriptors;
         }
-        
+
         typeStack.push(types);
         varStack.push(varName);
         return this;
     }
-    
+
     /**
      * Push the distinct type given the specified joinTypw
      * 
@@ -154,12 +163,12 @@ public class QueryContext {
      *            the property to join on            
      * @param joinType
      *            the joinType to use
-     * @return QueryContext                        
+     * @return QueryContext
      */
     QueryContext pushDistinctTypes(DistinctTypesResultSet types, String property,
             JoinType joinType) {
         String varName = getVariableName();
-        
+
         switch (joinType) {
         case InnerJoin:
             fromClause.append(" inner join ")
@@ -170,7 +179,7 @@ public class QueryContext {
             .append(varName)
             .append(" ");
             break;
-            
+
         case LeftOuterJoin:
             fromClause.append(" left outer join ")
             .append(varStack.peek())
@@ -180,7 +189,7 @@ public class QueryContext {
             .append(varName)
             .append(" ");
             break;
-            
+
         case RightOuterJoin:
             fromClause.append(" right outer  join ")
             .append(varStack.peek())
@@ -189,18 +198,18 @@ public class QueryContext {
             .append(" as ")
             .append(varName);
             break;
-            
+
         case None:
         default:
             // throw an exception
             break;
         }
-        
+
         typeStack.push(types);
         varStack.push(varName);
         return this;
     }
-    
+
     /**
      * Pop the logical operator on the stack
      * 
@@ -210,7 +219,7 @@ public class QueryContext {
         varStack.pop();
         return typeStack.pop();
     }
-    
+
     /**
      * Look at the rype that is currently on the stack
      * 
@@ -219,7 +228,7 @@ public class QueryContext {
     DistinctTypesResultSet peekDistinctTypes() {
         return typeStack.peek();
     }
-    
+
     /**
      * Push a variable name on the stack
      * 
@@ -230,7 +239,7 @@ public class QueryContext {
         varStack.push(varName);
         return this;
     }
-    
+
     /**
      * Pop the variable name on the stack
      * 
@@ -239,7 +248,7 @@ public class QueryContext {
     String popVariable() {
         return varStack.pop();
     }
-    
+
     /**
      * Add a where constraint.  
      * 
@@ -249,17 +258,17 @@ public class QueryContext {
      *            the relational operator to apply            
      * @param value
      *            the object value
-     * @return QueryContext                        
+     * @return QueryContext
      */
     QueryContext addWhereConstraint(String property, RelationalOp op, Object value) {
-        
+
         appendLogicalOperator();
         whereClause.append(varStack.peek())
             .append(".")
             .append(property)
             .append(" ")
             .append(getOperator(op, value));
-        
+
         // check if we need a parameter
         if (value != null) {
             String varName = getVariableName();
@@ -270,7 +279,7 @@ public class QueryContext {
         opStack.peek().count++;
         return this;
     }
-    
+
     /**
      * Add the specified sort constraint
      * 
@@ -284,7 +293,7 @@ public class QueryContext {
         if (orderedClause.length() > initOrderedClauseLen) {
             orderedClause.append(", ");
         }
-        
+
         orderedClause.append(varStack.peek())
                 .append(".")
                 .append(property);
@@ -296,7 +305,7 @@ public class QueryContext {
 
         return this;
     }
-    
+
     /**
      * Add a where constraint given the property and the node constraint
      * 
@@ -304,11 +313,11 @@ public class QueryContext {
      *            the attribue to constrain
      * @param constraint
      *            the node constraint
-     * @return QueryContext                        
+     * @return QueryContext
      */
     QueryContext addWhereConstraint(String property, NodeConstraint constraint) {
         String varName;
-        
+
         switch (constraint.getOperator()) {
         case BTW:
             if ((constraint.getParameters()[0] != null) ||
@@ -321,14 +330,14 @@ public class QueryContext {
                     whereClause.append(varStack.peek())
                         .append(".")
                         .append(property)
-                        .append(getOperator(RelationalOp.GTE, 
+                        .append(getOperator(RelationalOp.GTE,
                                 constraint.getParameters()[0]))
                         .append(" :")
                         .append(varName);
-                    params.put(varName, getValue(RelationalOp.GTE, 
+                    params.put(varName, getValue(RelationalOp.GTE,
                             constraint.getParameters()[0]));
                 }
-                
+
                 // process right hand side
                 if (constraint.getParameters()[1] != null) {
                     appendLogicalOperator();
@@ -336,17 +345,17 @@ public class QueryContext {
                     whereClause.append(varStack.peek())
                         .append(".")
                         .append(property)
-                        .append(getOperator(RelationalOp.LTE, 
+                        .append(getOperator(RelationalOp.LTE,
                                 constraint.getParameters()[1]))
                         .append(" :")
                         .append(varName);
-                    params.put(varName, getValue(RelationalOp.LTE, 
+                    params.put(varName, getValue(RelationalOp.LTE,
                             constraint.getParameters()[1]));
                 }
                 popLogicalOperator();
             }
             break;
-            
+
         case EQ:
         case GT:
         case GTE:
@@ -380,7 +389,7 @@ public class QueryContext {
                     QueryBuilderException.ErrorCode.OperatorNotSupported,
                     new Object[] {constraint.getOperator()});
         }
-        
+
         return this;
     }
 
@@ -398,7 +407,7 @@ public class QueryContext {
             .append(orderedClause.length() == initOrderedClauseLen ? "" : orderedClause)
             .toString();
     }
-    
+
     /**
      * Return the value map for the query
      * 
@@ -406,6 +415,15 @@ public class QueryContext {
      */
     public Map<String, Object> getValueMap() {
         return params;
+    }
+
+    /**
+     * Returns the descriptors of the archetypes being queried.
+     *
+     * @return the archetype descriptors
+     */
+    public Set<ArchetypeDescriptor> getDescriptors() {
+        return descriptors;
     }
 
     /**
@@ -428,16 +446,16 @@ public class QueryContext {
                 }
             }
             return "=";
-            
+
         case GT:
             return ">";
-            
+
         case GTE:
             return ">=";
-            
+
         case LT:
             return "<";
-            
+
         case LTE:
             return "<=";
 
@@ -453,7 +471,7 @@ public class QueryContext {
                     new Object[] {operator});
         }
     }
-    
+
     /**
      * Return the value
      * 
@@ -476,7 +494,7 @@ public class QueryContext {
             return param;
         }
     }
-    
+
     /**
      * Append the logical operator to the where class
      */
@@ -495,12 +513,12 @@ public class QueryContext {
     enum LogicalOperator {
         And(" and "),
         Or(" or ");
-        
+
         /**
          * Holds the string value
          */
         private String value;
-        
+
         /**
          * Constructor that takes string value
          * 
@@ -509,7 +527,7 @@ public class QueryContext {
         LogicalOperator(String value) {
             this.value = value;
         }
-        
+
         /**
          * Return the value
          * 
@@ -520,7 +538,7 @@ public class QueryContext {
         }
     }
 
-    
+
     /**
      * Private anonymous class to track the usage of the logical operator
      */
@@ -529,12 +547,12 @@ public class QueryContext {
          * The relational operator
          */
         LogicalOperator operator;
-        
+
         /**
          * Counts the number of terms applied to this operator  
          */
         int count;
-        
+
         /**
          * Create an instance using the specified operator
          * 
@@ -544,5 +562,5 @@ public class QueryContext {
             this.operator = operator;
         }
     }
-    
+
 }

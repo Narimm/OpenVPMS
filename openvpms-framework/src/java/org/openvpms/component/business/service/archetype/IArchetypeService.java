@@ -19,16 +19,19 @@
 package org.openvpms.component.business.service.archetype;
 
 // openvpms-framework
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDeriveValueException;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This interface defines the services that are provided by the archetype
@@ -47,7 +50,7 @@ public interface IArchetypeService {
      * @param name
      *            the short name
      * @return ArchetypeDescriptor
-     * @thorws ArchetypeServiceException
+     * @throws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
     public ArchetypeDescriptor getArchetypeDescriptor(String name);
@@ -59,20 +62,20 @@ public interface IArchetypeService {
      * @param id
      *            the archetype id
      * @return ArchetypeDescriptor           
-     * @thorws ArchetypeServiceException
+     * @throws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id);
     
     /**
      * Create a default domain object given a short name. The short name is
-     * a reference to an {@link ArchetypeRecord}. If the short name is not 
+     * a reference to an {@link ArchetypeDescriptor}. If the short name is not
      * known then return a null object.
      * 
      * @param name
      *            the short name
-     * @preturn IMObject
-     * @thorws ArchetypeServiceException
+     * @return IMObject
+     * @throws ArchetypeServiceException
      *            if there is a problem creating the object.                        
      */
     public IMObject create(String name);
@@ -101,7 +104,7 @@ public interface IArchetypeService {
     public void validateObject(IMObject object);
     
     /**
-     * Go and generate the derived values for the specified {@link IMOjbect}, 
+     * Go and generate the derived values for the specified {@link IMObject},
      * based on the corresponding {@link ArchetypeDescriptor}
      * 
      * @param object
@@ -120,7 +123,7 @@ public interface IArchetypeService {
      * @param node
      *            the name of the {@link NodeDescriptor}, which will be used
      *            to derive the value            
-     * @param FailedToDeriveValueException
+     * @throws FailedToDeriveValueException
      *            if it cannot derive the value            
      */
     public void deriveValue(IMObject object, String node);
@@ -238,7 +241,16 @@ public interface IArchetypeService {
      *            a runtime exception                         
      */
     public IPage<IMObject> get(ArchetypeQuery query);
-    
+
+    /**
+     * Retrieves the nodes from the objects that match the query criteria.
+     *
+     * @param nodes the node names
+     * @param query the archetype query
+     * @return the nodes for each object that matches the query criteria
+     */
+    IPage<NodeSet> get(List<String> nodes, ArchetypeQuery query);
+
     /**
      * Retrun a list of {@link IMObject} instances that satisfy the specified
      * named query. The query name must map to a valid query in the target 
@@ -309,7 +321,7 @@ public interface IArchetypeService {
      * 
      * @param ruleUri
      *            the rule uri
-     * @param properties
+     * @param props
      *            a set of properties that can be used by the rule engine
      * @param facts
      *            a list of facts that are asserted in to the working memory

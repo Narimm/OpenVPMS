@@ -52,8 +52,8 @@
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <many-to-one name="product" column="product_id" />
-    <set name="classifications" access="property" lazy="false" inverse="false"
-      table="product_price_classifications" cascade="none">
+    <set name="classifications" access="property" inverse="false"
+         table="product_price_classifications" cascade="none">
       <key column="product_price_id" />
       <many-to-many
         class="org.openvpms.component.business.domain.im.common.Classification"
