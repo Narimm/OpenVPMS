@@ -230,15 +230,20 @@ public class DefaultActQuery extends ActQuery {
                 }
             });
             String[] statuses = getStatuses();
+            String defaultStatus = null;
             if (statuses.length != 0 && !excludeStatuses()) {
-                updateStatusSelector(statuses[0]);
+                defaultStatus = statuses[0];
             } else {
                 for (Lookup lookup : lookups) {
                     if (lookup.isDefaultLookup()) {
-                        updateStatusSelector(lookup.getValue());
+                        defaultStatus = lookup.getValue();
                         break;
                     }
                 }
+            }
+            if (defaultStatus != null) {
+                updateStatusSelector(defaultStatus);
+                setStatus(defaultStatus);
             }
         }
 
