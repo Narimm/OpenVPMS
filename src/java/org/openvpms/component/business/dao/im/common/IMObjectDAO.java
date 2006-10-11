@@ -19,13 +19,15 @@
 package org.openvpms.component.business.dao.im.common;
 
 // java
-import java.util.Collection;
-import java.util.Map;
-
-// openvpms-framework
 import org.openvpms.component.business.dao.im.Page;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.IPage;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This interface provides data access object (DAO) support for objects of 
@@ -63,7 +65,7 @@ public interface IMObjectDAO {
      */
     public void save(Collection objects);
     /**
-     * Delete the specified {@link IMOBject}
+     * Delete the specified {@link IMObject}
      * 
      * @param object
      *            the imobject to delete
@@ -91,7 +93,25 @@ public interface IMObjectDAO {
      */
     public IPage<IMObject> get(String queryString, Map<String, Object> valueMap,
             int firstRow, int numOfRows);
-    
+
+    /**
+     * Execute a get using the specified query string and a map of the values.
+     * The first row and the number of rows is used to control the paging of the
+     * result set.
+     *
+     * @param nodes       the nodes to return
+     * @param queryString the query string
+     * @param valueMap    the values applied to the query
+     * @param firstRow    the first row to retrieve
+     * @param numOfRows   the maximum number of rows to return
+     * @return the nodes for each object that matches the query criteria
+     * @throws IMObjectDAOException a runtime exception, raised if the request
+     *                              cannot complete.
+     */
+    IPage<NodeSet> get(List<NodeDescriptor> nodes, String queryString,
+                       Map<String, Object> valueMap, int firstRow,
+                       int numOfRows);
+
     /**
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return 
@@ -168,7 +188,7 @@ public interface IMObjectDAO {
      * 
      * @param name
      *            the name of the query
-     * @param param
+     * @param params
      *            a map of param name and param value.
      * @param firstRow
      *            the first row to retrieve

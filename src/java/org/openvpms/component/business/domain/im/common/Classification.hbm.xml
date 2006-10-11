@@ -48,8 +48,8 @@
     <property name="details" column="details" length="5000"
       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
     <many-to-one name="parent" column="parent_id" />
-    <set name="children" access="property" lazy="false" inverse="true"
-      cascade="all,delete-orphan">
+    <set name="children" access="property" inverse="true"
+         cascade="all,delete-orphan">
       <key>
         <column name="parent_id" index="parent_id_idx" />
       </key>

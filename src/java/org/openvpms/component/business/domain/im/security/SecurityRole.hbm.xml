@@ -45,14 +45,14 @@
     <property name="description" access="property" column="description"
       type="string" />
     <property name="active" access="property" column="active" type="boolean" />
-    <set name="users" lazy="false" table="user_roles" inverse="true">
+    <set name="users" table="user_roles" inverse="true">
       <key column="security_role_id" />
       <many-to-many
         class="org.openvpms.component.business.domain.im.security.User"
         column="user_id" outer-join="auto" />
     </set>
-    <set name="authorities" lazy="false" inverse="false"
-      table="roles_authorities" cascade="none">
+    <set name="authorities" inverse="false" table="roles_authorities"
+         cascade="none">
       <key column="security_role_id" not-null="true"/>
       <many-to-many
         class="org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority" 
