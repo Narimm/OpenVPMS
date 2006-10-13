@@ -126,7 +126,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Lays out child components in a 2x2 grid.
+     * Lays out child components in a grid.
      *
      * @param object      the parent object
      * @param descriptors the property descriptors
