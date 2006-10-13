@@ -28,8 +28,11 @@
 			<node name="archetype" path="/details/attributes/archetype" type="java.lang.String"	minCardinality="0" />
 			<node name="save" path="/details/attributes/save" type="java.lang.Boolean" defaultValue="false()" />
 		</node>
+        <!--
+         This node is now implicit. There is currently no way of representing it.
         <node name="content" path="/participations" type="java.util.HashSet"
               minCardinality="1" maxCardinality="1"
-              filter="participation.document"/>
+              filter="participation.document"/
+         -->
     </archetype>
 </archetypes>
