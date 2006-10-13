@@ -36,7 +36,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.tools.Template;
 import org.openvpms.report.jasper.tools.Templates;
 import org.springframework.context.ApplicationContext;
@@ -134,7 +133,6 @@ public class TemplateLoader {
             participation.setAct(act.getObjectReference());
             act.addParticipation(participation);
             participation.setEntity(entity.getObjectReference());
-            entity.addParticipation(participation);
         }
 
         act.setDocReference(document.getObjectReference());
@@ -144,7 +142,6 @@ public class TemplateLoader {
         if (name == null) {
             name = document.getName();
         }
-        TemplateHelper.refresh(entity);
         entity.setName(name);
         EntityBean bean = new EntityBean(entity);
         bean.setValue("archetype", template.getArchetype());

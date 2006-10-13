@@ -173,13 +173,6 @@
         </constructor-arg>
     </bean>
 
-    <bean id="templateHelper"
-          class="org.openvpms.report.TemplateHelper">
-        <constructor-arg>
-            <ref local="sessionFactory"/>
-        </constructor-arg>
-    </bean>
-
     <!--bean id="bootstrapService"
         class="org.openvpms.report.openoffice.BootstrapService">
     </bean-->

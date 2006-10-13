@@ -18,22 +18,20 @@
 
 package org.openvpms.report;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.Hibernate;
-import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
 import java.util.List;
 
@@ -47,31 +45,11 @@ import java.util.List;
 public class TemplateHelper {
 
     /**
-     * Hibernate session factory. Only provided as a workaround for OBF-105
-     */
-    private static SessionFactory _sessionFactory;
-
-    /**
-     * The logger.
-     */
-    private static Log _log = LogFactory.getLog(TemplateHelper.class);
-
-
-    /**
-     * Initialise the template helper.
-     * todo - Constructor only provided as a workaround for OBF-105
-     *
-     * @param factory the session factory
-     */
-    public TemplateHelper(SessionFactory factory) {
-        _sessionFactory = factory;
-    }
-
-    /**
      * Retrieves a document template with matching name.
      *
      * @param name    the document name
      * @param service the archetype service
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public static Document getDocument(String name, IArchetypeService service) {
         ArchetypeQuery query = new ArchetypeQuery("act.documentTemplate",
@@ -94,6 +72,7 @@ public class TemplateHelper {
      * @param service   the archetype service
      * @return the template corresponding to <code>shortName</code> or
      *         <code>null</code> if none can be found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public static Document getDocumentForArchetype(String shortName,
                                                    IArchetypeService service) {
@@ -107,7 +86,7 @@ public class TemplateHelper {
             EntityBean bean = new EntityBean((Entity) object);
             String archetype = bean.getString("archetype");
             if (archetype != null && TypeHelper.matches(shortName, archetype)) {
-                DocumentAct act = getDocumentAct(bean);
+                DocumentAct act = getDocumentAct(bean.getEntity(), service);
                 if (act != null) {
                     document = (Document) get(act.getDocReference(), service);
                     if (document != null) {
@@ -122,13 +101,13 @@ public class TemplateHelper {
     /**
      * Returns the document associated with an <em>entity.documentTemplate</em>.
      *
-     * @param entity an <em>entity.documentTemplate</em>
+     * @param entity  an <em>entity.documentTemplate</em>
      * @param service the archetype service
+     * @throws ArchetypeServiceException for any archetype service error
      */
     public static Document getDocumentFromTemplate(Entity entity,
                                                    IArchetypeService service) {
-        EntityBean bean = new EntityBean(entity);
-        DocumentAct act = getDocumentAct(bean);
+        DocumentAct act = getDocumentAct(entity, service);
         if (act != null) {
             return (Document) get(act.getDocReference(), service);
         }
@@ -136,28 +115,44 @@ public class TemplateHelper {
     }
 
     /**
-     * Helper to refresh an entity within the context of a hibernate session.
-     * todo this is a workaround for OBF-105
+     * Returns the document act associated with an
+     * <em>entity.documentTemplate</em>.
      *
-     * @param entity the entity to refresh
+     * @param template the document template entity
+     * @param service  the archetype service
+     * @return the document act, or <code>null</code> if none exists
+     * @throws ArchetypeServiceException for any archetype service error
      */
-    public static void refresh(Entity entity) {
-        if (!entity.isNew()) {
-            Session session = _sessionFactory.openSession();
-            try {
-                session.refresh(entity);
-                Hibernate.initialize(entity.getParticipations());
-            } catch (Throwable throwable) {
-                _log.error(throwable, throwable);
-            } finally {
-                session.close();
-            }
+    public static DocumentAct getDocumentAct(Entity template,
+                                             IArchetypeService service) {
+        DocumentAct result = null;
+        Participation participation = getDocumentParticipation(template,
+                                                               service);
+        if (participation != null) {
+            result = (DocumentAct) get(participation.getAct(), service);
         }
+        return result;
     }
 
-    private static DocumentAct getDocumentAct(EntityBean bean) {
-        refresh(bean.getEntity());
-        return (DocumentAct) bean.getParticipant("participation.document");
+    /**
+     * Returns the first <em>participation.document</em> associated with an
+     * <em>entity.documentTemplate</em>.
+     *
+     * @param template the document template entity
+     * @param service  the archetype service
+     * @return the participation, or <code>null</code> if none exists
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static Participation getDocumentParticipation(
+            Entity template, IArchetypeService service) {
+        ArchetypeQuery query = new ArchetypeQuery("participation.document",
+                                                  true, true);
+        query.add(new ObjectRefNodeConstraint("entity",
+                                              template.getObjectReference()));
+        query.setFirstRow(0);
+        query.setNumOfRows(1);
+        List<IMObject> rows = service.get(query).getRows();
+        return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
     }
 
     /**
@@ -167,6 +162,7 @@ public class TemplateHelper {
      * @param service the archetype service
      * @return the object corresponding to ref or <code>null</code> if none is
      *         found
+     * @throws ArchetypeServiceException for any archetype service error
      */
     private static IMObject get(IMObjectReference ref,
                                 IArchetypeService service) {
