@@ -32,7 +32,6 @@ import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
 import org.openvpms.report.IMObjectReportFactory;
 import org.openvpms.report.TemplateHelper;
-import org.openvpms.web.component.im.doc.DocumentException;
 import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 

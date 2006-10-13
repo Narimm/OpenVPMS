@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
+import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
 import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ProductParticipationEditor;
@@ -282,6 +283,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     public void testCreateUserMessageActEditor() {
         checkCreate("act.userMessage", UserMessageActEditor.class);
+    }
+
+    /**
+     * Verifies that an {@link DocumentTemplateEditor} is created for
+     * <em>entity.documentTemplate</em>
+     */
+    public void testCreateDocumentTemplateEditor() {
+        checkCreate("entity.documentTemplate", DocumentTemplateEditor.class);
     }
 
     /**

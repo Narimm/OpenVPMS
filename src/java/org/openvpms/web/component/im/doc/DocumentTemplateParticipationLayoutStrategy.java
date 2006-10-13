@@ -19,20 +19,13 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
-
-import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.component.util.LabelFactory;
 
 
 /**
@@ -63,19 +56,6 @@ public class DocumentTemplateParticipationLayoutStrategy
         Property property = properties.get("entity");
         IMObjectReference ref = (IMObjectReference) property.getValue();
         return new IMObjectReferenceViewer(ref, true).getComponent();
-        /*
-        Entity entity = (Entity) IMObjectHelper.getObject(ref);
-        if (entity != null) {
-            TemplateHelper.refresh(entity); // todo - workaround for OBF-105
-            EntityBean bean = new EntityBean(entity);
-            final DocumentAct act = (DocumentAct) bean.getParticipant(
-                    "participation.document");
-            if (act != null) {
-                return new DocumentActDownloader(act).getComponent();
-            }
-        }
-        return LabelFactory.create();
-        */
     }
 
 }
