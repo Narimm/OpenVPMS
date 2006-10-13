@@ -19,13 +19,8 @@
 package org.openvpms.component.business.service.archetype;
 
 // java core
-import java.math.BigDecimal;
-import java.util.Date;
-
-//spring-context
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-// openvpms-framework
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -39,10 +34,10 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-// log4j
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Test that ability to create and query on acts.
@@ -105,24 +100,16 @@ public class ArchetypeServiceActTestCase extends
     public void testSimpleActCreation()
     throws Exception {
         Party person = createPerson("Mr", "Jim", "Alateras");
+        service.save(person);
         Act act = createSimpleAct("study", "inprogress");
         Participation participation = createSimpleParticipation("studyParticipation",
                 person, act);
-        person.addParticipation(participation);
+        act.addParticipation(participation);
         service.save(act);
-        service.save(person);
-        
+
         person = (Party)ArchetypeQueryHelper.getByUid(service, 
                 person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
-        // TODO:  Need to reinstate when resolved participation lazy loading issue 
-        //assertTrue(person.getParticipations().size() == 1);
-
-        //participation = person.getParticipations().iterator().next();
-        //act = (Act)ArchetypeQueryHelper.getByObjectReference(service, 
-        //        participation.getAct());
-        //assertTrue(act != null);
-        //assertTrue(act.getParticipations().size() == 1);
     }
     
     /**
@@ -136,10 +123,10 @@ public class ArchetypeServiceActTestCase extends
         Party person = createPerson("Mr", "Jim", "Alateras");
         for (int index = 0; index < 5; index++) {
             Act act = createSimpleAct("study" + index, "inprogress");
-            service.save(act);
             Participation participation = createSimpleParticipation("studyParticipation",
                 person, act);
-            person.addParticipation(participation);
+            act.addParticipation(participation);
+            service.save(act);
         }
         
         service.save(person);

@@ -19,17 +19,12 @@
 package org.openvpms.component.business.domain.im.common;
 
 // java core
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
-import org.openvpms.component.business.service.archetype.ValidationError;
-import org.openvpms.component.business.service.archetype.ValidationException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -44,12 +39,6 @@ public class Entity extends IMObject {
      * Generated SUID
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(Entity.class);
 
     /**
      * An alternative name for this object, unique wirhin the domain of
@@ -78,20 +67,14 @@ public class Entity extends IMObject {
         new HashSet<EntityIdentity>();
     
     /**
-     * Return a set of {@link Participation} that this entity is part off
-     */
-    private Set<Participation> participations = 
-        new HashSet<Participation>();
-    
-    /**
-     * Return a set of source {@link EntityRelationships} that this entity 
+     * Return a set of source {@link EntityRelationship}s that this entity
      * participates in.
      */
     private Set<EntityRelationship> sourceEntityRelationships = 
         new HashSet<EntityRelationship>();
     
     /**
-     * Return a set of target {@link EntityRelationships} that this entity 
+     * Return a set of target {@link EntityRelationship}s that this entity
      * participates in.
      */
     private Set<EntityRelationship> targetEntityRelationships = 
@@ -143,13 +126,6 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @param participations The participations to set.
-     */
-    public void setParticipations(Set<Participation> participations) {
-        this.participations = participations;
-    }
-
-    /**
      * Add a new {@link EntityIdentity}
      * 
      * @param identity
@@ -190,13 +166,13 @@ public class Entity extends IMObject {
     }
 
     /**
-     * @param targetRelationships The sourceEntityRelationships to set.
+     * @param entityRelationships The sourceEntityRelationships to set.
      */
     @SuppressWarnings("unused")
     private void setSourceEntityRelationships(Set<EntityRelationship> entityRelationships) {
         this.sourceEntityRelationships = entityRelationships;
     }
-    
+
     /**
      * Add a source {@link EntityRelationship} to this entity
      * 
@@ -227,7 +203,7 @@ public class Entity extends IMObject {
     }
     
     /**
-     * @param targetRelationships The targetEntityRelationships to set.
+     * @param entityRelationships The targetEntityRelationships to set.
      */
     @SuppressWarnings("unused")
     private void setTargetEntityRelationships(Set<EntityRelationship> entityRelationships) {
@@ -339,7 +315,7 @@ public class Entity extends IMObject {
     /**
      * Remove the {@link Classification} from this entity
      * 
-     * @oparam classification
+     * @param classification
      *            the classification to remove
      */
     public void removeClassification(Classification classification) {
@@ -364,36 +340,6 @@ public class Entity extends IMObject {
         this.classifications = classifications;
     }
 
-    /**
-     * Add this entity to the specified participation
-     * 
-     * @param participation
-     *            the participation to add  
-     */
-    public void addParticipation(Participation participation) {
-        participations.add(participation);
-    }
-    
-    /**
-     * Remove the {@link Participation} from this entity
-     * 
-     * @oparam participation
-     *            the entity classification to remove
-     */
-    public boolean removeParticipation(Participation participation) {
-        return participations.remove(participation);
-    }
-    
-    /**
-     * Return all the {@link Participation} objects that this entity is 
-     * the associated with.
-     * 
-     * @return Participation[]
-     */
-    public Set<Participation> getParticipations() {
-        return participations;
-    }
-    
     /**
      * @return Returns the details.
      */
@@ -427,7 +373,6 @@ public class Entity extends IMObject {
         copy.details = (DynamicAttributeMap)(this.details == null ?
                 null : this.details.clone());
         copy.identities = new HashSet<EntityIdentity>(this.identities);
-        copy.participations = new HashSet<Participation>(this.participations);
         copy.sourceEntityRelationships = new HashSet<EntityRelationship>(this.sourceEntityRelationships);
         copy.targetEntityRelationships = new HashSet<EntityRelationship>(this.targetEntityRelationships);
 

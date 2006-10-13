@@ -39,12 +39,18 @@ public class DateFunctions {
     /**
      * Short format style.
      */
-    private static final String SHORT = "short";
+    public static final String SHORT = "short";
 
     /**
      * Medium format style.
      */
-    private static final String MEDIUM = "medium";
+    public static final String MEDIUM = "medium";
+
+
+    /**
+     * Long format style.
+     */
+    public static final String LONG = "long";
 
 
     /**
@@ -81,7 +87,7 @@ public class DateFunctions {
      * Returns a formatted string for a time, using the locale associated
      * with the current thread, or the system default if none is specified.
      *
-     * @param time the date
+     * @param time the time
      * @return the formatted time string or <code>null</code> if no time was
      *         passed
      */
@@ -93,7 +99,7 @@ public class DateFunctions {
      * Returns a formatted string for a time, using the locale associated
      * with the current thread, or the system default if none is specified.
      *
-     * @param time  the date
+     * @param time  the time
      * @param style the time style. May be "short", "medium", or "long"
      * @return the formatted time string or <code>null</code> if no time was
      *         passed

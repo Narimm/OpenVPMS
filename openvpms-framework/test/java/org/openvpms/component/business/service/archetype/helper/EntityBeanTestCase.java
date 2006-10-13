@@ -18,11 +18,9 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -58,48 +56,6 @@ public class EntityBeanTestCase
     }
 
     /**
-     * Tests the {@link ActBean#addParticipation),
-     * {@link EntityBean#getParticipation(String),
-     * {@link EntityBean#removeParticipation} and
-     * {@link EntityBean#setParticipant} methods.
-     */
-    public void testParticipations() {
-        final String pName = "participation.customer";
-        Entity entity = (Entity) create("party.customerperson");
-        EntityBean bean = new EntityBean(entity);
-        Act act1 = (Act) create("act.customerEstimationItem");
-        ArchetypeServiceHelper.getArchetypeService().save(act1);
-        Act act2 = (Act) create("act.customerEstimationItem");
-        ArchetypeServiceHelper.getArchetypeService().save(act2);
-
-        assertNull(bean.getParticipation(pName));
-
-        // add a participation and verify it can be retrieved
-        Participation p = bean.addParticipation(pName, act1);
-        checkParticipation(p, pName, entity, act1);
-        p = bean.getParticipation(pName);
-        checkParticipation(p, pName, entity, act1);
-
-        //  test getParticipant
-        Act act = bean.getParticipant(pName);
-        assertNotNull(act);
-        assertEquals(act1, act);
-
-        // remove the participation and verify it has been removed
-        p = bean.removeParticipation(pName);
-        checkParticipation(p, pName, entity, act1);
-        assertNull(bean.getParticipation(pName));
-
-        // test setParticipant
-        p = bean.setParticipant(pName, act1);
-        checkParticipation(p, pName, entity, act1);
-        p = bean.setParticipant(pName, act2);
-        checkParticipation(p, pName, entity, act2);
-        p = bean.getParticipation(pName);
-        checkParticipation(p, pName, entity, act2);
-    }
-
-    /**
      * Verifies that an entity relationship matches that expected.
      *
      * @param relationship the relationship
@@ -114,23 +70,6 @@ public class EntityBeanTestCase
         assertEquals(shortName, relationship.getArchetypeId().getShortName());
         assertEquals(source.getObjectReference(), relationship.getSource());
         assertEquals(target.getObjectReference(), relationship.getTarget());
-    }
-
-    /**
-     * Verifies that a participation matches that expected.
-     *
-     * @param participation the participation
-     * @param shortName     the expected short name
-     * @param entity        the expected entity
-     * @param act           the expected act
-     */
-    private void checkParticipation(Participation participation,
-                                    String shortName, Entity entity,
-                                    Act act) {
-        assertNotNull(participation);
-        assertEquals(shortName, participation.getArchetypeId().getShortName());
-        assertEquals(entity.getObjectReference(), participation.getEntity());
-        assertEquals(act.getObjectReference(), participation.getAct());
     }
 
     /**

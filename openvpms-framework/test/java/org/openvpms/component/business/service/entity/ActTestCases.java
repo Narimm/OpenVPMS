@@ -19,13 +19,7 @@
 package org.openvpms.component.business.service.entity;
 
 //spring-context
-import java.util.List;
-
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-// openvpms-framework
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -36,6 +30,9 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.List;
 
 /**
  * Test the entity service with acts
@@ -45,12 +42,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
  */
 public class ActTestCases extends
         AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(ActTestCases.class);
-    
+
     /**
      * Holds a reference to the archetype service
      */
@@ -120,11 +112,6 @@ public class ActTestCases extends
         act3.addParticipation(participation3);
         archetypeService.save(act3);
 
-        person = (Party)ArchetypeQueryHelper.getByUid(archetypeService,
-                person.getArchetypeId(), person.getUid());
-        assertTrue(person != null);
-        assertTrue(person.getParticipations().size() == 3);
-        
         List<Participation> participations = ArchetypeQueryHelper.getParticipations(
                 archetypeService, new IMObjectReference(person), "participation.simple", 
                 null, null, 
