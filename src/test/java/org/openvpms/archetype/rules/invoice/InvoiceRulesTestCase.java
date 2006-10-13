@@ -405,8 +405,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(template);
         bean.setValue("name", "XDocumentTemplate");
         bean.setValue("archetype", "act.patientDocumentAttachment");
-        Act document = createAct("act.documentTemplate");
-        bean.addParticipation("participation.document", document);
         bean.save();
 
         return template;
