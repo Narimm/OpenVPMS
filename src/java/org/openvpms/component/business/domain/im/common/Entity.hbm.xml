@@ -76,12 +76,6 @@
       <one-to-many
         class="org.openvpms.component.business.domain.im.common.EntityRelationship" />
     </set>
-    <set name="participations" access="property" inverse="true"
-         cascade="all,delete-orphan">
-      <key column="entity_linkId" property-ref="linkId" not-null="true" />
-      <one-to-many
-        class="org.openvpms.component.business.domain.im.common.Participation" />
-    </set>
 
     <!-- Mapping for the User class -->
     <joined-subclass
@@ -99,7 +93,7 @@
       </set>
     </joined-subclass>
 
-    <!--  Mapping for the abstract Party class -->
+    <!--  Mapping for the Party class -->
     <joined-subclass
       name="org.openvpms.component.business.domain.im.party.Party"
       table="parties">
@@ -155,7 +149,7 @@
 
   <query name="entity.getEntityById">
     <![CDATA[
-			from org.openvpms.component.business.domain.im.common.Entity as 
+			from org.openvpms.component.business.domain.im.common.Entity as
 			entity where entity.uid = :uid
 		]]>
   </query>
