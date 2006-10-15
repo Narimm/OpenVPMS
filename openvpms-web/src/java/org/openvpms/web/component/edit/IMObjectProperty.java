@@ -38,10 +38,6 @@ package org.openvpms.web.component.edit;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.LazyInitializationException;
-import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
-import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectDAOHibernate;
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -52,7 +48,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.ValidationHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.spring.ServiceHelper;
-import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -130,22 +125,16 @@ public class IMObjectProperty implements Property, CollectionProperty {
      * @return the collection
      */
     public Collection getValues() {
+        List<IMObject> values = null;
         try {
-            List<IMObject> values = _descriptor.getChildren(_object);
+            values = _descriptor.getChildren(_object);
             if (values != null) {
                 values = Collections.unmodifiableList(values);
             }
-            return values;
         } catch (OpenVPMSException exception) {
-            Throwable cause = exception.getCause();
-            if (cause instanceof LazyInitializationException) {
-                // @todo - workaround for OBF-105
-                return getValuesInSession();
-            } else {
-                _log.error(exception, exception);
-            }
+            _log.error(exception, exception);
         }
-        return null;
+        return values;
     }
 
     /**
@@ -447,33 +436,6 @@ public class IMObjectProperty implements Property, CollectionProperty {
                     "Attenpt to modify read-only property: "
                             + getDescriptor().getDisplayName());
         }
-    }
-
-    /**
-     * Helper to get the collection values in a current hibernate session.
-     * todo: this is a hack to workaround OBF-105
-     *
-     * @return the collection or <code>null</code>
-     */
-    private Collection getValuesInSession() {
-        ApplicationContext context = ServiceHelper.getContext();
-        IMObjectDAOHibernate dao
-                = (IMObjectDAOHibernate) context.getBean("imObjectDao");
-        SessionFactory factory = dao.getHibernateTemplate().getSessionFactory();
-        Session session = factory.openSession();
-        try {
-            session.refresh(_object);
-            List<IMObject> values = _descriptor.getChildren(_object);
-            if (values != null) {
-                values = Collections.unmodifiableList(values);
-            }
-            return values;
-        } catch (Throwable throwable) {
-            _log.error(throwable, throwable);
-        } finally {
-            session.close();
-        }
-        return null;
     }
 
 }
