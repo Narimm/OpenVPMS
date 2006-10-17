@@ -26,7 +26,7 @@
     <cache usage="read-write" />
     <id name="uid" access="field" type="long" unsaved-value="-1">
       <column name="lookup_relationship_id" index="lookup_relationship_id_idx" />
-      <generator class="increment" />
+      <generator class="native" />
     </id>
     <version name="version" access="field" type="long" />
     <property name="linkId" access="property" type="string" length="100" />
