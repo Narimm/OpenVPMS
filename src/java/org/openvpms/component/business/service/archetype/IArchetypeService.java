@@ -249,7 +249,7 @@ public interface IArchetypeService {
      * @param query the archetype query
      * @return the nodes for each object that matches the query criteria
      */
-    IPage<NodeSet> get(List<String> nodes, ArchetypeQuery query);
+    IPage<NodeSet> get(Collection<String> nodes, ArchetypeQuery query);
 
     /**
      * Retrun a list of {@link IMObject} instances that satisfy the specified

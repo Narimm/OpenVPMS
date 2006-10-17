@@ -671,7 +671,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
     private class NodeCollector extends AbstractCollector<NodeSet> {
 
-        private List<NodeDescriptor> descriptors = new ArrayList<NodeDescriptor>();
+        private List<NodeDescriptor> descriptors
+                = new ArrayList<NodeDescriptor>();
 
         private List<NodeSet> result = new ArrayList<NodeSet>();
 
@@ -684,6 +685,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     = new NodeSet(object.getObjectReference());
             for (NodeDescriptor descriptor : descriptors) {
                 Object value = descriptor.getValue(object);
+                if (value instanceof Collection) {
+                    for (Object elt : (Collection) value) {
+                        if (elt instanceof IMObject) {
+                            loader.load((IMObject) elt);
+                        }
+                    }
+                }
                 nodes.set(descriptor.getName(), value);
             }
             result.add(nodes);
