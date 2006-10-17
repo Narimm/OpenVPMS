@@ -59,6 +59,16 @@ public abstract class DescriptorTableModel<T extends IMObject>
 
     /**
      * Creates a new <code>DescriptorTableModel</code>.
+     * The column model must be set using {@link #setTableColumnModel}.
+     */
+    public DescriptorTableModel() {
+        _context = new DefaultLayoutContext();
+        TableComponentFactory factory = new TableComponentFactory(_context);
+        _context.setComponentFactory(factory);
+    }
+
+    /**
+     * Creates a new <code>DescriptorTableModel</code>.
      *
      * @param shortNames the archetype short names
      */
@@ -83,7 +93,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
     /**
      * Construct a <code>DescriptorTableModel</code>.
      *
-     * @param model   the table column model
+     * @param model   the table column model. May be <code>null</code>
      * @param context the layout context
      */
     public DescriptorTableModel(TableColumnModel model,
@@ -248,7 +258,23 @@ public abstract class DescriptorTableModel<T extends IMObject>
     protected void addColumns(List<NodeDescriptor> descriptors,
                               TableColumnModel columns) {
         // determine a unique starting index for the columns
-        int index = BaseIMObjectTableModel.NEXT_INDEX;
+        int index = getNextModelIndex(columns);
+
+        for (NodeDescriptor descriptor : descriptors) {
+            TableColumn column = new DescriptorTableColumn(index, descriptor);
+            columns.addColumn(column);
+            ++index;
+        }
+    }
+
+    /**
+     * Helper to determine the next available model index.
+     *
+     * @param columns the columns
+     * @return the next available model index.
+     */
+    protected int getNextModelIndex(TableColumnModel columns) {
+        int index = NEXT_INDEX;
         Iterator iterator = columns.getColumns();
         while (iterator.hasNext()) {
             TableColumn col = (TableColumn) iterator.next();
@@ -256,12 +282,7 @@ public abstract class DescriptorTableModel<T extends IMObject>
                 index = col.getModelIndex() + 1;
             }
         }
-
-        for (NodeDescriptor descriptor : descriptors) {
-            TableColumn column = new DescriptorTableColumn(index, descriptor);
-            columns.addColumn(column);
-            ++index;
-        }
+        return index;
     }
 
     /**

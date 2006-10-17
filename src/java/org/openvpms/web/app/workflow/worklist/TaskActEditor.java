@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.worklist;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -34,8 +35,11 @@ import org.openvpms.web.component.edit.Modifiable;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
@@ -98,6 +102,16 @@ public class TaskActEditor extends AbstractActEditor {
             return super.save();
         }
         return false;
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new LayoutStrategy();
     }
 
     /**
@@ -245,5 +259,30 @@ public class TaskActEditor extends AbstractActEditor {
         return result;
     }
 
+    private class LayoutStrategy extends AbstractLayoutStrategy {
+
+        /**
+         * Creates a component for a property. This maintains a cache of created
+         * components, in order for the focus to be set on an appropriate
+         * component.
+         *
+         * @param property the property
+         * @param parent   the parent object
+         * @param context  the layout context
+         * @return a component to display <code>property</code>
+         */
+        @Override
+        protected Component createComponent(Property property, IMObject parent,
+                                            LayoutContext context) {
+            Component component;
+            String name = property.getDescriptor().getName();
+            if (name.equals("startTime") || name.equals("endTime")) {
+                component = DateTimeFieldFactory.create(property);
+            } else {
+                component = super.createComponent(property, parent, context);
+            }
+            return component;
+        }
+    }
 
 }

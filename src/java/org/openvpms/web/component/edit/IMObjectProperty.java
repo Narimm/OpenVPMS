@@ -339,6 +339,15 @@ public class IMObjectProperty implements Property, CollectionProperty {
     }
 
     /**
+     * Returns the object that the property belongs to.
+     *
+     * @return the object
+     */
+    public IMObject getObject() {
+        return _object;
+    }
+
+    /**
      * Sets the property transformer.
      *
      * @param transformer the property transformer. May be <code>null</code>

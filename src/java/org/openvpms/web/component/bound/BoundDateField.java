@@ -18,6 +18,8 @@
 
 package org.openvpms.web.component.bound;
 
+import echopointng.DateChooser;
+import echopointng.DateField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.component.edit.Property;
@@ -40,12 +42,7 @@ public class BoundDateField extends DateFieldImpl {
     /**
      * The bound property.
      */
-    private final Binder _binder;
-
-    /**
-     * Date change listener.
-     */
-    private final PropertyChangeListener _listener;
+    private final DateBinder binder;
 
 
     /**
@@ -54,15 +51,6 @@ public class BoundDateField extends DateFieldImpl {
      * @param property the property to bind
      */
     public BoundDateField(Property property) {
-        _listener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                String name = event.getPropertyName();
-                if ("selectedDate".equals(name)) {
-                    _binder.setProperty();
-                }
-            }
-        };
-
         // Register an action listener to ensure document update events
         // are triggered in a timely fashion
         getTextField().addActionListener(new ActionListener() {
@@ -71,24 +59,79 @@ public class BoundDateField extends DateFieldImpl {
             }
         });
 
-        _binder = new Binder(property) {
-            protected Object getFieldValue() {
-                return getDateChooser().getSelectedDate().getTime();
-            }
-
-            protected void setFieldValue(Object value) {
-                getDateChooser().removePropertyChangeListener(_listener);
-                Date date = (Date) value;
-                Calendar calendar = null;
-                if (date != null) {
-                    calendar = Calendar.getInstance();
-                    calendar.setTime(date);
-                }
-                getDateChooser().setSelectedDate(calendar);
-                getDateChooser().addPropertyChangeListener(_listener);
-            }
-        };
-        _binder.setField();
+        binder = createBinder(property);
+        binder.setField();
     }
 
+    /**
+     * Creates a new {@link DateBinder}.
+     *
+     * @param property the property to bind
+     * @return a new binder
+     */
+    protected DateBinder createBinder(Property property) {
+        return new DateBinder(this, property);
+    }
+
+    /**
+     * Returns the binder.
+     *
+     * @return the binder
+     */
+    protected DateBinder getBinder() {
+        return binder;
+    }
+
+    /**
+     * Binds a date field to a property.
+     */
+    protected static class DateBinder extends Binder {
+
+        /**
+         * The date field.
+         */
+        private final DateField field;
+
+        /**
+         * Date change listener.
+         */
+        private final PropertyChangeListener listener;
+
+
+        /**
+         * Constructs a new <code>DateBinder</code>.
+         *
+         * @param field    the field to bind
+         * @param property the property to bind to
+         */
+        public DateBinder(DateField field, Property property) {
+            super(property);
+            this.field = field;
+            listener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent event) {
+                    String name = event.getPropertyName();
+                    if ("selectedDate".equals(name)) {
+                        setProperty();
+                    }
+                }
+            };
+        }
+
+        protected Object getFieldValue() {
+            return field.getDateChooser().getSelectedDate().getTime();
+        }
+
+        protected void setFieldValue(Object value) {
+            DateChooser chooser = field.getDateChooser();
+            chooser.removePropertyChangeListener(listener);
+            Date date = (Date) value;
+            Calendar calendar = null;
+            if (date != null) {
+                calendar = Calendar.getInstance();
+                calendar.setTime(date);
+            }
+            chooser.setSelectedDate(calendar);
+            chooser.addPropertyChangeListener(listener);
+        }
+    }
 }
