@@ -127,8 +127,10 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
         NodeSet name = IMObjectHelper.getNodes(clinicianRef, "name");
         if (name != null) {
-            clinician = getValue((String) name.get("name"), bean, "clinician");
+            clinician = (String) name.get("name");
         }
+        clinician = getValue(clinician, bean, "clinician");
+
         return Messages.get("patient.record.summary", completed, clinician,
                             reason, status);
     }
