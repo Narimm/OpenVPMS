@@ -22,21 +22,19 @@ import nextapp.echo2.app.Row;
 import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 
-
 /**
- * CRUD Window for patient medication acts. Only supports the display of the
- * acts.
+ * CRUD Window for patient summary. Only supports the display of the acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class MedicationRecordCRUDWindow extends AbstractViewCRUDWindow {
+public class SummaryCRUDWindow extends AbstractViewCRUDWindow {
 
     /**
-     * Create a new <code>MedicationRecordCRUDWindow</code>.
+     * Create a new <code>SummaryCRUDWindow</code>.
      */
-    public MedicationRecordCRUDWindow() {
-        super(null, new ShortNameList("act.patientMedication"));
+    public SummaryCRUDWindow() {
+        super(null, new ShortNameList("act.patientClinicalEvent"));
     }
 
     /**

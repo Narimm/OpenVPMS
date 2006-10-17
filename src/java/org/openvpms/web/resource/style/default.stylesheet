@@ -1201,6 +1201,11 @@
         </properties>
     </style>
 
+    <style name="none"
+           type="org.openvpms.web.component.tree.StyleableTreeIcons">
+        <properties/>
+    </style>
+
     <!-- =================================================================== -->
     <!--  Window pane defaults                                               -->
     <!-- =================================================================== -->
@@ -1375,6 +1380,23 @@
         <properties>
             <property name="font">
                 <font size="6pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="plain" type="nextapp.echo2.app.Table" base-name="default">
+        <properties>
+            <property name="border">
+                <border style="none"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="plain-1024x768" base-name="plain"
+           type="nextapp.echo2.app.Table">
+        <properties>
+            <property name="font">
+                <font size="7pt"/>
             </property>
         </properties>
     </style>

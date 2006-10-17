@@ -51,6 +51,11 @@ public class RecordBrowser implements Browser<Act> {
     private TabbedPane _tab;
 
     /**
+     * The summary browser.
+     */
+    private Browser<Act> _summary;
+
+    /**
      * The visits browser.
      */
     private TableBrowser<Act> _visits;
@@ -84,23 +89,25 @@ public class RecordBrowser implements Browser<Act> {
      * The browser view.
      */
     public enum View {
-        VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT
+        SUMMARY, VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT
     }
 
 
     /**
      * Construct a new <code>RecordBrowser</code> that queries IMObjects using
-     * the specified query.
+     * the specified queries.
      *
-     * @param visits        query for visists
+     * @param summary       query for summary
+     * @param visits        query for visits
      * @param problems      query for problems
      * @param medication    query for medication
      * @param reminderAlert query for reminders/alerts
      * @param sort          the sort criteria. May be <code>null</code>
      */
-    public RecordBrowser(Query<Act> visits, Query<Act> problems,
-                         Query<Act> medication, Query<Act> reminderAlert,
-                         SortConstraint[] sort) {
+    public RecordBrowser(Query<Act> summary, Query<Act> visits,
+                         Query<Act> problems, Query<Act> medication,
+                         Query<Act> reminderAlert, SortConstraint[] sort) {
+        _summary = new SummaryTableBrowser(summary);
         _visits = new TableBrowser<Act>(visits, sort);
         _problems = new TableBrowser<Act>(problems, sort);
         _medication = new TableBrowser<Act>(medication, sort);
@@ -121,6 +128,7 @@ public class RecordBrowser implements Browser<Act> {
     public Component getComponent() {
         if (_tab == null) {
             DefaultTabModel model = new DefaultTabModel();
+            addTab("button.summary", model, _summary);
             addTab("button.visit", model, _visits);
             addTab("button.problem", model, _problems);
             addTab("button.medication", model, _medication);
@@ -175,6 +183,7 @@ public class RecordBrowser implements Browser<Act> {
      * @param listener the listener to add
      */
     public void addQueryListener(QueryBrowserListener listener) {
+        _summary.addQueryListener(listener);
         _visits.addQueryListener(listener);
         _problems.addQueryListener(listener);
         _medication.addQueryListener(listener);
@@ -185,6 +194,7 @@ public class RecordBrowser implements Browser<Act> {
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
+        query(_summary);
         query(_visits);
         query(_problems);
         query(_medication);
@@ -200,6 +210,9 @@ public class RecordBrowser implements Browser<Act> {
     public Browser<Act> getBrowser(View view) {
         Browser<Act> result;
         switch (view) {
+            case SUMMARY:
+                result = _summary;
+                break;
             case VISITS:
                 result = _visits;
                 break;
@@ -224,12 +237,15 @@ public class RecordBrowser implements Browser<Act> {
         View result;
         switch (_selected) {
             case 0:
-                result = View.VISITS;
+                result = View.SUMMARY;
                 break;
             case 1:
-                result = View.PROBLEMS;
+                result = View.VISITS;
                 break;
             case 2:
+                result = View.PROBLEMS;
+                break;
+            case 3:
                 result = View.MEDICATION;
                 break;
             default:
@@ -261,7 +277,7 @@ public class RecordBrowser implements Browser<Act> {
      *
      * @param browser the browser
      */
-    private void query(TableBrowser<Act> browser) {
+    private void query(Browser<Act> browser) {
         Act selected = browser.getSelected();
         browser.query();
         browser.setSelected(selected);
