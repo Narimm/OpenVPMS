@@ -406,7 +406,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param query the archetype query
      * @return the nodes for each object that matches the query criteria
      */
-    public IPage<NodeSet> get(List<String> nodes, ArchetypeQuery query) {
+    public IPage<NodeSet> get(Collection<String> nodes, ArchetypeQuery query) {
         if (nodes == null || query == null) {
             return null;
         }
@@ -437,6 +437,8 @@ public class ArchetypeService implements IArchetypeService {
             return dao.get(descriptors, context.getQueryString(),
                            context.getValueMap(), query.getFirstRow(),
                            query.getNumOfRows());
+        } catch (ArchetypeServiceException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,

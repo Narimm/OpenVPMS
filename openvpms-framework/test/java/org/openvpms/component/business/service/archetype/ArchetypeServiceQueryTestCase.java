@@ -19,26 +19,31 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-// openvpms-framework
+import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.InvalidNodeDescriptor;
+import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-// log4j
-import org.apache.log4j.Logger;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 
 /**
  * Test that ability to create and query on acts.
@@ -47,19 +52,12 @@ import org.apache.log4j.Logger;
  * @version $LastChangedDate$
  */
 public class ArchetypeServiceQueryTestCase extends
-        AbstractDependencyInjectionSpringContextTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeServiceQueryTestCase.class);
-    
+                                           AbstractDependencyInjectionSpringContextTests {
     /**
      * Holds a reference to the entity service
      */
     private IArchetypeService service;
-    
+
 
 
     public static void main(String[] args) {
@@ -79,8 +77,8 @@ public class ArchetypeServiceQueryTestCase extends
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] { 
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml" 
+        return new String[] {
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
                 };
     }
 
@@ -90,11 +88,11 @@ public class ArchetypeServiceQueryTestCase extends
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        
+
         this.service = (IArchetypeService)applicationContext.getBean(
                 "archetypeService");
     }
-    
+
     /**
      * Test the query by code in the lookup entity. This will support 
      * OVPMS-35
@@ -103,7 +101,7 @@ public class ArchetypeServiceQueryTestCase extends
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true).add(
                         new NodeConstraint("country", RelationalOp.EQ, "Belarus"));
-        
+
         int acount = service.get(query).getRows().size();
         Lookup lookup = (Lookup)service.create("lookup.country");
         lookup.setValue("Belarus");
@@ -111,7 +109,7 @@ public class ArchetypeServiceQueryTestCase extends
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
     }
-    
+
     /**
      * Test query by code with wildcard
      */
@@ -119,7 +117,7 @@ public class ArchetypeServiceQueryTestCase extends
     throws Exception {
         ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true).add(
                         new NodeConstraint("country", RelationalOp.EQ, "Bel*"));
-        
+
         int acount = service.get(query).getRows().size();
         Lookup lookup = (Lookup)service.create("lookup.country");
         lookup.setValue("Belarus");
@@ -127,7 +125,7 @@ public class ArchetypeServiceQueryTestCase extends
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
     }
-    
+
     /**
      * Test query by code with wild in short name
      */
@@ -143,7 +141,7 @@ public class ArchetypeServiceQueryTestCase extends
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
     }
-    
+
     /**
      * Test query by code with wild in short name and an order clause
      */
@@ -160,7 +158,7 @@ public class ArchetypeServiceQueryTestCase extends
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
     }
-    
+
     /**
      * Test OVPMS245
      */
@@ -176,9 +174,82 @@ public class ArchetypeServiceQueryTestCase extends
                                         .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.EQ, "species"))
                                         .add(new NodeConstraint("name", RelationalOp.EQ, "Canine"))
                                         .add(new NodeSortConstraint("name", true)))));
-        
+
         IPage<IMObject> page = service.get(query);
         assertTrue(page != null);
     }
-    
+
+    /**
+     * Tests the NodeSet get method. This verifies that subcollections a
+     * loaded correctly, avoiding LazyInitializationException.
+     */
+    public void testGetNodeSet() {
+        // set up a party with a single contact and contact purpose
+        Contact contact = (Contact) service.create("contact.phoneNumber");
+        contact.getDetails().setAttribute("areaCode", "03");
+        contact.getDetails().setAttribute("telephoneNumber", "0123456789");
+        Classification purpose = (Classification) service.create(
+                "classification.contactPurpose");
+        purpose.setName("Home");
+        service.save(purpose);
+
+        contact.addClassification(purpose);
+
+        Party person  = (Party) service.create("person.person");
+        person.getDetails().setAttribute("lastName", "Anderson");
+        person.getDetails().setAttribute("firstName", "Tim");
+        person.getDetails().setAttribute("title", "Mr");
+        person.addContact(contact);
+        service.save(person);
+
+        // query the firstName, lastName and contacts nodes of the person
+        ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
+        List<String> names = Arrays.asList("firstName", "lastName", "contacts");
+        IPage<NodeSet> page = service.get(names, query);
+        assertNotNull(page);
+
+        // verify that the page only has a single element, and that the node
+        // set has the expected nodes
+        assertEquals(1, page.getRows().size());
+        NodeSet nodes = page.getRows().get(0);
+        assertEquals(3, nodes.getNames().size());
+        assertTrue(nodes.getNames().contains("firstName"));
+        assertTrue(nodes.getNames().contains("lastName"));
+        assertTrue(nodes.getNames().contains("contacts"));
+
+        // verify the values of the simple nodes
+        assertEquals(person.getObjectReference(), nodes.getObjectReference());
+        assertEquals("Tim", nodes.get("firstName"));
+        assertEquals("Anderson", nodes.get("lastName"));
+
+
+        // verify the values of the contact node. If the classification hasn't
+        // been loaded, a LazyInitializationException will be raised by
+        // hibernate
+        Collection<Contact> contacts
+                = (Collection<Contact>) nodes.get("contacts");
+        assertEquals(1, contacts.size());
+        contact = contacts.toArray(new Contact[0])[0];
+        assertEquals("03", contact.getDetails().getAttribute("areaCode"));
+        assertEquals("0123456789",
+                     contact.getDetails().getAttribute("telephoneNumber"));
+        assertEquals(1, contact.getClassificationsAsArray().length);
+        purpose = contact.getClassificationsAsArray()[0];
+        assertEquals("Home", purpose.getName());
+    }
+
+    /**
+     * Tests the behaviour of the NodeSet get() method when the node doesn't
+     * exist.
+     */
+    public void testGetNodeSetForInvalidNode() {
+        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true);
+        List<String> nodes = Arrays.asList("invalidNode");
+        try {
+            service.get(nodes, query);
+            fail("Expected an ArchetypeServiceException to be thrown");
+        } catch (ArchetypeServiceException exception) {
+            assertEquals(InvalidNodeDescriptor, exception.getErrorCode());
+        }
+    }
 }
