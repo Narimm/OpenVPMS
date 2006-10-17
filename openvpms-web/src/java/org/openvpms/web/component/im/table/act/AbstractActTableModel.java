@@ -38,6 +38,13 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
 
     /**
      * Creates a new <code>AbstractActTableModel</code>.
+     * The column model must be set using {@link #setTableColumnModel}.
+     */
+    public AbstractActTableModel() {
+    }
+
+    /**
+     * Creates a new <code>AbstractActTableModel</code>.
      *
      * @param shortNames the act archetype short names
      */
