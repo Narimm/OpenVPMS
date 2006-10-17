@@ -60,7 +60,7 @@
            type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
-            <property name="separatorPosition" value="75px"/>
+            <property name="separatorPosition" value="30px"/>
             <property name="background" value="#339933"/>
             <property name="font">
                 <font size="9pt"/>
