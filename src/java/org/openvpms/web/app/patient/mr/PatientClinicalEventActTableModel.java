@@ -49,6 +49,6 @@ public class PatientClinicalEventActTableModel
     @Override
     protected String[] getDescriptorNames() {
         return new String[]{"startTime", "completeTime", "status", "clinician",
-                            "reason", "description"};
+                            "reason"};
     }
 }
