@@ -51,7 +51,12 @@ public class PagedIMObjectTable<T extends IMObject> extends Column {
      */
     public PagedIMObjectTable(IMObjectTableModel<T> model) {
         setStyleName("CellSpacing");
-        IMObjectTableModel<T> paged = new PagedIMObjectTableModel<T>(model);
+        IMObjectTableModel<T> paged;
+        if (!(model instanceof PagedIMObjectTableModel)) {
+            paged = new PagedIMObjectTableModel<T>(model);
+        } else {
+            paged = model;
+        }
         _table = new IMObjectTable<T>(paged);
         _table.setDefaultHeaderRenderer(new SortableTableHeaderRenderer());
         add(_table);

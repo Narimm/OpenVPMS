@@ -131,7 +131,7 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
 
         ResultSet<T> set = doQuery();
         if (_table == null) {
-            _table = new PagedIMObjectTable<T>(_model);
+            _table = createTable(_model);
             _table.getTable().addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     onSelect();
@@ -145,6 +145,16 @@ public class TableBrowser<T extends IMObject> extends AbstractBrowser<T> {
             set = new PreloadedResultSet<T>(empty, getQuery().getMaxRows());
         }
         _table.setResultSet(set);
+    }
+
+    /**
+     * Creates a new paged table.
+     *
+     * @param model the table model
+     * @return a new paged table
+     */
+    protected PagedIMObjectTable<T> createTable(IMObjectTableModel<T> model) {
+        return new PagedIMObjectTable<T>(model);
     }
 
     /**

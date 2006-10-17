@@ -30,7 +30,7 @@ import java.util.List;
 
 
 /**
- * Enter description here.
+ * Paged, sortable table of {@link IMObject}s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
@@ -91,7 +91,7 @@ public class PagedIMObjectTableModel<T extends IMObject>
             }
         }
         _page = page;
-        getModel().setObjects(objects);
+        setPage(objects);
     }
 
     /**
@@ -189,6 +189,15 @@ public class PagedIMObjectTableModel<T extends IMObject>
      */
     public boolean isSortedAscending() {
         return _set.isSortedAscending();
+    }
+
+    /**
+     * Sets the objects for the current page.
+     *
+     * @param objects the objects to set
+     */
+    protected void setPage(List<T> objects) {
+        getModel().setObjects(objects);
     }
 
 }

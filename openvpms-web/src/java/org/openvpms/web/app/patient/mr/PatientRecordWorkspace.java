@@ -146,7 +146,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
      * @return a new CRUD window
      */
     protected CRUDWindow createCRUDWindow() {
-        return new VisitRecordCRUDWindow();
+        return new SummaryCRUDWindow();
     }
 
     /**
@@ -168,7 +168,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
     @Override
     protected Browser<Act> createBrowser(ActQuery query) {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
-        RecordBrowser browser = new RecordBrowser(query, createProblemsQuery(),
+        Party patient = (Party) getObject();
+        RecordBrowser browser = new RecordBrowser(query, createQuery(patient),
+                                                  createProblemsQuery(),
                                                   createMedicationQuery(),
                                                   createReminderAlertQuery(),
                                                   sort);
@@ -197,7 +199,9 @@ public class PatientRecordWorkspace extends ActWorkspace {
         RecordBrowser browser = (RecordBrowser) getBrowser();
         CRUDWindow window;
         RecordBrowser.View view = browser.getView();
-        if (view == RecordBrowser.View.VISITS) {
+        if (view == RecordBrowser.View.SUMMARY) {
+            window = new SummaryCRUDWindow();
+        } else if (view == RecordBrowser.View.VISITS) {
             window = new VisitRecordCRUDWindow();
         } else if (view == RecordBrowser.View.PROBLEMS) {
             Browser<Act> visit = browser.getBrowser(RecordBrowser.View.VISITS);
