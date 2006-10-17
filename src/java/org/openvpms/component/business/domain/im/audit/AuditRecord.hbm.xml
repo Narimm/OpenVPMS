@@ -24,7 +24,7 @@
     table="audit_records">
     <id name="uid" type="long" unsaved-value="-1">
       <column name="audit_id" index="audit_id_idx" />
-      <generator class="increment" />
+      <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
     <property name="archetypeId" access="property" column="archetype_id"

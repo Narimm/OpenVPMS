@@ -26,7 +26,7 @@
 		<id name="uid" type="long" unsaved-value="-1">
 			<column name="archetype_desc_id"
 				index="archetype_desc_id_idx" />
-			<generator class="increment" />
+			<generator class="native" />
 		</id>
 		<version name="version" access="property" type="long" />
 		<property name="lastModified" access="property"

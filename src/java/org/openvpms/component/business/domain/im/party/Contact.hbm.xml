@@ -25,7 +25,7 @@
     <cache usage="read-write" />
     <id name="uid" type="long" unsaved-value="-1">
       <column name="contact_id" index="contact_id_idx" />
-      <generator class="increment" />
+      <generator class="native" />
     </id>
     <version name="version" access="property" type="long" />
     <property name="linkId" access="property" type="string" length="100" />
