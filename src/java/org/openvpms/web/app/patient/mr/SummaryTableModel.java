@@ -154,6 +154,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
         LabelEx description = new LabelEx(act.getDescription());
         description.setIntepretNewlines(true);
+        description.setLineWrap(true);
         Row padding = RowFactory.create("Inset", new Label(""));
         return RowFactory.create("CellSpacing", padding, date, description);
     }
