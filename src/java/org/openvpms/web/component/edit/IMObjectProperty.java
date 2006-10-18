@@ -199,6 +199,8 @@ public class IMObjectProperty implements Property, CollectionProperty {
             modified();
         } catch (ValidationException exception) {
             invalidate(exception);
+        } catch (DescriptorException exception) {
+            invalidate(exception);
         }
     }
 

@@ -70,7 +70,7 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new IMObjectReferenceEditor(property, getLayoutContext()) {
+        return new IMObjectReferenceEditor(property, getLayoutContext(), true) {
 
             @Override
             public void setObject(IMObject object) {

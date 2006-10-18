@@ -19,26 +19,18 @@
 package org.openvpms.web.app.patient.info;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
-import java.util.Date;
 import java.util.Set;
 
 
@@ -49,13 +41,6 @@ import java.util.Set;
  * @version $LastChangedDate$
  */
 public class InformationWorkspace extends CRUDWorkspace {
-
-    /**
-     * Patient/owner relationship short name.
-     */
-    private static final String PATIENT_OWNER
-            = "entityRelationship.patientOwner";
-
 
     /**
      * Construct a new <code>InformationWorkspace</code>.
@@ -123,16 +108,20 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     protected void onSaved(IMObject object, boolean isNew) {
         super.onSaved(object, isNew);
-        Party patient = (Party) object;
-        GlobalContext context = GlobalContext.getInstance();
-        Party customer = context.getCustomer();
-        IArchetypeService service = ServiceHelper.getArchetypeService();
-        if (customer != null && isNew) {
-            if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
-                addRelationship(PATIENT_OWNER, patient, customer, service);
-                // refresh the customer
-                customer = (Party) IMObjectHelper.reload(customer);
-                context.setCustomer(customer);
+        if (isNew) {
+            // todo  need to do the following to force a refresh of the customer
+            // to reflect any new entity relationships with the current patient.
+            // This is a poor solution - need a better way of indicating that
+            // an object has changed.
+            Party patient = (Party) object;
+            GlobalContext context = GlobalContext.getInstance();
+            Party customer = context.getCustomer();
+            if (customer != null && isNew) {
+                if (hasRelationship(patient, customer)) {
+                    // refresh the customer
+                    customer = (Party) IMObjectHelper.reload(customer);
+                    context.setCustomer(customer);
+                }
             }
         }
     }
@@ -143,7 +132,8 @@ public class InformationWorkspace extends CRUDWorkspace {
      * @return a new CRUD window
      */
     @Override
-    protected CRUDWindow createCRUDWindow() {
+    protected CRUDWindow createCRUDWindow
+            () {
         ShortNames shortNames = new ShortNameList(getRefModelName(),
                                                   getEntityName(),
                                                   getConceptName());
@@ -151,45 +141,14 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Add a new relationship.
+     * Determines if a relationship between a customer and patient exists.
      *
-     * @param shortName the relationship short name
-     * @param patient   the patient
-     * @param customer  the customer
-     */
-    private void addRelationship(String shortName, Entity patient,
-                                 Party customer, IArchetypeService service) {
-        try {
-            EntityRelationship relationship;
-            relationship = (EntityRelationship) service.create(shortName);
-            if (relationship != null) {
-                relationship.setActiveStartTime(new Date());
-                relationship.setSequence(1);
-                relationship.setSource(new IMObjectReference(customer));
-                relationship.setTarget(new IMObjectReference(patient));
-
-                patient.addEntityRelationship(relationship);
-                service.save(patient);
-            } else {
-                String msg = Messages.get("imobject.create.failed", shortName);
-                ErrorHelper.show(msg);
-            }
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Determines if a relationship of the specified type exists.
-     *
-     * @param shortName the relationship short name
-     * @param patient   the patient
-     * @param customer  the customer
+     * @param patient  the patient
+     * @param customer the customer
      * @return <code>true</code> if a relationship exists; otherwsie
      *         <code>false</code>
      */
-    private boolean hasRelationship(String shortName, Entity patient,
-                                    Entity customer) {
+    private boolean hasRelationship(Party patient, Party customer) {
         boolean result = false;
         Set<EntityRelationship> relationships
                 = patient.getEntityRelationships();
@@ -197,13 +156,10 @@ public class InformationWorkspace extends CRUDWorkspace {
         IMObjectReference target = new IMObjectReference(patient);
 
         for (EntityRelationship relationship : relationships) {
-            ArchetypeId id = relationship.getArchetypeId();
-            if (id.getShortName().equals(shortName)) {
-                if (source.equals(relationship.getSource())
-                        && target.equals(relationship.getTarget())) {
-                    result = true;
-                    break;
-                }
+            if (source.equals(relationship.getSource())
+                    && target.equals(relationship.getTarget())) {
+                result = true;
+                break;
             }
         }
         return result;

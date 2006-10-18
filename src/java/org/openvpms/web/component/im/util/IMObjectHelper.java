@@ -36,6 +36,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.util.StringUtilities;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.GlobalContext;
 
 import java.util.ArrayList;
@@ -61,15 +62,32 @@ public class IMObjectHelper {
 
     /**
      * Returns an object given its reference.
+     * This checks the global context first. If not found in the global context,
+     * tries to retrieve it from the archetype service.
      *
      * @param reference the object reference. May be <code>null</code>
      * @return the object corresponding to <code>reference</code> or
      *         <code>null</code> if none exists
      */
     public static IMObject getObject(IMObjectReference reference) {
+        return getObject(reference, GlobalContext.getInstance());
+    }
+
+    /**
+     * Returns an object given its reference.
+     * This checks the specified context first. If not found in the context,
+     * tries to retrieve it from the archetype service.
+     *
+     * @param reference the object reference. May be <code>null</code>
+     * @param context   the context to use
+     * @return the object corresponding to <code>reference</code> or
+     *         <code>null</code> if none exists
+     */
+    public static IMObject getObject(IMObjectReference reference,
+                                     Context context) {
         IMObject result = null;
         if (reference != null) {
-            result = GlobalContext.getInstance().getObject(reference);
+            result = context.getObject(reference);
             if (result == null) {
                 try {
                     IArchetypeService service
@@ -119,15 +137,17 @@ public class IMObjectHelper {
      *
      * @param reference  the object reference. May be <code>null</code>
      * @param descriptor the node descriptor
+     * @param context
      * @return the object matching <code>reference</code>, or
      *         <code>descriptor</code>, or <code>null</code> if there is no
      *         matches
      */
     public static IMObject getObject(IMObjectReference reference,
-                                     NodeDescriptor descriptor) {
+                                     NodeDescriptor descriptor,
+                                     Context context) {
         IMObject result;
         if (reference == null) {
-            result = match(descriptor);
+            result = match(descriptor, context);
         } else {
             result = getObject(reference);
         }
@@ -253,12 +273,13 @@ public class IMObjectHelper {
      * the specified descriptor.
      *
      * @param descriptor the node descriptor
+     * @param context    the context
      * @return the current object being edited, or <code>null</code> if its type
      *         doesn't matches the specified descriptor's archetype range
      */
-    private static IMObject match(NodeDescriptor descriptor) {
+    private static IMObject match(NodeDescriptor descriptor, Context context) {
         IMObject result = null;
-        IMObject object = GlobalContext.getInstance().getCurrent();
+        IMObject object = context.getCurrent();
         if (object != null) {
             for (String shortName : descriptor.getArchetypeRange()) {
                 if (TypeHelper.matches(object.getArchetypeId(), shortName)) {
