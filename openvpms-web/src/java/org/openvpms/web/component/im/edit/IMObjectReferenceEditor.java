@@ -34,9 +34,14 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.focus.FocusSet;
+import org.openvpms.web.component.im.create.IMObjectCreator;
+import org.openvpms.web.component.im.create.IMObjectCreatorListener;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -63,17 +68,22 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     /**
      * The object name listener.
      */
-    private final DocumentListener _nameListener;
+    private final DocumentListener nameListener;
 
     /**
      * The selector.
      */
-    private Selector _selector;
+    private Selector selector;
 
     /**
      * The previous selector text, to avoid spurious updates.
      */
-    private String _prevText;
+    private String prevText;
+
+    /**
+     * Determines if objects may be created.
+     */
+    private boolean allowCreate;
 
 
     /**
@@ -83,13 +93,25 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * @param context  the layout context
      */
     public IMObjectReferenceEditor(Property property, LayoutContext context) {
+        this(property, context, false);
+    }
+
+    /**
+     * Constructs a new <code>IMObjectReferenceEditor</code>.
+     *
+     * @param property    the reference property
+     * @param context     the layout context
+     * @param allowCreate determines if objects may be created
+     */
+    public IMObjectReferenceEditor(Property property, LayoutContext context,
+                                   boolean allowCreate) {
         super(property);
-        _selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL, true);
-        _selector.setFormat(Selector.Format.NAME);
+        selector = new Selector(Selector.ButtonStyle.RIGHT_NO_ACCEL, true);
+        selector.setFormat(Selector.Format.NAME);
         FocusSet set = new FocusSet("IMObjectReferenceEditor");
-        set.add(_selector.getComponent());
+        set.add(selector.getComponent());
         context.getFocusTree().add(set);
-        _selector.getSelect().addActionListener(new ActionListener() {
+        selector.getSelect().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onSelect();
             }
@@ -97,17 +119,18 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
         IMObjectReference reference = (IMObjectReference) property.getValue();
         if (reference != null) {
             NodeDescriptor descriptor = property.getDescriptor();
-            _selector.setObject(
-                    IMObjectHelper.getObject(reference, descriptor));
+            selector.setObject(
+                    IMObjectHelper.getObject(reference, descriptor,
+                                             context.getContext()));
         }
 
-        TextField text = _selector.getText();
-        _nameListener = new DocumentListener() {
+        TextField text = selector.getText();
+        nameListener = new DocumentListener() {
             public void documentUpdate(DocumentEvent event) {
                 onNameChanged();
             }
         };
-        text.getDocument().addDocumentListener(_nameListener);
+        text.getDocument().addDocumentListener(nameListener);
 
         // Register an action listener to ensure document update events
         // are triggered in a timely fashion
@@ -116,6 +139,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
                 // no-op.
             }
         });
+        this.allowCreate = allowCreate;
     }
 
     /**
@@ -134,7 +158,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * @return the component
      */
     public Component getComponent() {
-        return _selector.getComponent();
+        return selector.getComponent();
     }
 
     /**
@@ -156,12 +180,21 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     public boolean isNull() {
         boolean result = false;
         if (getProperty().getValue() == null) {
-            TextField text = _selector.getText();
+            TextField text = selector.getText();
             if (text == null || StringUtils.isEmpty(text.getText())) {
                 result = true;
             }
         }
         return result;
+    }
+
+    /**
+     * Determines if objects may be created.
+     *
+     * @param create if <code>true</code>, objects may be created
+     */
+    public void setAllowCreate(boolean create) {
+        allowCreate = create;
     }
 
     /**
@@ -184,16 +217,20 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
             String title = Messages.get("imobject.select.title",
                                         getDescriptor().getDisplayName());
             final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                    title, browser);
+                    title, browser, allowCreate);
             if (runQuery && !query.isAuto()) {
                 browser.query();
             }
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
-                    IMObject object = popup.getSelected();
-                    if (object != null) {
-                        onSelected(object);
+                    if (popup.createNew()) {
+                        onCreate();
+                    } else {
+                        IMObject object = popup.getSelected();
+                        if (object != null) {
+                            onSelected(object);
+                        }
                     }
                 }
             });
@@ -219,7 +256,7 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
      * @return a new query
      */
     protected Query<IMObject> createQuery() {
-        String name = _selector.getText().getText();
+        String name = selector.getText().getText();
         return createQuery(name);
     }
 
@@ -240,12 +277,65 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     }
 
     /**
+     * Invoked to create a new object.
+     */
+    protected void onCreate() {
+        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
+            public void created(IMObject object) {
+                onCreated(object);
+            }
+
+            public void cancelled() {
+                // ignore
+            }
+        };
+
+        NodeDescriptor descriptor = getDescriptor();
+        IMObjectCreator.create(descriptor.getDisplayName(),
+                               descriptor.getArchetypeRange(),
+                               listener);
+    }
+
+    /**
+     * Invoked when an object is created. Pops up an editor to edit it.
+     *
+     * @param object the object to edit
+     */
+    private void onCreated(IMObject object) {
+        Context context = new LocalContext();
+        context.setCurrent(object);
+        LayoutContext layoutContext = new DefaultLayoutContext(true);
+        layoutContext.setContext(context);
+        final IMObjectEditor editor
+                = IMObjectEditorFactory.create(object, layoutContext);
+        final EditDialog dialog = new EditDialog(editor, layoutContext);
+        dialog.addWindowPaneListener(new WindowPaneListener() {
+            public void windowPaneClosing(WindowPaneEvent event) {
+                onEditCompleted(editor);
+            }
+        });
+
+        dialog.show();
+    }
+
+    /**
+     * Invoked when the editor is closed.
+     *
+     * @param editor the editor
+     */
+    protected void onEditCompleted(IMObjectEditor editor) {
+        if (!editor.isCancelled() && !editor.isDeleted()) {
+            setObject(editor.getObject());
+        }
+    }
+
+    /**
      * Invoked when the name is updated.
      */
     private void onNameChanged() {
-        TextField text = _selector.getText();
+        TextField text = selector.getText();
         String name = text.getText();
-        if (!ObjectUtils.equals(name, _prevText)) {
+        if (!ObjectUtils.equals(name, prevText)) {
             if (StringUtils.isEmpty(name)) {
                 setObject(null);
             } else {
@@ -283,11 +373,11 @@ public class IMObjectReferenceEditor extends AbstractPropertyEditor {
     }
 
     private void updateSelector(IMObject object) {
-        TextField text = _selector.getText();
-        text.getDocument().removeDocumentListener(_nameListener);
-        _selector.setObject(object);
-        text.getDocument().addDocumentListener(_nameListener);
-        _prevText = _selector.getText().getText();
+        TextField text = selector.getText();
+        text.getDocument().removeDocumentListener(nameListener);
+        selector.setObject(object);
+        text.getDocument().addDocumentListener(nameListener);
+        prevText = selector.getText().getText();
     }
 
 }

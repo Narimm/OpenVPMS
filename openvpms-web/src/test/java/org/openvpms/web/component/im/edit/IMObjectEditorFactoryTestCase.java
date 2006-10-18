@@ -22,6 +22,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
+import org.openvpms.web.app.patient.PatientEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
 import org.openvpms.web.component.im.doc.DocumentTemplateEditor;
 import org.openvpms.web.component.im.edit.act.DefaultParticipationEditor;
@@ -291,6 +292,14 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     public void testCreateDocumentTemplateEditor() {
         checkCreate("entity.documentTemplate", DocumentTemplateEditor.class);
+    }
+
+    /**
+     * Verifies that an {@link PatientEditor} is created for
+     * <em>party.patientpet</em>
+     */
+    public void testCreatePatientEditor() {
+        checkCreate("party.patientpet", PatientEditor.class);
     }
 
     /**

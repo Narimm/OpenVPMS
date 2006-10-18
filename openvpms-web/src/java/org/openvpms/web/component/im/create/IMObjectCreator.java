@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.dialog.SelectionDialog;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
@@ -120,6 +121,7 @@ public final class IMObjectCreator {
      */
     public static void create(String type, String[] shortNames,
                               final IMObjectCreatorListener listener) {
+        shortNames = DescriptorHelper.getShortNames(shortNames);
         if (shortNames.length == 0) {
             ErrorHelper.show("imobject.create.noshortnames", type);
             listener.cancelled();

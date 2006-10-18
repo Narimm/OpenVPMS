@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
@@ -78,13 +79,15 @@ public abstract class AbstractRelationshipEditor
     /**
      * Construct a new <code>EntityRelationshipEditor</code>.
      *
-     * @param relationship the relationship
-     * @param parent       the parent object
-     * @param context      the layout context
+     * @param relationship  the relationship
+     * @param parent        the parent object
+     * @param layoutContext the layout context
      */
     public AbstractRelationshipEditor(IMObject relationship,
-                                      IMObject parent, LayoutContext context) {
-        super(relationship, parent, context);
+                                      IMObject parent,
+                                      LayoutContext layoutContext) {
+        super(relationship, parent, layoutContext);
+        Context context = layoutContext.getContext();
         IMObjectReference sourceRef;
         IMObjectReference targetRef;
         IMObject source;
@@ -97,9 +100,9 @@ public abstract class AbstractRelationshipEditor
         targetRef = (IMObjectReference) targetProp.getValue();
 
         source = IMObjectHelper.getObject(sourceRef,
-                                          sourceProp.getDescriptor());
+                                          sourceProp.getDescriptor(), context);
         target = IMObjectHelper.getObject(targetRef,
-                                          targetProp.getDescriptor());
+                                          targetProp.getDescriptor(), context);
 
         // initialise the properties if null
         if (sourceRef == null && source != null) {
@@ -109,20 +112,20 @@ public abstract class AbstractRelationshipEditor
             targetProp.setValue(target.getObjectReference());
         }
 
-        IMObject edited = context.getContext().getCurrent();
+        IMObject edited = layoutContext.getContext().getCurrent();
         boolean srcReadOnly = true;
         if (source == null || !source.equals(edited)) {
             srcReadOnly = false;
         }
 
-        _source = new Entity(sourceProp, srcReadOnly, context);
+        _source = new Entity(sourceProp, srcReadOnly, layoutContext);
 
         boolean targetReadOnly = true;
         if (target == null || !target.equals(edited) || target.equals(source)) {
             targetReadOnly = false;
         }
 
-        _target = new Entity(targetProp, targetReadOnly, context);
+        _target = new Entity(targetProp, targetReadOnly, layoutContext);
     }
 
     /**

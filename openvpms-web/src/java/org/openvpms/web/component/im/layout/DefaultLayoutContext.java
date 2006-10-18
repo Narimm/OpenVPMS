@@ -99,6 +99,7 @@ public class DefaultLayoutContext implements LayoutContext {
      * @param context the context
      */
     public DefaultLayoutContext(LayoutContext context) {
+        _context = context.getContext();
         _factory = context.getComponentFactory();
         _filter = context.getDefaultNodeFilter();
 
