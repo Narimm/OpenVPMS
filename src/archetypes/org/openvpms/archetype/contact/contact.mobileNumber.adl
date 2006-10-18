@@ -32,7 +32,7 @@
 			<node name="mobileNumber" path="/details/attributes/mobileNumber"
 				type="java.lang.String" minCardinality="1" >
 			</node>
-			<node displayName="Use SMS" name="useSms" path="/details/attributes/useSms"
+			<node displayName="Allow SMS" name="useSms" path="/details/attributes/useSms"
 				type="java.lang.Boolean" defaultValue="false()" />
 			<node name="preferred" path="/details/attributes/preferred"
 				type="java.lang.Boolean" defaultValue="false()" />
