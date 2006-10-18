@@ -81,7 +81,7 @@ public final class LabelFactory extends ComponentFactory {
      */
     public static Label create(String key, String style) {
         Label label = create(key);
-        label.setStyleName(style);
+        setStyle(label, style);
         return label;
     }
 
