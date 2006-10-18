@@ -26,9 +26,11 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.PagedIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -84,7 +86,12 @@ public class PagedSummaryTableModel extends PagedIMObjectTableModel<Act> {
     private void sortItems(List<Act> items) {
         Transformer transformer = new Transformer() {
             public Object transform(Object input) {
-                return ((Act) input).getActivityStartTime();
+                Date date = ((Act) input).getActivityStartTime();
+                if (date instanceof Timestamp) {
+                    // to avoid ClassCastException when doing compareTo
+                    date = new Date(date.getTime());
+                }
+                return date;
             }
         };
         Comparator comparator = ComparatorUtils.transformedComparator(
