@@ -64,7 +64,7 @@ public class TillWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party till = (Party) object;
-        layoutWorkspace(till, getRootComponent());
+        layoutWorkspace(till);
         initQuery(till);
     }
 

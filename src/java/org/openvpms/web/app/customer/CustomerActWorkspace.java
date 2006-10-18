@@ -58,7 +58,7 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
         super.setObject(object);
         Party party = (Party) object;
         GlobalContext.getInstance().setCustomer(party);
-        layoutWorkspace(party, getRootComponent());
+        layoutWorkspace(party);
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }

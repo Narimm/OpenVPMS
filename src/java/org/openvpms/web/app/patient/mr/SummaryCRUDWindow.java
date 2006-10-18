@@ -19,8 +19,9 @@
 package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Row;
-import org.openvpms.web.app.subsystem.AbstractViewCRUDWindow;
+import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
+
 
 /**
  * CRUD Window for patient summary. Only supports the display of the acts.
@@ -28,7 +29,7 @@ import org.openvpms.web.app.subsystem.ShortNameList;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class SummaryCRUDWindow extends AbstractViewCRUDWindow {
+public class SummaryCRUDWindow extends AbstractCRUDWindow {
 
     /**
      * Create a new <code>SummaryCRUDWindow</code>.

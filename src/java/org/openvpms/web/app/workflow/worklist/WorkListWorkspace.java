@@ -29,7 +29,6 @@ import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
@@ -66,7 +65,7 @@ public class WorkListWorkspace extends ActWorkspace {
         super.setObject(object);
         GlobalContext.getInstance().setWorkList((Party) object);
         Party party = (Party) object;
-        layoutWorkspace(party, getRootComponent());
+        layoutWorkspace(party);
         initQuery(party);
         TaskQuery query = (TaskQuery) getQuery();
         if (query != null) {
@@ -77,16 +76,15 @@ public class WorkListWorkspace extends ActWorkspace {
     /**
      * Creates the workspace split pane.
      *
-     * @param browser the act browser
-     * @param window  the CRUD window
      * @return a new workspace split pane
      */
     @Override
-    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
-        Component acts = getActs(browser);
+    protected Component createWorkspace() {
+        Component acts = getActs(getBrowser());
+        Component window = getCRUDWindow().getComponent();
         return SplitPaneFactory.create(
                 SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                "WorkflowWorkspace.Layout", window.getComponent(), acts);
+                "WorkflowWorkspace.Layout", window, acts);
     }
 
     /**
