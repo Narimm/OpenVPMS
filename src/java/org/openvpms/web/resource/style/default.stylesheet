@@ -1505,6 +1505,26 @@
         </properties>
     </style>
 
+    <style name="small" type="nextapp.echo2.app.Label"
+           base-name="default">
+        <properties>
+            <property name="font">
+                <font size="7pt"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="small-1024x768" type="nextapp.echo2.app.Label"
+           base-name="small">
+        <properties>
+            <properties>
+                <property name="font">
+                    <font size="6pt"/>
+                </property>
+            </properties>
+        </properties>
+    </style>
+
     <style name="error" base-name="default" type="nextapp.echo2.app.Label">
         <properties>
             <property name="foreground" value="#b0e0e6"/>

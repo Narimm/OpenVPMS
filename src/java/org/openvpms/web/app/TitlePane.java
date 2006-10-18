@@ -67,23 +67,21 @@ public class TitlePane extends ContentPane {
         Label logo = LabelFactory.create(new ResourceImageReference(PATH));
         Authentication auth
                 = SecurityContextHolder.getContext().getAuthentication();
+        RowLayoutData centre = new RowLayoutData();
+        centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
+        logo.setLayoutData(centre);
 
-        Label label = LabelFactory.create();
+        Label label = LabelFactory.create(null, "small");
         String name = (auth != null) ? auth.getName() : "";
         label.setText(Messages.get("label.user", name));
 
-        Row labelRow = RowFactory.create("Inset", label);
+        Row labelRow = RowFactory.create("InsetX", label);
         RowLayoutData right = new RowLayoutData();
-        right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
+        right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.BOTTOM));
         right.setWidth(new Extent(100, Extent.PERCENT));
         labelRow.setLayoutData(right);
 
         Row row = RowFactory.create(logo, labelRow);
-        RowLayoutData centre = new RowLayoutData();
-
-        centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
-        logo.setLayoutData(centre);
-
         add(row);
     }
 }
