@@ -48,22 +48,22 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
     /**
      * The workspace.
      */
-    private SplitPane _workspace;
+    private Component workspace;
 
     /**
      * The query.
      */
-    private ActQuery _query;
+    private ActQuery query;
 
     /**
      * The act browser.
      */
-    private Browser<Act> _acts;
+    private Browser<Act> acts;
 
     /**
      * The CRUD window.
      */
-    private CRUDWindow _window;
+    private CRUDWindow window;
 
 
     /**
@@ -88,8 +88,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
-        _acts.query();
-        _acts.setSelected((Act) object);
+        acts.query();
+        acts.setSelected((Act) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -99,7 +99,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param object the object
      */
     protected void onDeleted(IMObject object) {
-        _acts.query();
+        acts.query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -109,8 +109,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
-        _acts.query();
-        _acts.setSelected((Act) object);
+        acts.query();
+        acts.setSelected((Act) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -120,24 +120,19 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param act the act
      */
     protected void actSelected(Act act) {
-        _window.setObject(act);
+        window.setObject(act);
     }
 
     /**
      * Lays out the workspace.
      *
-     * @param party     the party
-     * @param container the container
+     * @param party the party
      */
-    protected void layoutWorkspace(Party party, Component container) {
+    protected void layoutWorkspace(Party party) {
         setQuery(createQuery(party));
-        setBrowser(createBrowser(_query));
+        setBrowser(createBrowser(query));
         setCRUDWindow(createCRUDWindow());
-        if (_workspace != null) {
-            container.remove(_workspace);
-        }
-        _workspace = createWorkspace(_acts, _window);
-        container.add(_workspace);
+        setWorkspace(createWorkspace());
     }
 
     /**
@@ -148,18 +143,16 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return a component representing the acts
      */
     protected Component getActs(Browser acts) {
-        return GroupBoxFactory.create(_acts.getComponent());
+        return GroupBoxFactory.create(this.acts.getComponent());
     }
 
     /**
-     * Creates the workspace split pane.
+     * Creates the workspace component.
      *
-     * @param browser the act browser
-     * @param window  the CRUD window
-     * @return a new workspace split pane
+     * @return a new workspace
      */
-    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
-        Component acts = getActs(browser);
+    protected Component createWorkspace() {
+        Component acts = getActs(getBrowser());
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
                                        "ActWorkspace.Layout", acts,
                                        window.getComponent());
@@ -205,7 +198,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param query the new query
      */
     protected void setQuery(ActQuery query) {
-        _query = query;
+        this.query = query;
     }
 
     /**
@@ -214,7 +207,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return the query
      */
     protected Query<Act> getQuery() {
-        return _query;
+        return query;
     }
 
     /**
@@ -223,8 +216,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param browser the new browser
      */
     protected void setBrowser(Browser<Act> browser) {
-        _acts = browser;
-        _acts.addQueryListener(new QueryBrowserListener() {
+        acts = browser;
+        acts.addQueryListener(new QueryBrowserListener() {
             public void query() {
                 onQuery();
             }
@@ -233,10 +226,6 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
                 actSelected((Act) object);
             }
         });
-        if (_workspace != null) {
-            _workspace.remove(0);
-            _workspace.add(getActs(_acts), 0);
-        }
     }
 
     /**
@@ -245,7 +234,21 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return the browser
      */
     protected Browser<Act> getBrowser() {
-        return _acts;
+        return acts;
+    }
+
+    /**
+     * Registers a new workspace.
+     *
+     * @param workspace the workspace
+     */
+    protected void setWorkspace(Component workspace) {
+        SplitPane root = getRootComponent();
+        if (this.workspace != null) {
+            root.remove(this.workspace);
+        }
+        this.workspace = workspace;
+        root.add(this.workspace);
     }
 
     /**
@@ -254,8 +257,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param window the window
      */
     protected void setCRUDWindow(CRUDWindow window) {
-        _window = window;
-        _window.setListener(new CRUDWindowListener() {
+        this.window = window;
+        this.window.setListener(new CRUDWindowListener() {
             public void saved(IMObject object, boolean isNew) {
                 onSaved(object, isNew);
             }
@@ -268,10 +271,6 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
                 onRefresh(object);
             }
         });
-        if (_workspace != null) {
-            _workspace.remove(1);
-            _workspace.add(_window.getComponent());
-        }
     }
 
     /**
@@ -280,7 +279,7 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @return the CRUD window
      */
     protected CRUDWindow getCRUDWindow() {
-        return _window;
+        return window;
     }
 
     /**
@@ -289,8 +288,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * @param party the party
      */
     protected void initQuery(Party party) {
-        _query.setEntity(party);
-        _acts.query();
+        query.setEntity(party);
+        acts.query();
         onQuery();
     }
 
@@ -299,8 +298,8 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      *
      * @return the workspace. May be <code>null</code>
      */
-    protected SplitPane getWorkspace() {
-        return _workspace;
+    protected Component getWorkspace() {
+        return workspace;
     }
 
     /**
@@ -314,13 +313,13 @@ public abstract class ActWorkspace extends AbstractViewWorkspace {
      * Selects the first available act, if any.
      */
     private void selectFirst() {
-        List<Act> objects = _acts.getObjects();
+        List<Act> objects = acts.getObjects();
         if (!objects.isEmpty()) {
             Act current = objects.get(0);
-            _acts.setSelected(current);
-            _window.setObject(current);
+            acts.setSelected(current);
+            window.setObject(current);
         } else {
-            _window.setObject(null);
+            window.setObject(null);
         }
     }
 }

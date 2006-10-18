@@ -58,7 +58,7 @@ public abstract class SupplierActWorkspace extends ActWorkspace {
         super.setObject(object);
         Party party = (Party) object;
         GlobalContext.getInstance().setSupplier(party);
-        layoutWorkspace(party, getRootComponent());
+        layoutWorkspace(party);
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }

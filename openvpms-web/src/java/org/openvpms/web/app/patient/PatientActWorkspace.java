@@ -55,7 +55,7 @@ public abstract class PatientActWorkspace extends ActWorkspace {
         super.setObject(object);
         Party party = (Party) object;
         GlobalContext.getInstance().setPatient(party);
-        layoutWorkspace(party, getRootComponent());
+        layoutWorkspace(party);
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }

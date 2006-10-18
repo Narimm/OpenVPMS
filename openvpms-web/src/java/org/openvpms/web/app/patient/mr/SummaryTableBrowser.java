@@ -18,10 +18,6 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
-import nextapp.echo2.app.Table;
-import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.TableBrowser;
@@ -60,22 +56,10 @@ public class SummaryTableBrowser extends TableBrowser<Act> {
         PagedIMObjectTable<Act> result = new PagedIMObjectTable<Act>(
                 new PagedSummaryTableModel(model));
         IMObjectTable<Act> table = result.getTable();
-        table.setDefaultRenderer(Object.class, new TableCellRenderer() {
-            public Component getTableCellRendererComponent(Table table,
-                                                           Object value,
-                                                           int column,
-                                                           int row) {
-                if (value instanceof Component) {
-                    return (Component) value;
-                }
-                if (value == null) {
-                    return new Label("");
-                }
-                return new Label(value.toString());
-            }
-        });
+        table.setDefaultRenderer(Object.class, new SummaryTableCellRenderer());
         table.setHeaderVisible(false);
         table.setStyleName("plain");
+        table.setSelectionEnabled(false);
         return result;
     }
 }

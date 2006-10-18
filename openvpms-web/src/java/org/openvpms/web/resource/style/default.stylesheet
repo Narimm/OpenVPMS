@@ -314,6 +314,70 @@
         </properties>
     </style>
 
+    <style name="MedicalRecordSummary.act.patientClinicalEvent"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="font">
+                <font bold="true"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientClinicalNote"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientClinicalProblem"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#ff3366"/>
+                        <!-- red -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientMedication"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#ccff66"/>
+                        <!-- yellow -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="MedicalRecordSummary.act.patientWeight"
+           type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="#33ff66"/>
+                        <!-- green -->
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <style name="ReminderWorkspace.Layout"
            type="nextapp.echo2.app.SplitPane">
         <properties>

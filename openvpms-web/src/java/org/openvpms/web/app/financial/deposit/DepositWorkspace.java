@@ -64,7 +64,7 @@ public class DepositWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party deposit = (Party) object;
-        layoutWorkspace(deposit, getRootComponent());
+        layoutWorkspace(deposit);
         initQuery(deposit);
     }
 

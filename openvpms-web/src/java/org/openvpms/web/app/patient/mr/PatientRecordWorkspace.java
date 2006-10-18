@@ -73,7 +73,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
         super.setObject(object);
         Party party = (Party) object;
         GlobalContext.getInstance().setPatient(party);
-        layoutWorkspace(party, getRootComponent());
+        layoutWorkspace(party);
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
@@ -126,18 +126,24 @@ public class PatientRecordWorkspace extends ActWorkspace {
     }
 
     /**
-     * Creates the workspace split pane.
+     * Creates the workspace.
      *
-     * @param browser the act browser
-     * @param window  the CRUD window
-     * @return a new workspace split pane
+     * @return a new workspace
      */
     @Override
-    protected SplitPane createWorkspace(Browser browser, CRUDWindow window) {
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                       "PatientRecordWorkspace.Layout",
-                                       browser.getComponent(),
-                                       window.getComponent());
+    protected Component createWorkspace() {
+        Component result;
+        CRUDWindow window = getCRUDWindow();
+        if (window instanceof SummaryCRUDWindow) {
+            // todo SummaryCRUDWindow is a bit of a hack as it is never rendered
+            result = getBrowser().getComponent();
+        } else {
+            result = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
+                                             "PatientRecordWorkspace.Layout",
+                                             getBrowser().getComponent(),
+                                             window.getComponent());
+        }
+        return result;
     }
 
     /**
@@ -221,6 +227,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
             window.setObject(selected);
         }
         setCRUDWindow(window);
+        setWorkspace(createWorkspace());
     }
 
     /**

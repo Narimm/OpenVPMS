@@ -40,6 +40,7 @@ import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.DateFormatter;
+import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
 
@@ -103,13 +104,13 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     }
 
     /**
-     * Returns a formatted string for an <em>act.patientClinicalEvent</em>.
+     * Returns a component for an <em>act.patientClinicalEvent</em>.
      *
      * @param act the event
-     * @return a formatted string representing the act
+     * @return a component representing the act
      * @throws OpenVPMSException for any error
      */
-    private String formatEvent(Act act) {
+    private Component formatEvent(Act act) {
         ActBean bean = new ActBean(act);
         String completed = null;
         String clinician = null;
@@ -131,8 +132,10 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         }
         clinician = getValue(clinician, bean, "clinician");
 
-        return Messages.get("patient.record.summary", completed, clinician,
-                            reason, status);
+        Label summary = LabelFactory.create(null, "PatientSummary");
+        summary.setText(Messages.get("patient.record.summary", completed,
+                                     clinician, reason, status));
+        return summary;
     }
 
     /**
@@ -151,7 +154,6 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
 
         LabelEx description = new LabelEx(act.getDescription());
         description.setIntepretNewlines(true);
-
         Row padding = RowFactory.create("Inset", new Label(""));
         return RowFactory.create("CellSpacing", padding, date, description);
     }
