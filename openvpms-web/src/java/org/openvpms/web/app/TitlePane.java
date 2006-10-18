@@ -19,19 +19,14 @@
 package org.openvpms.web.app;
 
 import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.ContentPane;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ResourceImageReference;
 import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
-
-import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
@@ -75,20 +70,20 @@ public class TitlePane extends ContentPane {
 
         Label label = LabelFactory.create();
         String name = (auth != null) ? auth.getName() : "";
-        label.setText(Messages.get("label.welcome", name));
-        Button logout = ButtonFactory.create("logout", new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                OpenVPMSApp.getInstance().logout();
-            }
-        });
+        label.setText(Messages.get("label.user", name));
 
-        Row logoutRow = RowFactory.create("CellSpacing", label, logout);
+        Row labelRow = RowFactory.create("Inset", label);
         RowLayoutData right = new RowLayoutData();
         right.setAlignment(new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
         right.setWidth(new Extent(100, Extent.PERCENT));
-        logoutRow.setLayoutData(right);
+        labelRow.setLayoutData(right);
 
-        Row layout = RowFactory.create(logo, logoutRow);
-        add(layout);
+        Row row = RowFactory.create(logo, labelRow);
+        RowLayoutData centre = new RowLayoutData();
+
+        centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
+        logo.setLayoutData(centre);
+
+        add(row);
     }
 }

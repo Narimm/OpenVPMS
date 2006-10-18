@@ -18,24 +18,20 @@
 
 package org.openvpms.web.app;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-
 import echopointng.GroupBox;
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.ContentPane;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
-import nextapp.echo2.app.Alignment;
-import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
+import nextapp.echo2.app.layout.RowLayoutData;
+import nextapp.echo2.app.layout.SplitPaneLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
@@ -53,6 +49,11 @@ import org.openvpms.web.component.util.GroupBoxFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -168,6 +169,8 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         addSubsystem(new ProductSubsystem());
         addSubsystem(new AdminSubsystem());
 
+        _menu.add(getLogoutRow());
+
         SplitPane left = SplitPaneFactory.create(ORIENTATION_VERTICAL,
                                                  LEFTPANE_STYLE);
         SplitPane right = SplitPaneFactory.create(ORIENTATION_VERTICAL,
@@ -269,6 +272,29 @@ public class MainPane extends SplitPane implements ContextChangeListener {
         _menu.add(button);
         _subsystems.add(subsystem);
         return button;
+    }
+
+    /**
+     * Creates a row containing a right justified logout button.
+     *
+     * @return the logout row
+     */
+    private Row getLogoutRow() {
+        Button logout = ButtonFactory.create(
+                "logout", BUTTON_STYLE,
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        OpenVPMSApp.getInstance().logout();
+                    }
+                });
+
+        Row logoutRow = RowFactory.create(logout);
+        RowLayoutData rightAlign = new RowLayoutData();
+        rightAlign.setAlignment(
+                new Alignment(Alignment.RIGHT, Alignment.DEFAULT));
+        rightAlign.setWidth(new Extent(100, Extent.PERCENT));
+        logoutRow.setLayoutData(rightAlign);
+        return logoutRow;
     }
 
     /**
