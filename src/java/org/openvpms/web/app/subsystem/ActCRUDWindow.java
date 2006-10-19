@@ -137,6 +137,10 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
             public void cancelled(IMObject object) {
                 // no-op
             }
+
+            public void failed(IMObject object, Throwable cause) {
+                // no-op
+            }
         });
         return printer;
     }

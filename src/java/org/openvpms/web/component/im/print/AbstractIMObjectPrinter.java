@@ -43,29 +43,41 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      */
     private IMObjectPrinterListener _listener;
 
+    /**
+     * Determines if printing should occur interactively.
+     */
+    private boolean interactive = true;
+
 
     /**
-     * Pops up a {@link PrintDialog} prompting if printing of an object
+     * Initiates printing of an object.
+     * If printing interactively, pops up a {@link PrintDialog} prompting if
+     * printing of an object
      * should proceed, invoking {@link #doPrint} if 'OK' is selected, or
      * {@link #doPrintPreview} if 'preview' is selected.
+     * If printing in the background, invokes {@link #doPrint}.
      *
      * @param object the object to print
      */
     public void print(final IMObject object) {
-        String title = Messages.get("imobject.print.title",
-                                    DescriptorHelper.getDisplayName(object));
-        final PrintDialog dialog = new PrintDialog(title);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (PrintDialog.OK_ID.equals(action)) {
-                    doPrint(object, null);
-                } else if (PrintDialog.PREVIEW_ID.equals(action)) {
-                    doPrintPreview(object);
+        if (isInteractive()) {
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.get("imobject.print.title", displayName);
+            final PrintDialog dialog = new PrintDialog(title);
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    String action = dialog.getAction();
+                    if (PrintDialog.OK_ID.equals(action)) {
+                        doPrint(object, null);
+                    } else if (PrintDialog.PREVIEW_ID.equals(action)) {
+                        doPrintPreview(object);
+                    }
                 }
-            }
-        });
-        dialog.show();
+            });
+            dialog.show();
+        } else {
+            doPrint(object, null);
+        }
     }
 
     /**
@@ -75,6 +87,25 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      */
     public void setListener(IMObjectPrinterListener listener) {
         _listener = listener;
+    }
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @param interactive if <code>true</code>, prompt the user
+     */
+    public void setInteractive(boolean interactive) {
+        this.interactive = interactive;
+    }
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @return <code>true</code> if printing should be interactively;
+     *         <code>false</code> if it should occur in the background
+     */
+    public boolean isInteractive() {
+        return interactive;
     }
 
     /**
@@ -99,6 +130,19 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
     }
 
     /**
+     * Invoked when an object has been failed to print.
+     * Notifies any registered listener.
+     *
+     * @param object    the object
+     * @param exception the cause of the failure
+     */
+    protected void failed(IMObject object, Throwable exception) {
+        if (_listener != null) {
+            _listener.cancelled(object);
+        }
+    }
+
+    /**
      * Prints the object.
      *
      * @param object  the object to print
@@ -110,7 +154,11 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
             DownloadServlet.startDownload(document);
             printed(object);
         } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+            if (isInteractive()) {
+                ErrorHelper.show(exception);
+            } else {
+                failed(object, exception);
+            }
         }
     }
 

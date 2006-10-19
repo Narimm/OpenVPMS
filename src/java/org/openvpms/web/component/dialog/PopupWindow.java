@@ -67,10 +67,8 @@ public abstract class PopupWindow extends WindowPane {
         if (style == null) {
             style = "PopupWindow";
         }
-        if (style != null) {
-            style = Styles.getStyle(WindowPane.class, style);
-            setStyleName(style);
-        }
+        style = Styles.getStyle(WindowPane.class, style);
+        setStyleName(style);
 
         _row = new ButtonRow(tabTree);
 

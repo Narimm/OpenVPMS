@@ -39,10 +39,17 @@ public interface IMObjectPrinterListener extends EventListener {
     void printed(IMObject object);
 
     /**
-     * Notifies that the print was cancelled/failed.
+     * Notifies that the print was cancelled.
      *
      * @param object the object
      */
     void cancelled(IMObject object);
 
+    /**
+     * Invoked when an object fails to print.
+     *
+     * @param object the object
+     * @param cause  the reason for the failure
+     */
+    void failed(IMObject object, Throwable cause);
 }

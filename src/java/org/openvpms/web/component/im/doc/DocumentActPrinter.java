@@ -42,25 +42,33 @@ import org.openvpms.web.resource.util.Messages;
 public class DocumentActPrinter extends AbstractIMObjectPrinter {
 
     /**
-     * Pops up a {@link ConfirmationDialog} prompting if printing of an object
-     * should proceed, invoking {@link #doPrint} if 'OK' is selected.
+     * Initiates printing of an object.
+     * If printing interactively, pops up a {@link ConfirmationDialog} prompting
+     * if printing of an object should proceed, invoking {@link #doPrint}
+     * if 'OK' is selected.
+     * If printing in the background, invokes {@link #doPrint}.
      *
      * @param object the object to print
      */
     @Override
     public void print(final IMObject object) {
-        String title = Messages.get("imobject.print.title",
-                                    DescriptorHelper.getDisplayName(object));
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, "");
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                String action = dialog.getAction();
-                if (ConfirmationDialog.OK_ID.equals(action)) {
-                    doPrint(object, null);
+        if (isInteractive()) {
+            String title = Messages.get("imobject.print.title",
+                                        DescriptorHelper.getDisplayName(
+                                                object));
+            final ConfirmationDialog dialog = new ConfirmationDialog(title, "");
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                public void windowPaneClosing(WindowPaneEvent event) {
+                    String action = dialog.getAction();
+                    if (ConfirmationDialog.OK_ID.equals(action)) {
+                        doPrint(object, null);
+                    }
                 }
-            }
-        });
-        dialog.show();
+            });
+            dialog.show();
+        } else {
+            doPrint(object, null);
+        }
     }
 
     /**

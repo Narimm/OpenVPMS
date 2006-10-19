@@ -19,7 +19,6 @@
 package org.openvpms.web.component.dialog;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-
 import org.openvpms.web.resource.util.Messages;
 
 
@@ -34,14 +33,29 @@ public class ErrorDialog extends MessageDialog {
     /**
      * Construct a new <code>ErrorDialog</code>.
      *
+     * @param message the message to display
+     */
+    public ErrorDialog(String message) {
+        this(Messages.get("errordialog.title"), message);
+    }
+
+    /**
+     * Construct a new <code>ErrorDialog</code>.
+     *
+     * @param exception the exception to display
+     */
+    public ErrorDialog(Throwable exception) {
+        this(ExceptionUtils.getStackTrace(exception));
+    }
+
+    /**
+     * Construct a new <code>ErrorDialog</code>.
+     *
      * @param title   the dialog title
      * @param message the message to display
      */
-    protected ErrorDialog(String title, String message) {
-        super(title, message, Buttons.OK);
-        setStyleName("ErrorDialog");
-
-        show();
+    public ErrorDialog(String title, String message) {
+        super(title, message, "ErrorDialog", Buttons.OK);
     }
 
     /**
@@ -50,8 +64,8 @@ public class ErrorDialog extends MessageDialog {
      * @param exception the exception to display
      */
     public static void show(Throwable exception) {
-        String message = ExceptionUtils.getStackTrace(exception);
-        show(Messages.get("errordialog.title"), message);
+        ErrorDialog dialog = new ErrorDialog(exception);
+        dialog.show();
     }
 
     /**
@@ -60,7 +74,8 @@ public class ErrorDialog extends MessageDialog {
      * @param message dialog message
      */
     public static void show(String message) {
-        show(Messages.get("errordialog.title"), message);
+        ErrorDialog dialog = new ErrorDialog(message);
+        dialog.show();
     }
 
     /**
@@ -70,7 +85,8 @@ public class ErrorDialog extends MessageDialog {
      * @param message dialog message
      */
     public static void show(String title, String message) {
-        new ErrorDialog(title, message);
+        ErrorDialog dialog = new ErrorDialog(title, message);
+        dialog.show();
     }
 
 }

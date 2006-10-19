@@ -40,4 +40,11 @@ public interface IMObjectPrinter {
      * @param listener the listener. May be <code>null</code>
      */
     void setListener(IMObjectPrinterListener listener);
+
+    /**
+     * Determines if printing should occur interactively.
+     *
+     * @param interactive if <code>true</code>, prompt the user
+     */
+    void setInteractive(boolean interactive);
 }

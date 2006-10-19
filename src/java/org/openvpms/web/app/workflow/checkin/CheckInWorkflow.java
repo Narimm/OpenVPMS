@@ -19,17 +19,11 @@
 package org.openvpms.web.app.workflow.checkin;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.AddActRelationshipTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -44,7 +38,6 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -95,6 +88,14 @@ public class CheckInWorkflow extends WorkflowImpl {
         TaskProperties appProps = new TaskProperties();
         appProps.add("status", "Checked-In");
         addTask(new UpdateIMObjectTask(appointment, appProps));
+    }
+
+    /**
+     * Starts the workflow.
+     */
+    @Override
+    public void start() {
+        super.start(initial);
     }
 
     /**
@@ -152,68 +153,5 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new EditIMObjectTask(weight, true));
         addTask(new AddActRelationshipTask(
                 event, weight, "actRelationship.patientClinicalEventItem"));
-    }
-
-    /**
-     * Starts the workflow.
-     */
-    @Override
-    public void start() {
-        super.start(initial);
-    }
-
-    class EditCustomerTask extends EditIMObjectTask {
-
-        /**
-         * Constructs a new <code>EditCustomerTask</code>.
-         *
-         * @param shortName the object short name
-         */
-        public EditCustomerTask(String shortName) {
-            super(shortName, false, true);
-        }
-
-        /**
-         * Edits an object.
-         *
-         * @param object  the object to edit
-         * @param context the task context
-         */
-        @Override
-        protected void edit(IMObject object, TaskContext context) {
-            ActBean bean = new ActBean((Act) object);
-            Party workList = context.getWorkList();
-            Entity taskType = getDefaultTaskType(workList);
-            if (taskType != null) {
-                bean.setParticipant("participation.taskType", taskType);
-            }
-            super.edit(object, context);
-        }
-
-        /**
-         * Returns the default task type associated with a work list.
-         *
-         * @param workList the work list
-         * @return a the default task types associated with
-         *         <code>workList</code>, or <code>null</code> if there is no
-         *         default task type
-         */
-        private Entity getDefaultTaskType(Party workList) {
-            Entity type = null;
-            EntityBean bean = new EntityBean(workList);
-            List<IMObject> relationships = bean.getValues("taskTypes");
-            for (IMObject object : relationships) {
-                EntityRelationship relationship = (EntityRelationship) object;
-                IMObjectBean relBean = new IMObjectBean(relationship);
-                if (relBean.getBoolean("default")) {
-                    type = (Entity) IMObjectHelper.getObject(
-                            relationship.getTarget());
-                    if (type != null) {
-                        break;
-                    }
-                }
-            }
-            return type;
-        }
     }
 }
