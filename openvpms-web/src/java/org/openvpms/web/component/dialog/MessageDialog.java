@@ -19,8 +19,9 @@
 package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.Label;
-
+import nextapp.echo2.app.Row;
 import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.RowFactory;
 
 
 /**
@@ -36,11 +37,6 @@ public abstract class MessageDialog extends PopupDialog {
      */
     private static final String STYLE = "MessageDialog";
 
-    /**
-     * Content label style.
-     */
-    private static final String LABEL_STYLE = "MessageDialog.Label";
-
 
     /**
      * Creates a new <code>MessageDialog</code>.
@@ -50,13 +46,26 @@ public abstract class MessageDialog extends PopupDialog {
      * @param buttons the buttons to display
      */
     public MessageDialog(String title, String message, Buttons buttons) {
-        super(title, STYLE, buttons);
-        setClosable(false);
+        this(title, message, STYLE, buttons);
+    }
+
+    /**
+     * Creates a new <code>MessageDialog</code>.
+     *
+     * @param title   the dialog title
+     * @param message the message to display
+     * @param style   the dialog style
+     * @param buttons the buttons to display
+     */
+    public MessageDialog(String title, String message, String style,
+                         Buttons buttons) {
+        super(title, style, buttons);
         setModal(true);
 
-        Label content = LabelFactory.create(null, LABEL_STYLE);
+        Label content = LabelFactory.create();
         content.setText(message);
-        getLayout().add(content);
+        Row row = RowFactory.create("Inset", content);
+        getLayout().add(row);
     }
 
 }

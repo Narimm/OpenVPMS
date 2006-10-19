@@ -18,10 +18,10 @@
 
 package org.openvpms.web.component.im.util;
 
-import org.openvpms.web.component.dialog.ErrorDialog;
-
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.web.component.dialog.ErrorDialog;
 
 
 /**
@@ -78,5 +78,18 @@ public class ErrorHelper {
     public static void show(Throwable error) {
         _log.error(error.getLocalizedMessage(), error);
         ErrorDialog.show(error.getLocalizedMessage());
+    }
+
+    /**
+     * Display and log an error, notifying when the user closes the dialog.
+     *
+     * @param error    the error
+     * @param listener the listener to notify
+     */
+    public static void show(Throwable error, WindowPaneListener listener) {
+        _log.error(error.getLocalizedMessage(), error);
+        ErrorDialog dialog = new ErrorDialog(error.getLocalizedMessage());
+        dialog.addWindowPaneListener(listener);
+        dialog.show();
     }
 }

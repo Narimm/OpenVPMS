@@ -22,9 +22,13 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
+import org.openvpms.web.app.workflow.checkout.CheckOutWorkflow;
 import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.component.workflow.TaskEvent;
+import org.openvpms.web.component.workflow.TaskListener;
 
 
 /**
@@ -70,6 +74,7 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         if (checkOut == null) {
             checkOut = ButtonFactory.create(CHECKOUT_ID, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
+                    onCheckOut();
                 }
             });
         }
@@ -85,12 +90,31 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         super.enableButtons(enable);
         Row buttons = getButtons();
         if (enable) {
-            if (buttons.indexOf(checkOut) == -1) {
-                buttons.add(checkOut);
+            Act act = (Act) getObject();
+            String status = act.getStatus();
+            if ("Pending".equals(status) || "In Progress".equals(status)) {
+                if (buttons.indexOf(checkOut) == -1) {
+                    buttons.add(checkOut);
+                }
+            } else {
+                buttons.remove(checkOut);
             }
         } else {
             buttons.remove(checkOut);
         }
+    }
+
+    /**
+     * Invoked when the 'check-out' button is pressed.
+     */
+    private void onCheckOut() {
+        CheckOutWorkflow workflow = new CheckOutWorkflow((Act) getObject());
+        workflow.setTaskListener(new TaskListener() {
+            public void taskEvent(TaskEvent event) {
+                onRefresh(getObject());
+            }
+        });
+        workflow.start();
     }
 
 }

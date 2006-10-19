@@ -18,28 +18,18 @@
 
 package org.openvpms.web.component.dialog;
 
-import nextapp.echo2.app.Label;
-import org.openvpms.web.component.util.LabelFactory;
-
-
 /**
  * A modal dialog that prompts the user to select an OK or Cancel button.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class ConfirmationDialog extends PopupDialog {
+public class ConfirmationDialog extends MessageDialog {
 
     /**
      * Dialog style name.
      */
     private static final String STYLE = "ConfirmationDialog";
-
-    /**
-     * Content label style.
-     */
-    private static final String LABEL_STYLE = "ConfirmationDialog.Label";
-
 
     /**
      * Constructs a new <code>ConfirmationDialog</code>
@@ -60,11 +50,7 @@ public class ConfirmationDialog extends PopupDialog {
      */
     public ConfirmationDialog(String title, String message,
                               Buttons buttons) {
-        super(title, STYLE, buttons);
-        Label prompt = LabelFactory.create(null, LABEL_STYLE);
-        prompt.setText(message);
-        getLayout().add(prompt);
-        setModal(true);
+        super(title, message, STYLE, buttons);
     }
 
 }

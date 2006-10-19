@@ -34,12 +34,18 @@ import java.util.List;
 
 
 /**
- * Add description here.
+ * Batch print dialog.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class BatchPrintDialog extends PopupDialog {
+
+    /**
+     * The table of objects to print.
+     */
+    private final IMObjectTable<IMObject> table;
+
 
     /**
      * Construct a new <code>BatchPrintDialog</code>.
@@ -48,10 +54,19 @@ public class BatchPrintDialog extends PopupDialog {
      */
     public BatchPrintDialog(String title, List<IMObject> objects) {
         super(title, Buttons.OK_CANCEL);
-        IMObjectTable<IMObject> table = new IMObjectTable<IMObject>(
-                new PrintTableModel());
+        table = new IMObjectTable<IMObject>(new PrintTableModel());
         table.setObjects(objects);
         getLayout().add(table);
+    }
+
+    /**
+     * Returns the selected objects.
+     *
+     * @return the selected objects
+     */
+    public List<IMObject> getSelected() {
+        PrintTableModel model = (PrintTableModel) table.getModel();
+        return model.getSelected();
     }
 
     private static class PrintTableModel
@@ -68,8 +83,27 @@ public class BatchPrintDialog extends PopupDialog {
          */
         private final int PRINT_INDEX = NEXT_INDEX;
 
+        /**
+         * Constructs a new <code>PrintTableModel</code>.
+         */
         public PrintTableModel() {
             createTableColumnModel(true);
+        }
+
+        /**
+         * Returns the list of objects selected for printing.
+         *
+         * @return the objects to print
+         */
+        public List<IMObject> getSelected() {
+            List<IMObject> result = new ArrayList<IMObject>();
+            for (int i = 0; i < print.size(); ++i) {
+                CheckBox check = print.get(i);
+                if (check.isSelected()) {
+                    result.add(getObject(i));
+                }
+            }
+            return result;
         }
 
         /**

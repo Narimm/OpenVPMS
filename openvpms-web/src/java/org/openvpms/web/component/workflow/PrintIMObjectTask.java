@@ -68,6 +68,10 @@ public class PrintIMObjectTask extends AbstractTask {
                 public void cancelled(IMObject object) {
                     notifyCancelled();
                 }
+
+                public void failed(IMObject object, Throwable cause) {
+                    notifyCancelled();
+                }
             });
             printer.print(object);
         } else {
