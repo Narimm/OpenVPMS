@@ -84,4 +84,24 @@ public class ArchetypeServiceFunctions {
         return resolver.getObject(node);
     }
 
+    /**
+     * Resolves the value at the specified node.  
+     * If Node doesn't exist returns the defaultValue.
+     *
+     * @param object the expression context
+     * @param node   the node name
+     * @param defaultValue  the value to return if node does not exist
+     * @return the value at the specified node or defaultValue if node does not exist
+     * @see NodeResolver
+     */
+    public static Object get(IMObject object, String node, Object defaultValue) {
+        try
+        {
+           return get(object, node);  
+        }
+        catch (NodeResolverException exception)
+        {
+            return defaultValue;
+        }
+    }
 }
