@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
@@ -146,7 +147,7 @@ public class PatientSummary {
      */
     private static ActResultSet getAlerts(Party patient) {
         String[] shortNames = {"act.patientAlert"};
-        String[] statuses = {"In Progress"};
+        String[] statuses = {ActStatus.IN_PROGRESS};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {
@@ -170,7 +171,7 @@ public class PatientSummary {
      */
     private static ResultSet<Act> getReminders(Party patient) {
         String[] shortNames = {"act.patientReminder"};
-        String[] statuses = {"In Progress"};
+        String[] statuses = {ActStatus.IN_PROGRESS};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {

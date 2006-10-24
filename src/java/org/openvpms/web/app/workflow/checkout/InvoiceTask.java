@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.checkout;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -75,8 +76,8 @@ class InvoiceTask extends CreateIMObjectTask {
 
         query.add(participations);
         OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("status", "In Progress"));
-        or.add(new NodeConstraint("status", "Completed"));
+        or.add(new NodeConstraint("status", FinancialActStatus.IN_PROGRESS));
+        or.add(new NodeConstraint("status", FinancialActStatus.COMPLETED));
         query.add(or);
 
         IArchetypeService service

@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.query;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -260,11 +261,11 @@ public class ActResultSetTestCase extends AbstractAppTest {
     protected Act createEstimation(Party customer, Party patient,
                                    Product product) {
         Act act = createAct("act.customerEstimation");
-        act.setStatus("In Progress");
+        act.setStatus(FinancialActStatus.IN_PROGRESS);
         addParticipation(act, customer, "participation.customer");
 
         Act child = createAct("act.customerEstimationItem");
-        child.setStatus("In Progress");
+        child.setStatus(FinancialActStatus.IN_PROGRESS);
 
         addParticipation(child, patient, "participation.patient");
         addParticipation(child, product, "participation.product");

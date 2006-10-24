@@ -18,16 +18,14 @@
 
 package org.openvpms.web.app.customer;
 
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.act.ActCopyHandler;
-import org.openvpms.web.component.im.edit.act.ActHelper;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.resource.util.Messages;
-
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import static org.openvpms.archetype.rules.act.EstimationActStatus.INVOICED;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.*;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -41,13 +39,15 @@ import org.openvpms.component.business.service.archetype.helper.AbstractIMObject
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActCopyHandler;
+import org.openvpms.web.component.im.edit.act.ActHelper;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -115,15 +115,6 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
     private static final String INVOICE_ITEM_RELATIONSHIP_TYPE
             = "actRelationship.customerAccountInvoiceItem";
 
-    /**
-     * estimation Act Invoiced status type.
-     */
-    protected static final String INVOICED_STATUS = "Invoiced";
-
-    /**
-     * estimation Act Cancelled status type.
-     */
-    protected static final String CANCELLED_STATUS = "Cancelled";
 
     /**
      * Create a new <code>EstimationCRUDWindow</code>.
@@ -193,7 +184,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
             Act act = (Act) copier.copy(object);
-            act.setStatus(INPROGRESS_STATUS);
+            act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
             SaveHelper.save(act);
@@ -215,7 +206,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         final Act act = (Act) getObject();
         if (canInvoice(act)) {
             String title = Messages.get("customer.estimation.invoice.title");
-            String message = Messages.get("customer.estimation.invoice.message");
+            String message = Messages.get(
+                    "customer.estimation.invoice.message");
             final ConfirmationDialog dialog
                     = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
@@ -227,7 +219,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
             });
             dialog.show();
         }
-        
+
     }
 
     /**
@@ -239,14 +231,14 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
         try {
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
             Act invoice = (Act) copier.copy(estimation);
-            invoice.setStatus(INPROGRESS_STATUS);
+            invoice.setStatus(IN_PROGRESS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
             calcAmount(invoice);
             SaveHelper.save(invoice);
 
-            if (!estimation.getStatus().equals(INVOICED_STATUS)) {
-                estimation.setStatus(INVOICED_STATUS);
+            if (!INVOICED.equals(estimation.getStatus())) {
+                estimation.setStatus(INVOICED);
                 SaveHelper.save(estimation);
                 setObject(estimation);
                 CRUDWindowListener listener = getListener();
@@ -270,7 +262,7 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
     @Override
     protected boolean canDelete(Act act) {
         String status = act.getStatus();
-        return !(POSTED_STATUS.equals(status) || INVOICED_STATUS.equals(status));
+        return !(POSTED.equals(status) || INVOICED.equals(status));
     }
 
     /**
@@ -283,8 +275,8 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
     @Override
     protected boolean canEdit(Act act) {
         String status = act.getStatus();
-        return INPROGRESS_STATUS.equals(status)
-                || COMPLETED_STATUS.equals(status) || CANCELLED_STATUS.equals(status);
+        return IN_PROGRESS.equals(status) || COMPLETED.equals(status)
+                || CANCELLED.equals(status);
     }
 
 
@@ -299,19 +291,18 @@ public class EstimationCRUDWindow extends CustomerActCRUDWindow {
     protected boolean canInvoice(Act act) {
         String status = act.getStatus();
         Boolean Result;
-        if (CANCELLED_STATUS.equals(status) || INVOICED_STATUS.equals(status)) {
-            showStatusError(act, "customer.estimation.noinvoice.title", "customer.estimation.noinvoice.message");
+        if (CANCELLED.equals(status) || INVOICED.equals(status)) {
+            showStatusError(act, "customer.estimation.noinvoice.title",
+                            "customer.estimation.noinvoice.message");
             Result = false;
-        }
-        else if (act.getActivityEndTime() != null) { 
+        } else if (act.getActivityEndTime() != null) {
             if (act.getActivityEndTime().before(new Date())) {
-                showStatusError(act, "customer.estimation.expired.title", "customer.estimation.expired.message");
+                showStatusError(act, "customer.estimation.expired.title",
+                                "customer.estimation.expired.message");
                 Result = false;
-            }
-            else
+            } else
                 Result = true;
-        }
-        else
+        } else
             Result = true;
         return Result;
     }

@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.archetype.rules.deposit.DepositRules;
+import static org.openvpms.archetype.rules.deposit.DepositStatus.UNDEPOSITED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -100,8 +101,7 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
         buttons.removeAll();
         if (enable) {
             Act act = (Act) getObject();
-            boolean uncleared = "UnDeposited".equals(act.getStatus());
-            if (uncleared) {
+            if (UNDEPOSITED.equals(act.getStatus())) {
                 buttons.add(_deposit);
             }
             buttons.add(getPrintButton());

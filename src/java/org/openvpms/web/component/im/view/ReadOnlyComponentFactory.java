@@ -21,7 +21,9 @@ package org.openvpms.web.component.im.view;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.TextField;
+import nextapp.echo2.app.text.TextComponent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
@@ -53,11 +55,19 @@ public class ReadOnlyComponentFactory extends AbstractReadOnlyComponentFactory {
     /**
      * Returns a component to display a lookup.
      *
-     * @param property
+     * @param property the property
+     * @param context  the context object
      * @return a component to display the lookup
      */
-    protected Component getLookup(Property property) {
-        return getTextComponent(property);
+    protected Component getLookup(Property property, IMObject context) {
+        TextComponent result;
+        final int maxDisplayLength = 50;
+        NodeDescriptor descriptor = property.getDescriptor();
+        int length = descriptor.getMaxLength();
+        int columns = (length < maxDisplayLength) ? length : maxDisplayLength;
+        result = TextComponentFactory.create(columns);
+        result.setText(getLookupName(property, context));
+        return result;
     }
 
     /**

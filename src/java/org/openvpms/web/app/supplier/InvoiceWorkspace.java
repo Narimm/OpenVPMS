@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.supplier;
 
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -79,7 +80,7 @@ public class InvoiceWorkspace extends SupplierActWorkspace {
         return new DefaultActQuery(customer, "supplier",
                                    "participation.supplier",
                                    "act", "supplierAccountCharges*", lookups,
-                                   "Posted");
+                                   POSTED);
     }
 
     /**
@@ -92,7 +93,7 @@ public class InvoiceWorkspace extends SupplierActWorkspace {
     protected void onSaved(IMObject object, boolean isNew) {
         super.onSaved(object, isNew);
         Act act = (Act) object;
-        if ("Posted".equals(act.getStatus())) {
+        if (POSTED.equals(act.getStatus())) {
             actSelected(null);
         }
     }

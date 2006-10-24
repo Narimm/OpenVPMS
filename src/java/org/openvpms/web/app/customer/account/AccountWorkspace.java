@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.customer.account;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.customer.CustomerActWorkspace;
@@ -70,7 +71,7 @@ public class AccountWorkspace extends CustomerActWorkspace {
                                "act.customerAccountCreditAdjust",
                                "act.customerAccountInitialBalance",
                                "act.customerAccountBadDebt"};
-        String[] statuses = {"Posted"};
+        String[] statuses = {FinancialActStatus.POSTED};
 
         return new DefaultActQuery(customer, "customer",
                                    "participation.customer",

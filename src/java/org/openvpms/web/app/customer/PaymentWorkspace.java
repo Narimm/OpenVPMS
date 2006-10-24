@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.customer;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -68,7 +69,8 @@ public class PaymentWorkspace extends CustomerActWorkspace {
      * @return a new query
      */
     protected ActQuery createQuery(Party customer) {
-        String[] statuses = {"In Progress", "On Hold"};
+        String[] statuses = {FinancialActStatus.IN_PROGRESS,
+                             FinancialActStatus.ON_HOLD};
         return new DefaultActQuery(customer, "customer",
                                    "participation.customer",
                                    SHORT_NAMES, statuses);
@@ -84,7 +86,7 @@ public class PaymentWorkspace extends CustomerActWorkspace {
     protected void onSaved(IMObject object, boolean isNew) {
         super.onSaved(object, isNew);
         Act act = (Act) object;
-        if ("Posted".equals(act.getStatus())) {
+        if (FinancialActStatus.POSTED.equals(act.getStatus())) {
             actSelected(null);
         }
     }

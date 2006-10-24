@@ -22,6 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.AbstractCRUDWindow;
 import org.openvpms.web.app.subsystem.ShortNames;
@@ -101,7 +102,7 @@ public abstract class WorkflowCRUDWindow extends AbstractCRUDWindow {
     @Override
     protected void onDelete() {
         Act act = (Act) getObject();
-        if (!"Completed".equals(act.getStatus())) {
+        if (!ActStatus.COMPLETED.equals(act.getStatus())) {
             super.onDelete();
         } else {
             String name = getArchetypeDescriptor().getDisplayName();

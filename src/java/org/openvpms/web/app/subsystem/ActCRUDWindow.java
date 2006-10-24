@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.subsystem;
 
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -39,23 +40,6 @@ import org.openvpms.web.resource.util.Messages;
 public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
 
     /**
-     * Act in progress status type.
-     */
-    protected static final String INPROGRESS_STATUS = "In Progress";
-
-    /**
-     * Act completed status type.
-     */
-    protected static final String COMPLETED_STATUS = "Completed";
-
-    /**
-     * Act posted status type. Acts with this status can't be edited or
-     * deleted.
-     */
-    protected static final String POSTED_STATUS = "Posted";
-
-
-    /**
      * Create a new <code>ActCRUDWindow</code>.
      *
      * @param type       display name for the types of objects that this may
@@ -75,7 +59,7 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
      */
     protected boolean canEdit(Act act) {
         String status = act.getStatus();
-        return !POSTED_STATUS.equals(status);
+        return !POSTED.equals(status);
     }
 
     /**
@@ -87,7 +71,7 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
      */
     protected boolean canDelete(Act act) {
         String status = act.getStatus();
-        return !POSTED_STATUS.equals(status);
+        return !POSTED.equals(status);
     }
 
     /**
@@ -154,8 +138,8 @@ public abstract class ActCRUDWindow extends AbstractViewCRUDWindow {
         Act act = (Act) object;
         try {
             String status = act.getStatus();
-            if (!POSTED_STATUS.equals(status)) {
-                act.setStatus(POSTED_STATUS);
+            if (!POSTED.equals(status)) {
+                act.setStatus(POSTED);
                 setPrintStatus(act, true);
                 SaveHelper.save(act);
                 setObject(act);

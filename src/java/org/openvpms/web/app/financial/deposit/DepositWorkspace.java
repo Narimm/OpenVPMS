@@ -19,6 +19,7 @@
 package org.openvpms.web.app.financial.deposit;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.deposit.DepositStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -94,7 +95,7 @@ public class DepositWorkspace extends ActWorkspace {
         ActQuery query = new DefaultActQuery(
                 till, "depositAccount", "participation.deposit", "act",
                 "bankDeposit", lookups, null);
-        query.setStatus("UnDeposited");
+        query.setStatus(DepositStatus.UNDEPOSITED);
         return query;
     }
 

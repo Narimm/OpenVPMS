@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.consult;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -76,8 +77,8 @@ class PatientClinicalEventTask extends CreateIMObjectTask {
 
         query.add(participations);
         OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("status", "In Progress"));
-        or.add(new NodeConstraint("status", "Completed"));
+        or.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
+        or.add(new NodeConstraint("status", ActStatus.COMPLETED));
         query.add(or);
 
         IArchetypeService service

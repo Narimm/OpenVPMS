@@ -236,7 +236,7 @@ public class DefaultActQuery extends ActQuery {
             } else {
                 for (Lookup lookup : lookups) {
                     if (lookup.isDefaultLookup()) {
-                        defaultStatus = lookup.getValue();
+                        defaultStatus = lookup.getCode();
                         break;
                     }
                 }

@@ -18,6 +18,8 @@
 
 package org.openvpms.web.app.workflow.checkout;
 
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -71,7 +73,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         // update the act status
         TaskProperties appProps = new TaskProperties();
-        appProps.add("status", "Completed");
+        appProps.add("status", ActStatus.COMPLETED);
         addTask(new UpdateIMObjectTask(act, appProps));
     }
 
@@ -103,7 +105,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // on save, determine if the user wants to post the invoice
         Tasks postTasks = new Tasks();
         TaskProperties invoiceProps = new TaskProperties();
-        invoiceProps.add("status", "Posted");
+        invoiceProps.add("status", FinancialActStatus.POSTED);
         postTasks.addTask(
                 new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
 

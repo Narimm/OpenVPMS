@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
@@ -161,10 +162,10 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow {
      */
     private void onCompleted() {
         Act act = (Act) getObject();
-        if (!"Completed".equals(act.getStatus())) {
+        if (!ActStatus.COMPLETED.equals(act.getStatus())) {
             act = (Act) IMObjectHelper.reload(act);
             if (act != null) {
-                act.setStatus("Completed");
+                act.setStatus(ActStatus.COMPLETED);
                 SaveHelper.save(act);
             }
             onRefresh(act);

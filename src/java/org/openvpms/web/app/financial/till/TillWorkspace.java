@@ -19,6 +19,7 @@
 package org.openvpms.web.app.financial.till;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.till.TillBalanceStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -95,7 +96,7 @@ public class TillWorkspace extends ActWorkspace {
         ActQuery query = new DefaultActQuery(
                 till, "till", "participation.till", "act", "tillBalance",
                 lookups, null);
-        query.setStatus("Uncleared");
+        query.setStatus(TillBalanceStatus.UNCLEARED);
         return query;
     }
 

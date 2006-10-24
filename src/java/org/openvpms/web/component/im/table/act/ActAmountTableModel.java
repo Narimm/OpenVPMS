@@ -25,7 +25,14 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.act.ActHelper;
@@ -179,7 +186,7 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
                 }
                 break;
             case STATUS_INDEX:
-                result = act.getStatus();
+                result = getStatus(act);
                 break;
             case AMOUNT_INDEX:
                 result = getAmount(act);
@@ -225,4 +232,28 @@ public class ActAmountTableModel extends BaseIMObjectTableModel<Act> {
         return label;
     }
 
+    /**
+     * Helper to return the display version of an act's status.
+     *
+     * @param act the act
+     * @return the display version of an act's status, or the status if
+     *         it can't be determined
+     */
+    protected String getStatus(Act act) {
+        String result = null;
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(act);
+        NodeDescriptor status = archetype.getNodeDescriptor("status");
+        if (status != null) {
+            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            Lookup lookup = LookupHelper.getLookup(service, status, act);
+            if (lookup != null) {
+                result = lookup.getName();
+            }
+        }
+        if (result == null) {
+            result = act.getStatus();
+        }
+        return result;
+    }
 }

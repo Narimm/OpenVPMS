@@ -133,7 +133,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // optionally select and print an act.patientDocumentForm
         String[] shortNames = {document};
-        String[] statuses = new String[0];
+        String[] statuses = {};
         Query<Act> query = new DefaultActQuery(patient, "patient",
                                                "participation.patient",
                                                shortNames, statuses);
