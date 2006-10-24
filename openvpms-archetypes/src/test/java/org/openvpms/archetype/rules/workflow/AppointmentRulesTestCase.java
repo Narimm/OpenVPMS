@@ -51,7 +51,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     public void testCalculateEndTimeForMinsUnits() {
         Entity appointmentType = createAppointmentType();
         save(appointmentType);
-        Party schedule = createSchedule(15, "minutes", 2, appointmentType);
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
         Date start = createTime(9, 0);
         Date end = AppointmentRules.calculateEndTime(start, schedule,
                                                      appointmentType);
@@ -66,7 +66,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     public void testCalculateEndTimeForHoursUnits() {
         Entity appointmentType = createAppointmentType();
         save(appointmentType);
-        Party schedule = createSchedule(1, "hours", 3, appointmentType);
+        Party schedule = createSchedule(1, "HOURS", 3, appointmentType);
         Date start = createTime(9, 0);
         Date end = AppointmentRules.calculateEndTime(start, schedule,
                                                      appointmentType);
@@ -83,8 +83,8 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Date end = createTime(9, 15);
 
         Entity appointmentType = createAppointmentType();
-        Party schedule1 = createSchedule(15, "minutes", 2, appointmentType);
-        Party schedule2 = createSchedule(15, "minutes", 2, appointmentType);
+        Party schedule1 = createSchedule(15, "MINUTES", 2, appointmentType);
+        Party schedule2 = createSchedule(15, "MINUTES", 2, appointmentType);
         save(schedule1);
         save(schedule2);
 
@@ -124,7 +124,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         Date start = createTime(9, 0);
         Date end = createTime(9, 15);
         Entity appointmentType = createAppointmentType();
-        Party schedule = createSchedule(15, "minutes", 2, appointmentType);
+        Party schedule = createSchedule(15, "MINUTES", 2, appointmentType);
         Act appointment = createAppointment(start, end, schedule);
         save(appointment);
 

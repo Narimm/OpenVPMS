@@ -41,16 +41,6 @@ import java.util.Date;
 public class DepositRules {
 
     /**
-     * Deposited act status.
-     */
-    public static final String DEPOSITED = "Deposited";
-
-    /**
-     * Undeposited act status.
-     */
-    public static final String UNDEPOSITED = "UnDeposited";
-
-    /**
      * Bank deposit act short name.
      */
     public static final String BANK_DEPOSIT = "act.bankDeposit";
@@ -87,14 +77,14 @@ public class DepositRules {
                 service, act.getArchetypeId(), act.getUid());
         if (oldAct != null) {
             // If the act already exists, make sure it hasn't been deposited
-            if (DEPOSITED.equals(oldAct.getStatus())) {
+            if (DepositStatus.DEPOSITED.equals(oldAct.getStatus())) {
                 throw new DepositRuleException(DepositAlreadyDeposited,
                                                act.getUid());
             }
         } else {
             // its a new bank deposit so if status is undeposited
             // check no other undeposited act exists.
-            if (UNDEPOSITED.equals(act.getStatus())) {
+            if (DepositStatus.UNDEPOSITED.equals(act.getStatus())) {
                 Entity account = bean.getParticipant(DEPOSIT_PARTICIPATION);
                 if (account == null) {
                     throw new DepositRuleException(MissingAccount,
@@ -124,11 +114,11 @@ public class DepositRules {
             throw new DepositRuleException(InvalidDepositArchetype,
                                            act.getArchetypeId().getShortName());
         }
-        if (DEPOSITED.equals(bean.getStatus())) {
+        if (DepositStatus.DEPOSITED.equals(bean.getStatus())) {
             throw new DepositRuleException(DepositAlreadyDeposited,
                                            bean.getStatus());
         }
-        bean.setStatus(DEPOSITED);
+        bean.setStatus(DepositStatus.DEPOSITED);
         IMObjectReference accountRef = bean.getParticipantRef(
                 DEPOSIT_PARTICIPATION);
         if (accountRef == null) {

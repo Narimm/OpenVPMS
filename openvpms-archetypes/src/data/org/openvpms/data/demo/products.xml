@@ -22,19 +22,19 @@
 <data id="Desexing" archetype="entity.productType" name="Desexing"  />
 <data id="MicroChip" archetype="entity.productType" name="Microchip"  />
 <data id="Other" archetype="entity.productType" name="Other"  />
-<data id="P1" archetype="product.merchandise" name="Troy 7-Dust 100g" printedName="" sellingUnits="Bottles" >
+<data id="P1" archetype="product.merchandise" name="Troy 7-Dust 100g" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="7DUST1"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P1" source="id:Merchandise"  />
-<data id="P2" archetype="product.merchandise" name="Troy 7-Dust 200g" printedName="" sellingUnits="Bottles" >
+<data id="P2" archetype="product.merchandise" name="Troy 7-Dust 200g" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="7DUST2"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P2" source="id:Merchandise"  />
-<data id="P3" archetype="product.medication" name="Acepromazine 10mg Tablets" printedName="" drugSchedule="S4" activeIngredients="10mg" sellingUnits="Tablets" >
+<data id="P3" archetype="product.medication" name="Acepromazine 10mg Tablets" printedName="" drugSchedule="S4" activeIngredients="10mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ACEP10"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -46,7 +46,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P4" source="id:Medications"  />
-<data id="P5" archetype="product.medication" name="Acepromazine 25mg Tablets" printedName="Acepromazine 25mg Tablets" drugSchedule="S4" activeIngredients="25mg" sellingUnits="Tablets" >
+<data id="P5" archetype="product.medication" name="Acepromazine 25mg Tablets" printedName="Acepromazine 25mg Tablets" drugSchedule="S4" activeIngredients="25mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ACEP25"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -109,7 +109,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P13" source="id:Medications"  />
-<data id="P14" archetype="product.medication" name="Amoxil Tablets 200mg" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Tablets" >
+<data id="P14" archetype="product.medication" name="Amoxil Tablets 200mg" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="AMOX200"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -117,7 +117,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P14" source="id:Medications"  />
-<data id="P15" archetype="product.medication" name="Amoxil Tablets 50mg" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="Tablets" >
+<data id="P15" archetype="product.medication" name="Amoxil Tablets 50mg" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="AMOX50"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -255,7 +255,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P36" source="id:Procedures"  />
-<data id="P37" archetype="product.medication" name="Anaplex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P37" archetype="product.medication" name="Anaplex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ANAPTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -282,7 +282,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P40" source="id:Medications"  />
-<data id="P41" archetype="product.medication" name="Antihistalone Tablets" printedName="" drugSchedule="S4" activeIngredients="Pred5mg/chlor2mg" sellingUnits="Tablets" >
+<data id="P41" archetype="product.medication" name="Antihistalone Tablets" printedName="" drugSchedule="S4" activeIngredients="Pred5mg/chlor2mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ANTITA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -301,7 +301,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P43" source="id:Medications"  />
-<data id="P44" archetype="product.medication" name="Apomorphine Injection" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P44" archetype="product.medication" name="Apomorphine Injection" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="APOMIN"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -309,7 +309,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P44" source="id:Medications"  />
-<data id="P45" archetype="product.medication" name="Aspro Tablets 300mcg" printedName="" drugSchedule="S4" activeIngredients="300mcg" sellingUnits="Tablets" >
+<data id="P45" archetype="product.medication" name="Aspro Tablets 300mcg" printedName="" drugSchedule="S4" activeIngredients="300mcg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ASPRTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
@@ -402,7 +402,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P57" source="id:Merchandise"  />
-<data id="P58" archetype="product.medication" name="Betsolan Tablets" printedName="" drugSchedule="S4" activeIngredients="0.25mg Betamethasone" sellingUnits="Tablets" >
+<data id="P58" archetype="product.medication" name="Betsolan Tablets" printedName="" drugSchedule="S4" activeIngredients="0.25mg Betamethasone" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="BETSTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -452,7 +452,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P65" source="id:Medications"  />
-<data id="P66" archetype="product.medication" name="Bisolvon Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P66" archetype="product.medication" name="Bisolvon Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="BISOTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -503,7 +503,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P73" source="id:Merchandise"  />
-<data id="P74" archetype="product.merchandise" name="Body Bags Small" printedName="" sellingUnits="Bottles" >
+<data id="P74" archetype="product.merchandise" name="Body Bags Small" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="BODYSM"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.80"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
@@ -531,7 +531,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P77" source="id:Medications"  />
-<data id="P78" archetype="product.medication" name="Brufen 200mg Tablets" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Tablets" >
+<data id="P78" archetype="product.medication" name="Brufen 200mg Tablets" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="BRUF200"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -545,7 +545,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P79" source="id:Medications"  />
-<data id="P80" archetype="product.medication" name="Buscopan Compositum Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P80" archetype="product.medication" name="Buscopan Compositum Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="BUSCTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -630,7 +630,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P91" source="id:Medications"  />
-<data id="P92" archetype="product.merchandise" name="Canex 2.5 Worming Tablets" printedName="" sellingUnits="Tablets" >
+<data id="P92" archetype="product.merchandise" name="Canex 2.5 Worming Tablets" printedName="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CANE25"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -643,7 +643,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P93" source="id:Medications"  />
-<data id="P94" archetype="product.medication" name="Canitone Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P94" archetype="product.medication" name="Canitone Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CANITA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -787,19 +787,19 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P116" source="id:Medications"  />
-<data id="P117" archetype="product.medication" name="Chartabs" printedName="" drugSchedule="S4" activeIngredients="300mg" sellingUnits="Tablets" >
+<data id="P117" archetype="product.medication" name="Chartabs" printedName="" drugSchedule="S4" activeIngredients="300mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CHARTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P117" source="id:Medications"  />
-<data id="P118" archetype="product.medication" name="Chloramphenical 125mg Tablets" printedName="" drugSchedule="S4" activeIngredients="125mg" sellingUnits="Tablets" >
+<data id="P118" archetype="product.medication" name="Chloramphenical 125mg Tablets" printedName="" drugSchedule="S4" activeIngredients="125mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CHLO125"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P118" source="id:Medications"  />
-<data id="P119" archetype="product.medication" name="Chloramphenicol 250mg Tablets" printedName="" drugSchedule="S4" activeIngredients="250mg" sellingUnits="Tablets" >
+<data id="P119" archetype="product.medication" name="Chloramphenicol 250mg Tablets" printedName="" drugSchedule="S4" activeIngredients="250mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CHLO250"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -807,7 +807,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P119" source="id:Medications"  />
-<data id="P120" archetype="product.medication" name="Chloramphenicol 500mg Tablets" printedName="" drugSchedule="S4" activeIngredients="500mg" sellingUnits="Tablets" >
+<data id="P120" archetype="product.medication" name="Chloramphenicol 500mg Tablets" printedName="" drugSchedule="S4" activeIngredients="500mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CHLO500"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -912,7 +912,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P134" source="id:Medications"  />
-<data id="P135" archetype="product.medication" name="Clavulox 250 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="250 Mg" sellingUnits="Tablets" >
+<data id="P135" archetype="product.medication" name="Clavulox 250 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="250 Mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CLAV250"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -920,14 +920,14 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P135" source="id:Medications"  />
-<data id="P136" archetype="product.medication" name="Clavulox 50 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="Tablets" >
+<data id="P136" archetype="product.medication" name="Clavulox 50 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CLAV50"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.30"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P136" source="id:Medications"  />
-<data id="P137" archetype="product.medication" name="Clavulox 500 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="500 Mg" sellingUnits="Tablets" >
+<data id="P137" archetype="product.medication" name="Clavulox 500 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="500 Mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CLAV500"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1001,7 +1001,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P147" source="id:Medications"  />
-<data id="P148" archetype="product.medication" name="Coloxyl Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P148" archetype="product.medication" name="Coloxyl Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="COLOTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1203,7 +1203,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P190" source="id:Medications"  />
-<data id="P191" archetype="product.medication" name="Cytobin Tablets" printedName="" drugSchedule="S4" activeIngredients="120mcg L-Triiodothyronine" sellingUnits="Tablets" >
+<data id="P191" archetype="product.medication" name="Cytobin Tablets" printedName="" drugSchedule="S4" activeIngredients="120mcg L-Triiodothyronine" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="CYTOTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1230,19 +1230,19 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P194" source="id:Procedures"  />
-<data id="P195" archetype="product.medication" name="Deltacal  400  Tablets" printedName="" drugSchedule="S4" activeIngredients="400mg" sellingUnits="Tablets" >
+<data id="P195" archetype="product.medication" name="Deltacal  400  Tablets" printedName="" drugSchedule="S4" activeIngredients="400mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DELT400"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P195" source="id:Medications"  />
-<data id="P196" archetype="product.medication" name="Deltameth  500  Tablets" printedName="" drugSchedule="S4" activeIngredients="500mg Dl-Methionine" sellingUnits="Tablets" >
+<data id="P196" archetype="product.medication" name="Deltameth  500  Tablets" printedName="" drugSchedule="S4" activeIngredients="500mg Dl-Methionine" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DELT500"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P196" source="id:Medications"  />
-<data id="P197" archetype="product.medication" name="Delta Albaplex Tablets" printedName="" drugSchedule="S4" activeIngredients="60mg" sellingUnits="Tablets" >
+<data id="P197" archetype="product.medication" name="Delta Albaplex Tablets" printedName="" drugSchedule="S4" activeIngredients="60mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DELTAL"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -1322,7 +1322,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P209" source="id:Merchandise"  />
-<data id="P210" archetype="product.merchandise" name="Dermaclens Spray 500ml" printedName="" sellingUnits="Bottles" >
+<data id="P210" archetype="product.merchandise" name="Dermaclens Spray 500ml" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="DERM500"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1354,7 +1354,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P214" source="id:Medications"  />
-<data id="P215" archetype="product.medication" name="Dexamethasone Tablets 5mg" printedName="" drugSchedule="S4" activeIngredients="5mg" sellingUnits="Tablets" >
+<data id="P215" archetype="product.medication" name="Dexamethasone Tablets 5mg" printedName="" drugSchedule="S4" activeIngredients="5mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DEXATA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -1402,28 +1402,28 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P221" source="id:Medications"  />
-<data id="P222" archetype="product.medication" name="Dimmitrol Heartworm Tab 400mg" printedName="Dimmitrol 400 Mg Tablets" drugSchedule="S4" activeIngredients="400 Mg" sellingUnits="Tablets" >
+<data id="P222" archetype="product.medication" name="Dimmitrol Heartworm Tab 400mg" printedName="Dimmitrol 400 Mg Tablets" drugSchedule="S4" activeIngredients="400 Mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DIMM400"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="10.20"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P222" source="id:Medications"  />
-<data id="P223" archetype="product.medication" name="Dimmitrol 50mg Heartworm Tabs" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="Tablets" >
+<data id="P223" archetype="product.medication" name="Dimmitrol 50mg Heartworm Tabs" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DIMM50"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="3.45"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P223" source="id:Medications"  />
-<data id="P224" archetype="product.medication" name="Dimmitrol C/c 200mg" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Bottles" >
+<data id="P224" archetype="product.medication" name="Dimmitrol C/c 200mg" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="DIMMC200"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="8.90"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P224" source="id:Medications"  />
-<data id="P225" archetype="product.medication" name="Dimmitrol C/c 50mg" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="Bottles" >
+<data id="P225" archetype="product.medication" name="Dimmitrol C/c 50mg" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="DIMMC50"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="5.60"  />
@@ -1530,21 +1530,21 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P240" source="id:Procedures"  />
-<data id="P241" archetype="product.medication" name="Droncit Tapewormer For Cats" printedName="Droncit Cat X 50" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P241" archetype="product.medication" name="Droncit Tapewormer For Cats" printedName="Droncit Cat X 50" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DRONCA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="1.66"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P241" source="id:Medications"  />
-<data id="P242" archetype="product.medication" name="Droncit Tapeworm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P242" archetype="product.medication" name="Droncit Tapeworm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DRONDO"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="2.20"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P242" source="id:Medications"  />
-<data id="P243" archetype="product.medication" name="Drontal Allwormer Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P243" archetype="product.medication" name="Drontal Allwormer Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="DRONTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="3.80"  />
@@ -1723,7 +1723,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P267" source="id:Medications"  />
-<data id="P268" archetype="product.medication" name="Equitone" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P268" archetype="product.medication" name="Equitone" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="EQUISY"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="40.00"  />
@@ -1846,7 +1846,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P285" source="id:Medications"  />
-<data id="P286" archetype="product.medication" name="Finadyne Tablets" printedName="Finadyne Tablets" drugSchedule="S4" activeIngredients="10mg Flunixin" sellingUnits="Tablets" >
+<data id="P286" archetype="product.medication" name="Finadyne Tablets" printedName="Finadyne Tablets" drugSchedule="S4" activeIngredients="10mg Flunixin" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="FINATA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1870,7 +1870,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P288" source="id:Medications"  />
-<data id="P289" archetype="product.medication" name="Flavatone Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P289" archetype="product.medication" name="Flavatone Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="FLAVTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1884,7 +1884,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P290" source="id:Merchandise"  />
-<data id="P291" archetype="product.medication" name="Flusapex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P291" archetype="product.medication" name="Flusapex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="FLUSTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -1953,7 +1953,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P300" source="id:Medications"  />
-<data id="P301" archetype="product.medication" name="Fruside Tablets" printedName="Fruside Tablets" drugSchedule="S4" activeIngredients="40mg" sellingUnits="Tablets" >
+<data id="P301" archetype="product.medication" name="Fruside Tablets" printedName="Fruside Tablets" drugSchedule="S4" activeIngredients="40mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="FRUSTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2136,7 +2136,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P326" source="id:Medications"  />
-<data id="P327" archetype="product.merchandise" name="Gluco-Stix" printedName="" sellingUnits="Bottles" >
+<data id="P327" archetype="product.merchandise" name="Gluco-Stix" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="GLUCST"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
@@ -2144,7 +2144,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P327" source="id:Merchandise"  />
-<data id="P328" archetype="product.medication" name="Glycerine Syrup" printedName="Glycerine Syrup" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P328" archetype="product.medication" name="Glycerine Syrup" printedName="Glycerine Syrup" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="GLYCSY"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2160,7 +2160,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P329" source="id:Medications"  />
-<data id="P330" archetype="product.medication" name="Grisovin 500mg Tablets" printedName="Grisovin 500mg Tablets" drugSchedule="S4" activeIngredients="500mg" sellingUnits="Tablets" >
+<data id="P330" archetype="product.medication" name="Grisovin 500mg Tablets" printedName="Grisovin 500mg Tablets" drugSchedule="S4" activeIngredients="500mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="GRIS500"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2194,7 +2194,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P334" source="id:Merchandise"  />
-<data id="P335" archetype="product.merchandise" name="Halothane Anaesthetic Agent" printedName="" sellingUnits="Bottles" >
+<data id="P335" archetype="product.merchandise" name="Halothane Anaesthetic Agent" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="HALOGA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="29.15"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
@@ -2442,7 +2442,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P370" source="id:Procedures"  />
-<data id="P371" archetype="product.medication" name="Insulin Injection" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P371" archetype="product.medication" name="Insulin Injection" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="INSUIN"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
@@ -2505,7 +2505,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P378" source="id:Medications"  />
-<data id="P379" archetype="product.medication" name="Konakion Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P379" archetype="product.medication" name="Konakion Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="KONATA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.39"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -2525,7 +2525,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P381" source="id:Medications"  />
-<data id="P382" archetype="product.medication" name="Kthrombin Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P382" archetype="product.medication" name="Kthrombin Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="KTHRTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2610,14 +2610,14 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P393" source="id:Merchandise"  />
-<data id="P394" archetype="product.medication" name="Levasole 200" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Tablets" >
+<data id="P394" archetype="product.medication" name="Levasole 200" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="LEVA200"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.38"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P394" source="id:Medications"  />
-<data id="P395" archetype="product.medication" name="Levasole 50" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="Tablets" >
+<data id="P395" archetype="product.medication" name="Levasole 50" printedName="" drugSchedule="S4" activeIngredients="50mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="LEVA50"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.18"  />
@@ -2630,7 +2630,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P396" source="id:Medications"  />
-<data id="P397" archetype="product.medication" name="Lincocin Capsules 500mg" printedName="" drugSchedule="S4" activeIngredients="500mg" sellingUnits="Tablets" >
+<data id="P397" archetype="product.medication" name="Lincocin Capsules 500mg" printedName="" drugSchedule="S4" activeIngredients="500mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="LINCCA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -2662,7 +2662,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P401" source="id:Medications"  />
-<data id="P402" archetype="product.medication" name="Lincocin Tablets - 200mg" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="Tablets" >
+<data id="P402" archetype="product.medication" name="Lincocin Tablets - 200mg" printedName="" drugSchedule="S4" activeIngredients="200mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="LINCTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -2680,7 +2680,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P404" source="id:Merchandise"  />
-<data id="P405" archetype="product.medication" name="Lomotil Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P405" archetype="product.medication" name="Lomotil Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="LOMOTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2740,7 +2740,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P412" source="id:Merchandise"  />
-<data id="P413" archetype="product.merchandise" name="Magnoplasm" printedName="" sellingUnits="Bottles" >
+<data id="P413" archetype="product.merchandise" name="Magnoplasm" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="MAGNPA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="4.50"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
@@ -2772,7 +2772,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P417" source="id:Medications"  />
-<data id="P418" archetype="product.medication" name="Maxalon Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P418" archetype="product.medication" name="Maxalon Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="MAXATA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2827,7 +2827,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P425" source="id:Merchandise"  />
-<data id="P426" archetype="product.medication" name="Methio-Form Tablets 500mg" printedName="" drugSchedule="S4" activeIngredients="500mg" sellingUnits="Tablets" >
+<data id="P426" archetype="product.medication" name="Methio-Form Tablets 500mg" printedName="" drugSchedule="S4" activeIngredients="500mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="METHTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2857,7 +2857,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P429" source="id:Medications"  />
-<data id="P430" archetype="product.medication" name="Millophyline Tablets" printedName="" drugSchedule="S4" activeIngredients="100mg" sellingUnits="Tablets" >
+<data id="P430" archetype="product.medication" name="Millophyline Tablets" printedName="" drugSchedule="S4" activeIngredients="100mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="MILLTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2871,7 +2871,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P431" source="id:Merchandise"  />
-<data id="P432" archetype="product.medication" name="Minipress 1 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="1 Mg" sellingUnits="Tablets" >
+<data id="P432" archetype="product.medication" name="Minipress 1 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="1 Mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="MINITA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2932,7 +2932,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P439" source="id:Medications"  />
-<data id="P440" archetype="product.medication" name="Mysoline Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P440" archetype="product.medication" name="Mysoline Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="MYSOTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -2946,7 +2946,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:GROOMING"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P441" source="id:Procedures"  />
-<data id="P442" archetype="product.medication" name="Nandoral Tablets" printedName="" drugSchedule="S4" activeIngredients="0.5mg Ethylestrenol" sellingUnits="Tablets" >
+<data id="P442" archetype="product.medication" name="Nandoral Tablets" printedName="" drugSchedule="S4" activeIngredients="0.5mg Ethylestrenol" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="NANDTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -3052,7 +3052,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P456" source="id:Medications"  />
-<data id="P457" archetype="product.medication" name="Neo-Sulcin Scour Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P457" archetype="product.medication" name="Neo-Sulcin Scour Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="NEOSTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -3076,7 +3076,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P459" source="id:Medications"  />
-<data id="P460" archetype="product.merchandise" name="Nitrite Tablets" printedName="" sellingUnits="Bottles" >
+<data id="P460" archetype="product.merchandise" name="Nitrite Tablets" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="NITRTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="10.08"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -3135,7 +3135,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P468" source="id:Procedures"  />
-<data id="P469" archetype="product.merchandise" name="Obstetrical Lube" printedName="Obstetrical Lube" sellingUnits="Bottles" >
+<data id="P469" archetype="product.merchandise" name="Obstetrical Lube" printedName="Obstetrical Lube" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="OBSTLU"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="13.75"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MISC"  />
@@ -3262,7 +3262,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P486" source="id:Medications"  />
-<data id="P487" archetype="product.medication" name="Ovarid 20mg Tablets" printedName="" drugSchedule="S4" activeIngredients="20 Mg" sellingUnits="Tablets" >
+<data id="P487" archetype="product.medication" name="Ovarid 20mg Tablets" printedName="" drugSchedule="S4" activeIngredients="20 Mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="OVAR20"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -3270,13 +3270,13 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P487" source="id:Medications"  />
-<data id="P488" archetype="product.medication" name="Ovarid Tablets 5mg" printedName="" drugSchedule="S4" activeIngredients="Megestrol Acetate 5mg" sellingUnits="Tablets" >
+<data id="P488" archetype="product.medication" name="Ovarid Tablets 5mg" printedName="" drugSchedule="S4" activeIngredients="Megestrol Acetate 5mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="OVAR5"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P488" source="id:Medications"  />
-<data id="P489" archetype="product.medication" name="Ovestin Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P489" archetype="product.medication" name="Ovestin Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="OVESTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.30"  />
@@ -3319,7 +3319,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P494" source="id:Medications"  />
-<data id="P495" archetype="product.medication" name="Pancrex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P495" archetype="product.medication" name="Pancrex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="PANCTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="12.80"  />
@@ -3346,7 +3346,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P498" source="id:Merchandise"  />
-<data id="P499" archetype="product.medication" name="Parcide Plus Worm Tablets" printedName="Parcide Plus Worm Ta. 250" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P499" archetype="product.medication" name="Parcide Plus Worm Tablets" printedName="Parcide Plus Worm Ta. 250" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PARCPL"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="1.50"  />
@@ -3707,7 +3707,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P557" source="id:Medications"  />
-<data id="P558" archetype="product.medication" name="Perlutex Tablets" printedName="" drugSchedule="S4" activeIngredients="5mg" sellingUnits="Tablets" >
+<data id="P558" archetype="product.medication" name="Perlutex Tablets" printedName="" drugSchedule="S4" activeIngredients="5mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PERLTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -3728,7 +3728,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P560" source="id:Medications"  />
-<data id="P561" archetype="product.medication" name="Pet-Form G Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P561" archetype="product.medication" name="Pet-Form G Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PETFTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -3736,7 +3736,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P561" source="id:Medications"  />
-<data id="P562" archetype="product.medication" name="Petguard Dry Shampoo" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P562" archetype="product.medication" name="Petguard Dry Shampoo" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="PETGDR"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="6.30"  />
@@ -3757,7 +3757,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P564" source="id:Medications"  />
-<data id="P565" archetype="product.medication" name="Phenobarbitone Tablets 30mg" printedName="" drugSchedule="S4" activeIngredients="30mg" sellingUnits="Tablets" >
+<data id="P565" archetype="product.medication" name="Phenobarbitone Tablets 30mg" printedName="" drugSchedule="S4" activeIngredients="30mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PHEN30"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -3792,7 +3792,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P569" source="id:Medications"  />
-<data id="P570" archetype="product.medication" name="Phenylbutazone Tablets 100mg" printedName="" drugSchedule="S4" activeIngredients="100mg" sellingUnits="Tablets" >
+<data id="P570" archetype="product.medication" name="Phenylbutazone Tablets 100mg" printedName="" drugSchedule="S4" activeIngredients="100mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PHENTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -3924,7 +3924,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P588" source="id:Medications"  />
-<data id="P589" archetype="product.merchandise" name="Poison Bottles 100ml" printedName="" sellingUnits="Bottles" >
+<data id="P589" archetype="product.merchandise" name="Poison Bottles 100ml" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="POISBO"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.96"  />
@@ -3989,7 +3989,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P598" source="id:Medications"  />
-<data id="P599" archetype="product.medication" name="Prednil Tablets" printedName="" drugSchedule="S4" activeIngredients="10mg" sellingUnits="Tablets" >
+<data id="P599" archetype="product.medication" name="Prednil Tablets" printedName="" drugSchedule="S4" activeIngredients="10mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PREDTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -4054,7 +4054,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P608" source="id:Medications"  />
-<data id="P609" archetype="product.medication" name="Proban Flea Tablets" printedName="" drugSchedule="S4" activeIngredients="30mg" sellingUnits="Tablets" >
+<data id="P609" archetype="product.medication" name="Proban Flea Tablets" printedName="" drugSchedule="S4" activeIngredients="30mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PROBTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.31"  />
@@ -4083,7 +4083,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P612" source="id:Medications"  />
-<data id="P613" archetype="product.medication" name="Pronestyl 250mg Tablets" printedName="" drugSchedule="S4" activeIngredients="250mg" sellingUnits="Tablets" >
+<data id="P613" archetype="product.medication" name="Pronestyl 250mg Tablets" printedName="" drugSchedule="S4" activeIngredients="250mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PRONTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -4113,28 +4113,28 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P616" source="id:Medications"  />
-<data id="P617" archetype="product.medication" name="Pyram 100 Worm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P617" archetype="product.medication" name="Pyram 100 Worm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PYRA100"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.50"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P617" source="id:Medications"  />
-<data id="P618" archetype="product.medication" name="Pyrantab 300 Worm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P618" archetype="product.medication" name="Pyrantab 300 Worm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PYRA300"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="1.50"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P618" source="id:Medications"  />
-<data id="P619" archetype="product.medication" name="Pyram Plus Worm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P619" archetype="product.medication" name="Pyram Plus Worm Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="PYRAPL"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="1.60"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P619" source="id:Medications"  />
-<data id="P620" archetype="product.medication" name="Quinine 300mg Tablets" printedName="" drugSchedule="S4" activeIngredients="300mg" sellingUnits="Tablets" >
+<data id="P620" archetype="product.medication" name="Quinine 300mg Tablets" printedName="" drugSchedule="S4" activeIngredients="300mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="QUINTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.06"  />
@@ -4245,13 +4245,13 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P636" source="id:Medications"  />
-<data id="P637" archetype="product.medication" name="Robaxin Tablets" printedName="" drugSchedule="S4" activeIngredients="500mg Methocarbamol" sellingUnits="Tablets" >
+<data id="P637" archetype="product.medication" name="Robaxin Tablets" printedName="" drugSchedule="S4" activeIngredients="500mg Methocarbamol" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ROBATA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P637" source="id:Medications"  />
-<data id="P638" archetype="product.medication" name="Rohypnol Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P638" archetype="product.medication" name="Rohypnol Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="ROHYTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.60"  />
@@ -4314,7 +4314,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P646" source="id:Merchandise"  />
-<data id="P647" archetype="product.merchandise" name="Savlon Wash" printedName="" sellingUnits="Bottles" >
+<data id="P647" archetype="product.merchandise" name="Savlon Wash" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="SAVLWA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="83.09"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
@@ -4425,7 +4425,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:FEES"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P663" source="id:Procedures"  />
-<data id="P664" archetype="product.medication" name="Sesoral-D Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P664" archetype="product.medication" name="Sesoral-D Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="SESOTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -4594,7 +4594,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:ANAESTHETIC"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P688" source="id:Medications"  />
-<data id="P689" archetype="product.medication" name="Strinacin Tablets" printedName="" drugSchedule="S4" activeIngredients="250mg" sellingUnits="Tablets" >
+<data id="P689" archetype="product.medication" name="Strinacin Tablets" printedName="" drugSchedule="S4" activeIngredients="250mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="STRITA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -4609,7 +4609,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P690" source="id:Medications"  />
-<data id="P691" archetype="product.medication" name="Sudafed 60mg Tablets" printedName="" drugSchedule="S4" activeIngredients="60mg" sellingUnits="Tablets" >
+<data id="P691" archetype="product.medication" name="Sudafed 60mg Tablets" printedName="" drugSchedule="S4" activeIngredients="60mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="SUDATA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="30.00"  />
@@ -4624,7 +4624,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P692" source="id:Medications"  />
-<data id="P693" archetype="product.medication" name="Suppress-5mg Tablets" printedName="" drugSchedule="S4" activeIngredients="5mg Megestrol Acetate" sellingUnits="Tablets" >
+<data id="P693" archetype="product.medication" name="Suppress-5mg Tablets" printedName="" drugSchedule="S4" activeIngredients="5mg Megestrol Acetate" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="SUPP05"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -4632,7 +4632,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P693" source="id:Medications"  />
-<data id="P694" archetype="product.medication" name="Suppress 20mg Tablets" printedName="" drugSchedule="S4" activeIngredients="20 Mg Megestrol Acetate" sellingUnits="Tablets" >
+<data id="P694" archetype="product.medication" name="Suppress 20mg Tablets" printedName="" drugSchedule="S4" activeIngredients="20 Mg Megestrol Acetate" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="SUPP20"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -4966,7 +4966,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P745" source="id:Medications"  />
-<data id="P746" archetype="product.medication" name="Terramycin Foaming Pessaries" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P746" archetype="product.medication" name="Terramycin Foaming Pessaries" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="TERRPE"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="3.90"  />
@@ -5022,7 +5022,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P753" source="id:Medications"  />
-<data id="P754" archetype="product.medication" name="Tetrex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P754" archetype="product.medication" name="Tetrex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="TETRTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.30"  />
@@ -5090,7 +5090,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P763" source="id:Medications"  />
-<data id="P764" archetype="product.medication" name="Torgyl 200 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="200 Mg" sellingUnits="Tablets" >
+<data id="P764" archetype="product.medication" name="Torgyl 200 Mg Tablets" printedName="" drugSchedule="S4" activeIngredients="200 Mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="TORGTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -5111,7 +5111,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P766" source="id:Medications"  />
-<data id="P767" archetype="product.medication" name="Tribrissen 20 Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P767" archetype="product.medication" name="Tribrissen 20 Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="TRIB20"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.18"  />
@@ -5126,7 +5126,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P768" source="id:Medications"  />
-<data id="P769" archetype="product.medication" name="Tribrissen 80 Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P769" archetype="product.medication" name="Tribrissen 80 Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="TRIB80"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -5149,7 +5149,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P771" source="id:Medications"  />
-<data id="P772" archetype="product.medication" name="Tricon Powder" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P772" archetype="product.medication" name="Tricon Powder" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="TRICPO"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="19.70"  />
@@ -5170,7 +5170,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P774" source="id:Medications"  />
-<data id="P775" archetype="product.medication" name="Trimidine Powder" printedName="Trimidine Powder" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P775" archetype="product.medication" name="Trimidine Powder" printedName="Trimidine Powder" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="TRIMPO"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="41.20"  />
@@ -5189,7 +5189,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P777" source="id:Medications"  />
-<data id="P778" archetype="product.medication" name="Triplopen Injection" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P778" archetype="product.medication" name="Triplopen Injection" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="TRIPIN"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -5228,13 +5228,13 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P783" source="id:Medications"  />
-<data id="P784" archetype="product.medication" name="Tylan 200 Tablets" printedName="" drugSchedule="S4" activeIngredients="Tylosin 200mg" sellingUnits="Tablets" >
+<data id="P784" archetype="product.medication" name="Tylan 200 Tablets" printedName="" drugSchedule="S4" activeIngredients="Tylosin 200mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="TYLATA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P784" source="id:Medications"  />
-<data id="P785" archetype="product.medication" name="Urex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P785" archetype="product.medication" name="Urex Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="UREXTA"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.20"  />
@@ -5259,7 +5259,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:SURGERY"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P788" source="id:Procedures"  />
-<data id="P789" archetype="product.medication" name="Utozyme Foaming Pessaries" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P789" archetype="product.medication" name="Utozyme Foaming Pessaries" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="UTOZPE"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -5407,13 +5407,13 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P811" source="id:Medications"  />
-<data id="P812" archetype="product.medication" name="Valium 2mg Tablets" printedName="" drugSchedule="S4" activeIngredients="2mg" sellingUnits="Tablets" >
+<data id="P812" archetype="product.medication" name="Valium 2mg Tablets" printedName="" drugSchedule="S4" activeIngredients="2mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="VALI02"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P812" source="id:Medications"  />
-<data id="P813" archetype="product.medication" name="Valium 5mg Tablets" printedName="" drugSchedule="S4" activeIngredients="5mg" sellingUnits="Tablets" >
+<data id="P813" archetype="product.medication" name="Valium 5mg Tablets" printedName="" drugSchedule="S4" activeIngredients="5mg" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="VALI05"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -5539,14 +5539,14 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P831" source="id:Merchandise"  />
-<data id="P832" archetype="product.merchandise" name="Vet-Kem Insecticidal Shampoo" printedName="" sellingUnits="Bottles" >
+<data id="P832" archetype="product.merchandise" name="Vet-Kem Insecticidal Shampoo" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="VETKSH"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="7.00"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P832" source="id:Merchandise"  />
-<data id="P833" archetype="product.merchandise" name="Vet-Kem Flea Kill Spray" printedName="" sellingUnits="Bottles" >
+<data id="P833" archetype="product.merchandise" name="Vet-Kem Flea Kill Spray" printedName="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="VETKSP"  />
 <data collection="prices" archetype="productPrice.markup" markup="50.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="10.50"  />
@@ -5566,7 +5566,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:MERCH"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P835" source="id:Merchandise"  />
-<data id="P836" archetype="product.medication" name="Vi-Sorbit Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P836" archetype="product.medication" name="Vi-Sorbit Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="VISOTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -5596,7 +5596,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P840" source="id:Medications"  />
-<data id="P841" archetype="product.medication" name="Vitamin K Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P841" archetype="product.medication" name="Vitamin K Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="VITAKTA"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -5608,7 +5608,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P842" source="id:Medications"  />
-<data id="P843" archetype="product.medication" name="Multi Vitamin Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P843" archetype="product.medication" name="Multi Vitamin Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="VITAMUT"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="0.10"  />
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
@@ -5724,7 +5724,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P860" source="id:Merchandise"  />
-<data id="P861" archetype="product.medication" name="Yeast Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Tablets" >
+<data id="P861" archetype="product.medication" name="Yeast Tablets" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="TABLETS" >
 <data collection="identities" archetype="entityIdentity.code" code="YEASTA"  />
 <data collection="prices" archetype="productPrice.fixedPrice" price="3.00"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
@@ -5732,7 +5732,7 @@
 <data collection="classifications" archetype="classification.productGroup" childId="id:DRUGS"  />
 </data>
 <data archetype="entityRelationship.productTypeProduct" target="id:P861" source="id:Medications"  />
-<data id="P862" archetype="product.medication" name="Yellow Lotion" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="Bottles" >
+<data id="P862" archetype="product.medication" name="Yellow Lotion" printedName="" drugSchedule="S4" activeIngredients="" sellingUnits="BOTTLES" >
 <data collection="identities" archetype="entityIdentity.code" code="YELLLO"  />
 <data collection="prices" archetype="productPrice.markup" markup="100.00"  />
 <data collection="prices" archetype="productPrice.unitPrice" price="25.60"  />

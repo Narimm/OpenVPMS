@@ -178,7 +178,7 @@ public class AppointmentRules {
         int slotSize = schedule.getInt("slotSize");
         String slotUnits = schedule.getString("slotUnits");
         int result;
-        if ("hours".equals(slotUnits)) {
+        if ("HOURS".equals(slotUnits)) {
             result = slotSize * 60;
         } else {
             result = slotSize;

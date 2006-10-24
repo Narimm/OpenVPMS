@@ -26,21 +26,21 @@
 		<node name="details" path="/details" hidden="true" type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap" minCardinality="1" maxCardinality="1">
 			<node name="creditLimit" path="/details/attributes/creditLimit" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
 			<node name="paymentTerms" path="/details/attributes/paymentTerms" type="java.lang.Integer" minCardinality="0" />
-			<node name="paymentUom" displayName="Payment Terms Units" path="/details/attributes/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
+			<node name="paymentUom" displayName="Payment Terms Units" path="/details/attributes/paymentUom" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
+						<property name="DAYS" value="days" />
+						<property name="WEEKS" value="weeks" />
+						<property name="MONTHS" value="months" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
-			<node name="accountFee" displayName="Account Fee Type" path="/details/attributes/accountFee" type="java.lang.String" minCardinality="0" defaultValue="'Fixed'" >
+			<node name="accountFee" displayName="Account Fee Type" path="/details/attributes/accountFee" type="java.lang.String" minCardinality="0" defaultValue="'FIXED'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="Fixed" value="Fixed" />
-						<property name="Percentage" value="Percentage" />
+						<property name="FIXED" value="Fixed" />
+						<property name="PERCENTAGE" value="Percentage" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
@@ -50,11 +50,11 @@
 			<node name="accountFeeBalance" displayName="Minimum Balance" path="/details/attributes/accountFeeBalance" type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0" defaultValue="'0.0'"/>
 			<node name="accountFeeDays" displayName="Overdue Days" path="/details/attributes/accountFeeDays" type="java.lang.Integer" minCardinality="0" />
 			<node name="accountFeeMessage" displayName="Fee Message" path="/details/attributes/accountFeeMessage" type="java.lang.String" minCardinality="0" maxLength="300" />
-			<node name="settlementDiscount" displayName="Settlement Discount Type" path="/details/attributes/settlementDiscount" type="java.lang.String" minCardinality="0" defaultValue="'Percentage'" >
+			<node name="settlementDiscount" displayName="Settlement Discount Type" path="/details/attributes/settlementDiscount" type="java.lang.String" minCardinality="0" defaultValue="'PERCENTAGE'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="Fixed" value="Fixed" />
-						<property name="Percentage" value="Percentage" />
+						<property name="FIXED" value="Fixed" />
+						<property name="PERCENTAGE" value="Percentage" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

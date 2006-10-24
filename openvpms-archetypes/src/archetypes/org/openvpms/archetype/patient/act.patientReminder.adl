@@ -27,12 +27,12 @@
 		<node name="reminderType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.reminderType" />
 		<node displayName="Due Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
-		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'In Progress'">
+		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="In Progress" value="In Progress" />
-					<property name="Completed" value="Completed" />
-					<property name="Cancelled" value="Cancelled" />
+					<property name="IN_PROGRESS" value="In Progress" />
+					<property name="COMPLETED" value="Completed" />
+					<property name="CANCELLED" value="Cancelled" />
 				</propertyList>
 				<errorMessage>An error message</errorMessage>
 			</assertion>

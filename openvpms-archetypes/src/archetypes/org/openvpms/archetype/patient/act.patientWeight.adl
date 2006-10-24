@@ -22,7 +22,7 @@
 		<node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
 			derivedValue="'Weight'" />
 		<node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/weight, ' ', /details/attributes/units)" />
+			derivedValue="concat(/details/attributes/weight, ' ', openvpms:lookup(.,'units'))" />
 		<node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" defaultValue="java.util.Date.new()" />
 		<node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1" 
 			filter="participation.patient" hidden="true" />
@@ -35,9 +35,9 @@
 				minCardinality="1" maxLength="30" default="'Kilograms'">
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="Kilograms" value="Kilograms" />
-						<property name="Grams" value="Grams" />
-						<property name="Pounds" value="Pounds" />
+						<property name="KILOGRAMS" value="Kilograms" />
+						<property name="GRAMS" value="Grams" />
+						<property name="POUNDS" value="Pounds" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

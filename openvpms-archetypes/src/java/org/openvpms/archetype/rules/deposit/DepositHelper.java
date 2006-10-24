@@ -56,9 +56,8 @@ public class DepositHelper {
                                                   true);
         query.setFirstRow(0);
         query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        query.add(
-                new NodeConstraint("status", RelationalOp.EQ,
-                                   DepositRules.UNDEPOSITED));
+        query.add(new NodeConstraint("status", RelationalOp.EQ,
+                                     DepositStatus.UNDEPOSITED));
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint(
                 "depositAccount", DepositRules.DEPOSIT_PARTICIPATION,

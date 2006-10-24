@@ -16,16 +16,25 @@
  *  $$Id$$
 -->
 <archetypes>
-	<archetype name="openvpms-lookup-lookup.postcode.1.0" latest="true"
-		type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Postcode" >
-		<node name="uid" path="/uid" displayName="id" type="java.lang.Long" hidden="true" readOnly="true" />
-		<node name="postCode" path="/value" type="java.lang.String" minCardinality="1" />
-		<node name="name" type="java.lang.String" path="/name"
-			hidden="true" minCardinality="1" derived="true"
-			derivedValue="/value" />
-		<node name="description" type="java.lang.String"
-			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/value,lookup:isDefault(/defaultLookup))" />
-		<node displayName="default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup" defaultValue="false()" /> 
-	</archetype>
+    <archetype name="openvpms-lookup-lookup.postcode.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.lookup.Lookup"
+               displayName="Postcode">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
+              hidden="true" readOnly="true"/>
+        <node name="code" path="/code" type="java.lang.String"
+              minCardinality="1">
+            <assertion name="regularExpression">
+                <property name="expression" value="[A-Z0-9_]*"/>
+                <errorMessage>errorMessage</errorMessage>
+            </assertion>
+        </node>
+        <node name="name" type="java.lang.String" path="/name" hidden="true"
+              minCardinality="1"/>
+        <node name="description" type="java.lang.String"
+              path="/description" hidden="true" derived="true"
+              derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>
+        <node displayName="default" name="defaultLookup"
+              type="java.lang.Boolean" path="/defaultLookup"
+              defaultValue="false()"/>
+    </archetype>
 </archetypes>

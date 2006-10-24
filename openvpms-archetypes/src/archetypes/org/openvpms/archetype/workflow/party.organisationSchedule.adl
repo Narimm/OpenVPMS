@@ -28,8 +28,8 @@
 			<node name="slotUnits" path="/details/attributes/slotUnit" type="java.lang.String" defaultVminCardinality="1" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="minutes" value="minutes" />
-						<property name="hours" value="hours" />
+						<property name="MINUTES" value="minutes" />
+						<property name="HOURS" value="hours" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

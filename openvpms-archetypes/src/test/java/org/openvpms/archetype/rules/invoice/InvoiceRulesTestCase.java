@@ -18,6 +18,7 @@
 
 package org.openvpms.archetype.rules.invoice;
 
+import static org.openvpms.archetype.rules.act.ActStatus.*;
 import org.openvpms.archetype.rules.patient.ReminderRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -185,12 +186,12 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         // set the reminder status to 'Completed'
         Act reminder = reminders.get(0);
-        reminder.setStatus("Completed");
+        reminder.setStatus(COMPLETED);
         save(reminder);
 
         // set the document status to 'Posted'
         Act document = documents.get(0);
-        document.setStatus("Posted");
+        document.setStatus(POSTED);
         save(document);
 
         item = reload(item); // reload to ensure the item has saved correctly
@@ -263,12 +264,12 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
 
         // set the reminder status to 'Completed'
         Act reminder = reminders.get(0);
-        reminder.setStatus("Completed");
+        reminder.setStatus(COMPLETED);
         save(reminder);
 
         // set the document status to 'Completed'
         Act document = documents.get(0);
-        document.setStatus("Completed");
+        document.setStatus(COMPLETED);
         save(document);
 
         // remove the invoice and verify it can't be retrieved
@@ -303,7 +304,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
      */
     private ActBean createInvoice() {
         Act act = createAct("act.customerAccountChargesInvoice");
-        act.setStatus("In Progress");
+        act.setStatus(IN_PROGRESS);
         ActBean bean = new ActBean(act);
         bean.addParticipation("participation.customer", _customer);
         bean.addParticipation("participation.patient", _patient);
@@ -336,7 +337,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         return act;
     }
 
-       /**
+    /**
      * Helper to create and save a customer.
      *
      * @return a new customer
@@ -390,7 +391,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(reminder);
         bean.setValue("name", "XReminderType");
         bean.setValue("defaultInterval", 1);
-        bean.setValue("defaultUnits", "months");
+        bean.setValue("defaultUnits", "MONTHS");
         bean.save();
         return reminder;
     }

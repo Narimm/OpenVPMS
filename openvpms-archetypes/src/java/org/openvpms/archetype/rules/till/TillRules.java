@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.till;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.archetype.rules.deposit.DepositHelper;
 import static org.openvpms.archetype.rules.till.TillRuleException.ErrorCode.*;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -58,16 +59,6 @@ public class TillRules {
     public static final String TILL_PARTICIPATION = "participation.till";
 
     /**
-     * Cleared act status.
-     */
-    public static final String CLEARED = "Cleared";
-
-    /**
-     * Uncleared act status.
-     */
-    public static final String UNCLEARED = "Uncleared";
-
-    /**
      * Customer account payment act short name.
      */
     private static final String ACCOUNT_PAYMENT = "act.customerAccountPayment";
@@ -104,13 +95,13 @@ public class TillRules {
                 service, act.getArchetypeId(), act.getUid());
         if (oldAct != null) {
             // If the act already exists, make sure it hasn't been cleared
-            if (CLEARED.equals(oldAct.getStatus())) {
+            if (TillBalanceStatus.CLEARED.equals(oldAct.getStatus())) {
                 throw new TillRuleException(ClearedTill, act.getUid());
             }
         } else {
             // Else we have a completely new till balance so if status is
             // cleared check no other uncleared for Till.
-            if (UNCLEARED.equals(bean.getStatus())) {
+            if (TillBalanceStatus.UNCLEARED.equals(bean.getStatus())) {
                 Entity till = bean.getParticipant(TILL_PARTICIPATION);
                 if (till == null) {
                     throw new TillRuleException(MissingTill,
@@ -148,7 +139,7 @@ public class TillRules {
             throw new TillRuleException(CantAddActToTill,
                                         act.getArchetypeId().getShortName());
         }
-        if (isAccount && !"Posted".equals(bean.getStatus())) {
+        if (isAccount && !POSTED.equals(bean.getStatus())) {
             return;
         }
         IMObjectReference till = bean.getParticipantRef(TILL_PARTICIPATION);
@@ -204,7 +195,7 @@ public class TillRules {
                 throw new TillRuleException(BalanceNotFound);
             }
         }
-        balance.setStatus(CLEARED);
+        balance.setStatus(TillBalanceStatus.CLEARED);
 
 
         Act deposit = DepositHelper.getUndepositedDeposit(account);
@@ -268,7 +259,7 @@ public class TillRules {
         if (orig.equals(till)) {
             throw new TillRuleException(InvalidTransferTill, till.getName());
         }
-        if (!UNCLEARED.equals(balance.getStatus())) {
+        if (!TillBalanceStatus.UNCLEARED.equals(balance.getStatus())) {
             throw new TillRuleException(ClearedTill, balance.getUid());
         }
         if (actBean.getParticipant(TILL_PARTICIPATION) == null) {
