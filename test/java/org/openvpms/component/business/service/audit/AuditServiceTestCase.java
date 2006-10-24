@@ -20,17 +20,13 @@ package org.openvpms.component.business.service.audit;
 
 
 // commons-lang
-import java.util.List;
-
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.audit.AuditRecord;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-
-// openvpms-test-component
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.List;
 
 /**
  * Test the
@@ -98,7 +94,7 @@ public class AuditServiceTestCase extends
      */
     public void testAuditOnSave()
     throws Exception {
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         archetype.save(person);
         List<AuditRecord> records = audit.getByObjectId(
                 person.getArchetypeIdAsString(), person.getUid());
@@ -111,7 +107,7 @@ public class AuditServiceTestCase extends
      */
     public void testAuditOnUpdate()
     throws Exception {
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         archetype.save(person);
         assertTrue(audit.getByObjectId(person.getArchetypeIdAsString(), 
                 person.getUid()).size() == 1);
@@ -127,7 +123,7 @@ public class AuditServiceTestCase extends
      */
     public void testAuditOnMultipleUpdates()
     throws Exception {
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         archetype.save(person);
         
         for (int index = 0; index < 5; index++) {
@@ -144,7 +140,7 @@ public class AuditServiceTestCase extends
      */
      public void testRetrievalById()
      throws Exception {
-         Party person = createPerson("Mr", "Jim", "Alateras");
+         Party person = createPerson("MR", "Jim", "Alateras");
          archetype.save(person);
          archetype.save(person);
          archetype.save(person);
@@ -162,7 +158,7 @@ public class AuditServiceTestCase extends
       */
      public void testAuditOnDelete()
      throws Exception {
-         Party person = createPerson("Mr", "Jim", "Alateras");
+         Party person = createPerson("MR", "Jim", "Alateras");
          archetype.save(person);
          archetype.remove(person);
          List<AuditRecord> records = audit.getByObjectId(

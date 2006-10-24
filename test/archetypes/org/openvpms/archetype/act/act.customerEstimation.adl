@@ -14,22 +14,22 @@
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
-			<node name="lowTotal" path="/details/attributes/lowTotal" type="java.math.BigDecimal" 
+			<node name="lowTotal" path="/details/attributes/lowTotal" type="java.math.BigDecimal"
 				derivedValue="sum(openvpms:resolveRefs(/sourceActRelationships/target)/details/attributes/lowTotal)"
 				derived="true" defaultValue="'0.0'" minCardinality="1" />
-			<node name="highTotal" path="/details/attributes/highTotal" type="java.math.BigDecimal" 
+			<node name="highTotal" path="/details/attributes/highTotal" type="java.math.BigDecimal"
 				derivedValue="sum(openvpms:resolveRefs(/sourceActRelationships/target)/details/attributes/highTotal)"
 				derived="true" defaultValue="'0.0'" minCardinality="1" />
-			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1" />			
+			<node name="printed" path="/details/attributes/printed" type="java.lang.Boolean" defaultValue="false()" minCardinality="1" />
 		</node>
 		<node name="status" path="/status" type="java.lang.String"
 			minCardinality="1">
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="In Progress" value="In Progress" />
-					<property name="Completed" value="Completed" />
-					<property name="Cancelled" value="Cancelled" />
-					<property name="Posted" value="Posted" />
+                    <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="COMPLETED" value="Completed"/>
+                    <property name="CANCELLED" value="Cancelled"/>
+                    <property name="POSTED" value="Posted"/>
 				</propertyList>
 				<errorMessage>An error message</errorMessage>
 			</assertion>

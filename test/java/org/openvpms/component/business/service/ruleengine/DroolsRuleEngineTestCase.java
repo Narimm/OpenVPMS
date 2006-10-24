@@ -20,27 +20,23 @@ package org.openvpms.component.business.service.ruleengine;
 
 
 // log4j
-import java.util.Date;
-
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.ValidationError;
-
-// openvpms-test-component
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
+
+import java.util.Date;
 
 /**
  * Test the
  * {@link org.openvpms.component.business.service.ruleengine.DroolsRuleEngine}
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
@@ -89,62 +85,62 @@ public class DroolsRuleEngineTestCase extends
         this.archetype = (IArchetypeService)applicationContext
                 .getBean("archetypeService");
     }
-    
+
     /**
      * Test that rule engine is called when this object is being saved
      */
     public void testRuleEngineOnSave()
     throws Exception {
         try {
-            Party person = createPerson("Mr", "Jim", "Alateras");
+            Party person = createPerson("MR", "Jim", "Alateras");
             archetype.save(person);
         } catch (ValidationException exception) {
             for (ValidationError error : exception.getErrors()) {
                 logger.error(error.toString());
             }
-            
+
             //rethrow exception
             throw exception;
         }
     }
-    
+
     /**
      * Test for OVPMS-127
      */
     public void testOVPMS127()
     throws Exception {
-        Party personA = createPerson("Mr", "Jim", "Alateras");
+        Party personA = createPerson("MR", "Jim", "Alateras");
         archetype.save(personA);
-        Party personB = createPerson("Mr", "Oscar", "Alateras");
+        Party personB = createPerson("MR", "Oscar", "Alateras");
         archetype.save(personB);
         Party pet = createAnimal("lucky");
         archetype.save(pet);
-        
+
         // create the entity relationships
-        EntityRelationship rel = createEntityRelationship(personA, pet, 
-                "entityRelationship.animalOwner");
+        EntityRelationship rel = createEntityRelationship(personA, pet,
+                                                          "entityRelationship.animalOwner");
         pet.addEntityRelationship(rel);
         archetype.save(pet);
         assertTrue(rel.getActiveEndTime() == null);
-        
-        EntityRelationship rel1 = createEntityRelationship(personB, pet, 
+
+        EntityRelationship rel1 = createEntityRelationship(personB, pet,
         "entityRelationship.animalOwner");
         pet.addEntityRelationship(rel1);
         archetype.save(pet);
 
         assertTrue(rel.getActiveEndTime() != null);
         assertTrue(rel1.getActiveEndTime() == null);
-        
+
         pet = createAnimal("billy");
         archetype.save(pet);
         rel = createEntityRelationship(personB, pet, "entityRelationship.animalOwner");
         personB.addEntityRelationship(rel);
         archetype.save(personB);
     }
-    
+
     /**
      * Create a person
-     * 
+     *
      * @param title
      *            the person's title
      * @param firstName
@@ -159,13 +155,13 @@ public class DroolsRuleEngineTestCase extends
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
         person.addContact(createPhoneContact());
-        
+
         return person;
     }
-    
+
     /**
      * Create an anima entity
-     * 
+     *
      * @param name
      *            the name of the pet
      * @return Animal
@@ -175,17 +171,17 @@ public class DroolsRuleEngineTestCase extends
         pet.setName(name);
         pet.getDetails().setAttribute("breed", "dog");
         pet.getDetails().setAttribute("colour", "brown");
-        pet.getDetails().setAttribute("sex", "unspecified");
+        pet.getDetails().setAttribute("sex", "UNSPECIFIED");
         pet.getDetails().setAttribute("species", "k9");
         pet.setDescription("A dog");
         pet.getDetails().setAttribute("dateOfBirth", new Date());
-        
+
         return pet;
     }
 
     /**
      * Create a phone contact
-     * 
+     *
      * @return Contact
      */
     private Contact createPhoneContact() {
@@ -193,32 +189,32 @@ public class DroolsRuleEngineTestCase extends
         contact.getDetails().setAttribute("areaCode", "03");
         contact.getDetails().setAttribute("telephoneNumber", "1234567");
         contact.getDetails().setAttribute("preferred", new Boolean(true));
-        
+
         return contact;
     }
-    
+
     /**
-     * Create an entity relationship of the specified type between the 
+     * Create an entity relationship of the specified type between the
      * source and target entities
-     * 
+     *
      * @param source
      *            the source entity
-     * @param target 
+     * @param target
      *            the target entity
      * @param shortName
      *            the short name of the relationship to create
-     * @return EntityRelationship                                    
+     * @return EntityRelationship
      */
-    private EntityRelationship createEntityRelationship(Entity source, 
+    private EntityRelationship createEntityRelationship(Entity source,
             Entity target, String shortName) {
         EntityRelationship rel = (EntityRelationship)archetype.create(shortName);
-        
+
         rel.setActiveStartTime(new Date());
         rel.setSequence(1);
         rel.setSource(new IMObjectReference(source));
         rel.setTarget(new IMObjectReference(target));
 
         return rel;
-        
+
     }
 }

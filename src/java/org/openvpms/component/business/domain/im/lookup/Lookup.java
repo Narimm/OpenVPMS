@@ -20,276 +20,309 @@
 package org.openvpms.component.business.domain.im.lookup;
 
 // java lang
-import java.util.HashSet;
-import java.util.Set;
 
-// commons-lang
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-// openvpms-common
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
+import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToAddLookRelationship;
+import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToRemoveLookRelationship;
+
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
- * A lookup represents a piece of static data that is used by 
+ * A lookup represents a piece of static data that is used by
  * OpenVPMS. It can be used to represent a Species, a Breed, a Country,
  * a PostCode etc.
- * <p> 
- * A lookup can have additional information stored in the details 
- * attribute 
+ * <p/>
+ * A lookup has a <em>code</em>, <em>name</em> and <em>description</em>.
+ * The <em>code</em> is mandatory, used to uniquely identify the lookup within
+ * its domain. The other attributes are optional.
+ * The convention for alphabetic codes are that they appear all in uppercase,
+ * with words separated by an underscore.
+ * E.g, CANINE, COMPLETED, IN_PROGRESS.
+ * The <em>name</em> is used for display purposes. If not specified, it
+ * is derived from <em>code</code>.
+ * The <em>description</em> is used for display purposes, and defaults to
+ * <code>null</code>.
+ * <p/>
+ * A lookup can have additional information stored in the details
+ * attribute.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
 public class Lookup extends IMObject {
 
     /**
-     * Default SUID
+     * Default SUID.
      */
     private static final long serialVersionUID = 1L;
 
     /**
-     * The value of the lookup. This is mandatory.
-     */
-    private String value;
-    
-    /**
-     * The code associsted with the lookup. This is an optional.
+     * The lookup code.
      */
     private String code;
-    
-    /**
-     * Is this the default lookup for a particular domain
-     */
-    private boolean defaultLookup;
-    
-    /**
-     * Holds all the {@link LookupRelationship}s that this lookup is a source off.
-     */
-    private Set<LookupRelationship> sourceLookupRelationships =
-        new HashSet<LookupRelationship>();
-    
-    /**
-     * Holds all the {@link LookupRelationship}s that this lookup is a target off.
-     */
-    private Set<LookupRelationship> targetLookupRelationships =
-        new HashSet<LookupRelationship>();
 
     /**
-     * Details holds dynamic attributes for a lookup
+     * Is this the default lookup for a particular domain.
+     */
+    private boolean defaultLookup;
+
+    /**
+     * The {@link LookupRelationship}s that this lookup is a source of.
+     */
+    private Set<LookupRelationship> sourceLookupRelationships =
+            new HashSet<LookupRelationship>();
+
+    /**
+     * The {@link LookupRelationship}s that this lookup is a target of.
+     */
+    private Set<LookupRelationship> targetLookupRelationships =
+            new HashSet<LookupRelationship>();
+
+    /**
+     * Details holds dynamic attributes for a lookup.
      */
     private DynamicAttributeMap details = new DynamicAttributeMap();
-    
-    
+
+
     /**
-     * Default constructor
+     * Default constructor.
      */
     public Lookup() {
     }
 
     /**
-     * Construct a lookup
-     * 
-     * @param archetypeId
-     *            the archetype id constraining this object
-     * @param value
-     *            the value associated with the lookup
-     * @param code 
-     *            an optional code 
+     * Constructs a new <code>Lookup</code>.
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param code        the lookup code
      */
-    public Lookup(ArchetypeId archetypeId, String value, 
-        String code) {
-        super(archetypeId);
-        
-        this.value = value;
+    public Lookup(ArchetypeId archetypeId, String code) {
+        this(archetypeId, code, null);
+    }
+
+    /**
+     * Constructs a new <code>Lookup</code>.
+     *
+     * @param archetypeId the archetype id constraining this object
+     * @param code        the lookup code
+     * @param name        the lookup name
+     */
+    public Lookup(ArchetypeId archetypeId, String code, String name) {
+        super(archetypeId, name, null);
         this.code = code;
     }
 
     /**
-     * @return Returns the details.
-     */
-    public DynamicAttributeMap getDetails() {
-        return details;
-    }
-
-    /**
-     * @param details The details to set.
-     */
-    public void setDetails(DynamicAttributeMap details) {
-        this.details = details;
-    }
-
-    /**
-     * @return Returns the value.
-     */
-    public String getValue() {
-        return value;
-    }
-
-    /**
-     * @param value The value to set.
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
-     * @return Returns the code.
+     * Returns the lookup code.
+     *
+     * @return the code
      */
     public String getCode() {
         return code;
     }
 
     /**
-     * @param code The code to set.
+     * Sets the lookup code.
+     *
+     * @param code the code to set
      */
     public void setCode(String code) {
         this.code = code;
     }
 
     /**
-     * @return Returns the defaultLookup.
+     * Returns the name.
+     *
+     * @return the name
+     */
+    public String getName() {
+        String name = super.getName();
+        if (name == null && code != null) {
+            name = code.replace('_', ' ');
+            name = WordUtils.capitalizeFully(name);
+        }
+        return name;
+    }
+
+    /**
+     * Determines if this is the default lookup.
+     *
+     * @return <code>true</code> if this is the default lookup, otherwise
+     *         <code>false</code>
      */
     public boolean isDefaultLookup() {
         return defaultLookup;
     }
 
     /**
-     * @param defaultLookup The defaultLookup to set.
+     * Determines if this is the default lookup.
+     *
+     * @param defaultLookup if <code>true</code> this is the default lookup
      */
     public void setDefaultLookup(boolean defaultLookup) {
         this.defaultLookup = defaultLookup;
     }
+
     /**
-     * @return Returns the sourceLookupRelationships.
+     * Returns the details.
+     *
+     * @return the details
+     */
+    public DynamicAttributeMap getDetails() {
+        return details;
+    }
+
+    /**
+     * Sets the details.
+     *
+     * @param details the details to set.
+     */
+    public void setDetails(DynamicAttributeMap details) {
+        this.details = details;
+    }
+
+    /**
+     * Returns the the source lookup relationships.
+     *
+     * @return the source lookup relationships
      */
     public Set<LookupRelationship> getSourceLookupRelationships() {
         return sourceLookupRelationships;
     }
 
     /**
-     * @param sourceLookupRelationships The sourceLookupRelationships to set.
+     * Sets the source lookup relationships.
+     *
+     * @param relationships the relationships to set
      */
     public void setSourceLookupRelationships(
-            Set<LookupRelationship> sourceLookupRelationships) {
-        this.sourceLookupRelationships = sourceLookupRelationships;
+            Set<LookupRelationship> relationships) {
+        sourceLookupRelationships = relationships;
     }
 
     /**
      * Add a source {@link LookupRelationship}.
-     * 
-     * @param source 
+     *
+     * @param source the relationship to add
      */
     public void addSourceLookupRelationship(LookupRelationship source) {
-        this.sourceLookupRelationships.add(source);
+        sourceLookupRelationships.add(source);
     }
 
     /**
      * Remove a source {@link LookupRelationship}.
-     * 
-     * @param source
+     *
+     * @param source the relationship to remove
      */
     public void removeSourceLookupRelationship(LookupRelationship source) {
-        this.sourceLookupRelationships.remove(source);
+        sourceLookupRelationships.remove(source);
     }
 
     /**
-     * @return Returns the targetLookupRelationships.
+     * Returns the target lookup relationships.
+     *
+     * @return the target lookup relationships
      */
     public Set<LookupRelationship> getTargetLookupRelationships() {
         return targetLookupRelationships;
     }
 
     /**
-     * Set this lookup to be a targt of an {@link LookupRelationship}.
-     * 
-     * @param targetLookupRelationships The targetLookupRelationships to set.
+     * Sets the target lookup relationships
+     *
+     * @param relationships the relationships to set
      */
     public void setTargetLookupRelationships(
-            Set<LookupRelationship> targetLookupRelationships) {
-        this.targetLookupRelationships = targetLookupRelationships;
+            Set<LookupRelationship> relationships) {
+        targetLookupRelationships = relationships;
     }
-    
+
     /**
-     * Add a target {@link LookupRelationship}.
-     * 
-     * @param target 
-     *            add a new target.
+     * Adds a target {@link LookupRelationship}.
+     *
+     * @param target the relationship to add
      */
     public void addTargetLookupRelationship(LookupRelationship target) {
-        this.targetLookupRelationships.add(target);
+        targetLookupRelationships.add(target);
     }
 
     /**
-     * Remove a target {@link LookupRelationship}.
-     * 
-     * @param target
+     * Removes a target {@link LookupRelationship}.
+     *
+     * @param target the relationship to remove
      */
     public void removeTargetLookupRelationship(LookupRelationship target) {
-        this.targetLookupRelationships.remove(target);
+        targetLookupRelationships.remove(target);
     }
 
     /**
-     * Add a relationship to this lookup. It will determine whether it is a 
+     * Add a relationship to this lookup. It will determine whether it is a
      * source or target relationship before adding it.
-     * 
-     * @param rel
-     *            the lookup relationship to add
-     * @throws LookupRelationshipException
-     *            if this relationship cannot be added to this lookup            
+     *
+     * @param rel the relationship to add
+     * @throws LookupRelationshipException if the relationship cannot be added
+     *                                     to this lookup
      */
     public void addLookupRelationship(LookupRelationship rel) {
         if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (rel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+                (rel.getSource().getArchetypeId().equals(
+                        this.getArchetypeId()))) {
             addSourceLookupRelationship(rel);
         } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
-            (rel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+                (rel.getTarget().getArchetypeId().equals(
+                        this.getArchetypeId()))) {
             addTargetLookupRelationship(rel);
         } else {
             throw new LookupRelationshipException(
-                    LookupRelationshipException.ErrorCode.FailedToAddLookRelationship,
-                    new Object[] { rel.getSource(), rel.getTarget()});
+                    FailedToAddLookRelationship,
+                    new Object[]{rel.getSource(), rel.getTarget()});
         }
     }
 
     /**
-     * Remove a relationship to this lookup. It will determine whether it is a 
+     * Remove a relationship from this lookup. It will determine whether it is a
      * source or target relationship before removing it.
-     * 
-     * @param rel
-     *            the lookup relationship to remove
-     * @throws LookupRelationshipException
-     *            if this relationship cannot be removed from this lookup            
+     *
+     * @param rel the lookup relationship to remove
+     * @throws LookupRelationshipException if the relationship cannot be removed
+     *                                     from this lookup
      */
     public void removeLookupRelationship(LookupRelationship rel) {
         if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (rel.getSource().getArchetypeId().equals(this.getArchetypeId()))){
+                (rel.getSource().getArchetypeId().equals(
+                        this.getArchetypeId()))) {
             removeSourceLookupRelationship(rel);
         } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
-            (rel.getTarget().getArchetypeId().equals(this.getArchetypeId()))){
+                (rel.getTarget().getArchetypeId().equals(
+                        this.getArchetypeId()))) {
             removeTargetLookupRelationship(rel);
         } else {
             throw new LookupRelationshipException(
-                    LookupRelationshipException.ErrorCode.FailedToRemoveLookRelationship,
-                    new Object[] { rel.getSource(), rel.getTarget()});
+                    FailedToRemoveLookRelationship,
+                    new Object[]{rel.getSource(), rel.getTarget()});
         }
     }
-    
+
     /**
-     * Return all the lookup relationships. Do not use the returned set to 
-     * add and remove lookup relationships. Instead use {@link #addLookupRelationship(LookupRelationship)}
+     * Returns all the lookup relationships. Do not use the returned set to
+     * add and remove lookup relationships.
+     * Instead use {@link #addLookupRelationship(LookupRelationship)}
      * and {@link #removeLookupRelationship(LookupRelationship)} repsectively.
-     * 
-     * @return Set<LookupRelationship>
+     *
+     * @return the set of all lookup relationships
      */
     public Set<LookupRelationship> getLookupRelationships() {
-        Set<LookupRelationship> relationships = 
-            new HashSet<LookupRelationship>(sourceLookupRelationships);
+        Set<LookupRelationship> relationships =
+                new HashSet<LookupRelationship>(sourceLookupRelationships);
         relationships.addAll(targetLookupRelationships);
-        
         return relationships;
     }
 
@@ -307,10 +340,9 @@ public class Lookup extends IMObject {
         }
         Lookup rhs = (Lookup) obj;
         return new EqualsBuilder()
-            .append(getArchetypeId(), rhs.getArchetypeId())
-            .append(value, rhs.value)
-            .append(code, rhs.code)
-            .isEquals();
+                .append(getArchetypeId(), rhs.getArchetypeId())
+                .append(code, rhs.code)
+                .isEquals();
     }
 
     /* (non-Javadoc)
@@ -319,10 +351,9 @@ public class Lookup extends IMObject {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-        .append(getArchetypeId())
-        .append(code)
-        .append(value)
-        .toHashCode();
+                .append(getArchetypeId())
+                .append(code)
+                .toHashCode();
     }
 
     /* (non-Javadoc)
@@ -331,13 +362,12 @@ public class Lookup extends IMObject {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-            .appendSuper(super.toString())
-            .append("linkId", getLinkId())
-            .append("uid", getUid())
-            .append("value", value)
-            .append("code", code)
-            .append("default", defaultLookup)
-            .toString();
+                .appendSuper(super.toString())
+                .append("linkId", getLinkId())
+                .append("uid", getUid())
+                .append("code", code)
+                .append("default", defaultLookup)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -345,13 +375,11 @@ public class Lookup extends IMObject {
      */
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Lookup copy = (Lookup)super.clone();
+        Lookup copy = (Lookup) super.clone();
         copy.code = this.code;
-        copy.details = (DynamicAttributeMap)(this.details == null ?
+        copy.details = (DynamicAttributeMap) (this.details == null ?
                 null : this.details.clone());
-        copy.value = this.value;
         copy.defaultLookup = this.defaultLookup;
-        
         return copy;
     }
 }

@@ -1,32 +1,35 @@
 <?xml version ="1.0" encoding = "UTF-8"?>
 <tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <params>
-  </params>
-  
-  <class name="PersistentAddressTestCase">
-    <!-- Data for the testCreateMultipleAddresses method -->
-  	<method name="testCreateMultipleAddresses" test-case="normal">
-  		<params>
-  			<param name="count" type="java.lang.Integer">10</param>
-  		</params>
-  	</method>
-  </class>
-  
-  <class name="PersistentRoleTestCase">
-    <!-- Data for the testAdditionRemoveEntityIdentities method -->
-  	<method name="testAdditionRemoveEntityIdentities" test-case="normal">
-  		<params>
-  			<param name="entityIdentityCount" type="java.lang.Integer">10</param>
-  		</params>
-  	</method>
-  	
-    <!-- Data for the testAdditionRemovalEntityClassification method -->
-  	<method name="testAdditionRemovalEntityClassification" test-case="normal">
-  		<params>
-  			<param name="entityClassificationCount" type="java.lang.Integer">10</param>
-  		</params>
-  	</method>
-  </class>
+    <params>
+    </params>
+
+    <class name="PersistentAddressTestCase">
+        <!-- Data for the testCreateMultipleAddresses method -->
+        <method name="testCreateMultipleAddresses" test-case="normal">
+            <params>
+                <param name="count" type="java.lang.Integer">10</param>
+            </params>
+        </method>
+    </class>
+
+    <class name="PersistentRoleTestCase">
+        <!-- Data for the testAdditionRemoveEntityIdentities method -->
+        <method name="testAdditionRemoveEntityIdentities" test-case="normal">
+            <params>
+                <param name="entityIdentityCount" type="java.lang.Integer">
+                    10</param>
+            </params>
+        </method>
+
+        <!-- Data for the testAdditionRemovalEntityClassification method -->
+        <method name="testAdditionRemovalEntityClassification"
+                test-case="normal">
+            <params>
+                <param name="entityClassificationCount"
+                       type="java.lang.Integer">10</param>
+            </params>
+        </method>
+    </class>
 </tests>
 
 

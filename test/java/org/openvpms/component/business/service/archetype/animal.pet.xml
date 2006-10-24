@@ -1,116 +1,125 @@
 <archetypes>
-  <archetype name="openvpms-party-animal.pet.1.0" latest="true"
-    type="org.openvpms.component.business.domain.im.party.Party">
-    <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
-    <node name="details" path="/details" hidden="true"
-      type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-      minCardinality="1" maxCardinality="1">
-      <node name="sex" path="/details/attributes/sex" type="java.lang.String">
-        <assertion name="lookup">
-          <property name="male" value="male" />
-          <property name="female" value="female" />
-          <property name="unspecified" value="unspecified" />
-          <errorMessage>errorMessage</errorMessage>
-        </assertion>
-      </node>
-      <node name="desexed" path="/details/attributes/desexed"
-        type="java.lang.Boolean" defaultValue="false()" />
-      <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
-        type="java.util.Date" minCardinality="1" />
-    </node>
-    <node name="identities" path="/identities" type="java.util.HashSet"
-      minCardinality="1" maxCardinality="3">
-    </node>
-    <node name="contacts" path="/contacts"
-      type="org.openvpms.component.business.domain.im.party.Contact"
-      maxCardinality="0" />
-  </archetype>
+    <archetype name="openvpms-party-animal.pet.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party">
+        <node name="name" path="/name" type="java.lang.String"
+              minCardinality="1"/>
+        <node name="details" path="/details" hidden="true"
+              type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+              minCardinality="1" maxCardinality="1">
+            <node name="sex" path="/details/attributes/sex"
+                  type="java.lang.String">
+                <assertion name="lookup">
+                    <property name="MAKE" value="male"/>
+                    <property name="FEMALE" value="female"/>
+                    <property name="UNSPECIFIED" value="unspecified"/>
+                    <errorMessage>errorMessage</errorMessage>
+                </assertion>
+            </node>
+            <node name="desexed" path="/details/attributes/desexed"
+                  type="java.lang.Boolean" defaultValue="false()"/>
+            <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
+                  type="java.util.Date" minCardinality="1"/>
+        </node>
+        <node name="identities" path="/identities" type="java.util.HashSet"
+              minCardinality="1" maxCardinality="3">
+        </node>
+        <node name="contacts" path="/contacts"
+              type="org.openvpms.component.business.domain.im.party.Contact"
+              maxCardinality="0"/>
+    </archetype>
 
-  <archetype name="openvpms-party-animal.pet1.1.0" latest="true"
-    type="org.openvpms.component.business.domain.im.party.Party">
-    <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
-    <node name="details" path="/details" hidden="true"
-      type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-      minCardinality="1" maxCardinality="1">
-      <node name="sex" path="/details/attributes/sex" type="java.lang.String">
-        <assertion name="lookup">
-          <property name="male" value="male" />
-          <property name="female" value="female" />
-          <property name="unspecified" value="unspecified" />
-          <errorMessage>errorMessage</errorMessage>
-        </assertion>
-      </node>
-      <node name="desexed" path="/details/attributes/desexed"
-        type="java.lang.Boolean" defaultValue="false()" />
-      <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
-        type="java.util.Date" minCardinality="1" />
-    </node>
-    <node name="identities" path="/identities" type="java.util.HashSet"
-      maxCardinality="3">
-    </node>
-    <node name="contacts" path="/contacts"
-      type="org.openvpms.component.business.domain.im.party.Contact"
-      maxCardinality="0" />
-  </archetype>
+    <archetype name="openvpms-party-animal.pet1.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party">
+        <node name="name" path="/name" type="java.lang.String"
+              minCardinality="1"/>
+        <node name="details" path="/details" hidden="true"
+              type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+              minCardinality="1" maxCardinality="1">
+            <node name="sex" path="/details/attributes/sex"
+                  type="java.lang.String">
+                <assertion name="lookup">
+                    <property name="MALE" value="male"/>
+                    <property name="FEMALE" value="female"/>
+                    <property name="UNSPECIFIED" value="unspecified"/>
+                    <errorMessage>errorMessage</errorMessage>
+                </assertion>
+            </node>
+            <node name="desexed" path="/details/attributes/desexed"
+                  type="java.lang.Boolean" defaultValue="false()"/>
+            <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
+                  type="java.util.Date" minCardinality="1"/>
+        </node>
+        <node name="identities" path="/identities" type="java.util.HashSet"
+              maxCardinality="3">
+        </node>
+        <node name="contacts" path="/contacts"
+              type="org.openvpms.component.business.domain.im.party.Contact"
+              maxCardinality="0"/>
+    </archetype>
 
-  <archetype name="openvpms-party-animal.pet2.1.0" latest="true"
-    type="org.openvpms.component.business.domain.im.party.Party">
-    <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
-    <node name="details" path="/details" hidden="true"
-      type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-      minCardinality="1" maxCardinality="1">
-      <node name="sex" path="/details/attributes/sex" type="java.lang.String">
-        <assertion name="lookup">
-          <property name="male" value="male" />
-          <property name="female" value="female" />
-          <property name="unspecified" value="unspecified" />
-          <errorMessage>errorMessage</errorMessage>
-        </assertion>
-      </node>
-      <node name="desexed" path="/details/attributes/desexed"
-        type="java.lang.Boolean" defaultValue="false()" />
-      <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
-        type="java.util.Date" minCardinality="1" />
-    </node>
-    <node name="identities" path="/identities" type="java.util.HashSet"
-      minCardinality="3" maxCardinality="*">
-    </node>
-    <node name="contacts" path="/contacts"
-      type="org.openvpms.component.business.domain.im.party.Contact"
-      maxCardinality="0" />
-  </archetype>
+    <archetype name="openvpms-party-animal.pet2.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party">
+        <node name="name" path="/name" type="java.lang.String"
+              minCardinality="1"/>
+        <node name="details" path="/details" hidden="true"
+              type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+              minCardinality="1" maxCardinality="1">
+            <node name="sex" path="/details/attributes/sex"
+                  type="java.lang.String">
+                <assertion name="lookup">
+                    <property name="MALE" value="male"/>
+                    <property name="FEMALE" value="female"/>
+                    <property name="UNSPECIFIED" value="unspecified"/>
+                    <errorMessage>errorMessage</errorMessage>
+                </assertion>
+            </node>
+            <node name="desexed" path="/details/attributes/desexed"
+                  type="java.lang.Boolean" defaultValue="false()"/>
+            <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
+                  type="java.util.Date" minCardinality="1"/>
+        </node>
+        <node name="identities" path="/identities" type="java.util.HashSet"
+              minCardinality="3" maxCardinality="*">
+        </node>
+        <node name="contacts" path="/contacts"
+              type="org.openvpms.component.business.domain.im.party.Contact"
+              maxCardinality="0"/>
+    </archetype>
 
-  <archetype name="openvpms-party-animal.pet3.1.0" latest="true"
-    type="org.openvpms.component.business.domain.im.party.Party">
-    <node name="name" path="/name" type="java.lang.String" minCardinality="1" />
-    <node name="details" path="/details" hidden="true"
-      type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
-      minCardinality="1" maxCardinality="1">
-      <node name="sex" path="/details/attributes/sex" type="java.lang.String">
-        <assertion name="lookup">
-          <property name="male" value="male" />
-          <property name="female" value="female" />
-          <property name="unspecified" value="unspecified" />
-          <errorMessage>errorMessage</errorMessage>
-        </assertion>
-      </node>
-      <node name="desexed" path="/details/attributes/desexed"
-        type="java.lang.Boolean" defaultValue="false()" />
-      <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
-        type="java.util.Date" minCardinality="1" />
-    </node>
-    <node name="identities" path="/identities" type="java.util.HashSet"
-      maxCardinality="*">
-    </node>
-    <node name="contacts" path="/contacts"
-      type="org.openvpms.component.business.domain.im.party.Contact"
-      maxCardinality="0" />
-  </archetype>
+    <archetype name="openvpms-party-animal.pet3.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.party.Party">
+        <node name="name" path="/name" type="java.lang.String"
+              minCardinality="1"/>
+        <node name="details" path="/details" hidden="true"
+              type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
+              minCardinality="1" maxCardinality="1">
+            <node name="sex" path="/details/attributes/sex"
+                  type="java.lang.String">
+                <assertion name="lookup">
+                    <property name="MALE" value="male"/>
+                    <property name="FEMALE" value="female"/>
+                    <property name="UNSPECIFIED" value="unspecified"/>
+                    <errorMessage>errorMessage</errorMessage>
+                </assertion>
+            </node>
+            <node name="desexed" path="/details/attributes/desexed"
+                  type="java.lang.Boolean" defaultValue="false()"/>
+            <node name="dateOfBirth" path="/details/attributes/dateOfBirth"
+                  type="java.util.Date" minCardinality="1"/>
+        </node>
+        <node name="identities" path="/identities" type="java.util.HashSet"
+              maxCardinality="*">
+        </node>
+        <node name="contacts" path="/contacts"
+              type="org.openvpms.component.business.domain.im.party.Contact"
+              maxCardinality="0"/>
+    </archetype>
 
-  <archetype name="openvpms-common-entityIdentity.animalAlias.1.0" latest="true"
-    type="org.openvpms.component.business.domain.im.common.EntityIdentity">
-    <node name="uid" path="/uid" displayName="id" type="java.lang.Long" />
-    <node name="identity" path="/identity" type="java.lang.String"
-      minCardinality="1" />
-  </archetype>
+    <archetype name="openvpms-common-entityIdentity.animalAlias.1.0"
+               latest="true"
+               type="org.openvpms.component.business.domain.im.common.EntityIdentity">
+        <node name="uid" path="/uid" displayName="id" type="java.lang.Long"/>
+        <node name="identity" path="/identity" type="java.lang.String"
+              minCardinality="1"/>
+    </archetype>
 </archetypes>

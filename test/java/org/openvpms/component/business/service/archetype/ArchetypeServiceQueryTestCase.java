@@ -19,6 +19,7 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
+
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -47,7 +48,7 @@ import java.util.List;
 
 /**
  * Test that ability to create and query on acts.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -57,7 +58,6 @@ public class ArchetypeServiceQueryTestCase extends
      * Holds a reference to the entity service
      */
     private IArchetypeService service;
-
 
 
     public static void main(String[] args) {
@@ -77,9 +77,9 @@ public class ArchetypeServiceQueryTestCase extends
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] {
+        return new String[]{
                 "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
-                };
+        };
     }
 
     /* (non-Javadoc)
@@ -89,22 +89,23 @@ public class ArchetypeServiceQueryTestCase extends
     protected void onSetUp() throws Exception {
         super.onSetUp();
 
-        this.service = (IArchetypeService)applicationContext.getBean(
+        this.service = (IArchetypeService) applicationContext.getBean(
                 "archetypeService");
     }
 
     /**
-     * Test the query by code in the lookup entity. This will support 
+     * Test the query by code in the lookup entity. This will support
      * OVPMS-35
      */
     public void testOVPMS35()
-    throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true).add(
-                        new NodeConstraint("country", RelationalOp.EQ, "Belarus"));
+            throws Exception {
+        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
+                                                  true).add(
+                new NodeConstraint("name", RelationalOp.EQ, "Belarus"));
 
         int acount = service.get(query).getRows().size();
-        Lookup lookup = (Lookup)service.create("lookup.country");
-        lookup.setValue("Belarus");
+        Lookup lookup = (Lookup) service.create("lookup.country");
+        lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
@@ -114,13 +115,14 @@ public class ArchetypeServiceQueryTestCase extends
      * Test query by code with wildcard
      */
     public void testGetByCodeWithWildcard()
-    throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true).add(
-                        new NodeConstraint("country", RelationalOp.EQ, "Bel*"));
+            throws Exception {
+        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
+                                                  true).add(
+                new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
 
         int acount = service.get(query).getRows().size();
-        Lookup lookup = (Lookup)service.create("lookup.country");
-        lookup.setValue("Belarus");
+        Lookup lookup = (Lookup) service.create("lookup.country");
+        lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
@@ -130,13 +132,14 @@ public class ArchetypeServiceQueryTestCase extends
      * Test query by code with wild in short name
      */
     public void testGetCodeWithWildCardShortName()
-    throws Exception {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false, true).add(
-                new NodeConstraint("country", RelationalOp.EQ, "Bel*"));
+            throws Exception {
+        ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false,
+                                                  true).add(
+                new NodeConstraint("name", RelationalOp.EQ, "Bel*"));
 
         int acount = service.get(query).getRows().size();
-        Lookup lookup = (Lookup)service.create("lookup.country");
-        lookup.setValue("Belarus");
+        Lookup lookup = (Lookup) service.create("lookup.country");
+        lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
@@ -146,14 +149,14 @@ public class ArchetypeServiceQueryTestCase extends
      * Test query by code with wild in short name and an order clause
      */
     public void testGetCodeWithWildCardShortNameAndOrdered()
-    throws Exception {
+            throws Exception {
         ArchetypeQuery query = new ArchetypeQuery("lookup.cou*", false, true)
-            .add(new NodeConstraint("country", RelationalOp.EQ, "Bel*"))
-            .add(new NodeSortConstraint("country", true));
+                .add(new NodeConstraint("name", RelationalOp.EQ, "Bel*"))
+                .add(new NodeSortConstraint("name", true));
 
         int acount = service.get(query).getRows().size();
-        Lookup lookup = (Lookup)service.create("lookup.country");
-        lookup.setValue("Belarus");
+        Lookup lookup = (Lookup) service.create("lookup.country");
+        lookup.setCode("Belarus");
         service.save(lookup);
         int acount1 = service.get(query).getRows().size();
         assertTrue(acount1 == acount + 1);
@@ -163,17 +166,23 @@ public class ArchetypeServiceQueryTestCase extends
      * Test OVPMS245
      */
     public void testOVPMS245()
-    throws Exception {
+            throws Exception {
         ArchetypeQuery query = new ArchetypeQuery(
-                new ArchetypeShortNameConstraint("product.product", false, true))
-                    .add(new CollectionNodeConstraint("classifications", true)
-                            .setJoinType(JoinType.LeftOuterJoin)
-                            .add(new OrConstraint()
-                                .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.IsNULL))
-                                .add(new AndConstraint()
-                                        .add(new ArchetypeNodeConstraint(ArchetypeProperty.ConceptName, RelationalOp.EQ, "species"))
-                                        .add(new NodeConstraint("name", RelationalOp.EQ, "Canine"))
-                                        .add(new NodeSortConstraint("name", true)))));
+                new ArchetypeShortNameConstraint("product.product", false,
+                                                 true))
+                .add(new CollectionNodeConstraint("classifications", true)
+                        .setJoinType(JoinType.LeftOuterJoin)
+                        .add(new OrConstraint()
+                        .add(new ArchetypeNodeConstraint(
+                                ArchetypeProperty.ConceptName,
+                                RelationalOp.IsNULL))
+                        .add(new AndConstraint()
+                        .add(new ArchetypeNodeConstraint(
+                                ArchetypeProperty.ConceptName, RelationalOp.EQ,
+                                "species"))
+                        .add(new NodeConstraint("name", RelationalOp.EQ,
+                                                "Canine"))
+                        .add(new NodeSortConstraint("name", true)))));
 
         IPage<IMObject> page = service.get(query);
         assertTrue(page != null);
@@ -195,10 +204,10 @@ public class ArchetypeServiceQueryTestCase extends
 
         contact.addClassification(purpose);
 
-        Party person  = (Party) service.create("person.person");
+        Party person = (Party) service.create("person.person");
         person.getDetails().setAttribute("lastName", "Anderson");
         person.getDetails().setAttribute("firstName", "Tim");
-        person.getDetails().setAttribute("title", "Mr");
+        person.getDetails().setAttribute("title", "MR");
         person.addContact(contact);
         service.save(person);
 
@@ -222,7 +231,6 @@ public class ArchetypeServiceQueryTestCase extends
         assertEquals("Tim", nodes.get("firstName"));
         assertEquals("Anderson", nodes.get("lastName"));
 
-
         // verify the values of the contact node. If the classification hasn't
         // been loaded, a LazyInitializationException will be raised by
         // hibernate
@@ -243,7 +251,8 @@ public class ArchetypeServiceQueryTestCase extends
      * exist.
      */
     public void testGetNodeSetForInvalidNode() {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false, true);
+        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
+                                                  true);
         List<String> nodes = Arrays.asList("invalidNode");
         try {
             service.get(nodes, query);

@@ -20,18 +20,14 @@ package org.openvpms.component.business.service.security;
 
 //log4j
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-
-// openvpms-test-component
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * This base class contains all the security test cases
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
@@ -48,9 +44,9 @@ public abstract class SecurityServiceTests extends
      * Holds a reference to the archetectype service
      */
     protected IArchetypeService archetype;
-    
-    
-    
+
+
+
     /**
      * Test that the caller has the credentials to make the call
      */
@@ -58,10 +54,10 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         archetype.save(person);
     }
-    
+
     /**
      * Test that the caller does not have the credentials to make the call
      */
@@ -69,8 +65,8 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("bernief", "bernief", "archetype:archetypeService.save:party.person");
-        Party person = createPerson("Mr", "Peter", "Alateras");
-        
+        Party person = createPerson("MR", "Peter", "Alateras");
+
         try {
             archetype.save(person);
             fail("The caller does not have the authority to call IArchetypeService.save");
@@ -82,7 +78,7 @@ public abstract class SecurityServiceTests extends
             // this is the correct action
         }
     }
-    
+
     /**
      * Test archetype wild card authorization
      */
@@ -90,34 +86,34 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.per*");
-        Party person = createPerson("Mr", "Peter1", "Alateras");
+        Party person = createPerson("MR", "Peter1", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:pers*.person");
-        person = createPerson("Mr", "Peter2", "Alateras");
+        person = createPerson("MR", "Peter2", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.*erson");
-        person = createPerson("Mr", "Peter3", "Alateras");
+        person = createPerson("MR", "Peter3", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:*son.person");
-        person = createPerson("Mr", "Peter4", "Alateras");
+        person = createPerson("MR", "Peter4", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:*son.per*");
-        person = createPerson("Mr", "Peter5", "Alateras");
+        person = createPerson("MR", "Peter5", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:per*.*son*");
-        person = createPerson("Mr", "Peter6", "Alateras");
+        person = createPerson("MR", "Peter6", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:*.*");
-        person = createPerson("Mr", "Peter7", "Alateras");
+        person = createPerson("MR", "Peter7", "Alateras");
         archetype.save(person);
     }
-    
+
     /**
      * Test method wild card on save
      */
@@ -125,19 +121,19 @@ public abstract class SecurityServiceTests extends
     throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
-        Party person = createPerson("Mr", "Save", "Alateras");
+        Party person = createPerson("MR", "Save", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.s*:person.person");
-        person = createPerson("Mr", "Save2", "Alateras");
+        person = createPerson("MR", "Save2", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.*ave:person.person");
-        person = createPerson("Mr", "Save3", "Alateras");
+        person = createPerson("MR", "Save3", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.*:person.person");
-        person = createPerson("Mr", "Save4", "Alateras");
+        person = createPerson("MR", "Save4", "Alateras");
         archetype.save(person);
     }
 
@@ -145,32 +141,32 @@ public abstract class SecurityServiceTests extends
      * Test method  and archetype wild card on save
      */
     public void testMethodAndArchetypeWildcardAuthorizationOnSave()
-    throws Exception {
+            throws Exception {
         // create a security contect before executing a method
         createSecurityContext("jima", "jima", "archetype:archetypeService.save:person.person");
-        Party person = createPerson("Mr", "Bob", "Alateras");
+        Party person = createPerson("MR", "Bob", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.s*:pers*.*son");
-        person = createPerson("Mr", "Bob2", "Alateras");
+        person = createPerson("MR", "Bob2", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.*ave:*.*");
-        person = createPerson("Mr", "Bob3", "Alateras");
+        person = createPerson("MR", "Bob3", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.*:person.*");
-        person = createPerson("Mr", "Bob4", "Alateras");
+        person = createPerson("MR", "Bob4", "Alateras");
         archetype.save(person);
 
         createSecurityContext("jima", "jima", "archetype:archetypeService.*:*.*");
-        person = createPerson("Mr", "Bob4", "Alateras");
+        person = createPerson("MR", "Bob4", "Alateras");
         archetype.save(person);
     }
 
     /**
      * Create a person
-     * 
+     *
      * @param title
      *            the person's title
      * @param firstName
@@ -185,13 +181,13 @@ public abstract class SecurityServiceTests extends
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
         person.addContact(createPhoneContact());
-        
+
         return person;
     }
-    
+
     /**
      * Create a phone contact
-     * 
+     *
      * @return Contact
      */
     private Contact createPhoneContact() {
@@ -199,19 +195,19 @@ public abstract class SecurityServiceTests extends
         contact.getDetails().setAttribute("areaCode", "03");
         contact.getDetails().setAttribute("telephoneNumber", "1234567");
         contact.getDetails().setAttribute("preferred", new Boolean(true));
-        
+
         return contact;
     }
 
     /**
      * Create a secure context so that we can do some authorization testing
-     * 
+     *
      * @param user
      *            the user name
      * @param password
-     *            the password    
+     *            the password
      * @param authority
-     *            the authority of the person                    
+     *            the authority of the person
      *
      */
     abstract protected void createSecurityContext(String user, String password, String authority);

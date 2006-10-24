@@ -6,7 +6,7 @@
 			derivedValue="concat(/details/attributes/lastName, ',', /details/attributes/firstName)" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/title, ' ', /details/attributes/firstName, ' ', /details/attributes/initials,' ',/details/attributes/lastName)" />
+              derivedValue="concat(openvpms:lookup(.,'title'), ' ', /details/attributes/firstName, ' ', /details/attributes/initials,' ',/details/attributes/lastName)"/>
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
@@ -14,13 +14,13 @@
 				minCardinality="0">
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="Mr" value="Mr" />
-						<property name="Ms" value="Ms" />
-						<property name="Mrs" value="Mrs" />
-						<property name="Dr" value="Dr" />
-						<property name="Miss" value="Miss" />
-						<property name="Sir" value="Sir" />
-						<property name="Lady" value="Lady" />
+                        <property name="MR" value="Mr"/>
+                        <property name="MS" value="Ms"/>
+                        <property name="MRS" value="Mrs"/>
+                        <property name="DR" value="Dr"/>
+                        <property name="MISS" value="Miss"/>
+                        <property name="SIR" value="Sir"/>
+                        <property name="LADY" value="Lady"/>
 					</propertyList>
 					<errorMessage>An error message</errorMessage>
 				</assertion>
@@ -48,7 +48,7 @@
 			derivedValue="concat(/details/attributes/lastName, ',', /details/attributes/firstName)" />
 		<node name="description" type="java.lang.String"
 			path="/description" hidden="true" derived="true"
-			derivedValue="concat(/details/attributes/title, ' ', /details/attributes/firstName, ' ', /details/attributes/initials,' ',/details/attributes/lastName)" />
+              derivedValue="concat(openvpms:lookup(.,'title'), ' ', /details/attributes/firstName, ' ', /details/attributes/initials,' ',/details/attributes/lastName)"/>
 		<node name="details" path="/details" hidden="true"
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
@@ -56,19 +56,19 @@
 				minCardinality="0">
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="Mr" value="Mr" />
-						<property name="Ms" value="Ms" />
-						<property name="Mrs" value="Mrs" />
-						<property name="Dr" value="Dr" />
-						<property name="Miss" value="Miss" />
-						<property name="Sir" value="Sir" />
-						<property name="Lady" value="Lady" />
+                        <property name="MR" value="Mr"/>
+                        <property name="MS" value="Ms"/>
+                        <property name="MRS" value="Mrs"/>
+                        <property name="DR" value="Dr"/>
+                        <property name="MISS" value="Miss"/>
+                        <property name="SIR" value="Sir"/>
+                        <property name="LADY" value="Lady"/>
 					</propertyList>
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>
 			<node name="team" path="/details/attributes/team" type="java.lang.String"
-				minCardinality="1" defaultValue="'Richmond'">
+                  minCardinality="1" defaultValue="'RICHMOND'">
 				<assertion name="lookup">
 					<property name="type" value="lookup" />
 					<property name="source" value="lookup.afl" />

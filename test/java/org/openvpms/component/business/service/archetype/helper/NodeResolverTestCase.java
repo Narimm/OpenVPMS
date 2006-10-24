@@ -177,7 +177,7 @@ public class NodeResolverTestCase
      */
     private Party createCustomer() {
         IMObjectBean bean = createBean("party.customerperson");
-        bean.setValue("title", "Mr");
+        bean.setValue("title", "MR");
         bean.setValue("firstName", "J");
         bean.setValue("lastName", "Zoo");
         Contact contact = (Contact) create("contact.phoneNumber");

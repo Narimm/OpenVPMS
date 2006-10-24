@@ -20,37 +20,36 @@
 package org.openvpms.component.business.service.archetype.descriptor;
 
 // spring framework
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-// openvpms-framework
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 
 /**
  * Test assertion descriptors for archetypes.
  *
- * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version  $LastChangedDate$
+ * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @version $LastChangedDate$
  */
-public class AssertionDescriptorTestCase 
-    extends AbstractDependencyInjectionSpringContextTests {
+public class AssertionDescriptorTestCase
+        extends AbstractDependencyInjectionSpringContextTests {
     /**
      * Define a logger for this class
      */
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
             .getLogger(AssertionDescriptorTestCase.class);
-    
+
 
     /**
      * Holds a reference to the entity service
      */
     private ArchetypeService service;
-    
+
     public static void main(String[] args) {
         junit.textui.TestRunner.run(AssertionDescriptorTestCase.class);
     }
@@ -68,9 +67,9 @@ public class AssertionDescriptorTestCase
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] { 
-                "org/openvpms/component/business/service/archetype/descriptor/descriptor-test-appcontext.xml" 
-                };
+        return new String[]{
+                "org/openvpms/component/business/service/archetype/descriptor/descriptor-test-appcontext.xml"
+        };
     }
 
     /* (non-Javadoc)
@@ -79,108 +78,116 @@ public class AssertionDescriptorTestCase
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        
-        this.service = (ArchetypeService)applicationContext.getBean(
+
+        this.service = (ArchetypeService) applicationContext.getBean(
                 "archetypeService");
     }
 
     /**
-     * Test that the assertion descriptors are returned in the order they were 
+     * Test that the assertion descriptors are returned in the order they were
      * entered
      */
     public void testAssertionDescriptorOrdering()
-    throws Exception {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("person.bernief");
+            throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
+                "person.bernief");
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
         assertTrue(ndesc.getAssertionDescriptors().size() == 5);
         int currIndex = 0;
         String assertName = "dummyAssertion";
-        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsInIndexOrder()) {
+        for (AssertionDescriptor desc : ndesc.getAssertionDescriptorsInIndexOrder())
+        {
             String name = desc.getName();
             if (name.startsWith(assertName)) {
-                int index = Integer.parseInt(name.substring(assertName.length()));
+                int index = Integer.parseInt(
+                        name.substring(assertName.length()));
                 if (index > currIndex) {
                     currIndex = index;
                 } else {
-                    fail("Assertions are not returned in the correct order currIndex: " 
+                    fail("Assertions are not returned in the correct order currIndex: "
                             + currIndex + " index: " + index);
                 }
             }
         }
-        
+
         // clone and test it again
-        NodeDescriptor clone = (NodeDescriptor)ndesc.clone();
+        NodeDescriptor clone = (NodeDescriptor) ndesc.clone();
         assertTrue(clone != null);
         assertTrue(clone.getAssertionDescriptors().size() == 5);
         currIndex = 0;
-        for (AssertionDescriptor desc : clone.getAssertionDescriptorsInIndexOrder()) {
+        for (AssertionDescriptor desc : clone.getAssertionDescriptorsInIndexOrder())
+        {
             String name = desc.getName();
             if (name.startsWith(assertName)) {
-                int index = Integer.parseInt(name.substring(assertName.length()));
+                int index = Integer.parseInt(
+                        name.substring(assertName.length()));
                 if (index > currIndex) {
                     currIndex = index;
                 } else {
-                    fail("Assertions are not returned in the correct order currIndex: " 
+                    fail("Assertions are not returned in the correct order currIndex: "
                             + currIndex + " index: " + index);
                 }
             }
         }
     }
-    
+
     /**
-     * Test that the properties within an assertion are returned in the 
+     * Test that the properties within an assertion are returned in the
      * order that they are defined.
      */
     public void testAssertionPropertyOrder()
-    throws Exception {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("person.bernief");
+            throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
+                "person.bernief");
         assertTrue(adesc != null);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("identities");
         assertTrue(ndesc != null);
-        
+
         int index = 0;
         for (String shortName : ndesc.getArchetypeRange()) {
             switch (index++) {
-            case 0:
-                assertTrue(shortName.equals("entityIdentity.animalAlias"));
-                break;
-            case 1:
-                assertTrue(shortName.equals("entityIdentity.personAlias"));
-                break;
-            case 2:
-                assertTrue(shortName.equals("entityIdentity.customerAlias1"));
-                break;
-            case 3:
-                assertTrue(shortName.equals("entityIdentity.customerAlias"));
-                break;
-            default:
-                fail("The short name " + shortName + " should not be defined");
-                break;
+                case 0:
+                    assertTrue(shortName.equals("entityIdentity.animalAlias"));
+                    break;
+                case 1:
+                    assertTrue(shortName.equals("entityIdentity.personAlias"));
+                    break;
+                case 2:
+                    assertTrue(
+                            shortName.equals("entityIdentity.customerAlias1"));
+                    break;
+                case 3:
+                    assertTrue(
+                            shortName.equals("entityIdentity.customerAlias"));
+                    break;
+                default:
+                    fail("The short name " + shortName + " should not be defined");
+                    break;
             }
         }
     }
-    
+
     /**
      * Deleting nodes with archetypes assertions cause a validation error
      */
     public void testOBF10()
-    throws Exception {
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor("person.person");
+            throws Exception {
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(
+                "person.person");
         assertTrue(adesc != null);
-        
-        
+
         // find and remove the classifications node
         assertTrue(adesc.getNodeDescriptor("classifications") != null);
         adesc.removeNodeDescriptor("classifications");
         assertTrue(adesc.getNodeDescriptor("classifications") == null);
-        
+
         // remove the title node
         assertTrue(adesc.getNodeDescriptor("title") != null);
         adesc.removeNodeDescriptor("title");
         assertTrue(adesc.getNodeDescriptor("title") == null);
-        
+
         // now validate the archetype
         service.validateObject(adesc);
     }
