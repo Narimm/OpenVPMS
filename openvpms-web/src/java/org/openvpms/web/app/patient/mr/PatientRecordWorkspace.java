@@ -20,6 +20,7 @@ package org.openvpms.web.app.patient.mr;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -270,7 +271,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
         DefaultActQuery query = new DefaultActQuery(patient, "patient",
                                                     "participation.patient",
                                                     shortNames, lookups, null);
-        query.setStatus("In Progress");
+        query.setStatus(ActStatus.IN_PROGRESS);
         return query;
     }
 

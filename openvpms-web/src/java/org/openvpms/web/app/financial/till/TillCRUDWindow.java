@@ -25,6 +25,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.till.TillBalanceStatus;
 import org.openvpms.archetype.rules.till.TillRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -168,7 +169,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
             Act act = (Act) getObject();
             boolean uncleared = false;
             if (TypeHelper.isA(act, "act.tillBalance")) {
-                uncleared = "Uncleared".equals(act.getStatus());
+                uncleared = TillBalanceStatus.UNCLEARED.equals(act.getStatus());
             }
             if (uncleared) {
                 buttons.add(_clear);

@@ -22,6 +22,7 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.TableLayoutStrategyFactory;
@@ -55,10 +56,13 @@ public class TableComponentFactory extends AbstractReadOnlyComponentFactory {
      * Returns a component to display a lookup property.
      *
      * @param property the lookup property
+     * @param context  the context object
      * @return a component to display the lookup property
      */
-    protected Component getLookup(Property property) {
-        return getLabel(property);
+    protected Component getLookup(Property property, IMObject context) {
+        Label result = LabelFactory.create();
+        result.setText(getLookupName(property, context));
+        return result;
     }
 
     /**

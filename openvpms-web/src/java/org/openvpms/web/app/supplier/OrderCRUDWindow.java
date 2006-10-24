@@ -18,16 +18,14 @@
 
 package org.openvpms.web.app.supplier;
 
-import org.openvpms.web.app.subsystem.CRUDWindowListener;
-import org.openvpms.web.app.subsystem.ShortNameList;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.edit.act.ActCopyHandler;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.component.util.ButtonFactory;
-import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
-
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Row;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -42,13 +40,15 @@ import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHe
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-
-import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Row;
-import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.event.ActionListener;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.web.app.subsystem.CRUDWindowListener;
+import org.openvpms.web.app.subsystem.ShortNameList;
+import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.act.ActCopyHandler;
+import org.openvpms.web.component.im.util.ErrorHelper;
+import org.openvpms.web.component.util.ButtonFactory;
+import org.openvpms.web.resource.util.Messages;
+import org.openvpms.web.spring.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -185,7 +185,7 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
         try {
             IMObjectCopier copier = new IMObjectCopier(new ActCopyHandler());
             Act act = (Act) copier.copy(object);
-            act.setStatus(INPROGRESS_STATUS);
+            act.setStatus(IN_PROGRESS);
             act.setActivityStartTime(new Date());
             setPrintStatus(act, false);
             SaveHelper.save(act);
@@ -228,14 +228,14 @@ public class OrderCRUDWindow extends SupplierActCRUDWindow {
         try {
             IMObjectCopier copier = new IMObjectCopier(new InvoiceHandler());
             Act invoice = (Act) copier.copy(order);
-            invoice.setStatus(INPROGRESS_STATUS);
+            invoice.setStatus(IN_PROGRESS);
             invoice.setActivityStartTime(new Date());
             setPrintStatus(invoice, false);
             calcAmount(invoice);
             SaveHelper.save(invoice);
 
-            if (!order.getStatus().equals(POSTED_STATUS)) {
-                order.setStatus(POSTED_STATUS);
+            if (!POSTED.equals(order.getStatus())) {
+                order.setStatus(POSTED);
                 SaveHelper.save(order);
                 setObject(order);
                 CRUDWindowListener listener = getListener();

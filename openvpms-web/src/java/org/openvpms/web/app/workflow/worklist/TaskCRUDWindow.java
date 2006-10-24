@@ -20,6 +20,7 @@ package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
@@ -73,10 +74,11 @@ public class TaskCRUDWindow extends WorkflowCRUDWindow {
         if (enable) {
             Act act = (Act) getObject();
             String status = act.getStatus();
-            if ("Pending".equals(status)) {
+            if (WorkflowStatus.PENDING.equals(status)) {
                 buttons.add(consult);
             }
-            if ("Pending".equals(status) || "In Progress".equals(status)) {
+            if (WorkflowStatus.PENDING.equals(status)
+                    || WorkflowStatus.IN_PROGRESS.equals(status)) {
                 buttons.add(checkOut);
             }
         }

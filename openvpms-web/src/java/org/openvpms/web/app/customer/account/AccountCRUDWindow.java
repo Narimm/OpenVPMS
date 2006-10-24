@@ -24,6 +24,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -156,9 +157,8 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
     protected void onReverse() {
         final Act act = (Act) getObject();
         String status = act.getStatus();
-        if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE,
-                            CLOSING_BALANCE_TYPE) && POSTED_STATUS.equals(
-                status)) {
+        if (!TypeHelper.isA(act, OPENING_BALANCE_TYPE, CLOSING_BALANCE_TYPE)
+                && FinancialActStatus.POSTED.equals(status)) {
             String name = getArchetypeDescriptor().getDisplayName();
             String title = Messages.get("customer.account.reverse.title", name);
             String message = Messages.get("customer.account.reverse.message",
@@ -221,7 +221,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow {
             IMObjectCopier copier
                     = new IMObjectCopier(new CustomerActReversalHandler(act));
             Act reversal = (Act) copier.copy(act);
-            reversal.setStatus(POSTED_STATUS);
+            reversal.setStatus(FinancialActStatus.POSTED);
             reversal.setActivityStartTime(new Date());
             setPrintStatus(reversal, false);
             SaveHelper.save(reversal);

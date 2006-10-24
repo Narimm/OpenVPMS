@@ -21,7 +21,6 @@ package org.openvpms.web.component.im.list;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.list.AbstractListComponent;
 import nextapp.echo2.app.list.ListCellRenderer;
-
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.web.resource.util.Messages;
 
@@ -56,20 +55,19 @@ public class LookupListCellRenderer implements ListCellRenderer {
     public Object getListCellRendererComponent(Component list, Object value,
                                                int index) {
         Object result = value;
-        if (value == null) {
-            // dummy lookup being rendered.
-            AbstractListComponent box = (AbstractListComponent) list;
-            LookupListModel model = (LookupListModel) box.getModel();
-            Lookup lookup = model.getLookup(index);
-            if (lookup.getArchetypeId() == null && lookup.getValue() == null) {
-                // dummy lookup
-                String code = lookup.getCode();
-                if (LookupListModel.ALL.equals(code)) {
-                    result = ALL;
-                } else if (LookupListModel.NONE.equals(code)) {
-                    result = NONE;
-                }
+        AbstractListComponent box = (AbstractListComponent) list;
+        LookupListModel model = (LookupListModel) box.getModel();
+        Lookup lookup = model.getLookup(index);
+        if (lookup.getArchetypeId() == null && lookup.getCode() == null) {
+            // dummy lookup
+            String name = lookup.getName();
+            if (LookupListModel.ALL.equals(name)) {
+                result = ALL;
+            } else if (LookupListModel.NONE.equals(name)) {
+                result = NONE;
             }
+        } else {
+            result = lookup.getName();
         }
         return result;
     }

@@ -106,7 +106,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
             for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
                  iterator.hasNext();) {
                 Lookup lookup = iterator.next();
-                if (lookup.getValue().equals(_excludeStatus)) {
+                if (lookup.getCode().equals(_excludeStatus)) {
                     iterator.remove();
                 }
             }
@@ -140,7 +140,7 @@ public abstract class ActQuery extends AbstractQuery<Act> {
             for (ListIterator<Lookup> iterator = _statusLookups.listIterator();
                  iterator.hasNext();) {
                 Lookup lookup = iterator.next();
-                if (lookup.getValue().equals(_excludeStatus)) {
+                if (lookup.getCode().equals(_excludeStatus)) {
                     iterator.remove();
                 }
             }

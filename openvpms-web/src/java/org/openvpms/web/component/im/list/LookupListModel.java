@@ -115,7 +115,7 @@ public class LookupListModel extends AbstractListModel {
      * @return the value
      */
     public Object get(int index) {
-        return _lookups.get(index).getValue();
+        return _lookups.get(index).getCode();
     }
 
     /**
@@ -130,7 +130,7 @@ public class LookupListModel extends AbstractListModel {
     /**
      * Returns the lookup at the specified index.
      *
-     * @param index gthe index
+     * @param index the index
      * @return the lookup
      */
     public Lookup getLookup(int index) {
@@ -147,7 +147,7 @@ public class LookupListModel extends AbstractListModel {
     public int indexOf(String lookup) {
         int result = -1;
         for (int i = 0; i < _lookups.size(); ++i) {
-            if (StringUtils.equals(lookup, _lookups.get(i).getValue())) {
+            if (StringUtils.equals(lookup, _lookups.get(i).getCode())) {
                 result = i;
                 break;
             }

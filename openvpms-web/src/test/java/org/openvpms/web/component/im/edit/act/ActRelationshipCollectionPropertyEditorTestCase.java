@@ -24,6 +24,7 @@
  */
 package org.openvpms.web.component.im.edit.act;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -64,7 +65,7 @@ public class ActRelationshipCollectionPropertyEditorTestCase
                 = (ActRelationshipCollectionPropertyEditor) createEditor(
                 property, parent);
         assertEquals("actRelationship.customerEstimationItem",
-                editor.getRelationshipShortName());
+                     editor.getRelationshipShortName());
     }
 
     /**
@@ -77,9 +78,9 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         IMObject customer = TestHelper.createCustomer();
         Participation participation
                 = TestHelper.createParticipation("participation.customer",
-                customer, act);
+                                                 customer, act);
         act.addParticipation(participation);
-        act.setStatus("In Progress");
+        act.setStatus(FinancialActStatus.IN_PROGRESS);
         return act;
     }
 
@@ -118,14 +119,14 @@ public class ActRelationshipCollectionPropertyEditorTestCase
         IMObject patient = TestHelper.createPatient();
         Participation patientParticipation
                 = TestHelper.createParticipation("participation.patient",
-                patient, act);
+                                                 patient, act);
 
         Participation productParticipation
                 = TestHelper.createParticipation("participation.product",
-                product, act);
+                                                 product, act);
         act.addParticipation(patientParticipation);
         act.addParticipation(productParticipation);
-        act.setStatus("In Progress");
+        act.setStatus(FinancialActStatus.IN_PROGRESS);
         return act;
     }
 

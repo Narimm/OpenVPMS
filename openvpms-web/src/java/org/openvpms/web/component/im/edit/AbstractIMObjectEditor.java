@@ -26,6 +26,7 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
@@ -50,7 +51,6 @@ import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
 import org.openvpms.web.component.im.view.layout.DefaultLayoutStrategyFactory;
 import org.openvpms.web.resource.util.Messages;
-import org.openvpms.web.spring.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -278,7 +278,8 @@ public abstract class AbstractIMObjectEditor
             deleted = true;
         } else {
             try {
-                IArchetypeService service = ServiceHelper.getArchetypeService();
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
                 service.remove(object);
                 deleted = true;
             } catch (OpenVPMSException exception) {
@@ -585,14 +586,19 @@ public abstract class AbstractIMObjectEditor
     protected void updateDerivedFields(Modifiable modified) {
         if (modified instanceof Property) {
             _editors.removeModifiableListener(_derivedFieldRefresher);
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            service.deriveValues(getObject());
+            try {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                service.deriveValues(getObject());
 
-            for (Property property : _properties.getProperties()) {
-                if (modified != property
-                        && property.getDescriptor().isDerived()) {
-                    property.refresh();
+                for (Property property : _properties.getProperties()) {
+                    if (modified != property
+                            && property.getDescriptor().isDerived()) {
+                        property.refresh();
+                    }
                 }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
             }
             _editors.addModifiableListener(_derivedFieldRefresher);
         }

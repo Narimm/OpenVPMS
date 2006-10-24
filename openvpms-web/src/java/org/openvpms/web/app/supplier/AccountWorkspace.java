@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.supplier;
 
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.CRUDWindow;
@@ -63,7 +64,7 @@ public class AccountWorkspace extends SupplierActWorkspace {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment",
                                "act.supplierAccountRefund"};
-        String[] statuses = {"Posted"};
+        String[] statuses = {FinancialActStatus.POSTED};
         return new DefaultActQuery(party, "supplier", "participation.supplier",
                                    shortNames, statuses);
     }

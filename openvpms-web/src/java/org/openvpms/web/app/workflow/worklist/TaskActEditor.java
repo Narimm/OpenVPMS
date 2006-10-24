@@ -19,6 +19,8 @@
 package org.openvpms.web.app.workflow.worklist;
 
 import nextapp.echo2.app.Component;
+import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.FinancialActStatus.CANCELLED;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -142,7 +144,7 @@ public class TaskActEditor extends AbstractActEditor {
         Property status = getProperty("status");
         Property endTime = getProperty("endTime");
         String value = (String) status.getValue();
-        if ("Completed".equals(value) || "Cancelled".equals(value)) {
+        if (COMPLETED.equals(value) || CANCELLED.equals(value)) {
             endTime.setValue(new Date());
         } else {
             endTime.setValue(null);
@@ -248,7 +250,7 @@ public class TaskActEditor extends AbstractActEditor {
                                                 workList));
             query.add(new NodeConstraint("uid", RelationalOp.NE, act.getUid()));
             query.add(
-                    new NodeConstraint("status", RelationalOp.NE, "Cancelled"));
+                    new NodeConstraint("status", RelationalOp.NE, CANCELLED));
             query.setFirstRow(0);
             query.setNumOfRows(1);
             IPage<IMObject> page = service.get(query);

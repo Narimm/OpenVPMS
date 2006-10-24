@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.consult;
 
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -58,7 +59,7 @@ public class ConsultWorkflow extends WorkflowImpl {
     public ConsultWorkflow(Act act) {
         // update the act status
         TaskProperties appProps = new TaskProperties();
-        appProps.add("status", "In Progress");
+        appProps.add("status", ActStatus.IN_PROGRESS);
         addTask(new UpdateIMObjectTask(act, appProps));
 
         ActBean bean = new ActBean(act);

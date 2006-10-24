@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.archetype.rules.act.ActCalculator;
+import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -84,7 +85,7 @@ public class ActHelper {
                                                String participant,
                                                String participation,
                                                String[] shortNames) {
-        String[] statuses = {"Posted"};
+        String[] statuses = {FinancialActStatus.POSTED};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint constraint = new ParticipantConstraint(

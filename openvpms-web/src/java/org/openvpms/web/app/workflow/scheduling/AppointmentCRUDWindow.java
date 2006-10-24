@@ -22,6 +22,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.app.subsystem.ShortNames;
 import org.openvpms.web.app.workflow.WorkflowCRUDWindow;
@@ -100,9 +101,9 @@ public class AppointmentCRUDWindow extends WorkflowCRUDWindow {
         if (enable) {
             Act act = (Act) getObject();
             String status = act.getStatus();
-            if ("Pending".equals(status)) {
+            if (AppointmentStatus.PENDING.equals(status)) {
                 buttons.add(checkIn);
-            } else if ("Checked-In".equals(status)) {
+            } else if (AppointmentStatus.CHECKED_IN.equals(status)) {
                 buttons.add(consult);
                 buttons.add(checkOut);
             }
