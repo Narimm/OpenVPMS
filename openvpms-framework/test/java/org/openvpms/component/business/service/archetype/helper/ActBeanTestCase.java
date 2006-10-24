@@ -250,7 +250,7 @@ public class ActBeanTestCase
     private Party createCustomer() {
         Party party = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("title", "Mr");
+        bean.setValue("title", "MR");
         bean.setValue("firstName", "ZFoo");
         bean.setValue("lastName", "ZActBeanTestCase.Customer" +
                 party.hashCode());

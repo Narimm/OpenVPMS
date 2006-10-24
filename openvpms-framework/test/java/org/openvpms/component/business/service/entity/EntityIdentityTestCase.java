@@ -20,15 +20,15 @@ package org.openvpms.component.business.service.entity;
 
 
 //openvpms-framework
-import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.ServiceBaseTestCase;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 
 /**
  * Test the entity service
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -39,7 +39,7 @@ public class EntityIdentityTestCase extends
      * Holds a reference to the archetype service
      */
     private ArchetypeService service;
-    
+
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(EntityIdentityTestCase.class);
@@ -65,7 +65,7 @@ public class EntityIdentityTestCase extends
      * Test the creation of EntityIdentities on an entity object.
      */
     public void testEntityIdentityCreation() throws Exception {
-        Party person = createPerson("Mr", "EntityIdentity", "Test");
+        Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity eidentity = createEntityIdentity("jimbo");
 
         person.addIdentity(eidentity);
@@ -83,24 +83,24 @@ public class EntityIdentityTestCase extends
     /**
      * Test the creation of multiple entity identity objects to the single
      * person object.
-     * 
+     *
      * @throws Exception
      */
     public void testEntityIdentityDeletion() throws Exception {
-        Party person = createPerson("Mr", "EntityIdentity", "Test");
+        Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
         EntityIdentity ident2 = createEntityIdentity("jimmya");
         person.addIdentity(ident1);
         person.addIdentity(ident2);
-        
+
         service.save(person);
-        
+
         // retrieve the entity, check it and then remove an entity identity
         person = (Party) ArchetypeQueryHelper.getByUid(service,
                 person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getIdentities().size() == 2);
-        
+
         ident1 = person.getIdentities().iterator().next();
         person.removeIdentity(ident1);
         assertTrue(person.getIdentities().size() == 1);
@@ -118,11 +118,11 @@ public class EntityIdentityTestCase extends
      * person object
      */
     public void testEntityIdentityUpdate() throws Exception {
-        Party person = createPerson("Mr", "EntityIdentity", "Test");
+        Party person = createPerson("MR", "EntityIdentity", "Test");
         EntityIdentity ident1 = createEntityIdentity("jimbo");
         person.addIdentity(ident1);
         service.save(person);
-        
+
         // retrieve the entity, check it and then update an entity identity
         person = (Party) ArchetypeQueryHelper.getByUid(service,
                 person.getArchetypeId(), person.getUid());
@@ -132,7 +132,7 @@ public class EntityIdentityTestCase extends
         assertTrue(ident1.getIdentity().equals("jimbo"));
         ident1.setIdentity("jimmya");
         service.save(person);
-        
+
         // make sure the update happened
         person = (Party) ArchetypeQueryHelper.getByUid(service,
                 person.getArchetypeId(), person.getUid());
@@ -154,7 +154,7 @@ public class EntityIdentityTestCase extends
 
     /**
      * Create a person
-     * 
+     *
      * @param title
      *            the person's title
      * @param firstName
@@ -168,13 +168,13 @@ public class EntityIdentityTestCase extends
         person.getDetails().setAttribute("lastName", lastName);
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
-        
+
         return person;
     }
 
     /**
      * Create an entity identity with the specified identity
-     * 
+     *
      * @param identity
      *            the identity to assign
      * @return EntityIdentity

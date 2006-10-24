@@ -19,31 +19,14 @@
 package org.openvpms.component.system.service.jxpath;
 
 // java
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-// commons-beanutils
-import org.apache.commons.beanutils.MethodUtils;
-
-// ognl
 import ognl.Ognl;
 import ognl.OgnlContext;
-
-// commons-jxpath
+import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
@@ -60,6 +43,16 @@ import org.openvpms.component.business.service.archetype.descriptor.cache.IArche
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.component.system.common.test.BaseTestCase;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Test the JXPath expressions on etity objects and descriptors.
@@ -147,7 +140,7 @@ public class JXPathTestCase extends BaseTestCase {
      */
     public void testOVPMS131()
     throws Exception {
-        Party person = createPerson("Mr", "jima", "alateras");
+        Party person = createPerson("MR", "jima", "alateras");
         EntityIdentity id1 = new EntityIdentity();
         id1.setName("jimbo");
         EntityIdentity id2 = new EntityIdentity();
@@ -200,7 +193,7 @@ public class JXPathTestCase extends BaseTestCase {
     public void testDerivedValueNodes() throws Exception {
         // we know that both name and description are derived nodes
         // for person.person
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         
         try {
             service.validateObject(person);
@@ -271,15 +264,15 @@ public class JXPathTestCase extends BaseTestCase {
     public void testJXPathCollectionExpressions()
     throws Exception {
         List<Party> list = new ArrayList<Party>();
-        list.add(createPerson("Mr", "Jim", "Alateras"));
-        list.add(createPerson("Ms", "Bernadette", "Feeney"));
-        list.add(createPerson("Ms", "Grace", "Alateras"));
+        list.add(createPerson("MR", "Jim", "Alateras"));
+        list.add(createPerson("MS", "Bernadette", "Feeney"));
+        list.add(createPerson("MS", "Grace", "Alateras"));
         
         JXPathContext ctx = JXPathHelper.newContext(list);
         // NOTE: Index starts at 1 not 0.
         assertTrue(ctx.getValue(".[1]/details/attributes/firstName").equals("Jim"));
         assertTrue(ctx.getValue(".[2]/details/attributes/lastName").equals("Feeney"));
-        assertTrue(ctx.getValue(".[3]/details/attributes/title").equals("Ms"));
+        assertTrue(ctx.getValue(".[3]/details/attributes/title").equals("MS"));
     }
     
     /**
@@ -305,15 +298,15 @@ public class JXPathTestCase extends BaseTestCase {
     public void testJXPathSearchCollectionForMatchingUid()
     throws Exception {
         List<Party> list = new ArrayList<Party>();
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         person.setUid(1);
         list.add(person);
 
-        person = createPerson("Ms", "Bernadette", "Feeney");
+        person = createPerson("MS", "Bernadette", "Feeney");
         person.setUid(2);
         list.add(person);
 
-        person = createPerson("Ms", "Grace", "Alateras");
+        person = createPerson("MS", "Grace", "Alateras");
         person.setUid(3);
         list.add(person);
         

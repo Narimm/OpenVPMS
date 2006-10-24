@@ -19,21 +19,17 @@
 package org.openvpms.component.business.service.archetype;
 
 // spring-context
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-// openvpms-framework
+import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-
-// log4j
-import org.apache.log4j.Logger;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * Test that ability to create and query on parties.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -45,12 +41,12 @@ public class ArchetypeServicePartyTestCase extends
     @SuppressWarnings("unused")
     private static final Logger logger = Logger
             .getLogger(ArchetypeServicePartyTestCase.class);
-    
+
     /**
      * Holds a reference to the entity service
      */
     private ArchetypeService service;
-    
+
     /**
      * A reference to the hibernate session factory
      */
@@ -68,13 +64,13 @@ public class ArchetypeServicePartyTestCase extends
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#getConfigLocations()
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] { 
-                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml" 
+        return new String[] {
+                "org/openvpms/component/business/service/archetype/archetype-service-appcontext.xml"
                 };
     }
 
@@ -84,13 +80,13 @@ public class ArchetypeServicePartyTestCase extends
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        
+
         this.service = (ArchetypeService)applicationContext.getBean(
                 "archetypeService");
         this.sessionFactory = (SessionFactory)applicationContext.getBean(
                 "sessionFactory");
     }
-    
+
     /**
      * Test the creation of a simple contact with a contact classification
      */
@@ -101,12 +97,12 @@ public class ArchetypeServicePartyTestCase extends
         service.save(classification);
         Classification classification1 = createClassification("home");
         service.save(classification1);
-        
-        Party person = createPerson("Mr", "Jim", "Alateras");
+
+        Party person = createPerson("MR", "Jim", "Alateras");
         person.addContact(createContact(classification));
         person.addContact(createContact(classification1));
         service.save(person);
-        
+
         // try the hql query
         Query query = sessionFactory.openSession().createQuery(
                 "select party from " + Party.class.getName() + " as party inner join party.contacts as contact left outer join contact.classifications as classification where contact.archetypeId.entityName = :entityName and contact.archetypeId.concept = :concept and classification.name = :classification");
@@ -115,14 +111,14 @@ public class ArchetypeServicePartyTestCase extends
         query.setParameter("classification", "email");
         query.list();
     }
-    
+
     /**
      * Create a person with the specified title, firstName and LastName
-     * 
+     *
      * @param title
      * @param firstName
      * @param lastName
-     * 
+     *
      * @return Person
      */
     public Party createPerson(String title, String firstName, String lastName) {
@@ -130,31 +126,31 @@ public class ArchetypeServicePartyTestCase extends
         person.getDetails().setAttribute("lastName", lastName);
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
-        
+
         return person;
     }
-    
+
     /**
      * Create a contact with the specified classification
-     * 
-     * @return Contact                  
+     *
+     * @return Contact
      */
     private Contact createContact(Classification classification) {
         Contact contact = (Contact)service.create("contact.location");
-        
+
         contact.getDetails().setAttribute("address", "kalulu rd");
         contact.getDetails().setAttribute("suburb", "Belgrave");
         contact.getDetails().setAttribute("postcode", "3160");
-        contact.getDetails().setAttribute("state", "Victoria");
-        contact.getDetails().setAttribute("country", "Australia");
+        contact.getDetails().setAttribute("state", "VIC");
+        contact.getDetails().setAttribute("country", "AU");
         contact.addClassification(classification);
-        
+
         return contact;
     }
-    
+
     /**
      * Create a classification with the specified name
-     * 
+     *
      * @param name
      *            the name of the classification
      * @return Classification
@@ -163,7 +159,7 @@ public class ArchetypeServicePartyTestCase extends
         Classification classification = (Classification)service.create(
                 "classification.contactPurpose");
         classification.setName(name);
-        
+
         return classification;
     }
 }

@@ -20,72 +20,66 @@
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-  <class name="org.openvpms.component.business.domain.im.lookup.Lookup"
-    table="lookups">
-    <cache usage="read-write" />
-    <id name="uid" type="long" unsaved-value="-1">
-      <column name="lookup_id" index="lookup_id_idx" />
-      <generator class="native" />
-    </id>
-    <version name="version" access="property" type="long" />
-    <property name="linkId" access="property" type="string" length="100" />
-    <property name="active" access="property" column="active" type="boolean" />
-    <component name="archetypeId">
-      <property name="namespace" access="property" column="arch_namespace"
-        type="string" length="100" />
-      <property name="rmName" access="property" column="arch_rm_name"
-        type="string" length="100" />
-      <property name="concept" access="property" column="arch_concept_name"
-        type="string" length="100"
-        index="lookup_concept_index, lookup_concept_value_idx, lookup_concept_code_idx" />
-      <property name="entityName" access="property" column="arch_entity_name"
-        type="string" length="100" />
-      <property name="version" access="property" column="arch_version"
-        type="string" length="100" />
-    </component>
-    <property name="name" access="property" column="name" type="string" />
-    <property name="description" access="property" column="description"
-      type="string" />
-    <property name="value" access="property" column="value" type="string"
-      length="100" index="lookup_concept_value_idx" />
-    <property name="code" access="property" column="code" type="string"
-      length="100" index="lookup_concept_code_idx" />
-    <property name="defaultLookup" access="property" column="default_lookup"
-      type="boolean" />
-    <!-- property name="details" access="property" column="details" length="5000"
-      type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" /-->
-    <set name="sourceLookupRelationships" access="property" lazy="true"
-      cascade="all,delete-orphan" inverse="true">
-      <key column="source_linkId" not-null="true" property-ref="linkId" />
-      <one-to-many
-        class="org.openvpms.component.business.domain.im.lookup.LookupRelationship" />
-    </set>
-    <set name="targetLookupRelationships" access="property" lazy="true"
-      cascade="all,delete-orphan" inverse="true">
-      <key column="target_linkId" not-null="true" property-ref="linkId" />
-      <one-to-many
-        class="org.openvpms.component.business.domain.im.lookup.LookupRelationship" />
-    </set>
-  </class>
+    <class name="org.openvpms.component.business.domain.im.lookup.Lookup"
+           table="lookups">
+        <cache usage="read-write"/>
+        <id name="uid" type="long" unsaved-value="-1">
+            <column name="lookup_id" index="lookup_id_idx"/>
+            <generator class="native"/>
+        </id>
+        <version name="version" access="property" type="long"/>
+        <property name="linkId" access="property" type="string" length="100"/>
+        <property name="active" access="property" column="active"
+                  type="boolean"/>
+        <component name="archetypeId">
+            <property name="namespace" access="property" column="arch_namespace"
+                      type="string" length="100"/>
+            <property name="rmName" access="property" column="arch_rm_name"
+                      type="string" length="100"/>
+            <property name="concept" access="property"
+                      column="arch_concept_name"
+                      type="string" length="100"
+                      index="lookup_concept_index, lookup_concept_value_idx, lookup_concept_code_idx"/>
+            <property name="entityName" access="property"
+                      column="arch_entity_name"
+                      type="string" length="100"/>
+            <property name="version" access="property" column="arch_version"
+                      type="string" length="100"/>
+        </component>
+        <property name="code" access="property" column="code" type="string"
+                  length="100" not-null="true" index="lookup_concept_code_idx"/>
+        <property name="name" access="property" column="name" type="string"/>
+        <property name="description" access="property" column="description"
+                  type="string"/>
+        <property name="defaultLookup" access="property" column="default_lookup"
+                  type="boolean"/>
+        <!-- property name="details" access="property" column="details" length="5000"
+       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" /-->
+        <set name="sourceLookupRelationships" access="property" lazy="true"
+             cascade="all,delete-orphan" inverse="true">
+            <key column="source_linkId" not-null="true" property-ref="linkId"/>
+            <one-to-many
+                    class="org.openvpms.component.business.domain.im.lookup.LookupRelationship"/>
+        </set>
+        <set name="targetLookupRelationships" access="property" lazy="true"
+             cascade="all,delete-orphan" inverse="true">
+            <key column="target_linkId" not-null="true" property-ref="linkId"/>
+            <one-to-many
+                    class="org.openvpms.component.business.domain.im.lookup.LookupRelationship"/>
+        </set>
+    </class>
 
-  <query name="lookup.getRowCount">
-    <![CDATA[
+    <query name="lookup.getRowCount">
+        <![CDATA[
 			select count(lookup) from org.openvpms.component.business.domain.im.lookup.Lookup as 
 			lookup
 		]]>
-  </query>
+    </query>
 
-  <query name="lookup.getLookupForConceptAndValue">
-    <![CDATA[
-			from org.openvpms.component.business.domain.im.lookup.Lookup as 
-			lookup where lookup.archetypeId.concept = :concept and lookup.value =:value
-		]]>
-  </query>
-
-  <query name="lookup.getByConcept">
-    <![CDATA[
+    <query name="lookup.getByConcept">
+        <![CDATA[
 			from org.openvpms.component.business.domain.im.lookup.Lookup as 
 			lookup where lookup.archetypeId.concept = :concept
 		]]>
-  </query>
+    </query>
 </hibernate-mapping>

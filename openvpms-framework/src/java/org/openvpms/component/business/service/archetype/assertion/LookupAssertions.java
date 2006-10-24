@@ -34,7 +34,7 @@ import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 /**
  * This class has static methods for local reference data assertions. All
  * the static methods return boolean and take an object and a property
- * map as parameters.        
+ * map as parameters.
  *
  * @author   <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version  $LastChangedDate$
@@ -46,50 +46,50 @@ public class LookupAssertions {
      */
     public LookupAssertions() {
     }
-    
+
     /**
      * Check that the target object is in the specified list.
-     * 
+     *
      * @param target
      *            the target object
      * @param node
      *            the node descriptor for this assertion
      * @param assertion
-     *            the particular assertion                        
+     *            the particular assertion
      */
-    public static boolean isStringValueInList(Object target, 
+    public static boolean isStringValueInList(Object target,
             NodeDescriptor node, AssertionDescriptor assertion) {
         PropertyList entries = (PropertyList)assertion.getPropertyMap()
             .getProperties().get("entries");
         if (entries == null) {
             return false;
         }
-        
+
         for (NamedProperty property : entries.getProperties()) {
             AssertionProperty prop = (AssertionProperty)property;
-            if (prop.getValue().equals((String)target)) {
+            if (prop.getName().equals(target)) {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     /**
-     * This  method will be inspect this lookup assertion and determine 
-     * whether it should set node value of the supplied target object to 
+     * This  method will be inspect this lookup assertion and determine
+     * whether it should set node value of the supplied target object to
      * the default lookup type.
-     * 
+     *
      * @param target
      *            the target object
      * @param node
      *            the node descriptor for this assertion
      * @param assertion
-     *            the particular assertion                              
-     */ 
-    public static void setDefaultValue(Object target, NodeDescriptor node, 
+     *            the particular assertion
+     */
+    public static void setDefaultValue(Object target, NodeDescriptor node,
             AssertionDescriptor assertion) {
-        
+
         // only process if it is a lookup and there is no defeault value
         if ((assertion.getName().equals("lookup")) &&
             (StringUtils.isEmpty(node.getDefaultValue()))) {
@@ -101,29 +101,29 @@ public class LookupAssertions {
                 if (!StringUtils.isEmpty(source)) {
                     Lookup defaultLookup = LookupHelper.getDefaultLookup(
                             ArchetypeServiceHelper.getArchetypeService(), source);
-                    
-                    // if a default lookup has identified then set it through the 
+
+                    // if a default lookup has identified then set it through the
                     // node descriptor.
                     if (defaultLookup != null) {
-                        node.setValue((IMObject)target, defaultLookup.getValue());
+                        node.setValue((IMObject)target, defaultLookup.getCode());
                     }
                 }
             }
         }
     }
-    
+
     /**
      * Always return true
-     * 
+     *
      * @param target
      *            the target object
      * @param node
      *            the node descriptor for this assertion
      * @param assertion
-     *            the particular assertion    
-     * @return boolean                                
+     *            the particular assertion
+     * @return boolean
      */
-    public static boolean alwaysTrue(Object target, 
+    public static boolean alwaysTrue(Object target,
             NodeDescriptor node, AssertionDescriptor assertion) {
         return true;
     }

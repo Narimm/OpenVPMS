@@ -19,30 +19,28 @@
 package org.openvpms.component.business.service.entity;
 
 //spring-context
-import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**
  * Test the entity service
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public class PersonContactTestCase extends
         AbstractDependencyInjectionSpringContextTests {
-    
+
     /**
      * Holds a reference to the archetype service
      */
     private ArchetypeService service;
-    
+
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(PersonContactTestCase.class);
@@ -61,37 +59,38 @@ public class PersonContactTestCase extends
      */
     @Override
     protected String[] getConfigLocations() {
-        return new String[] { 
-                "org/openvpms/component/business/service/entity/entity-service-appcontext.xml" 
+        return new String[] {
+                "org/openvpms/component/business/service/entity/entity-service-appcontext.xml"
                 };
     }
 
     /**
-     * Test the creation of a person with contacts and addresses as 
+     * Test the creation of a person with contacts and addresses as
      * specified in the archetype
      */
-    public void testValidPersonContactCreation() 
+    public void testValidPersonContactCreation()
     throws Exception {
-        Party person = createPerson("person.person", "Mr", "John", "Dillon");
+        Party person = createPerson("person.person", "MR", "John", "Dillon");
         Contact contact = createLocationContact();
         person.addContact(contact);
         service.save(person);
-        
+
         person = (Party)ArchetypeQueryHelper.getByUid(service,
                 person.getArchetypeId(), person.getUid());
         assertTrue(person != null);
         assertTrue(person.getContacts().size() == 1);
     }
-    
+
     /**
-     * Test that the many-to-many relationship between contact and 
+     * Test that the many-to-many relationship between contact and
      * address works.
      */
     public void testContactRelationship()
     throws Exception {
-        Party person1 = createPerson("person.person", "Mr", "John", "Dimantaris");
-        Party person2 = createPerson("person.person", "Ms", "Jenny", "Love");
-        
+        Party person1 = createPerson("person.person", "MR", "John",
+                                     "Dimantaris");
+        Party person2 = createPerson("person.person", "MS", "Jenny", "Love");
+
         Contact contact1 = createLocationContact();
         Contact contact2 = createLocationContact();
         person1.addContact(contact1);
@@ -99,9 +98,9 @@ public class PersonContactTestCase extends
 
         person2.addContact(contact2);
         service.save(person2);
-        
+
         // save the entities
-        
+
         // now attempt to retrieve the entities
         person1 = (Party)ArchetypeQueryHelper.getByUid(service,
                 person1.getArchetypeId(), person1.getUid());
@@ -112,37 +111,37 @@ public class PersonContactTestCase extends
                 person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
-        
+
         // now delete the address from person1 and update it.
         person1.getContacts().clear();
         assertTrue(person1.getContacts().size() == 0);
         service.save(person1);
-        
+
         // retrieve the entities again and check that the addresses are
         // still valid
         person1 = (Party)ArchetypeQueryHelper.getByUid(service,
                 person1.getArchetypeId(), person1.getUid());
         assertTrue(person1 != null);
         assertTrue(person1.getContacts().size() == 0);
-        
+
         person2 = (Party)ArchetypeQueryHelper.getByUid(service,
                 person2.getArchetypeId(), person2.getUid());
         assertTrue(person2 != null);
         assertTrue(person2.getContacts().size() == 1);
     }
-    
+
     /**
      * Test the addition and removal of contacts
      */
-    public void testContactLifecycle() 
+    public void testContactLifecycle()
     throws Exception {
-        Party person = createPerson("person.person", "Mr", "Jim", "Alateras");
+        Party person = createPerson("person.person", "MR", "Jim", "Alateras");
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
         person.addContact(createLocationContact());
 
         service.save(person);
-        
+
         // retrieve and remove the first contact and update
         person = (Party)ArchetypeQueryHelper.getByUid(service,
                 person.getArchetypeId(), person.getUid());
@@ -151,31 +150,31 @@ public class PersonContactTestCase extends
         person.getContacts().remove(contact);
         assertTrue(person.getContacts().size() == 2);
         service.save(person);
-        
+
         // retrieve and ensure thagt there are only 2 contacts
         person = (Party)ArchetypeQueryHelper.getByUid(service,
                 person.getArchetypeId(), person.getUid());
         assertTrue(person.getContacts().size() == 2);
     }
-    
+
     /**
      * Test for OBF-49
      */
     public void testOBF049()
     throws Exception {
-        Party person = (Party)createPerson("person.obf49", "Mr", "Jim", "Alateras");
+        Party person = (Party)createPerson("person.obf49", "MR", "Jim", "Alateras");
         try {
             service.validateObject(person);
             fail("This should not have validated");
         } catch (ValidationException exception) {
             // ingore
         }
-        
+
         // add classification
         person.addClassification(createClassification("classification.staff"));
         person.addClassification(createClassification("classification.patient"));
         service.validateObject(person);
-        
+
         // add another classification
         try {
             person.addClassification(createClassification("classification.patient"));
@@ -185,55 +184,55 @@ public class PersonContactTestCase extends
             // ingore
         }
     }
-    
+
     /**
      * Create a valid location contact
-     * 
+     *
      * @return
      */
     private Contact createLocationContact() {
         Contact contact = (Contact)service.create("contact.location");
-        
+
         contact.getDetails().setAttribute("address", "5 Kalulu Rd");
         contact.getDetails().setAttribute("suburb", "Belgrave");
         contact.getDetails().setAttribute("postcode", "3160");
-        contact.getDetails().setAttribute("state", "Victoria");
-        contact.getDetails().setAttribute("country", "Australia");
+        contact.getDetails().setAttribute("state", "VIC");
+        contact.getDetails().setAttribute("country", "AU");
         return contact;
     }
-    
+
     /**
      * Create a person
-     * 
+     *
      * @param shortName
-     *            the type   
+     *            the type
      * @param title
      *            the person's title
      * @param firstName
      *            the person's first name
      * @param lastName
-     *            the person's last name            
-     * @return Person                  
+     *            the person's last name
+     * @return Person
      */
     private Party createPerson(String shortName, String title, String firstName, String lastName) {
         Party person = (Party)service.create(shortName);
         person.getDetails().setAttribute("lastName", lastName);
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
-        
+
         return person;
     }
-    
+
     /* (non-Javadoc)
      * @see org.springframework.test.AbstractDependencyInjectionSpringContextTests#onSetUp()
      */
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        
+
         this.service = (ArchetypeService)applicationContext.getBean("archetypeService");
     }
-    
+
     /**
      * Create a classification of the specified type and name
      */
@@ -241,7 +240,7 @@ public class PersonContactTestCase extends
         Classification classification = (Classification)service.create(shortName);
         classification.setName(shortName);
         classification.setDescription(shortName);
-        
+
         return classification;
     }
 

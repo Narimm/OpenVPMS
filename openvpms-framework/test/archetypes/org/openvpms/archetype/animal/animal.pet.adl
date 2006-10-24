@@ -32,9 +32,9 @@
 			<node name="sex" path="/details/attributes/sex" type="java.lang.String">
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="male" value="male" />
-						<property name="female" value="female" />
-						<property name="unspecified" value="unspecified" />
+                        <property name="MALE" value="male"/>
+                        <property name="FEMALE" value="female"/>
+                        <property name="UNSPECIFIED" value="unspecified"/>
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

@@ -19,24 +19,20 @@
 package org.openvpms.component.business.service.archetype;
 
 // java-core
-import java.util.Date;
-import java.util.Hashtable;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.im.common.Classification;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeService;
 import org.openvpms.component.business.service.archetype.descriptor.cache.ArchetypeDescriptorCacheFS;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
-
-// openvpms-test-component
 import org.openvpms.component.system.common.test.BaseTestCase;
+
+import java.util.Date;
+import java.util.Hashtable;
 
 /**
  * Test that validation errors work correctly
- * 
+ *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -55,7 +51,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
     /**
      * Constructor for ArchetypeServiceTestCase.
-     * 
+     *
      * @param name
      */
     public ValidationErrorTestCase(String name) {
@@ -64,7 +60,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.system.common.test.BaseTestCase#setUp()
      */
     @Override
@@ -105,7 +101,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * example
      */
     public void testExtendedValidationException() throws Exception {
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
         EntityIdentity eid = (EntityIdentity) service
                 .create("entityIdentity.personAlias");
         eid.setIdentity("jimmy");
@@ -151,7 +147,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
      * satisfied
      */
     public void testValidMinCardinalityOnArchetypeRange() throws Exception {
-        Party person = createPerson("Mr", "Jim", "Alateras");
+        Party person = createPerson("MR", "Jim", "Alateras");
 
         person.addClassification(createClassification("classification.staff",
                 "class1"));
@@ -159,14 +155,14 @@ public class ValidationErrorTestCase extends BaseTestCase {
     }
 
     /**
-     * Test the max cardinality attached to the archetypeRange 
+     * Test the max cardinality attached to the archetypeRange
      * assertion being satisfied
      */
     public void testValidMaxCardinalityOnArchetypeRange()
     throws Exception {
         Party person = (Party)service.create("person.jima");
 
-        person.getDetails().setAttribute("title", "Mr");
+        person.getDetails().setAttribute("title", "MR");
         person.getDetails().setAttribute("firstName", "Jim");
         person.getDetails().setAttribute("lastName", "Alateras");
         person.addClassification(createClassification("classification.staff", "class1"));
@@ -179,7 +175,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
         service.validateObject(person);
         person.addClassification(createClassification("classification.patient", "classs1"));
         service.validateObject(person);
-        
+
         // now try and add anotehr .staff
         Classification classification = null;
         try {
@@ -195,7 +191,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
                     "classifications"));
             person.removeClassification(classification);
         }
-        
+
         // now try and add another .patient
         try {
             classification = createClassification("classification.patient", "classs2");
@@ -437,7 +433,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
     /**
      * Dump the errors in the validation exception.
-     * 
+     *
      * @param exception
      *            the validation exception
      */
@@ -449,7 +445,7 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
     /**
      * Create a classification with the specified name.
-     * 
+     *
      * @param shortName
      *            the archetype short name to create
      * @param name
@@ -465,28 +461,28 @@ public class ValidationErrorTestCase extends BaseTestCase {
 
         return classification;
     }
-    
+
     /**
      * This will create an entity identtiy with the specified identity
-     * 
+     *
      * @param shortName
      *            the archetype
      * @param identity
      *            the identity to set
      * @return EntityIdentity
-     * @throws Exception                       
+     * @throws Exception
      */
     private EntityIdentity createEntityIdentity(String shortName, String identity)
     throws Exception {
         EntityIdentity eid = (EntityIdentity) service.create(shortName);
         eid.setIdentity(identity);
-        
+
         return eid;
     }
-    
+
     /**
      * Create a person
-     * 
+     *
      * @param title
      *            the person's title
      * @param firstName
@@ -500,8 +496,8 @@ public class ValidationErrorTestCase extends BaseTestCase {
         person.getDetails().setAttribute("lastName", lastName);
         person.getDetails().setAttribute("firstName", firstName);
         person.getDetails().setAttribute("title", title);
-        
+
         return person;
     }
-    
+
 }
