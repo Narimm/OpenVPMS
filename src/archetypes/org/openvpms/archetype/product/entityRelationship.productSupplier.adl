@@ -42,13 +42,13 @@
 				</assertion>
 			</node>
 			<node name="leadTime" displayName="Lead Time" path="/details/attributes/leadTime" type="java.lang.Integer" minCardinality="0" />			
-			<node name="leadUom" displayName="Lead Time Units" path="/details/attributes/leadUom" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
+			<node name="leadUom" displayName="Lead Time Units" path="/details/attributes/leadUom" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="hours" value="hours" />
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
+						<property name="DAYS" value="days" />
+						<property name="WEEKS" value="weeks" />
+						<property name="MONTHS" value="months" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

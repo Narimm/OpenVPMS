@@ -1,12 +1,12 @@
 <archetype>
 	<data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15" 
-		slotUnits="minutes" maxSlots="100" allowDoubleBooking="true" />
+		slotUnits="MINUTES" maxSlots="100" allowDoubleBooking="true" />
 	<data id="OS2" archetype="party.organisationSchedule" name="Branch Appointment Schedule" slotSize="15" 
-		slotUnits="minutes" maxSlots="30" allowDoubleBooking="true" />
+		slotUnits="MINUTES" maxSlots="30" allowDoubleBooking="true" />
 	<data id="OS3" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30" 
-		slotUnits="minutes" maxSlots="10" allowDoubleBooking="false" />
+		slotUnits="MINUTES" maxSlots="10" allowDoubleBooking="false" />
 	<data id="OS4" archetype="party.organisationSchedule" name="Branch Surgery Schedule" slotSize="30" 
-		slotUnits="minutes" maxSlots="5" allowDoubleBooking="false" />
+		slotUnits="MINUTES" maxSlots="5" allowDoubleBooking="false" />
 	<data archetype="entityRelationship.locationSchedule" source="id:OL1" target="id:OS1" />
 	<data archetype="entityRelationship.locationSchedule" source="id:OL1" target="id:OS2" />
 	<data archetype="entityRelationship.locationSchedule" source="id:OL2" target="id:OS3" />

@@ -39,10 +39,10 @@
 			minCardinality="1">
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="In Progress" value="In Progress" />
-					<property name="Completed" value="Completed" />
-					<property name="Cancelled" value="Cancelled" />
-					<property name="Posted" value="Posted" />
+					<property name="IN_PROGRESS" value="In Progress" />
+					<property name="COMPLETED" value="Completed" />
+					<property name="CANCELLED" value="Cancelled" />
+					<property name="POSTED" value="Posted" />
 				</propertyList>
 				<errorMessage>An error message</errorMessage>
 			</assertion>

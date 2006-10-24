@@ -31,12 +31,12 @@
                     type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
                     defaultValue="'0.0'" readOnly="true"/>
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />
-		<node name="status" path="/status" type="java.lang.String" defaultValue="'UnDeposited'"
+		<node name="status" path="/status" type="java.lang.String" defaultValue="'UNDEPOSITED'"
 			minCardinality="1">
 			<assertion name="lookup.local">
 				<propertyList name="entries">
-					<property name="UnDeposited" value="UnDeposited" />
-					<property name="Deposited" value="Deposited" />
+					<property name="UNDEPOSITED" value="Undeposited" />
+					<property name="DEPOSITED" value="Deposited" />
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>
 			</assertion>

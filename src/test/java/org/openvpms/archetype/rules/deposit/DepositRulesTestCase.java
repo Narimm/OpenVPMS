@@ -54,13 +54,13 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      * Requires the rule <em>archetypeService.save.act.bankDeposit.before</em>.
      */
     public void testSaveUndepositedDeposit() {
-        ActBean deposit1 = createDeposit("UnDeposited");
+        ActBean deposit1 = createDeposit(DepositStatus.UNDEPOSITED);
         deposit1.save();
 
         // can save the same deposit multiple times
         deposit1.save();
 
-        ActBean deposit2 = createDeposit("UnDeposited");
+        ActBean deposit2 = createDeposit(DepositStatus.UNDEPOSITED);
         try {
             deposit2.save();
             fail("Expected save of second undeposited bank deposit to fail");
@@ -82,7 +82,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
      */
     public void testSaveDepositedDeposit() {
         for (int i = 0; i < 3; ++i) {
-            ActBean deposit = createDeposit("Deposited");
+            ActBean deposit = createDeposit(DepositStatus.DEPOSITED);
             deposit.save();
         }
     }
@@ -109,7 +109,7 @@ public class DepositRulesTestCase extends ArchetypeServiceTest {
     public void testDeposit() {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        ActBean deposit = createDeposit("UnDeposited");
+        ActBean deposit = createDeposit(DepositStatus.UNDEPOSITED);
         DepositRules.deposit(deposit.getAct(), service);
 
         // reload the account to pick up the updates

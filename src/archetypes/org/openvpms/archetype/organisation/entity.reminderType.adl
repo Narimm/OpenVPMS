@@ -26,37 +26,37 @@
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="defaultInterval" displayName="Reminder Interval" path="/details/attributes/interval" type="java.lang.Integer" minCardinality="1" />			
-			<node name="defaultUnits" displayName="Interval Units" path="/details/attributes/units" type="java.lang.String" minCardinality="1" defaultValue="'years'" >
+			<node name="defaultUnits" displayName="Interval Units" path="/details/attributes/units" type="java.lang.String" minCardinality="1" defaultValue="'YEARS'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
-						<property name="years" value="years" />
+						<property name="DAYS" value="days" />
+						<property name="WEEKS" value="weeks" />
+						<property name="MONTHS" value="months" />
+						<property name="YEARS" value="years" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
 			<node name="cancelInterval" displayName="Cancel Interval" path="/details/attributes/cancelInterval" type="java.lang.Integer" minCardinality="0" />			
-			<node name="cancelUnits" displayName="Cancel Units" path="/details/attributes/cancelUnits" type="java.lang.String" minCardinality="0" defaultValue="'years'" >
+			<node name="cancelUnits" displayName="Cancel Units" path="/details/attributes/cancelUnits" type="java.lang.String" minCardinality="0" defaultValue="'YEARS'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
-						<property name="years" value="years" />
+						<property name="DAYS" value="days" />
+						<property name="WEEKS" value="weeks" />
+						<property name="MONTHS" value="months" />
+						<property name="YEARS" value="years" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
 			<node name="sensitivityInterval" displayName="Sensitivity Interval" path="/details/attributes/sensitivityInterval" type="java.lang.Integer" minCardinality="0" />			
-			<node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/attributes/sensitivityUnits" type="java.lang.String" minCardinality="0" defaultValue="'days'" >
+			<node name="sensitivityUnits" displayName="Sensitivity Units" path="/details/attributes/sensitivityUnits" type="java.lang.String" minCardinality="0" defaultValue="'DAYS'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
-						<property name="years" value="years" />
+						<property name="DAYS" value="days" />
+						<property name="WEEKS" value="weeks" />
+						<property name="MONTHS" value="months" />
+						<property name="YEARS" value="years" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

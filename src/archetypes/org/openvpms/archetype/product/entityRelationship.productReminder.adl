@@ -33,13 +33,13 @@
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="period" displayName="Period" path="/details/attributes/period" type="java.lang.Integer" minCardinality="0" defaultValue="'1'" />			
-			<node name="periodUom" displayName="Period Units" path="/details/attributes/periodUom" type="java.lang.String" minCardinality="0" defaultValue="'years'" >
+			<node name="periodUom" displayName="Period Units" path="/details/attributes/periodUom" type="java.lang.String" minCardinality="0" defaultValue="'YEARS'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
-						<property name="days" value="days" />
-						<property name="weeks" value="weeks" />
-						<property name="months" value="months" />
-						<property name="years" value="years" />
+						<property name="DAYS" value="days" />
+						<property name="WEEKS" value="weeks" />
+						<property name="MONTHS" value="months" />
+						<property name="YEARS" value="years" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>

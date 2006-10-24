@@ -16,15 +16,15 @@
  *  $$Id$$
 -->
 <archetype>
-	<data id="CTY1" archetype="lookup.country" country="Australia" isoCode="AU" defaultLookup="true"/>
-	<data id="ST1" archetype="lookup.state" state="Victoria" defaultLookup="true"/>
-	<data id="ST2" archetype="lookup.state" state="New South Wales" />
-	<data id="ST3" archetype="lookup.state" state="Western Australia" />
-	<data id="ST4" archetype="lookup.state" state="South Australia" />
-	<data id="ST5" archetype="lookup.state" state="Northern Territory" />
-	<data id="ST6" archetype="lookup.state" state="Tasmania" />
-	<data id="ST7" archetype="lookup.state" state="Australian Capital Territory" />
-	<data id="ST8" archetype="lookup.state" state="Queensland" />
+	<data id="CTY1" archetype="lookup.country" code="AU" country="Australia" defaultLookup="true"/>
+	<data id="ST1" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
+	<data id="ST2" archetype="lookup.state" code="NSW" name="New South Wales" />
+	<data id="ST3" archetype="lookup.state" code="WA" name="Western Australia" />
+	<data id="ST4" archetype="lookup.state" code="SA" name="South Australia" />
+	<data id="ST5" archetype="lookup.state" code="NT" name="Northern Territory" />
+	<data id="ST6" archetype="lookup.state" code="TAS" name="Tasmania" />
+	<data id="ST7" archetype="lookup.state" code="ACT" name="Australian Capital Territory" />
+	<data id="ST8" archetype="lookup.state" code="QLD" name="Queensland" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST1" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST2" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST3" />
@@ -33,479 +33,66 @@
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
-	<data archetype="lookup.chargeStatus" status="In Progress" />
-	<data archetype="lookup.chargeStatus" status="Completed" defaultLookup="true"/>
-	<data archetype="lookup.chargeStatus" status="On Hold" />
-	<data archetype="lookup.chargeStatus" status="Posted" />
-	<data archetype="lookup.paymentStatus" status="In Progress" />
-	<data archetype="lookup.paymentStatus" status="On Hold" />
-	<data archetype="lookup.paymentStatus" status="Posted" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" status="In Progress" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" status="Completed" />
-	<data archetype="lookup.eventStatus" status="In Progress" defaultLookup="true"/>
-	<data archetype="lookup.eventStatus" status="Completed" />
-	<data archetype="lookup.appointmentStatus" status="Pending" defaultLookup="true" />
-	<data archetype="lookup.appointmentStatus" status="Cancelled" />
-	<data archetype="lookup.appointmentStatus" status="Checked-In" />
-	<data archetype="lookup.appointmentStatus" status="In Progress" />
-	<data archetype="lookup.appointmentStatus" status="Completed" />
-	<data archetype="lookup.appointmentReason" reason="Checkup" defaultLookup="true" />
-	<data archetype="lookup.appointmentReason" reason="Vaccination" />
-	<data archetype="lookup.appointmentReason" reason="Other" />
-	<data archetype="lookup.taskStatus" status="Pending" defaultLookup="true" />
-	<data archetype="lookup.taskStatus" status="Cancelled" />
-	<data archetype="lookup.taskStatus" status="In Progress" />
-	<data archetype="lookup.taskStatus" status="Completed" />
-	<data archetype="lookup.messageStatus" status="Pending" defaultLookup="true" />
-	<data archetype="lookup.messageStatus" status="Completed" />
-	<data archetype="lookup.uom" uom="Unit" defaultLookup="true"/>
-	<data archetype="lookup.uom" uom="Bottle" />
-	<data archetype="lookup.uom" uom="Syringe" />
-	<data archetype="lookup.uom" uom="Tablet" />
-	<data archetype="lookup.uom" uom="Packet" />
-	<data archetype="lookup.uom" uom="Vial" />
-	<data archetype="lookup.uom" uom="Box" />
-	<data archetype="lookup.uom" uom="Grams" />
-	<data archetype="lookup.uom" uom="Litres" />
-	<data archetype="lookup.uom" uom="Ampoule" />
-	<data archetype="lookup.uom" uom="Mls" />
-	<data archetype="lookup.uom" uom="Tube" />
-	<data archetype="lookup.uom" uom="Packet" />
-	<data id="Kilogram" archetype="lookup.uom" uom="Kilogram" />
-	<data id="Pounds" archetype="lookup.uom" uom="Pounds" />
-    <data id="Weight" archetype="lookup.uomGroup" uomGroup="Weight"/>
+	<data archetype="lookup.chargeStatus" code="IN_PROGRESS" />
+	<data archetype="lookup.chargeStatus" code="COMPLETED" defaultLookup="true"/>
+	<data archetype="lookup.chargeStatus" code="ON_HOLD" />
+	<data archetype="lookup.chargeStatus" code="POSTED" />
+	<data archetype="lookup.paymentStatus" code="IN_PROGRESS" />
+	<data archetype="lookup.paymentStatus" code="ON_HOLD" />
+	<data archetype="lookup.paymentStatus" code="POSTED" defaultLookup="true"/>
+	<data archetype="lookup.episodeStatus" code="IN_PROGRESS" defaultLookup="true"/>
+	<data archetype="lookup.episodeStatus" code="COMPLETED" />
+	<data archetype="lookup.eventStatus" code="IN_PROGRESS" defaultLookup="true"/>
+	<data archetype="lookup.eventStatus" code="COMPLETED" />
+	<data archetype="lookup.appointmentStatus" code="PENDING" defaultLookup="true" />
+	<data archetype="lookup.appointmentStatus" code="CANCELLED" />
+	<data archetype="lookup.appointmentStatus" code="CHECKED_IN" />
+	<data archetype="lookup.appointmentStatus" code="IN_PROGRESS" />
+	<data archetype="lookup.appointmentStatus" code="COMPLETED" />
+	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
+	<data archetype="lookup.appointmentReason" code="VACCINATION" />
+	<data archetype="lookup.appointmentReason" code="OTHER" />
+	<data archetype="lookup.taskStatus" code="PENDING" defaultLookup="true" />
+	<data archetype="lookup.taskStatus" code="CANCELLED" />
+	<data archetype="lookup.taskStatus" code="IN_PROGRESS" />
+	<data archetype="lookup.taskStatus" code="COMPLETED" />
+	<data archetype="lookup.messageStatus" code="PENDING" defaultLookup="true" />
+	<data archetype="lookup.messageStatus" code="COMPLETED" />
+	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
+	<data archetype="lookup.uom" code="BOTTLE" />
+	<data archetype="lookup.uom" code="SYRINGE" />
+	<data archetype="lookup.uom" code="TABLET" />
+	<data archetype="lookup.uom" code="PACKET" />
+	<data archetype="lookup.uom" code="VIAL" />
+	<data archetype="lookup.uom" code="BOX" />
+	<data archetype="lookup.uom" code="GRAMS" />
+	<data archetype="lookup.uom" code="LITRES" />
+	<data archetype="lookup.uom" code="AMPOULE" />
+	<data archetype="lookup.uom" code="MLS" />
+	<data archetype="lookup.uom" code="TUBE" />
+	<data archetype="lookup.uom" code="PACKET" />
+	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
+	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
+    <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
-	<data archetype="lookup.bank" bank="National" />
-	<data archetype="lookup.bank" bank="Commonwealth" />
-	<data archetype="lookup.bank" bank="ANZ" />
-	<data archetype="lookup.bank" bank="WestPac" />
-	<data archetype="lookup.bank" bank="St George" />
-	<data archetype="lookup.bank" bank="Bank West" />
-	<data archetype="lookup.bank" bank="State SA" />
-	<data archetype="lookup.bank" bank="Bendigo" />
-	<data archetype="lookup.creditcard" creditcard="Visa" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" creditcard="Mastercard" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" creditcard="American Express" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" creditcard="Diners" floorLimit="500.00" />
-	<data archetype="lookup.personTitle" title="Mr" defaultLookup="true"/>
-	<data archetype="lookup.personTitle" title="Mrs" />
-	<data archetype="lookup.personTitle" title="Ms" />
-	<data archetype="lookup.personTitle" title="Dr" />
-	<data archetype="lookup.alertType" alertType="Allergy" />
-	<data archetype="lookup.alertType" alertType="Agression" />
-	<data archetype="lookup.alertType" alertType="Other" defaultLookup="true"/>
-	<data id="Canine" archetype="lookup.species" species="Canine"  />
-	<data id="Feline" archetype="lookup.species" species="Feline"  />
-	<data id="Equine" archetype="lookup.species" species="Equine"  />
-	<data id="Bovine" archetype="lookup.species" species="Bovine"  />
-	<data id="Caprine" archetype="lookup.species" species="Caprine"  />
-	<data id="Ovine" archetype="lookup.species" species="Ovine"  />
-	<data id="Porsine" archetype="lookup.species" species="Porsine"  />
-	<data id="Avian" archetype="lookup.species" species="Avian"  />
-	<data id="Lapine" archetype="lookup.species" species="Lapine"  />
-	<data id="Murine" archetype="lookup.species" species="Murine"  />
-	<data id="Cervidae" archetype="lookup.species" species="Cervidae"  />
-	<data id="Cavies" archetype="lookup.species" species="Cavies"  />
-	<data id="Piscine" archetype="lookup.species" species="Piscine"  />
-	<data id="Camelid" archetype="lookup.species" species="Camelid"  />
-	<data id="Other" archetype="lookup.species" species="Other"  />
-	<data id="B1" archetype="lookup.breed" breed="Abyssinian"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B1"  />
-	<data id="B2" archetype="lookup.breed" breed="Affenpinscher"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B2"  />
-	<data id="B3" archetype="lookup.breed" breed="Afghan Hound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B3"  />
-	<data id="B4" archetype="lookup.breed" breed="Airedale Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B4"  />
-	<data id="B5" archetype="lookup.breed" breed="Akita"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B5"  />
-	<data id="B6" archetype="lookup.breed" breed="Alaskan Malamute"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B6"  />
-	<data id="B7" archetype="lookup.breed" breed="American Staffordshire Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B7"  />
-	<data id="B8" archetype="lookup.breed" breed="Anatolian Shepherd Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B8"  />
-	<data id="B9" archetype="lookup.breed" breed="Arab"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Equine" target="id:B9"  />
-	<data id="B10" archetype="lookup.breed" breed="Australian Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B10"  />
-	<data id="B11" archetype="lookup.breed" breed="Balinese"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B11"  />
-	<data id="B12" archetype="lookup.breed" breed="Basenji"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B12"  />
-	<data id="B13" archetype="lookup.breed" breed="Basset Hound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B13"  />
-	<data id="B14" archetype="lookup.breed" breed="Bearded Collie"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B14"  />
-	<data id="B15" archetype="lookup.breed" breed="Beagle"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B15"  />
-	<data id="B16" archetype="lookup.breed" breed="Bedlington Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B16"  />
-	<data id="B17" archetype="lookup.breed" breed="Bernese Mountain Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B17"  />
-	<data id="B18" archetype="lookup.breed" breed="Belgian Shepherd Dog (4 Types)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B18"  />
-	<data id="B19" archetype="lookup.breed" breed="Bichon Frise"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B19"  />
-	<data id="B20" archetype="lookup.breed" breed="Birman"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B20"  />
-	<data id="B21" archetype="lookup.breed" breed="Bloodhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B21"  />
-	<data id="B22" archetype="lookup.breed" breed="Bouvier Des Flandes"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B22"  />
-	<data id="B23" archetype="lookup.breed" breed="Border Collie"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B23"  />
-	<data id="B24" archetype="lookup.breed" breed="Border Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B24"  />
-	<data id="B25" archetype="lookup.breed" breed="Borzoi"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B25"  />
-	<data id="B26" archetype="lookup.breed" breed="Boston Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B26"  />
-	<data id="B27" archetype="lookup.breed" breed="Boxer"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B27"  />
-	<data id="B28" archetype="lookup.breed" breed="Briard"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B28"  />
-	<data id="B29" archetype="lookup.breed" breed="British Bulldog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B29"  />
-	<data id="B30" archetype="lookup.breed" breed="British Shorthair"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B30"  />
-	<data id="B31" archetype="lookup.breed" breed="Brittany"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B31"  />
-	<data id="B32" archetype="lookup.breed" breed="Bullmastiff"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B32"  />
-	<data id="B33" archetype="lookup.breed" breed="Bull Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B33"  />
-	<data id="B34" archetype="lookup.breed" breed="Burmese"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B34"  />
-	<data id="B35" archetype="lookup.breed" breed="Cairn Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B35"  />
-	<data id="B36" archetype="lookup.breed" breed="Australian Cattle Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B36"  />
-	<data id="B37" archetype="lookup.breed" breed="Cattle Dog (stumpy Tail)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B37"  />
-	<data id="B38" archetype="lookup.breed" breed="Chesapeake Bay Retriever"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B38"  />
-	<data id="B39" archetype="lookup.breed" breed="Chinese Crested Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B39"  />
-	<data id="B40" archetype="lookup.breed" breed="Chihuahua (long)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B40"  />
-	<data id="B41" archetype="lookup.breed" breed="Chinchilla (persian)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B41"  />
-	<data id="B42" archetype="lookup.breed" breed="Chihuahua (smooth)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B42"  />
-	<data id="B43" archetype="lookup.breed" breed="Chow Chow"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B43"  />
-	<data id="B44" archetype="lookup.breed" breed="Cavalier King Charles Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B44"  />
-	<data id="B45" archetype="lookup.breed" breed="Clumber Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B45"  />
-	<data id="B46" archetype="lookup.breed" breed="Cocker Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B46"  />
-	<data id="B47" archetype="lookup.breed" breed="Collie (rough)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B47"  />
-	<data id="B48" archetype="lookup.breed" breed="Colorpoint Shorthair (siamese)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B48"  />
-	<data id="B49" archetype="lookup.breed" breed="Collie (smooth)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B49"  />
-	<data id="B50" archetype="lookup.breed" breed="Welsh Corgi Cardigan/pembroke"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B50"  />
-	<data id="B51" archetype="lookup.breed" breed="Cornish Rex"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B51"  />
-	<data id="B52" archetype="lookup.breed" breed="Cocker Spaniel (american)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B52"  />
-	<data id="B53" archetype="lookup.breed" breed="Curley Coated Retriever"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B53"  />
-	<data id="B54" archetype="lookup.breed" breed="Cymric"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B54"  />
-	<data id="B55" archetype="lookup.breed" breed="Dachshund (longhair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B55"  />
-	<data id="B56" archetype="lookup.breed" breed="Dachshund (smoothhair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B56"  />
-	<data id="B57" archetype="lookup.breed" breed="Dachshund (wirehair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B57"  />
-	<data id="B58" archetype="lookup.breed" breed="Dandie Dinmont Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B58"  />
-	<data id="B59" archetype="lookup.breed" breed="Dalmation"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B59"  />
-	<data id="B60" archetype="lookup.breed" breed="Dachshund (minature Longhair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B60"  />
-	<data id="B61" archetype="lookup.breed" breed="Dachshund (mini Smoothhair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B61"  />
-	<data id="B62" archetype="lookup.breed" breed="Dachshund (miniture Wirehair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B62"  />
-	<data id="B63" archetype="lookup.breed" breed="Deerhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B63"  />
-	<data id="B64" archetype="lookup.breed" breed="Devon Rex"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B64"  />
-	<data id="B65" archetype="lookup.breed" breed="Dingo"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B65"  />
-	<data id="B66" archetype="lookup.breed" breed="Doberman"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B66"  />
-	<data id="B67" archetype="lookup.breed" breed="Domestic Longhair"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B67"  />
-	<data id="B68" archetype="lookup.breed" breed="Domestic Shorthair"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B68"  />
-	<data id="B69" archetype="lookup.breed" breed="Elkhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B69"  />
-	<data id="B70" archetype="lookup.breed" breed="English Setter"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B70"  />
-	<data id="B71" archetype="lookup.breed" breed="English Springer Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B71"  />
-	<data id="B72" archetype="lookup.breed" breed="English Toy Terrier (black)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B72"  />
-	<data id="B73" archetype="lookup.breed" breed="English Toy Terrier (tan)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B73"  />
-	<data id="B74" archetype="lookup.breed" breed="Field Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B74"  />
-	<data id="B75" archetype="lookup.breed" breed="Finnish Spitz"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B75"  />
-	<data id="B76" archetype="lookup.breed" breed="Flat Coated Retriever"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B76"  />
-	<data id="B77" archetype="lookup.breed" breed="Foreign White"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B77"  />
-	<data id="B78" archetype="lookup.breed" breed="Fox Terrier (smoothhair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B78"  />
-	<data id="B79" archetype="lookup.breed" breed="Fox Terrier (wirehair)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B79"  />
-	<data id="B80" archetype="lookup.breed" breed="Foxhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B80"  />
-	<data id="B81" archetype="lookup.breed" breed="French Bulldog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B81"  />
-	<data id="B82" archetype="lookup.breed" breed="Friesian"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Bovine" target="id:B82"  />
-	<data id="B83" archetype="lookup.breed" breed="German Pinscher"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B83"  />
-	<data id="B84" archetype="lookup.breed" breed="German Shepherd Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B84"  />
-	<data id="B85" archetype="lookup.breed" breed="German Shorthaired Pointer"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B85"  />
-	<data id="B86" archetype="lookup.breed" breed="German Wirehaired Pointer"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B86"  />
-	<data id="B87" archetype="lookup.breed" breed="Glen Of Immaal Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B87"  />
-	<data id="B88" archetype="lookup.breed" breed="Golden Retriever"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B88"  />
-	<data id="B89" archetype="lookup.breed" breed="Gordon Setter"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B89"  />
-	<data id="B90" archetype="lookup.breed" breed="Great Dane"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B90"  />
-	<data id="B91" archetype="lookup.breed" breed="Greyhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B91"  />
-	<data id="B92" archetype="lookup.breed" breed="Griffon Bruxellois"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B92"  />
-	<data id="B93" archetype="lookup.breed" breed="Hamiltonstovare"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B93"  />
-	<data id="B94" archetype="lookup.breed" breed="Harrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B94"  />
-	<data id="B95" archetype="lookup.breed" breed="Himalayan"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B95"  />
-	<data id="B96" archetype="lookup.breed" breed="Hungarian Puli"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B96"  />
-	<data id="B97" archetype="lookup.breed" breed="Hungarian Sheepdog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B97"  />
-	<data id="B98" archetype="lookup.breed" breed="Hungarian Vizsla"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B98"  />
-	<data id="B99" archetype="lookup.breed" breed="Ibizan Hound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B99"  />
-	<data id="B100" archetype="lookup.breed" breed="Irish Setter"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B100"  />
-	<data id="B101" archetype="lookup.breed" breed="Irish Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B101"  />
-	<data id="B102" archetype="lookup.breed" breed="Irish Wolfhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B102"  />
-	<data id="B103" archetype="lookup.breed" breed="Irish Water Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B103"  />
-	<data id="B104" archetype="lookup.breed" breed="Italian Greyhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B104"  />
-	<data id="B105" archetype="lookup.breed" breed="Japanese Chin"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B105"  />
-	<data id="B106" archetype="lookup.breed" breed="Japanese Spitz"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B106"  />
-	<data id="B107" archetype="lookup.breed" breed="Jack Russell Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B107"  />
-	<data id="B108" archetype="lookup.breed" breed="Kerry Blue Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B108"  />
-	<data id="B109" archetype="lookup.breed" breed="Keeshond"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B109"  />
-	<data id="B110" archetype="lookup.breed" breed="Australian Kelpy"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B110"  />
-	<data id="B111" archetype="lookup.breed" breed="King Charles Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B111"  />
-	<data id="B112" archetype="lookup.breed" breed="Komondor"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B112"  />
-	<data id="B113" archetype="lookup.breed" breed="Korat"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B113"  />
-	<data id="B114" archetype="lookup.breed" breed="Labrador Retriever"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B114"  />
-	<data id="B115" archetype="lookup.breed" breed="Lahaso Apso"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B115"  />
-	<data id="B116" archetype="lookup.breed" breed="Lakeland Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B116"  />
-	<data id="B117" archetype="lookup.breed" breed="Large Munsterlander"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B117"  />
-	<data id="B118" archetype="lookup.breed" breed="Lowchen"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B118"  />
-	<data id="B119" archetype="lookup.breed" breed="Maltese"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B119"  />
-	<data id="B120" archetype="lookup.breed" breed="Manchester Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B120"  />
-	<data id="B121" archetype="lookup.breed" breed="Manx"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B121"  />
-	<data id="B122" archetype="lookup.breed" breed="Maremma Sheepdog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B122"  />
-	<data id="B123" archetype="lookup.breed" breed="Mastiff"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B123"  />
-	<data id="B124" archetype="lookup.breed" breed="Minature Pinscher"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B124"  />
-	<data id="B125" archetype="lookup.breed" breed="No Breed"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Other" target="id:B125"  />
-	<data id="B126" archetype="lookup.breed" breed="Newfoundland"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B126"  />
-	<data id="B127" archetype="lookup.breed" breed="Norwegian Buhund"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B127"  />
-	<data id="B128" archetype="lookup.breed" breed="Norfolk Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B128"  />
-	<data id="B129" archetype="lookup.breed" breed="Norwich Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B129"  />
-	<data id="B130" archetype="lookup.breed" breed="Old English Sheepdog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B130"  />
-	<data id="B131" archetype="lookup.breed" breed="Oriental Shorthair"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B131"  />
-	<data id="B132" archetype="lookup.breed" breed="Otterhound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B132"  />
-	<data id="B133" archetype="lookup.breed" breed="Papillon"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B133"  />
-	<data id="B134" archetype="lookup.breed" breed="Petit Basset Griffon Vendeen"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B134"  />
-	<data id="B135" archetype="lookup.breed" breed="Pekingese"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B135"  />
-	<data id="B136" archetype="lookup.breed" breed="Persian"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B136"  />
-	<data id="B137" archetype="lookup.breed" breed="Pharaoh Hound"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B137"  />
-	<data id="B138" archetype="lookup.breed" breed="Pointer"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B138"  />
-	<data id="B139" archetype="lookup.breed" breed="Pomeranian"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B139"  />
-	<data id="B140" archetype="lookup.breed" breed="Poodle (miniture)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B140"  />
-	<data id="B141" archetype="lookup.breed" breed="Poodle (standard)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B141"  />
-	<data id="B142" archetype="lookup.breed" breed="Poodle (toy)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B142"  />
-	<data id="B143" archetype="lookup.breed" breed="Purebred Giant (   50kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B143"  />
-	<data id="B144" archetype="lookup.breed" breed="Purebred Large (25-50kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B144"  />
-	<data id="B145" archetype="lookup.breed" breed="Purebred Medium (10-25kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B145"  />
-	<data id="B146" archetype="lookup.breed" breed="Purebred Toy (   5kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B146"  />
-	<data id="B147" archetype="lookup.breed" breed="Purebred Feline Longhair"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B147"  />
-	<data id="B148" archetype="lookup.breed" breed="Purebred Feline Shorthair"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B148"  />
-	<data id="B149" archetype="lookup.breed" breed="Pug"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B149"  />
-	<data id="B150" archetype="lookup.breed" breed="Pug"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B150"  />
-	<data id="B151" archetype="lookup.breed" breed="Pyrenean Mountain Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B151"  />
-	<data id="B152" archetype="lookup.breed" breed="Rhodesian Ridgeback"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B152"  />
-	<data id="B153" archetype="lookup.breed" breed="Rottweiler"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B153"  />
-	<data id="B154" archetype="lookup.breed" breed="Russian Black"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B154"  />
-	<data id="B155" archetype="lookup.breed" breed="Russian Blue"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B155"  />
-	<data id="B156" archetype="lookup.breed" breed="Russian White"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B156"  />
-	<data id="B157" archetype="lookup.breed" breed="Saint Bernard"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B157"  />
-	<data id="B158" archetype="lookup.breed" breed="Saluki"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B158"  />
-	<data id="B159" archetype="lookup.breed" breed="Samoyed"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B159"  />
-	<data id="B160" archetype="lookup.breed" breed="Schnauzer (giant)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B160"  />
-	<data id="B161" archetype="lookup.breed" breed="Schipperke"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B161"  />
-	<data id="B162" archetype="lookup.breed" breed="Schnauzer (miniture)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B162"  />
-	<data id="B163" archetype="lookup.breed" breed="Schnauzer (standard)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B163"  />
-	<data id="B164" archetype="lookup.breed" breed="Scottish Fold"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B164"  />
-	<data id="B165" archetype="lookup.breed" breed="Scottish Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B165"  />
-	<data id="B166" archetype="lookup.breed" breed="Soft Coated Wheaton Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B166"  />
-	<data id="B167" archetype="lookup.breed" breed="Sealyham Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B167"  />
-	<data id="B168" archetype="lookup.breed" breed="Shar Pei"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B168"  />
-	<data id="B169" archetype="lookup.breed" breed="Shetland Sheepdog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B169"  />
-	<data id="B170" archetype="lookup.breed" breed="Shih Tzu"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B170"  />
-	<data id="B171" archetype="lookup.breed" breed="Siamese"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B171"  />
-	<data id="B172" archetype="lookup.breed" breed="Siberian Husky"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B172"  />
-	<data id="B173" archetype="lookup.breed" breed="Australian Silky Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B173"  />
-	<data id="B174" archetype="lookup.breed" breed="Skye Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B174"  />
-	<data id="B175" archetype="lookup.breed" breed="Sloughi"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B175"  />
-	<data id="B176" archetype="lookup.breed" breed="Somali"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B176"  />
-	<data id="B177" archetype="lookup.breed" breed="Staffordshire Bull Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B177"  />
-	<data id="B178" archetype="lookup.breed" breed="Sussex Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B178"  />
-	<data id="B179" archetype="lookup.breed" breed="Swedish Vallhund"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B179"  />
-	<data id="B180" archetype="lookup.breed" breed="Thoroughbred"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Equine" target="id:B180"  />
-	<data id="B181" archetype="lookup.breed" breed="Tibetan Mastiff"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B181"  />
-	<data id="B182" archetype="lookup.breed" breed="Tibetan Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B182"  />
-	<data id="B183" archetype="lookup.breed" breed="Tibetan Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B183"  />
-	<data id="B184" archetype="lookup.breed" breed="Turkish Van"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Feline" target="id:B184"  />
-	<data id="B185" archetype="lookup.breed" breed="Weimaraner"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B185"  />
-	<data id="B186" archetype="lookup.breed" breed="Welsh Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B186"  />
-	<data id="B187" archetype="lookup.breed" breed="Welsh Springer Spaniel"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B187"  />
-	<data id="B188" archetype="lookup.breed" breed="Whippet"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B188"  />
-	<data id="B189" archetype="lookup.breed" breed="West Highland White Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B189"  />
-	<data id="B190" archetype="lookup.breed" breed="Crossbred Cattle Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B190"  />
-	<data id="B191" archetype="lookup.breed" breed="Crossbred Giant (   50kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B191"  />
-	<data id="B192" archetype="lookup.breed" breed="Crossbred German Shepherd Dog"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B192"  />
-	<data id="B193" archetype="lookup.breed" breed="Crossbred Kelpie"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B193"  />
-	<data id="B194" archetype="lookup.breed" breed="Crossbred Large (25-50kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B194"  />
-	<data id="B195" archetype="lookup.breed" breed="Crossbred Labrador"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B195"  />
-	<data id="B196" archetype="lookup.breed" breed="Crossbred Medium (10-25kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B196"  />
-	<data id="B197" archetype="lookup.breed" breed="Crossbred Small (5-10kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B197"  />
-	<data id="B198" archetype="lookup.breed" breed="Crossbred Toy (   5kg)"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B198"  />
-	<data id="B199" archetype="lookup.breed" breed="Yorkshire Terrier"  />
-	<data archetype="lookupRelationship.speciesBreed" source="id:Canine" target="id:B199"  />
+	<data archetype="lookup.bank" code="NAB" name="National" />
+	<data archetype="lookup.bank" code="CBA" name="Commonwealth" />
+	<data archetype="lookup.bank" code="ANZ"/>
+	<data archetype="lookup.bank" code="WBA" name="Westpac" />
+	<data archetype="lookup.bank" code="SGB" name="St George" />
+	<data archetype="lookup.bank" code="BANK_WEST" />
+	<data archetype="lookup.bank" code="STATE_SA" />
+	<data archetype="lookup.bank" code="BEN" name="Bendigo" />
+	<data archetype="lookup.creditcard" code="VISA" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="MASTERCARD"  floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="AMEX" name="American Express" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="DINERS" floorLimit="500.00" />
+	<data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
+	<data archetype="lookup.personTitle" code="MRS" />
+	<data archetype="lookup.personTitle" code="MS" />
+	<data archetype="lookup.personTitle" code="DR" />
+	<data archetype="lookup.alertType" code="ALLLERGY" />
+	<data archetype="lookup.alertType" code="AGGRESSION" />
+	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
 </archetype>

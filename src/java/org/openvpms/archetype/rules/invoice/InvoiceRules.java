@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.invoice;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
@@ -252,7 +253,7 @@ public class InvoiceRules {
 
         for (Act act : acts) {
             ActRelationship r = bean.getRelationship(act);
-            if (!"Completed".equals(act.getStatus())) {
+            if (!ActStatus.COMPLETED.equals(act.getStatus())) {
                 _service.remove(act);
                 bean.removeRelationship(r);
             }
@@ -275,7 +276,8 @@ public class InvoiceRules {
         for (Act act : acts) {
             String status = act.getStatus();
             ActRelationship r = bean.getRelationship(act);
-            if (!"Completed".equals(status) && !"Posted".equals(status)) {
+            if (!ActStatus.COMPLETED.equals(status)
+                    && !ActStatus.POSTED.equals(status)) {
                 _service.remove(act);
                 bean.removeRelationship(r);
             }

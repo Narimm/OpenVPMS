@@ -31,7 +31,7 @@
 	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" />
 	<data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2" />
 	<data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"
-		bank="Bendigo" branch="Boronia" accountNumber="123-456-789" />
+		bank="BEN" branch="Boronia" accountNumber="123-456-789" />
 	<data archetype="entityRelationship.locationDeposit" source="id:OL1" target="id:OD1" />
 	<data archetype="entityRelationship.locationDeposit" source="id:OL2" target="id:OD1" />
 	<data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00" />

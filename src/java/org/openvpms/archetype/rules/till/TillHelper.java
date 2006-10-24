@@ -58,7 +58,7 @@ public class TillHelper {
         query.setFirstRow(0);
         query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
         query.add(new NodeConstraint("status", RelationalOp.EQ,
-                                     TillRules.UNCLEARED));
+                                     TillBalanceStatus.UNCLEARED));
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint("till",
                                                TillRules.TILL_PARTICIPATION,
@@ -84,7 +84,7 @@ public class TillHelper {
         FinancialAct act = (FinancialAct) service.create(
                 TillRules.TILL_BALANCE);
         ActBean bean = new ActBean(act);
-        bean.setStatus(TillRules.UNCLEARED);
+        bean.setStatus(TillBalanceStatus.UNCLEARED);
         bean.setParticipant(TillRules.TILL_PARTICIPATION, till);
         return act;
     }
