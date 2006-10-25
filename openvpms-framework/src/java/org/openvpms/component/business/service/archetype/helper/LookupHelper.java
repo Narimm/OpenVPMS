@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-// openvpms-framework
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -44,8 +43,9 @@ import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+
 
 /**
  * This is a helper class for retrieving lookups reference data.
@@ -65,194 +65,45 @@ public class LookupHelper  {
      * Return a list of lookups for the specified {@link NodeDescriptor} or
      * an empty list if not applicable
      *
-     * @param service
-     *            a reference to the archetype service
-     * @param descriptor
-     *            the node descriptor
+     * @param service    a reference to the archetype service
+     * @param descriptor the node descriptor
      * @return List<Lookup>
      * @throws LookupHelperException
      */
     @SuppressWarnings("unchecked")
-    public static List<Lookup> get(IArchetypeService service, NodeDescriptor descriptor) {
-        List<Lookup> lookups = new ArrayList<Lookup>();
-
-        if (descriptor.isLookup()) {
-            if (descriptor.containsAssertionType("lookup")) {
-                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
-
-                // This is a remote lookup
-                Map<String, NamedProperty> props = assertion.getPropertyMap().getProperties();
-                String type = (props.get("type") == null) ? null :
-                    (String)props.get("type").getValue();
-                String source = (props.get("source") == null) ? null :
-                    (String)props.get("source").getValue();
-
-                if ((StringUtils.isEmpty(type)) ||
-                    (StringUtils.isEmpty(source))) {
-                    throw new LookupHelperException(
-                            LookupHelperException.ErrorCode.InvalidAssertion,
-                            new Object[] { assertion.getName() });
-                }
-
-                if ("lookup".equals(type)) {
-                    lookups = LookupHelper.getLookups(service, source, 0, -1);
-                } else {
-                    // invalid lookup type throw an exception
-                    throw new LookupHelperException(
-                            LookupHelperException.ErrorCode.InvalidLookupType,
-                            new Object[] { type });
-                }
-            } else if (descriptor.containsAssertionType("lookup.local")){
-                // it is a local lookup
-                // TODO This is very inefficient..we should cache them in
-                // this service
-                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup.local");
-                PropertyList list = (PropertyList)assertion.getPropertyMap()
-                    .getProperties().get("entries");
-                for (NamedProperty prop : list.getProperties()) {
-                    AssertionProperty aprop = (AssertionProperty)prop;
-                    lookups.add(new Lookup(ArchetypeId.LocalLookupId,
-                            aprop.getName(), aprop.getValue()));
-                }
-            } else {
-                throw new LookupHelperException(
-                        LookupHelperException.ErrorCode.InvalidLookupAssertion,
-                        new Object[] { descriptor.getName() });
-            }
+    public static List<Lookup> get(IArchetypeService service,
+                                   NodeDescriptor descriptor) {
+        List<Lookup> lookups;
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor);
+        if (assertion instanceof OneWayLookup
+                || assertion instanceof LocalLookup) {
+            lookups = assertion.getLookups(null, service);
+        } else {
+            throw new LookupHelperException(
+                    LookupHelperException.ErrorCode.InvalidLookupType,
+                    new Object[]{assertion.getType()});
         }
-
         return lookups;
     }
 
     /**
      * Return a list of {@link Lookup} instances given the specified
      * {@link NodeDescriptor} and {@link IMObject}.
-     * <p>
+     * <p/>
      * This method should be used if you want to constrain a lookup
      * search based on a source or target relationship.
      *
-     * @param service
-     *            a reference to the archetype service
-     * @param descriptor
-     *            the node descriptor
-     * @param object
-     *            the object to use.
+     * @param service    a reference to the archetype service
+     * @param descriptor the node descriptor
+     * @param object     the object to use.
      * @return List<Lookup>
      * @throws LookupHelperException
      */
     @SuppressWarnings("unchecked")
-    public static List<Lookup> get(IArchetypeService service, NodeDescriptor descriptor, IMObject object) {
-        List<Lookup> lookups = new ArrayList<Lookup>();
-
-        // TODO This needs to be fixed up so that it is more pluggabl
-        // Need to define a better interface for the different assertion
-        // types.
-        if (descriptor.isLookup()) {
-            if (descriptor.containsAssertionType("lookup")) {
-                // This is a remote lookup
-                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
-                String type = (String) assertion.getPropertyMap().getProperties()
-                    .get("type").getValue();
-
-                // if the type and concept properties are not specified
-                // then throw an exception
-                if (StringUtils.isEmpty(type)) {
-                    throw new LookupHelperException(
-                            LookupHelperException.ErrorCode.TypeNotSpecified,
-                            new Object[] { assertion.getName() });
-                }
-
-                if (type.equals("lookup")) {
-                    // one way lookup
-                    String source = (String) assertion.getPropertyMap().getProperties()
-                        .get("source").getValue();
-                    if (StringUtils.isEmpty(source)) {
-                        throw new LookupHelperException(
-                                LookupHelperException.ErrorCode.SourceNotSpecified,
-                                new Object[] { assertion.getName(), type });
-                    }
-                    lookups = LookupHelper.getLookups(service, source, 0, -1);
-                } else if (type.equals("targetLookup")) {
-                    // constrained lookup specifying the source
-                    Map<String, NamedProperty> props = assertion.getPropertyMap().getProperties();
-                    String relationship = (props.get("relationship") == null) ? null :
-                        (String)props.get("relationship").getValue();
-                    String value = (props.get("value") == null) ? null :
-                        (String)props.get("value").getValue();
-                    if ((StringUtils.isEmpty(relationship)) ||
-                        (StringUtils.isEmpty(value))) {
-                        throw new LookupHelperException(
-                                LookupHelperException.ErrorCode.InvalidTargetLookupSpec);
-                    }
-
-                    // we need to get the value
-                    String srcVal = (String)JXPathContext.newContext(object).getValue(value);
-                    String[] source = getArchetypeShortNames(service, relationship, "source");
-                    String[] target = getArchetypeShortNames(service, relationship, "target");
-
-                    Lookup lookup = LookupHelper.getLookup(service, source, srcVal);
-                    if (lookup != null) {
-                        lookups = LookupHelper.getTargetLookups(service, lookup,
-                                                                target);
-                    }
-                } else if (type.equals("sourceLookup")) {
-                    // constrained lookup specifying the source
-                    Map<String, NamedProperty> props = assertion.getPropertyMap().getProperties();
-                    String relationship = (props.get("relationship") == null) ? null :
-                        (String)props.get("relationship").getValue();
-                    String value = (props.get("value") == null) ? null :
-                        (String)props.get("value").getValue();
-                    if ((StringUtils.isEmpty(relationship)) ||
-                        (StringUtils.isEmpty(value))) {
-                        throw new LookupHelperException(
-                                LookupHelperException.ErrorCode.InvalidSourceLookupSpec);
-                    }
-
-                    // we need to get the value
-                    String tarVal = (String)JXPathContext.newContext(object).getValue(value);
-                    String[] source = getArchetypeShortNames(service, relationship, "source");
-                    String[] target = getArchetypeShortNames(service, relationship, "target");
-
-                    Lookup lookup = LookupHelper.getLookup(service, target, tarVal);
-                    if (lookup != null) {
-                        lookups = LookupHelper.getSourceLookups(service, lookup,
-                                source);
-                    }
-                } else {
-                    // invalid lookup type throw an exception
-                    throw new LookupHelperException(
-                            LookupHelperException.ErrorCode.InvalidLookupType,
-                            new Object[] { type });
-                }
-            } else if (descriptor.containsAssertionType("lookup.local")){
-                // it is a local lookup
-                // TODO This is very inefficient..we should cache them in
-                // this service
-                AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup.local");
-                PropertyList list = (PropertyList)assertion.getPropertyMap()
-                    .getProperties().get("entries");
-                for (NamedProperty prop : list.getProperties()) {
-                    AssertionProperty aprop = (AssertionProperty)prop;
-                    lookups.add(new Lookup(ArchetypeId.LocalLookupId,
-                            aprop.getName(), aprop.getValue()));
-                }
-            } else if (descriptor.containsAssertionType("lookup.assertionType")){
-                // retrieve all the assertionTypes from the archetype service
-                // we need to 
-                List<AssertionTypeDescriptor> adescs =
-                    service.getAssertionTypeDescriptors();
-                for (AssertionTypeDescriptor adesc : adescs) {
-                    lookups.add(new Lookup(ArchetypeId.LocalLookupId,
-                            adesc.getName(), adesc.getName()));
-                }
-            } else {
-                throw new LookupHelperException(
-                        LookupHelperException.ErrorCode.InvalidLookupAssertion,
-                        new Object[] { descriptor.getName() });
-            }
-        }
-
-        return lookups;
+    public static List<Lookup> get(IArchetypeService service,
+                                   NodeDescriptor descriptor, IMObject object) {
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor);
+        return assertion.getLookups(object, service);
     }
 
     /**
@@ -268,14 +119,12 @@ public class LookupHelper  {
     public static Lookup getLookup(IArchetypeService service,
                                    NodeDescriptor descriptor, IMObject object) {
         Lookup result = null;
-        Object value = descriptor.getValue(object);
-        if (value != null) {
-            List<Lookup> lookups = get(service, descriptor, object);
-            for (Lookup lookup : lookups) {
-                if (value.equals(lookup.getCode())) {
-                    result = lookup;
-                    break;
-                }
+        if (descriptor.isLookup()) {
+            Object value = descriptor.getValue(object);
+            if (value != null) {
+                LookupAssertion assertion
+                        = LookupAssertionFactory.create(descriptor);
+                result = assertion.getLookup(object, service, (String) value);
             }
         }
         return result;
@@ -297,7 +146,7 @@ public class LookupHelper  {
      */
     @SuppressWarnings("unchecked")
     public static Lookup getLookup(IArchetypeService service, String shortName,
-            String value) {
+                                   String value) {
         Lookup lookup = null;
 
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
@@ -335,7 +184,7 @@ public class LookupHelper  {
      */
     @SuppressWarnings("unchecked")
     public static Lookup getLookup(IArchetypeService service, String[] shortNames,
-            String value) {
+                                   String value) {
         Lookup lookup = null;
 
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true)
@@ -375,7 +224,7 @@ public class LookupHelper  {
      */
     @SuppressWarnings("unchecked")
     public static List<Lookup> getLookups(IArchetypeService service, String shortName,
-            int firstRow, int numOfRows) {
+                                          int firstRow, int numOfRows) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
             .setFirstRow(firstRow)
             .setNumOfRows(numOfRows);
@@ -385,71 +234,60 @@ public class LookupHelper  {
 
     /**
      * Helper method to return a list of target {@link Lookup} instances
-     * give a reference source {@link Lookup}
-     * <p>
-     * Note this will work if the archetype names in your system conform to the
-     * strcuture indicated below.
-     * <p>
-     * All lookups have an entity name of 'lookup' and all lookup relationships
-     * have a short name of 'lookuprel.common'
+     * give a reference source {@link Lookup}.
+     * <p/>
+     * Note this will work if the target lookups have a 'target' collection
+     * node of lookup relationships, and each relationship has a 'source' node.
      *
-     * @param service
-     *            a reference to the archetype service
-     * @param source
-     *            the source lookup
-     * @param target
-     *            the archetype shortNames of the target
-     * @return List<Lookup>
-     *            a list of lookup objects
-     * @throws LookupHelperException
-     *            if the request cannot complete
+     * @param service a reference to the archetype service
+     * @param source  the source lookup
+     * @param target  the archetype shortNames of the target
+     * @return a list of lookup objects
+     * @throws ArchetypeServiceException for any archetype service error
      */
     @SuppressWarnings("unchecked")
     public static List<Lookup> getTargetLookups(IArchetypeService service,
-            Lookup source, String[] target) {
-        // now we need to look for the relationship archetype
-        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
-                target, false, false))
-            .add(new CollectionNodeConstraint("target", false)
-                    .add(new ObjectRefNodeConstraint("source", source.getObjectReference())))
-            .add(new NodeSortConstraint("name", true))
-            .setActiveOnly(true);
+                                                Lookup source,
+                                                String[] target) {
+        ArchetypeQuery query = new ArchetypeQuery(
+                new ArchetypeShortNameConstraint(
+                        target, false, false))
+                .add(new CollectionNodeConstraint("target", false)
+                        .add(new ObjectRefNodeConstraint("source",
+                                                         source.getObjectReference())))
+                .add(new NodeSortConstraint("name", true))
+                .setActiveOnly(true);
 
-        return new ArrayList<Lookup>((List)service.get(query).getRows());
+        return new ArrayList<Lookup>((List) service.get(query).getRows());
     }
 
     /**
-     * Helper class to return a list of source {@link Lookup} instances
-     * give a reference target{@link Lookup}
-     * <p>
-     * Note this will work if the archetype names in your system conform to the
-     * strcuture indicated below.
-     * <p>
-     * All lookups have an entity name of 'lookup' and all lookup relationships
-     * have a short name of 'lookuprel.common'
+     * Helper to return a list of source {@link Lookup} instances given a
+     * reference target{@link Lookup}.
+     * <p/>
+     * Note this will work if the source lookups have a 'source' collection
+     * node of lookup relationships, and each relationship has a 'target' node.
      *
-     * @param service
-     *            a reference to the archetype service
-     * @param target
-     *            the target lookup
-     * @param source
-     *            the list of shortnames for the source
-     * @return List<Lookup>
-     *            a list of lookup objects
-     * @throws ArchetypeServiceException
-     *            if the request cannot complete
+     * @param service a reference to the archetype service
+     * @param target  the target lookup
+     * @param source  the list of shortnames for the source
+     * @return a list of lookup objects
+     * @throws ArchetypeServiceException if the request cannot complete
      */
     @SuppressWarnings("unchecked")
     public static List<Lookup> getSourceLookups(IArchetypeService service,
-            Lookup target, String[] source) {
-        ArchetypeQuery query = new ArchetypeQuery(new ArchetypeShortNameConstraint(
-                source, false, false))
-            .add(new CollectionNodeConstraint("source", false)
-                    .add(new ObjectRefNodeConstraint("target", target.getObjectReference())))
-            .add(new NodeSortConstraint("name", true))
-            .setActiveOnly(true);
+                                                Lookup target,
+                                                String[] source) {
+        ArchetypeQuery query = new ArchetypeQuery(
+                new ArchetypeShortNameConstraint(
+                        source, false, false))
+                .add(new CollectionNodeConstraint("source", false)
+                        .add(new ObjectRefNodeConstraint("target",
+                                                         target.getObjectReference())))
+                .add(new NodeSortConstraint("name", true))
+                .setActiveOnly(true);
 
-        return new ArrayList<Lookup>((List)service.get(query).getRows());
+        return new ArrayList<Lookup>((List) service.get(query).getRows());
     }
 
     /**
@@ -492,7 +330,7 @@ public class LookupHelper  {
      * @throws LookupHelperException
      */
     private static String[] getArchetypeShortNames(IArchetypeService service,
-            String relationship, String node) {
+                                                   String relationship, String node) {
         ArchetypeDescriptor adesc = service.getArchetypeDescriptor(relationship);
         if (adesc == null) {
             throw new LookupHelperException(
@@ -521,24 +359,317 @@ public class LookupHelper  {
      * {@link NodeDescriptor}. If the  specified descriptor does not contain
      * any lookup assertions then return null.
      *
-     * @param ndesc
-     *            the node descriptor
+     * @param ndesc the node descriptor
      * @return String
-     *            the unspecified value or null            
+     *         the unspecified value or null
      */
     public static String getUnspecifiedValue(NodeDescriptor ndesc) {
         String value = null;
 
         if (ndesc != null) {
-          AssertionDescriptor adesc = ndesc.getAssertionDescriptor("lookup");
-          if (adesc  != null) {
-              NamedProperty prop = adesc.getProperty("unspecified");
-              if (prop != null) {
-                  value = (String)prop.getValue();
-              }
-          }
+            AssertionDescriptor assertion
+                    = ndesc.getAssertionDescriptor("lookup");
+            if (assertion != null) {
+                value = getValue(assertion, "unspecified");
+            }
         }
 
         return value;
+    }
+
+    private interface LookupAssertion {
+
+        String getType();
+
+        List<Lookup> getLookups(IMObject context, IArchetypeService service);
+
+        Lookup getLookup(IMObject context, IArchetypeService service, String code);
+    }
+
+    private static class LookupAssertionFactory {
+
+        public static LookupAssertion create(NodeDescriptor descriptor) {
+            LookupAssertion result;
+            if (descriptor.containsAssertionType("lookup")) {
+                AssertionDescriptor assertion
+                        = descriptor.getAssertionDescriptor("lookup");
+                String type = getValue(assertion, "type");
+                if (StringUtils.isEmpty(type)) {
+                    throw new LookupHelperException(
+                            LookupHelperException.ErrorCode.TypeNotSpecified,
+                            new Object[]{assertion.getName()});
+                }
+                if (OneWayLookup.TYPE.equals(type)) {
+                    result = new OneWayLookup(assertion);
+                } else if (TargetLookup.TYPE.equals(type)) {
+                    result = new TargetLookup(assertion);
+                } else if (SourceLookup.TYPE.equals(type)) {
+                    result = new SourceLookup(assertion);
+                } else {
+                    throw new LookupHelperException(
+                            LookupHelperException.ErrorCode.InvalidLookupType,
+                            new Object[]{type});
+                }
+            } else if (descriptor.containsAssertionType(LocalLookup.TYPE)) {
+                AssertionDescriptor assertion
+                        = descriptor.getAssertionDescriptor(LocalLookup.TYPE);
+                result = new LocalLookup(assertion);
+            } else
+            if (descriptor.containsAssertionType(LookupAssertionType.TYPE)) {
+                result = new LookupAssertionType();
+            } else {
+                throw new LookupHelperException(
+                        LookupHelperException.ErrorCode.InvalidLookupAssertion,
+                        new Object[]{descriptor.getName()});
+            }
+            return result;
+        }
+    }
+
+    private static String getValue(AssertionDescriptor assertion, String name) {
+        NamedProperty property = assertion.getProperty(name);
+        return (property != null) ? (String) property.getValue() : null;
+
+    }
+
+    private static class OneWayLookup implements LookupAssertion {
+
+        public static final String TYPE = "lookup";
+
+        private String source;
+
+        public OneWayLookup(AssertionDescriptor assertion) {
+            source = getValue(assertion, "source");
+            if (StringUtils.isEmpty(source)) {
+                throw new LookupHelperException(
+                        LookupHelperException.ErrorCode.SourceNotSpecified,
+                        new Object[]{assertion.getName(), "lookup"});
+            }
+        }
+
+        public String getType() {
+            return TYPE;
+        }
+
+        public List<Lookup> getLookups(IMObject context,
+                                       IArchetypeService service) {
+            return LookupHelper.getLookups(service, source, 0, -1);
+        }
+
+        public Lookup getLookup(IMObject context, IArchetypeService service,
+                                String code) {
+            return LookupHelper.getLookup(service, source, code);
+        }
+
+    }
+
+    private static class TargetLookup implements LookupAssertion {
+
+        public static final String TYPE = "targetLookup";
+
+        private String relationship;
+        private String value;
+
+        public TargetLookup(AssertionDescriptor assertion) {
+            relationship = getValue(assertion, "relationship");
+            value = getValue(assertion, "value");
+            if (StringUtils.isEmpty(relationship)
+                    || StringUtils.isEmpty(value)) {
+                throw new LookupHelperException(
+                        LookupHelperException.ErrorCode.InvalidTargetLookupSpec);
+            }
+
+        }
+
+        public String getType() {
+            return TYPE;
+        }
+
+        public List<Lookup> getLookups(IMObject context,
+                                       IArchetypeService service) {
+            List<Lookup> lookups;
+
+            String srcVal = (String) JXPathContext.newContext(context).getValue(
+                    value);
+            String[] source = getArchetypeShortNames(service, relationship,
+                                                     "source");
+            String[] target = getArchetypeShortNames(service, relationship,
+                                                     "target");
+
+            Lookup lookup = LookupHelper.getLookup(service, source, srcVal);
+            if (lookup != null) {
+                lookups = getTargetLookups(service, lookup, target);
+            }  else {
+                lookups = Collections.emptyList();
+            }
+            return lookups;
+        }
+
+        public Lookup getLookup(IMObject context, IArchetypeService service,
+                                String code) {
+            Lookup result = null;
+
+            String srcVal = (String) JXPathContext.newContext(context).getValue(
+                    value);
+            String[] source = getArchetypeShortNames(service, relationship,
+                                                     "source");
+            String[] target = getArchetypeShortNames(service, relationship,
+                                                     "target");
+            Lookup lookup = LookupHelper.getLookup(service, source, srcVal);
+            if (lookup != null) {
+                ArchetypeQuery query = new ArchetypeQuery(
+                        new ArchetypeShortNameConstraint(
+                                target, false, false))
+                        .add(new CollectionNodeConstraint("target", false)
+                                .add(new ObjectRefNodeConstraint("source",
+                                                                 lookup.getObjectReference())))
+                        .add(new NodeConstraint("code", code))
+                        .setActiveOnly(true);
+                List<IMObject> rows = service.get(query).getRows();
+                if (!rows.isEmpty()) {
+                   result = (Lookup) rows.get(0);
+                }
+            }
+            return result;
+        }
+    }
+
+    private static class SourceLookup implements LookupAssertion {
+
+        public static final String TYPE = "sourceLookup";
+
+        private final String relationship;
+        private final String value;
+
+        public SourceLookup(AssertionDescriptor assertion) {
+            relationship = getValue(assertion, "relationship");
+            value = getValue(assertion, "value");
+            if (StringUtils.isEmpty(relationship)
+                    || StringUtils.isEmpty(value)) {
+                throw new LookupHelperException(
+                        LookupHelperException.ErrorCode.InvalidSourceLookupSpec);
+            }
+        }
+
+        public String getType() {
+            return TYPE;
+        }
+
+        public List<Lookup> getLookups(IMObject context,
+                                       IArchetypeService service) {
+            List<Lookup> lookups = null;
+            String tarVal = (String) JXPathContext.newContext(context).getValue(
+                    value);
+            String[] source = getArchetypeShortNames(service, relationship,
+                                                     "source");
+            String[] target = getArchetypeShortNames(service, relationship,
+                                                     "target");
+
+            Lookup lookup = LookupHelper.getLookup(service, target, tarVal);
+            if (lookup != null) {
+                lookups = LookupHelper.getSourceLookups(service, lookup,
+                                                        source);
+            }
+            return lookups;
+        }
+
+        public Lookup getLookup(IMObject context, IArchetypeService service,
+                                String code) {
+            Lookup result = null;
+            String tarVal = (String) JXPathContext.newContext(context).getValue(
+                    value);
+            String[] source = getArchetypeShortNames(service, relationship,
+                                                     "source");
+            String[] target = getArchetypeShortNames(service, relationship,
+                                                     "target");
+
+            Lookup lookup = LookupHelper.getLookup(service, target, tarVal);
+            if (lookup != null) {
+                ArchetypeQuery query = new ArchetypeQuery(
+                        new ArchetypeShortNameConstraint(
+                                source, false, false))
+                        .add(new CollectionNodeConstraint("source", false)
+                                .add(new ObjectRefNodeConstraint("target",
+                                                                 lookup.getObjectReference())))
+                        .add(new NodeConstraint("code", code))
+                        .setActiveOnly(true);
+                List<IMObject> rows = service.get(query).getRows();
+                if (!rows.isEmpty()) {
+                   result = (Lookup) rows.get(0);
+                }
+            }
+            return result;
+        }
+    }
+
+    private static class LocalLookup implements LookupAssertion {
+
+        public static final String TYPE = "lookup.local";
+
+        private List<Lookup> lookups = new ArrayList<Lookup>();
+
+        public LocalLookup(AssertionDescriptor assertion) {
+            PropertyList list = (PropertyList) assertion.getPropertyMap()
+                    .getProperties().get("entries");
+            for (NamedProperty prop : list.getProperties()) {
+                AssertionProperty aprop = (AssertionProperty) prop;
+                lookups.add(new Lookup(ArchetypeId.LocalLookupId,
+                                       aprop.getName(), aprop.getValue()));
+            }
+
+        }
+
+        public String getType() {
+            return TYPE;
+        }
+
+        public List<Lookup> getLookups(IMObject context,
+                                       IArchetypeService service) {
+            return lookups;
+        }
+
+        public Lookup getLookup(IMObject context, IArchetypeService service,
+                                String code) {
+            for (Lookup lookup : lookups) {
+                if (lookup.getCode().equals(code)) {
+                    return lookup;
+                }
+            }
+            return null;
+        }
+    }
+
+    private static class LookupAssertionType implements LookupAssertion {
+
+        public static final String TYPE = "lookup.assertionType";
+
+        public String getType() {
+            return TYPE;
+        }
+
+        public List<Lookup> getLookups(IMObject context,
+                                       IArchetypeService service) {
+            List<Lookup> lookups = new ArrayList<Lookup>();
+            List<AssertionTypeDescriptor> descs =
+                    service.getAssertionTypeDescriptors();
+            for (AssertionTypeDescriptor adesc : descs) {
+                lookups.add(new Lookup(ArchetypeId.LocalLookupId,
+                                       adesc.getName(), adesc.getName()));
+            }
+            return lookups;
+        }
+
+        public Lookup getLookup(IMObject context, IArchetypeService service,
+                                String code) {
+            List<AssertionTypeDescriptor> descs =
+                    service.getAssertionTypeDescriptors();
+            for (AssertionTypeDescriptor adesc : descs) {
+                if (adesc.getName().equals(code)) {
+                    return new Lookup(ArchetypeId.LocalLookupId,
+                                       adesc.getName(), adesc.getName());
+                }
+            }
+            return null;
+        }
     }
 }
