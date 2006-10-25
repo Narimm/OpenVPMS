@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
@@ -73,7 +74,6 @@ public class LookupHelper  {
      * @return List<Lookup>
      * @throws LookupHelperException
      */
-    @SuppressWarnings("unchecked")
     public static List<Lookup> get(IArchetypeService service,
                                    NodeDescriptor descriptor) {
         List<Lookup> lookups;
@@ -81,6 +81,30 @@ public class LookupHelper  {
         if (assertion instanceof OneWayLookup
                 || assertion instanceof LocalLookup) {
             lookups = assertion.getLookups(null, service);
+        } else {
+            throw new LookupHelperException(
+                    LookupHelperException.ErrorCode.InvalidLookupType,
+                    new Object[]{assertion.getType()});
+        }
+        return lookups;
+    }
+
+    /**
+     * Return a list of lookups for the specified {@link NodeDescriptor} or
+     * an empty list if not applicable
+     *
+     * @param service    a reference to the archetype service
+     * @param descriptor the node descriptor
+     * @return List<Lookup>
+     * @throws LookupHelperException
+     */
+    public static List<Lookup> getSimpleLookups(IArchetypeService service,
+                                   NodeDescriptor descriptor) {
+        List<Lookup> lookups;
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor);
+        if (assertion instanceof OneWayLookup
+                || assertion instanceof LocalLookup) {
+            lookups = assertion.getSimpleLookups(null, service);
         } else {
             throw new LookupHelperException(
                     LookupHelperException.ErrorCode.InvalidLookupType,
@@ -102,11 +126,16 @@ public class LookupHelper  {
      * @return List<Lookup>
      * @throws LookupHelperException
      */
-    @SuppressWarnings("unchecked")
     public static List<Lookup> get(IArchetypeService service,
                                    NodeDescriptor descriptor, IMObject object) {
         LookupAssertion assertion = LookupAssertionFactory.create(descriptor);
         return assertion.getLookups(object, service);
+    }
+
+    public static List<Lookup> getSimpleLookups(IArchetypeService service,
+                                   NodeDescriptor descriptor, IMObject object) {
+        LookupAssertion assertion = LookupAssertionFactory.create(descriptor);
+        return assertion.getSimpleLookups(object, service);
     }
 
     /**
@@ -199,6 +228,12 @@ public class LookupHelper  {
         }
 
         return lookup;
+    }
+
+    public static List<NodeSet> get(IArchetypeService service, String shortName,
+                             Collection<String> nodes) {
+        ArchetypeQuery query = new ArchetypeQuery(shortName, false, true);
+        return service.get(nodes, query).getRows();
     }
 
     public static NodeSet getNodes(IArchetypeService service, String shortName,
@@ -430,6 +465,8 @@ public class LookupHelper  {
 
         List<Lookup> getLookups(IMObject context, IArchetypeService service);
 
+        List<Lookup> getSimpleLookups(IMObject context, IArchetypeService service);
+
         Lookup getLookup(IMObject context, IArchetypeService service,
                          String code);
 
@@ -483,6 +520,25 @@ public class LookupHelper  {
 
     }
 
+    private static List<Lookup> getSimpleLookups(List<NodeSet> nodeSets) {
+        List<Lookup> result = new ArrayList<Lookup>();
+        ArchetypeDescriptor archetype = null;
+        for (NodeSet set : nodeSets) {
+            ArchetypeId id = set.getObjectReference().getArchetypeId();
+            if (archetype == null || !archetype.getType().equals(id)) {
+                archetype = DescriptorHelper.getArchetypeDescriptor(id.getShortName());
+            }
+            Lookup lookup = new Lookup();
+            lookup.setArchetypeId(id);
+            for (String name : set.getNames()) {
+                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+                descriptor.setValue(lookup, set.get(name));
+            }
+            result.add(lookup);
+        }
+        return result;
+    }
+
     private static class OneWayLookup implements LookupAssertion {
 
         public static final String TYPE = "lookup";
@@ -505,6 +561,14 @@ public class LookupHelper  {
         public List<Lookup> getLookups(IMObject context,
                                        IArchetypeService service) {
             return LookupHelper.getLookups(service, source, 0, -1);
+        }
+
+        public List<Lookup> getSimpleLookups(IMObject context,
+                                             IArchetypeService service) {
+            List<String> names = Arrays.asList("code", "name", "description",
+                                               "defaultLookup");
+            List<NodeSet> lookups = LookupHelper.get(service, source, names);
+            return LookupHelper.getSimpleLookups(lookups);
         }
 
         public Lookup getLookup(IMObject context, IArchetypeService service,
@@ -536,7 +600,6 @@ public class LookupHelper  {
                 throw new LookupHelperException(
                         LookupHelperException.ErrorCode.InvalidTargetLookupSpec);
             }
-
         }
 
         public String getType() {
@@ -546,7 +609,6 @@ public class LookupHelper  {
         public List<Lookup> getLookups(IMObject context,
                                        IArchetypeService service) {
             List<Lookup> lookups;
-
             Lookup lookup = getSourceLookup(context, service);
             if (lookup != null) {
                 String[] target = getArchetypeShortNames(service, relationship,
@@ -558,11 +620,34 @@ public class LookupHelper  {
             return lookups;
         }
 
+        public List<Lookup> getSimpleLookups(IMObject context,
+                                             IArchetypeService service) {
+            List<Lookup> result = Collections.emptyList();
+            IMObjectReference lookup = getSourceLookupRef(context, service);
+            if (lookup != null) {
+                String[] target = getArchetypeShortNames(service, relationship,
+                                                         "target");
+                ArchetypeQuery query = new ArchetypeQuery(
+                    new ArchetypeShortNameConstraint(
+                            target, false, false))
+                    .add(new CollectionNodeConstraint("target", false)
+                            .add(new ObjectRefNodeConstraint("source", lookup)))
+                    .add(new NodeSortConstraint("name", true))
+                    .setActiveOnly(true);
+
+                List<String> names = Arrays.asList("code", "name", "description",
+                                                   "defaultLookup");
+                List<NodeSet> lookups = service.get(names, query).getRows();
+                result = LookupHelper.getSimpleLookups(lookups);
+            }
+            return result;
+        }
+
         public Lookup getLookup(IMObject context, IArchetypeService service,
                                 String code) {
             Lookup result = null;
 
-            Lookup lookup = getSourceLookup(context, service);
+            IMObjectReference lookup = getSourceLookupRef(context, service);
             if (lookup != null) {
                 ArchetypeQuery query = createQuery(service, lookup, code);
                 List<IMObject> rows = service.get(query).getRows();
@@ -574,15 +659,14 @@ public class LookupHelper  {
         }
 
         private ArchetypeQuery createQuery(IArchetypeService service,
-                                           Lookup lookup, String code) {
+                                           IMObjectReference lookup, String code) {
             String[] target = getArchetypeShortNames(service, relationship,
                                                      "target");
             return new ArchetypeQuery(
                     new ArchetypeShortNameConstraint(
                             target, false, false))
                     .add(new CollectionNodeConstraint("target", false)
-                            .add(new ObjectRefNodeConstraint("source",
-                                                             lookup.getObjectReference())))
+                            .add(new ObjectRefNodeConstraint("source", lookup)))
                     .add(new NodeConstraint("code", code))
                     .setActiveOnly(true);
         }
@@ -590,7 +674,7 @@ public class LookupHelper  {
         public String getName(IMObject context, IArchetypeService service,
                               String code) {
             String result = null;
-            Lookup lookup = getSourceLookup(context, service);
+            IMObjectReference lookup = getSourceLookupRef(context, service);
             if (lookup != null) {
                 ArchetypeQuery query = createQuery(service, lookup, code);
                 List<NodeSet> rows
@@ -603,12 +687,23 @@ public class LookupHelper  {
         }
 
         private Lookup getSourceLookup(IMObject context,
-                                       IArchetypeService service) {
+                                                     IArchetypeService service) {
             String srcVal = (String) JXPathContext.newContext(context).getValue(
                     value);
             String[] source = getArchetypeShortNames(service, relationship,
                                                      "source");
             return LookupHelper.getLookup(service, source, srcVal);
+        }
+
+        private IMObjectReference getSourceLookupRef(IMObject context,
+                                                     IArchetypeService service) {
+            String srcVal = (String) JXPathContext.newContext(context).getValue(
+                    value);
+            String[] source = getArchetypeShortNames(service, relationship,
+                                                     "source");
+            List<String> names = Collections.emptyList();
+            NodeSet nodes = LookupHelper.getNodes(service, source[0], names, srcVal);
+            return (nodes != null) ? nodes.getObjectReference() :null;
         }
     }
 
@@ -646,10 +741,31 @@ public class LookupHelper  {
             return lookups;
         }
 
+        public List<Lookup> getSimpleLookups(IMObject context,
+                                             IArchetypeService service) {
+            List<Lookup> result = Collections.emptyList();
+            IMObjectReference lookup = getTargetLookupRef(context, service);
+            if (lookup != null) {
+                String[] source = getArchetypeShortNames(service, relationship,
+                                                         "source");
+                ArchetypeQuery query = new ArchetypeQuery(
+                    new ArchetypeShortNameConstraint(
+                            source, false, false))
+                    .add(new CollectionNodeConstraint("source", false)
+                            .add(new ObjectRefNodeConstraint("target", lookup)))
+                    .setActiveOnly(true);
+                List<String> names = Arrays.asList("code", "name", "description",
+                                                   "defaultLookup");
+                List<NodeSet> lookups = service.get(names, query).getRows();
+                result = LookupHelper.getSimpleLookups(lookups);
+            }
+            return result;
+        }
+
         public Lookup getLookup(IMObject context, IArchetypeService service,
                                 String code) {
             Lookup result = null;
-            Lookup lookup = getTargetLookup(context, service);
+            IMObjectReference lookup = getTargetLookupRef(context, service);
             if (lookup != null) {
                 ArchetypeQuery query = createQuery(service, lookup, code);
                 List<IMObject> rows = service.get(query).getRows();
@@ -663,7 +779,7 @@ public class LookupHelper  {
         public String getName(IMObject context, IArchetypeService service,
                               String code) {
             String result = null;
-            Lookup lookup = getTargetLookup(context, service);
+            IMObjectReference lookup = getTargetLookupRef(context, service);
             if (lookup != null) {
                 ArchetypeQuery query = createQuery(service, lookup, code);
                 List<NodeSet> rows
@@ -676,7 +792,7 @@ public class LookupHelper  {
         }
 
         private ArchetypeQuery createQuery(IArchetypeService service,
-                                           Lookup lookup,
+                                           IMObjectReference lookup,
                                            String code) {
             String[] source = getArchetypeShortNames(service, relationship,
                                                      "source");
@@ -684,8 +800,7 @@ public class LookupHelper  {
                     new ArchetypeShortNameConstraint(
                             source, false, false))
                     .add(new CollectionNodeConstraint("source", false)
-                            .add(new ObjectRefNodeConstraint("target",
-                                                             lookup.getObjectReference())))
+                            .add(new ObjectRefNodeConstraint("target", lookup)))
                     .add(new NodeConstraint("code", code))
                     .setActiveOnly(true);
         }
@@ -697,6 +812,17 @@ public class LookupHelper  {
             String[] target = getArchetypeShortNames(service, relationship,
                                                      "target");
             return LookupHelper.getLookup(service, target, tarVal);
+        }
+
+        private IMObjectReference getTargetLookupRef(IMObject context,
+                                       IArchetypeService service) {
+            String tarVal = (String) JXPathContext.newContext(context).getValue(
+                    value);
+            String[] target = getArchetypeShortNames(service, relationship,
+                                                     "target");
+            List<String> names = Collections.emptyList();
+            NodeSet nodes = LookupHelper.getNodes(service, target[0], names, tarVal);
+            return (nodes != null) ? nodes.getObjectReference() :null;
         }
     }
 
@@ -714,7 +840,6 @@ public class LookupHelper  {
                 lookups.add(new Lookup(ArchetypeId.LocalLookupId,
                                        aprop.getName(), aprop.getValue()));
             }
-
         }
 
         public String getType() {
@@ -723,6 +848,11 @@ public class LookupHelper  {
 
         public List<Lookup> getLookups(IMObject context,
                                        IArchetypeService service) {
+            return lookups;
+        }
+
+        public List<Lookup> getSimpleLookups(IMObject context,
+                                             IArchetypeService service) {
             return lookups;
         }
 
@@ -761,6 +891,11 @@ public class LookupHelper  {
                                        adesc.getName(), adesc.getName()));
             }
             return lookups;
+        }
+
+        public List<Lookup> getSimpleLookups(IMObject context,
+                                             IArchetypeService service) {
+            return getLookups(context, service);
         }
 
         public Lookup getLookup(IMObject context, IArchetypeService service,
