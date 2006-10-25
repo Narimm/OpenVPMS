@@ -267,7 +267,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.patientReminder");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
         DefaultActQuery query = new DefaultActQuery(patient, "patient",
                                                     "participation.patient",
                                                     shortNames, lookups, null);

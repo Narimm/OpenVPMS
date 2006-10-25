@@ -177,8 +177,9 @@ public class LookupListModel extends AbstractListModel {
     protected List<Lookup> getLookups() {
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
-            List<Lookup> lookups = LookupHelper.get(service, _descriptor,
-                                                    _object);
+            List<Lookup> lookups = LookupHelper.getSimpleLookups(service,
+                                                                 _descriptor,
+                                                                 _object);
             return getLookups(lookups);
         } catch (OpenVPMSException exception) {
             _log.error(exception, exception);

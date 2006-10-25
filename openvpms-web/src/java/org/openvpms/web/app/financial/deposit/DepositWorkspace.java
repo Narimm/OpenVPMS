@@ -91,7 +91,7 @@ public class DepositWorkspace extends ActWorkspace {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.bankDeposit");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
         ActQuery query = new DefaultActQuery(
                 till, "depositAccount", "participation.deposit", "act",
                 "bankDeposit", lookups, null);

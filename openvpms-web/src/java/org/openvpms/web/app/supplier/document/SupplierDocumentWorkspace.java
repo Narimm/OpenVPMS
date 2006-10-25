@@ -18,8 +18,6 @@
 
 package org.openvpms.web.app.supplier.document;
 
-import java.util.List;
-
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -38,6 +36,8 @@ import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 /**
  * Supplier document workspace.
@@ -84,7 +84,7 @@ public class SupplierDocumentWorkspace extends SupplierActWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.supplierDocumentLetter");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
         return new DefaultActQuery(supplier, "supplier",
                                    "participation.supplier",
                                    SHORT_NAMES, lookups, null);

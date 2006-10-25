@@ -75,7 +75,7 @@ public class InvoiceWorkspace extends SupplierActWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.supplierAccountChargesInvoice");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(
                 ServiceHelper.getArchetypeService(), descriptor);
         return new DefaultActQuery(customer, "supplier",
                                    "participation.supplier",

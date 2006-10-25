@@ -92,7 +92,7 @@ public class TillWorkspace extends ActWorkspace {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.tillBalance");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
         ActQuery query = new DefaultActQuery(
                 till, "till", "participation.till", "act", "tillBalance",
                 lookups, null);
