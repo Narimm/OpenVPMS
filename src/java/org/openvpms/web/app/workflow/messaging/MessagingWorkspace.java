@@ -244,7 +244,7 @@ public class MessagingWorkspace extends AbstractWorkspace {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(shortName);
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(service, statuses);
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
         return new DefaultActQuery(user, "to",
                                    "participation.user",
                                    shortNames, lookups, null);

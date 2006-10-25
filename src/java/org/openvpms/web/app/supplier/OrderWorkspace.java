@@ -69,7 +69,7 @@ public class OrderWorkspace extends SupplierActWorkspace {
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor("act.supplierOrder");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(
                 ArchetypeServiceHelper.getArchetypeService(), descriptor);
         return new DefaultActQuery(customer, "supplier",
                                    "participation.supplier",

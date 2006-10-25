@@ -71,7 +71,7 @@ public class EstimationWorkspace extends CustomerActWorkspace {
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.customerEstimation");
         NodeDescriptor descriptor = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.get(
+        List<Lookup> lookups = LookupHelper.getSimpleLookups(
                 ServiceHelper.getArchetypeService(), descriptor);
         return new DefaultActQuery(customer, "customer",
                                    "participation.customer",
