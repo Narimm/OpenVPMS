@@ -13,6 +13,28 @@
               mimeType="text/xml"
               docType="document.other"/>
 
+    <template name="Receipt Template"
+              archetype="act.customerAccountPayment"
+              path="receipt.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Receipt Items Template"
+              path="receiptItems.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Estimation Template"
+              archetype="act.customerEstimation"
+              path="estimation.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
+    <template name="Estimation Items Template"
+              path="estimationItems.jrxml"
+              mimeType="text/xml"
+              docType="document.other"/>
+
     <!--template name="OpenOffice Sample"
               path="test.odt"
               archetype="party.*"
