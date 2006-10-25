@@ -24,7 +24,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
@@ -126,11 +125,7 @@ public class ArchetypeServiceFunctions {
         if (archetype != null) {
             NodeDescriptor descriptor = archetype.getNodeDescriptor(node);
             if (descriptor != null) {
-                Lookup lookup = LookupHelper.getLookup(service, descriptor,
-                                                       object);
-                if (lookup != null) {
-                    result = lookup.getName();
-                }
+                result = LookupHelper.getName(service, descriptor, object);
             }
         }
         return result;
