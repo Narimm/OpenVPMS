@@ -24,7 +24,6 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -241,8 +240,7 @@ public abstract class AbstractReadOnlyComponentFactory
 
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        Lookup lookup = LookupHelper.getLookup(service, descriptor, context);
-        return (lookup != null) ? lookup.getName() : null;
+        return LookupHelper.getName(service, descriptor, context);
     }
 
 
