@@ -28,7 +28,7 @@
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="country" path="/name" type="java.lang.String"
+        <node displayName="Country" name="name" path="/name" type="java.lang.String"
               minCardinality="1"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
