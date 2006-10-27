@@ -25,10 +25,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.spring.ServiceHelper;
+import org.openvpms.web.component.im.util.FastLookupHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -176,10 +174,8 @@ public class LookupListModel extends AbstractListModel {
      */
     protected List<Lookup> getLookups() {
         try {
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            List<Lookup> lookups = LookupHelper.getSimpleLookups(service,
-                                                                 _descriptor,
-                                                                 _object);
+            List<Lookup> lookups = FastLookupHelper.getLookups(_descriptor,
+                                                               _object);
             return getLookups(lookups);
         } catch (OpenVPMSException exception) {
             _log.error(exception, exception);

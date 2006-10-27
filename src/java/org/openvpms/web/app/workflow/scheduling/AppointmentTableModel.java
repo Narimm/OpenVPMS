@@ -38,6 +38,13 @@ import java.util.Date;
 public class AppointmentTableModel extends AbstractActTableModel {
 
     /**
+     * The nodes to display.
+     */
+    public static final String[] NODE_NAMES
+            = new String[]{"startTime", "endTime", "status", "appointmentType",
+                           "customer", "patient", "reason", "description"};
+
+    /**
      * Creates a new <code>AppointmentTableModel</code>.
      */
     public AppointmentTableModel() {
@@ -78,8 +85,7 @@ public class AppointmentTableModel extends AbstractActTableModel {
      */
     @Override
     protected String[] getDescriptorNames() {
-        return new String[]{"startTime", "endTime", "status", "appointmentType",
-                            "customer", "patient", "reason", "description"};
+        return NODE_NAMES;
     }
 
 }

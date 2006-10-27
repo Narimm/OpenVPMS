@@ -18,8 +18,11 @@
 
 package org.openvpms.web.app.workflow.scheduling;
 
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.app.workflow.WorkflowQuery;
+import org.openvpms.web.component.im.query.ResultSet;
 
 
 /**
@@ -38,6 +41,19 @@ public class AppointmentQuery extends WorkflowQuery {
     public AppointmentQuery(Party schedule) {
         super(schedule, "schedule", "participation.schedule",
               new String[]{"act.customerAppointment"}, new String[0]);
+    }
+
+    /**
+     * Creates a new result set.
+     *
+     * @param sort the sort constraint. May be <code>null</code>
+     * @return a new result set
+     */
+    @Override
+    protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
+        ResultSet<Act> set = super.createResultSet(sort);
+        set.setNodes(AppointmentTableModel.NODE_NAMES);
+        return set;
     }
 
 }

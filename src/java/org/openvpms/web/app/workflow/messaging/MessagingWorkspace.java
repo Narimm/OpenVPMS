@@ -27,10 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWindowListener;
 import org.openvpms.web.app.subsystem.ShortNameList;
@@ -40,6 +37,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
+import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.subsystem.AbstractWorkspace;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -239,12 +237,10 @@ public class MessagingWorkspace extends AbstractWorkspace {
     private ActQuery createQuery(User user) {
         String shortName = "act.userMessage";
         String[] shortNames = {shortName};
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(shortName);
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
         return new DefaultActQuery(user, "to",
                                    "participation.user",
                                    shortNames, lookups, null);

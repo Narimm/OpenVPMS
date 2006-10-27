@@ -47,6 +47,11 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      */
     private int _cursor;
 
+    /**
+     * The nodes to query. If <code>null</code> indicates to query all nodes.
+     */
+    private String[] nodes;
+
 
     /**
      * Construct a new <code>AbstractResultSet</code>.
@@ -113,6 +118,26 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
             throw new IllegalStateException("No current page");
         }
         return _page.getTotalNumOfRows();
+    }
+
+    /**
+     * Sets the nodes to query. If <code>null</code> or empty, indicates
+     * to query all nodes.
+     *
+     * @param nodes the nodes to query. May be <code>null</code>
+     */
+    public void setNodes(String[] nodes) {
+        this.nodes = nodes;
+    }
+
+    /**
+     * Returns the nodes to query.
+     *
+     * @return the nodes to query/ If <code>null</code> indicates to query
+     *         all nodes
+     */
+    public String[] getNodes() {
+        return nodes;
     }
 
     /**
@@ -228,7 +253,7 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Inserts the specified element into the list (optional operation)
+     * Inserts the specified element into the list (optional operation).
      *
      * @param object the element to insert.
      * @throws UnsupportedOperationException if invoked
