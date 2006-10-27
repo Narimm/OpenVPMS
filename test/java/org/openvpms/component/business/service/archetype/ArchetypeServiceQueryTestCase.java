@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import static org.openvpms.component.business.service.archetype.ArchetypeServiceException.ErrorCode.InvalidNodeDescriptor;
 import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeNodeConstraint;
@@ -214,7 +213,7 @@ public class ArchetypeServiceQueryTestCase extends
         // query the firstName, lastName and contacts nodes of the person
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
         List<String> names = Arrays.asList("firstName", "lastName", "contacts");
-        IPage<NodeSet> page = service.get(names, query);
+        IPage<NodeSet> page = service.getNodes(names, query);
         assertNotNull(page);
 
         // verify that the page only has a single element, and that the node
@@ -246,19 +245,4 @@ public class ArchetypeServiceQueryTestCase extends
         assertEquals("Home", purpose.getName());
     }
 
-    /**
-     * Tests the behaviour of the NodeSet get() method when the node doesn't
-     * exist.
-     */
-    public void testGetNodeSetForInvalidNode() {
-        ArchetypeQuery query = new ArchetypeQuery("lookup.country", false,
-                                                  true);
-        List<String> nodes = Arrays.asList("invalidNode");
-        try {
-            service.get(nodes, query);
-            fail("Expected an ArchetypeServiceException to be thrown");
-        } catch (ArchetypeServiceException exception) {
-            assertEquals(InvalidNodeDescriptor, exception.getErrorCode());
-        }
-    }
 }

@@ -190,7 +190,7 @@ public class LookupTestCase extends
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("country"),
-                                    null).size() > 0);
+                                    (IMObject) null).size() > 0);
     }
 
     /**
@@ -202,11 +202,11 @@ public class LookupTestCase extends
         ArchetypeDescriptor descriptor = service.getArchetypeDescriptor(
                 "contact.location");
         Contact contact = (Contact) service.create(descriptor.getType());
-        contact.getDetails().setAttribute("country", "Australia");
+        contact.getDetails().setAttribute("country", "AU");
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("state"),
                                     contact).size() > 0);
-        contact.getDetails().setAttribute("country", "Tasmania");
+        contact.getDetails().setAttribute("country", "TAS");
         assertTrue(LookupHelper.get(service,
                                     descriptor.getNodeDescriptor("state"),
                                     contact).size() == 0);

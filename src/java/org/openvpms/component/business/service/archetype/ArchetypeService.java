@@ -43,6 +43,7 @@ import org.openvpms.component.system.service.hibernate.EntityInterceptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +61,7 @@ import java.util.Set;
  * NOTE: The archetype service is currently supporting both styles of queries
  * but this will change to support a single query api for all queries once it
  * has been validated.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
@@ -75,21 +76,21 @@ public class ArchetypeService implements IArchetypeService {
      * A reference to the archetype descriptor cache
      */
     private IArchetypeDescriptorCache dCache;
-    
+
     /**
      * The DAO instance it will use...optional
      */
     private IMObjectDAO dao;
-    
+
     /**
      * The rule engine to use. If not specified then the service does
      * not support rule engine invocations.
      */
     private IStatelessRuleEngineInvocation ruleEngine;
-    
+
     /**
      * A reference to the query builder. The query build is stuff is not
-     * well abstracted at this stage since there are no requirements to 
+     * well abstracted at this stage since there are no requirements to
      * support anything outside (hibernate).
      */
     private QueryBuilder builder = new QueryBuilder();
@@ -107,7 +108,7 @@ public class ArchetypeService implements IArchetypeService {
      * The resource specified by afile must be loadable from the classpath. A
      * similar constraint applies to the resourcr specified by adir, it must be
      * a valid path in the classpath.
-     * 
+     *
      * @param cache the archetype descriptor cache
      */
     public ArchetypeService(IArchetypeDescriptorCache cache) {
@@ -160,7 +161,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
      */
     public ArchetypeDescriptor getArchetypeDescriptor(String name) {
@@ -169,7 +170,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
@@ -178,7 +179,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecord(java.lang.String)
      */
     public AssertionTypeDescriptor getAssertionTypeDescriptor(String name) {
@@ -187,7 +188,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecords()
      */
     public List<AssertionTypeDescriptor> getAssertionTypeDescriptors() {
@@ -196,15 +197,15 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
     public IMObject create(ArchetypeId id) {
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.create: Creating object of type " 
+            logger.debug("ArchetypeService.create: Creating object of type "
                     + id.getShortName());
         }
-        
+
         ArchetypeDescriptor desc = dCache.getArchetypeDescriptor(id);
         if (desc != null) {
             return create(desc);
@@ -215,12 +216,12 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(java.lang.String)
      */
     public IMObject create(String name) {
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.create: Creating object of type " 
+            logger.debug("ArchetypeService.create: Creating object of type "
                     + name);
         }
 
@@ -234,13 +235,13 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void validateObject(IMObject object) {
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.validateObject: Validating object of type " 
-                    + object.getArchetypeId().getShortName() 
+            logger.debug("ArchetypeService.validateObject: Validating object of type "
+                    + object.getArchetypeId().getShortName()
                     + " with uid " + object.getUid()
                     + " and version " + object.getVersion());
         }
@@ -287,14 +288,14 @@ public class ArchetypeService implements IArchetypeService {
         if (object == null) {
             return;
         }
-        
+
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.deriveValues: Deriving values for type" 
-                    + object.getArchetypeId().getShortName() 
+            logger.debug("ArchetypeService.deriveValues: Deriving values for type"
+                    + object.getArchetypeId().getShortName()
                     + " with uid " + object.getUid()
                     + " and version " + object.getVersion());
         }
-        
+
         // check that we can retrieve a valid archetype for this object
         ArchetypeDescriptor descriptor = getArchetypeDescriptor(object.getArchetypeId());
         if (descriptor == null) {
@@ -319,12 +320,12 @@ public class ArchetypeService implements IArchetypeService {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NonNullObjectRequired);
         }
-        
+
         if (StringUtils.isEmpty(node)) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NonNullNodeNameRequired);
         }
-        
+
         // check that the node name is valid for the specified object
         ArchetypeDescriptor adesc = getArchetypeDescriptor(object.getArchetypeId());
         if (adesc == null) {
@@ -332,7 +333,7 @@ public class ArchetypeService implements IArchetypeService {
                     ArchetypeServiceException.ErrorCode.InvalidArchetypeDescriptor,
                     new Object[] {object.getArchetypeId()});
         }
-        
+
         NodeDescriptor ndesc = adesc.getNodeDescriptor(node);
         if (ndesc == null) {
             throw new ArchetypeServiceException(
@@ -346,7 +347,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords()
      */
     public List<ArchetypeDescriptor> getArchetypeDescriptors() {
@@ -355,7 +356,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptors(java.lang.String)
      */
     public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
@@ -364,7 +365,7 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptorsByRmName(java.lang.String)
      */
     public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName) {
@@ -378,25 +379,61 @@ public class ArchetypeService implements IArchetypeService {
        if (query == null) {
            return null;
        }
-       
+
        if (logger.isDebugEnabled()) {
            logger.debug("ArchetypeService.get: query " + query);
        }
-       
+
        try {
            QueryContext context = builder.build(query);
            if (logger.isDebugEnabled()) {
                logger.debug("ArchetypeService.get: query " + context.getQueryString());
            }
-           
+
            return dao.get(context.getQueryString(), context.getValueMap(),
-                   query.getFirstRow(), query.getNumOfRows());
+                          query.getFirstRow(), query.getNumOfRows());
        } catch (Exception exception) {
            throw new ArchetypeServiceException(
                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
-                   new Object[] { query.toString()}, 
+                   new Object[] { query.toString()},
                    exception);
        }
+    }
+
+    /**
+     * Retrieves the objects that match the specified query criteria.
+     *
+     * @param nodes the node names
+     * @param query the archetype query
+     * @return a list of objects that match the query criteria
+     */
+    public IPage<IMObject> get(Collection<String> nodes, ArchetypeQuery query) {
+        if (nodes == null || query == null) {
+            return null;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("ArchetypeService.get: nodes=" + nodes
+                    + ", query=" + query);
+        }
+        try {
+            QueryContext context = builder.build(query);
+            if (logger.isDebugEnabled()) {
+                logger.debug("ArchetypeService.get: query "
+                        + context.getQueryString());
+            }
+            return dao.get(getArchetypes(context), nodes,
+                           context.getQueryString(),
+                           context.getValueMap(), query.getFirstRow(),
+                           query.getNumOfRows());
+        } catch (ArchetypeServiceException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new ArchetypeServiceException(
+                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
+                    new Object[]{query.toString()},
+                    exception);
+        }
     }
 
     /**
@@ -406,37 +443,25 @@ public class ArchetypeService implements IArchetypeService {
      * @param query the archetype query
      * @return the nodes for each object that matches the query criteria
      */
-    public IPage<NodeSet> get(Collection<String> nodes, ArchetypeQuery query) {
+    public IPage<NodeSet> getNodes(Collection<String> nodes, ArchetypeQuery query) {
         if (nodes == null || query == null) {
             return null;
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.get: nodes=" + nodes + ", query="
-                    + query);
+            logger.debug("ArchetypeService.getNodes: nodes=" + nodes
+                    + ", query=" + query);
         }
         try {
             QueryContext context = builder.build(query);
             if (logger.isDebugEnabled()) {
-                logger.debug("ArchetypeService.get: query " + context.getQueryString());
+                logger.debug("ArchetypeService.getNodes: query "
+                        + context.getQueryString());
             }
-            Set<ArchetypeDescriptor> archetypes = context.getDescriptors();
-            List<NodeDescriptor> descriptors = new ArrayList<NodeDescriptor>();
-            for (ArchetypeDescriptor archetype : archetypes) {
-                for (String node : nodes) {
-                    NodeDescriptor descriptor
-                            = archetype.getNodeDescriptor(node);
-                    if (descriptor == null) {
-                        throw new ArchetypeServiceException(
-                                ArchetypeServiceException.ErrorCode.InvalidNodeDescriptor,
-                                new Object[] {node, archetype.getShortName()});
-                    }
-                    descriptors.add(descriptor);
-                }
-            }
-            return dao.get(descriptors, context.getQueryString(),
-                           context.getValueMap(), query.getFirstRow(),
-                           query.getNumOfRows());
+            return dao.getNodes(getArchetypes(context), nodes,
+                                context.getQueryString(),
+                                context.getValueMap(), query.getFirstRow(),
+                                query.getNumOfRows());
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -451,7 +476,7 @@ public class ArchetypeService implements IArchetypeService {
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getByNamedQuery(java.lang.String, java.util.Map)
      */
     public IPage<IMObject> getByNamedQuery(String name, Map<String, Object> params,
-            int firstRow, int numOfRows) {
+                                           int firstRow, int numOfRows) {
         if (logger.isDebugEnabled()) {
             logger.debug("ArchetypeService.getByNamedQuery: query " + name);
         }
@@ -479,12 +504,12 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#remove(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void remove(IMObject entity) {
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.remove: Removing object of type "  
+            logger.debug("ArchetypeService.remove: Removing object of type "
                     + entity.getArchetypeId().getShortName()
                     + " with uid " + entity.getUid()
                     + " and version " + entity.getVersion());
@@ -515,12 +540,12 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
     public void save(IMObject entity, boolean validate) {
         if (logger.isDebugEnabled()) {
-            logger.debug("ArchetypeService.save: Saving object of type "  
+            logger.debug("ArchetypeService.save: Saving object of type "
                     + entity.getArchetypeId().getShortName()
                     + " with uid " + entity.getUid()
                     + " and version " + entity.getVersion());
@@ -536,7 +561,7 @@ public class ArchetypeService implements IArchetypeService {
             validateObject(entity);
         try {
             dao.save(entity);
-             
+
             // a quick fix to the archetype descriptor update problem
             // couldn't get the hibernate interceptors working
             // TODO Review the interceptors
@@ -570,7 +595,7 @@ public class ArchetypeService implements IArchetypeService {
                 validateObject((IMObject)entity);
             }
         }
-        
+
         // now issue a call to save the entities
         try {
             dao.save(entities);
@@ -583,16 +608,16 @@ public class ArchetypeService implements IArchetypeService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String,
      *      java.lang.String, java.lang.String, boolean)
      */
     public List<String> getArchetypeShortNames(String rmName,
-            String entityName, String conceptName, boolean primaryOnly) {
-        return dCache.getArchetypeShortNames(rmName, entityName, conceptName, 
-                primaryOnly);
+                                               String entityName, String conceptName, boolean primaryOnly) {
+        return dCache.getArchetypeShortNames(rmName, entityName, conceptName,
+                                             primaryOnly);
     }
-    
+
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String, boolean)
      */
@@ -629,7 +654,7 @@ public class ArchetypeService implements IArchetypeService {
      * Iterate through all the nodes and ensure that the object meets all the
      * specified assertions. The assertions are defined in the node and can be
      * hierarchical, which means that this method is re-entrant.
-     * 
+     *
      * @param context
      *            holds the object to be validated
      * @param nodes
@@ -638,7 +663,7 @@ public class ArchetypeService implements IArchetypeService {
      *            the errors are collected in this object
      */
     private void validateObject(JXPathContext context, Map nodes,
-            List<ValidationError> errors) {
+                                List<ValidationError> errors) {
         for (Object o : nodes.values()) {
             NodeDescriptor node = (NodeDescriptor) o;
             Object value = null;
@@ -659,7 +684,7 @@ public class ArchetypeService implements IArchetypeService {
                 } catch (Exception exception) {
                     value = null;
                     errors.add(new ValidationError(node.getName(),
-                            "Cannot derive value"));
+                                                   "Cannot derive value"));
                     logger.error("Failed to derive value for " +
                             node.getName(),exception);
                 }
@@ -672,7 +697,7 @@ public class ArchetypeService implements IArchetypeService {
                 ((value == null) ||
                  ((value instanceof String) && (StringUtils.isEmpty((String)value))))) {
                 errors.add(new ValidationError(node.getName(),
-                        "value is required"));
+                                               "value is required"));
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation failed for Node: "
@@ -687,8 +712,8 @@ public class ArchetypeService implements IArchetypeService {
                 if ((minCardinality > 0) &&
                     (collection == null || collection.size() < minCardinality)) {
                     errors.add(new ValidationError(node.getName(),
-                            " must supply at least " + minCardinality + " "
-                                    + node.getBaseName()));
+                                                   " must supply at least " + minCardinality + " "
+                                                           + node.getBaseName()));
 
                 }
 
@@ -697,8 +722,8 @@ public class ArchetypeService implements IArchetypeService {
                     (maxCardinality != NodeDescriptor.UNBOUNDED) &&
                     (collection != null && collection.size() > maxCardinality)) {
                     errors.add(new ValidationError(node.getName(),
-                            " cannot supply more than " + maxCardinality + " "
-                                    + node.getBaseName()));
+                                                   " cannot supply more than " + maxCardinality + " "
+                                                           + node.getBaseName()));
                 }
 
                 // if it's a parent-child relationship then validate the
@@ -763,7 +788,7 @@ public class ArchetypeService implements IArchetypeService {
                     try {
                         if (!assertionType.validate(value, node, assertion)) {
                             errors.add(new ValidationError(node.getName(),
-                                    assertion.getErrorMessage()));
+                                                           assertion.getErrorMessage()));
                             if (logger.isDebugEnabled()) {
                                 logger.debug("Assertion failed for Node: "
                                         + node.getName() + " and Assertion "
@@ -775,7 +800,7 @@ public class ArchetypeService implements IArchetypeService {
                         logger.error("Error in validateObject for node "
                                 + node.getName(), exception);
                         errors.add(new ValidationError(node.getName(),
-                                assertion.getErrorMessage()));
+                                                       assertion.getErrorMessage()));
                     }
                 }
             }
@@ -791,12 +816,12 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * Iterate through the {@link NodeDescriptor}s and set all derived values.
      * Do it recursively.
-     * 
+     *
      * @param context
      *          the context object
      * @param nodes
      *          a list of node descriptors
-     * @throws ArchetypeServiceException          
+     * @throws ArchetypeServiceException
      */
     private void deriveValues(JXPathContext context, Map<String, NodeDescriptor> nodes) {
         for (NodeDescriptor  node : nodes.values()) {
@@ -824,7 +849,7 @@ public class ArchetypeService implements IArchetypeService {
      * descriptor. Fundamentally, it will set the default value when specified
      * and it will also create an object through a default constructur if a
      * cardinality constraint is specified.
-     * 
+     *
      * @param descriptor
      *            the archetype descriptor
      * @return IMObject
@@ -841,7 +866,7 @@ public class ArchetypeService implements IArchetypeService {
                         ArchetypeServiceException.ErrorCode.InvalidDomainClass,
                         new Object[] {descriptor.getClassName()});
             }
-            
+
             imobj = (IMObject)domainClass.newInstance();
             imobj.setArchetypeId(descriptor.getType());
 
@@ -864,7 +889,7 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * Iterate through all the nodes in the archetype definition and create the
      * default object.
-     * 
+     *
      * @param context
      *            the JXPath
      * @param nodes
@@ -956,19 +981,37 @@ public class ArchetypeService implements IArchetypeService {
 
     /**
      * Convert value to the specified type
-     * 
-     * @param value 
+     *
+     * @param value
      *            the value to convert
      * @param clazz
      *            the class that the value should be converted too
      * @return Object
-     *            the converted value      
+     *            the converted value
      * @throws Exception
-     *            let the client handle the exception                              
+     *            let the client handle the exception
      */
     @SuppressWarnings("unchecked")
-    private Object convertValue(Object value, Class clazz) 
+    private Object convertValue(Object value, Class clazz)
     throws Exception {
         return ConvertUtils.convert(ConvertUtils.convert(value), clazz);
+    }
+
+    /**
+     * Helper to get the archetype descriptors from an {@link QueryContext},
+     * and return them in a map keyed on short name.
+     *
+     * @param context the query context
+     * @return the archetype descriptors, keyed on short name
+     */
+    private Map<String, ArchetypeDescriptor> getArchetypes(
+            QueryContext context) {
+        Set<ArchetypeDescriptor> archetypes = context.getDescriptors();
+        Map<String, ArchetypeDescriptor> result
+                = new HashMap<String, ArchetypeDescriptor>();
+        for (ArchetypeDescriptor archetype : archetypes) {
+            result.put(archetype.getType().getShortName(), archetype);
+        }
+        return result;
     }
 }
