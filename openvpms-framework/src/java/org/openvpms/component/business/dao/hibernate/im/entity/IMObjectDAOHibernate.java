@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 
 /**
  * This is an implementation of the IMObject DAO for hibernate. It uses the
@@ -116,6 +118,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     new Object[] { object.getUid() }, exception);
 
         } finally {
+            clearCache();
             session.close();
         }
         /**
@@ -150,6 +153,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     new Object[] { objects.size() }, exception);
 
         } finally {
+            clearCache();
             session.close();
         }
     }
@@ -175,6 +179,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                     new Object[] { object.getUid() });
 
         } finally {
+            clearCache();
             session.close();
         }
     }
@@ -256,9 +261,9 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *                              cannot complete.
      */
     public IPage<NodeSet> getNodes(Map<String, ArchetypeDescriptor> archetypes,
-                            Collection<String> nodes, String queryString,
-                            Map<String, Object> valueMap, int firstRow,
-                            int numOfRows){
+                                   Collection<String> nodes, String queryString,
+                                   Map<String, Object> valueMap, int firstRow,
+                                   int numOfRows){
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("nodes=" + nodes + ", query=" + queryString
@@ -572,6 +577,8 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                 logger.debug("The maximum number of rows is " + numOfRows);
             }
 
+            query.setCacheable(true);
+
             List<IMObject> rows = query.list();
             collector.setFirstRow(firstRow);
             collector.setNumOfRows(numOfRows);
@@ -656,6 +663,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
             return page;
         } finally {
             session.close();
+        }
+    }
+
+    /**
+     * Clears the second level cache, to ensure that changes to the database
+     * are reflected in retrieved objects.
+     */
+    @SuppressWarnings("unchecked")
+    private void clearCache() {
+        try {
+            SessionFactory factory = getSessionFactory();
+            factory.evictQueries();
+            Map metaData = factory.getAllClassMetadata();
+            Set<String> entityNames = (Set<String>) metaData.keySet();
+            for (String entityName : entityNames) {
+                factory.evictEntity(entityName);
+            }
+        } catch (Throwable exception) {
+            logger.warn(exception, exception);
         }
     }
 
