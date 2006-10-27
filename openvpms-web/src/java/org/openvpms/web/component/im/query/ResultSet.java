@@ -107,4 +107,11 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
      *         otherwise <code>false</code>
      */
     boolean isDistinct();
+
+    /**
+     * Sets the nodes to query.
+     *
+     * @param nodes the nodes to query
+     */
+    void setNodes(String[] nodes);
 }

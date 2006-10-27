@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.AndConstraint;
@@ -34,8 +35,8 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.spring.ServiceHelper;
 
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -204,8 +205,15 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
                 query.add(sort);
             }
 
-            IArchetypeService service = ServiceHelper.getArchetypeService();
-            IPage<IMObject> page = service.get(query);
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
+            String[] nodes = getNodes();
+            IPage<IMObject> page;
+            if (nodes == null || nodes.length == 0) {
+                page = service.get(query);
+            } else {
+                page = service.get(Arrays.asList(nodes), query);
+            }
             result = convert(page);
         } catch (OpenVPMSException exception) {
             _log.error(exception, exception);

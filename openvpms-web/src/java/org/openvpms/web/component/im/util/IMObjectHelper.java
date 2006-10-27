@@ -118,8 +118,8 @@ public class IMObjectHelper {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
                 ArchetypeQuery query = new ArchetypeQuery(reference);
-                IPage<NodeSet> page = service.get(Arrays.asList(nodes),
-                                                  query);
+                IPage<NodeSet> page = service.getNodes(Arrays.asList(nodes),
+                                                       query);
                 if (page.getRows().size() == 1) {
                     result = page.getRows().get(0);
                 }

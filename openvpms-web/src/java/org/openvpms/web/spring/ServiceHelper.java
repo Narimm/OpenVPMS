@@ -18,9 +18,9 @@
 
 package org.openvpms.web.spring;
 
-import org.openvpms.component.business.service.archetype.IArchetypeService;
-
 import nextapp.echo2.app.ApplicationInstance;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.springframework.context.ApplicationContext;
 
 
@@ -38,7 +38,7 @@ public final class ServiceHelper {
      * @return the archetype service
      */
     public static IArchetypeService getArchetypeService() {
-        return (IArchetypeService) getContext().getBean("archetypeService");
+        return ArchetypeServiceHelper.getArchetypeService();
     }
 
     /**

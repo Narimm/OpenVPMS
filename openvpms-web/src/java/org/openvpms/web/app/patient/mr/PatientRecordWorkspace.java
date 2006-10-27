@@ -27,10 +27,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -44,6 +41,7 @@ import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
 
 import java.util.List;
@@ -261,13 +259,11 @@ public class PatientRecordWorkspace extends ActWorkspace {
     private Query<Act> createReminderAlertQuery() {
         String[] shortNames = {"act.patientReminder", "act.patientAlert"};
         Party patient = (Party) getObject();
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeDescriptor archetype
                 = DescriptorHelper.getArchetypeDescriptor(
                 "act.patientReminder");
         NodeDescriptor statuses = archetype.getNodeDescriptor("status");
-        List<Lookup> lookups = LookupHelper.getSimpleLookups(service, statuses);
+        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
         DefaultActQuery query = new DefaultActQuery(patient, "patient",
                                                     "participation.patient",
                                                     shortNames, lookups, null);
