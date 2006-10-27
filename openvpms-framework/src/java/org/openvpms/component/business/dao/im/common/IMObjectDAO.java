@@ -18,15 +18,13 @@
 
 package org.openvpms.component.business.dao.im.common;
 
-// java
 import org.openvpms.component.business.dao.im.Page;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.query.NodeSet;
 import org.openvpms.component.system.common.query.IPage;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,6 +62,7 @@ public interface IMObjectDAO {
      *            a runtime exception if the request cannot complete            
      */
     public void save(Collection objects);
+
     /**
      * Delete the specified {@link IMObject}
      * 
@@ -98,8 +97,12 @@ public interface IMObjectDAO {
      * Execute a get using the specified query string and a map of the values.
      * The first row and the number of rows is used to control the paging of the
      * result set.
+     * The nodes argument may be used to specified which collections to load.
+     * If empty, no collections will be loaded.
      *
-     * @param nodes       the nodes to return
+     * @param archetypes  the archetype descriptors of the objects being
+     *                    queried, keyed on short name
+     * @param nodes       the nodes to load
      * @param queryString the query string
      * @param valueMap    the values applied to the query
      * @param firstRow    the first row to retrieve
@@ -108,9 +111,30 @@ public interface IMObjectDAO {
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
      */
-    IPage<NodeSet> get(List<NodeDescriptor> nodes, String queryString,
-                       Map<String, Object> valueMap, int firstRow,
-                       int numOfRows);
+    IPage<IMObject> get(Map<String, ArchetypeDescriptor> archetypes,
+                        Collection<String> nodes, String queryString,
+                        Map<String, Object> valueMap, int firstRow,
+                        int numOfRows);
+
+    /**
+     * Execute a get using the specified query string and a map of the values.
+     * The first row and the number of rows is used to control the paging of the
+     * result set.
+     *
+     * @param archetypes  the archetype descriptors of the objects being
+     *                    queried, keyed on short name
+     * @param queryString the query string
+     * @param valueMap    the values applied to the query
+     * @param firstRow    the first row to retrieve
+     * @param numOfRows   the maximum number of rows to return
+     * @return the nodes for each object that matches the query criteria
+     * @throws IMObjectDAOException a runtime exception, raised if the request
+     *                              cannot complete.
+     */
+    IPage<NodeSet> getNodes(Map<String, ArchetypeDescriptor> archetypes,
+                            Collection<String> nodes, String queryString,
+                            Map<String, Object> valueMap, int firstRow,
+                            int numOfRows);
 
     /**
      * Retrieve the objects that matches the specified search criteria.

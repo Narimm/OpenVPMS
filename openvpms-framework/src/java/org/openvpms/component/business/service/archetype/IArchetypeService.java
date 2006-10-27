@@ -39,147 +39,147 @@ import java.util.Map;
  * idenity.
  * <p>
  * This class depends on the acode implementation of the Java kernel.
- * 
+ *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
 public interface IArchetypeService {
     /**
-     * Retrieve the {@link ArchetypeDescriptor} with the specified short name. 
-     * 
+     * Retrieve the {@link ArchetypeDescriptor} with the specified short name.
+     *
      * @param name
      *            the short name
      * @return ArchetypeDescriptor
      * @throws ArchetypeServiceException
-     *            if there is a problem creating the object.                        
+     *            if there is a problem creating the object.
      */
     public ArchetypeDescriptor getArchetypeDescriptor(String name);
-    
+
     /**
-     * Retrieve the {@link ArchetypeDescriptor} for the specified 
+     * Retrieve the {@link ArchetypeDescriptor} for the specified
      * {@link ArchetypeId}.
-     * 
+     *
      * @param id
      *            the archetype id
-     * @return ArchetypeDescriptor           
+     * @return ArchetypeDescriptor
      * @throws ArchetypeServiceException
-     *            if there is a problem creating the object.                        
+     *            if there is a problem creating the object.
      */
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id);
-    
+
     /**
      * Create a default domain object given a short name. The short name is
      * a reference to an {@link ArchetypeDescriptor}. If the short name is not
      * known then return a null object.
-     * 
+     *
      * @param name
      *            the short name
      * @return IMObject
      * @throws ArchetypeServiceException
-     *            if there is a problem creating the object.                        
+     *            if there is a problem creating the object.
      */
     public IMObject create(String name);
-    
+
     /**
-     * Create a default domain object given an {@link ArchetypeId}. If the 
+     * Create a default domain object given an {@link ArchetypeId}. If the
      * archetype id is not defined then return null.
-     * 
+     *
      * @param id
      *            the archetype id
      * @return IMObject
      * @throws ArchetypeServiceException
-     *            if there is a problem creating the object.            
+     *            if there is a problem creating the object.
      */
     public IMObject create(ArchetypeId id);
-    
+
     /**
      * Validate the specified {@link IMObject}. To validate the object it will
      * retrieve the archetype and iterate through the assertions
-     * 
+     *
      * @param object
      *            the object to validate
      * @throws ValidationException
-     *            if there are validation errors                        
+     *            if there are validation errors
      */
     public void validateObject(IMObject object);
-    
+
     /**
      * Go and generate the derived values for the specified {@link IMObject},
      * based on the corresponding {@link ArchetypeDescriptor}
-     * 
+     *
      * @param object
      *            generate the derived values for this object
      * @throws ArchetypeServiceException
-     *            if it cannot derive the values                        
+     *            if it cannot derive the values
      */
     public void deriveValues(IMObject object);
 
     /**
-     * Derive the value for the {@link NodeDescriptor} with the specified 
+     * Derive the value for the {@link NodeDescriptor} with the specified
      * name
-     * 
+     *
      * @param object
      *            the object to operate on.
      * @param node
      *            the name of the {@link NodeDescriptor}, which will be used
-     *            to derive the value            
+     *            to derive the value
      * @throws FailedToDeriveValueException
-     *            if it cannot derive the value            
+     *            if it cannot derive the value
      */
     public void deriveValue(IMObject object, String node);
     /**
      * Return all the {@link ArchetypeDescriptor} managed by this service
-     * 
+     *
      * @return List<ArchetypeDescriptor>
      * @throws ArchetypeServiceException
      *            runtime error, which is thrown if the request cannot be completed
      */
-    public List<ArchetypeDescriptor> getArchetypeDescriptors(); 
+    public List<ArchetypeDescriptor> getArchetypeDescriptors();
 
     /**
      * Return all the {@link ArchetypeDescriptor} instances that match the
      * specified shortName. The short name can be a regular expression.
-     * 
+     *
      * @param shortName
      *            the short name, which can be a regular expression
      * @return ArchetypeDescriptor[]
-     * @throws ArchetypeServiceException            
+     * @throws ArchetypeServiceException
      */
     public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName);
-    
+
     /**
-     * Return all the {@link ArchetypeDescriptor} instance with the specified 
-     * reference model name. 
-     * 
+     * Return all the {@link ArchetypeDescriptor} instance with the specified
+     * reference model name.
+     *
      * @param rmName
      *            the reference model name
      * @return List<ArchetypeDescriptor>
-     * @throws ArchetypeServiceException            
+     * @throws ArchetypeServiceException
      */
     public List<ArchetypeDescriptor> getArchetypeDescriptorsByRmName(String rmName);
-    
+
     /**
      * Return the {@link AssertionTypeDescriptor} with the specified name.
-     * 
+     *
      * @param name
      *            the name of the assertion type
      * @return AssertionTypeDescriptor
-     * @throws ArchetypeServiceException            
+     * @throws ArchetypeServiceException
      */
     public AssertionTypeDescriptor getAssertionTypeDescriptor(String name);
-    
+
     /**
      * Return all the {@link AssertionTypeDescriptor} instances supported by this
      * service
-     * 
+     *
      * @return List<AssertionTypeDescriptor>
      */
     public List<AssertionTypeDescriptor> getAssertionTypeDescriptors();
-    
+
     /**
      * Remove the specified entity. If the entity cannot be removed for whatever
      * reason then raise a {@link ArchetypeServiceException}.
-     * 
+     *
      * @param entity
      *            the entity to remove
      * @throws ArchetypeServiceException
@@ -190,19 +190,19 @@ public interface IArchetypeService {
 
     /**
      * Save or upadate the specified entity
-     * 
+     *
      * @param entity
      *            the entity to insert or update
      * @throws ArchetypeServiceException
      *            if the service cannot save the specified entity
      * @throws ValidationException
-     *            if the specified entity cannot be validated                        
+     *            if the specified entity cannot be validated
      */
     public void save(IMObject entity);
-    
+
     /**
      * Save or upadate the specified entity
-     * 
+     *
      * @param entity
      *            the entity to insert or update
      * @param validate
@@ -210,14 +210,14 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            if the service cannot save the specified entity
      * @throws ValidationException
-     *            if the specified entity cannot be validated                        
+     *            if the specified entity cannot be validated
      */
-    
+
     public void save(IMObject entity, boolean validate);
-    
+
     /**
      * Save a collection of {@link IMObject} instances
-     * 
+     *
      * @param entities
      *            the entities to insert or update
      * @param validate
@@ -225,22 +225,32 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException
      *            if the service cannot save any of the entities
      * @throws ValidationException
-     *            if any of the specified entities cannot be validated                        
+     *            if any of the specified entities cannot be validated
      */
     public void save(Collection entities, boolean validate);
-    
+
     /**
      * Retrieve the objects specified by the following {@link ArchetypeQuery}
      * request.
-     * 
+     *
      * @param query
      *        the archetype query
      * @return IPage<IMObject>
      *            the list of objects meeting request constraints
      * @throws ArchetypeServiceException
-     *            a runtime exception                         
+     *            a runtime exception
      */
     public IPage<IMObject> get(ArchetypeQuery query);
+
+    /**
+     * Retrieves the objects that match the specified query criteria.
+     *
+     * @param nodes the node names
+     * @param query the archetype query
+     * @return a list of objects that match the query criteria
+     */
+    IPage<IMObject> get(Collection<String> nodes, ArchetypeQuery query);
+
 
     /**
      * Retrieves the nodes from the objects that match the query criteria.
@@ -249,14 +259,14 @@ public interface IArchetypeService {
      * @param query the archetype query
      * @return the nodes for each object that matches the query criteria
      */
-    IPage<NodeSet> get(Collection<String> nodes, ArchetypeQuery query);
+    IPage<NodeSet> getNodes(Collection<String> nodes, ArchetypeQuery query);
 
     /**
      * Retrun a list of {@link IMObject} instances that satisfy the specified
-     * named query. The query name must map to a valid query in the target 
-     * database. That params are key-value pairs that are required for the 
+     * named query. The query name must map to a valid query in the target
+     * database. That params are key-value pairs that are required for the
      * query to execute correctly
-     * 
+     *
      * @param name
      *            the query name
      * @param params
@@ -264,18 +274,18 @@ public interface IArchetypeService {
      * @param firstRow
      *            the firstRow to retrieve
      * @param numOfRows
-     *            the maximum number of rows to retrieve             
+     *            the maximum number of rows to retrieve
      * @return IPage<IMObject>
      * @throws ArchetypeServiceException
-     *            a runtime exception                         
+     *            a runtime exception
      */
     public IPage<IMObject> getByNamedQuery(String name, Map<String, Object>params,
             int firstRow, int numOfRows);
-    
+
     /**
-     * Return a list of archtype short names (i.e strings) given the 
+     * Return a list of archtype short names (i.e strings) given the
      * nominated criteria
-     * 
+     *
      * @param rmName
      *            the reference model name
      * @param entityName
@@ -283,42 +293,42 @@ public interface IArchetypeService {
      * @param conceptName
      *            the concept name
      * @param primaryOnly
-     *            indicates whether to return primary objects only.  
+     *            indicates whether to return primary objects only.
      * @return List<String>
-     *            a list of short names                                                               
+     *            a list of short names
      * @throws ArchetypeServiceException
-     *            a runtime exception                         
+     *            a runtime exception
      */
     public List<String> getArchetypeShortNames(String rmName, String entityName,
             String conceptName, boolean primaryOnly);
-    
+
     /**
      * Return all the archetype short names
-     * 
+     *
      * @return List<String>
-     *            a list of short names                                                               
+     *            a list of short names
      * @throws ArchetypeServiceException
-     *            a runtime exception if it cannot complete the call                        
+     *            a runtime exception if it cannot complete the call
      */
     public List<String> getArchetypeShortNames();
-    
+
     /**
      * Return all the archetypes which match the specified short name
-     * 
+     *
      * @param shortName
      *            the short name, which may contain a wildcard character
      * @param primaryOnly
      *            return only the primary archetypes
-     * @return List<String>                              
+     * @return List<String>
      * @throws ArchetypeServiceException
-     *            a runtime exception if it cannot complete the call                        
+     *            a runtime exception if it cannot complete the call
      */
     public List<String> getArchetypeShortNames(String shortName, boolean primaryOnly);
-    
+
     /**
-     * Execute the rule specified by the uri and using the passed in 
-     * properties and facts. 
-     * 
+     * Execute the rule specified by the uri and using the passed in
+     * properties and facts.
+     *
      * @param ruleUri
      *            the rule uri
      * @param props
@@ -328,7 +338,7 @@ public interface IArchetypeService {
      * @return List<Object>
      *            a list objects, which maybe an empty list.
      * @throws ArchetypeServiceException
-     *            if it cannot execute the specified rule                                                
+     *            if it cannot execute the specified rule
      */
     public List<Object> executeRule(String ruleUri, Map<String, Object> props,
             List<Object> facts);

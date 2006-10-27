@@ -27,6 +27,7 @@ import org.hibernate.Transaction;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
+import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.query.NodeSet;
@@ -204,8 +205,10 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * Execute a get using the specified query string and a map of the values.
      * The first row and the number of rows is used to control the paging of the
      * result set.
+     * If empty, no collections will be loaded.
      *
-     * @param nodes       the names of the nodes to return
+     * @param archetypes
+     * @param nodes
      * @param queryString the query string
      * @param valueMap    the values applied to the query
      * @param firstRow    the first row to retrieve
@@ -214,16 +217,55 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
      */
-    public IPage<NodeSet> get(List<NodeDescriptor> nodes, String queryString,
-                              Map<String, Object> valueMap, int firstRow,
-                              int numOfRows) {
+    public IPage<IMObject> get(Map<String,ArchetypeDescriptor> archetypes,
+                               Collection<String> nodes,
+                               String queryString,
+                               Map<String, Object> valueMap, int firstRow,
+                               int numOfRows) {
+        try {
+            if (logger.isDebugEnabled()) {
+                logger.debug("nodes=" + archetypes + ", query=" + queryString
+                        + ", parameters=" + valueMap);
+            }
+
+            IMObjectNodeCollector collector
+                    = new IMObjectNodeCollector(archetypes, nodes);
+            executeQuery(queryString, new Params(valueMap), firstRow,
+                         numOfRows, collector);
+            return collector.getPage();
+        } catch (Exception exception) {
+            throw new IMObjectDAOException(
+                    IMObjectDAOException.ErrorCode.FailedToExecuteQuery,
+                    new Object[]{queryString}, exception);
+        }
+    }
+
+    /**
+     * Execute a get using the specified query string and a map of the values.
+     * The first row and the number of rows is used to control the paging of the
+     * result set.
+     *
+     * @param archetypes  the archetype descriptors of the objects being
+     *                    queried, keyed on short name
+     * @param queryString the query string
+     * @param valueMap    the values applied to the query
+     * @param firstRow    the first row to retrieve
+     * @param numOfRows   the maximum number of rows to return
+     * @return the nodes for each object that matches the query criteria
+     * @throws IMObjectDAOException a runtime exception, raised if the request
+     *                              cannot complete.
+     */
+    public IPage<NodeSet> getNodes(Map<String, ArchetypeDescriptor> archetypes,
+                            Collection<String> nodes, String queryString,
+                            Map<String, Object> valueMap, int firstRow,
+                            int numOfRows){
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("nodes=" + nodes + ", query=" + queryString
                         + ", parameters=" + valueMap);
             }
 
-            NodeCollector collector = new NodeCollector(nodes);
+            NodeCollector collector = new NodeCollector(archetypes, nodes);
             executeQuery(queryString, new Params(valueMap), firstRow,
                          numOfRows, collector);
             return collector.getPage();
@@ -669,35 +711,84 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
         }
     }
 
-    private class NodeCollector extends AbstractCollector<NodeSet> {
+    private abstract class AbstractNodeCollector<T>
+            extends AbstractCollector<T> {
 
-        private List<NodeDescriptor> descriptors
-                = new ArrayList<NodeDescriptor>();
+        private final Map<String, ArchetypeDescriptor> archetypes;
+        private final Collection<String> names;
+
+        public AbstractNodeCollector(Map<String, ArchetypeDescriptor> archetypes,
+                                     Collection<String> nodes) {
+            this.archetypes = archetypes;
+            this.names = nodes;
+        }
+
+        protected List<NodeDescriptor> getDescriptors(IMObject object) {
+            String shortName = object.getArchetypeId().getShortName();
+            ArchetypeDescriptor archetype = archetypes.get(shortName);
+            List<NodeDescriptor> nodes = new ArrayList<NodeDescriptor>();
+            for (String name : names) {
+                nodes.add(archetype.getNodeDescriptor(name));
+            }
+            return nodes;
+        }
+
+        protected Object loadValue(NodeDescriptor descriptor, IMObject object) {
+            Object value = descriptor.getValue(object);
+            if (value instanceof Collection) {
+                for (Object elt : (Collection) value) {
+                    if (elt instanceof IMObject) {
+                        loader.load((IMObject) elt);
+                    }
+                }
+            }
+            return value;
+        }
+
+    }
+
+    private class NodeCollector extends AbstractNodeCollector<NodeSet> {
 
         private List<NodeSet> result = new ArrayList<NodeSet>();
 
-        public NodeCollector(List<NodeDescriptor> nodes) {
-            this.descriptors = nodes;
+        public NodeCollector(Map<String, ArchetypeDescriptor> archetypes,
+                             Collection<String> nodes) {
+            super(archetypes, nodes);
         }
 
         public void collect(IMObject object) {
-            NodeSet nodes
-                    = new NodeSet(object.getObjectReference());
-            for (NodeDescriptor descriptor : descriptors) {
-                Object value = descriptor.getValue(object);
-                if (value instanceof Collection) {
-                    for (Object elt : (Collection) value) {
-                        if (elt instanceof IMObject) {
-                            loader.load((IMObject) elt);
-                        }
-                    }
-                }
+            NodeSet nodes = new NodeSet(object.getObjectReference());
+            for (NodeDescriptor descriptor : getDescriptors(object)) {
+                Object value = loadValue(descriptor, object);
                 nodes.set(descriptor.getName(), value);
             }
             result.add(nodes);
         }
 
         protected List<NodeSet> getRows() {
+            return result;
+        }
+    }
+
+    private class IMObjectNodeCollector
+            extends AbstractNodeCollector<IMObject> {
+
+        private List<IMObject> result = new ArrayList<IMObject>();
+
+        public IMObjectNodeCollector(
+                Map<String, ArchetypeDescriptor> archetypes,
+                Collection<String> nodes) {
+            super(archetypes, nodes);
+        }
+
+        public void collect(IMObject object) {
+            for (NodeDescriptor descriptor : getDescriptors(object)) {
+                loadValue(descriptor, object);
+            }
+            result.add(object);
+        }
+
+        protected List<IMObject> getRows() {
             return result;
         }
     }
