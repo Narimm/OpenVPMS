@@ -248,7 +248,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     @SuppressWarnings("unchecked")
     protected List<Lookup> getLookups(Collection<String> nodes,
                                       ArchetypeQuery query) {
-        List result = service.get(nodes, query).getRows();
+        List result = service.get(query, nodes).getRows();
         return (List<Lookup>) result;
     }
 
@@ -277,7 +277,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
                 .add(new NodeConstraint("code", code))
                 .setFirstRow(0)
                 .setNumOfRows(1);
-        IPage<NodeSet> page = service.getNodes(nodes, query);
+        IPage<NodeSet> page = service.getNodes(query, nodes);
         if (!page.getRows().isEmpty()) {
             result = page.getRows().get(0);
         }

@@ -35,7 +35,6 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -168,9 +167,9 @@ class TargetLookup extends AbstractLookupAssertion {
         IMObjectReference lookup = getSourceLookupRef(context);
         if (lookup != null) {
             ArchetypeQuery query = createQuery(lookup, code);
-            List<String> nodes = Arrays.asList("name");
+            List<String> nodes = Collections.emptyList();
             IArchetypeService service = getArchetypeService();
-            List<NodeSet> rows = service.getNodes(nodes, query).getRows();
+            List<NodeSet> rows = service.getNodes(query, nodes).getRows();
             if (!rows.isEmpty()) {
                 result = (String) rows.get(0).get("name");
             }

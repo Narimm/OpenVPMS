@@ -208,9 +208,13 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
     /**
      * Execute a get using the specified query string and a map of the values.
-     * The first row and the number of rows is used to control the paging of the
-     * result set.
-     * If empty, no collections will be loaded.
+     * This retrieves partially populated objects and may be used to selectively
+     * load parts of object graphs to improve performance.
+     * <p/>
+     * All simple properties of the returned objects are populated - the
+     * <code>nodes</code> argument is used to specify which collection nodes to
+     * populate. If empty, no collections will be loaded, and the behaviour of
+     * accessing them is undefined.
      *
      * @param archetypes
      * @param nodes
