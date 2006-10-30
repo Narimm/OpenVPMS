@@ -22,14 +22,14 @@
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
         <node name="code" path="/code" type="java.lang.String"
-              minCardinality="1">
+              hidden="true" minCardinality="1">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z0-9_]*"/>
                 <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
         <node name="name" type="java.lang.String" path="/name"
-              hidden="true" minCardinality="1"/>
+              minCardinality="1"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
               derivedValue="concat(/name,' ',lookup:isDefault(/defaultLookup))"/>

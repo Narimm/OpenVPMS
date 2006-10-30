@@ -21,7 +21,7 @@
                displayName="Message Reason">
         <node name="uid" path="/uid" displayName="id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
-        <node name="code" path="/code" type="java.lang.String"
+        <node name="code" path="/code" type="java.lang.String" hidden="true"
               minCardinality="1">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z0-9_]*"/>
