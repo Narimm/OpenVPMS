@@ -53,8 +53,8 @@
                   type="string"/>
         <property name="defaultLookup" access="property" column="default_lookup"
                   type="boolean"/>
-        <!-- property name="details" access="property" column="details" length="5000"
-       type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" /-->
+        <property name="details" access="property" column="details" length="5000"
+                  type="org.openvpms.component.business.dao.hibernate.usertype.DynamicAttributeMapUserType" />
         <set name="sourceLookupRelationships" access="property" lazy="true"
              cascade="all,delete-orphan" inverse="true">
             <key column="source_linkId" not-null="true" property-ref="linkId"/>
