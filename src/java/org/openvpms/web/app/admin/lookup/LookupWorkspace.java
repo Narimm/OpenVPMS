@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.admin;
+package org.openvpms.web.app.admin.lookup;
 
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 

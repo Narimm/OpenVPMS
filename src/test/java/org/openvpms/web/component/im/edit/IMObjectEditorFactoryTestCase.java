@@ -21,6 +21,7 @@ package org.openvpms.web.component.im.edit;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.app.admin.lookup.LookupEditor;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.app.patient.PatientEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
@@ -300,6 +301,13 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     public void testCreatePatientEditor() {
         checkCreate("party.patientpet", PatientEditor.class);
+    }
+
+    /**
+     * Verifies that a {@link LookupEditor} is created for <em>lookup.*</em>
+     */
+    public void testCreateLookupEditor() {
+        checkCreate("lookup.alertType", LookupEditor.class);
     }
 
     /**
