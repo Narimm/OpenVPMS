@@ -22,13 +22,14 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -61,6 +62,28 @@ class InvoiceTask extends CreateIMObjectTask {
      */
     @Override
     public void start(final TaskContext context) {
+        Act invoice = getInvoice(context, FinancialActStatus.IN_PROGRESS);
+        if (invoice == null) {
+            getInvoice(context, FinancialActStatus.COMPLETED);
+        }
+        if (invoice == null) {
+            super.start(context);
+        } else {
+            context.addObject(invoice);
+            notifyCompleted();
+        }
+    }
+
+    /**
+     * Returns the  most recent invoice with the specified status.
+     *
+     * @param context the task context
+     * @param status  the invoice status
+     * @return the most recent invoice with the specified status or
+     *         <code>null</code> if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private Act getInvoice(TaskContext context, String status) {
         ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
                                                   true);
         query.setFirstRow(0);
@@ -75,20 +98,17 @@ class InvoiceTask extends CreateIMObjectTask {
                 "entity", customer.getObjectReference()));
 
         query.add(participations);
-        OrConstraint or = new OrConstraint();
-        or.add(new NodeConstraint("status", FinancialActStatus.IN_PROGRESS));
-        or.add(new NodeConstraint("status", FinancialActStatus.COMPLETED));
-        query.add(or);
+        query.add(new NodeConstraint("status", status));
+        query.add(new NodeSortConstraint("startTime", false));
 
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        List<IMObject> result = service.get(query).getRows();
-        if (result.isEmpty()) {
-            super.start(context);
-        } else {
-            Act invoice = (Act) result.get(0);
-            context.addObject(invoice);
-            notifyCompleted();
+        List<IMObject> invoices = service.get(query).getRows();
+
+        Act result = null;
+        if (!invoices.isEmpty()) {
+            result = (Act) invoices.get(0);
         }
+        return result;
     }
 }
