@@ -43,6 +43,7 @@ import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -188,7 +189,7 @@ public class ArchetypeServiceQueryTestCase extends
     }
 
     /**
-     * Tests the NodeSet get method. This verifies that subcollections a
+     * Tests the NodeSet get method. This verifies that subcollections are
      * loaded correctly, avoiding LazyInitializationException.
      */
     public void testGetNodeSet() {
@@ -213,7 +214,7 @@ public class ArchetypeServiceQueryTestCase extends
         // query the firstName, lastName and contacts nodes of the person
         ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
         List<String> names = Arrays.asList("firstName", "lastName", "contacts");
-        IPage<NodeSet> page = service.getNodes(names, query);
+        IPage<NodeSet> page = service.getNodes(query, names);
         assertNotNull(page);
 
         // verify that the page only has a single element, and that the node
@@ -243,6 +244,63 @@ public class ArchetypeServiceQueryTestCase extends
         assertEquals(1, contact.getClassificationsAsArray().length);
         purpose = contact.getClassificationsAsArray()[0];
         assertEquals("Home", purpose.getName());
+    }
+
+    /**
+     * Tests the partial get method. This verifies that specified subcollections
+     * are loaded correctly, avoiding LazyInitializationException.
+     */
+    public void testGetPartialObject() {
+        // set up a party with a single contact and contact purpose
+        Contact contact = (Contact) service.create("contact.phoneNumber");
+        contact.getDetails().setAttribute("areaCode", "03");
+        contact.getDetails().setAttribute("telephoneNumber", "0123456789");
+        Classification purpose = (Classification) service.create(
+                "classification.contactPurpose");
+        purpose.setName("Home");
+        service.save(purpose);
+
+        contact.addClassification(purpose);
+
+        Party person = (Party) service.create("person.person");
+        person.getDetails().setAttribute("lastName", "Anderson");
+        person.getDetails().setAttribute("firstName", "Tim");
+        person.getDetails().setAttribute("title", "MR");
+        person.addContact(contact);
+        service.save(person);
+
+        // query the firstName, lastName and contacts nodes of the person
+        ArchetypeQuery query = new ArchetypeQuery(person.getObjectReference());
+        List<String> names = Arrays.asList("details", "contacts");
+        IPage<IMObject> page = service.get(query, names);
+        assertNotNull(page);
+
+        // verify that the page only has a single element, and that the
+        // contacts node has been loaded.
+        assertEquals(1, page.getRows().size());
+        Party person2 = (Party) page.getRows().get(0);
+        Set<Contact> contacts = person2.getContacts();
+        assertEquals(1, contacts.size());
+
+        // verify the values of the simple nodes. Note that although details
+        // is a collection, it is treated as a simple node by hibernate as it
+        // maps to a single column. We specify it to load anyway
+        assertEquals(person.getObjectReference(), person2.getObjectReference());
+        assertEquals(3, person2.getDetails().getAttributes().size());
+        assertEquals("Tim", person.getDetails().getAttribute("firstName"));
+        assertEquals("Anderson", person.getDetails().getAttribute("lastName"));
+        assertEquals("MR", person2.getDetails().getAttribute("title"));
+
+        // verify the values of the contact node. If the classification hasn't
+        // been loaded, a LazyInitializationException will be raised by
+        // hibernate
+        Contact contact2 = contacts.toArray(new Contact[0])[0];
+        assertEquals("03", contact2.getDetails().getAttribute("areaCode"));
+        assertEquals("0123456789",
+                     contact2.getDetails().getAttribute("telephoneNumber"));
+        assertEquals(1, contact2.getClassificationsAsArray().length);
+        Classification purpose2 = contact2.getClassificationsAsArray()[0];
+        assertEquals("Home", purpose2.getName());
     }
 
 }

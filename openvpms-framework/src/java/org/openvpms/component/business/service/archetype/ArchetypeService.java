@@ -401,13 +401,21 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /**
-     * Retrieves the objects that match the specified query criteria.
+     * Retrieves partially populated objects that match the specified query
+     * criteria.<p/>
+     * This may be used to selectively load parts of object graphs to improve
+     * performance.
+     * <p/>
+     * All simple properties of the returned objects are populated - the
+     * <code>nodes</code> argument is used to specify which collection nodes to
+     * populate. If empty, no collections will be loaded, and the behaviour of
+     * accessing them is undefined.
      *
-     * @param nodes the node names
      * @param query the archetype query
+     * @param nodes the collection node names
      * @return a list of objects that match the query criteria
      */
-    public IPage<IMObject> get(Collection<String> nodes, ArchetypeQuery query) {
+    public IPage<IMObject> get(ArchetypeQuery query, Collection<String> nodes) {
         if (nodes == null || query == null) {
             return null;
         }
@@ -439,11 +447,12 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * Retrieves the nodes from the objects that match the query criteria.
      *
-     * @param nodes the node names
      * @param query the archetype query
+     * @param nodes the node names
      * @return the nodes for each object that matches the query criteria
      */
-    public IPage<NodeSet> getNodes(Collection<String> nodes, ArchetypeQuery query) {
+    public IPage<NodeSet> getNodes(ArchetypeQuery query,
+                                   Collection<String> nodes) {
         if (nodes == null || query == null) {
             return null;
         }
