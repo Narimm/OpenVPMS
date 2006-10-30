@@ -212,7 +212,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             if (nodes == null || nodes.length == 0) {
                 page = service.get(query);
             } else {
-                page = service.get(Arrays.asList(nodes), query);
+                page = service.get(query, Arrays.asList(nodes));
             }
             result = convert(page);
         } catch (OpenVPMSException exception) {
