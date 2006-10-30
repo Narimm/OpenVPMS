@@ -44,7 +44,9 @@ import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.util.DateTimeFieldFactory;
 import org.openvpms.web.resource.util.Messages;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 /**
@@ -71,7 +73,8 @@ public class TaskActEditor extends AbstractActEditor {
 
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
-            startTime.setValue(context.getContext().getWorkListDate());
+            Date date = context.getContext().getWorkListDate();
+            startTime.setValue(getDefaultStartTime(date));
         }
         startTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -259,6 +262,25 @@ public class TaskActEditor extends AbstractActEditor {
             }
         }
         return result;
+    }
+
+    /**
+     * Calculates the default start time of a task, using the supplied date
+     * and current time.
+     *
+     * @param date the start date
+     * @return the start time
+     */
+    private Date getDefaultStartTime(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        Calendar timeCal = new GregorianCalendar();
+        timeCal.setTime(new Date());
+        calendar.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+        calendar.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
     }
 
     private class LayoutStrategy extends AbstractLayoutStrategy {
