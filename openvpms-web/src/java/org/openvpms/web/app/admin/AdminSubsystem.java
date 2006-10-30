@@ -18,10 +18,10 @@
 
 package org.openvpms.web.app.admin;
 
-import org.openvpms.web.component.subsystem.AbstractSubsystem;
-
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.openvpms.web.app.admin.lookup.LookupWorkspace;
+import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 
 /**
