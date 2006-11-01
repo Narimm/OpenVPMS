@@ -16,7 +16,7 @@
  *  $$Id$$
 -->
 <archetype>
-	<data id="CTY1" archetype="lookup.country" code="AU" country="Australia" defaultLookup="true"/>
+	<data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
 	<data id="ST1" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
 	<data id="ST2" archetype="lookup.state" code="NSW" name="New South Wales" />
 	<data id="ST3" archetype="lookup.state" code="WA" name="Western Australia" />
@@ -33,44 +33,31 @@
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
-	<data archetype="lookup.chargeStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.chargeStatus" code="COMPLETED" defaultLookup="true"/>
-	<data archetype="lookup.chargeStatus" code="ON_HOLD" />
-	<data archetype="lookup.chargeStatus" code="POSTED" />
-	<data archetype="lookup.paymentStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.paymentStatus" code="ON_HOLD" />
-	<data archetype="lookup.paymentStatus" code="POSTED" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" code="IN_PROGRESS" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" code="COMPLETED" />
-	<data archetype="lookup.eventStatus" code="IN_PROGRESS" defaultLookup="true"/>
-	<data archetype="lookup.eventStatus" code="COMPLETED" />
-	<data archetype="lookup.appointmentStatus" code="PENDING" defaultLookup="true" />
-	<data archetype="lookup.appointmentStatus" code="CANCELLED" />
-	<data archetype="lookup.appointmentStatus" code="CHECKED_IN" />
-	<data archetype="lookup.appointmentStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.appointmentStatus" code="COMPLETED" />
-	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
-	<data archetype="lookup.appointmentReason" code="VACCINATION" />
-	<data archetype="lookup.appointmentReason" code="OTHER" />
-	<data archetype="lookup.taskStatus" code="PENDING" defaultLookup="true" />
-	<data archetype="lookup.taskStatus" code="CANCELLED" />
-	<data archetype="lookup.taskStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.taskStatus" code="COMPLETED" />
-	<data archetype="lookup.messageStatus" code="PENDING" defaultLookup="true" />
-	<data archetype="lookup.messageStatus" code="COMPLETED" />
-	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
-	<data archetype="lookup.uom" code="BOTTLE" />
-	<data archetype="lookup.uom" code="SYRINGE" />
-	<data archetype="lookup.uom" code="TABLET" />
-	<data archetype="lookup.uom" code="PACKET" />
-	<data archetype="lookup.uom" code="VIAL" />
-	<data archetype="lookup.uom" code="BOX" />
-	<data archetype="lookup.uom" code="GRAMS" />
-	<data archetype="lookup.uom" code="LITRES" />
-	<data archetype="lookup.uom" code="AMPOULE" />
-	<data archetype="lookup.uom" code="MLS" />
-	<data archetype="lookup.uom" code="TUBE" />
-	<data archetype="lookup.uom" code="PACKET" />
+	<data archetype="lookup.chargeStatus" code="IN_PROGRESS" name="In Pogress"/>
+	<data archetype="lookup.chargeStatus" code="COMPLETED" name="Completed" defaultLookup="true"/>
+	<data archetype="lookup.chargeStatus" code="ON_HOLD" name="On Hold" />
+	<data archetype="lookup.chargeStatus" code="POSTED" name="Posted" />
+	<data archetype="lookup.paymentStatus" code="IN_PROGRESS" name="In Progress"/>
+	<data archetype="lookup.paymentStatus" code="ON_HOLD" name="On Hold"/>
+	<data archetype="lookup.paymentStatus" code="POSTED" name="Posted" defaultLookup="true"/>
+	<data archetype="lookup.episodeStatus" code="IN_PROGRESS" name="In Progress" defaultLookup="true"/>
+	<data archetype="lookup.episodeStatus" code="COMPLETED" name="Completed" />
+	<data archetype="lookup.eventStatus" code="IN_PROGRESS" name="In Progress" defaultLookup="true"/>
+	<data archetype="lookup.eventStatus" code="COMPLETED" name="Completed" />
+	<data archetype="lookup.appointmentStatus" code="PENDING" name="Pending" defaultLookup="true" />
+	<data archetype="lookup.appointmentStatus" code="CANCELLED" name="Cancelled" />
+	<data archetype="lookup.appointmentStatus" code="CHECKED_IN" name="Checked In" />
+	<data archetype="lookup.appointmentStatus" code="IN_PROGRESS" name="In Progress" />
+	<data archetype="lookup.appointmentStatus" code="COMPLETED" name="Completed" />
+	<data archetype="lookup.appointmentReason" code="CHECKUP" name="Checkup" defaultLookup="true" />
+	<data archetype="lookup.appointmentReason" code="VACCINATION" name="Vaccination" />
+	<data archetype="lookup.appointmentReason" code="OTHER" name="Other" />
+	<data archetype="lookup.taskStatus" code="PENDING" name="Pending" defaultLookup="true" />
+	<data archetype="lookup.taskStatus" code="CANCELLED" name="Cancelled" />
+	<data archetype="lookup.taskStatus" code="IN_PROGRESS" name="In Progress" />
+	<data archetype="lookup.taskStatus" code="COMPLETED" name="Completed" />
+	<data archetype="lookup.messageStatus" code="PENDING" name="Pending" defaultLookup="true" />
+	<data archetype="lookup.messageStatus" code="COMPLETED" name="Completed" />
 	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
 	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
@@ -78,16 +65,16 @@
 	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
 	<data archetype="lookup.bank" code="NAB" name="National" />
 	<data archetype="lookup.bank" code="CBA" name="Commonwealth" />
-	<data archetype="lookup.bank" code="ANZ"/>
+	<data archetype="lookup.bank" code="ANZ" name="ANZ" />
 	<data archetype="lookup.bank" code="WBA" name="Westpac" />
 	<data archetype="lookup.bank" code="SGB" name="St George" />
-	<data archetype="lookup.bank" code="BANK_WEST" />
-	<data archetype="lookup.bank" code="STATE_SA" />
+	<data archetype="lookup.bank" code="BANK_WEST" name="Bank West" />
+	<data archetype="lookup.bank" code="SBSA" name="State bank of SA"/>
 	<data archetype="lookup.bank" code="BEN" name="Bendigo" />
-	<data archetype="lookup.creditcard" code="VISA" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="MASTERCARD"  floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="VISA" name="Visa" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="MASTERCARD"  name="Mastercard" floorLimit="500.00" />
 	<data archetype="lookup.creditcard" code="AMEX" name="American Express" floorLimit="500.00" />
-	<data archetype="lookup.creditcard" code="DINERS" floorLimit="500.00" />
+	<data archetype="lookup.creditcard" code="DINERS" name="Diners" floorLimit="500.00" />
 	<data archetype="lookup.personTitle" code="MR" defaultLookup="true"/>
 	<data archetype="lookup.personTitle" code="MRS" />
 	<data archetype="lookup.personTitle" code="MS" />
@@ -96,4 +83,12 @@
 	<data archetype="lookup.alertType" code="ALLLERGY" />
 	<data archetype="lookup.alertType" code="AGGRESSION" />
 	<data archetype="lookup.alertType" code="OTHER" defaultLookup="true"/>
+	<data archetype="lookup.reportType" code="CUSTOMER" />
+	<data archetype="lookup.reportType" code="PATIENT" />
+	<data archetype="lookup.reportType" code="SUPPLIER" />
+	<data archetype="lookup.reportType" code="PRODUCT" />
+	<data archetype="lookup.reportType" code="WORKFLOW" />
+	<data archetype="lookup.reportType" code="ADMINISTRATION" />
+	<data archetype="lookup.reportType" code="FINANCIAL" />
+	<data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
 </archetype>
