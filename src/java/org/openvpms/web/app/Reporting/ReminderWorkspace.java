@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient.reminder;
+package org.openvpms.web.app.Reporting;
 
 import echopointng.DateField;
 import echopointng.GroupBox;
@@ -101,7 +101,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * Construct a new <code>ReminderWorkspace</code>.
      */
     public ReminderWorkspace() {
-        super("patient", "reminder");
+        super("reporting", "reminder");
     }
 
     /**
@@ -198,31 +198,31 @@ public class ReminderWorkspace extends AbstractWorkspace {
         CheckBox preview = CheckBoxFactory.create(false);
         CheckBox finalise = CheckBoxFactory.create(true);
         Grid grid = GridFactory.create(2);
-        add(grid, "patient.reminder.reminderType", reminderTypeRow);
-        add(grid, "patient.reminder.preview", preview);
-        add(grid, "patient.reminder.finalise", finalise);
+        add(grid, "reporting.reminder.reminderType", reminderTypeRow);
+        add(grid, "reporting.reminder.preview", preview);
+        add(grid, "reporting.reminder.finalise", finalise);
 
-        add(grid, "patient.reminder.due",
+        add(grid, "reporting.reminder.due",
             createRow(
-                    createRow(LabelFactory.create("patient.reminder.dueFrom"),
+                    createRow(LabelFactory.create("reporting.reminder.dueFrom"),
                               dueFrom),
-                    createRow(LabelFactory.create("patient.reminder.dueTo"),
+                    createRow(LabelFactory.create("reporting.reminder.dueTo"),
                               dueTo)));
 
         allCustomers = CheckBoxFactory.create(
-                "patient.reminder.allCustomers", true);
+                "reporting.reminder.allCustomers", true);
         allCustomers.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 onAllCustomersChanged();
             }
         });
         customerFromLabel
-                = LabelFactory.create("patient.reminder.customerFrom");
+                = LabelFactory.create("reporting.reminder.customerFrom");
         customerFrom = TextComponentFactory.create();
-        customerToLabel = LabelFactory.create("patient.reminder.customerTo");
+        customerToLabel = LabelFactory.create("reporting.reminder.customerTo");
         customerTo = TextComponentFactory.create();
 
-        add(grid, "patient.reminder.customerRange",
+        add(grid, "reporting.reminder.customerRange",
             createRow(allCustomers,
                       createRow(customerFromLabel, customerFrom),
                       createRow(customerToLabel, customerTo)));
@@ -237,8 +237,8 @@ public class ReminderWorkspace extends AbstractWorkspace {
      * Invoked when the 'run' button is pressed.
      */
     private void onRun() {
-        String title = Messages.get("patient.reminder.run.title");
-        String message = Messages.get("patient.reminder.run.message");
+        String title = Messages.get("reporting.reminder.run.title");
+        String message = Messages.get("reporting.reminder.run.message");
         final ConfirmationDialog dialog
                 = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new WindowPaneListener() {
