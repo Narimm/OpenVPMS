@@ -16,32 +16,24 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.patient;
+package org.openvpms.web.app.Reporting;
 
-import org.openvpms.web.app.Reporting.ReminderWorkspace;
-import org.openvpms.web.app.patient.document.PatientDocumentWorkspace;
-import org.openvpms.web.app.patient.info.InformationWorkspace;
-import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;
-import org.openvpms.web.app.subsystem.DummyWorkspace;
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
-
 /**
- * Patient sybsystem.
+ * Reporting subsystem.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PatientSubsystem extends AbstractSubsystem {
-
+public class ReportingSubsystem extends AbstractSubsystem {
     /**
-     * Construct a new <code>PatientSubsystem</code>.
+     * Construct a new <code>WorkflowSubsystem</code>.
      */
-    public PatientSubsystem() {
-        super("patient");
-        addWorkspace(new InformationWorkspace());
-        addWorkspace(new PatientRecordWorkspace());
-        addWorkspace(new PatientDocumentWorkspace());
-        addWorkspace(new DummyWorkspace("patient", "investigation"));
+    public ReportingSubsystem() {
+        super("reporting");
+        addWorkspace(new ReportingWorkspace());
+        addWorkspace(new ReminderWorkspace());
     }
+
 }
