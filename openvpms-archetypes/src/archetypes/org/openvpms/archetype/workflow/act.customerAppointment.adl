@@ -29,7 +29,7 @@
 			filter="participation.appointmentType" />
 		<node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1" />
 		<node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1" />
-		<node name="reason" path="/reason" type="java.lang.String" minCardinality="1" >
+		<node name="reason" path="/reason" type="java.lang.String" minCardinality="0" >
 			<assertion name="lookup">
 				<property name="type" value="lookup" />
 				<property name="source" value="lookup.appointmentReason" />
