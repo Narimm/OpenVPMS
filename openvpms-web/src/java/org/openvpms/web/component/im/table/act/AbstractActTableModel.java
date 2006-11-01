@@ -19,13 +19,8 @@
 package org.openvpms.web.component.im.table.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -60,43 +55,6 @@ public abstract class AbstractActTableModel extends DescriptorTableModel<Act> {
      */
     public AbstractActTableModel(String[] shortNames, LayoutContext context) {
         super(shortNames, context);
-    }
-
-    /**
-     * Returns a list of descriptor names to include in the table.
-     * This implementation returns <code>null</code> to indicate that the
-     * intersection should be calculated from all descriptors.
-     *
-     * @return the list of descriptor names to include in the table
-     */
-    protected String[] getDescriptorNames() {
-        return null;
-    }
-
-    /**
-     * Returns a filtered list of descriptors for an archetype.
-     *
-     * @param archetype the archetype
-     * @param context   the layout context
-     * @return a filtered list of descriptors for the archetype
-     */
-    @Override
-    protected List<NodeDescriptor> getDescriptors(ArchetypeDescriptor archetype,
-                                                  LayoutContext context) {
-        List<NodeDescriptor> result;
-        String[] names = getDescriptorNames();
-        if (names != null) {
-            result = new ArrayList<NodeDescriptor>();
-            for (String name : names) {
-                NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-                if (descriptor != null) {
-                    result.add(descriptor);
-                }
-            }
-        } else {
-            result = filter(archetype.getSimpleNodeDescriptors(), context);
-        }
-        return result;
     }
 
 }
