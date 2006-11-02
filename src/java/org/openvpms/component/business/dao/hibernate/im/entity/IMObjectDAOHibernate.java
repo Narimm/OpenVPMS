@@ -21,6 +21,8 @@ package org.openvpms.component.business.dao.hibernate.im.entity;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -620,24 +622,30 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
-            Query query;
+            Query query = session.getNamedQuery(name);
 
-
-            // get the count first....IS THIS THE BEST APPROACH FOR NAMED
-            // QUERIES
             if (numOfRows != ArchetypeQuery.ALL_ROWS) {
                 query = session.getNamedQuery(name);
                 for (String key : params.keySet()) {
                     query.setParameter(key, params.get(key));
                 }
-                totalNumOfRows = (Integer) query.list().get(0);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("The number of rows returned is "
-                            + totalNumOfRows);
+                ScrollableResults results = null;
+                try {
+                    results = query.scroll(ScrollMode.FORWARD_ONLY);
+                    if (results.last()) {
+                        totalNumOfRows = results.getRowNumber() + 1;
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("The number of rows returned is "
+                                + totalNumOfRows);
+                    }
+                } finally {
+                    if (results != null) {
+                        results.close();
+                    }
                 }
             }
 
-            query = session.getNamedQuery(name);
             for (String key : params.keySet()) {
                 query.setParameter(key, params.get(key));
             }
