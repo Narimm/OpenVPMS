@@ -22,15 +22,22 @@ import java.util.List;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Command;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.report.TemplateHelper;
+import org.openvpms.web.app.OpenVPMSApp;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
@@ -301,8 +308,19 @@ public class ReportingWorkspace extends AbstractWorkspace {
     /**
      * Invoked when the run button is pressed. Runs the
      * selected report.
+     * TODO:  Currently set to use Birt Viewer app deployed
+     * in local Tomcat passing report file name defined in template.
+     * Need to create proper report generator implementation.  
      */
     protected void onRun() {
+        IArchetypeService service
+        = ArchetypeServiceHelper.getArchetypeService();
+        Document doc = TemplateHelper.getDocumentFromTemplate(
+                (Entity)getObject(), service);
+        String uri = "http://localhost:8080/openvpms-viewer/frameset?__report=report/" + doc.getName();
+        Command command = new BrowserOpenWindowCommand(
+                uri, "OpenVPMS Report Viewer","width=800,height=600,resizable=yes,scrollbars=yes");
+        OpenVPMSApp.getInstance().enqueueCommand(command);
     }
 
 }
