@@ -518,7 +518,9 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
     public IPage<IMObject> getByNamedQuery(String name,
                                            Map<String, Object> params, int firstRow, int numOfRows) {
         try {
-            return executeNamedQuery(name, params, firstRow, numOfRows, new Page<IMObject>());
+            Collector collector = new IMObjectCollector();
+            executeNamedQuery(name, params, firstRow, numOfRows, collector);
+            return collector.getPage();
         } catch (Exception exception) {
             throw new IMObjectDAOException(
                     IMObjectDAOException.ErrorCode.FailedToExecuteNamedQuery,
@@ -536,7 +538,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *            the first row to return
      * @param numOfRows
      *            the number of rows to return
-     * @param collector
+     * @param collector the collector
      */
     @SuppressWarnings("unchecked")
     private void executeQuery(String queryString, Params params, int firstRow,
@@ -612,12 +614,12 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
      *            the first row to return
      * @param numOfRows
      *            the number of rows to return
-     * @param page
-     *            the page to populate
+     * @param collector the collector
      */
     @SuppressWarnings("unchecked")
-    private IPage executeNamedQuery(String name, Map<String, Object> params,
-                                    int firstRow, int numOfRows, Page page) throws Exception {
+    private void executeNamedQuery(String name, Map<String, Object> params,
+                                    int firstRow, int numOfRows,
+                                    Collector collector) throws Exception {
         int totalNumOfRows = 0;
 
         Session session = getHibernateTemplate().getSessionFactory().openSession();
@@ -663,16 +665,16 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
 
             List<IMObject> rows = query.list();
-            page.setFirstRow(firstRow);
-            page.setNumOfRows(numOfRows);
+            collector.setFirstRow(firstRow);
+            collector.setNumOfRows(numOfRows);
             if (numOfRows == ArchetypeQuery.ALL_ROWS) {
-                page.setTotalNumOfRows(rows.size());
+                collector.setTotalNumOfRows(rows.size());
             } else {
-                page.setTotalNumOfRows(totalNumOfRows);
+                collector.setTotalNumOfRows(totalNumOfRows);
             }
-            page.setRows(rows);
-
-            return page;
+            for (IMObject object : rows) {
+                collector.collect(object);
+            }
         } finally {
             session.close();
         }
