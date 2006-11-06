@@ -21,7 +21,7 @@ package org.openvpms.web.app.patient.summary;
 import nextapp.echo2.app.Table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.patient.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;

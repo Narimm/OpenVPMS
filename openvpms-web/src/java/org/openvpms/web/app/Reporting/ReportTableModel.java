@@ -16,27 +16,27 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.Reporting;
+package org.openvpms.web.app.reporting;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 
 /**
- * Report Table Model.  
+ * Report Table Model.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 
 public class ReportTableModel extends DescriptorTableModel<Entity> {
-	 
-	/**
+
+    /**
      * Creates a new <code>ReportTableModel</code>.
      */
     public ReportTableModel() {
         super(new String[]{"entity.documentTemplate"});
     }
-    
+
     /**
      * Returns a list of descriptor names to include in the table.
      *

@@ -77,6 +77,7 @@
                     ${hibernate.cache.use_second_level_cache}</prop>
                 <prop key="hibernate.cache.use_query_cache">
                     ${hibernate.cache.use_query_cache}</prop>
+                <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.jdbc.batch_size">
                     ${hibernate.jdbc.batch_size}</prop>
                 <prop key="hibernate.c3p0.max_statements">
@@ -145,6 +146,9 @@
                 </value>
                 <value>
                     /org/openvpms/component/business/domain/im/audit/AuditRecord.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml
                 </value>
             </list>
         </property>

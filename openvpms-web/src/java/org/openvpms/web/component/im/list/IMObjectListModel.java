@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.list;
 
 import nextapp.echo2.app.list.AbstractListModel;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 
 import java.util.ArrayList;
@@ -40,14 +41,14 @@ public class IMObjectListModel extends AbstractListModel {
     private List<IMObject> objects;
 
     /**
-     * Dummy name indicating that all values apply.
+     * Dummy IMObject indicating that all values apply.
      */
-    public static final String ALL = "all";
+    public static final IMObject ALL;
 
     /**
-     * Dummy name indicating that no value is required.
+     * Dummy IMObject indicating that no value is required.
      */
-    public static final String NONE = "none";
+    public static final IMObject NONE;
 
     /**
      * Determines if "all" should be included.
@@ -106,17 +107,21 @@ public class IMObjectListModel extends AbstractListModel {
             objects = new ArrayList<IMObject>(objects);
 
             if (all) {
-                IMObject dummyAll = new IMObject();
-                dummyAll.setName(ALL);
-                objects.add(0, dummyAll);
+                objects.add(0, ALL);
             }
             if (none) {
-                IMObject dummyNone = new IMObject();
-                dummyNone.setName(NONE);
-                objects.add(0, dummyNone);
+                objects.add(0, NONE);
             }
         }
         return objects;
     }
 
+    static {
+        ArchetypeId dummy = new ArchetypeId("dummy", "dummy", "dummy", "dummy",
+                                            "1.0");
+        ALL = new IMObject();
+        ALL.setArchetypeId(dummy);
+        NONE = new IMObject();
+        NONE.setArchetypeId(dummy);
+    }
 }

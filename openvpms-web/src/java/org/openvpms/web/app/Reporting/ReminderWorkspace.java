@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.Reporting;
+package org.openvpms.web.app.reporting;
 
 import echopointng.DateField;
 import echopointng.GroupBox;
@@ -36,6 +36,9 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import nextapp.echo2.app.list.ListModel;
 import nextapp.echo2.app.list.ListSelectionModel;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
@@ -71,7 +74,22 @@ import java.util.List;
 public class ReminderWorkspace extends AbstractWorkspace {
 
     /**
-     * Checkbox to indicate if statments should be generated for all customers,
+     * Reminder type filter.
+     */
+    private ListBox reminderType;
+
+    /**
+     * The 'due from' field.
+     */
+    private DateField dueFrom;
+
+    /**
+     * The 'due to' field.
+     */
+    private DateField dueTo;
+
+    /**
+     * Checkbox to indicate if statements should be generated for all customers,
      * or a range of customers.
      */
     private CheckBox allCustomers;
@@ -171,7 +189,7 @@ public class ReminderWorkspace extends AbstractWorkspace {
                 ArchetypeQuery.ALL_ROWS);
         List<IMObject> rows = page.getRows();
         ListModel model = new IMObjectListModel(rows, true, false);
-        ListBox reminderType = ListBoxFactory.create(model);
+        reminderType = ListBoxFactory.create(model);
         reminderType.setCellRenderer(new IMObjectListCellRenderer());
         reminderType.setSelectionMode(ListSelectionModel.MULTIPLE_SELECTION);
         reminderType.setStyleName("ReminderWorkspace.ReminderTypes");
@@ -181,14 +199,14 @@ public class ReminderWorkspace extends AbstractWorkspace {
         // See OVPMS-239
 
         // default dueFrom to the 1st of next month
-        DateField dueFrom = DateFieldFactory.create();
+        dueFrom = DateFieldFactory.create();
         Calendar calendarFrom = new GregorianCalendar();
         calendarFrom.set(Calendar.DAY_OF_MONTH, 1);
         calendarFrom.add(Calendar.MONTH, 1);
         dueFrom.getDateChooser().setSelectedDate(calendarFrom);
 
         // default dueTo to the last of next month
-        DateField dueTo = DateFieldFactory.create();
+        dueTo = DateFieldFactory.create();
         Calendar calendarTo = new GregorianCalendar();
         calendarTo.set(Calendar.DAY_OF_MONTH, 1);
         calendarTo.add(Calendar.MONTH, 2);
@@ -243,10 +261,34 @@ public class ReminderWorkspace extends AbstractWorkspace {
                 = new ConfirmationDialog(title, message);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
+                if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
+                    generateReminders();
+                }
             }
+
         });
         dialog.show();
 
+    }
+
+    /**
+     * Generate the reminders.
+     */
+    private void generateReminders() {
+        ReminderQuery query = new ReminderQuery();
+        IMObject reminder = (IMObject) reminderType.getSelectedValue();
+        if (reminder != IMObjectListModel.ALL) {
+            query.setReminderType((Entity) reminder);
+        }
+        query.setDueDateRange(dueFrom.getSelectedDate().getTime(),
+                              dueTo.getSelectedDate().getTime());
+        if (!allCustomers.isSelected()) {
+            String from = StringUtils.trimToNull(customerFrom.getText());
+            String to = StringUtils.trimToNull(customerTo.getText());
+            query.setCustomerRange(from, to);
+        }
+        ReminderGenerator generator = new ReminderGenerator(query);
+        generator.generate();
     }
 
     /**

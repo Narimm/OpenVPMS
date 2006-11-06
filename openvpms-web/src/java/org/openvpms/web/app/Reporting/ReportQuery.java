@@ -1,17 +1,13 @@
 /**
  * 
  */
-package org.openvpms.web.app.Reporting;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.openvpms.web.app.reporting;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
-
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -33,9 +29,11 @@ import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.SelectFieldFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author tony
- *
  */
 public class ReportQuery extends AbstractQuery<Entity> {
     /**
@@ -49,7 +47,7 @@ public class ReportQuery extends AbstractQuery<Entity> {
     private List<Lookup> _reportTypes;
 
     /**
-     * The selected report type. If <code>null</code> indicates to 
+     * The selected report type. If <code>null</code> indicates to
      * query using all matching types.
      */
     private String _reportType;
@@ -82,7 +80,7 @@ public class ReportQuery extends AbstractQuery<Entity> {
      */
     @Override
     protected void doLayout(Component container) {
-    	addReportTypeSelector(container);
+        addReportTypeSelector(container);
     }
 
     /**
@@ -92,7 +90,8 @@ public class ReportQuery extends AbstractQuery<Entity> {
      */
     protected void addReportTypeSelector(Component container) {
         ArchetypeDescriptor archetype
-        = DescriptorHelper.getArchetypeDescriptor("entity.documentTemplate");
+                = DescriptorHelper.getArchetypeDescriptor(
+                "entity.documentTemplate");
         NodeDescriptor types = archetype.getNodeDescriptor("reportType");
         List<Lookup> lookups = FastLookupHelper.getLookups(types);
         LookupListModel model = new LookupListModel(lookups, true);
@@ -100,7 +99,7 @@ public class ReportQuery extends AbstractQuery<Entity> {
         _typeSelector.setCellRenderer(new LookupListCellRenderer());
         _typeSelector.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-            	onTypeChanged();
+                onTypeChanged();
             }
         });
 
@@ -124,9 +123,9 @@ public class ReportQuery extends AbstractQuery<Entity> {
      * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
-     @Override
-     public ResultSet<Entity> query(SortConstraint[] sort) {
-    	ResultSet<Entity> templates; 
+    @Override
+    public ResultSet<Entity> query(SortConstraint[] sort) {
+        ResultSet<Entity> templates;
         List<Entity> result = new ArrayList<Entity>();
         int userReportLevel;
         int templateUserLevel;
@@ -134,46 +133,49 @@ public class ReportQuery extends AbstractQuery<Entity> {
         String name = null;
         boolean activeOnly = true;
 
-        
+
         getComponent();  // ensure the component is rendered
 
         // Get the current users reportlevel
-        if(_user == null)
-        	userReportLevel = new Integer(0);
+        if (_user == null)
+            userReportLevel = 0;
         else {
-        	EntityBean userBean = new EntityBean(_user);
-        	userReportLevel = userBean.getInt("userLevel",0);
-        }       		
+            EntityBean userBean = new EntityBean(_user);
+            userReportLevel = userBean.getInt("userLevel", 0);
+        }
         // Do the initial archetype query
         BaseArchetypeConstraint archetypes;
         if (type == null || type.equals(ArchetypeShortNameListModel.ALL)) {
             archetypes = getArchetypeConstraint();
             archetypes.setActiveOnly(activeOnly);
         } else {
-            archetypes = new ArchetypeShortNameConstraint(type, true, activeOnly);
+            archetypes = new ArchetypeShortNameConstraint(type, true,
+                                                          activeOnly);
         }
-    	templates = new  EntityResultSet(archetypes, name, getConstraints(), sort,
-                getMaxRows(), isDistinct());
-    	
-    	// Now filter for Reports, user Level and selected type 
-    	while (templates.hasNext()) {
-    		  IPage<Entity> page = templates.next();
-    		  for (Entity object : page.getRows()) {
-    			  EntityBean template = new EntityBean(object);
-    			  String templateArchetype = template.getString("archetype","");
-    			  templateUserLevel = template.getInt("userLevel",9);
-    			  String reportType = template.getString("reportType","");
-    			  if (templateArchetype.equalsIgnoreCase("REPORT") && (templateUserLevel <= userReportLevel)) {
-    				  if (getReportType() == null || getReportType().equals("") ||
-    						  (reportType.equalsIgnoreCase(getReportType())))
-    					  result.add(object);    				  
-    			  }
-    		  }
-    	}
-    	
-    	return new PreloadedResultSet<Entity>(result,getMaxRows());
+        templates = new EntityResultSet(archetypes, name, getConstraints(),
+                                        sort,
+                                        getMaxRows(), isDistinct());
+
+        // Now filter for Reports, user Level and selected type
+        while (templates.hasNext()) {
+            IPage<Entity> page = templates.next();
+            for (Entity object : page.getRows()) {
+                EntityBean template = new EntityBean(object);
+                String templateArchetype = template.getString("archetype", "");
+                templateUserLevel = template.getInt("userLevel", 9);
+                String reportType = template.getString("reportType", "");
+                if (templateArchetype.equalsIgnoreCase(
+                        "REPORT") && (templateUserLevel <= userReportLevel)) {
+                    if (getReportType() == null || getReportType().equals("") ||
+                            (reportType.equalsIgnoreCase(getReportType())))
+                        result.add(object);
+                }
+            }
+        }
+
+        return new PreloadedResultSet<Entity>(result, getMaxRows());
     }
-    
+
 
     /**
      * Determines if the query should be run automatically.
@@ -186,16 +188,16 @@ public class ReportQuery extends AbstractQuery<Entity> {
         return (_user != null);
     }
 
-	public String getReportType() {
-		return _reportType;
-	}
+    public String getReportType() {
+        return _reportType;
+    }
 
-	public void setReportType(String type) {
-		_reportType = type;
-	}
+    public void setReportType(String type) {
+        _reportType = type;
+    }
 
-	public List<Lookup> getReportTypes() {
-		return _reportTypes;
-	}
+    public List<Lookup> getReportTypes() {
+        return _reportTypes;
+    }
 
 }

@@ -18,11 +18,7 @@
 
 package org.openvpms.web.app;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-
+import echopointng.GroupBox;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -36,14 +32,13 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
-
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.app.Reporting.ReportingSubsystem;
 import org.openvpms.web.app.admin.AdminSubsystem;
 import org.openvpms.web.app.customer.CustomerSubsystem;
 import org.openvpms.web.app.financial.FinancialSubsystem;
 import org.openvpms.web.app.patient.PatientSubsystem;
 import org.openvpms.web.app.product.ProductSubsystem;
+import org.openvpms.web.app.reporting.ReportingSubsystem;
 import org.openvpms.web.app.supplier.SupplierSubsystem;
 import org.openvpms.web.app.workflow.WorkflowSubsystem;
 import org.openvpms.web.component.subsystem.Subsystem;
@@ -56,7 +51,10 @@ import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
 import org.openvpms.web.resource.util.Styles;
 
-import echopointng.GroupBox;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
