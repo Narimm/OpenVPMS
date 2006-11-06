@@ -32,7 +32,7 @@
 			minCardinality="1" maxCardinality="1">
 			<node name="weight" path="/details/attributes/weight" type="java.math.BigDecimal" defaultValue="0.0"/>
 			<node name="units" path="/details/attributes/units" type="java.lang.String"
-				minCardinality="1" maxLength="30" default="'Kilograms'">
+				minCardinality="1" maxLength="30" defaultValue="'KILOGRAMS'">
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="KILOGRAMS" value="Kilograms" />

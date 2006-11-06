@@ -33,10 +33,14 @@
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
 		<node name="status" path="/status" type="java.lang.String" minCardinality="1" >
-			<assertion name="lookup">
-				<property name="type" value="lookup" />
-				<property name="source" value="lookup.taskStatus" />
-				<errorMessage>An error message</errorMessage>
+			<assertion name="lookup.local" defaultValue="'PENDING'" >
+				<propertyList name="entries">
+					<property name="PENDING" value="Pending" />
+					<property name="CANCELLED" value="Cancelled" />
+					<property name="IN_PROGRESS" value="In Progress" />
+					<property name="COMPLETED" value="Completed" />
+				</propertyList>
+				<errorMessage>Invalid Task Status</errorMessage>
 			</assertion>
 		</node>
 		<node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1" 

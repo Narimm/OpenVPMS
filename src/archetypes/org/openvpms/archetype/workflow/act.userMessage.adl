@@ -39,10 +39,12 @@
 		</node>
 		<node displayName="Notes" name="description" type="java.lang.String" path="/description" />
 		<node name="status" path="/status" type="java.lang.String" minCardinality="1" >
-			<assertion name="lookup">
-				<property name="type" value="lookup" />
-				<property name="source" value="lookup.messageStatus" />
-				<errorMessage>An error message</errorMessage>
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="PENDING" value="Pending" />
+					<property name="COMPLETED" value="Completed" />
+				</propertyList>
+				<errorMessage>Invalid Message Status</errorMessage>
 			</assertion>
 		</node>
 	</archetype>

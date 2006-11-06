@@ -33,31 +33,11 @@
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
-	<data archetype="lookup.chargeStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.chargeStatus" code="COMPLETED" defaultLookup="true"/>
-	<data archetype="lookup.chargeStatus" code="ON_HOLD" />
-	<data archetype="lookup.chargeStatus" code="POSTED" />
-	<data archetype="lookup.paymentStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.paymentStatus" code="ON_HOLD" />
-	<data archetype="lookup.paymentStatus" code="POSTED" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" code="IN_PROGRESS" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" code="COMPLETED" />
-	<data archetype="lookup.eventStatus" code="IN_PROGRESS" defaultLookup="true"/>
-	<data archetype="lookup.eventStatus" code="COMPLETED" />
-	<data archetype="lookup.appointmentStatus" code="PENDING" defaultLookup="true" />
-	<data archetype="lookup.appointmentStatus" code="CANCELLED" />
-	<data archetype="lookup.appointmentStatus" code="CHECKED_IN" />
-	<data archetype="lookup.appointmentStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.appointmentStatus" code="COMPLETED" />
 	<data archetype="lookup.appointmentReason" code="CHECKUP" defaultLookup="true" />
 	<data archetype="lookup.appointmentReason" code="VACCINATION" />
 	<data archetype="lookup.appointmentReason" code="OTHER" />
-	<data archetype="lookup.taskStatus" code="PENDING" defaultLookup="true" />
-	<data archetype="lookup.taskStatus" code="CANCELLED" />
-	<data archetype="lookup.taskStatus" code="IN_PROGRESS" />
-	<data archetype="lookup.taskStatus" code="COMPLETED" />
-	<data archetype="lookup.messageStatus" code="PENDING" defaultLookup="true" />
-	<data archetype="lookup.messageStatus" code="COMPLETED" />
+	<data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true" />
+	<data archetype="lookup.messageReason" code="OTHER" name="Other" />
 	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
 	<data archetype="lookup.uom" code="BOTTLE" />
 	<data archetype="lookup.uom" code="SYRINGE" />

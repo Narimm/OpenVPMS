@@ -40,7 +40,7 @@
                   type="java.lang.String" minCardinality="0" maxLength="300"/>
             <node name="separateList" displayName="Separate Deposit List"
                   path="/details/attributes/separateList"
-                  type="java.lang.Boolean" minCardinality="1"
+                  type="java.lang.Boolean" minCardinality="0"
                   defaultValue="true()"/>
         </node>
         <node name="description" type="java.lang.String"

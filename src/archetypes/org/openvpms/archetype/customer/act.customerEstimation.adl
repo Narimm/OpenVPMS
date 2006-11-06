@@ -50,7 +50,7 @@
                   minCardinality="1"/>
         </node>
         <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1">
+              minCardinality="1" defaultValue="'COMPLETED'" >
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
@@ -59,7 +59,7 @@
                     <property name="POSTED" value="Posted"/>
                     <property name="INVOICED" value="Invoiced"/>
                 </propertyList>
-                <errorMessage>An error message</errorMessage>
+                <errorMessage>Invalid Estimation Status</errorMessage>
             </assertion>
         </node>
         <node name="customer" path="/participations" type="java.util.HashSet"
