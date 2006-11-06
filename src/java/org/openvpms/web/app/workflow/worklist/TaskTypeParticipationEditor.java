@@ -89,7 +89,7 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
                     IMObject taskType = IMObjectHelper.getObject(
                             relationship.getTarget());
                     if (taskType != null) {
-                        getEditor().setObject(object);
+                        getEditor().setObject(taskType);
                         break;
                     }
                 }
