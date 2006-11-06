@@ -18,7 +18,7 @@
 
 package org.openvpms.web.component.im.edit.reminder;
 
-import org.openvpms.archetype.rules.patient.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;

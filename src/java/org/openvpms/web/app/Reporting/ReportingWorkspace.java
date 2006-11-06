@@ -16,9 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.Reporting;
-
-import java.util.List;
+package org.openvpms.web.app.reporting;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
@@ -29,7 +27,6 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
-
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -47,6 +44,8 @@ import org.openvpms.web.component.util.ButtonFactory;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.component.util.SplitPaneFactory;
+
+import java.util.List;
 
 /**
  * Reporting workspace.
@@ -213,13 +212,13 @@ public class ReportingWorkspace extends AbstractWorkspace {
      * Creates the workspace.
      *
      * @param browser the entity browser
-     * @param window  the CRUD window
      * @return a new split pane representing the workspace
      */
     private SplitPane createWorkspace(Browser<Entity> browser) {
         Column entities = ColumnFactory.create("Inset", browser.getComponent());
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
-                                       "ReportingWorkspace.Layout", getButtons(), entities);
+        return SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP,
+                "ReportingWorkspace.Layout", getButtons(), entities);
     }
 
     /**
@@ -239,7 +238,7 @@ public class ReportingWorkspace extends AbstractWorkspace {
      * @return a new query
      */
     private ReportQuery createQuery(User user) {
-        return new ReportQuery(_user);
+        return new ReportQuery(user);
     }
 
     /**
@@ -310,16 +309,17 @@ public class ReportingWorkspace extends AbstractWorkspace {
      * selected report.
      * TODO:  Currently set to use Birt Viewer app deployed
      * in local Tomcat passing report file name defined in template.
-     * Need to create proper report generator implementation.  
+     * Need to create proper report generator implementation.
      */
     protected void onRun() {
         IArchetypeService service
-        = ArchetypeServiceHelper.getArchetypeService();
+                = ArchetypeServiceHelper.getArchetypeService();
         Document doc = TemplateHelper.getDocumentFromTemplate(
-                (Entity)getObject(), service);
+                (Entity) getObject(), service);
         String uri = "http://localhost:8080/openvpms-viewer/frameset?__report=report/" + doc.getName();
         Command command = new BrowserOpenWindowCommand(
-                uri, "OpenVPMS Report Viewer","width=800,height=600,resizable=yes,scrollbars=yes");
+                uri, "OpenVPMS Report Viewer",
+                "width=800,height=600,resizable=yes,scrollbars=yes");
         OpenVPMSApp.getInstance().enqueueCommand(command);
     }
 

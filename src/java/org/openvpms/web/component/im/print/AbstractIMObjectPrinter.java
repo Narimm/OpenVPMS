@@ -52,9 +52,8 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
     /**
      * Initiates printing of an object.
      * If printing interactively, pops up a {@link PrintDialog} prompting if
-     * printing of an object
-     * should proceed, invoking {@link #doPrint} if 'OK' is selected, or
-     * {@link #doPrintPreview} if 'preview' is selected.
+     * printing of an object should proceed, invoking {@link #doPrint} if 'OK'
+     * is selected, or {@link #doPrintPreview} if 'preview' is selected.
      * If printing in the background, invokes {@link #doPrint}.
      *
      * @param object the object to print

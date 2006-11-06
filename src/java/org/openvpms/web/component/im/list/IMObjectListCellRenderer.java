@@ -63,16 +63,12 @@ public class IMObjectListCellRenderer implements ListCellRenderer {
         Object result = null;
         if (value instanceof IMObject) {
             IMObject object = (IMObject) value;
-            String name = object.getName();
-            if (object.getArchetypeId() == null) {
-                // dummy object.
-                if (IMObjectListModel.ALL.equals(name)) {
-                    result = new BoldListCell(ALL);
-                } else if (IMObjectListModel.NONE.equals(name)) {
-                    result = new BoldListCell(NONE);
-                }
+            if (object.equals(IMObjectListModel.ALL)) {
+                result = new BoldListCell(ALL);
+            } else if (object.equals(IMObjectListModel.NONE)) {
+                result = new BoldListCell(NONE);
             } else {
-                result = name;
+                result = object.getName();
             }
         }
         if (result == null) {

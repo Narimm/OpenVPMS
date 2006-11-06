@@ -18,7 +18,6 @@
 
 package org.openvpms.web.app.patient;
 
-import org.openvpms.web.app.Reporting.ReminderWorkspace;
 import org.openvpms.web.app.patient.document.PatientDocumentWorkspace;
 import org.openvpms.web.app.patient.info.InformationWorkspace;
 import org.openvpms.web.app.patient.mr.PatientRecordWorkspace;

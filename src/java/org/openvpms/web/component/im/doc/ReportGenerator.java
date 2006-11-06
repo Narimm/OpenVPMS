@@ -35,6 +35,8 @@ import org.openvpms.report.TemplateHelper;
 import static org.openvpms.web.component.im.doc.DocumentException.ErrorCode.NotFound;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
+import java.util.Arrays;
+
 
 /**
  * Helper to generate reports from a template.
@@ -127,7 +129,7 @@ public class ReportGenerator {
         }
         IMObjectReport report = IMObjectReportFactory.create(
                 doc, mimeTypes, service);
-        return report.generate(object);
+        return report.generate(Arrays.asList(object));
 
     }
 }

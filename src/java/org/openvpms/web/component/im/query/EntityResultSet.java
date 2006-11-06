@@ -27,7 +27,6 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import static org.openvpms.component.system.common.query.CollectionNodeConstraint.JoinType.LeftOuterJoin;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.List;

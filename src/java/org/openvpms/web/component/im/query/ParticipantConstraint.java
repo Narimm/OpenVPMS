@@ -41,8 +41,7 @@ public class ParticipantConstraint extends CollectionNodeConstraint {
      */
     public ParticipantConstraint(String nodeName, String shortName,
                                  Entity entity) {
-        super(nodeName, shortName, true, true);
-        add(new ObjectRefNodeConstraint("entity", entity.getObjectReference()));
+        this(nodeName, shortName, entity.getObjectReference());
     }
 
     /**

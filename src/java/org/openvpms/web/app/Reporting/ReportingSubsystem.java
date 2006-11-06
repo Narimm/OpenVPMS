@@ -16,12 +16,12 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.Reporting;
+package org.openvpms.web.app.reporting;
 
 import org.openvpms.web.component.subsystem.AbstractSubsystem;
 
 /**
- * Reporting subsystem.
+ * reporting subsystem.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
