@@ -16,24 +16,23 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.deposit;
+package org.openvpms.archetype.rules.patient.reminder;
+
+import org.openvpms.archetype.rules.act.ActStatus;
 
 
 /**
- * Act status types for <em>act.bankDeposit</em> acts.
+ * Act status types for <em>act.patientReminder</em> acts.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DepositStatus {
+public class ReminderStatus extends ActStatus {
 
     /**
-     * Undeposited act status.
+     * Cancelled act status.
      */
-    public static final String UNDEPOSITED = "UNDEPOSITED";
-    
-    /**
-     * Deposited act status.
-     */
-    public static final String DEPOSITED = "DEPOSITED";
+    public static final String CANCELLED = "CANCELLED";
+
 }
+
