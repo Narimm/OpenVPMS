@@ -290,7 +290,8 @@ public class NodeEditorFactory extends AbstractIMObjectComponentFactory {
         if (TypeHelper.matches(range, "document.*")) {
             editor = new DocumentEditor(property, getLayoutContext());
         } else {
-            editor = new IMObjectReferenceEditor(property, getLayoutContext());
+            editor = IMObjectReferenceEditorFactory.create(property,
+                                                           getLayoutContext());
         }
         _editors.add(editor);
         return editor;

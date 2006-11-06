@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
@@ -36,10 +37,12 @@ import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLE
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
@@ -71,7 +74,7 @@ public class PatientRecordWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party party = (Party) object;
-        GlobalContext.getInstance().setPatient(party);
+        ContextHelper.setPatient(party);
         layoutWorkspace(party);
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
@@ -111,6 +114,28 @@ public class PatientRecordWorkspace extends ActWorkspace {
         if (patient != getObject()) {
             setObject(patient);
         }
+    }
+
+    /**
+     * Create a new query.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected Query<IMObject> createQuery(String refModelName,
+                                          String entityName,
+                                          String conceptName) {
+        Query query = super.createQuery(refModelName, entityName, conceptName);
+        if (query instanceof PatientQuery) {
+            ((PatientQuery) query).setShowAllPatients(true);
+        }
+        return query;
     }
 
     /**

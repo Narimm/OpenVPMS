@@ -114,7 +114,7 @@
                     /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
                 </value>
                 <value>
-                    /org/openvpms/archetype/rules/reminder/Reminder.hbm.xml
+                    /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml
                 </value>
             </list>
         </property>

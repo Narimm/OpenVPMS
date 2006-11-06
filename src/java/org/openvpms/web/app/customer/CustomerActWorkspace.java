@@ -22,6 +22,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.app.subsystem.ActWorkspace;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -57,7 +58,7 @@ public abstract class CustomerActWorkspace extends ActWorkspace {
     public void setObject(IMObject object) {
         super.setObject(object);
         Party party = (Party) object;
-        GlobalContext.getInstance().setCustomer(party);
+        ContextHelper.setCustomer(party);
         layoutWorkspace(party);
         initQuery(party);
         firePropertyChange(SUMMARY_PROPERTY, null, null);

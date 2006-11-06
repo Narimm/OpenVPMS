@@ -28,6 +28,7 @@ import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -131,7 +132,8 @@ public abstract class AbstractParticipationEditor
      */
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new IMObjectReferenceEditor(property, getLayoutContext());
+        return IMObjectReferenceEditorFactory.create(property,
+                                                     getLayoutContext());
     }
 
     /**

@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.LabelFactory;
@@ -56,13 +56,18 @@ public class PatientQuery extends AbstractEntityQuery {
      * The customer to limit the search to. If <code>null</code>, indicates to
      * query all patients.
      */
-    private final Party _customer;
+    private final Party customer;
+
+    /**
+     * Determines if the 'all patients' checkbox should be displayed.
+     */
+    private boolean showAllPatients;
 
     /**
      * The 'all patients' checkbox. If selected, query all patients, otherwise
      * constrain the search to the current customer.
      */
-    private CheckBox _allPatients;
+    private CheckBox allPatients;
 
     /**
      * All patients label id.
@@ -77,11 +82,13 @@ public class PatientQuery extends AbstractEntityQuery {
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
+     * @param context      the context
      */
     public PatientQuery(String refModelName, String entityName,
-                        String conceptName) {
+                        String conceptName,
+                        Context context) {
         super(refModelName, entityName, conceptName);
-        _customer = GlobalContext.getInstance().getCustomer();
+        customer = context.getCustomer();
     }
 
     /**
@@ -89,9 +96,10 @@ public class PatientQuery extends AbstractEntityQuery {
      * specified short names, and using the current customer, if set.
      *
      * @param shortNames the patient archetype short names
+     * @param context    the context
      */
-    public PatientQuery(String[] shortNames) {
-        this(shortNames, GlobalContext.getInstance().getCustomer());
+    public PatientQuery(String[] shortNames, Context context) {
+        this(shortNames, context.getCustomer());
     }
 
     /**
@@ -105,7 +113,16 @@ public class PatientQuery extends AbstractEntityQuery {
      */
     public PatientQuery(String[] shortNames, Party customer) {
         super(shortNames);
-        _customer = customer;
+        this.customer = customer;
+    }
+
+    /**
+     * Determines if the 'all patients' checkbox should be displayed.
+     *
+     * @param show if <code>true</code>, display the 'all patients' checkbox
+     */
+    public void setShowAllPatients(boolean show) {
+        showAllPatients = show;
     }
 
     /**
@@ -118,11 +135,11 @@ public class PatientQuery extends AbstractEntityQuery {
     public ResultSet<Entity> query(SortConstraint[] sort) {
         getComponent();  // ensure the component is rendered
         ResultSet<Entity> result;
-        if (_allPatients.isSelected()) {
+        if (allPatients != null && allPatients.isSelected()) {
             result = super.query(sort);
         } else {
             List<Entity> objects = null;
-            if (_customer != null) {
+            if (customer != null) {
                 objects = filterForCustomer();
             }
             if (objects == null) {
@@ -144,7 +161,7 @@ public class PatientQuery extends AbstractEntityQuery {
      */
     @Override
     public boolean isAuto() {
-        return (_customer != null);
+        return (customer != null);
     }
 
     /**
@@ -157,7 +174,9 @@ public class PatientQuery extends AbstractEntityQuery {
     protected void doLayout(Component container) {
         addShortNameSelector(container);
         addInstanceName(container);
-        addAllPatients(container);
+        if (showAllPatients) {
+            addAllPatients(container);
+        }
         addInactive(container);
         ApplicationInstance.getActive().setFocusedComponent(getInstanceName());
     }
@@ -168,12 +187,12 @@ public class PatientQuery extends AbstractEntityQuery {
      * @param container the container
      */
     protected void addAllPatients(Component container) {
-        _allPatients = new CheckBox();
-        boolean selected = (_customer == null);
-        _allPatients.setSelected(selected);
+        allPatients = new CheckBox();
+        boolean selected = (customer == null);
+        allPatients.setSelected(selected);
         Label allPatients = LabelFactory.create(ALL_PATIENTS_ID);
         container.add(allPatients);
-        container.add(_allPatients);
+        container.add(this.allPatients);
     }
 
     /**
@@ -184,7 +203,7 @@ public class PatientQuery extends AbstractEntityQuery {
      */
     private List<Entity> filterForCustomer() {
         List<Entity> result = null;
-        List<Entity> patients = getPatients(_customer);
+        List<Entity> patients = getPatients(customer);
         String type = getShortName();
         String name = getName();
         boolean activeOnly = !includeInactive();

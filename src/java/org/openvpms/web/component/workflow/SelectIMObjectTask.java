@@ -21,6 +21,7 @@ package org.openvpms.web.component.workflow;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
@@ -52,9 +53,10 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
      * Constructs a new <code>SelectIMObjectTask</code>.
      *
      * @param shortName the short name to query on. May contain wildcards
+     * @param context   the context
      */
-    public SelectIMObjectTask(String shortName) {
-        query = QueryFactory.create(shortName);
+    public SelectIMObjectTask(String shortName, Context context) {
+        query = QueryFactory.create(shortName, context);
         type = getType(query.getShortNames());
     }
 

@@ -97,7 +97,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     private boolean _distinct;
 
     /**
-     * The instance name. If the text is <code>null</code> or empty, indicates
+     * The instance name field. If the text is <code>null</code> or empty, indicates
      * to query all instances.
      */
     private TextField _instanceName;
@@ -255,8 +255,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @param name the name. May contain wildcards, or be <code>null</code>
      */
     public void setName(String name) {
-        getComponent();
-        _instanceName.setText(name);
+        getInstanceName().setText(name);
     }
 
     /**
@@ -265,9 +264,8 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      * @return the name. May contain wildcards, or be <code>null</code>
      */
     public String getName() {
-        getComponent();
         final String wildcard = "*";
-        String name = _instanceName.getText();
+        String name = getInstanceName().getText();
         if (!StringUtils.isEmpty(name)) {
             // if entered name contains a wildcard then leave alone else
             // add one to end
@@ -396,7 +394,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      *         <code>false</code>
      */
     protected boolean includeInactive() {
-        return _inactive.isSelected();
+        return (_inactive != null && _inactive.isSelected());
     }
 
     /**
@@ -486,16 +484,27 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
     }
 
     /**
+     * Returns the inactive field.
+     *
+     * @return the inactive field
+     */
+    protected CheckBox getInactive() {
+        if (_inactive == null) {
+            _inactive = new CheckBox();
+            _inactive.setSelected(false);
+        }
+        return _inactive;
+    }
+
+    /**
      * Adds the inactive checkbox to a container.
      *
      * @param container the container
      */
     protected void addInactive(Component container) {
-        _inactive = new CheckBox();
-        _inactive.setSelected(false);
         Label deactivedLabel = LabelFactory.create(DEACTIVATED_ID);
         container.add(deactivedLabel);
-        container.add(_inactive);
+        container.add(getInactive());
     }
 
     /**

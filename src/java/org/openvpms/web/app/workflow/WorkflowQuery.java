@@ -45,6 +45,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.button.ShortcutHelper;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.ActResultSet;
@@ -228,7 +229,8 @@ public abstract class WorkflowQuery extends ActQuery {
     protected void onSelect() {
         try {
             String shortName = "security.user";
-            Query<IMObject> query = QueryFactory.create(shortName);
+            Query<IMObject> query = QueryFactory.create(
+                    shortName, GlobalContext.getInstance());
             final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
 
             String title = Messages.get(
