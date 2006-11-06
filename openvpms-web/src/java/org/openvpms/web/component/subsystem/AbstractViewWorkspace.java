@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
@@ -254,10 +255,27 @@ public abstract class AbstractViewWorkspace extends AbstractWorkspace {
     protected Browser<IMObject> createBrowser(String refModelName,
                                               String entityName,
                                               String conceptName) {
-        Query<IMObject> query = QueryFactory.create(refModelName, entityName,
-                                                    conceptName);
+        Query<IMObject> query = createQuery(refModelName, entityName,
+                                            conceptName);
         SortConstraint[] sort = {new NodeSortConstraint("name", true)};
         return new TableBrowser<IMObject>(query, sort);
+    }
+
+    /**
+     * Create a new query.
+     *
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
+     */
+    protected Query<IMObject> createQuery(String refModelName,
+                                          String entityName,
+                                          String conceptName) {
+        return QueryFactory.create(refModelName, entityName, conceptName,
+                                   GlobalContext.getInstance());
     }
 
     /**

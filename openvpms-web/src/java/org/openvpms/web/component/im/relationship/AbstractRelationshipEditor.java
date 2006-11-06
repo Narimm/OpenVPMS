@@ -20,38 +20,24 @@ package org.openvpms.web.component.im.relationship;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
-import org.openvpms.web.component.im.create.IMObjectCreator;
-import org.openvpms.web.component.im.create.IMObjectCreatorListener;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.EditDialog;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.IMObjectReferenceEditorFactory;
 import org.openvpms.web.component.im.filter.NamedNodeFilter;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.im.query.TableBrowser;
-import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.resource.util.Messages;
 
 import java.util.List;
 
@@ -157,94 +143,18 @@ public abstract class AbstractRelationshipEditor
     }
 
     /**
-     * Pops up a dialog to select an entity.
+     * Creates a new reference editor.
      *
-     * @param entity the entity wrapper
+     * @param property the reference property
+     * @param context  the layout context
+     * @return a new reference editor
      */
-    protected void onSelect(final Entity entity) {
-        NodeDescriptor descriptor = entity.getProperty().getDescriptor();
-        try {
-            Query<IMObject> query = QueryFactory.create(
-                    descriptor.getArchetypeRange());
-            final Browser<IMObject> browser = new TableBrowser<IMObject>(query);
-            String title = Messages.get("imobject.select.title",
-                                        descriptor.getDisplayName());
-            final BrowserDialog<IMObject> popup
-                    = new BrowserDialog<IMObject>(title, browser, true);
-
-            popup.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    if (popup.createNew()) {
-                        onCreate(entity);
-                    } else {
-                        IMObject object = popup.getSelected();
-                        if (object != null) {
-                            entity.setObject(object);
-                        }
-                    }
-                }
-            });
-
-            popup.show();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
-    }
-
-    /**
-     * Invoked when the 'new' button is pressed.
-     *
-     * @param entity describes the type of object to create
-     */
-    protected void onCreate(final Entity entity) {
-        IMObjectCreatorListener listener = new IMObjectCreatorListener() {
-            public void created(IMObject object) {
-                onCreated(object, entity);
-            }
-
-            public void cancelled() {
-                // ignore
-            }
-        };
-
-        NodeDescriptor descriptor = entity.getProperty().getDescriptor();
-        IMObjectCreator.create(descriptor.getDisplayName(),
-                               descriptor.getArchetypeRange(), listener);
-    }
-
-    /**
-     * Invoked when the editor is closed.
-     *
-     * @param editor the editor
-     * @param entity the entity to associate the object with
-     */
-    protected void onEditCompleted(IMObjectEditor editor,
-                                   AbstractRelationshipEditor.Entity entity) {
-        if (!editor.isCancelled() && !editor.isDeleted()) {
-            entity.setObject(editor.getObject());
-        }
-    }
-
-    /**
-     * Invoked when an object is created. Pops up an editor to edit it.
-     *
-     * @param object the object to edit
-     * @param entity the entity to associate the object with, on completion of
-     *               editing
-     */
-    private void onCreated(IMObject object,
-                           final AbstractRelationshipEditor.Entity entity) {
-        LayoutContext context = getLayoutContext();
-        final IMObjectEditor editor
-                = IMObjectEditorFactory.create(object, context);
-        final EditDialog dialog = new EditDialog(editor, context);
-        dialog.addWindowPaneListener(new WindowPaneListener() {
-            public void windowPaneClosing(WindowPaneEvent event) {
-                onEditCompleted(editor, entity);
-            }
-        });
-
-        dialog.show();
+    protected IMObjectReferenceEditor createReferenceEditor(
+            Property property, LayoutContext context) {
+        IMObjectReferenceEditor editor = IMObjectReferenceEditorFactory.create(
+                property, context);
+        editor.setAllowCreate(true);
+        return editor;
     }
 
     /**
@@ -319,12 +229,7 @@ public abstract class AbstractRelationshipEditor
                 IMObjectReference ref = (IMObjectReference) property.getValue();
                 _viewer = new IMObjectReferenceViewer(ref, false);
             } else {
-                _editor = new IMObjectReferenceEditor(property, context) {
-                    protected void onSelect() {
-                        // override default behaviour to enable creation of objects.
-                        Entity.this.onSelect();
-                    }
-                };
+                _editor = createReferenceEditor(property, context);
             }
         }
 
@@ -347,13 +252,6 @@ public abstract class AbstractRelationshipEditor
         public Component getComponent() {
             return (_editor != null) ? _editor.getComponent() :
                     _viewer.getComponent();
-        }
-
-        /**
-         * Pops up a dialog to select an object.
-         */
-        protected void onSelect() {
-            AbstractRelationshipEditor.this.onSelect(this);
         }
 
     }

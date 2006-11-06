@@ -22,6 +22,8 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.app.admin.lookup.LookupEditor;
+import org.openvpms.web.app.customer.CustomerEditor;
+import org.openvpms.web.app.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.app.customer.account.AdjustmentActEditor;
 import org.openvpms.web.app.patient.PatientEditor;
 import org.openvpms.web.app.workflow.messaging.UserMessageActEditor;
@@ -67,18 +69,24 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      * class is configured.
      */
     public void testCreateDefaultEditor() {
-        checkCreate("party.customerperson", DefaultIMObjectEditor.class);
+        checkCreate("contact.location", DefaultIMObjectEditor.class);
     }
 
     /**
-     * Verifies that a {@link EntityRelationshipEditor} is returned for
-     * <em>entityRelationship.*</em> short names.
+     * Verifies that an {@link EntityRelationshipEditor} is returned for
+     * all <em>entityRelationship.*</em> short names, with the exception
+     * of <em>entityRelationship.patientOwner</em> which should return
+     * an {@link PatientOwnerRelationshipEditor}.
      */
     public void testCreateRelationshipEditor() {
         String[] shortNames
                 = DescriptorHelper.getShortNames("entityRelationship.*");
         for (String shortName : shortNames) {
-            checkCreate(shortName, EntityRelationshipEditor.class);
+            if (shortName.equals("entityRelationship.patientOwner")) {
+                checkCreate(shortName, PatientOwnerRelationshipEditor.class);
+            } else {
+                checkCreate(shortName, EntityRelationshipEditor.class);
+            }
         }
     }
 
@@ -293,6 +301,18 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     public void testCreateDocumentTemplateEditor() {
         checkCreate("entity.documentTemplate", DocumentTemplateEditor.class);
+    }
+
+    /**
+     * Verifies that an {@link CustomerEditor} is created for
+     * <em>party.customer*</em>
+     */
+    public void testCreateCustomerEditor() {
+        String[] shortNames
+                = DescriptorHelper.getShortNames("party.customer*");
+        for (String shortName : shortNames) {
+            checkCreate(shortName, CustomerEditor.class);
+        }
     }
 
     /**

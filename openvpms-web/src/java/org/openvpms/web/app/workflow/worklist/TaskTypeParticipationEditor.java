@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.AbstractParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -105,7 +106,8 @@ public class TaskTypeParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new IMObjectReferenceEditor(property, getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor(property,
+                                                   getLayoutContext()) {
 
             @Override
             protected Query<IMObject> createQuery(String name) {

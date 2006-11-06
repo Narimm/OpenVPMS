@@ -85,6 +85,13 @@ public interface Query<T extends IMObject> {
     /**
      * Determines if the query should be run automatically.
      *
+     * @param auto if <code>true</code> run the query automatically
+     */
+    void setAuto(boolean auto);
+
+    /**
+     * Determines if the query should be run automatically.
+     *
      * @return <code>true</code> if the query should be run automaticaly;
      *         otherwise <code>false</code>
      */

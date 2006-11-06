@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.ArchetypeHandler;
 import org.openvpms.web.component.im.util.ArchetypeHandlers;
 
@@ -70,36 +71,38 @@ public final class QueryFactory {
 
     /**
      * Construct a new {@link Query}. Query implementations must provide at
-     * least constructor accepting the following arguments, invoked in the
-     * order: <ul> <li>(String refModelName, String entityName, String
-     * conceptName)</li> <li>(String[] shortNames)</li> <li>default
-     * constructor</li> </ul>
+     * least one constructor accepting the following arguments, invoked in the
+     * order:
+     * <ul>
+     * <li>(String refModelName, String entityName, String conceptName,
+     * Context context)</li>
+     * <li>(String refModelName, String entityName, String conceptName)</li>
+     * <li>(String[] shortNames, Context context)</li>
+     * <li>(String[] shortNames)</li>
+     * <li>default constructor</li>
+     * </ul>
      *
      * @param refModelName the archetype reference model name
      * @param entityName   the archetype entity name
      * @param conceptName  the archetype concept name
+     * @param context      the current context
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
     public static <T extends IMObject> Query<T> create(String refModelName,
                                                        String entityName,
-                                                       String conceptName) {
+                                                       String conceptName,
+                                                       Context context) {
         Query<T> result = null;
         String[] shortNames = DescriptorHelper.getShortNames(
                 refModelName, entityName, conceptName);
         ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
         if (handler != null) {
-            try {
-                try {
-                    String[] args = {refModelName, entityName, conceptName};
-                    Class[] types = {String.class, String.class, String.class};
-                    result = (Query<T>) handler.create(args, types);
-                } catch (NoSuchMethodException exception) {
-                    result = create(handler, shortNames);
-                }
-            } catch (Throwable throwable) {
-                _log.error(throwable, throwable);
+            result = create(handler, refModelName, entityName, conceptName,
+                            context);
+            if (result == null) {
+                result = create(handler, shortNames, context);
             }
         }
         if (result == null) {
@@ -111,64 +114,129 @@ public final class QueryFactory {
     /**
      * Construct a new {@link Query}. Query implementations must provide at
      * least one constructor accepting the following arguments, invoked in the
-     * order: <ul> <li>(String[] shortNames)</li> <li>default constructor</li>
+     * order:
+     * <ul>
+     * <li>(String[] shortNames, Context context)</li>
+     * <li>(String[] shortNames)</li>
+     * <li>default constructor</li>
      * </ul>
      *
      * @param shortName the archetype short name to query on. May contain
      *                  wildcards
+     * @param context   the context
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public static <T extends IMObject> Query<T> create(String shortName) {
-        return create(new String[]{shortName});
+    public static <T extends IMObject> Query<T> create(String shortName,
+                                                       Context context) {
+        return create(new String[]{shortName}, context);
     }
 
     /**
      * Construct a new {@link Query}. Query implementations must provide at
-     * least one constructor accepting the following arguments, invoked in the
-     * order: <ul> <li>(String[] shortNames)</li> <li>default constructor</li>
+     * least constructor one accepting the following arguments, invoked in the
+     * order:
+     * <ul>
+     * <li>(String[] shortNames, Context context)</li>
+     * <li>(String[] shortNames)</li>
+     * <li>default constructor</li>
      * </ul>
      *
      * @param shortNames the archetype short names to query on. May contain
      *                   wildcards
+     * @param context    the current context
      * @return a new query
      * @throws ArchetypeQueryException if the short names don't match any
      *                                 archetypes
      */
-    public static <T extends IMObject> Query<T> create(String[] shortNames) {
+    public static <T extends IMObject> Query<T> create(String[] shortNames,
+                                                       Context context) {
         shortNames = DescriptorHelper.getShortNames(shortNames);
         ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
         if (handler == null) {
             return new DefaultQuery<T>(shortNames);
         }
-        return create(handler, shortNames);
+        return create(handler, shortNames, context);
     }
 
     /**
-     * Constructs a query implementation, using the <em>(String[]
-     * shortNames)</em> constructor; or the default constructor if it doesn't
-     * exist.
+     * Attempts to create a new query, using one of the following constructors:
+     * <ul>
+     * <li>(String refModelName, String entityName, String conceptName,
+     * Context context)</li>
+     * <li>(String refModelName, String entityName, String conceptName)</li>
+     * </ul>
+     *
+     * @param handler      the {@link Query} implementation
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @param context      the current context
+     * @return a new query, or <code>null</code> if no appropriate constructor
+     *         can be found or construction fails
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends IMObject> Query<T> create(
+            ArchetypeHandler<Query> handler,
+            String refModelName, String entityName,
+            String conceptName, Context context) {
+        Query<T> result = null;
+        try {
+            try {
+                Object[] args = {refModelName, entityName, conceptName,
+                                 context};
+                Class[] types = {String.class, String.class, String.class,
+                                 Context.class};
+                result = (Query<T>) handler.create(args, types);
+            } catch (NoSuchMethodException exception) {
+                try {
+                    Object[] args = {refModelName, entityName, conceptName};
+                    Class[] types = {String.class, String.class, String.class};
+                    result = (Query<T>) handler.create(args, types);
+                } catch (NoSuchMethodException nested) {
+                    // ignore
+                }
+            }
+        } catch (Throwable exception) {
+            _log.error(exception, exception);
+        }
+        return result;
+    }
+
+    /**
+     * Attempts to create a new query, using one of the following constructors:
+     * <ul>
+     * <li>(String[] shortNames, Context context)</li>
+     * <li>(String[] shortNames)</li>
+     * <li>default constructor</li>
+     * </ul>
      *
      * @param handler    the {@link Query} implementation
      * @param shortNames the archerype short names to query on
-     * @return a new query implementation
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @param context    the context
+     * @return a new query, or <code>null</code> if no appropriate constructor
+     *         can be found or construction fails
      */
+    @SuppressWarnings("unchecked")
     private static <T extends IMObject> Query<T> create(
-            ArchetypeHandler<Query> handler, String[] shortNames) {
-        Query<T> result;
+            ArchetypeHandler<Query> handler, String[] shortNames,
+            Context context) {
+        Query<T> result = null;
         try {
             try {
-                Object[] args = new Object[]{shortNames};
+                Object[] args = new Object[]{shortNames, context};
                 result = (Query<T>) handler.create(args);
             } catch (NoSuchMethodException exception) {
-                result = (Query<T>) handler.create();
+                try {
+                    Object[] args = new Object[]{shortNames};
+                    result = (Query<T>) handler.create(args);
+                } catch (NoSuchMethodException nested) {
+                    result = (Query<T>) handler.create();
+                }
             }
         } catch (Throwable throwable) {
             _log.error(throwable, throwable);
-            result = new DefaultQuery<T>(shortNames);
         }
         return result;
     }

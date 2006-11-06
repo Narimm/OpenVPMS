@@ -123,7 +123,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         String weight = "act.patientWeight";
 
         // select a worklist
-        addTask(new SelectIMObjectTask<Party>(workList));
+        addTask(new SelectIMObjectTask<Party>(workList, initial));
 
         // create and edit an act.customerTask
         TaskProperties taskProps = new TaskProperties();

@@ -19,6 +19,7 @@
 package org.openvpms.web.component.im.util;
 
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.query.AutoQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
@@ -70,7 +71,8 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         ArchetypeHandler patient = _handlers.getHandler("party.patient*");
         assertNotNull(patient);
         assertEquals(patient.getType(), PatientQuery.class);
-        Query query = (Query) patient.create(new Object[]{shortNames});
+        Query query = (Query) patient.create(
+                new Object[]{shortNames, new LocalContext()});
         assertNotNull(query);
         assertEquals(25, query.getMaxRows());
     }

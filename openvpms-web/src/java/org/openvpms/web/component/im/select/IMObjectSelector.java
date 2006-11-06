@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
@@ -249,7 +250,8 @@ public class IMObjectSelector extends Selector {
      *                                 archetypes
      */
     protected Query<IMObject> createQuery(String name) {
-        Query<IMObject> query = QueryFactory.create(shortNames);
+        Query<IMObject> query = QueryFactory.create(
+                shortNames, GlobalContext.getInstance());
         query.setName(name);
         return query;
     }

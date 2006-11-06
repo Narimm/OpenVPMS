@@ -19,19 +19,18 @@
 package org.openvpms.web.app.patient.info;
 
 import nextapp.echo2.app.Component;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
 import org.openvpms.web.app.subsystem.ShortNameList;
 import org.openvpms.web.app.subsystem.ShortNames;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
-
-import java.util.Set;
+import org.openvpms.web.component.im.query.PatientQuery;
+import org.openvpms.web.component.im.query.Query;
 
 
 /**
@@ -57,7 +56,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        GlobalContext.getInstance().setPatient((Party) object);
+        ContextHelper.setPatient((Party) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -100,40 +99,12 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Invoked when the object has been saved.
-     *
-     * @param object the object
-     * @param isNew  determines if the object is a new instance
-     */
-    @Override
-    protected void onSaved(IMObject object, boolean isNew) {
-        super.onSaved(object, isNew);
-        if (isNew) {
-            // todo  need to do the following to force a refresh of the customer
-            // to reflect any new entity relationships with the current patient.
-            // This is a poor solution - need a better way of indicating that
-            // an object has changed.
-            Party patient = (Party) object;
-            GlobalContext context = GlobalContext.getInstance();
-            Party customer = context.getCustomer();
-            if (customer != null && isNew) {
-                if (hasRelationship(patient, customer)) {
-                    // refresh the customer
-                    customer = (Party) IMObjectHelper.reload(customer);
-                    context.setCustomer(customer);
-                }
-            }
-        }
-    }
-
-    /**
      * Creates a new CRUD window.
      *
      * @return a new CRUD window
      */
     @Override
-    protected CRUDWindow createCRUDWindow
-            () {
+    protected CRUDWindow createCRUDWindow() {
         ShortNames shortNames = new ShortNameList(getRefModelName(),
                                                   getEntityName(),
                                                   getConceptName());
@@ -141,28 +112,24 @@ public class InformationWorkspace extends CRUDWorkspace {
     }
 
     /**
-     * Determines if a relationship between a customer and patient exists.
+     * Create a new query.
      *
-     * @param patient  the patient
-     * @param customer the customer
-     * @return <code>true</code> if a relationship exists; otherwsie
-     *         <code>false</code>
+     * @param refModelName the archetype reference model name
+     * @param entityName   the archetype entity name
+     * @param conceptName  the archetype concept name
+     * @return a new query
+     * @throws ArchetypeQueryException if the short names don't match any
+     *                                 archetypes
      */
-    private boolean hasRelationship(Party patient, Party customer) {
-        boolean result = false;
-        Set<EntityRelationship> relationships
-                = patient.getEntityRelationships();
-        IMObjectReference source = new IMObjectReference(customer);
-        IMObjectReference target = new IMObjectReference(patient);
-
-        for (EntityRelationship relationship : relationships) {
-            if (source.equals(relationship.getSource())
-                    && target.equals(relationship.getTarget())) {
-                result = true;
-                break;
-            }
+    @Override
+    @SuppressWarnings("unchecked")
+    protected Query<IMObject> createQuery(String refModelName,
+                                          String entityName,
+                                          String conceptName) {
+        Query query = super.createQuery(refModelName, entityName, conceptName);
+        if (query instanceof PatientQuery) {
+            ((PatientQuery) query).setShowAllPatients(true);
         }
-        return result;
+        return query;
     }
-
 }

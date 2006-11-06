@@ -32,6 +32,7 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
@@ -89,7 +90,8 @@ public class ProductParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new IMObjectReferenceEditor(property, getLayoutContext()) {
+        return new AbstractIMObjectReferenceEditor(property,
+                                                   getLayoutContext()) {
 
             @Override
             protected Query<IMObject> createQuery(String name) {

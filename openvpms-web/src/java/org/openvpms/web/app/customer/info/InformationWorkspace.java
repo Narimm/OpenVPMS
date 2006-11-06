@@ -16,12 +16,14 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.customer;
+package org.openvpms.web.app.customer.info;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.app.customer.CustomerSummary;
 import org.openvpms.web.app.subsystem.CRUDWorkspace;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 
 
@@ -48,7 +50,7 @@ public class InformationWorkspace extends CRUDWorkspace {
     @Override
     public void setObject(IMObject object) {
         super.setObject(object);
-        GlobalContext.getInstance().setCustomer((Party) object);
+        ContextHelper.setCustomer((Party) object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 

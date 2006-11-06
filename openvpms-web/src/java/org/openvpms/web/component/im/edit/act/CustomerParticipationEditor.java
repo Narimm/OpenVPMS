@@ -23,8 +23,10 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -70,14 +72,14 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
     @Override
     protected IMObjectReferenceEditor createObjectReferenceEditor(
             Property property) {
-        return new IMObjectReferenceEditor(property, getLayoutContext(), true) {
+        return new AbstractIMObjectReferenceEditor(property, getLayoutContext(),
+                                                   true) {
 
             @Override
             public void setObject(IMObject object) {
                 super.setObject(object);
                 Party customer = (Party) object;
-                GlobalContext.getInstance().setCustomer(customer);
-                GlobalContext.getInstance().setPatient(null);
+                ContextHelper.setCustomer(customer);
             }
         };
     }

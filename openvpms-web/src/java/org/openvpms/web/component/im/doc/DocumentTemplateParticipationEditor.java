@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
+import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -68,7 +69,7 @@ public class DocumentTemplateParticipationEditor
             act.setValue(parent.getObjectReference());
         }
         Property entity = getProperty("entity");
-        _templateEditor = new IMObjectReferenceEditor(entity, context) {
+        _templateEditor = new AbstractIMObjectReferenceEditor(entity, context) {
 
             /**
              * Pops up a dialog to select an object.
@@ -93,7 +94,7 @@ public class DocumentTemplateParticipationEditor
                     public void windowPaneClosing(WindowPaneEvent event) {
                         IMObject object = popup.getSelected();
                         if (object != null) {
-                            onSelected(object);
+                            setObject(object);
                         }
                     }
                 });
