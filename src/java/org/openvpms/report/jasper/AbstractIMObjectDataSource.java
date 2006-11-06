@@ -19,6 +19,7 @@
 package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 
@@ -42,6 +43,26 @@ public abstract class AbstractIMObjectDataSource implements JRDataSource {
     public AbstractIMObjectDataSource(IArchetypeService service) {
         _service = service;
     }
+
+    /**
+     * Returns a data source for a collection node.
+     *
+     * @param name the collection node name
+     * @throws JRException for any error
+     */
+    public JRDataSource getDataSource(String name) throws JRException {
+        return getDataSource(name, new String[0]);
+    }
+
+    /**
+     * Returns a data source for a collection node.
+     *
+     * @param name      the collection node name
+     * @param sortNodes the list of nodes to sort on
+     * @throws JRException for any error
+     */
+    public abstract JRDataSource getDataSource(String name, String[] sortNodes)
+            throws JRException;
 
     /**
      * Returns the archetype service.

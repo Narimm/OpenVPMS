@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Arrays;
 
 
 /**
@@ -120,7 +121,7 @@ public class ReportTool {
      */
     public void save(IMObject object, String path) throws IOException {
         IMObjectReport report = getReport(object);
-        Document doc = report.generate(object);
+        Document doc = report.generate(Arrays.asList(object));
         path = new File(path, doc.getName()).getPath();
         FileOutputStream stream = new FileOutputStream(path);
         stream.write(doc.getContents());

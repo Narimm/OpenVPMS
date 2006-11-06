@@ -25,7 +25,7 @@
 	<import value="org.openvpms.component.business.domain.im.party.Party" />
 	<import value="org.openvpms.archetype.function.party.PartyFunctions" />
 
-	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.IMObjectDataSource"/>
+	<parameter name="dataSource" isForPrompting="false" class="org.openvpms.report.jasper.IMObjectCollectionDataSource"/>
 
 	<field name="author.entity.name" class="java.lang.String"/>
 	<field name="customer.entity.name" class="java.lang.String"/>

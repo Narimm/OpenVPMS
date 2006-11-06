@@ -82,16 +82,6 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     /**
      * Returns a data source for a collection node.
      *
-     * @param name the collection node name
-     * @throws JRException for any error
-     */
-    public JRDataSource getDataSource(String name) throws JRException {
-        return getDataSource(name, new String[0]);
-    }
-
-    /**
-     * Returns a data source for a collection node.
-     *
      * @param name      the collection node name
      * @param sortNodes the list of nodes to sort on
      * @throws JRException for any error

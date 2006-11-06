@@ -20,6 +20,7 @@ package org.openvpms.report.jasper;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.comparators.TransformingComparator;
@@ -29,6 +30,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.report.IMObjectReportException;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -47,23 +49,24 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
     /**
      * The collection iterator.
      */
-    private Iterator<IMObject> _iter;
-
-    /**
-     * The collection descriptor.
-     */
-    private final NodeDescriptor _descriptor;
+    private Iterator<IMObject> iter;
 
     /**
      * The current object.
      */
-    private IMObjectDataSource _current;
+    private IMObjectDataSource current;
+
+    /**
+     * Display name for this collection. May be <code>null</code>
+     */
+    private String displayName;
 
 
     /**
-     * Construct a new <code>IMObjectCollectionDataSource</code>.
+     * Construct a new <code>IMObjectCollectionDataSource</code> for a
+     * collection node.
      *
-     * @param parent     the parent objecft
+     * @param parent     the parent object
      * @param descriptor the collection desccriptor
      * @param sortNodes  the sort nodes
      */
@@ -76,8 +79,21 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
         }
-        _iter = values.iterator();
-        _descriptor = descriptor;
+        iter = values.iterator();
+        displayName = descriptor.getDisplayName();
+    }
+
+    /**
+     * Construct a new <code>IMObjectCollectionDataSource</code> for a
+     * collection of objects.
+     *
+     * @param objects the objects
+     * @param service the archetype service
+     */
+    public IMObjectCollectionDataSource(Collection<IMObject> objects,
+                                        IArchetypeService service) {
+        super(service);
+        iter = objects.iterator();
     }
 
     /**
@@ -86,12 +102,24 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      * @return true if there is a next record, false otherwise
      */
     public boolean next() {
-        boolean result = _iter.hasNext();
+        boolean result = iter.hasNext();
         if (result) {
-            _current = new IMObjectDataSource(_iter.next(),
-                                              getArchetypeService());
+            current = new IMObjectDataSource(iter.next(),
+                                             getArchetypeService());
         }
         return result;
+    }
+
+    /**
+     * Returns a data source for a collection node.
+     *
+     * @param name      the collection node name
+     * @param sortNodes the list of nodes to sort on
+     * @throws JRException for any error
+     */
+    public JRDataSource getDataSource(String name, String[] sortNodes)
+            throws JRException {
+        return current.getDataSource(name, sortNodes);
     }
 
     /**
@@ -103,11 +131,11 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
      */
     public Object getFieldValue(JRField field) throws JRException {
         Object result = null;
-        if (_current != null) {
+        if (current != null) {
             if (field.getName().equals("displayName")) {
-                result = _descriptor.getDisplayName();
+                result = displayName;
             } else {
-                result = _current.getFieldValue(field);
+                result = current.getFieldValue(field);
             }
         }
         return result;
@@ -136,12 +164,12 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         /**
          * The field name.
          */
-        private final String _name;
+        private final String name;
 
         /**
          * The archetype service.
          */
-        private final IArchetypeService _service;
+        private final IArchetypeService service;
 
 
         /**
@@ -151,8 +179,8 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
          * @param service the archetype service
          */
         public NodeTransformer(String name, IArchetypeService service) {
-            _name = name;
-            _service = service;
+            this.name = name;
+            this.service = service;
         }
 
         /**
@@ -164,9 +192,9 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource {
         public Object transform(Object input) {
             Object result;
             IMObject object = (IMObject) input;
-            NodeResolver resolver = new NodeResolver(object, _service);
+            NodeResolver resolver = new NodeResolver(object, service);
             try {
-                result = resolver.getObject(_name);
+                result = resolver.getObject(name);
                 if (!(result instanceof Comparable)) {
                     // not comparable so null to avoid class cast exceptions
                     result = null;

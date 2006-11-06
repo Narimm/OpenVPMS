@@ -39,13 +39,13 @@ import java.util.List;
 
 
 /**
- * Abstract implementation of the {@link IMObjectCollectionReport} interface.
+ * Abstract implementation of the {@link SubreportGenerator} interface.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractIMObjectCollectionReport
-        implements IMObjectCollectionReport {
+public abstract class AbstractSubreportGenerator
+        implements SubreportGenerator {
 
     /**
      * The collection node descriptor.
@@ -64,8 +64,8 @@ public abstract class AbstractIMObjectCollectionReport
      * @param descriptor the collection node descriptor
      * @param service    the archetype service
      */
-    public AbstractIMObjectCollectionReport(NodeDescriptor descriptor,
-                                            IArchetypeService service) {
+    public AbstractSubreportGenerator(NodeDescriptor descriptor,
+                                      IArchetypeService service) {
         _descriptor = descriptor;
         _service = service;
     }

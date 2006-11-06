@@ -28,7 +28,7 @@ import net.sf.jasperreports.engine.design.JasperDesign;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectCollectionReport {
+public interface SubreportGenerator {
 
     /**
      * Generates the report.

@@ -35,14 +35,16 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
-import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
+import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.JasperIMObjectReport;
 import org.openvpms.report.TemplateHelper;
-import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
+import org.openvpms.report.jasper.TemplatedJasperReport;
 import org.openvpms.report.tools.ReportTool;
 
 import java.io.ByteArrayInputStream;
 import java.io.PrintStream;
+import java.util.List;
+import java.util.Arrays;
 
 
 /**
@@ -79,7 +81,8 @@ public class JasperReportTool extends ReportTool {
         IMObjectReport report = getReport(object);
         if (report instanceof JasperIMObjectReport) {
             JasperIMObjectReport r = (JasperIMObjectReport) report;
-            JasperViewer viewer = new JasperViewer(r.report(object), true);
+            List<IMObject> list = Arrays.asList(object);
+            JasperViewer viewer = new JasperViewer(r.report(list), true);
             viewer.setVisible(true);
         } else {
             System.out.println("Can't view reports of type "
@@ -156,7 +159,7 @@ public class JasperReportTool extends ReportTool {
                     ByteArrayInputStream stream
                             = new ByteArrayInputStream(doc.getContents());
                     JasperDesign design = JRXmlLoader.load(stream);
-                    report = new TemplatedJasperIMObjectReport(
+                    report = new TemplatedJasperReport(
                             design, mimeTypes, service);
                 } else {
                     System.err.println("Warning:" + doc.getName()
@@ -165,7 +168,7 @@ public class JasperReportTool extends ReportTool {
                 }
             }
             if (report == null) {
-                report = new DynamicJasperIMObjectReport(
+                report = new DynamicJasperReport(
                         service.getArchetypeDescriptor(shortName), mimeTypes,
                         service);
             }
@@ -222,8 +225,7 @@ public class JasperReportTool extends ReportTool {
      */
     private static void displayUsage(JSAP parser) {
         System.err.println();
-        System.err
-                .println("Usage: java " + JasperReportTool.class.getName());
+        System.err.println("Usage: java " + JasperReportTool.class.getName());
         System.err.println("                " + parser.getUsage());
         System.err.println();
         System.err.println(parser.getHelp());

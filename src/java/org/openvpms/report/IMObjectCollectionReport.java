@@ -26,21 +26,20 @@ import java.util.Collection;
 
 
 /**
- * Generates a report for a collection of {@link IMObject}s.
+ * Generates a report for a collection of objects.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public interface IMObjectReport {
+public interface IMObjectCollectionReport {
 
     /**
      * Generates a report for a collection of objects.
      *
-     * @param objects the objects to report on
+     * @param objects the objects
      * @return a document containing the report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     Document generate(Collection<IMObject> objects);
-
 }
