@@ -16,24 +16,24 @@
  *  $Id$
  */
 
-package org.openvpms.archetype.rules.deposit;
+package org.openvpms.archetype.rules.patient.reminder;
+
+import org.openvpms.component.business.domain.im.act.Act;
 
 
 /**
- * Act status types for <em>act.bankDeposit</em> acts.
+ * Reminder processor.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DepositStatus {
+public interface ReminderProcessor {
 
     /**
-     * Undeposited act status.
+     * Process a reminder.
+     *
+     * @param reminder the reminder to process
      */
-    public static final String UNDEPOSITED = "UNDEPOSITED";
-    
-    /**
-     * Deposited act status.
-     */
-    public static final String DEPOSITED = "DEPOSITED";
+    void process(Act reminder);
+
 }

@@ -19,18 +19,17 @@
 package org.openvpms.archetype.rules.invoice;
 
 import static org.openvpms.archetype.rules.act.ActStatus.*;
-import org.openvpms.archetype.rules.patient.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
 import java.util.Date;
@@ -290,10 +289,10 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _customer = createCustomer();
-        _clinician = createClinician();
-        _patient = createPatient();
-        _reminder = createReminder();
+        _customer = TestHelper.createCustomer();
+        _clinician = TestHelper.createClinician(false);
+        _patient = TestHelper.createPatient();
+        _reminder = TestHelper.createReminderType();
         _template = createDocumentTemplate();
     }
 
@@ -335,65 +334,6 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Act act = (Act) create(shortName);
         assertNotNull(act);
         return act;
-    }
-
-    /**
-     * Helper to create and save a customer.
-     *
-     * @return a new customer
-     */
-    private Party createCustomer() {
-        Party customer = (Party) create("party.customerperson");
-        IMObjectBean bean = new IMObjectBean(customer);
-        bean.setValue("firstName", "J");
-        bean.setValue("lastName", "Zoo");
-        Contact contact = (Contact) create("contact.phoneNumber");
-        assertNotNull(contact);
-        customer.addContact(contact);
-        save(customer);
-        return customer;
-    }
-
-    /**
-     * Creates and saves a new patient.
-     *
-     * @return a new patient
-     */
-    private Party createPatient() {
-        Party patient = (Party) create("party.patientpet");
-        EntityBean bean = new EntityBean(patient);
-        bean.setValue("name", "XPatient");
-        bean.setValue("species", "Canine");
-        bean.save();
-        assertNotNull(patient);
-        return patient;
-    }
-
-    /**
-     * Creates a new user.
-     *
-     * @return a new user
-     */
-    private User createClinician() {
-        User user = (User) create("security.user");
-        assertNotNull(user);
-        user.setName("vet");
-        return user;
-    }
-
-    /**
-     * Creates and saves a new reminder.
-     *
-     * @return a new reminder
-     */
-    private Entity createReminder() {
-        Entity reminder = (Entity) create("entity.reminderType");
-        EntityBean bean = new EntityBean(reminder);
-        bean.setValue("name", "XReminderType");
-        bean.setValue("defaultInterval", 1);
-        bean.setValue("defaultUnits", "MONTHS");
-        bean.save();
-        return reminder;
     }
 
     /**

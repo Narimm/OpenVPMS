@@ -79,7 +79,7 @@
             <prop key="hibernate.dialect">${hibernate.dialect}</prop>
             <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
             <prop key="hibernate.max_fetch_depth">3</prop>
-            <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
+            <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
             <prop key="hibernate.cache.use_query_cache">true</prop>
             <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
             <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
@@ -150,6 +150,9 @@
                 </value>
                 <value>
                     /org/openvpms/component/business/domain/im/security/ArchetypeAwareGrantedAuthority.hbm.xml
+                </value>
+                <value>
+                    /org/openvpms/archetype/rules/patient/reminder/Reminder.hbm.xml
                 </value>
             </list>
         </property>

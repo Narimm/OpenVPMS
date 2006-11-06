@@ -64,12 +64,12 @@
 		</node>		
 		<node name="templates" path="/entityRelationships"
 			type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*" 
-			filter="entityRelationship.reminderTypeTemplates" >
+			filter="entityRelationship.reminderTypeTemplate" >
 			<assertion name="archetypeRange">
 				<propertyList name="archetypes">
 					<propertyMap name="archetype">
 						<property name="shortName"
-							value="entityRelationship.reminderTypeTemplates" />
+							value="entityRelationship.reminderTypeTemplate" />
 					</propertyMap>
 				</propertyList>
 				<errorMessage>errorMessage</errorMessage>

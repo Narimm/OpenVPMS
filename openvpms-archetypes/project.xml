@@ -487,6 +487,7 @@
         <directory>${basedir}/src/java</directory>
         <includes>
           <include>**/*.properties</include>
+          <include>**/*.hbm.xml</include>
         </includes>
       </resource>
       <resource>
