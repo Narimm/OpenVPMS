@@ -113,7 +113,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
     public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
             throws HibernateException, SQLException {
         if (rs.getString(names[0]) == null) {
-            return (DynamicAttributeMap)null;
+            return new DynamicAttributeMap();
         } else {
             return (DynamicAttributeMap)new XStream()
                 .fromXML(rs.getString(names[0]));
@@ -125,7 +125,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      */
     public void nullSafeSet(PreparedStatement st, Object value, int index)
             throws HibernateException, SQLException {
-        if (value == null) {
+        if (value == null || ((DynamicAttributeMap)value).getAttributes().isEmpty()) {
             st.setNull(index, Types.VARCHAR);
         } else {
             st.setString(index, new XStream().toXML(value));
