@@ -25,7 +25,7 @@
 			type="org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap"
 			minCardinality="1" maxCardinality="1">
 			<node name="slotSize" path="/details/attributes/slotSize" type="java.lang.Integer" defaultValue="'15'" minCardinality="1" />
-			<node name="slotUnits" path="/details/attributes/slotUnit" type="java.lang.String" defaultVminCardinality="1" >
+			<node name="slotUnits" path="/details/attributes/slotUnit" type="java.lang.String" defaultValue="'MINUTES'" minCardinality="1" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="MINUTES" value="minutes" />
