@@ -28,7 +28,6 @@ import net.sf.jasperreports.engine.design.JRDesignSubreport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
@@ -42,44 +41,37 @@ import java.util.Map;
 
 
 /**
- * {@link JasperIMObjectReport} that uses pre-defined templates.
+ * Helper for loading and compiling jasper report templates.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TemplatedJasperIMObjectReport
-        extends AbstractJasperIMObjectReport {
+public class TemplateLoader {
 
     /**
      * The compiled report.
      */
-    private JasperReport _report;
+    private JasperReport report;
 
     /**
      * The sub-reports.
      */
-    private final List<JasperReport> _subreports
+    private final List<JasperReport> subreports
             = new ArrayList<JasperReport>();
-
     /**
      * Report parameters.
      */
-    private final Map<String, Object> _parameters
+    private final Map<String, Object> parameters
             = new HashMap<String, Object>();
 
-
     /**
-     * Constructs a new <code>TemplatedJasperIMObjectReport</code>.
+     * Constructs a new <code>TemplateLoader</code>.
      *
-     * @param template  the document template
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
-     * @param service   the archetype service
+     * @param template the document template
+     * @param service  the archetype service
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplatedJasperIMObjectReport(Document template, String[] mimeTypes,
-                                         IArchetypeService service) {
-        super(mimeTypes, service);
+    public TemplateLoader(Document template, IArchetypeService service) {
         try {
             ByteArrayInputStream stream
                     = new ByteArrayInputStream(template.getContents());
@@ -92,18 +84,13 @@ public class TemplatedJasperIMObjectReport
     }
 
     /**
-     * Constructs a new <code>TemplatedJasperIMObjectReport</code>.
+     * Constructs a new <code>TemplateLoader</code>.
      *
-     * @param design    the master report design
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
-     * @param service   the archetype service
+     * @param design  the master report design
+     * @param service the archetype service
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplatedJasperIMObjectReport(JasperDesign design,
-                                         String[] mimeTypes,
-                                         IArchetypeService service) {
-        super(mimeTypes, service);
+    public TemplateLoader(JasperDesign design, IArchetypeService service) {
         init(design, service);
     }
 
@@ -113,7 +100,7 @@ public class TemplatedJasperIMObjectReport
      * @return the master report
      */
     public JasperReport getReport() {
-        return _report;
+        return report;
     }
 
     /**
@@ -122,19 +109,16 @@ public class TemplatedJasperIMObjectReport
      * @return the sub-reports.
      */
     public JasperReport[] getSubreports() {
-        return _subreports.toArray(new JasperReport[0]);
+        return subreports.toArray(new JasperReport[0]);
     }
 
     /**
      * Returns the report parameters to use when filling the report.
      *
-     * @param object the object to report on
      * @return the report parameters
      */
-    protected Map<String, Object> getParameters(IMObject object) {
-        Map<String, Object> result = super.getParameters(object);
-        result.putAll(_parameters);
-        return result;
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 
     /**
@@ -144,7 +128,7 @@ public class TemplatedJasperIMObjectReport
      * @param service the archetype service
      * @throws IMObjectReportException if the report cannot be initialised
      */
-    private void init(JasperDesign design, IArchetypeService service) {
+    protected void init(JasperDesign design, IArchetypeService service) {
         try {
             JRElement[] elements = design.getDetail().getElements();
             for (JRElement element : elements) {
@@ -152,8 +136,7 @@ public class TemplatedJasperIMObjectReport
                     JRDesignSubreport subreport = (JRDesignSubreport) element;
                     String reportName = getReportName(subreport);
                     JasperDesign report = JasperReportHelper.getReport(
-                            reportName,
-                            service);
+                            reportName, service);
                     if (report == null) {
                         throw new IMObjectReportException(
                                 FailedToCreateReport,
@@ -169,8 +152,8 @@ public class TemplatedJasperIMObjectReport
 
                     JasperReport compiled
                             = JasperCompileManager.compileReport(report);
-                    _subreports.add(compiled);
-                    _parameters.put(reportName, compiled);
+                    subreports.add(compiled);
+                    parameters.put(reportName, compiled);
 
                     JRDesignParameter param = new JRDesignParameter();
                     param.setName(reportName);
@@ -178,9 +161,10 @@ public class TemplatedJasperIMObjectReport
                     design.addParameter(param);
                 }
             }
-            _report = JasperCompileManager.compileReport(design);
+            report = JasperCompileManager.compileReport(design);
         } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToCreateReport,
+            throw new IMObjectReportException(exception,
+                                              FailedToCreateReport,
                                               exception.getMessage());
         }
     }
@@ -196,5 +180,4 @@ public class TemplatedJasperIMObjectReport
         name = StringUtils.strip(name, " \"");
         return name;
     }
-
 }

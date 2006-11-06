@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,14 +80,16 @@ public class OpenOfficeIMObjectReportTestCase
         act.setValue("lowTotal", new BigDecimal("100"));
         act.setParticipant("participation.customer", party);
 
-        Document result = report.generate(act.getAct());
+        Document result = report.generate(
+                Arrays.asList((IMObject) act.getAct()));
         Map<String, String> fields = getFields(result);
         assertEquals("4/08/2006", fields.get("startTime"));  // @todo localise
         assertEquals("$100.00", fields.get("lowTotal"));
         assertEquals("J", fields.get("firstName"));
         assertEquals("Zoo", fields.get("lastName"));
         assertEquals("2.00", fields.get("expression"));
-        assertEquals("1234 Foo St\nMelbourne Victoria 3001", fields.get("address"));
+        assertEquals("1234 Foo St\nMelbourne Victoria 3001",
+                     fields.get("address"));
         assertEquals("Invalid node name: invalid", fields.get("invalid"));
     }
 

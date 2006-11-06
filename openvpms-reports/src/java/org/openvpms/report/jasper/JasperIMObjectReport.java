@@ -24,6 +24,8 @@ import net.sf.jasperreports.engine.JasperReport;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.report.IMObjectReport;
 
+import java.util.Collection;
+
 
 /**
  * Generates a jasper report for an <code>IMObject</code>.
@@ -34,13 +36,13 @@ import org.openvpms.report.IMObjectReport;
 public interface JasperIMObjectReport extends IMObjectReport {
 
     /**
-     * Generates a report for an object.
+     * Generates a report.
      *
-     * @param object the object
+     * @param objects the objects to report on
      * @return the report
      * @throws JRException for any error
      */
-    JasperPrint report(IMObject object) throws JRException;
+    JasperPrint report(Collection<IMObject> objects) throws JRException;
 
     /**
      * Returns the master report.

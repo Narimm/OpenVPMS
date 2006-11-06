@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
-import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
-import org.openvpms.report.jasper.DynamicJasperIMObjectReport;
+import org.openvpms.report.jasper.TemplatedJasperReport;
+import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.openoffice.OpenOfficeIMObjectReport;
 
 
@@ -51,8 +51,8 @@ public class IMObjectReportFactory {
         String name = template.getName();
         IMObjectReport report;
         if (name.endsWith(DocFormats.JRXML_EXT)) {
-            report = new TemplatedJasperIMObjectReport(template, mimeTypes,
-                                                       service);
+            report = new TemplatedJasperReport(template, mimeTypes,
+                                               service);
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
             report = new OpenOfficeIMObjectReport(template, mimeTypes);
         } else {
@@ -80,7 +80,7 @@ public class IMObjectReportFactory {
         Document doc = TemplateHelper.getDocumentForArchetype(shortName,
                                                               service);
         if (doc == null) {
-                                       return new DynamicJasperIMObjectReport(
+                                       return new DynamicJasperReport(
                     service.getArchetypeDescriptor(shortName), mimeTypes,
                     service);
         }

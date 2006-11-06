@@ -33,7 +33,6 @@ import net.sf.jasperreports.engine.design.JRDesignTextField;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
@@ -48,32 +47,32 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
+public class DynamicJasperReport extends AbstractJasperIMObjectReport {
 
     /**
      * Design time report.
      */
-    private JasperDesign _design;
+    private JasperDesign design;
 
     /**
      * Template helper.
      */
-    private JRElementFactory _template;
+    private JRElementFactory template;
 
     /**
      * The compiled report.
      */
-    private JasperReport _report;
+    private JasperReport report;
 
     /**
      * Subreports, keyed on name.
      */
-    private Map<String, JasperReport> _subreports
+    private Map<String, JasperReport> subreports
             = new HashMap<String, JasperReport>();
 
 
     /**
-     * Construct a new <code>DynamicJasperIMObjectReport</code>.
+     * Construct a new <code>DynamicJasperReport</code>.
      *
      * @param archetype the archetype descriptor
      * @param mimeTypes a list of mime-types, used to select the preferred
@@ -81,9 +80,9 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      * @param service   the archetype service
      * @throws IMObjectReportException if the report cannot be created
      */
-    public DynamicJasperIMObjectReport(ArchetypeDescriptor archetype,
-                                       String[] mimeTypes,
-                                       IArchetypeService service) {
+    public DynamicJasperReport(ArchetypeDescriptor archetype,
+                               String[] mimeTypes,
+                               IArchetypeService service) {
         super(mimeTypes, service);
         try {
             init(archetype);
@@ -99,7 +98,7 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      * @return the master report
      */
     public JasperReport getReport() {
-        return _report;
+        return report;
     }
 
     /**
@@ -108,18 +107,17 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      * @return the sub-reports.
      */
     public JasperReport[] getSubreports() {
-        return _subreports.values().toArray(new JasperReport[0]);
+        return subreports.values().toArray(new JasperReport[0]);
     }
 
     /**
      * Returns the report parameters to use when filling the report.
      *
-     * @param object
      * @return the report parameters
      */
-    protected Map<String, Object> getParameters(IMObject object) {
-        Map<String, Object> result = super.getParameters(object);
-        result.putAll(_subreports);
+    protected Map<String, Object> getParameters() {
+        Map<String, Object> result = super.getParameters();
+        result.putAll(subreports);
         return result;
     }
 
@@ -130,15 +128,15 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      * @throws JRException for any error
      */
     private void init(ArchetypeDescriptor archetype) throws JRException {
-        _design = JasperReportHelper.getReportResource(
+        design = JasperReportHelper.getReportResource(
                 "/archetype_template.jrxml");
-        _template = new JRElementFactory(_design);
+        template = new JRElementFactory(design);
 
         JRDesignParameter param = new JRDesignParameter();
         param.setName("dataSource");
-        param.setValueClass(IMObjectDataSource.class);
-        _design.addParameter(param);
-        _design.addImport(IMObjectDataSource.class.getName());
+        param.setValueClass(IMObjectCollectionDataSource.class);
+        design.addParameter(param);
+        design.addImport(IMObjectCollectionDataSource.class.getName());
 
         JRDesignBand detail = new JRDesignBand();
 
@@ -151,12 +149,12 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
             field.setName(node.getName());
             Class valueClass = JasperReportHelper.getValueClass(node);
             field.setValueClass(valueClass);
-            _design.addField(field);
+            design.addField(field);
 
-            JRDesignStaticText label = _template.createStaticText(
+            JRDesignStaticText label = template.createStaticText(
                     node.getDisplayName());
             label.setY(y);
-            JRDesignTextField textField = _template.createTextField();
+            JRDesignTextField textField = template.createTextField();
             textField.setY(y);
             JRDesignExpression expression = new JRDesignExpression();
             expression.setValueClass(valueClass);
@@ -168,11 +166,11 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
             y += 20;
         }
 
-        if (!_design.getFieldsMap().containsKey("displayName")) {
+        if (!design.getFieldsMap().containsKey("displayName")) {
             JRDesignField displayName = new JRDesignField();
             displayName.setName("displayName");
             displayName.setValueClass(String.class);
-            _design.addField(displayName);
+            design.addField(displayName);
         }
 
         for (NodeDescriptor node : archetype.getComplexNodeDescriptors()) {
@@ -182,9 +180,9 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
             y += report.getHeight();
         }
         detail.setHeight(y + 20);
-        _design.setDetail(detail);
+        design.setDetail(detail);
 
-        _report = JasperCompileManager.compileReport(_design);
+        report = JasperCompileManager.compileReport(design);
     }
 
     /**
@@ -196,12 +194,12 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
      */
     private JRDesignSubreport getSubreport(NodeDescriptor node)
             throws JRException {
-        IMObjectCollectionReport generator
-                = IMObjectCollectionReportFactory.create(
+        SubreportGenerator generator
+                = SubreportGeneratorFactory.create(
                 node, getArchetypeService());
         JasperDesign collectionReport = generator.generate();
         String subreportName = collectionReport.getName();
-        JRDesignSubreport subreport = _template.createSubreport();
+        JRDesignSubreport subreport = template.createSubreport();
         subreport.setHeight(collectionReport.getPageHeight());
         JRExpression dataSource = createExpression(
                 "$P{dataSource}.getDataSource(\"" + node.getName() + "\")",
@@ -213,10 +211,10 @@ public class DynamicJasperIMObjectReport extends AbstractJasperIMObjectReport {
         JRDesignParameter param = new JRDesignParameter();
         param.setName(subreportName);
         param.setValueClass(JasperReport.class);
-        _design.addParameter(param);
+        design.addParameter(param);
         JasperReport compiled = JasperCompileManager.compileReport(
                 collectionReport);
-        _subreports.put(subreportName, compiled);
+        subreports.put(subreportName, compiled);
         return subreport;
     }
 

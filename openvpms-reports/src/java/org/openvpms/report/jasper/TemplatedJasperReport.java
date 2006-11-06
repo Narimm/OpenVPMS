@@ -21,6 +21,8 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -28,39 +30,80 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
- * Abstract implementation of the {@link JasperIMObjectReport} interface.
+ * A {@link JasperIMObjectReport} that uses pre-defined templates.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public abstract class AbstractJasperIMObjectReport extends AbstractJasperReport
+public class TemplatedJasperReport extends AbstractJasperReport
         implements JasperIMObjectReport {
+
+    /**
+     * The template loader.
+     */
+    private TemplateLoader template;
 
 
     /**
-     * Constructs a new <code>AbstractJasperIMObjectReport</code>.
+     * Constructs a new <code>TemplatedJasperReport</code>.
      *
+     * @param template  the document template
      * @param mimeTypes a list of mime-types, used to select the preferred
      *                  output format of the report
      * @param service   the archetype service
-     * @throws IMObjectReportException if no mime-type is supported
+     * @throws IMObjectReportException if the report cannot be created
      */
-    public AbstractJasperIMObjectReport(String[] mimeTypes,
-                                        IArchetypeService service) {
+    public TemplatedJasperReport(Document template, String[] mimeTypes,
+                                 IArchetypeService service) {
         super(mimeTypes, service);
+        this.template = new TemplateLoader(template, service);
     }
 
     /**
-     * Generates a report for a collection of objects.
+     * Constructs a new <code>TemplatedJasperReport</code>.
      *
-     * @param objects the objects to report on
+     * @param design    the master report design
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
+     * @param service   the archetype service
+     * @throws IMObjectReportException if the report cannot be created
+     */
+    public TemplatedJasperReport(JasperDesign design, String[] mimeTypes,
+                                 IArchetypeService service) {
+        super(mimeTypes, service);
+        this.template = new TemplateLoader(design, service);
+    }
+
+    /**
+     * Returns the master report.
+     *
+     * @return the master report
+     */
+    public JasperReport getReport() {
+        return template.getReport();
+    }
+
+    /**
+     * Returns the sub-reports.
+     *
+     * @return the sub-reports.
+     */
+    public JasperReport[] getSubreports() {
+        return template.getSubreports();
+    }
+
+    /**
+     * Generates a report for an object.
+     *
+     * @param objects
      * @return a document containing the report
-     * @throws IMObjectReportException   for any report error
+     * @throws IMObjectReportException   for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document generate(Collection<IMObject> objects) {
@@ -83,13 +126,25 @@ public abstract class AbstractJasperIMObjectReport extends AbstractJasperReport
      * @throws JRException for any error
      */
     public JasperPrint report(Collection<IMObject> objects) throws JRException {
-          IMObjectCollectionDataSource source
+        IMObjectCollectionDataSource source
                 = new IMObjectCollectionDataSource(objects,
                                                    getArchetypeService());
         HashMap<String, Object> properties
                 = new HashMap<String, Object>(getParameters());
         properties.put("dataSource", source);
-        return JasperFillManager.fillReport(getReport(), properties, source);
+        return JasperFillManager.fillReport(template.getReport(), properties,
+                                            source);
+    }
+
+    /**
+     * Returns the report parameters to use when filling the report.
+     *
+     * @return the report parameters
+     */
+    protected Map<String, Object> getParameters() {
+        Map<String, Object> result = super.getParameters();
+        result.putAll(template.getParameters());
+        return result;
     }
 
 }

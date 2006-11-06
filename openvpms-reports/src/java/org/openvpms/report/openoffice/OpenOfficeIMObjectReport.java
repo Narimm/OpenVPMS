@@ -18,6 +18,7 @@
 
 package org.openvpms.report.openoffice;
 
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -31,6 +32,7 @@ import org.openvpms.report.IMObjectReportException;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
 
 import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -76,14 +78,20 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
     }
 
     /**
-     * Generates a report for an object.
+     * Generates a report for a collection of objects.
      *
-     * @param object the object
+     * @param objects the objects to report on
      * @return a document containing the report
-     * @throws IMObjectReportException   for any error
+     * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(IMObject object) {
+    public Document generate(Collection<IMObject> objects) {
+        if (objects.size() != 1) {
+          throw new IMObjectReportException(
+                  FailedToGenerateReport,
+                  "Can only report on single objects");
+        }
+        IMObject object = objects.toArray(new IMObject[0])[0];
         ExpressionEvaluator eval = new ExpressionEvaluator(
                 object, ArchetypeServiceHelper.getArchetypeService());
 
