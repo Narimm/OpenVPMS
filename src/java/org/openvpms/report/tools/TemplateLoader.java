@@ -120,7 +120,7 @@ public class TemplateLoader {
             entity = bean.getParticipant("participation.document");
             if (entity == null) {
                 entity = (Entity) _service.create("entity.documentTemplate");
-                bean.setParticipant("entity.documentTemplate", entity);
+                bean.setParticipant("participation.document", entity);
             }
         } else {
             entity = (Entity) _service.create("entity.documentTemplate");
