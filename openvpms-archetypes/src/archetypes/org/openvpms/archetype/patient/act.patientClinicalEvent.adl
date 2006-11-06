@@ -33,10 +33,12 @@
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
 			filter="participation.clinician" />
 		<node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
-			<assertion name="lookup">
-				<property name="type" value="lookup" />
-				<property name="source" value="lookup.eventStatus" />
-				<errorMessage>An error message</errorMessage>
+			<assertion name="lookup.local" defaultValue="'IN_PROGRESS'">
+				<propertyList name="entries">
+					<property name="IN_PROGRESS" value="In Progress" />
+					<property name="COMPLETED" value="Completed" />
+				</propertyList>
+				<errorMessage>Invalid Payment Status</errorMessage>
 			</assertion>
 		</node>
 		<node displayName="Records" name="items" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship" 

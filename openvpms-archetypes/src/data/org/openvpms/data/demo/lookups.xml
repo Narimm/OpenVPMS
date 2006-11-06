@@ -33,31 +33,11 @@
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST6" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST7" />
 	<data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ST8" />
-	<data archetype="lookup.chargeStatus" code="IN_PROGRESS" name="In Pogress"/>
-	<data archetype="lookup.chargeStatus" code="COMPLETED" name="Completed" defaultLookup="true"/>
-	<data archetype="lookup.chargeStatus" code="ON_HOLD" name="On Hold" />
-	<data archetype="lookup.chargeStatus" code="POSTED" name="Posted" />
-	<data archetype="lookup.paymentStatus" code="IN_PROGRESS" name="In Progress"/>
-	<data archetype="lookup.paymentStatus" code="ON_HOLD" name="On Hold"/>
-	<data archetype="lookup.paymentStatus" code="POSTED" name="Posted" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" code="IN_PROGRESS" name="In Progress" defaultLookup="true"/>
-	<data archetype="lookup.episodeStatus" code="COMPLETED" name="Completed" />
-	<data archetype="lookup.eventStatus" code="IN_PROGRESS" name="In Progress" defaultLookup="true"/>
-	<data archetype="lookup.eventStatus" code="COMPLETED" name="Completed" />
-	<data archetype="lookup.appointmentStatus" code="PENDING" name="Pending" defaultLookup="true" />
-	<data archetype="lookup.appointmentStatus" code="CANCELLED" name="Cancelled" />
-	<data archetype="lookup.appointmentStatus" code="CHECKED_IN" name="Checked In" />
-	<data archetype="lookup.appointmentStatus" code="IN_PROGRESS" name="In Progress" />
-	<data archetype="lookup.appointmentStatus" code="COMPLETED" name="Completed" />
 	<data archetype="lookup.appointmentReason" code="CHECKUP" name="Checkup" defaultLookup="true" />
 	<data archetype="lookup.appointmentReason" code="VACCINATION" name="Vaccination" />
 	<data archetype="lookup.appointmentReason" code="OTHER" name="Other" />
-	<data archetype="lookup.taskStatus" code="PENDING" name="Pending" defaultLookup="true" />
-	<data archetype="lookup.taskStatus" code="CANCELLED" name="Cancelled" />
-	<data archetype="lookup.taskStatus" code="IN_PROGRESS" name="In Progress" />
-	<data archetype="lookup.taskStatus" code="COMPLETED" name="Completed" />
-	<data archetype="lookup.messageStatus" code="PENDING" name="Pending" defaultLookup="true" />
-	<data archetype="lookup.messageStatus" code="COMPLETED" name="Completed" />
+	<data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true" />
+	<data archetype="lookup.messageReason" code="OTHER" name="Other" />
 	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
 	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>

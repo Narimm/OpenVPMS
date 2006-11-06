@@ -33,11 +33,14 @@
 		<node name="credit" path="/credit" type="java.lang.Boolean"	defaultValue="false()" readOnly="true" hidden="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
 		<node name="status" path="/status" type="java.lang.String"
-			minCardinality="1">
-			<assertion name="lookup">
-				<property name="type" value="lookup" />
-				<property name="source" value="lookup.paymentStatus" />
-				<errorMessage>An error message</errorMessage>
+			minCardinality="1" defaultValue="'IN_PROGRESS'" >
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="IN_PROGRESS" value="In Progress" />
+					<property name="ON_HOLD" value="On Hold" />
+					<property name="POSTED" value="Posted" />
+				</propertyList>
+				<errorMessage>Invalid Payment Status</errorMessage>
 			</assertion>
 		</node>
 		<node name="items" path="/sourceActRelationships" type="java.util.HashSet" minCardinality="0" maxCardinality="*"

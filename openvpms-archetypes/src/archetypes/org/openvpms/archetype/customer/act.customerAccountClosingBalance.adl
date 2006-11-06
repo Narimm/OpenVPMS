@@ -33,7 +33,14 @@
 		<node name="credit" path="/credit" type="java.lang.Boolean"
 			defaultValue="true()" readOnly="true" />
 		<node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" />			
-		<node name="status" path="/status" type="java.lang.String"	minCardinality="1" defaultValue="'POSTED'" />
+		<node name="status" path="/status" type="java.lang.String"	minCardinality="1" readOnly="true" defaultValue="'POSTED'" >
+			<assertion name="lookup.local">
+				<propertyList name="entries">
+					<property name="POSTED" value="Posted" />
+				</propertyList>
+				<errorMessage>Invalid Closing Balance Status</errorMessage>
+			</assertion>
+		</node>
         <node name="customer" path="/participations" type="java.util.HashSet"
               minCardinality="0" maxCardinality="1"
               filter="participation.customer" hidden="true"/>
