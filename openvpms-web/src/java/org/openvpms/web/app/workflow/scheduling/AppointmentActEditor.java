@@ -84,7 +84,8 @@ public class AppointmentActEditor extends AbstractActEditor {
         }
         Property startTime = getProperty("startTime");
         if (startTime.getValue() == null) {
-            startTime.setValue(getDefaultTime());
+            Date scheduleDate = context.getContext().getScheduleDate();
+            startTime.setValue(getDefaultStartTime(scheduleDate));
         }
         startTime.addModifiableListener(new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -99,30 +100,6 @@ public class AppointmentActEditor extends AbstractActEditor {
             }
         };
         endTime.addModifiableListener(_endTimeListener);
-    }
-
-    /**
-     * Calculates the default time as 'now' rounded to the next nearest 15
-     * minute interval.
-     *
-     * @return the default time
-     */
-    private Date getDefaultTime() {
-        int slotSize = 0;
-        Party schedule = (Party) getParticipant("schedule");
-        if (schedule != null) {
-            slotSize = AppointmentRules.getSlotSize(schedule);
-        }
-        Calendar calendar = new GregorianCalendar();
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        if (slotSize != 0) {
-            int mins = calendar.get(Calendar.MINUTE);
-            mins = ((mins / slotSize) * slotSize) + slotSize;
-            calendar.add(Calendar.MINUTE, mins);
-        }
-        return calendar.getTime();
     }
 
     /**
@@ -188,6 +165,37 @@ public class AppointmentActEditor extends AbstractActEditor {
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Calculates the default start time of an appointment, using the supplied
+     * date and current time.
+     * The start time is rounded to the next nearest 'slot-size' interval.
+     *
+     * @param date the start date
+     * @return the start time
+     */
+    private Date getDefaultStartTime(Date date) {
+        int slotSize = 0;
+        Party schedule = (Party) getParticipant("schedule");
+        if (schedule != null) {
+            slotSize = AppointmentRules.getSlotSize(schedule);
+        }
+
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        Calendar timeCal = new GregorianCalendar();
+        timeCal.setTime(new Date());
+        calendar.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+        calendar.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        if (slotSize != 0) {
+            int mins = calendar.get(Calendar.MINUTE);
+            mins = ((mins / slotSize) * slotSize) + slotSize;
+            calendar.set(Calendar.MINUTE, mins);
+        }
+        return calendar.getTime();
     }
 
     /**
