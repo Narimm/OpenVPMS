@@ -86,7 +86,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // update the appointment status
         TaskProperties appProps = new TaskProperties();
-        appProps.add("status", "Checked-In");
+        appProps.add("status", "CHECKED_IN");
         addTask(new UpdateIMObjectTask(appointment, appProps));
     }
 
