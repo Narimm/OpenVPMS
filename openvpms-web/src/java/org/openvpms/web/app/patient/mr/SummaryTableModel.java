@@ -28,9 +28,12 @@ import nextapp.echo2.app.layout.RowLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.query.NodeSet;
@@ -115,7 +118,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         String completed = null;
         String clinician = null;
         String reason = getValue(bean, "reason");
-        String status = getValue(bean.getStatus(), bean, "status");
+        String status = ArchetypeServiceFunctions.lookup(act, "status");
 
         Date date = bean.getDate("completeTime");
         if (date != null) {
@@ -132,9 +135,17 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
         }
         clinician = getValue(clinician, bean, "clinician");
 
+        String text;
+        if (completed == null
+                || ActStatus.IN_PROGRESS.equals(bean.getStatus())) {
+            text = Messages.get("patient.record.summary.incomplete",
+                                reason, clinician, status);
+        } else {
+            text = Messages.get("patient.record.summary.complete",
+                                reason, clinician, completed);
+        }
         Label summary = LabelFactory.create(null, "PatientSummary");
-        summary.setText(Messages.get("patient.record.summary", completed,
-                                     clinician, reason, status));
+        summary.setText(text);
         return summary;
     }
 
@@ -173,7 +184,8 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
     }
 
     /**
-     * Helper to return a value, or a formatted string if the value is null.
+     * Helper to return a value, or a formatted string if the value is null
+     * or empty.
      *
      * @param value the value
      * @param bean  the bean the value came from
@@ -182,7 +194,7 @@ public class SummaryTableModel extends AbstractIMObjectTableModel<Act> {
      *         null
      */
     private String getValue(String value, ActBean bean, String node) {
-        if (value == null) {
+        if (StringUtils.isEmpty(value)) {
             return Messages.get("patient.record.summary.novalue",
                                 bean.getDisplayName(node));
         }
