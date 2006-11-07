@@ -250,7 +250,8 @@ public final class QueryFactory {
         String[] shortNames = DescriptorHelper.getShortNames(
                 query.getShortNames());
         ArchetypeHandler<Query> handler = getQueries().getHandler(shortNames);
-        if (handler != null && handler.getType().equals(query.getClass())) {
+        if (handler != null && handler.getType().isAssignableFrom(
+                query.getClass())) {
             try {
                 handler.initialise(query);
             } catch (Throwable exception) {

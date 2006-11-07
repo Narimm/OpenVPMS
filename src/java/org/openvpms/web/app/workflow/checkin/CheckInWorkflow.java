@@ -18,6 +18,7 @@
 
 package org.openvpms.web.app.workflow.checkin;
 
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -86,7 +87,7 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         // update the appointment status
         TaskProperties appProps = new TaskProperties();
-        appProps.add("status", "CHECKED_IN");
+        appProps.add("status", AppointmentStatus.CHECKED_IN);
         addTask(new UpdateIMObjectTask(appointment, appProps));
     }
 
