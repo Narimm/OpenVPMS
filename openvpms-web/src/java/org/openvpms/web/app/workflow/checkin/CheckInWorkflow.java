@@ -139,10 +139,10 @@ public class CheckInWorkflow extends WorkflowImpl {
                                                "participation.patient",
                                                shortNames, statuses);
         SelectIMObjectTask<Act> docTask = new SelectIMObjectTask<Act>(query);
-        docTask.setRequired(false);
         Tasks selectAndPrint = new Tasks();
         selectAndPrint.addTask(docTask);
         selectAndPrint.addTask(new PrintIMObjectTask(document));
+        selectAndPrint.setRequired(false);
         addTask(selectAndPrint);
 
         // create a new act.patientClinicalEvent

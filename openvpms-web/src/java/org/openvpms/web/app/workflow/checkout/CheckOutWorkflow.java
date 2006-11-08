@@ -32,8 +32,11 @@ import org.openvpms.web.component.workflow.TaskContextImpl;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
+import org.openvpms.web.component.workflow.Variable;
 import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.Date;
 
 
 /**
@@ -74,6 +77,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // update the act status
         TaskProperties appProps = new TaskProperties();
         appProps.add("status", ActStatus.COMPLETED);
+        appProps.add(new Variable("endTime") {
+            public Object getValue(TaskContext context) {
+                return new Date();
+            }
+        });
         addTask(new UpdateIMObjectTask(act, appProps));
     }
 
@@ -114,6 +122,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         postTasks.addTask(new ConditionalTask(
                 new ConfirmationTask(payTitle, payMsg),
                 new EditIMObjectTask("act.customerAccountPayment", true)));
+        postTasks.setRequired(false);
 
         String invoiceTitle = Messages.get(
                 "workflow.checkout.postinvoice.title");
@@ -122,7 +131,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
         ConditionalTask post = new ConditionalTask(new ConfirmationTask(
                 invoiceTitle, invoiceMsg), postTasks);
         addTask(post);
-        addTask(new PrintDocumentsTask());
+        post.setRequired(false);
+        PrintDocumentsTask printDocs = new PrintDocumentsTask();
+        printDocs.setRequired(false);
+        addTask(printDocs);
     }
 
 }
