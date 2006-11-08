@@ -388,6 +388,15 @@ public abstract class IMObjectTableCollectionEditor
     }
 
     /**
+     * Returns the table.
+     *
+     * @return the table
+     */
+    protected PagedIMObjectTable<IMObject> getTable() {
+        return _table;
+    }
+
+    /**
      * Remove the editor.
      */
     private void removeEditor() {
