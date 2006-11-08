@@ -115,6 +115,13 @@ public class ActRelationshipCollectionEditor
             IMObjectReference product = ((ActItemEditor) editor).getProduct();
             if (TypeHelper.isA(product, "product.template")) {
                 result = expandTemplate((ActItemEditor) editor, act, product);
+                if (result) {
+                    populateTable();
+                    // template act is replaced with the first product in
+                    // the template, so try and select it in the table
+                    IMObject object = editor.getObject();
+                    getTable().getTable().setSelected(object);
+                }
             }
         } else {
             result = super.addEdited(editor);
