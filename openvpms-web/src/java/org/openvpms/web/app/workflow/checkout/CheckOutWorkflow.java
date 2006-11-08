@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.workflow.InvoiceTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -46,12 +47,6 @@ import java.util.Date;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class CheckOutWorkflow extends WorkflowImpl {
-
-    /**
-     * The invoice short name.
-     */
-    public static final String INVOICE_SHORTNAME
-            = "act.customerAccountChargesInvoice";
 
     /**
      * The initial context.
@@ -108,14 +103,15 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         // get/create the invoice, and edit it
         addTask(new InvoiceTask());
-        addTask(new EditIMObjectTask(INVOICE_SHORTNAME));
+        addTask(new EditIMObjectTask(InvoiceTask.INVOICE_SHORTNAME));
 
         // on save, determine if the user wants to post the invoice
         Tasks postTasks = new Tasks();
         TaskProperties invoiceProps = new TaskProperties();
         invoiceProps.add("status", FinancialActStatus.POSTED);
         postTasks.addTask(
-                new UpdateIMObjectTask(INVOICE_SHORTNAME, invoiceProps));
+                new UpdateIMObjectTask(InvoiceTask.INVOICE_SHORTNAME,
+                                       invoiceProps));
 
         String payTitle = Messages.get("workflow.checkout.payaccount.title");
         String payMsg = Messages.get("workflow.checkout.payaccount.message");

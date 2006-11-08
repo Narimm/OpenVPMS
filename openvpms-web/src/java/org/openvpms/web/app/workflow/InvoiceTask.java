@@ -16,7 +16,7 @@
  *  $Id$
  */
 
-package org.openvpms.web.app.workflow.checkout;
+package org.openvpms.web.app.workflow;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -43,13 +43,20 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-class InvoiceTask extends CreateIMObjectTask {
+public class InvoiceTask extends CreateIMObjectTask {
+
+    /**
+     * The invoice short name.
+     */
+    public static final String INVOICE_SHORTNAME
+            = "act.customerAccountChargesInvoice";
+
 
     /**
      * Constructs a new <code>InvoiceTask</code>
      */
     public InvoiceTask() {
-        super(CheckOutWorkflow.INVOICE_SHORTNAME);
+        super(INVOICE_SHORTNAME);
     }
 
     /**
