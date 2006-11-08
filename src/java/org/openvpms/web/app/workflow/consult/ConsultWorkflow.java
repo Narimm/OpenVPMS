@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.app.workflow.InvoiceTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskContextImpl;
@@ -74,6 +75,10 @@ public class ConsultWorkflow extends WorkflowImpl {
         // get/create the clinical event, and edit it
         addTask(new PatientClinicalEventTask());
         addTask(new EditIMObjectTask(EVENT_SHORTNAME));
+
+        // get/create the invoice, and edit it
+        addTask(new InvoiceTask());
+        addTask(new EditIMObjectTask(InvoiceTask.INVOICE_SHORTNAME));
     }
 
     /**
