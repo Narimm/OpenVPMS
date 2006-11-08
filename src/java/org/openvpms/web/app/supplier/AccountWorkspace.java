@@ -35,7 +35,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AccountWorkspace extends SupplierActWorkspace {
+public class AccountWorkspace extends SupplierFinancialActWorkspace {
 
     /**
      * Construct a new <code>AccountWorkspace</code>.

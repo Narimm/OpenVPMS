@@ -38,7 +38,7 @@ import java.util.List;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class EstimationWorkspace extends CustomerActWorkspace {
+public class EstimationWorkspace extends CustomerFinancialActWorkspace {
 
     /**
      * Construct a new <code>EstimationWorkspace</code>.

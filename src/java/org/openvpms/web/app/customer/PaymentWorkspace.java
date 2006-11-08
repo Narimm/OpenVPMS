@@ -36,7 +36,7 @@ import org.openvpms.web.resource.util.Messages;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class PaymentWorkspace extends CustomerActWorkspace {
+public class PaymentWorkspace extends CustomerFinancialActWorkspace {
 
     /**
      * Payment and refund shortnames supported by the workspace.
