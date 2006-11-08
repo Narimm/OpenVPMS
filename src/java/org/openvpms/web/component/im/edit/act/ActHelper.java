@@ -18,6 +18,11 @@
 
 package org.openvpms.web.component.im.edit.act;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -30,13 +35,10 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -90,12 +92,27 @@ public class ActHelper {
                 shortNames, true, true);
         ParticipantConstraint constraint = new ParticipantConstraint(
                 participant, participation, entity);
+        SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         ActResultSet set = new ActResultSet(constraint, archetypes, null, null,
-                                            statuses, 50, null);
+                                            statuses, 50, sort);
         BigDecimal balance = BigDecimal.ZERO;
+        // Add up amounts until find first opening balance ignoring first closing balances.
+        boolean finished = false;
         while (set.hasNext()) {
             IPage<Act> acts = set.next();
-            balance = sum(balance, acts.getRows(), "amount");
+            for (Act act : acts.getRows()) {
+            	//Ignore first closing balance
+            	if(act.getArchetypeId().getShortName().equalsIgnoreCase("act.customerAccountClosingBalance"))
+            		continue;
+                BigDecimal amount = getAmount(act, "amount");
+                balance = balance.add(amount);
+            	if(act.getArchetypeId().getShortName().equalsIgnoreCase("act.customerAccountOpeningBalance")) {
+            		finished = true;
+            		break;
+            	}
+            }
+            if (finished)
+            	break;
         }
         return balance;
     }
