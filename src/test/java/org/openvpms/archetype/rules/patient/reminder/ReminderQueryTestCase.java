@@ -23,9 +23,11 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -302,7 +304,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             calendar.set(Calendar.DAY_OF_MONTH, i + 1);
             Date dueDate = calendar.getTime();
             Entity reminderType = (i % 2 == 0) ? reminderType1 : reminderType2;
-            for (Party patient: patients) {
+            for (Party patient : patients) {
                 createReminder(patient, reminderType, dueDate);
             }
         }
@@ -343,13 +345,14 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Counts IN_PROGRESS reminders.
+     * Counts IN_PROGRESS reminders for patients with patient-owner relationships.
      *
      * @param dueFrom the start due date. May be <code>null</code>
      * @param dueTo   to end due date. May be <code>null</code>
      * @return a count of reminders in the specified date range
      */
     private int countReminders(Date dueFrom, Date dueTo) {
+        int result = 0;
         ArchetypeQuery query = new ArchetypeQuery("act.patientReminder", false,
                                                   true);
         query.add(new NodeConstraint("status", ActStatus.IN_PROGRESS));
@@ -357,10 +360,31 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             query.add(new NodeConstraint("endTime", RelationalOp.BTW, dueFrom,
                                          dueTo));
         }
+        int pageIndex = 0;
+        int rowsPerPage = 100;
         query.setFirstRow(0);
-        query.setNumOfRows(1);
+        query.setNumOfRows(rowsPerPage);
         IPage<IMObject> page = getArchetypeService().get(query);
-        return page.getTotalNumOfRows();
+        while (!page.getRows().isEmpty()) {
+            for (IMObject object : page.getRows()) {
+                ActBean bean = new ActBean((Act) object);
+                Party patient = (Party) bean.getParticipant(
+                        "participation.patient");
+                if (patient != null) {
+                    for (EntityRelationship relationship
+                            : patient.getEntityRelationships()){
+                        if (TypeHelper.isA(relationship,
+                                           "entityRelationship.patientOwner")) {
+                            result++;
+                        }
+                    }
+                }
+            }
+            pageIndex++;
+            query.setFirstRow(pageIndex * rowsPerPage);
+            page = getArchetypeService().get(query);
+        }
+        return result;
     }
 
 }

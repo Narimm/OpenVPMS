@@ -103,7 +103,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         List<Act> documents = item.getActsForNode("documents");
         assertEquals(1, documents.size());
         Act document = documents.get(0);
-        assertTrue(TypeHelper.isA(document, "act.patientDocumentAttachment"));
+        assertTrue(TypeHelper.isA(document, "act.patientDocumentForm"));
 
         // verify the start time is the same as the invoice item start time
         assertEquals(item.getAct().getActivityStartTime(),
@@ -345,7 +345,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         Entity template = (Entity) create("entity.documentTemplate");
         EntityBean bean = new EntityBean(template);
         bean.setValue("name", "XDocumentTemplate");
-        bean.setValue("archetype", "act.patientDocumentAttachment");
+        bean.setValue("archetype", "act.patientDocumentForm");
         bean.save();
 
         return template;

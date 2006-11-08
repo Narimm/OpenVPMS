@@ -158,13 +158,12 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
                                     Party schedule) {
         Act act = createAct("act.customerAppointment");
         Lookup reason = createLookup("lookup.appointmentReason", "XReason");
-        Lookup status = createLookup("lookup.appointmentStatus", "XStatus");
 
         ActBean bean = new ActBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
-        bean.setValue("reason", reason);
-        bean.setValue("status", status);
+        bean.setValue("reason", reason.getCode());
+        bean.setValue("status", AppointmentStatus.IN_PROGRESS);
         Party customer = (Party) create("party.customerperson");
         Entity appointmentType = (Entity) create("entity.appointmentType");
         bean.setParticipant("participation.customer", customer);
