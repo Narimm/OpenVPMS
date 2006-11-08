@@ -67,7 +67,7 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
     /**
      * Table column identifiers.
      */
-    protected static final String[] COLUMNS = {
+    private static final String[] COLUMNS = {
             "table.imobject.archetype", "table.imobject.name",
             "table.imobject.description"};
 
@@ -77,7 +77,7 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      * a new column model created by {@link #createTableColumnModel}.
      */
     public BaseIMObjectTableModel() {
-        setTableColumnModel(createTableColumnModel(false));
+        setTableColumnModel(createTableColumnModel());
     }
 
     /**
@@ -87,6 +87,15 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
      */
     public BaseIMObjectTableModel(TableColumnModel model) {
         super(model);
+    }
+
+    /**
+     * Creates a new column model.
+     *
+     * @return a new column model
+     */
+    protected TableColumnModel createTableColumnModel() {
+        return createTableColumnModel(false);
     }
 
     /**
