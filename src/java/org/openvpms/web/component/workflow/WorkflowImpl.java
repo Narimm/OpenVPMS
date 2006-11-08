@@ -130,11 +130,11 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     protected void onEvent(TaskEvent event) {
         switch (event.getType()) {
             case CANCELLED:
-                cancel = true;
                 if (event.getTask().isRequired()) {
+                    cancel = true;
                     notifyCancelled();
                 } else {
-                    notifyCompleted();
+                    next();
                 }
                 break;
             case COMPLETED:

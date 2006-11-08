@@ -47,7 +47,22 @@ public class Tasks extends AbstractTask {
      * @param context the task context
      */
     public void start(TaskContext context) {
-        workflow.setTaskListener(getTaskListener());
+        workflow.setTaskListener(new TaskListener() {
+            public void taskEvent(TaskEvent event) {
+                switch (event.getType()) {
+                    case CANCELLED:
+                        if (isRequired()) {
+                            notifyCancelled();
+                        } else {
+                            notifyCompleted();
+                        }
+                        break;
+                    case COMPLETED:
+                        notifyCompleted();
+                }
+            }
+        });
         workflow.start(context);
     }
+
 }
