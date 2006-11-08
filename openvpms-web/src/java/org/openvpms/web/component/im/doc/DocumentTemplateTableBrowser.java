@@ -85,8 +85,8 @@ public class DocumentTemplateTableBrowser<T extends IMObject>
             for (IMObject object : rows) {
                 EntityBean bean = new EntityBean((Entity) object);
                 String archetype = bean.getString("archetype");
-                if (StringUtils.isEmpty(archetype)
-                        || TypeHelper.matches(_shortName, archetype)) {
+                if (!StringUtils.isEmpty(archetype)
+                        && TypeHelper.matches(_shortName, archetype)) {
                     objects.add((T) object);
                 }
             }
