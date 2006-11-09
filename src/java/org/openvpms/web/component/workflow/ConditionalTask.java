@@ -85,6 +85,9 @@ public class ConditionalTask extends AbstractTask {
      */
     private void onConditionEvent(TaskEvent event) {
         switch (event.getType()) {
+            case SKIPPED:
+                notifySkipped();
+                break;
             case CANCELLED:
                 notifyCancelled();
                 break;
@@ -105,6 +108,9 @@ public class ConditionalTask extends AbstractTask {
      */
     private void onTaskEvent(TaskEvent event) {
         switch (event.getType()) {
+            case SKIPPED:
+                notifySkipped();
+                break;
             case CANCELLED:
                 notifyCancelled();
                 break;

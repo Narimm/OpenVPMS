@@ -18,9 +18,6 @@
 
 package org.openvpms.web.component.dialog;
 
-import org.openvpms.web.component.util.ColumnFactory;
-import org.openvpms.web.component.util.LabelFactory;
-
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.ListBox;
@@ -28,6 +25,8 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.app.list.DefaultListModel;
 import nextapp.echo2.app.list.ListModel;
+import org.openvpms.web.component.util.ColumnFactory;
+import org.openvpms.web.component.util.LabelFactory;
 
 import java.util.List;
 
@@ -96,7 +95,7 @@ public class SelectionDialog extends PopupDialog {
      * @param list    the list of items to select from
      */
     public SelectionDialog(String title, String message, ListBox list) {
-        super(title, STYLE, Buttons.CANCEL);
+        super(title, STYLE, CANCEL);
         setModal(true);
 
         _list = list;

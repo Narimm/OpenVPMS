@@ -45,7 +45,7 @@ public abstract class MessageDialog extends PopupDialog {
      * @param message the message to display
      * @param buttons the buttons to display
      */
-    public MessageDialog(String title, String message, Buttons buttons) {
+    public MessageDialog(String title, String message, String[] buttons) {
         this(title, message, STYLE, buttons);
     }
 
@@ -58,7 +58,7 @@ public abstract class MessageDialog extends PopupDialog {
      * @param buttons the buttons to display
      */
     public MessageDialog(String title, String message, String style,
-                         Buttons buttons) {
+                         String[] buttons) {
         super(title, style, buttons);
         setModal(true);
 

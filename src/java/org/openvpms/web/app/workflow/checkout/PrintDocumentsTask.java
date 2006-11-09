@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.print.IMObjectPrinter;
 import org.openvpms.web.component.im.print.IMObjectPrinterFactory;
 import org.openvpms.web.component.im.print.IMObjectPrinterListener;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,12 +68,18 @@ class PrintDocumentsTask extends AbstractTask {
         if (unprinted.isEmpty()) {
             notifyCompleted();
         } else {
-            final BatchPrintDialog dialog = new BatchPrintDialog("Print",
+            String title = Messages.get("workflow.checkout.print.title");
+            String[] buttons = isRequired()
+                    ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
+            final BatchPrintDialog dialog = new BatchPrintDialog(title, buttons,
                                                                  unprinted);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
-                    if (dialog.getAction().equals(BatchPrintDialog.OK_ID)) {
+                    String action = dialog.getAction();
+                    if (action.equals(BatchPrintDialog.OK_ID)) {
                         print(dialog.getSelected());
+                    } else if (action.equals(BatchPrintDialog.SKIP_ID)) {
+                        notifySkipped();
                     } else {
                         notifyCancelled();
                     }

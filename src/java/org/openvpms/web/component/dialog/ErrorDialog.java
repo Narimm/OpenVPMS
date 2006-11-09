@@ -55,7 +55,7 @@ public class ErrorDialog extends MessageDialog {
      * @param message the message to display
      */
     public ErrorDialog(String title, String message) {
-        super(title, message, "ErrorDialog", Buttons.OK);
+        super(title, message, "ErrorDialog", OK);
     }
 
     /**

@@ -54,6 +54,11 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
     private boolean cancel;
 
     /**
+     * Determines if the skipping a task terminates the workflow.
+     */
+    private boolean breakOnSkip;
+
+    /**
      * The listener to handle task events.
      */
     private final TaskListener taskListener;
@@ -77,6 +82,16 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      */
     public void addTask(Task task) {
         tasks.add(task);
+    }
+
+    /**
+     * Determines if skipping a task should cause the workflow to terminate.
+     *
+     * @param breakOnSkip if <code>true</code> terminate the workflow if a task
+     *                    is skipped
+     */
+    public void setBreakOnSkip(boolean breakOnSkip) {
+        this.breakOnSkip = breakOnSkip;
     }
 
     /**
@@ -129,13 +144,19 @@ public class WorkflowImpl extends AbstractTask implements Workflow {
      */
     protected void onEvent(TaskEvent event) {
         switch (event.getType()) {
-            case CANCELLED:
+            case SKIPPED:
                 if (event.getTask().isRequired()) {
+                    ErrorHelper.show("Required task skipped");
                     cancel = true;
                     notifyCancelled();
+                } else if (breakOnSkip) {
+                    notifySkipped();
                 } else {
                     next();
                 }
+                break;
+            case CANCELLED:
+                notifyCancelled();
                 break;
             case COMPLETED:
                 next();

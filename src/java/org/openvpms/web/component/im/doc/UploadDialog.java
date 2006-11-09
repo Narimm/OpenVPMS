@@ -39,7 +39,7 @@ public class UploadDialog extends PopupDialog {
      * Construct a new <code>UploadDialog</code>.
      */
     public UploadDialog(final UploadListener listener) {
-        super(Messages.get("file.upload.title"), Buttons.CANCEL);
+        super(Messages.get("file.upload.title"), CANCEL);
         setModal(true);
         UploadSelect select = new UploadSelect();
 

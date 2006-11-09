@@ -50,10 +50,23 @@ public class BatchPrintDialog extends PopupDialog {
     /**
      * Construct a new <code>BatchPrintDialog</code>.
      *
-     * @param title the window title
+     * @param title   the window title
+     * @param objects the objects to print
      */
     public BatchPrintDialog(String title, List<IMObject> objects) {
-        super(title, Buttons.OK_CANCEL);
+        this(title, OK_CANCEL, objects);
+    }
+
+    /**
+     * Construct a new <code>BatchPrintDialog</code>.
+     *
+     * @param title   the window title
+     * @param buttons the buttons to display
+     * @param objects the objects to print
+     */
+    public BatchPrintDialog(String title, String[] buttons,
+                            List<IMObject> objects) {
+        super(title, buttons);
         table = new IMObjectTable<IMObject>(new PrintTableModel());
         table.setObjects(objects);
         getLayout().add(table);

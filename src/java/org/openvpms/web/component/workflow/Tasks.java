@@ -39,6 +39,16 @@ public class Tasks extends AbstractTask {
     }
 
     /**
+     * Determines if skipping a task should cause the workflow to terminate.
+     *
+     * @param breakOnSkip if <code>true</code> terminate the workflow if a task
+     *                    is skipped
+     */
+    public void setBreakOnSkip(boolean breakOnSkip) {
+        workflow.setBreakOnSkip(breakOnSkip);
+    }
+
+    /**
      * Starts the task.
      * <p/>
      * The registered {@link TaskListener} will be notified on completion or
@@ -50,12 +60,11 @@ public class Tasks extends AbstractTask {
         workflow.setTaskListener(new TaskListener() {
             public void taskEvent(TaskEvent event) {
                 switch (event.getType()) {
+                    case SKIPPED:
+                        notifySkipped();
+                        break;
                     case CANCELLED:
-                        if (isRequired()) {
-                            notifyCancelled();
-                        } else {
-                            notifyCompleted();
-                        }
+                        notifyCancelled();
                         break;
                     case COMPLETED:
                         notifyCompleted();

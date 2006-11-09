@@ -27,7 +27,6 @@ import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
-
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.util.GridFactory;
 import org.openvpms.web.component.util.LabelFactory;
@@ -88,7 +87,7 @@ public class LoginDialog extends PopupDialog {
      * Construct a new <code>LoginDialog</code>.
      */
     public LoginDialog() {
-        super(Messages.get(LOGIN_KEY), STYLE, Buttons.OK);
+        super(Messages.get(LOGIN_KEY), STYLE, OK);
         setClosable(false);
 
         _username = TextComponentFactory.create();
@@ -127,7 +126,8 @@ public class LoginDialog extends PopupDialog {
         String password = _password.getText();
 
         // @todo need to encode
-        Command redirect = new BrowserRedirectCommand("j_acegi_security_check?j_username=" + username + "&j_password=" + password);
+        Command redirect = new BrowserRedirectCommand(
+                "j_acegi_security_check?j_username=" + username + "&j_password=" + password);
         ApplicationInstance.getActive().enqueueCommand(redirect);
     }
 
