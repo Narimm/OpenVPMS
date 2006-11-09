@@ -18,19 +18,17 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.web.component.edit.CollectionProperty;
-import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
-import org.openvpms.web.component.util.CheckBoxFactory;
-import org.openvpms.web.resource.util.Messages;
-
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
-
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.edit.CollectionProperty;
+import org.openvpms.web.component.im.view.AbstractIMObjectCollectionViewer;
+import org.openvpms.web.component.util.CheckBoxFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.util.Date;
 import java.util.List;
@@ -89,11 +87,31 @@ public class EntityRelationshipCollectionViewer
      */
     @Override
     protected List<IMObject> getObjects() {
-        List<IMObject> objects = super.getObjects();
-        if (_hideInactive.isSelected()) {
+        return filter(super.getObjects());
+    }
+
+    /**
+     * Filters objects.
+     * This implementation filters inactive objects, if {@link #hideInactive()}
+     * is <code>true</code>.
+     *
+     * @param objects the objects to filter
+     * @return the filtered objects
+     */
+    protected List<IMObject> filter(List<IMObject> objects) {
+        if (hideInactive()) {
             objects = RelationshipHelper.filterInactive(objects, new Date());
         }
         return objects;
+    }
+
+    /**
+     * Determines if inactive objects should be hidden.
+     *
+     * @return <code>true</code> if inactive objects should be hidden
+     */
+    protected boolean hideInactive() {
+        return _hideInactive.isSelected();
     }
 
     /**

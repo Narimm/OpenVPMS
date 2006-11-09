@@ -57,8 +57,22 @@ public class EntityRelationshipCollectionEditor
     public EntityRelationshipCollectionEditor(CollectionProperty property,
                                               IMObject object,
                                               LayoutContext context) {
-        super(new EntityRelationshipCollectionPropertyEditor(property),
-              object, context);
+        this(new EntityRelationshipCollectionPropertyEditor(property),
+             object, context);
+    }
+
+    /**
+     * Construct a new <code>EntityRelationshipCollectionEditor</code>.
+     *
+     * @param editor  the collection property editor
+     * @param object  the object being edited
+     * @param context the layout context
+     */
+    protected EntityRelationshipCollectionEditor(
+            EntityRelationshipCollectionPropertyEditor editor,
+            IMObject object,
+            LayoutContext context) {
+        super(editor, object, context);
     }
 
     /**

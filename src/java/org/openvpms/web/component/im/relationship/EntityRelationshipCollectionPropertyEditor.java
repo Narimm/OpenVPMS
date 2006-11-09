@@ -39,9 +39,9 @@ public class EntityRelationshipCollectionPropertyEditor
         extends AbstractCollectionPropertyEditor {
 
     /**
-     * Determines if inactive relationships should be returned.
+     * Determines if inactive relationships should be excluded.
      */
-    private boolean _exclude = true;
+    private boolean exclude = true;
 
 
     /**
@@ -55,12 +55,21 @@ public class EntityRelationshipCollectionPropertyEditor
     }
 
     /**
-     * Indicates if inactive relationships should be returned.
+     * Indicates if inactive relationships should be excluded.
      *
      * @param exclude if <code>true</code> exclude inactive relationships
      */
     public void setExcludeInactive(boolean exclude) {
-        _exclude = exclude;
+        this.exclude = exclude;
+    }
+
+    /**
+     * Determines if inactive relationships should be excluded.
+     *
+     * @return <code>true</code> if inactive relationships should be excluded
+     */
+    public boolean getExcludeInactive() {
+        return exclude;
     }
 
     /**
@@ -70,9 +79,20 @@ public class EntityRelationshipCollectionPropertyEditor
      */
     @Override
     public List<IMObject> getObjects() {
-        List<IMObject> objects = super.getObjects();
+        return filter(super.getObjects());
+    }
+
+    /**
+     * Filters objects.
+     * This implementation filters inactive objects, if {@link #getExcludeInactive()}
+     * is <code>true</code>.
+     *
+     * @param objects the objects to filter
+     * @return the filtered objects
+     */
+    protected List<IMObject> filter(List<IMObject> objects) {
         List<IMObject> result;
-        if (_exclude) {
+        if (exclude) {
             result = RelationshipHelper.filterInactive(objects, new Date());
         } else {
             result = objects;
