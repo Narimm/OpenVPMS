@@ -113,7 +113,7 @@ public abstract class IMObjectTableCollectionEditor
 
 
     /**
-     * Construct a new <code>AbstractIMObjectCollectionEditor</code>.
+     * Construct a new <code>IMObjectTableCollectionEditor</code>.
      *
      * @param editor  the collection property editor
      * @param object  the object being edited
