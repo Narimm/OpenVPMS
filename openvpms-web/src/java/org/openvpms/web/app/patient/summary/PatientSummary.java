@@ -212,7 +212,7 @@ public class PatientSummary {
          */
         public ViewerDialog(String title, String style,
                             PagedIMObjectTable<Act> table) {
-            super(title, style, Buttons.OK);
+            super(title, style, OK);
             setModal(true);
             getLayout().add(ColumnFactory.create("Inset", table));
             show();

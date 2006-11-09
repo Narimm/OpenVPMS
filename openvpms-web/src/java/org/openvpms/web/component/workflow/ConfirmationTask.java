@@ -66,7 +66,7 @@ public class ConfirmationTask extends EvalTask<Boolean> {
      */
     public void start(TaskContext context) {
         final ConfirmationDialog dialog = new ConfirmationDialog(
-                title, message, PopupDialog.Buttons.YES_NO_CANCEL);
+                title, message, PopupDialog.YES_NO_CANCEL);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 String action = dialog.getAction();

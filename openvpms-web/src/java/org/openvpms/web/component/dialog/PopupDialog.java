@@ -51,14 +51,30 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String NO_ID = "no";
 
     /**
+     * Skip button identifier.
+     */
+    public static final String SKIP_ID = "skip";
+
+    /**
      * Used to indicate which buttons to display.
      */
-    public static enum Buttons {
-        OK,
-        CANCEL,
-        OK_CANCEL,
-        YES_NO_CANCEL
-    }
+    public enum Button {
+        OK, YES, NO, CANCEL, SKIP}
+
+    /**
+     *
+     */
+    public static final String[] OK = {OK_ID};
+
+    public static final String[] CANCEL = {CANCEL_ID};
+
+    public static final String[] OK_CANCEL = {OK_ID, CANCEL_ID};
+
+    public static final String[] OK_SKIP_CANCEL = {OK_ID, SKIP_ID, CANCEL_ID};
+
+    public static final String[] SKIP_CANCEL = {SKIP_ID, CANCEL_ID};
+
+    public static final String[] YES_NO_CANCEL = {YES_ID, NO_ID, CANCEL_ID};
 
     /**
      * The dialog action.
@@ -72,7 +88,7 @@ public abstract class PopupDialog extends PopupWindow {
      * @param title   the window title
      * @param buttons the buttons to display
      */
-    public PopupDialog(String title, Buttons buttons) {
+    public PopupDialog(String title, String[] buttons) {
         this(title, null, buttons);
     }
 
@@ -83,37 +99,13 @@ public abstract class PopupDialog extends PopupWindow {
      * @param style   the window style
      * @param buttons the buttons to display
      */
-    public PopupDialog(String title, String style, Buttons buttons) {
+    public PopupDialog(String title, String style, String[] buttons) {
         super(title, style, null);
 
-        if (buttons == Buttons.OK || buttons == Buttons.OK_CANCEL) {
-            addButton(OK_ID, new ActionListener() {
+        for (final String button : buttons) {
+            addButton(button, new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    onOK();
-                }
-            });
-        }
-        if (buttons == Buttons.CANCEL || buttons == Buttons.OK_CANCEL) {
-            addButton(CANCEL_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onCancel();
-                }
-            });
-        }
-        if (buttons == Buttons.YES_NO_CANCEL) {
-            addButton(YES_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onYes();
-                }
-            });
-            addButton(NO_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onNo();
-                }
-            });
-            addButton(CANCEL_ID, new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    onCancel();
+                    onButton(button);
                 }
             });
         }
@@ -138,7 +130,31 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Invoked when the OK button is pressed. This sets the action and closes
+     * Invoked when a button is pressed. This delegates to the appropriate
+     * on*() method for the button if it is known, else sets the action to
+     * the button identifier and closes the window.
+     *
+     * @param button the button identifier
+     */
+    protected void onButton(String button) {
+        if (OK_ID.equals(button)) {
+            onOK();
+        } else if (CANCEL_ID.equals(button)) {
+            onCancel();
+        } else if (YES_ID.equals(button)) {
+            onYes();
+        } else if (NO_ID.equals(button)) {
+            onNo();
+        } else if (SKIP_ID.equals(button)) {
+            onSkip();
+        } else {
+            setAction(button);
+            close();
+        }
+    }
+
+    /**
+     * Invoked when the 'OK' button is pressed. This sets the action and closes
      * the window.
      */
     protected void onOK() {
@@ -147,7 +163,7 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Invoked when the cancel button is pressed. This sets the action and
+     * Invoked when the 'cancel' button is pressed. This sets the action and
      * closes the window.
      */
     protected void onCancel() {
@@ -156,7 +172,7 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Invoked when the yes button is pressed. This sets the action and closes
+     * Invoked when the 'yes' button is pressed. This sets the action and closes
      * the window.
      */
     protected void onYes() {
@@ -165,11 +181,20 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Invoked when the no button is pressed. This sets the action and closes
+     * Invoked when the 'no' button is pressed. This sets the action and closes
      * the window.
      */
     protected void onNo() {
         setAction(NO_ID);
+        close();
+    }
+
+    /**
+     * Invoked when the 'skip' button is pressed. This sets the action and
+     * closes the window.
+     */
+    protected void onSkip() {
+        setAction(SKIP_ID);
         close();
     }
 }

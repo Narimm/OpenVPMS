@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
@@ -93,13 +94,18 @@ public class SelectIMObjectTask<T extends IMObject> extends AbstractTask {
         Browser<T> browser = new TableBrowser<T>(query);
         String title = Messages.get(
                 "imobject.select.title", type);
-        final BrowserDialog<T> dialog = new BrowserDialog<T>(title, browser);
+        String[] buttons = isRequired()
+                ? PopupDialog.CANCEL : PopupDialog.SKIP_CANCEL;
+        final BrowserDialog<T> dialog = new BrowserDialog<T>(title, buttons,
+                                                             browser);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void windowPaneClosing(WindowPaneEvent event) {
                 T selected = dialog.getSelected();
                 if (selected != null) {
                     context.addObject(selected);
                     notifyCompleted();
+                } else if (dialog.getAction().equals(PopupDialog.SKIP_ID)) {
+                    notifySkipped();
                 } else {
                     notifyCancelled();
                 }

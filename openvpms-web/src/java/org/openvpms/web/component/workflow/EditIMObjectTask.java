@@ -157,6 +157,9 @@ public class EditIMObjectTask extends AbstractTask {
                 creator.setTaskListener(new TaskListener() {
                     public void taskEvent(TaskEvent event) {
                         switch (event.getType()) {
+                            case SKIPPED:
+                                notifySkipped();
+                                break;
                             case CANCELLED:
                                 notifyCancelled();
                                 break;

@@ -52,7 +52,7 @@ public class PrintDialog extends PopupDialog {
      * @param title the window title
      */
     public PrintDialog(String title) {
-        super(title, "PrintDialog", Buttons.OK_CANCEL);
+        super(title, "PrintDialog", OK_CANCEL);
         setModal(true);
 
 /*

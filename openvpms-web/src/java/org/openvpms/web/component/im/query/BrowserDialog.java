@@ -58,21 +58,45 @@ public class BrowserDialog<T extends IMObject> extends PopupDialog {
      * Construct a new <code>BrowserDialog</code>.
      *
      * @param title   the dialog title
-     * @param browser the editor
+     * @param browser the browser
      */
     public BrowserDialog(String title, Browser<T> browser) {
         this(title, browser, false);
     }
 
     /**
+     * Constructs a new <code>BrowserDialog</code>.
+     *
+     * @param title   the dialog title
+     * @param buttons the buttons to display
+     * @param browser the browser
+     */
+    public BrowserDialog(String title, String[] buttons, Browser<T> browser) {
+        this(title, buttons, browser, false);
+    }
+
+    /**
      * Construct a new <code>BrowserDialog</code>.
      *
      * @param title   the dialog title
-     * @param browser the editor
+     * @param browser the browser
      * @param addNew  if <code>true</code> add a 'new' button
      */
     public BrowserDialog(String title, Browser<T> browser, boolean addNew) {
-        super(title, STYLE, Buttons.CANCEL);
+        this(title, CANCEL, browser, addNew);
+    }
+
+    /**
+     * Construct a new <code>BrowserDialog</code>.
+     *
+     * @param title   the dialog title
+     * @param buttons the buttons to display
+     * @param browser the browser
+     * @param addNew  if <code>true</code> add a 'new' button
+     */
+    public BrowserDialog(String title, String[] buttons, Browser<T> browser,
+                         boolean addNew) {
+        super(title, STYLE, buttons);
         setModal(true);
         getLayout().add(browser.getComponent());
 

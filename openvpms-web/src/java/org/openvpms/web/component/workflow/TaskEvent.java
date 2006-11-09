@@ -31,7 +31,7 @@ public class TaskEvent {
      * The event type.
      */
     public enum Type {
-        COMPLETED, CANCELLED}
+        SKIPPED, COMPLETED, CANCELLED}
 
     /**
      * The event type.
@@ -42,6 +42,7 @@ public class TaskEvent {
      * The task that generated the event.
      */
     private final Task task;
+
 
     /**
      * Creates a new <code>TaskEvent</code>/

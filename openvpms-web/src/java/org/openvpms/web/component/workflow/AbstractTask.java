@@ -84,6 +84,15 @@ public abstract class AbstractTask implements Task {
     }
 
     /**
+     * Notifies any registered listener that the task has been skipped.
+     */
+    protected void notifySkipped() {
+        if (listener != null) {
+            listener.taskEvent(new TaskEvent(TaskEvent.Type.SKIPPED, this));
+        }
+    }
+
+    /**
      * Notifies any registered listener that the task has completed.
      */
     protected void notifyCompleted() {

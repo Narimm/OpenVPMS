@@ -50,7 +50,7 @@ public class SelectUserDialog extends PopupDialog {
      * @param title the window title
      */
     public SelectUserDialog(String title) {
-        super(title, "SelectUserDialog", Buttons.CANCEL);
+        super(title, "SelectUserDialog", CANCEL);
 
         String shortName = "security.user";
         String type = DescriptorHelper.getDisplayName(shortName);

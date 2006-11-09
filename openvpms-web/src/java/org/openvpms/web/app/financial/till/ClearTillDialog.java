@@ -18,13 +18,9 @@
 
 package org.openvpms.web.app.financial.till;
 
-import org.openvpms.web.component.dialog.PopupDialog;
-import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
-import org.openvpms.web.component.util.GridFactory;
-import org.openvpms.web.component.util.LabelFactory;
-import org.openvpms.web.component.util.SelectFieldFactory;
-import org.openvpms.web.resource.util.Messages;
-
+import nextapp.echo2.app.Grid;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.TextField;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
@@ -32,10 +28,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
-
-import nextapp.echo2.app.Grid;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.TextField;
+import org.openvpms.web.component.dialog.PopupDialog;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.util.GridFactory;
+import org.openvpms.web.component.util.LabelFactory;
+import org.openvpms.web.component.util.SelectFieldFactory;
+import org.openvpms.web.resource.util.Messages;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -64,8 +62,7 @@ public class ClearTillDialog extends PopupDialog {
      * Construct a new <code>ClearTillDialog</code>.
      */
     public ClearTillDialog() {
-        super(Messages.get("till.clear.title"), "ClearTillDialog",
-              Buttons.OK_CANCEL);
+        super(Messages.get("till.clear.title"), "ClearTillDialog", OK_CANCEL);
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         setModal(true);

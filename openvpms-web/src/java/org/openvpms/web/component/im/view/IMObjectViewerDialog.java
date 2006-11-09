@@ -41,7 +41,7 @@ public class IMObjectViewerDialog extends PopupDialog {
      * @param browser the browser to display
      */
     public IMObjectViewerDialog(IMObjectViewer browser) {
-        super(browser.getTitle(), STYLE, Buttons.OK);
+        super(browser.getTitle(), STYLE, OK);
         setModal(true);
         getLayout().add(browser.getComponent());
         show();

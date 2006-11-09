@@ -38,7 +38,7 @@ public class ConfirmationDialog extends MessageDialog {
      * @param message the message
      */
     public ConfirmationDialog(String title, String message) {
-        this(title, message, Buttons.OK_CANCEL);
+        this(title, message, OK_CANCEL);
     }
 
     /**
@@ -48,8 +48,7 @@ public class ConfirmationDialog extends MessageDialog {
      * @param message the message
      * @param buttons the buttons to display
      */
-    public ConfirmationDialog(String title, String message,
-                              Buttons buttons) {
+    public ConfirmationDialog(String title, String message, String[] buttons) {
         super(title, message, STYLE, buttons);
     }
 

@@ -180,7 +180,7 @@ class ReminderGenerator extends AbstractReminderProcessor {
          * @param stats the statistics to display
          */
         public SummaryDialog(Statistics stats) {
-            super(Messages.get("reporting.reminder.summary.title"), Buttons.OK);
+            super(Messages.get("reporting.reminder.summary.title"), OK);
             setModal(true);
             Grid grid = new Grid(2);
             for (Statistics.Type type : Statistics.Type.values()) {
