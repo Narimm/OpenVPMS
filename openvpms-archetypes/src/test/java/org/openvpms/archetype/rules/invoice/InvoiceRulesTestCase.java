@@ -20,6 +20,7 @@ package org.openvpms.archetype.rules.invoice;
 
 import static org.openvpms.archetype.rules.act.ActStatus.*;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -292,7 +293,7 @@ public class InvoiceRulesTestCase extends ArchetypeServiceTest {
         _customer = TestHelper.createCustomer();
         _clinician = TestHelper.createClinician(false);
         _patient = TestHelper.createPatient();
-        _reminder = TestHelper.createReminderType();
+        _reminder = ReminderTestHelper.createReminderType();
         _template = createDocumentTemplate();
     }
 
