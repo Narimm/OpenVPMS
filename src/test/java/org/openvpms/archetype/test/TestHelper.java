@@ -19,7 +19,6 @@
 package org.openvpms.archetype.test;
 
 import junit.framework.Assert;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -180,21 +179,6 @@ public class TestHelper extends Assert {
             bean.save();
         }
         return user;
-    }
-
-    /**
-     * Creates and saves a new <em>entity.reminderType</em>.
-     *
-     * @return a new reminder
-     */
-    public static Entity createReminderType() {
-        Entity reminder = (Entity) create("entity.reminderType");
-        EntityBean bean = new EntityBean(reminder);
-        bean.setValue("name", "XReminderType");
-        bean.setValue("defaultInterval", 1);
-        bean.setValue("defaultUnits", "MONTHS");
-        bean.save();
-        return reminder;
     }
 
 }

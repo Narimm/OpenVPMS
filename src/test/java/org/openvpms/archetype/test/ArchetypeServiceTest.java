@@ -74,6 +74,17 @@ public abstract class ArchetypeServiceTest
     }
 
     /**
+     * Helper to reload an object from the archetype service.
+     *
+     * @param object the object to reload
+     * @return the corresponding object or <code>null</code> if no object
+     *         is found
+     */
+    protected IMObject get(IMObject object) {
+        return get(object.getObjectReference());
+    }
+
+    /**
      * Helper to retrieve an object from the archetype service.
      *
      * @param ref the object reference

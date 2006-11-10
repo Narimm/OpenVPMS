@@ -69,13 +69,13 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      */
     public void testQueryReminderType() {
         final int count = 10;
-        Entity reminderType = TestHelper.createReminderType();
+        Entity reminderType = ReminderTestHelper.createReminderType();
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient(customer);
         Date dueDate = new Date();
 
         for (int i = 0; i < count; ++i) {
-            createReminder(patient, reminderType, dueDate);
+            ReminderTestHelper.createReminder(patient, reminderType, dueDate);
         }
 
         ReminderQuery query = new ReminderQuery();
@@ -90,7 +90,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQueryDateRange() {
         final int count = 10;
 
-        Entity reminderType = TestHelper.createReminderType();
+        Entity reminderType = ReminderTestHelper.createReminderType();
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient(customer);
 
@@ -102,7 +102,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         // add some data
         for (int i = 0; i < count; ++i) {
-            createReminder(patient, reminderType, dueFrom);
+            ReminderTestHelper.createReminder(patient, reminderType, dueFrom);
         }
 
         // now determine the no. of acts with a due date in the date range
@@ -134,12 +134,13 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             names[i] = customer.getName();
             patients[i] = TestHelper.createPatient(customer);
         }
-        Entity reminderType = TestHelper.createReminderType();
+        Entity reminderType = ReminderTestHelper.createReminderType();
 
         Date dueDate = new Date();
         for (int i = 0; i < count; ++i) {
             for (Party patient : patients) {
-                createReminder(patient, reminderType, dueDate);
+                ReminderTestHelper.createReminder(patient, reminderType,
+                                                  dueDate);
             }
         }
         // run the query again, and verify it returns those reminders just
@@ -157,7 +158,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      */
     public void testQueryReminderTypeDateRange() {
         final int count = 10;
-        Entity reminderType = TestHelper.createReminderType();
+        Entity reminderType = ReminderTestHelper.createReminderType();
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient(customer);
 
@@ -168,7 +169,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         for (int i = 0; i < count; ++i) {
             calendar.set(Calendar.DAY_OF_MONTH, i + 1);
             Date dueDate = calendar.getTime();
-            createReminder(patient, reminderType, dueDate);
+            ReminderTestHelper.createReminder(patient, reminderType, dueDate);
         }
         // query a subset of the dates just added
         calendar.set(Calendar.DAY_OF_MONTH, 5);
@@ -203,15 +204,16 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             patients[i] = TestHelper.createPatient(customer);
         }
 
-        Entity reminderType1 = TestHelper.createReminderType();
-        Entity reminderType2 = TestHelper.createReminderType();
+        Entity reminderType1 = ReminderTestHelper.createReminderType();
+        Entity reminderType2 = ReminderTestHelper.createReminderType();
 
         Date dueDate = new Date();
 
         for (int i = 0; i < count; ++i) {
             Entity reminderType = (i % 2 == 0) ? reminderType1 : reminderType2;
             for (Party patient : patients) {
-                createReminder(patient, reminderType, dueDate);
+                ReminderTestHelper.createReminder(patient, reminderType,
+                                                  dueDate);
             }
         }
 
@@ -246,7 +248,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             names[i] = customer.getName();
             patients[i] = TestHelper.createPatient(customer);
         }
-        Entity reminderType = TestHelper.createReminderType();
+        Entity reminderType = ReminderTestHelper.createReminderType();
 
         Calendar calendar = new GregorianCalendar();
         calendar.set(1980, 0, 1);
@@ -256,7 +258,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             calendar.set(Calendar.DAY_OF_MONTH, i + 1);
             Date dueDate = calendar.getTime();
             for (Party patient : patients) {
-                createReminder(patient, reminderType, dueDate);
+                ReminderTestHelper.createReminder(patient, reminderType,
+                                                  dueDate);
             }
         }
 
@@ -293,8 +296,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             names[i] = customer.getName();
             patients[i] = TestHelper.createPatient(customer);
         }
-        Entity reminderType1 = TestHelper.createReminderType();
-        Entity reminderType2 = TestHelper.createReminderType();
+        Entity reminderType1 = ReminderTestHelper.createReminderType();
+        Entity reminderType2 = ReminderTestHelper.createReminderType();
 
         Calendar calendar = new GregorianCalendar();
         calendar.set(1980, 0, 1);
@@ -305,7 +308,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
             Date dueDate = calendar.getTime();
             Entity reminderType = (i % 2 == 0) ? reminderType1 : reminderType2;
             for (Party patient : patients) {
-                createReminder(patient, reminderType, dueDate);
+                ReminderTestHelper.createReminder(patient, reminderType,
+                                                  dueDate);
             }
         }
 
@@ -324,25 +328,6 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         assertEquals(9, reminders.getTotalNumOfRows());
     }
 
-    /**
-     * Creates a new reminder.
-     *
-     * @param patient      the patient
-     * @param reminderType the reminder type
-     * @param dueDate      the due date
-     * @return a new reminder
-     */
-    private Act createReminder(Party patient, Entity reminderType,
-                               Date dueDate) {
-        Act act = (Act) create("act.patientReminder");
-        ActBean bean = new ActBean(act);
-        bean.setStatus(ActStatus.IN_PROGRESS);
-        bean.setValue("endTime", dueDate);
-        bean.setParticipant("participation.patient", patient);
-        bean.setParticipant("participation.reminderType", reminderType);
-        bean.save();
-        return act;
-    }
 
     /**
      * Counts IN_PROGRESS reminders for patients with patient-owner relationships.
@@ -372,7 +357,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
                         "participation.patient");
                 if (patient != null) {
                     for (EntityRelationship relationship
-                            : patient.getEntityRelationships()){
+                            : patient.getEntityRelationships()) {
                         if (TypeHelper.isA(relationship,
                                            "entityRelationship.patientOwner")) {
                             result++;
