@@ -75,23 +75,21 @@ public interface IMObjectDAO {
 
     /**
      * Execute a get using the specified query string and a map of the
-     * values. The first row and ther number of rows is used to control
-     * the paging of the result set 
-     * 
-     * @param queryString
-     *            the query string
-     * @param valueMap
-     *            the values applied to the query
-     * @param firstRow
-     *            the first row to retrieve
-     * @param numOfRows
-     *            the maximum number of rows to return            
+     * values. The first row and the number of rows is used to control
+     * the paging of the result set.
+     *
+     * @param queryString the query string
+     * @param valueMap    the values applied to the query
+     * @param firstRow    the first row to retrieve
+     * @param numOfRows   the maximum number of rows to return
+     * @param count       if <code>true</code> counts the total no. of rows,
+     *                    returning it in {@link IPage#getTotalNumOfRows()}
      * @return IPage<IMObject>
-     * @throws IMObjectDAOException
-     *            a runtime exception, raised if the request cannot complete.            
+     * @throws IMObjectDAOException a runtime exception, raised if the request
+     *                              cannot complete.
      */
     public IPage<IMObject> get(String queryString, Map<String, Object> valueMap,
-            int firstRow, int numOfRows);
+                               int firstRow, int numOfRows, boolean count);
 
     /**
      * Execute a get using the specified query string and a map of the values.
@@ -110,6 +108,8 @@ public interface IMObjectDAO {
      * @param valueMap    the values applied to the query
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
+     * @param count       if <code>true</code> counts the total no. of rows,
+     *                    returning it in {@link IPage#getTotalNumOfRows()}
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -117,7 +117,7 @@ public interface IMObjectDAO {
     IPage<IMObject> get(Map<String, ArchetypeDescriptor> archetypes,
                         Collection<String> nodes, String queryString,
                         Map<String, Object> valueMap, int firstRow,
-                        int numOfRows);
+                        int numOfRows, boolean count);
 
     /**
      * Execute a get using the specified query string and a map of the values.
@@ -130,6 +130,8 @@ public interface IMObjectDAO {
      * @param valueMap    the values applied to the query
      * @param firstRow    the first row to retrieve
      * @param numOfRows   the maximum number of rows to return
+     * @param count       if <code>true</code> counts the total no. of rows,
+     *                    returning it in {@link IPage#getTotalNumOfRows()}
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException a runtime exception, raised if the request
      *                              cannot complete.
@@ -137,7 +139,7 @@ public interface IMObjectDAO {
     IPage<NodeSet> getNodes(Map<String, ArchetypeDescriptor> archetypes,
                             Collection<String> nodes, String queryString,
                             Map<String, Object> valueMap, int firstRow,
-                            int numOfRows);
+                            int numOfRows, boolean count);
 
     /**
      * Retrieve the objects that matches the specified search criteria.
@@ -212,21 +214,20 @@ public interface IMObjectDAO {
     /**
      * Execute the specified named query using the specified parameter
      * list.
-     * 
-     * @param name
-     *            the name of the query
-     * @param params
-     *            a map of param name and param value.
-     * @param firstRow
-     *            the first row to retrieve
-     * @param numOfRows
-     *            the maximum number of rows to return            
+     *
+     * @param name      the name of the query
+     * @param params    a map of param name and param value.
+     * @param firstRow  the first row to retrieve
+     * @param numOfRows the maximum number of rows to return
+     * @param count       if <code>true</code> counts the total no. of rows,
+     *                    returning it in {@link IPage#getTotalNumOfRows()}
      * @return IPage<IMObject>
-     *            the results and associated context information
-     * @throws IMObjectDAOException
-     *            if there is an error processing the request                                   
+     *         the results and associated context information
+     * @throws IMObjectDAOException if there is an error processing the request
      */
-    public IPage<IMObject> getByNamedQuery(String name, Map<String, Object> params,
-            int firstRow, int numOfRows);
+    public IPage<IMObject> getByNamedQuery(String name, 
+                                           Map<String, Object> params,
+                                           int firstRow, int numOfRows,
+                                           boolean count);
 }
 

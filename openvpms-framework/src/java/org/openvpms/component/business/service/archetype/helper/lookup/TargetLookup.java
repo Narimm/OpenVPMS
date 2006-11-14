@@ -193,7 +193,8 @@ class TargetLookup extends AbstractLookupAssertion {
                 .add(new CollectionNodeConstraint("target", false)
                         .add(new ObjectRefNodeConstraint("source", lookup)))
                 .add(new NodeConstraint("code", code))
-                .setActiveOnly(true);
+                .setActiveOnly(true)
+                .setCountTotalRows(false);
     }
 
     /**

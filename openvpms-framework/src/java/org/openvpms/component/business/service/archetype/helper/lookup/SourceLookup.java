@@ -188,7 +188,8 @@ public class SourceLookup extends AbstractLookupAssertion {
                 .add(new CollectionNodeConstraint("source", false)
                         .add(new ObjectRefNodeConstraint("target", lookup)))
                 .add(new NodeConstraint("code", code))
-                .setActiveOnly(true);
+                .setActiveOnly(true)
+                .setCountTotalRows(false);
     }
 
     /**

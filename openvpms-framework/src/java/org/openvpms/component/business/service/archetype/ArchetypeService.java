@@ -391,7 +391,9 @@ public class ArchetypeService implements IArchetypeService {
            }
 
            return dao.get(context.getQueryString(), context.getValueMap(),
-                          query.getFirstRow(), query.getNumOfRows());
+                                          query.getFirstRow(),
+                                          query.getNumOfRows(),
+                                          query.countTotalRows());
        } catch (Exception exception) {
            throw new ArchetypeServiceException(
                    ArchetypeServiceException.ErrorCode.FailedToExecuteQuery,
@@ -433,7 +435,7 @@ public class ArchetypeService implements IArchetypeService {
             return dao.get(getArchetypes(context), nodes,
                            context.getQueryString(),
                            context.getValueMap(), query.getFirstRow(),
-                           query.getNumOfRows());
+                           query.getNumOfRows(), query.countTotalRows());
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -470,7 +472,7 @@ public class ArchetypeService implements IArchetypeService {
             return dao.getNodes(getArchetypes(context), nodes,
                                 context.getQueryString(),
                                 context.getValueMap(), query.getFirstRow(),
-                                query.getNumOfRows());
+                                query.getNumOfRows(), query.countTotalRows());
         } catch (ArchetypeServiceException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -503,7 +505,7 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         try {
-            return dao.getByNamedQuery(name, params, firstRow, numOfRows);
+            return dao.getByNamedQuery(name, params, firstRow, numOfRows, true);
         } catch (IMObjectDAOException exception) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.FailedInGetByNamedQuery,
