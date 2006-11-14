@@ -19,8 +19,6 @@
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -62,12 +60,6 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * The archetype service.
      */
     private final IArchetypeService service;
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(
-            AbstractLookupAssertion.class);
 
 
     /**
@@ -233,6 +225,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      */
     @SuppressWarnings("unchecked")
     protected List<Lookup> getLookups(ArchetypeQuery query) {
+        query.setCountTotalRows(false);
         List result = service.get(query).getRows();
         return (List<Lookup>) result;
     }
@@ -248,6 +241,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
     @SuppressWarnings("unchecked")
     protected List<Lookup> getLookups(Collection<String> nodes,
                                       ArchetypeQuery query) {
+        query.setCountTotalRows(false);
         List result = service.get(query, nodes).getRows();
         return (List<Lookup>) result;
     }
@@ -276,17 +270,11 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true)
                 .add(new NodeConstraint("code", code))
                 .setFirstRow(0)
-                .setNumOfRows(1);
+                .setNumOfRows(1)
+                .setCountTotalRows(false);
         IPage<NodeSet> page = service.getNodes(query, nodes);
         if (!page.getRows().isEmpty()) {
             result = page.getRows().get(0);
-        }
-
-        // warn if there is more than one lookup with the same value
-        if (page.getTotalNumOfRows() > 1) {
-            log.warn("There are " + page.getTotalNumOfRows() +
-                    "lookups with shortNames=" + shortNames +
-                    " and code=" + code);
         }
         return result;
     }

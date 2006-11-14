@@ -20,17 +20,7 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 // openvpms-framework
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-// commons-lang
 import org.apache.commons.lang.StringUtils;
-
-//log4j
-import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -46,6 +36,10 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 /**
  * A helper class, which is used to wrap frequently used queries
  * 
@@ -53,17 +47,11 @@ import org.openvpms.component.system.common.query.RelationalOp;
  * @version  $LastChangedDate$
  */
 public class ArchetypeQueryHelper {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(ArchetypeQueryHelper.class);
 
     /**
      *  Return the object with the specified archId and uid. 
      *  
-     * @paeam service
+     * @param service
      *            the archetype service  
      * @param archId
      *            the archetype id of the object to retrieve
@@ -73,9 +61,11 @@ public class ArchetypeQueryHelper {
      *            the object of null if one does not exist                       
      */
     public static IMObject getByUid(IArchetypeService service, ArchetypeId archId, long uid) {
+        ArchetypeQuery query = new ArchetypeQuery(archId)
+                .add(new NodeConstraint("uid", RelationalOp.EQ, uid))
+                .setCountTotalRows(false);
         IPage<IMObject> results = service.get(
-                new ArchetypeQuery(archId)
-                .add(new NodeConstraint("uid", RelationalOp.EQ, uid)));
+                query);
         return (results.getRows().size() == 1) ? results.getRows().get(0) : null;
     }
     
@@ -91,12 +81,14 @@ public class ArchetypeQueryHelper {
      */
     public static IMObject getByObjectReference(IArchetypeService service, 
             IMObjectReference reference) {
-        IPage<IMObject> results = service.get(new ArchetypeQuery(reference));
+        ArchetypeQuery query = new ArchetypeQuery(reference)
+                .setCountTotalRows(false);
+        IPage<IMObject> results = service.get(query);
         return (results.getRows().size() == 1) ? results.getRows().get(0) : null;
     }
     
     /**
-     * Return a list of {@link Acts} given the following constraints
+     * Return a list of {@link Act}s given the following constraints
      * 
      * @param service
      *            a reference ot the archetype service
@@ -120,12 +112,12 @@ public class ArchetypeQueryHelper {
      *            a particular act status
      * @param activeOnly 
      *            only areturn acts that are active
-     * @param startRow
+     * @param firstRow
      *            the first row to return
      * @param numOfRows
      *            the number of rows to return                        
      * @return IPage<Act>
-     * @param ArchetypeServiceException
+     * @throws ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
     public static IPage getActs(IArchetypeService service, IMObjectReference ref, 
@@ -161,7 +153,7 @@ public class ArchetypeQueryHelper {
                 .add(new ObjectRefNodeConstraint("entity", ref));
         query.add(participations);
         
-        return (IPage)service.get(query);
+        return service.get(query);
     }
     
     /**
@@ -188,7 +180,7 @@ public class ArchetypeQueryHelper {
      * @param numOfRows
      *            the number of rows to return            
      * @return IPage<Participation>
-     * @param ArchetypeServiceException
+     * @throws ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
     public static IPage getParticipations(IArchetypeService service, 
@@ -212,7 +204,7 @@ public class ArchetypeQueryHelper {
                     new Object[]{endTimeFrom, endTimeThru}));
         }
         
-        return (IPage)service.get(query);
+        return service.get(query);
     }
 
     /**
@@ -241,7 +233,7 @@ public class ArchetypeQueryHelper {
      * @param numOfRows
      *            the num of rows to retrieve            
      * @return IPage<Act>
-     * @param ArchetypeServiceException
+     * @throws ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
     public static IPage getActs(IArchetypeService service, String entityName, 
@@ -272,7 +264,7 @@ public class ArchetypeQueryHelper {
         }
         
         
-        return (IPage)service.get(query);
+        return service.get(query);
     }
 
     /**
@@ -295,7 +287,7 @@ public class ArchetypeQueryHelper {
      *            the reference model name (must be complete name)
      * @param entityName
      *            the name of the entity (partial or complete)
-     * @param concept
+     * @param conceptName
      *            the concept name (partial or complete)
      * @param instanceName
      *            the particular instance name
@@ -306,7 +298,7 @@ public class ArchetypeQueryHelper {
      * @param numOfRows
      *            the num of rows to retrieve            
      * @return IPage<IMObject>
-     * @param ArchetypeServiceException
+     * @throws ArchetypeServiceException
      *            if there is a problem executing the service request                                                                                  
      */
     public static IPage<IMObject> get(IArchetypeService service, String rmName, 

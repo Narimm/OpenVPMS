@@ -18,7 +18,6 @@
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -49,12 +48,6 @@ import java.util.List;
  * @version $LastChangedDate$
  */
 public class LookupHelper  {
-
-    /**
-     * Define a logger for this class.
-     */
-    private static final Logger logger = Logger.getLogger(LookupHelper.class);
-
 
     /**
      * Return a list of lookups for the specified {@link NodeDescriptor}.
@@ -225,17 +218,11 @@ public class LookupHelper  {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true)
                 .add(new NodeConstraint("code", code))
                 .setFirstRow(0)
-                .setNumOfRows(1);
+                .setNumOfRows(1)
+                .setCountTotalRows(false);
         IPage<IMObject> page = service.get(query);
-        if (page.getTotalNumOfRows() > 0) {
+        if (!page.getRows().isEmpty()) {
             lookup = (Lookup) page.getRows().get(0);
-        }
-
-        // warn if there is more than one lookup with the same value
-        if (page.getTotalNumOfRows() > 1) {
-            logger.warn("There are " + page.getTotalNumOfRows() +
-                    "lookups with shortNames: " + shortNames +
-                    " and code: " + code);
         }
 
         return lookup;
@@ -341,11 +328,13 @@ public class LookupHelper  {
      *            the object of null if one does not exist
      */
     public static Lookup getDefaultLookup(IArchetypeService service, String lookup) {
-        IPage<IMObject> results = service.get(new ArchetypeQuery(lookup, false, false)
-                    .add(new NodeConstraint("defaultLookup", RelationalOp.EQ, true))
-                    .setNumOfRows(1));
+        ArchetypeQuery query = new ArchetypeQuery(lookup, false, false)
+                .add(new NodeConstraint("defaultLookup", RelationalOp.EQ, true))
+                .setNumOfRows(1)
+                .setCountTotalRows(false);
+        IPage<IMObject> results = service.get(query);
 
-        return (results.getRows().size() == 1) ? (Lookup)results.getRows().get(0) : null;
+        return (results.getRows().size() == 1) ? (Lookup) results.getRows().get(0) : null;
 
     }
 
