@@ -80,12 +80,12 @@ public class Editors implements Modifiable {
     /**
      * Adds an editor, associating it with a property.
      *
-     * @param editor the editor to add
+     * @param editor   the editor to add
      * @param property the property
      */
     public void add(Editor editor, Property property) {
         addEditor(editor);
-       _propertyEditors.put(property.getDescriptor().getName(), editor);
+        _propertyEditors.put(property.getDescriptor().getName(), editor);
     }
 
     /**
@@ -108,7 +108,7 @@ public class Editors implements Modifiable {
         List<Saveable> result = new ArrayList<Saveable>();
         for (Modifiable modifiable : _editors) {
             if ((modifiable instanceof Saveable)
-                && modifiable.isModified()) {
+                    && modifiable.isModified()) {
                 result.add((Saveable) modifiable);
             }
         }
@@ -168,8 +168,7 @@ public class Editors implements Modifiable {
      */
     public boolean isValid() {
         Validator validator = new Validator();
-        validate(validator);
-        return validator.isValid();
+        return validate(validator);
     }
 
     /**
@@ -191,7 +190,7 @@ public class Editors implements Modifiable {
      * Returns <code>true</code> if no editors are registered.
      *
      * @return <code>true</code> if no editors are registered, otherwise
-     * <code>false</code>
+     *         <code>false</code>
      */
     public boolean isEmpty() {
         return _editors.isEmpty();

@@ -243,8 +243,7 @@ public abstract class AbstractIMObjectEditor
         }
         boolean saved = false;
         Validator validator = new Validator();
-        validator.validate(this);
-        if (validator.isValid()) {
+        if (validator.validate(this)) {
             if (!isModified()) {
                 saved = true;
             } else {
@@ -360,14 +359,16 @@ public abstract class AbstractIMObjectEditor
      *         otherwise <code>false</code>
      */
     public boolean validate(Validator validator) {
-        if (validator.validate(_editors)) {
+        boolean valid = validator.validate(_editors);
+        if (valid) {
             for (Property property : _properties.getProperties()) {
                 if (!validator.validate(property)) {
+                    valid = false;
                     break;
                 }
             }
         }
-        return validator.isValid();
+        return valid;
     }
 
     /**

@@ -38,6 +38,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.edit.Property;
+import org.openvpms.web.component.edit.Validator;
 import org.openvpms.web.component.focus.FocusSet;
 import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.create.IMObjectCreatorListener;
@@ -90,6 +91,13 @@ public abstract class AbstractIMObjectReferenceEditor
      * The context.
      */
     private final Context context;
+
+    /**
+     * Determines if a selection dialog has been popped up. If so, flags the
+     * underlying property as being invalid, at least until the dialog is
+     * closed.
+     */
+    private boolean inSelect;
 
 
     /**
@@ -216,6 +224,17 @@ public abstract class AbstractIMObjectReferenceEditor
     }
 
     /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
+     */
+    public boolean validate(Validator validator) {
+        return (!inSelect) && super.validate(validator);
+    }
+
+    /**
      * Pops up a dialog to select an object.
      */
     protected void onSelect() {
@@ -241,6 +260,7 @@ public abstract class AbstractIMObjectReferenceEditor
 
             popup.addWindowPaneListener(new WindowPaneListener() {
                 public void windowPaneClosing(WindowPaneEvent event) {
+                    setInSelect(false);
                     if (popup.createNew()) {
                         onCreate();
                     } else {
@@ -252,6 +272,7 @@ public abstract class AbstractIMObjectReferenceEditor
                 }
             });
 
+            setInSelect(true);
             popup.show();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
@@ -343,6 +364,26 @@ public abstract class AbstractIMObjectReferenceEditor
         Query<IMObject> query = QueryFactory.create(shortNames, context);
         query.setName(name);
         return query;
+    }
+
+    /**
+     * Determines if a selection dialog has been popped up.
+     *
+     * @return <code>true</code> if a selection dialog has been popped up
+     *         otherwise <code>false</code>
+     */
+    protected boolean inSelect() {
+        return inSelect;
+    }
+
+    /**
+     * Determines if a selection dialog has been popped up.
+     *
+     * @param select if <code>true</code> denotes that a selection dialog has
+     *               been popped up
+     */
+    protected void setInSelect(boolean select) {
+        this.inSelect = select;
     }
 
     /**

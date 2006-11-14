@@ -46,15 +46,15 @@ public class Validator {
      *
      * @param modifiable the object to validate
      * @return <code>true</code> if the object is valid; otherwise
-     * <code>false</code>
+     *         <code>false</code>
      */
     public boolean validate(Modifiable modifiable) {
-        modifiable.validate(this);
-        return (_errors.get(modifiable) == null);
+        return modifiable.validate(this);
     }
 
     /**
      * Adds
+     *
      * @param modifiable
      * @param errors
      */
@@ -70,15 +70,6 @@ public class Validator {
 
     public List<ValidationError> getErrors(Modifiable modifiable) {
         return _errors.get(modifiable);
-    }
-
-    /**
-     * Determines if the heirarchy is valid.
-     *
-     * @return <code>true</code> if the heirarchy is valid; otherwise <code>false</code>
-     */
-    public boolean isValid() {
-        return _errors.isEmpty();
     }
 
 }

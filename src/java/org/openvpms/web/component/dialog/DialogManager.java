@@ -19,6 +19,7 @@
 package org.openvpms.web.component.dialog;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
 
@@ -32,19 +33,22 @@ import nextapp.echo2.app.WindowPane;
 public class DialogManager {
 
     /**
-     * Z-index allocator.
-     */
-    private static volatile int zIndex;
-
-
-    /**
      * Shows a dialog.
      *
      * @param dialog the dialog to show
      */
     public static void show(WindowPane dialog) {
         Window root = ApplicationInstance.getActive().getDefaultWindow();
-        dialog.setZIndex(++zIndex);
+        int zIndex = 0;
+        for (Component component : root.getContent().getComponents()) {
+            if (component instanceof WindowPane) {
+                WindowPane pane = (WindowPane) component;
+                if (pane.getZIndex() > zIndex) {
+                    zIndex = pane.getZIndex();
+                }
+            }
+        }
+        dialog.setZIndex(zIndex + 1);
         root.getContent().add(dialog);
     }
 

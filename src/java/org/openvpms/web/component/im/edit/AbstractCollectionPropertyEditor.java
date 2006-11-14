@@ -195,8 +195,7 @@ public abstract class AbstractCollectionPropertyEditor
      */
     public boolean isValid() {
         Validator validator = new Validator();
-        validator.validate(_property);
-        return validator.isValid();
+        return validator.validate(_property);
     }
 
     /**
