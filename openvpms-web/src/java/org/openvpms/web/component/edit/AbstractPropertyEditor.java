@@ -99,7 +99,9 @@ public abstract class AbstractPropertyEditor implements PropertyEditor {
     /**
      * Validates the object.
      *
-     * @param validator thhe validator
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
      */
     public boolean validate(Validator validator) {
         return validator.validate(getProperty());

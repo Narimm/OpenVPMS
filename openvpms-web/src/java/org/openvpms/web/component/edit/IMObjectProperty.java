@@ -289,7 +289,9 @@ public class IMObjectProperty implements Property, CollectionProperty {
     /**
      * Validates the object.
      *
-     * @param validator thhe validator
+     * @param validator the validator
+     * @return <code>true</code> if the object and its descendents are valid
+     *         otherwise <code>false</code>
      */
     public boolean validate(Validator validator) {
         List<ValidationError> errors = null;
@@ -337,7 +339,7 @@ public class IMObjectProperty implements Property, CollectionProperty {
         if (errors != null) {
             validator.add(this, errors);
         }
-        return (errors != null);
+        return (errors == null);
     }
 
     /**

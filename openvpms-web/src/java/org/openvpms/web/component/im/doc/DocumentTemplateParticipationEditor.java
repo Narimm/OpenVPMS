@@ -92,6 +92,7 @@ public class DocumentTemplateParticipationEditor
 
                 popup.addWindowPaneListener(new WindowPaneListener() {
                     public void windowPaneClosing(WindowPaneEvent event) {
+                        setInSelect(false);
                         IMObject object = popup.getSelected();
                         if (object != null) {
                             setObject(object);
@@ -99,6 +100,7 @@ public class DocumentTemplateParticipationEditor
                     }
                 });
 
+                setInSelect(true);
                 popup.show();
             }
         };
