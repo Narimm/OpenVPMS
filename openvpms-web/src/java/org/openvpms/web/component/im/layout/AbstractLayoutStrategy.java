@@ -141,10 +141,11 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         if (!descriptors.isEmpty()) {
             int size = descriptors.size();
             Grid grid;
-            if (size <= 4)
+            if (size <= 4) {
                 grid = GridFactory.create(2);
-            else
+            } else {
                 grid = GridFactory.create(4);
+            }
             doGridLayout(object, descriptors, properties, grid, context);
             container.add(grid);
         }
@@ -244,7 +245,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
     }
 
     /**
-     * Lays out child components in 2 columns.
+     * Lays out child components in columns.
      *
      * @param object      the parent object
      * @param descriptors the property descriptors
@@ -256,33 +257,53 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                 List<NodeDescriptor> descriptors,
                                 PropertySet properties, Grid grid,
                                 LayoutContext context) {
-        int size = descriptors.size();
-        Component[] components = new Component[size];
-        String[] labels = new String[components.length];
-        for (int i = 0; i < components.length; ++i) {
-            NodeDescriptor descriptor = descriptors.get(i);
-            labels[i] = descriptor.getDisplayName();
-            Property property = properties.get(descriptor);
-            Component component = createComponent(property, object, context);
+        ComponentSet components = createComponentSet(object, descriptors,
+                                                     properties,
+                                                     context);
+        Component[] list = components.getComponents().toArray(new Component[0]);
+        for (int i = 0; i < list.length; ++i) {
+            Component component = list[i];
             setTabIndex(component);
             if (component instanceof SelectField) {
-                // workaround for render bug in firefox. See OVPMS-239 
-                component = RowFactory.create(component);
+                // workaround for render bug in firefox. See OVPMS-239
+                list[i] = RowFactory.create(component);
             }
-            components[i] = component;
         }
-
+        int size = list.length;
         int rows;
-        if (size <= 4)
+        if (size <= 4) {
             rows = size;
-        else
+        } else {
             rows = (size / 2) + (size % 2);
+        }
         for (int i = 0, j = rows; i < rows; ++i, ++j) {
-            add(grid, labels[i], components[i]);
+            add(grid, components.getLabel(list[i]), list[i]);
             if (j < size) {
-                add(grid, labels[j], components[j]);
+                add(grid, components.getLabel(list[j]), list[j]);
             }
         }
+    }
+
+    /**
+     * Creates a set of components to be rendered from the supplied descriptors.
+     *
+     * @param object      the parent object
+     * @param descriptors the property descriptors
+     * @param properties  the properties
+     * @param context     the layout context
+     * @return the components
+     */
+    protected ComponentSet createComponentSet(IMObject object,
+                                              List<NodeDescriptor> descriptors,
+                                              PropertySet properties,
+                                              LayoutContext context) {
+        ComponentSet result = new ComponentSet();
+        for (NodeDescriptor descriptor : descriptors) {
+            Property property = properties.get(descriptor);
+            Component component = createComponent(property, object, context);
+            result.add(component, descriptor.getDisplayName());
+        }
+        return result;
     }
 
     /**

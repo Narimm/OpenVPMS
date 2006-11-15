@@ -18,21 +18,19 @@
 
 package org.openvpms.web.component.util;
 
-import java.text.Format;
-
+import echopointng.RichTextArea;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.PasswordField;
 import nextapp.echo2.app.TextArea;
 import nextapp.echo2.app.TextField;
 import nextapp.echo2.app.text.TextComponent;
-
 import org.openvpms.web.component.bound.BoundFormattedField;
 import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.bound.BoundTextField;
 import org.openvpms.web.component.edit.Property;
 
-import echopointng.RichTextArea;
+import java.text.Format;
 
 
 /**
@@ -88,7 +86,8 @@ public class TextComponentFactory extends ComponentFactory {
      * @param format   the field format
      * @return a new bound text field
      */
-    public static TextField create(Property property, int columns, Format format) {
+    public static TextField create(Property property, int columns,
+                                   Format format) {
         TextField text = new BoundFormattedField(property, columns, format);
         setDefaultStyle(text);
         return text;
@@ -110,10 +109,11 @@ public class TextComponentFactory extends ComponentFactory {
      *
      * @param property the property to bind
      * @param columns  the no. of columns to display
-     * @param rows TODO
+     * @param rows     TODO
      * @return a new bound text field
      */
-    public static TextArea createTextArea(Property property, int columns, int rows) {
+    public static TextArea createTextArea(Property property, int columns,
+                                          int rows) {
         TextArea text = new BoundTextArea(property, columns, rows);
         setDefaultStyle(text);
         return text;
@@ -126,7 +126,8 @@ public class TextComponentFactory extends ComponentFactory {
      * @param columns  the no. of columns to display
      * @return a new bound text field
      */
-    public static RichTextArea createRichTextArea(Property property, int columns) {
+    public static RichTextArea createRichTextArea(Property property,
+                                                  int columns) {
         RichTextArea text = new BoundRichTextArea(property, columns);
         setDefaultStyle(text);
         return text;
@@ -141,5 +142,17 @@ public class TextComponentFactory extends ComponentFactory {
         TextField password = new PasswordField();
         setDefaultStyle(password);
         return password;
+    }
+
+    /**
+     * Create a new password field.
+     *
+     * @param columns the no. of columns to display
+     * @return a new password field
+     */
+    public static TextField createPassword(int columns) {
+        TextField text = createPassword();
+        text.setWidth(new Extent(columns, Extent.EX));
+        return text;
     }
 }
