@@ -19,16 +19,8 @@
 package org.openvpms.component.business.service.security;
 
 // java core
-import java.util.List;
-
-// acegi security
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-
-// log4j
-import org.apache.log4j.Logger;
-
-// openvpms-framework
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
@@ -37,6 +29,8 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 
+import java.util.List;
+
 /**
  * Exercises the security test cases using a hibernate user details service
  * 
@@ -44,12 +38,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
  * @version $LastChangedDate: 2005-12-08 00:31:09 +1100 (Thu, 08 Dec 2005) $
  */
 public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
-    /**
-     * Define a logger for this class
-     */
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(HibernateSecurityServiceTestCase.class);
 
     /**
      * A reference to the dao, which is used to during setup
@@ -104,6 +92,7 @@ public class HibernateSecurityServiceTestCase extends SecurityServiceTests {
      */
     private User createUser(String name, String password) throws Exception {
         User user = (User) archetype.create("security.user");
+        user.setUsername(name);
         user.setName(name);
         user.setPassword(password);
 

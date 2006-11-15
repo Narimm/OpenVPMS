@@ -180,10 +180,10 @@
   </bean>
 
   <!--  The User Details Service -->
-  <bean id="hibernateUserDetailsService"
-    class="org.openvpms.component.business.service.security.hibernate.HibernateUserDetailsService">
+  <bean id="userDetailsService"
+    class="org.openvpms.component.business.service.security.UserService">
     <constructor-arg index="0">
-      <ref local="imObjectDao" />
+      <ref local="archetypeService" />
     </constructor-arg>
   </bean>
 
@@ -258,7 +258,7 @@
   <bean id='daoAuthenticationProvider'
     class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
     <property name="userDetailsService">
-      <ref bean="hibernateUserDetailsService" />
+      <ref bean="userDetailsService" />
     </property>
   </bean>
 
