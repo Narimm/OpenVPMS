@@ -19,6 +19,7 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.openvpms.archetype.test.ArchetypeServiceTest;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -110,7 +111,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     @Override
     protected void onSetUp() throws Exception {
         super.onSetUp();
-        _clinician = createClinician();
+        _clinician = TestHelper.createClinician(false);
         _patient = createPatient();
     }
 
@@ -203,18 +204,6 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Party patient = (Party) create("party.patientpet");
         assertNotNull(patient);
         return patient;
-    }
-
-    /**
-     * Creates a new user.
-     *
-     * @return a new user
-     */
-    protected User createClinician() {
-        User user = (User) create("security.user");
-        assertNotNull(user);
-        user.setName("vet");
-        return user;
     }
 
 }
