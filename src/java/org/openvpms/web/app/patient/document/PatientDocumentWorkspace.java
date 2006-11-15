@@ -46,7 +46,7 @@ public class PatientDocumentWorkspace extends PatientActWorkspace {
 
 
     /**
-     * Patien Document shortnames supported by the workspace.
+     * Patient Document shortnames supported by the workspace.
      */
     private static final String[] SHORT_NAMES = {"act.patientDocumentForm",
                                                  "act.patientDocumentLetter",

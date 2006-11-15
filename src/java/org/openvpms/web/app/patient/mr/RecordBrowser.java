@@ -18,9 +18,12 @@
 
 package org.openvpms.web.app.patient.mr;
 
-import echopointng.TabbedPane;
-import echopointng.tabbedpane.DefaultTabModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
 import nextapp.echo2.app.Component;
+
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.Browser;
@@ -28,13 +31,13 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserListener;
 import org.openvpms.web.component.im.query.TableBrowser;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.act.ActAmountTableModel;
 import org.openvpms.web.component.util.ColumnFactory;
 import org.openvpms.web.component.util.TabbedPaneFactory;
 import org.openvpms.web.resource.util.Messages;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
+import echopointng.TabbedPane;
+import echopointng.tabbedpane.DefaultTabModel;
 
 
 /**
@@ -76,6 +79,16 @@ public class RecordBrowser implements Browser<Act> {
     private TableBrowser<Act> _reminderAlert;
 
     /**
+     * The documents browser.
+     */
+    private TableBrowser<Act> _document;
+
+    /**
+     * The investigations browser.
+     */
+    private TableBrowser<Act> _investigation;
+
+    /**
      * The event listener.
      */
     private RecordBrowserListener _listener;
@@ -89,7 +102,7 @@ public class RecordBrowser implements Browser<Act> {
      * The browser view.
      */
     public enum View {
-        SUMMARY, VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT
+        SUMMARY, VISITS, PROBLEMS, MEDICATION, REMINDER_ALERT, DOCUMENTS, INVESTIGATIONS
     }
 
 
@@ -106,7 +119,8 @@ public class RecordBrowser implements Browser<Act> {
      */
     public RecordBrowser(Query<Act> summary, Query<Act> visits,
                          Query<Act> problems, Query<Act> medication,
-                         Query<Act> reminderAlert, SortConstraint[] sort) {
+                         Query<Act> reminderAlert, Query<Act> document,
+                         Query<Act> investigation, SortConstraint[] sort) {
         _summary = new SummaryTableBrowser(summary);
         _visits = new TableBrowser<Act>(visits, sort);
         _problems = new TableBrowser<Act>(problems, sort);
@@ -118,6 +132,10 @@ public class RecordBrowser implements Browser<Act> {
         IMObjectTableModel<Act> model = new ReminderActTableModel(
                 reminderAlert.getShortNames());
         _reminderAlert = new TableBrowser<Act>(reminderAlert, sort, model);
+        IMObjectTableModel<Act> docModel = new ActAmountTableModel(true, false);
+        _document = new TableBrowser<Act>(document, sort, docModel);
+        IMObjectTableModel<Act> invModel = new ActAmountTableModel(true, false);
+        _investigation = new TableBrowser<Act>(investigation, sort, invModel);
     }
 
     /**
@@ -133,6 +151,8 @@ public class RecordBrowser implements Browser<Act> {
             addTab("button.problem", model, _problems);
             addTab("button.medication", model, _medication);
             addTab("button.reminder", model, _reminderAlert);
+            addTab("button.document", model, _document);
+            addTab("button.investigation", model, _investigation);
             _tab = TabbedPaneFactory.create(model);
             _tab.setSelectedIndex(_selected);
 
@@ -188,6 +208,8 @@ public class RecordBrowser implements Browser<Act> {
         _problems.addQueryListener(listener);
         _medication.addQueryListener(listener);
         _reminderAlert.addQueryListener(listener);
+        _document.addQueryListener(listener);
+        _investigation.addQueryListener(listener);
     }
 
     /**
@@ -199,6 +221,8 @@ public class RecordBrowser implements Browser<Act> {
         query(_problems);
         query(_medication);
         query(_reminderAlert);
+        query(_document);
+        query(_investigation);
     }
 
     /**
@@ -222,8 +246,14 @@ public class RecordBrowser implements Browser<Act> {
             case MEDICATION:
                 result = _medication;
                 break;
-            default:
+            case REMINDER_ALERT:
                 result = _reminderAlert;
+                break;
+            case DOCUMENTS:
+                result = _document;
+                break;
+            default:
+                result = _investigation;
         }
         return result;
     }
@@ -248,8 +278,14 @@ public class RecordBrowser implements Browser<Act> {
             case 3:
                 result = View.MEDICATION;
                 break;
+            case 4:
+            	result = View.REMINDER_ALERT;
+            	break;
+            case 5:
+            	result = View.DOCUMENTS;
+            	break;
             default:
-                result = View.REMINDER_ALERT;
+                result = View.INVESTIGATIONS;
         }
         return result;
     }

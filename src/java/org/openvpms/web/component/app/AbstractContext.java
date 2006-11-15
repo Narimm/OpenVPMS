@@ -18,6 +18,15 @@
 
 package org.openvpms.web.component.app;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Window;
+
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -25,13 +34,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -165,8 +169,14 @@ public abstract class AbstractContext implements Context {
      */
     public void setCustomer(Party customer) {
         setObject(CUSTOMER_SHORTNAME, customer);
+        if (customer == null)
+        	ApplicationInstance.getActive().getDefaultWindow().setTitle("OpenVPMS ");
+        else {
+        	EntityBean bean = new EntityBean(customer);
+        	ApplicationInstance.getActive().getDefaultWindow().setTitle("OpenVPMS -" + bean.getString("name"));
+        }
     }
-
+    
     /**
      * Returns the current customer.
      *
