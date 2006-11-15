@@ -59,7 +59,7 @@ public class ActHelper {
         String[] shortNames = DescriptorHelper.getShortNames(
                 "act.customerAccount*");
         return getAccountBalance(customer.getObjectReference(), "customer",
-                                 "participation.customer", shortNames);
+                                 "participation.customer", shortNames, "act.customerAccountOpeningBalance");
     }
 
     /**
@@ -72,7 +72,7 @@ public class ActHelper {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment"};
         return getAccountBalance(supplier.getObjectReference(), "supplier",
-                                 "participation.supplier", shortNames);
+                                 "participation.supplier", shortNames, "act.supplierAccountOpeningbalance");
     }
 
     /**
@@ -82,11 +82,12 @@ public class ActHelper {
      * @param participant   the participant node name
      * @param participation the participation short name
      * @param shortNames    the act short names
+     * @param openingBalanceName the opening blance shortname
      */
     public static BigDecimal getAccountBalance(IMObjectReference entity,
                                                String participant,
                                                String participation,
-                                               String[] shortNames) {
+                                               String[] shortNames, String openingBalanceName) {
         String[] statuses = {FinancialActStatus.POSTED};
         BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
                 shortNames, true, true);
@@ -95,6 +96,7 @@ public class ActHelper {
         SortConstraint[] sort = {new NodeSortConstraint("startTime", false)};
         ActResultSet set = new ActResultSet(constraint, archetypes, null, null,
                                             statuses, 50, sort);
+        set.setNodes(new String[]{"amount"});
         BigDecimal balance = BigDecimal.ZERO;
         // Add up amounts until find first opening balance ignoring first closing balances.
         boolean finished = false;

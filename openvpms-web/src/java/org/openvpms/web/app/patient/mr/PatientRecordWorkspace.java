@@ -13,13 +13,19 @@
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
- *  $Id: PatientRecordWorkspace.java 931 2006-05-29 03:43:35Z tanderson $
+ *  $Id$
  */
 
 package org.openvpms.web.app.patient.mr;
 
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
+import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
+
+import java.util.List;
+
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -32,13 +38,12 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_EVENT;
-import static org.openvpms.web.app.patient.mr.PatientRecordTypes.CLINICAL_PROBLEM;
 import org.openvpms.web.app.patient.summary.PatientSummary;
 import org.openvpms.web.app.subsystem.ActWorkspace;
 import org.openvpms.web.app.subsystem.CRUDWindow;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
+import org.openvpms.web.component.im.doc.DocumentCRUDWindow;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.DefaultActQuery;
@@ -46,19 +51,34 @@ import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.FastLookupHelper;
 import org.openvpms.web.component.util.SplitPaneFactory;
-
-import java.util.List;
+import org.openvpms.web.resource.util.Messages;
 
 
 /**
  * Patient medical record workspace.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-29 03:43:35Z $
+ * @version $LastChangedDate$
  */
 public class PatientRecordWorkspace extends ActWorkspace {
 
     /**
+     * Patient Document shortnames supported by the workspace.
+     */
+    private static final String[] DOCUMENT_SHORT_NAMES = {"act.patientDocumentForm",
+                                                 "act.patientDocumentLetter",
+                                                 "act.patientDocumentAttachment",
+                                                 "act.patientDocumentImage"};
+
+    /**
+     * Patient Investigation shortnames supported by the workspace.
+     */
+    private static final String[] INVESTIGATION_SHORT_NAMES = {"act.patientInvestigationRadiology",
+                                                 "act.patientInvestigationBiochemistry",
+                                                 "act.patientInvestigationHaematology",
+                                                 "act.patientInvestigationCytology"};
+
+/**
      * Construct a new <code>PatientRecordWorkspace</code>.
      */
     public PatientRecordWorkspace() {
@@ -203,6 +223,8 @@ public class PatientRecordWorkspace extends ActWorkspace {
                                                   createProblemsQuery(),
                                                   createMedicationQuery(),
                                                   createReminderAlertQuery(),
+                                                  createDocumentQuery(),
+                                                  createInvestigationQuery(),
                                                   sort);
         browser.setListener(new RecordBrowserListener() {
             public void onViewChanged() {
@@ -243,7 +265,14 @@ public class PatientRecordWorkspace extends ActWorkspace {
             window = problems;
         } else if (view == RecordBrowser.View.MEDICATION) {
             window = new MedicationRecordCRUDWindow();
-        } else {
+        } else if (view == RecordBrowser.View.DOCUMENTS) {
+            String type = Messages.get("patient.document.createtype");		
+        	window = new DocumentCRUDWindow(type,DOCUMENT_SHORT_NAMES);
+	    } else if (view == RecordBrowser.View.INVESTIGATIONS) {
+	        String type = Messages.get("patient.investigation.createtype");		
+	    	window = new DocumentCRUDWindow(type,INVESTIGATION_SHORT_NAMES);
+	    }
+        else {      
             window = new ReminderCRUDWindow();
         }
         Act selected = browser.getSelected();
@@ -293,6 +322,44 @@ public class PatientRecordWorkspace extends ActWorkspace {
                                                     "participation.patient",
                                                     shortNames, lookups, null);
         query.setStatus(ActStatus.IN_PROGRESS);
+        return query;
+    }
+
+    /**
+     * Creates a new query, for the document view.
+     *
+     * @return a new query
+     */
+    private Query<Act> createDocumentQuery() {
+        Party patient = (Party) getObject();
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.patientDocumentLetter");
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
+        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        DefaultActQuery query = new DefaultActQuery(patient, "patient",
+                                                    "participation.patient",
+                                                    DOCUMENT_SHORT_NAMES, lookups, null);
+        //query.setStatus(ActStatus.IN_PROGRESS);
+        return query;
+    }
+
+    /**
+     * Creates a new query, for the investigations view.
+     *
+     * @return a new query
+     */
+    private Query<Act> createInvestigationQuery() {
+        Party patient = (Party) getObject();
+        ArchetypeDescriptor archetype
+                = DescriptorHelper.getArchetypeDescriptor(
+                "act.patientInvestigationRadiology");
+        NodeDescriptor statuses = archetype.getNodeDescriptor("status");
+        List<Lookup> lookups = FastLookupHelper.getLookups(statuses);
+        DefaultActQuery query = new DefaultActQuery(patient, "patient",
+                                                    "participation.patient",
+                                                    INVESTIGATION_SHORT_NAMES, lookups, null);
+        //query.setStatus(ActStatus.IN_PROGRESS);
         return query;
     }
 

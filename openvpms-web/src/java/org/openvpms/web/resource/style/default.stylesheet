@@ -241,7 +241,7 @@
     <style name="ActWorkspace.Layout" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="true"/>
-            <property name="separatorPosition" value="150px"/>
+            <property name="separatorPosition" value="285px"/>
         </properties>
     </style>
 
@@ -1521,7 +1521,7 @@
            base-name="default">
         <properties>
             <property name="font">
-                <font size="7pt"/>
+                <font size="8pt"/>
             </property>
         </properties>
     </style>
@@ -1531,7 +1531,7 @@
         <properties>
             <properties>
                 <property name="font">
-                    <font size="6pt"/>
+                    <font size="7pt"/>
                 </property>
             </properties>
         </properties>
