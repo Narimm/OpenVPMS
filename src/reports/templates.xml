@@ -35,9 +35,14 @@
               mimeType="text/xml"
               docType="document.other"/>
 
-    <!--template name="OpenOffice Sample"
-              path="test.odt"
-              archetype="party.*"
+    <template name="Vaccination Certificate"
+              path="Vaccination Certificate.odt"
+              archetype="act.patientDocumentForm"
               mimeType="application/vnd.oasis.opendocument.text"
-              docType="document.other"/-->
+              docType="document.other"/>
+    <template name="Desexing Certificate"
+              path="Desexing Certificate.odt"
+              archetype="act.patientDocumentForm"
+              mimeType="application/vnd.oasis.opendocument.text"
+              docType="document.other"/>
 </templates>
