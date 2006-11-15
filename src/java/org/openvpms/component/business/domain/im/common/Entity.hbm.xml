@@ -82,8 +82,10 @@
       name="org.openvpms.component.business.domain.im.security.User"
       table="users">
       <key column="user_id" />
+      <property name="username" access="property" column="user_name"
+           type="string" length="20" index="user_name_idx" not-null="true"/>
       <property name="password" access="property" column="password"
-        type="string" />
+           type="string" length="20"/>
       <set name="roles" access="property" table="user_roles"
            cascade="save-update" inverse="false">
         <key column="user_id" />

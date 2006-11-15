@@ -21,8 +21,6 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 // hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-// openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedAuthority;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
@@ -42,8 +40,8 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
 
     /**
      * Constructor for PersistentUserTestCase.
-     * 
-     * @param arg0
+     *
+     * @param name
      */
     public PersistentSecurityRoleTestCase(String name) {
         super(name);
@@ -474,6 +472,7 @@ public class PersistentSecurityRoleTestCase extends HibernateInfoModelTestCase {
     private User createUser(String name, String password) throws Exception {
         User user = new User();
         user.setArchetypeIdAsString("openvpms-security-security.user.1.0");
+        user.setUsername(name);
         user.setName(name);
         user.setPassword(password);
         

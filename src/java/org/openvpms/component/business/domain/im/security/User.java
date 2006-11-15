@@ -19,12 +19,12 @@
 
 package org.openvpms.component.business.domain.im.security;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.userdetails.UserDetails;
 import org.openvpms.component.business.domain.im.common.Entity;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class represents the user details and the list of associated 
@@ -39,9 +39,14 @@ public class User extends Entity implements UserDetails {
      * Default UID
      */
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * The user's password
+     * The user's login name.
+     */
+    private String userName;
+
+    /**
+     * The user's password.
      */
     private String password;
     
@@ -61,14 +66,13 @@ public class User extends Entity implements UserDetails {
     /**
      * Create a user with the specified parameters.
      * 
-     * @param username
-     *            the user name
-     * @param password
-     *            the password
+     * @param username the user's login name
+     * @param password the user's password
      */
     public User(String username, String password, boolean active) {
-        setName(username);
+        this.userName = username;
         this.password = password;
+        setName(username);
         setActive(active);
     }
 
@@ -125,14 +129,16 @@ public class User extends Entity implements UserDetails {
      * @see org.acegisecurity.userdetails.UserDetails#getUsername()
      */
     public String getUsername() {
-        return getName();
+        return this.userName;
     }
 
     /**
-     * @param userName The userName to set.
+     * Sets the user's login name.
+     *
+     * @param userName the user's login name
      */
     public void setUsername(String userName) {
-        setName(userName);
+        this.userName = userName;
     }
 
     /**

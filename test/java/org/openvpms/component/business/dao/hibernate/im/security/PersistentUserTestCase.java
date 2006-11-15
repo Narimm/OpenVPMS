@@ -21,8 +21,6 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 // hibernate
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-// openvpms-framework
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.domain.im.security.User;
@@ -42,7 +40,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
     /**
      * Constructor for PersistentUserTestCase.
      * 
-     * @param arg0
+     * @param name
      */
     public PersistentUserTestCase(String name) {
         super(name);
@@ -107,10 +105,9 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
             int acount = HibernateSecurityUtil.getTableRowCount(session, "user");
 
             // execute the test
-            User user = null;
             for (int index = 0; index < 10; index++) {
                 tx = session.beginTransaction();
-                user = createUser("jima" + index, "jima");
+                User user = createUser("jima" + index, "jima");
                 session.save(user);
                 tx.commit();
                 user = (User)session.load(User.class, user.getUid());
@@ -228,7 +225,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
             long ids[] = new long[count];
 
             // execute the test
-            User user = null;
+            User user;
             for (int index = 0; index < count; index++) {
                 tx = session.beginTransaction();
                 user = createUser("jima" + index, "jima");
@@ -315,6 +312,7 @@ public class PersistentUserTestCase extends HibernateInfoModelTestCase {
     private User createUser(String name, String password) throws Exception {
         User user = new User();
         user.setArchetypeIdAsString("openvpms-security-security.user.1.0");
+        user.setUsername(name);
         user.setName(name);
         user.setPassword(password);
         
