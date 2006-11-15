@@ -174,7 +174,7 @@ public class TestHelper extends Assert {
         User user = (User) create("security.user");
         assertNotNull(user);
         EntityBean bean = new EntityBean(user);
-        bean.setValue("name", "zvet");
+        bean.setValue("username", "zvet");
         if (save) {
             bean.save();
         }
