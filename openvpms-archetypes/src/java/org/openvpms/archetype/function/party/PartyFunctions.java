@@ -54,7 +54,7 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns a formatted list of contacts for a party.
+     * Returns a formatted list of preferred contacts for a party.
      *
      * @param party the party
      * @return a formatted list of contacts
