@@ -136,7 +136,7 @@
     <bean id="daoAuthenticationProvider"
           class='org.acegisecurity.providers.dao.DaoAuthenticationProvider'>
         <property name="userDetailsService">
-            <ref bean="hibernateUserDetailsService"/>
+            <ref bean="userDetailsService"/>
         </property>
     </bean>
 

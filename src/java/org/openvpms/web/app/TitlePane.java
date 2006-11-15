@@ -27,9 +27,19 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.util.LabelFactory;
 import org.openvpms.web.component.util.RowFactory;
 import org.openvpms.web.resource.util.Messages;
+
+import java.util.List;
 
 
 /**
@@ -65,15 +75,12 @@ public class TitlePane extends ContentPane {
         setStyleName(STYLE);
 
         Label logo = LabelFactory.create(new ResourceImageReference(PATH));
-        Authentication auth
-                = SecurityContextHolder.getContext().getAuthentication();
         RowLayoutData centre = new RowLayoutData();
         centre.setAlignment(new Alignment(Alignment.DEFAULT, Alignment.CENTER));
         logo.setLayoutData(centre);
 
         Label label = LabelFactory.create(null, "small");
-        String name = (auth != null) ? auth.getName() : "";
-        label.setText(Messages.get("label.user", name));
+        label.setText(Messages.get("label.user", getUserName()));
 
         Row labelRow = RowFactory.create("InsetX", label);
         RowLayoutData right = new RowLayoutData();
@@ -84,4 +91,35 @@ public class TitlePane extends ContentPane {
         Row row = RowFactory.create(logo, labelRow);
         add(row);
     }
+
+    /**
+     * Returns the user name for the current user.
+     *
+     * @return the user name
+     */
+    protected String getUserName() {
+        String result = null;
+        Authentication auth
+                = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            ArchetypeQuery query = new ArchetypeQuery("security.user", true,
+                                                      true);
+            query.add(new NodeConstraint("username", auth.getName()));
+            query.setNumOfRows(1);
+
+            try {
+                IArchetypeService service
+                        = ArchetypeServiceHelper.getArchetypeService();
+                List<IMObject> rows = service.get(query).getRows();
+                if (!rows.isEmpty()) {
+                    User user = (User) rows.get(0);
+                    result = user.getName();
+                }
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+        return result;
+    }
+
 }

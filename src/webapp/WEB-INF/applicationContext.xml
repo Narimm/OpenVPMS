@@ -207,10 +207,10 @@
     </bean>
 
     <!-- The User Details service -->
-    <bean id="hibernateUserDetailsService"
-          class="org.openvpms.component.business.service.security.hibernate.HibernateUserDetailsService">
+    <bean id="userDetailsService"
+          class="org.openvpms.component.business.service.security.UserService">
         <constructor-arg index="0">
-            <ref local="imObjectDao"/>
+            <ref local="archetypeService"/>
         </constructor-arg>
     </bean>
 
