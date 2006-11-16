@@ -361,10 +361,14 @@ public abstract class AbstractIMObjectEditor
     public boolean validate(Validator validator) {
         boolean valid = validator.validate(_editors);
         if (valid) {
+            // validate each property not associated with an editor
             for (Property property : _properties.getProperties()) {
-                if (!validator.validate(property)) {
-                    valid = false;
-                    break;
+                String name = property.getDescriptor().getName();
+                if (_editors.getEditor(name) == null) {
+                    if (!validator.validate(property)) {
+                        valid = false;
+                        break;
+                    }
                 }
             }
         }

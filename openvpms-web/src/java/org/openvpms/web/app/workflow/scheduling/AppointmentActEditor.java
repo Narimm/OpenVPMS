@@ -19,6 +19,7 @@
 package org.openvpms.web.app.workflow.scheduling;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -34,6 +35,9 @@ import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.TimePropertyTransformer;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
+import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -117,6 +121,12 @@ public class AppointmentActEditor extends AbstractActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
+        getCustomerEditor().addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onCustomerChanged();
+            }
+        });
+
         Party schedule = (Party) getParticipant("schedule");
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
@@ -152,6 +162,25 @@ public class AppointmentActEditor extends AbstractActEditor {
             if (endTime.compareTo(startTime) < 0) {
                 end.setValue(startTime);
             }
+        }
+    }
+
+    /**
+     * Invoked when the customer changes. Sets the patient to null if no
+     * relationship exists between the two..
+     */
+    private void onCustomerChanged() {
+        try {
+            Party customer = (Party) getCustomerEditor().getEntity();
+            Party patient = (Party) getPatientEditor().getEntity();
+            PatientRules rules = new PatientRules();
+            if (customer != null && patient != null) {
+                if (!rules.isOwner(customer, patient)) {
+                    getPatientEditor().getEditor().setObject(null);
+                }
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
         }
     }
 
@@ -221,6 +250,26 @@ public class AppointmentActEditor extends AbstractActEditor {
             endTime.setValue(end);
             endTime.addModifiableListener(_endTimeListener);
         }
+    }
+
+    /**
+     * Returns the customer editor.
+     *
+     * @return the customer editor
+     */
+    private CustomerParticipationEditor getCustomerEditor() {
+        return (CustomerParticipationEditor) getEditor("customer");
+    }
+
+    /**
+     * Returns the patient editor.
+     *
+     * @return the patient editor
+     */
+    private PatientParticipationEditor getPatientEditor() {
+        ParticipationCollectionEditor editor = (ParticipationCollectionEditor)
+                getEditor("patient");
+        return (PatientParticipationEditor) editor.getCurrentEditor();
     }
 
     /**

@@ -26,8 +26,10 @@ import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.Validator;
+import org.openvpms.web.component.im.edit.AbstractIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.DefaultIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 
@@ -43,7 +45,7 @@ public class ParticipationCollectionEditor
     /**
      * The editor to delegate to.
      */
-    private IMObjectCollectionEditor _editor;
+    private AbstractIMObjectCollectionEditor editor;
 
 
     /**
@@ -60,11 +62,11 @@ public class ParticipationCollectionEditor
                 property.getDescriptor());
         int max = property.getMaxCardinality();
         if (max == 1 && shortNames.length == 1) {
-            _editor = new SingleParticipationCollectionEditor(property, object,
-                                                              context);
+            editor = new SingleParticipationCollectionEditor(property, object,
+                                                             context);
         } else {
-            _editor = new DefaultIMObjectCollectionEditor(property, object,
-                                                          context);
+            editor = new DefaultIMObjectCollectionEditor(property, object,
+                                                         context);
         }
     }
 
@@ -74,7 +76,7 @@ public class ParticipationCollectionEditor
      * @return the collection property
      */
     public CollectionProperty getCollection() {
-        return _editor.getCollection();
+        return editor.getCollection();
     }
 
     /**
@@ -83,7 +85,7 @@ public class ParticipationCollectionEditor
      * @return the parent object
      */
     public IMObject getObject() {
-        return _editor.getObject();
+        return editor.getObject();
     }
 
     /**
@@ -92,7 +94,7 @@ public class ParticipationCollectionEditor
      * @return the property being edited
      */
     public Property getProperty() {
-        return _editor.getProperty();
+        return editor.getProperty();
     }
 
     /**
@@ -101,7 +103,7 @@ public class ParticipationCollectionEditor
      * @return the edit component
      */
     public Component getComponent() {
-        return _editor.getComponent();
+        return editor.getComponent();
     }
 
     /**
@@ -110,14 +112,14 @@ public class ParticipationCollectionEditor
      * @return <code>true</code> if the object has been modified
      */
     public boolean isModified() {
-        return _editor.isModified();
+        return editor.isModified();
     }
 
     /**
      * Clears the modified status of the object.
      */
     public void clearModified() {
-        _editor.clearModified();
+        editor.clearModified();
     }
 
     /**
@@ -126,7 +128,7 @@ public class ParticipationCollectionEditor
      * @param listener the listener to add
      */
     public void addModifiableListener(ModifiableListener listener) {
-        _editor.addModifiableListener(listener);
+        editor.addModifiableListener(listener);
     }
 
     /**
@@ -135,7 +137,7 @@ public class ParticipationCollectionEditor
      * @param listener the listener to remove
      */
     public void removeModifiableListener(ModifiableListener listener) {
-        _editor.removeModifiableListener(listener);
+        editor.removeModifiableListener(listener);
     }
 
     /**
@@ -145,7 +147,7 @@ public class ParticipationCollectionEditor
      *         <code>false</code>
      */
     public boolean isValid() {
-        return _editor.isValid();
+        return editor.isValid();
     }
 
     /**
@@ -156,7 +158,7 @@ public class ParticipationCollectionEditor
      *         otherwise <code>false</code>
      */
     public boolean validate(Validator validator) {
-        return _editor.validate(validator);
+        return editor.validate(validator);
     }
 
     /**
@@ -165,7 +167,7 @@ public class ParticipationCollectionEditor
      * @return <code>true</code> if the save was successful
      */
     public boolean save() {
-        return _editor.save();
+        return editor.save();
     }
 
     /**
@@ -174,6 +176,16 @@ public class ParticipationCollectionEditor
      * @return <code>true</code> if edits have been saved.
      */
     public boolean isSaved() {
-        return _editor.isSaved();
+        return editor.isSaved();
+    }
+
+    /**
+     * Returns the current editor.
+     *
+     * @return the current editor, or <code>null</code> if there is no current
+     *         editor
+     */
+    public IMObjectEditor getCurrentEditor() {
+        return editor.getCurrentEditor();
     }
 }

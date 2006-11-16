@@ -248,6 +248,15 @@ public abstract class AbstractIMObjectCollectionEditor
     }
 
     /**
+     * Returns the current editor.
+     *
+     * @return the current editor. May be <code>null</code>
+     */
+    public IMObjectEditor getCurrentEditor() {
+        return _editor;
+    }
+
+    /**
      * Lays out the component.
      *
      * @param context the layout context
@@ -280,15 +289,6 @@ public abstract class AbstractIMObjectCollectionEditor
      */
     protected void setCurrentEditor(IMObjectEditor editor) {
         _editor = editor;
-    }
-
-    /**
-     * Returns the current editor.
-     *
-     * @return the current editor. May be <code>null</code>
-     */
-    protected IMObjectEditor getCurrentEditor() {
-        return _editor;
     }
 
     /**
