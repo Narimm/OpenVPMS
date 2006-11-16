@@ -539,34 +539,40 @@
            type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="closable" value="true"/>
-            <property name="width" value="800px"/>
-            <property name="height" value="675px"/>
+            <property name="width" value="1200px"/>
+            <property name="height" value="800px"/>
             <property name="resizable" value="true"/>
             <property name="font">
                 <font size="9pt"/>
             </property>
+            <property name="positionX" value="200px"/>
+            <property name="positionY" value="40px"/>
         </properties>
     </style>
 
     <style name="EditDialog-1024x768" base-name="EditDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="700px"/>
-            <property name="height" value="450px"/>
+            <property name="width" value="1000px"/>
+            <property name="height" value="600px"/>
             <property name="font">
                 <font size="7pt"/>
             </property>
+            <property name="positionX" value="150px"/>
+            <property name="positionY" value="30px"/>
         </properties>
     </style>
 
     <style name="EditDialog-800x600" base-name="EditDialog-1024x768"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="680px"/>
-            <property name="height" value="380px"/>
+            <property name="width" value="800px"/>
+            <property name="height" value="500px"/>
             <property name="font">
                 <font size="6pt"/>
             </property>
+            <property name="positionX" value="120px"/>
+            <property name="positionY" value="25px"/>
         </properties>
     </style>
 
