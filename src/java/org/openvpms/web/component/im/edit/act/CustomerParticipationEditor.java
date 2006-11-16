@@ -79,7 +79,7 @@ public class CustomerParticipationEditor extends AbstractParticipationEditor {
             public void setObject(IMObject object) {
                 super.setObject(object);
                 Party customer = (Party) object;
-                //ContextHelper.setCustomer(customer);
+                ContextHelper.setCustomer(customer);
             }
         };
     }
