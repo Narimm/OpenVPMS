@@ -18,8 +18,15 @@
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -37,12 +44,6 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -572,6 +573,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
 
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
+        	session.setFlushMode(FlushMode.NEVER);
             Query query = session.createQuery(queryString);
             params.setParameters(query);
 
@@ -632,6 +634,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport implements
                                     Collector collector, boolean count) throws Exception {
         Session session = getHibernateTemplate().getSessionFactory().openSession();
         try {
+        	session.setFlushMode(FlushMode.NEVER);
             Query query = session.getNamedQuery(name);
             for (String key : params.keySet()) {
                 query.setParameter(key, params.get(key));
