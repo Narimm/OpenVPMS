@@ -62,6 +62,21 @@
 					<errorMessage>An error message</errorMessage>
 				</assertion>
 			</node>				
+			<node name="dispensingVerb" displayName="Dispensing Verb" path="/details/attributes/dispensingVerb" 
+				type="java.lang.String" minCardinality="0" defaultValue="'GIVE'" >
+				<assertion name="lookup.local">
+					<propertyList name="entries">
+						<property name="GIVE" value="Give" />
+						<property name="ADMINISTER" value="Administer" />
+						<property name="INJECT" value="Inject" />
+						<property name="APPLY" value="Apply" />
+					</propertyList>
+					<errorMessage>An error message</errorMessage>
+				</assertion>
+			</node>				
+			<node name="label" displayName="Dispensing Label" path="/details/attributes/label" type="java.lang.Boolean" defaultValue="true()" />
+			<node name="dispInstructions" displayName="Dispensing Instructions" type="java.lang.String" path="/details/attributes/dispInstructions" 
+				minCardinality="0" maxLength="300" />
 		</node>
 		<node name="Active" path="/active" type="java.lang.Boolean" defaultValue="true()" />
 		<node name="prices" path="/productPrices" parentChild="true"

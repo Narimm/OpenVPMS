@@ -38,11 +38,6 @@
 	<data archetype="lookup.appointmentReason" code="OTHER" name="Other" />
 	<data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true" />
 	<data archetype="lookup.messageReason" code="OTHER" name="Other" />
-	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
-	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
-    <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
-	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
-	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
 	<data archetype="lookup.bank" code="NAB" name="National" />
 	<data archetype="lookup.bank" code="CBA" name="Commonwealth" />
 	<data archetype="lookup.bank" code="ANZ" name="ANZ" />
@@ -71,4 +66,22 @@
 	<data archetype="lookup.reportType" code="ADMINISTRATION" />
 	<data archetype="lookup.reportType" code="FINANCIAL" />
 	<data archetype="lookup.reportType" code="OTHER" defaultLookup="true"/>
+	<data archetype="lookup.uom" code="UNIT" defaultLookup="true"/>
+	<data archetype="lookup.uom" code="BOTTLE" />
+	<data archetype="lookup.uom" code="SYRINGE" />
+	<data archetype="lookup.uom" code="TABLET" />
+	<data archetype="lookup.uom" code="PACKET" />
+	<data archetype="lookup.uom" code="VIAL" />
+	<data archetype="lookup.uom" code="BOX" />
+	<data archetype="lookup.uom" code="GRAMS" />
+	<data archetype="lookup.uom" code="LITRES" />
+	<data archetype="lookup.uom" code="AMPOULE" />
+	<data archetype="lookup.uom" code="MLS" />
+	<data archetype="lookup.uom" code="TUBE" />
+	<data archetype="lookup.uom" code="PACKET" />
+	<data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" />
+	<data id="Pounds" archetype="lookup.uom" code="POUNDS" />
+    <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
+	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
+	<data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
 </archetype>
