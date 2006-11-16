@@ -19,7 +19,7 @@
 package org.openvpms.archetype.test;
 
 import junit.framework.Assert;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -152,12 +152,9 @@ public class TestHelper extends Assert {
      */
     public static Party createPatient(Party owner, boolean save) {
         Party patient = createPatient(save);
-        EntityRelationship relationship = (EntityRelationship) create(
-                "entityRelationship.patientOwner");
-        relationship.setSource(owner.getObjectReference());
-        relationship.setTarget(patient.getObjectReference());
-        patient.addEntityRelationship(relationship);
-        owner.addEntityRelationship(relationship);
+        PatientRules rules = new PatientRules(
+                ArchetypeServiceHelper.getArchetypeService());
+        rules.addPatientOwnerRelationship(owner, patient);
         if (save) {
             save(patient);
         }

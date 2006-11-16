@@ -22,10 +22,12 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 
+import java.util.Date;
 import java.util.Set;
 
 
@@ -38,6 +40,11 @@ import java.util.Set;
 public class PatientRules {
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * Patient owner relationship short name.
      */
     private static final String PATIENT_OWNER
@@ -45,10 +52,14 @@ public class PatientRules {
 
 
     /**
-     * The archetype service.
+     * Constructs a new <code>PatientRules</code>.
+     *
+     * @throws ArchetypeServiceException if the archetype service is not
+     *                                   configured
      */
-    private final IArchetypeService service;
-
+    public PatientRules() {
+        this(ArchetypeServiceHelper.getArchetypeService());
+    }
 
     /**
      * Construct a new <code>PatientRules/code>.
@@ -57,6 +68,25 @@ public class PatientRules {
      */
     public PatientRules(IArchetypeService service) {
         this.service = service;
+    }
+
+    /**
+     * Adds a patient-owner relationship between the supplied customer and
+     * patient.
+     *
+     * @param customer the customer
+     * @param patient  the patient
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void addPatientOwnerRelationship(Party customer, Party patient) {
+        EntityRelationship relationship
+                = (EntityRelationship) service.create(PATIENT_OWNER);
+        relationship.setActiveStartTime(new Date());
+        relationship.setSequence(1);
+        relationship.setSource(new IMObjectReference(customer));
+        relationship.setTarget(new IMObjectReference(patient));
+        customer.addEntityRelationship(relationship);
+        patient.addEntityRelationship(relationship);
     }
 
     /**
@@ -84,5 +114,18 @@ public class PatientRules {
             }
         }
         return owner;
+    }
+
+    /**
+     * Determines if a patient has a customer as its owner.
+     *
+     * @param customer the customer
+     * @param patient  the patient
+     * @return <code>true</code> if the customer is the owner of the patient
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public boolean isOwner(Party customer, Party patient) {
+        Party owner = getOwner(patient);
+        return (owner != null && owner.equals(customer));
     }
 }
