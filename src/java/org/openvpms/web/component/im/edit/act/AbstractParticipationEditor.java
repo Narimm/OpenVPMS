@@ -81,6 +81,15 @@ public abstract class AbstractParticipationEditor
     }
 
     /**
+     * Returns the participation entity editor.
+     *
+     * @return the participation entity editor
+     */
+    public IMObjectReferenceEditor getEditor() {
+        return _editor;
+    }
+
+    /**
      * Returns the participation entity property.
      *
      * @return the participation entity property
@@ -113,15 +122,6 @@ public abstract class AbstractParticipationEditor
      */
     public boolean isNull() {
         return getEditor().isNull();
-    }
-
-    /**
-     * Returns the editor.
-     *
-     * @return the editor
-     */
-    protected IMObjectReferenceEditor getEditor() {
-        return _editor;
     }
 
     /**

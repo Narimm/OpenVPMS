@@ -394,10 +394,11 @@ public class IMObjectProperty implements Property, CollectionProperty {
             _errors.clear();
         }
         Throwable cause = ExceptionUtils.getRootCause(exception);
-        if (cause != null)
+        if (cause != null) {
             addError(cause.getMessage());
-        else
+        } else {
             addError(exception.getMessage());
+        }
     }
 
     /**

@@ -18,10 +18,19 @@
 
 package org.openvpms.web.app.workflow.messaging;
 
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.Modifiable;
+import org.openvpms.web.component.edit.ModifiableListener;
 import org.openvpms.web.component.im.edit.act.ActEditor;
+import org.openvpms.web.component.im.edit.act.CustomerParticipationEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
+import org.openvpms.web.component.im.edit.act.PatientParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.ErrorHelper;
 
 
 /**
@@ -56,6 +65,59 @@ public class UserMessageActEditor extends ActEditor {
      */
     protected void updateTotals() {
         // no-op
+    }
+
+    /**
+     * Invoked when layout has completed. All editors have been created.
+     */
+    @Override
+    protected void onLayoutCompleted() {
+        getCustomerEditor().addModifiableListener(new ModifiableListener() {
+            public void modified(Modifiable modifiable) {
+                onCustomerChanged();
+            }
+        });
+    }
+
+    /**
+     * Returns the customer editor.
+     *
+     * @return the customer editor
+     */
+    private CustomerParticipationEditor getCustomerEditor() {
+        ParticipationCollectionEditor editor = (ParticipationCollectionEditor)
+                getEditor("customer");
+        return (CustomerParticipationEditor) editor.getCurrentEditor();
+    }
+
+    /**
+     * Returns the patient editor.
+     *
+     * @return the patient editor
+     */
+    private PatientParticipationEditor getPatientEditor() {
+        ParticipationCollectionEditor editor = (ParticipationCollectionEditor)
+                getEditor("patient");
+        return (PatientParticipationEditor) editor.getCurrentEditor();
+    }
+
+    /**
+     * Invoked when the customer changes. Sets the patient to null if no
+     * relationship exists between the two..
+     */
+    private void onCustomerChanged() {
+        try {
+            Party customer = (Party) getCustomerEditor().getEntity();
+            Party patient = (Party) getPatientEditor().getEntity();
+            PatientRules rules = new PatientRules();
+            if (customer != null && patient != null) {
+                if (!rules.isOwner(customer, patient)) {
+                    getPatientEditor().getEditor().setObject(null);
+                }
+            }
+        } catch (OpenVPMSException exception) {
+            ErrorHelper.show(exception);
+        }
     }
 
 }

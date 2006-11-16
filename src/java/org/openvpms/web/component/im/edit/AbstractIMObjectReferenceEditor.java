@@ -165,8 +165,8 @@ public abstract class AbstractIMObjectReferenceEditor
      * @param object the object. May  be <code>null</code>
      */
     public void setObject(IMObject object) {
-        updateProperty(object);
         updateSelector(object);
+        updateProperty(object);
     }
 
     /**
@@ -420,6 +420,11 @@ public abstract class AbstractIMObjectReferenceEditor
         }
     }
 
+    /**
+     * Updates the underlying property, notifying any registered listeners.
+     *
+     * @param object the object. May be <code>null</code>
+     */
     private void updateProperty(IMObject object) {
         Property property = getProperty();
         if (object != null) {
@@ -429,6 +434,11 @@ public abstract class AbstractIMObjectReferenceEditor
         }
     }
 
+    /**
+     * Updates the selector.
+     *
+     * @param object the object. May be <code>null</code>
+     */
     private void updateSelector(IMObject object) {
         TextField text = selector.getText();
         text.getDocument().removeDocumentListener(nameListener);

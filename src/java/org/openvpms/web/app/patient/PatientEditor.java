@@ -18,20 +18,11 @@
 
 package org.openvpms.web.app.patient;
 
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.create.IMObjectCreator;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.ErrorHelper;
-import org.openvpms.web.resource.util.Messages;
-
-import java.util.Date;
-import java.util.Set;
 
 
 /**
@@ -43,13 +34,6 @@ import java.util.Set;
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
 public class PatientEditor extends AbstractIMObjectEditor {
-
-    /**
-     * Patient/owner relationship short name.
-     */
-    private static final String PATIENT_OWNER
-            = "entityRelationship.patientOwner";
-
 
     /**
      * Construct a new <code>PatientEditor</code>.
@@ -64,68 +48,13 @@ public class PatientEditor extends AbstractIMObjectEditor {
         if (patient.isNew()) {
             Party customer = context.getContext().getCustomer();
             if (customer != null) {
-                if (!hasRelationship(PATIENT_OWNER, patient, customer)) {
-                    addRelationship(PATIENT_OWNER, patient, customer);
-                    // todo - need a way to indicate that the context customer
-                    // has changed
+                PatientRules rules = new PatientRules();
+                if (!rules.isOwner(customer, patient)) {
+                    rules.addPatientOwnerRelationship(customer, patient);
                 }
             }
         }
     }
 
-    /**
-     * Determines if a relationship of the specified type exists.
-     * todo - should be moved to EntityBean
-     *
-     * @param shortName the relationship short name
-     * @param patient   the patient
-     * @param customer  the customer
-     * @return <code>true</code> if a relationship exists; otherwsie
-     *         <code>false</code>
-     */
-    private boolean hasRelationship(String shortName, Entity patient,
-                                    Entity customer) {
-        boolean result = false;
-        Set<EntityRelationship> relationships
-                = patient.getEntityRelationships();
-        IMObjectReference source = new IMObjectReference(customer);
-        IMObjectReference target = new IMObjectReference(patient);
 
-        for (EntityRelationship relationship : relationships) {
-            ArchetypeId id = relationship.getArchetypeId();
-            if (id.getShortName().equals(shortName)) {
-                if (source.equals(relationship.getSource())
-                        && target.equals(relationship.getTarget())) {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Add a new relationship.
-     * todo - should be moved to EntityBean
-     *
-     * @param shortName the relationship short name
-     * @param patient   the patient
-     * @param customer  the customer
-     */
-    private void addRelationship(String shortName, Party patient,
-                                 Party customer) {
-        EntityRelationship relationship
-                = (EntityRelationship) IMObjectCreator.create(shortName);
-        if (relationship != null) {
-            relationship.setActiveStartTime(new Date());
-            relationship.setSequence(1);
-            relationship.setSource(new IMObjectReference(customer));
-            relationship.setTarget(new IMObjectReference(patient));
-
-            patient.addEntityRelationship(relationship);
-        } else {
-            String msg = Messages.get("imobject.create.failed", shortName);
-            ErrorHelper.show(msg);
-        }
-    }
 }
