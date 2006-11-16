@@ -19,6 +19,7 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionEditor;
@@ -51,7 +52,7 @@ public class PatientEntityRelationshipCollectionEditor
     public PatientEntityRelationshipCollectionEditor(
             CollectionProperty property, IMObject object,
             LayoutContext context) {
-        super(new Editor(property), object, context);
+        super(new Editor(property, (Party) object), object, context);
     }
 
     /**
@@ -65,9 +66,10 @@ public class PatientEntityRelationshipCollectionEditor
          * Construct a new <code>Editor</code>.
          *
          * @param property the collection property
+         * @param party    the party
          */
-        public Editor(CollectionProperty property) {
-            super(property);
+        public Editor(CollectionProperty property, Party party) {
+            super(property, party);
         }
 
         /**
@@ -82,7 +84,9 @@ public class PatientEntityRelationshipCollectionEditor
         protected List<IMObject> filter(List<IMObject> objects) {
             List<IMObject> result;
             if (getExcludeInactive()) {
-                result = RelationshipHelper.filterPatients(objects, new Date());
+                Party party = (Party) getObject();
+                result = RelationshipHelper.filterPatients(party, objects,
+                                                           new Date());
             } else {
                 result = objects;
             }
