@@ -23,6 +23,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -56,7 +57,7 @@ public class EntityRelationshipCollectionViewer
      * @param parent   the parent object
      */
     public EntityRelationshipCollectionViewer(CollectionProperty property,
-                                              IMObject parent) {
+                                              Entity parent) {
         super(property, parent);
     }
 
@@ -100,7 +101,9 @@ public class EntityRelationshipCollectionViewer
      */
     protected List<IMObject> filter(List<IMObject> objects) {
         if (hideInactive()) {
-            objects = RelationshipHelper.filterInactive(objects, new Date());
+            Entity object = (Entity) getObject();
+            objects = RelationshipHelper.filterInactive(object, objects,
+                                                        new Date());
         }
         return objects;
     }

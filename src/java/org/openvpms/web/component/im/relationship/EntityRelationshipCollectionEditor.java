@@ -23,6 +23,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -55,9 +56,9 @@ public class EntityRelationshipCollectionEditor
      * @param context  the layout context
      */
     public EntityRelationshipCollectionEditor(CollectionProperty property,
-                                              IMObject object,
+                                              Entity object,
                                               LayoutContext context) {
-        this(new EntityRelationshipCollectionPropertyEditor(property),
+        this(new EntityRelationshipCollectionPropertyEditor(property, object),
              object, context);
     }
 

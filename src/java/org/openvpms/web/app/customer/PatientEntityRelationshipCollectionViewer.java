@@ -19,6 +19,7 @@
 package org.openvpms.web.app.customer;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.edit.CollectionProperty;
 import org.openvpms.web.component.im.relationship.EntityRelationshipCollectionViewer;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
@@ -47,7 +48,7 @@ public class PatientEntityRelationshipCollectionViewer
      */
     public PatientEntityRelationshipCollectionViewer(
             CollectionProperty property,
-            IMObject parent) {
+            Party parent) {
         super(property, parent);
     }
 
@@ -62,7 +63,9 @@ public class PatientEntityRelationshipCollectionViewer
     @Override
     protected List<IMObject> filter(List<IMObject> objects) {
         if (hideInactive()) {
-            objects = RelationshipHelper.filterPatients(objects, new Date());
+            Party object = (Party) getObject();
+            objects = RelationshipHelper.filterPatients(object, objects,
+                                                        new Date());
         }
         return objects;
     }

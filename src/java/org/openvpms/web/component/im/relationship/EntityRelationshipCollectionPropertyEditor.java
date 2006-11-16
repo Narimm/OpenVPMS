@@ -18,6 +18,7 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.edit.CollectionProperty;
@@ -39,6 +40,11 @@ public class EntityRelationshipCollectionPropertyEditor
         extends AbstractCollectionPropertyEditor {
 
     /**
+     * The parent object.
+     */
+    private final Entity object;
+
+    /**
      * Determines if inactive relationships should be excluded.
      */
     private boolean exclude = true;
@@ -48,10 +54,21 @@ public class EntityRelationshipCollectionPropertyEditor
      * Construct a new <code>EntityRelationshipCollectionPropertyEditor</code>.
      *
      * @param property the collection property
+     * @param object   the parent object
      */
     public EntityRelationshipCollectionPropertyEditor(
-            CollectionProperty property) {
+            CollectionProperty property, Entity object) {
         super(property);
+        this.object = object;
+    }
+
+    /**
+     * Returns the parent object.
+     *
+     * @return the parent object
+     */
+    public Entity getObject() {
+        return object;
     }
 
     /**
@@ -84,8 +101,8 @@ public class EntityRelationshipCollectionPropertyEditor
 
     /**
      * Filters objects.
-     * This implementation filters inactive objects, if {@link #getExcludeInactive()}
-     * is <code>true</code>.
+     * This implementation filters inactive objects,
+     * if {@link #getExcludeInactive()} is <code>true</code>.
      *
      * @param objects the objects to filter
      * @return the filtered objects
@@ -93,7 +110,8 @@ public class EntityRelationshipCollectionPropertyEditor
     protected List<IMObject> filter(List<IMObject> objects) {
         List<IMObject> result;
         if (exclude) {
-            result = RelationshipHelper.filterInactive(objects, new Date());
+            result = RelationshipHelper.filterInactive(object, objects,
+                                                       new Date());
         } else {
             result = objects;
         }
