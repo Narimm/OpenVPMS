@@ -151,15 +151,14 @@ public class DocumentParticipationEditor extends AbstractIMObjectEditor {
         DocumentAct docAct;
         Property act = getProperty("act");
         IMObjectReference ref = (IMObjectReference) act.getValue();
-        if (ref == null) {
+        docAct = (DocumentAct) IMObjectHelper.getObject(ref);
+        if (docAct == null) {
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
             docAct = (DocumentAct) service.create("act.documentTemplate");
             Participation participation = (Participation) getObject();
             participation.setAct(docAct.getObjectReference());
             docAct.addParticipation(participation);
-        } else {
-            docAct = (DocumentAct) IMObjectHelper.getObject(ref);
         }
         return docAct;
     }
