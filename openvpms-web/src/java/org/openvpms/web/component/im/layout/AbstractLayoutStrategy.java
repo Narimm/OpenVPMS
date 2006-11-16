@@ -261,8 +261,10 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
                                                      properties,
                                                      context);
         Component[] list = components.getComponents().toArray(new Component[0]);
+        String[] labels = new String[list.length];
         for (int i = 0; i < list.length; ++i) {
             Component component = list[i];
+            labels[i] = components.getLabel(component);
             setTabIndex(component);
             if (component instanceof SelectField) {
                 // workaround for render bug in firefox. See OVPMS-239
@@ -277,9 +279,9 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
             rows = (size / 2) + (size % 2);
         }
         for (int i = 0, j = rows; i < rows; ++i, ++j) {
-            add(grid, components.getLabel(list[i]), list[i]);
+            add(grid, labels[i], list[i]);
             if (j < size) {
-                add(grid, components.getLabel(list[j]), list[j]);
+                add(grid, labels[j], list[j]);
             }
         }
     }
