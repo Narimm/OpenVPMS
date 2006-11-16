@@ -18,14 +18,15 @@
 
 package org.openvpms.web.component.util;
 
-import org.apache.commons.jxpath.JXPathContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.Variables;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 
 /**
@@ -61,12 +62,32 @@ public class MacroEvaluator {
     public static String evaluate(String text, Object context) {
         StringTokenizer tokens = new StringTokenizer(text, " \t\n\r", true);
         StringBuffer result = new StringBuffer();
+        JXPathContext ctx = null;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
+            String number = "";
+            // If token starts with numbers strip numbers and create number
+			// variable
+			// and if any left pass token to test for macro.
+			int index = 0;
+			while (token.length() > index) {
+				if (!Character.isDigit(token.charAt(index)))
+					break;
+				index++;
+			}
+			if (index == 0)
+				number = "";
+			else
+				number = token.substring(0, index);
+			token = token.substring(index);
             String macro = macros.get(token);
             if (macro != null) {
                 try {
-                    JXPathContext ctx = JXPathHelper.newContext(context);
+                	if (ctx == null) {
+                		ctx = JXPathHelper.newContext(context);
+                		ctx.setVariables(new MacroVariables(context));
+                	}                	
+                    ctx.getVariables().declareVariable("number", number);
                     Object value = ctx.getValue(macro);
                     if (value != null) {
                         result.append(value);
@@ -82,7 +103,71 @@ public class MacroEvaluator {
         return result.toString();
     }
 
+    /**
+     * Variables implementation that evaluates macros.
+     *
+     */
+    private static class MacroVariables implements Variables {
 
+    	/**
+    	 * The context to evaluate macro based varibales with
+    	 */
+    	private Object _context;
+    	
+        /**
+         * The variables.
+         */
+        private Map<String, Object> _variables;
+    	
+		/**
+		 * Constructor
+		 * @param _context
+		 */
+		public MacroVariables(Object _context) {
+			this._context = _context;
+			_variables = new HashMap<String, Object>();
+		}
+
+		public void declareVariable(String name, Object value) {
+			_variables.put(name, value);
+		}
+
+		public Object getVariable(String name) {
+			Object result;
+			try {
+				JXPathContext ctx = JXPathHelper.newContext(_context);
+				String macro = macros.get(name);
+				if (macro != null) {
+					result = ctx.getValue(macro);
+				}
+				else {
+					result = _variables.get(name);
+				}
+
+            } catch (Throwable exception) {
+            	result = null;
+                log.debug(exception);
+            }
+			
+			return result;
+		}
+
+		public boolean isDeclaredVariable(String name) {
+			if (macros.containsKey(name)) {
+				return true;
+			} else if (_variables.containsKey(name)){
+				return true;
+			}
+			else
+				return false;
+		}
+
+		public void undeclareVariable(String name) {
+			_variables.remove(name);
+		}		
+		    	
+    }
+    
     private static class Parser extends PropertiesParser {
 
         /**
@@ -101,4 +186,5 @@ public class MacroEvaluator {
         Parser parser = new Parser();
         parser.parse("Macros.properties");
     }
+
 }
