@@ -170,10 +170,10 @@ public abstract class AbstractContext implements Context {
     public void setCustomer(Party customer) {
         setObject(CUSTOMER_SHORTNAME, customer);
         if (customer == null)
-        	ApplicationInstance.getActive().getDefaultWindow().setTitle("OpenVPMS ");
+        	ApplicationInstance.getActive().getDefaultWindow().setTitle("OpenVPMS - No Customer");
         else {
         	EntityBean bean = new EntityBean(customer);
-        	ApplicationInstance.getActive().getDefaultWindow().setTitle("OpenVPMS -" + bean.getString("name"));
+        	ApplicationInstance.getActive().getDefaultWindow().setTitle("OpenVPMS - " + bean.getString("name"));
         }
     }
     
