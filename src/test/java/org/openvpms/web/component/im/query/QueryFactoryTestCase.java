@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.List;
@@ -66,6 +67,14 @@ public class QueryFactoryTestCase extends AbstractAppTest {
      */
     public void testOrganisationAutoQuery() {
         checkCreate("party.organisation*", AutoQuery.class);
+    }
+
+    /**
+     * Verifies that a {@link DocumentTemplateQuery} is returned for
+     * <em>entity.documentTemplate*</em> short names.
+     */
+    public void testDocumentTemplate() {
+        checkCreate("entity.documentTemplate*", DocumentTemplateQuery.class);
     }
 
     /**

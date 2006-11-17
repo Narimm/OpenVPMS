@@ -20,11 +20,11 @@ package org.openvpms.web.app.workflow.checkin;
 
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.web.component.im.query.DefaultActQuery;
-import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.component.workflow.AddActRelationshipTask;
 import org.openvpms.web.component.workflow.CreateIMObjectTask;
 import org.openvpms.web.component.workflow.EditIMObjectTask;
@@ -133,12 +133,10 @@ public class CheckInWorkflow extends WorkflowImpl {
         addTask(new EditCustomerTask(task));
 
         // optionally select and print an act.patientDocumentForm
-        String[] shortNames = {document};
-        String[] statuses = {};
-        Query<Act> query = new DefaultActQuery(patient, "patient",
-                                               "participation.patient",
-                                               shortNames, statuses);
-        SelectIMObjectTask<Act> docTask = new SelectIMObjectTask<Act>(query);
+        DocumentTemplateQuery query = new DocumentTemplateQuery();
+        query.setArchetype(document);
+        SelectIMObjectTask<Entity> docTask
+                = new SelectIMObjectTask<Entity>(query);
         docTask.setRequired(false);
         PrintIMObjectTask printTask = new PrintIMObjectTask(document);
         Tasks selectAndPrint = new Tasks();

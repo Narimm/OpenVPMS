@@ -11,7 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
  *
  *  $Id$
  */
@@ -26,76 +26,88 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.TableBrowser;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Document Template Table Browser to filter document templates by archetype
- * name.
+ * Query for <em>entity.documentTemplate</em>s.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class DocumentTemplateTableBrowser<T extends IMObject>
-        extends TableBrowser<T> {
+public class DocumentTemplateQuery extends AbstractQuery<Entity> {
 
     /**
-     * The shortname to filter the query on. If null then no filtering.
+     * The archetype short name to filter on. May be <code>null</code>.
      */
-    private String _shortName;
+    private String archetypeShortName;
 
 
     /**
-     * Creates a new <code>DocumentTemplateTableBrowser</code>.
+     * Construct a new <code>DocumentTemplateQuery</code>.
      *
-     * @param query     the query
-     * @param shortName the short name to filter the query on. May be
-     *                  <code>null</code>
+     * @throws ArchetypeQueryException if the short name don't match any
+     *                                 archetypes
      */
-    public DocumentTemplateTableBrowser(Query<T> query, String shortName) {
-        super(query);
-        _shortName = shortName;
+    public DocumentTemplateQuery() {
+        super(new String[]{"entity.documentTemplate"});
+    }
+
+    /**
+     * Sets the archetype to filter on.
+     *
+     * @param shortName the archetype short name. May be <code>null</code>
+     */
+    public void setArchetype(String shortName) {
+        archetypeShortName = shortName;
+    }
+
+    /**
+     * Returns the archetype to filter on.
+     *
+     * @return the archetype to filter on. May be <code>null</code>
+     */
+    public String getArchetype() {
+        return archetypeShortName;
     }
 
     /**
      * Performs the query.
-     * Gets the Documnet Templates and filters them.
      *
+     * @param sort the sort constraint. May be <code>null</code>
      * @return the query result set
      */
     @Override
-    protected ResultSet<T> doQuery() {
-        ResultSet<T> result;
-        if (_shortName == null || _shortName.length() == 0)
-            result = getQuery().query(null);
-        else {
+    public ResultSet<Entity> query(SortConstraint[] sort) {
+        ResultSet<Entity> result;
+        if (archetypeShortName == null) {
+            result = super.query(sort);
+        } else {
             ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
                                                       false, true);
             query.setFirstRow(0);
             query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-            IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+            IArchetypeService service
+                    = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> rows = service.get(query).getRows();
-            List<T> objects = new ArrayList<T>();
+            List<Entity> objects = new ArrayList<Entity>();
             for (IMObject object : rows) {
                 EntityBean bean = new EntityBean((Entity) object);
                 String archetype = bean.getString("archetype");
-                if (!StringUtils.isEmpty(archetype)
-                        && TypeHelper.matches(_shortName, archetype)) {
-                    objects.add((T) object);
+                if (StringUtils.isEmpty(archetype)
+                        || TypeHelper.matches(archetypeShortName, archetype)) {
+                    objects.add((Entity) object);
                 }
             }
-            int maxRows = getQuery().getMaxRows();
-            result = new PreloadedResultSet<T>(objects, maxRows);
+            result = new PreloadedResultSet<Entity>(objects, getMaxRows());
         }
-
         return result;
     }
-
-
 }
