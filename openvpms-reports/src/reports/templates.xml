@@ -9,6 +9,7 @@
               docType="document.other"/>
 
     <template name="Invoice Items Template"
+              archetype="SUBREPORT"
               path="invoiceItems.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
@@ -20,6 +21,7 @@
               docType="document.other"/>
 
     <template name="Receipt Items Template"
+              archetype="SUBREPORT"
               path="receiptItems.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
@@ -31,6 +33,7 @@
               docType="document.other"/>
 
     <template name="Estimation Items Template"
+              archetype="SUBREPORT"
               path="estimationItems.jrxml"
               mimeType="text/xml"
               docType="document.other"/>
