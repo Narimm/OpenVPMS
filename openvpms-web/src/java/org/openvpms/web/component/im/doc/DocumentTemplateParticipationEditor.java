@@ -19,11 +19,10 @@
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.edit.Property;
 import org.openvpms.web.component.edit.PropertySet;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -31,10 +30,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.resource.util.Messages;
 
 
 /**
@@ -50,7 +46,7 @@ public class DocumentTemplateParticipationEditor
     /**
      * The template editor.
      */
-    private final IMObjectReferenceEditor _templateEditor;
+    private final IMObjectReferenceEditor templateEditor;
 
 
     /**
@@ -69,43 +65,35 @@ public class DocumentTemplateParticipationEditor
             act.setValue(parent.getObjectReference());
         }
         Property entity = getProperty("entity");
-        _templateEditor = new AbstractIMObjectReferenceEditor(entity, context) {
+        templateEditor = new AbstractIMObjectReferenceEditor(entity, context) {
 
             /**
-             * Pops up a dialog to select an object.
+             * Creates a query to select objects.
+             *
+             * @param name a name to filter on. May be <code>null</code>
+             * @param name the name to filter on. May be <code>null</code>
+             * @return a new query
+             * @throws ArchetypeQueryException if the short names don't match any
+             *                                 archetypes
              */
             @Override
-            protected void onSelect() {
-                Query<IMObject> query = createQuery();
+            @SuppressWarnings("unchecked")
+            protected Query<IMObject> createQuery(String name) {
+                Query query = super.createQuery(name);
                 String shortname = null;
-                if (getParent() != null)
+                if (getParent() != null) {
                     shortname = getParent().getArchetypeId().getShortName();
+                }
+                if (shortname != null
+                        && query instanceof DocumentTemplateQuery) {
+                    ((DocumentTemplateQuery) query).setArchetype(shortname);
 
-                final Browser<IMObject> browser
-                        = new DocumentTemplateTableBrowser<IMObject>(
-                        query, shortname);
-
-                String title = Messages.get("imobject.select.title",
-                                            getDescriptor().getDisplayName());
-                final BrowserDialog<IMObject> popup = new BrowserDialog<IMObject>(
-                        title, browser);
-
-                popup.addWindowPaneListener(new WindowPaneListener() {
-                    public void windowPaneClosing(WindowPaneEvent event) {
-                        setInSelect(false);
-                        IMObject object = popup.getSelected();
-                        if (object != null) {
-                            setObject(object);
-                        }
-                    }
-                });
-
-                setInSelect(true);
-                popup.show();
+                }
+                return query;
             }
         };
 
-        getEditors().add(_templateEditor);
+        getEditors().add(templateEditor);
     }
 
     /**
@@ -127,7 +115,7 @@ public class DocumentTemplateParticipationEditor
         return new IMObjectLayoutStrategy() {
             public Component apply(IMObject object, PropertySet properties,
                                    IMObject parent, LayoutContext context) {
-                return _templateEditor.getComponent();
+                return templateEditor.getComponent();
             }
         };
     }

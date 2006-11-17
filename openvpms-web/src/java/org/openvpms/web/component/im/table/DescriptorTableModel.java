@@ -135,7 +135,8 @@ public abstract class DescriptorTableModel<T extends IMObject>
         if (col instanceof DescriptorTableColumn) {
             NodeDescriptor descriptor
                     = ((DescriptorTableColumn) col).getDescriptor();
-            if (descriptor.getPath().lastIndexOf("/") <= 0) {
+            if (!descriptor.isCollection() &&
+                    descriptor.getPath().lastIndexOf("/") <= 0) {
                 // can only sort on top level nodes
                 result = new SortConstraint[]{
                         new NodeSortConstraint(descriptor.getName(), ascending)
