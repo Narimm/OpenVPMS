@@ -79,8 +79,8 @@ public class MacroEvaluator {
 				number = "";
 			else
 				number = token.substring(0, index);
-			token = token.substring(index);
-            String macro = macros.get(token);
+			String newToken = token.substring(index);
+            String macro = macros.get(newToken);
             if (macro != null) {
                 try {
                 	if (ctx == null) {
