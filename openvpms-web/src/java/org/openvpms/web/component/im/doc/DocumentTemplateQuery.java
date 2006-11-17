@@ -30,6 +30,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.PreloadedResultSet;
+import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ public class DocumentTemplateQuery extends AbstractQuery<Entity> {
      */
     public DocumentTemplateQuery() {
         super(new String[]{"entity.documentTemplate"});
+        QueryFactory.initialise(this);
     }
 
     /**
