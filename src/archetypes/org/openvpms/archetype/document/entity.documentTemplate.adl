@@ -42,7 +42,8 @@
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
 			</node>
-			<node dislayName="User Level" name="userLevel" path="/details/attributes/userLevel" type="java.lang.String"	minCardinality="0" >
+			<node dislayName="User Level" name="userLevel" path="/details/attributes/userLevel" type="java.lang.String"	minCardinality="0" 
+				defaultValue="'0'" >
 				<assertion name="lookup.local">
 					<propertyList name="entries">
 						<property name="0" value="0" />
