@@ -38,6 +38,7 @@
 						<property name="act.customerAccountChargesInvoice" value="Customer Invoice" />
 						<property name="act.customerEstimation" value="Customer Estimation" />
 						<property name="REPORT" value="Report" />
+						<property name="SUBREPORT" value="Sub Report" />
 					</propertyList>
 					<errorMessage>errorMessage</errorMessage>
 				</assertion>
