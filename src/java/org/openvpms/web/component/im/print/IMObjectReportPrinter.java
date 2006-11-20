@@ -47,12 +47,23 @@ public class IMObjectReportPrinter extends AbstractIMObjectPrinter {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document getDocument(IMObject object) {
-        String shortName = object.getArchetypeId().getShortName();
+        IMObjectReport report = createReport(object);
         String[] mimeTypes = {DocFormats.PDF_TYPE};
-        // @todo - need to generate reports to ODT/RTF format in order to print
-        IMObjectReport report = IMObjectReportFactory.create(
-                shortName, mimeTypes,
-                ArchetypeServiceHelper.getArchetypeService());
-        return report.generate(Arrays.asList(object));
+        return report.generate(Arrays.asList(object), mimeTypes);
     }
+
+    /**
+     * Creates a new report.
+     *
+     * @param object the object to report on
+     * @return a new report
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObjectReport createReport(IMObject object) {
+        String shortName = object.getArchetypeId().getShortName();
+        return IMObjectReportFactory.create(
+                shortName, ArchetypeServiceHelper.getArchetypeService());
+    }
+
 }
