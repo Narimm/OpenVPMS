@@ -34,10 +34,12 @@ public class IMObjectReportExceptionTestCase extends TestCase {
      */
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     3, IMObjectReportException.ErrorCode.values().length);
+                     4, IMObjectReportException.ErrorCode.values().length);
         checkException(FailedToCreateReport, "Failed to create report: foo",
                        "foo");
         checkException(FailedToGenerateReport, "Failed to generate report: foo",
+                       "foo");
+        checkException(FailedToPrintReport, "Failed to print report: foo",
                        "foo");
         checkException(UnsupportedMimeTypes,
                        "Mime types not supported by report");

@@ -121,7 +121,9 @@ public class ReportTool {
      */
     public void save(IMObject object, String path) throws IOException {
         IMObjectReport report = getReport(object);
-        Document doc = report.generate(Arrays.asList(object));
+        String[] mimeTypes = {DocFormats.RTF_TYPE, DocFormats.ODT_TYPE,
+                              DocFormats.PDF_TYPE};
+        Document doc = report.generate(Arrays.asList(object), mimeTypes);
         path = new File(path, doc.getName()).getPath();
         FileOutputStream stream = new FileOutputStream(path);
         stream.write(doc.getContents());
@@ -183,9 +185,7 @@ public class ReportTool {
      */
     protected IMObjectReport getReport(IMObject object) {
         String shortName = object.getArchetypeId().getShortName();
-        String[] mimeTypes = {DocFormats.RTF_TYPE, DocFormats.ODT_TYPE,
-                              DocFormats.PDF_TYPE};
-        return IMObjectReportFactory.create(shortName, mimeTypes, _service);
+        return IMObjectReportFactory.create(shortName, _service);
     }
 
     /**

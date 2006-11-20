@@ -42,7 +42,7 @@ public class PrintService {
     /**
      * The OpenOffice service.
      */
-    private final OpenOfficeService _service;
+    private final OpenOfficeService service;
 
 
     /**
@@ -51,7 +51,7 @@ public class PrintService {
      * @param service the OpenOffice service
      */
     public PrintService(OpenOfficeService service) {
-        _service = service;
+        this.service = service;
     }
 
     /**
@@ -61,7 +61,7 @@ public class PrintService {
      * @throws OpenOfficeException for any error
      */
     public String[] getPrinters() {
-        XPrinterServer printerServer = _service.getPrinterServer();
+        XPrinterServer printerServer = service.getPrinterServer();
         return printerServer.getPrinterNames();
     }
 
@@ -73,18 +73,32 @@ public class PrintService {
      * @throws OpenOfficeException for any error
      */
     public void print(Document document, String printer) {
-        final OpenOfficeDocument ood
-                = new OpenOfficeDocument(document, _service);
+        OpenOfficeDocument doc = new OpenOfficeDocument(document, service);
+        try {
+            print(doc, printer);
+        } finally {
+            doc.close();
+        }
+    }
+
+    /**
+     * Prints a document.
+     *
+     * @param document the document to print
+     * @param printer  the printer name
+     * @throws OpenOfficeException for any error
+     */
+    public void print(final OpenOfficeDocument document, String printer) {
         XPrintable printable = (XPrintable) UnoRuntime.queryInterface(
-                XPrintable.class, ood.getComponent());
+                XPrintable.class, document.getComponent());
 
         PropertyValue[] printerDesc = {newProperty("Name", printer)};
         PropertyValue[] printOpts = {newProperty("Pages", "1")};
 
-        ood.getComponent().addEventListener(new XPrintableListener() {
+        document.getComponent().addEventListener(new XPrintableListener() {
             public void stateChanged(PrintableStateEvent event) {
                 if (!event.State.equals(PrintableState.JOB_STARTED)) {
-                    ood.close();
+                    document.close();
                 }
             }
 
@@ -96,7 +110,6 @@ public class PrintService {
             printable.setPrinter(printerDesc);
             printable.print(printOpts);
         } catch (IllegalArgumentException exception) {
-            ood.close();
             throw new OpenOfficeException(FailedToPrint, exception.getMessage(),
                                           exception);
         }

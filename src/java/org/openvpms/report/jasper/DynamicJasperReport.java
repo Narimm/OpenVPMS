@@ -75,15 +75,12 @@ public class DynamicJasperReport extends AbstractJasperIMObjectReport {
      * Construct a new <code>DynamicJasperReport</code>.
      *
      * @param archetype the archetype descriptor
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
      * @param service   the archetype service
      * @throws IMObjectReportException if the report cannot be created
      */
     public DynamicJasperReport(ArchetypeDescriptor archetype,
-                               String[] mimeTypes,
                                IArchetypeService service) {
-        super(mimeTypes, service);
+        super(service);
         try {
             init(archetype);
         } catch (JRException exception) {
