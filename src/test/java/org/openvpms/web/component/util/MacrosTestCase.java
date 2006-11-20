@@ -36,26 +36,58 @@ public class MacrosTestCase extends AbstractAppTest {
      */
     public void testMacros() {
         Party person = TestHelper.createCustomer();
-        Object text1 = MacroEvaluator.evaluate("@macro1", person);
+        Object text1 = MacroEvaluator.evaluate("macro1", person);
         assertEquals("macro 1 text", text1);
 
-        Object text2 = MacroEvaluator.evaluate("@macro2", person);
+        Object text2 = MacroEvaluator.evaluate("macro2", person);
         assertEquals("onetwothree", text2);
 
-        Object text3 = MacroEvaluator.evaluate("test @macro1 @macro2 endtest",
+        Object text3 = MacroEvaluator.evaluate("test macro1 macro2 endtest",
                                                person);
         assertEquals("test macro 1 text onetwothree endtest", text3);
 
-        Object text4 = MacroEvaluator.evaluate("@displayName", person);
+        Object text4 = MacroEvaluator.evaluate("displayName", person);
         assertEquals("Customer(Person)", text4);
+    }
 
-        // verifies that invalid macros don't expand
-        Object text5 = MacroEvaluator.evaluate("@invalidNode", person);
-        assertEquals("@invalidNode", text5);
+    /**
+     * Verifies verifies that macros that throw exceptions don't expand.
+     */
+    public void testExceptionMacro() {
+        Party person = TestHelper.createCustomer();
+        Object text = MacroEvaluator.evaluate("exceptionMacro", person);
+        assertEquals("exceptionMacro", text);
 
-        // verifies that non-existent macros don't expand
-        Object text6 = MacroEvaluator.evaluate("@non existent", person);
-        assertEquals("@non existent", text6);
+    }
+
+    /**
+     * Verifies that non-existent macros don't expand.
+     */
+    public void testNonExistentMacro() {
+        Object text = MacroEvaluator.evaluate("non existent", new Object());
+        assertEquals("non existent", text);
+    }
+
+    /**
+     * Tests that nested macros are expanded.
+     */
+    public void testNestedMacro() {
+        Object text = MacroEvaluator.evaluate("nested", new Object());
+        assertEquals("nested test: macro 1 text", text);
+    }
+
+    /**
+     * Tests that numeric prefixes are expanded as the $number variable.
+     */
+    public void testNumericPrefix() {
+        Object dummy = new Object();
+        // verify that when no prefix is specified, the number doesn't evaluate
+        // to anything
+        Object text1 = MacroEvaluator.evaluate("numbertest", dummy);
+        assertEquals("input number: ", text1);
+
+        Object text2 = MacroEvaluator.evaluate("99numbertest", dummy);
+        assertEquals("input number: 99", text2);
     }
 
 }

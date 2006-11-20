@@ -18,23 +18,35 @@
 
 package org.openvpms.web.component.util;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Variables;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 
 /**
  * Macro evaluator. Evaluates macros embedded in text.
- * Macros are xpath expressions,  loaded from one or more property files named
+ * Macros are xpath expressions, loaded from one or more property files named
  * <em>Macros.properties</em> located in the classpath. E.g:
- * <code>@macro1 = 'simple text'</code>
- * <code>@bid = concat(openvpms:get(., 'product.entity.sellingUnits'), ' twice a day')</code>
+ * <code>
+ * pm = 'in the afternoon'
+ * am = 'in the morning'
+ * </code>
+ * Macros can refer to other macros. E.g:
+ * <code>
+ * sellingUnits = openvpms:get(., 'product.entity.sellingUnits',"")
+ * oid = concat('Take ', $number, ' ', $sellingUnits, ' Once Daily')
+ * </code>
+ * The <em>$number</em> variable is a special variable set when a macro is
+ * prefixed with a number. E.g, given the macro:
+ * <code>tid = concat('Take ', $number, ' tablets twice daily')</code>
+ * The evaluation of the macro '<em>3tid'</em> would evaluate to:
+ * <em>Take 3 tablets twice daily</em>
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
@@ -65,28 +77,26 @@ public class MacroEvaluator {
         JXPathContext ctx = null;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
+            String newToken = token;
             String number = "";
             // If token starts with numbers strip numbers and create number
-			// variable
-			// and if any left pass token to test for macro.
-			int index = 0;
-			while (token.length() > index) {
-				if (!Character.isDigit(token.charAt(index)))
-					break;
-				index++;
-			}
-			if (index == 0)
-				number = "";
-			else
-				number = token.substring(0, index);
-			String newToken = token.substring(index);
+            // variable. If any left pass token to test for macro.
+            int index = 0;
+            while (index < token.length()
+                    && Character.isDigit(token.charAt(index))) {
+                ++index;
+            }
+            if (index != 0) {
+                number = token.substring(0, index);
+                newToken = token.substring(index);
+            }
             String macro = macros.get(newToken);
             if (macro != null) {
                 try {
-                	if (ctx == null) {
-                		ctx = JXPathHelper.newContext(context);
-                		ctx.setVariables(new MacroVariables(context));
-                	}                	
+                    if (ctx == null) {
+                        ctx = JXPathHelper.newContext(context);
+                        ctx.setVariables(new MacroVariables(context));
+                    }
                     ctx.getVariables().declareVariable("number", number);
                     Object value = ctx.getValue(macro);
                     if (value != null) {
@@ -105,69 +115,61 @@ public class MacroEvaluator {
 
     /**
      * Variables implementation that evaluates macros.
-     *
      */
     private static class MacroVariables implements Variables {
 
-    	/**
-    	 * The context to evaluate macro based varibales with
-    	 */
-    	private Object _context;
-    	
+        /**
+         * The context to evaluate macro based variables with.
+         */
+        private Object context;
+
         /**
          * The variables.
          */
-        private Map<String, Object> _variables;
-    	
-		/**
-		 * Constructor
-		 * @param _context
-		 */
-		public MacroVariables(Object _context) {
-			this._context = _context;
-			_variables = new HashMap<String, Object>();
-		}
+        private Map<String, Object> variables;
 
-		public void declareVariable(String name, Object value) {
-			_variables.put(name, value);
-		}
 
-		public Object getVariable(String name) {
-			Object result;
-			try {
-				JXPathContext ctx = JXPathHelper.newContext(_context);
-				String macro = macros.get(name);
-				if (macro != null) {
-					result = ctx.getValue(macro);
-				}
-				else {
-					result = _variables.get(name);
-				}
+        public MacroVariables(Object context) {
+            this.context = context;
+            variables = new HashMap<String, Object>();
+        }
+
+        public void declareVariable(String name, Object value) {
+            variables.put(name, value);
+        }
+
+        public Object getVariable(String name) {
+            Object result;
+            try {
+                JXPathContext ctx = JXPathHelper.newContext(context);
+                String macro = macros.get(name);
+                if (macro != null) {
+                    result = ctx.getValue(macro);
+                } else {
+                    result = variables.get(name);
+                }
 
             } catch (Throwable exception) {
-            	result = null;
+                result = null;
                 log.debug(exception);
             }
-			
-			return result;
-		}
 
-		public boolean isDeclaredVariable(String name) {
-			if (macros.containsKey(name)) {
-				return true;
-			} else if (_variables.containsKey(name)){
-				return true;
-			}
-			else
-				return false;
-		}
+            return result;
+        }
 
-		public void undeclareVariable(String name) {
-			_variables.remove(name);
-		}		
-		    	
+        public boolean isDeclaredVariable(String name) {
+            if (macros.containsKey(name)) {
+                return true;
+            }
+            return (variables.containsKey(name));
+        }
+
+        public void undeclareVariable(String name) {
+            variables.remove(name);
+        }
+
     }
-    
+
     private static class Parser extends PropertiesParser {
 
         /**
