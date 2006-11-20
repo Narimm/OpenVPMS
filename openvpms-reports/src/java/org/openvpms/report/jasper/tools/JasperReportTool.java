@@ -18,7 +18,6 @@
 
 package org.openvpms.report.jasper.tools;
 
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -32,19 +31,19 @@ import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
+import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.DynamicJasperReport;
 import org.openvpms.report.jasper.JasperIMObjectReport;
-import org.openvpms.report.TemplateHelper;
 import org.openvpms.report.jasper.TemplatedJasperReport;
 import org.openvpms.report.tools.ReportTool;
 
 import java.io.ByteArrayInputStream;
 import java.io.PrintStream;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -59,7 +58,7 @@ public class JasperReportTool extends ReportTool {
     /**
      * If <code>true</code> display the generated .jrxml
      */
-    private final boolean _showXML;
+    private final boolean showXML;
 
     /**
      * Construct a new <code>JasperReportTool</code>.
@@ -69,7 +68,7 @@ public class JasperReportTool extends ReportTool {
      */
     public JasperReportTool(IArchetypeService service, boolean showXML) {
         super(service);
-        _showXML = showXML;
+        this.showXML = showXML;
     }
 
     /**
@@ -152,15 +151,13 @@ public class JasperReportTool extends ReportTool {
         Document doc = TemplateHelper.getDocumentForArchetype(
                 shortName, service);
         JasperIMObjectReport report = null;
-        String[] mimeTypes = {DocFormats.PDF_TYPE};
         try {
             if (doc != null) {
                 if (doc.getName().endsWith(".jrxml")) {
                     ByteArrayInputStream stream
                             = new ByteArrayInputStream(doc.getContents());
                     JasperDesign design = JRXmlLoader.load(stream);
-                    report = new TemplatedJasperReport(
-                            design, mimeTypes, service);
+                    report = new TemplatedJasperReport(design, service);
                 } else {
                     System.err.println("Warning:" + doc.getName()
                             + " not a recognised jasper extension. "
@@ -169,15 +166,14 @@ public class JasperReportTool extends ReportTool {
             }
             if (report == null) {
                 report = new DynamicJasperReport(
-                        service.getArchetypeDescriptor(shortName), mimeTypes,
-                        service);
+                        service.getArchetypeDescriptor(shortName), service);
             }
         } catch (JRException exception) {
             throw new IMObjectReportException(exception, FailedToCreateReport,
                                               exception.getMessage());
         }
 
-        if (_showXML) {
+        if (showXML) {
             try {
                 JRXmlWriter.writeReport(report.getReport(),
                                         new PrintStream(System.out), "UTF-8");

@@ -36,11 +36,23 @@ public interface IMObjectReport {
     /**
      * Generates a report for a collection of objects.
      *
-     * @param objects the objects to report on
+     * @param objects   the objects to report on
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
      * @return a document containing the report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    Document generate(Collection<IMObject> objects);
+    Document generate(Collection<IMObject> objects, String[] mimeTypes);
+
+    /**
+     * Prints a report directly to a printer.
+     *
+     * @param objects    the objects to report on
+     * @param properties the print properties
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    void print(Collection<IMObject> objects, PrintProperties properties);
 
 }

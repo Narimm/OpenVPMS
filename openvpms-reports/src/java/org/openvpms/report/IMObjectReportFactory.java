@@ -22,8 +22,8 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToCreateReport;
-import org.openvpms.report.jasper.TemplatedJasperReport;
 import org.openvpms.report.jasper.DynamicJasperReport;
+import org.openvpms.report.jasper.TemplatedJasperReport;
 import org.openvpms.report.openoffice.OpenOfficeIMObjectReport;
 
 
@@ -39,22 +39,19 @@ public class IMObjectReportFactory {
      * Creates a new report for a template.
      *
      * @param template  the document template
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
      * @param service   the archetype service
      * @return a new report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static IMObjectReport create(Document template, String[] mimeTypes,
+    public static IMObjectReport create(Document template,
                                         IArchetypeService service) {
         String name = template.getName();
         IMObjectReport report;
         if (name.endsWith(DocFormats.JRXML_EXT)) {
-            report = new TemplatedJasperReport(template, mimeTypes,
-                                               service);
+            report = new TemplatedJasperReport(template, service);
         } else if (name.endsWith(DocFormats.ODT_EXT)) {
-            report = new OpenOfficeIMObjectReport(template, mimeTypes);
+            report = new OpenOfficeIMObjectReport(template);
         } else {
             throw new IMObjectReportException(
                     FailedToCreateReport,
@@ -67,23 +64,19 @@ public class IMObjectReportFactory {
      * Creates a new report.
      *
      * @param shortName the archetype short name
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
      * @param service   the archetype service
      * @return a new report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMObjectReport create(String shortName,
-                                        String[] mimeTypes,
                                         IArchetypeService service) {
         Document doc = TemplateHelper.getDocumentForArchetype(shortName,
                                                               service);
         if (doc == null) {
-                                       return new DynamicJasperReport(
-                    service.getArchetypeDescriptor(shortName), mimeTypes,
-                    service);
+            return new DynamicJasperReport(
+                    service.getArchetypeDescriptor(shortName), service);
         }
-        return create(doc, mimeTypes, service);
+        return create(doc, service);
     }
 }

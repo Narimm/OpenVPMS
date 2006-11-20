@@ -72,8 +72,7 @@ public class OpenOfficeIMObjectReportTestCase
         doc.setDocSize(length);
         doc.setMimeType(DocFormats.ODT_TYPE);
 
-        IMObjectReport report = new OpenOfficeIMObjectReport(
-                doc, new String[]{DocFormats.ODT_TYPE});
+        IMObjectReport report = new OpenOfficeIMObjectReport(doc);
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setValue("startTime", java.sql.Date.valueOf("2006-08-04"));
@@ -81,7 +80,8 @@ public class OpenOfficeIMObjectReportTestCase
         act.setParticipant("participation.customer", party);
 
         Document result = report.generate(
-                Arrays.asList((IMObject) act.getAct()));
+                Arrays.asList((IMObject) act.getAct()),
+                new String[]{DocFormats.ODT_TYPE});
         Map<String, String> fields = getFields(result);
         assertEquals("4/08/2006", fields.get("startTime"));  // @todo localise
         assertEquals("$100.00", fields.get("lowTotal"));

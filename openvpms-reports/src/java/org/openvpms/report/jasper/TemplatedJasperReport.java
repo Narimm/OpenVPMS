@@ -25,10 +25,8 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.IMObjectReportException;
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,8 +39,7 @@ import java.util.Map;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  */
-public class TemplatedJasperReport extends AbstractJasperReport
-        implements JasperIMObjectReport {
+public class TemplatedJasperReport extends AbstractJasperIMObjectReport {
 
     /**
      * The template loader.
@@ -53,30 +50,25 @@ public class TemplatedJasperReport extends AbstractJasperReport
     /**
      * Constructs a new <code>TemplatedJasperReport</code>.
      *
-     * @param template  the document template
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
-     * @param service   the archetype service
+     * @param template the document template
+     * @param service  the archetype service
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplatedJasperReport(Document template, String[] mimeTypes,
-                                 IArchetypeService service) {
-        super(mimeTypes, service);
+    public TemplatedJasperReport(Document template, IArchetypeService service) {
+        super(service);
         this.template = new TemplateLoader(template, service);
     }
 
     /**
      * Constructs a new <code>TemplatedJasperReport</code>.
      *
-     * @param design    the master report design
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
-     * @param service   the archetype service
+     * @param design  the master report design
+     * @param service the archetype service
      * @throws IMObjectReportException if the report cannot be created
      */
-    public TemplatedJasperReport(JasperDesign design, String[] mimeTypes,
+    public TemplatedJasperReport(JasperDesign design,
                                  IArchetypeService service) {
-        super(mimeTypes, service);
+        super(service);
         this.template = new TemplateLoader(design, service);
     }
 
@@ -96,26 +88,6 @@ public class TemplatedJasperReport extends AbstractJasperReport
      */
     public JasperReport[] getSubreports() {
         return template.getSubreports();
-    }
-
-    /**
-     * Generates a report for an object.
-     *
-     * @param objects
-     * @return a document containing the report
-     * @throws IMObjectReportException   for any error
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public Document generate(Collection<IMObject> objects) {
-        Document document;
-        try {
-            JasperPrint print = report(objects);
-            document = convert(print);
-        } catch (JRException exception) {
-            throw new IMObjectReportException(exception, FailedToGenerateReport,
-                                              exception.getMessage());
-        }
-        return document;
     }
 
     /**

@@ -18,21 +18,23 @@
 
 package org.openvpms.report.openoffice;
 
-import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
+import static org.openvpms.report.IMObjectReportException.ErrorCode.FailedToGenerateReport;
 import static org.openvpms.report.IMObjectReportException.ErrorCode.UnsupportedMimeTypes;
+import org.openvpms.report.PrintProperties;
 
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -47,57 +49,97 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
     /**
      * The document template.
      */
-    private final Document _template;
-
-    /**
-     * The mime-type to generate the document as.
-     */
-    private String _mimeType;
+    private final Document template;
 
 
     /**
      * Creates a new <code>OpenOfficeIMObjectReport</code>.
      *
-     * @param template  the document template
-     * @param mimeTypes a list of mime-types, used to select the preferred
-     *                  output format of the report
+     * @param template the document template
      * @throws IMObjectReportException if the mime-type is invalid
      */
-    public OpenOfficeIMObjectReport(Document template, String[] mimeTypes) {
-        _template = template;
-        for (String mimeType : mimeTypes) {
-            if (DocFormats.ODT_TYPE.equals(mimeType)
-                    || DocFormats.PDF_TYPE.equals(mimeType)) {
-                _mimeType = mimeType;
-                break;
-            }
-        }
-        if (_mimeType == null) {
-            throw new IMObjectReportException(UnsupportedMimeTypes);
-        }
+    public OpenOfficeIMObjectReport(Document template) {
+        this.template = template;
     }
 
     /**
      * Generates a report for a collection of objects.
      *
-     * @param objects the objects to report on
+     * @param objects   the objects to report on
+     * @param mimeTypes a list of mime-types, used to select the preferred
+     *                  output format of the report
      * @return a document containing the report
      * @throws IMObjectReportException   for any report error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Document generate(Collection<IMObject> objects) {
+    public Document generate(Collection<IMObject> objects, String[] mimeTypes) {
+        String mimeType = null;
+        for (String type : mimeTypes) {
+            if (DocFormats.ODT_TYPE.equals(type)
+                    || DocFormats.PDF_TYPE.equals(type)) {
+                mimeType = type;
+                break;
+            }
+        }
+        if (mimeType == null) {
+            throw new IMObjectReportException(UnsupportedMimeTypes);
+        }
+
+        OpenOfficeDocument doc = null;
+        try {
+            doc = create(objects);
+            return export(doc, mimeType);
+        } finally {
+            if (doc != null) {
+                doc.close();
+            }
+        }
+    }
+
+    /**
+     * Prints a report directly to a printer.
+     *
+     * @param objects    the objects to report on
+     * @param properties the print properties
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public void print(Collection<IMObject> objects,
+                      PrintProperties properties) {
+        OpenOfficeDocument doc = null;
+        try {
+            doc = create(objects);
+            PrintService service = OpenOfficeHelper.getPrintService();
+            service.print(doc, properties.getPrinterName());
+        } finally {
+            if (doc != null) {
+                doc.close();
+            }
+        }
+    }
+
+    /**
+     * Creates an openoffice document from a collection of objects.
+     * Note that the collection is limited to a single object.
+     *
+     * @param objects the objects to generate the document from
+     * @return a new openoffice document
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    private OpenOfficeDocument create(Collection<IMObject> objects) {
+        OpenOfficeDocument doc = null;
         if (objects.size() != 1) {
-          throw new IMObjectReportException(
-                  FailedToGenerateReport,
-                  "Can only report on single objects");
+            throw new IMObjectReportException(
+                    FailedToGenerateReport,
+                    "Can only report on single objects");
         }
         IMObject object = objects.toArray(new IMObject[0])[0];
         ExpressionEvaluator eval = new ExpressionEvaluator(
                 object, ArchetypeServiceHelper.getArchetypeService());
 
-        OpenOfficeDocument doc = null;
         try {
-            doc = new OpenOfficeDocument(_template,
+            doc = new OpenOfficeDocument(template,
                                          OpenOfficeHelper.getService());
             List<String> fieldNames = doc.getUserFieldNames();
             for (String name : fieldNames) {
@@ -109,29 +151,31 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
             }
             // refresh the text fields
             doc.refresh();
-            return export(doc);
-        } finally {
+        } catch (OpenVPMSException exception) {
             if (doc != null) {
                 doc.close();
             }
+            throw exception;
         }
+        return doc;
     }
 
     /**
      * Exports a document, serializing to a {@link Document}.
      *
-     * @param doc the document to export
+     * @param doc      the document to export
+     * @param mimeType the mime-type of the document     *
      * @return a new document
      * @throws OpenOfficeException       for any error
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private Document export(OpenOfficeDocument doc) {
+    private Document export(OpenOfficeDocument doc, String mimeType) {
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        String name = _template.getName();
-        if (!_mimeType.equals(DocFormats.ODT_TYPE)) {
+        String name = template.getName();
+        if (!DocFormats.ODT_TYPE.equals(mimeType)) {
             name = FilenameUtils.removeExtension(name);
         }
-        return doc.export(_mimeType, name, service);
+        return doc.export(mimeType, name, service);
     }
 }
