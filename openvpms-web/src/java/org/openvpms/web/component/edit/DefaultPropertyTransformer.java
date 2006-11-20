@@ -22,7 +22,7 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 
 
 /**
- * Default property handler.
+ * Default property transformer. This transformer doesn't not modify its inputs.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
