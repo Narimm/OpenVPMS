@@ -22,12 +22,18 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.report.IMObjectReport;
+import org.openvpms.report.IMObjectReportException;
+import org.openvpms.report.PrintProperties;
 import org.openvpms.web.component.dialog.PrintDialog;
 import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.resource.util.Messages;
 import org.openvpms.web.servlet.DownloadServlet;
+
+import java.util.Arrays;
 
 
 /**
@@ -67,7 +73,12 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
                 public void windowPaneClosing(WindowPaneEvent event) {
                     String action = dialog.getAction();
                     if (PrintDialog.OK_ID.equals(action)) {
-                        doPrint(object, null);
+                        String printer = dialog.getPrinter();
+                        if (printer == null) {
+                            doPrintPreview(object);
+                        } else {
+                            doPrint(object, printer);
+                        }
                     } else if (PrintDialog.PREVIEW_ID.equals(action)) {
                         doPrintPreview(object);
                     }
@@ -106,6 +117,16 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
     public boolean isInteractive() {
         return interactive;
     }
+
+    /**
+     * Creates a new report.
+     *
+     * @param object the object to report on
+     * @return a new report
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected abstract IMObjectReport createReport(IMObject object);
 
     /**
      * Returns a document for an object.
@@ -149,8 +170,8 @@ public abstract class AbstractIMObjectPrinter implements IMObjectPrinter {
      */
     protected void doPrint(IMObject object, String printer) {
         try {
-            Document document = getDocument(object);
-            DownloadServlet.startDownload(document);
+            IMObjectReport report = createReport(object);
+            report.print(Arrays.asList(object), new PrintProperties(printer));
             printed(object);
         } catch (OpenVPMSException exception) {
             if (isInteractive()) {

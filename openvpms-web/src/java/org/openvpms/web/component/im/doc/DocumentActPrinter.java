@@ -18,19 +18,21 @@
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
+import org.openvpms.report.IMObjectReport;
 import org.openvpms.report.IMObjectReportException;
-import org.openvpms.web.component.dialog.ConfirmationDialog;
+import org.openvpms.report.PrintProperties;
+import org.openvpms.report.openoffice.OpenOfficeHelper;
 import org.openvpms.web.component.im.print.AbstractIMObjectPrinter;
+import org.openvpms.web.component.im.util.ErrorHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.resource.util.Messages;
+
+import java.util.Arrays;
 
 
 /**
@@ -42,33 +44,48 @@ import org.openvpms.web.resource.util.Messages;
 public class DocumentActPrinter extends AbstractIMObjectPrinter {
 
     /**
-     * Initiates printing of an object.
-     * If printing interactively, pops up a {@link ConfirmationDialog} prompting
-     * if printing of an object should proceed, invoking {@link #doPrint}
-     * if 'OK' is selected.
-     * If printing in the background, invokes {@link #doPrint}.
+     * Prints the object.
      *
-     * @param object the object to print
+     * @param object  the object to print
+     * @param printer the printer
      */
-    @Override
-    public void print(final IMObject object) {
-        if (isInteractive()) {
-            String title = Messages.get("imobject.print.title",
-                                        DescriptorHelper.getDisplayName(
-                                                object));
-            final ConfirmationDialog dialog = new ConfirmationDialog(title, "");
-            dialog.addWindowPaneListener(new WindowPaneListener() {
-                public void windowPaneClosing(WindowPaneEvent event) {
-                    String action = dialog.getAction();
-                    if (ConfirmationDialog.OK_ID.equals(action)) {
-                        doPrint(object, null);
-                    }
-                }
-            });
-            dialog.show();
-        } else {
-            doPrint(object, null);
+    protected void doPrint(IMObject object, String printer) {
+        try {
+            DocumentAct act = (DocumentAct) object;
+            Document doc = (Document) IMObjectHelper.getObject(
+                    act.getDocReference());
+            if (doc == null) {
+                IMObjectReport report = createReport(object);
+                report.print(Arrays.asList(object),
+                             new PrintProperties(printer));
+                printed(object);
+            } else if (DocFormats.ODT_TYPE.equals(doc.getMimeType())) {
+                OpenOfficeHelper.getPrintService().print(doc, printer);
+            } else {
+                doPrintPreview(object);
+            }
+            printed(object);
+        } catch (OpenVPMSException exception) {
+            if (isInteractive()) {
+                ErrorHelper.show(exception);
+            } else {
+                failed(object, exception);
+            }
         }
+    }
+
+    /**
+     * Creates a new report.
+     *
+     * @param object the object to report on
+     * @return a new report
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected IMObjectReport createReport(IMObject object) {
+        DocumentAct act = (DocumentAct) object;
+        ReportGenerator gen = new ReportGenerator(act);
+        return gen.createReport();
     }
 
     /**

@@ -49,7 +49,8 @@ public class ReportGenerator {
     /**
      * Reference to an <em>entity.documentTemplate</em>/
      */
-    private final IMObjectReference _template;
+    private final IMObjectReference template;
+
 
     /**
      * Constructs a new <code>ReportGenerator</code>.
@@ -61,8 +62,8 @@ public class ReportGenerator {
      */
     public ReportGenerator(DocumentAct act) {
         ActBean bean = new ActBean(act);
-        _template = bean.getParticipantRef("participation.documentTemplate");
-        if (_template == null) {
+        template = bean.getParticipantRef("participation.documentTemplate");
+        if (template == null) {
             throw new DocumentException(NotFound);
         }
     }
@@ -73,7 +74,7 @@ public class ReportGenerator {
      * @param template a reference to an <em>entity.documentTemplate</em>
      */
     public ReportGenerator(IMObjectReference template) {
-        _template = template;
+        this.template = template;
     }
 
     /**
@@ -105,6 +106,29 @@ public class ReportGenerator {
     }
 
     /**
+     * Creates a report.
+     *
+     * @return a new report
+     * @throws DocumentException         if the template document can't be found
+     * @throws IMObjectReportException   for any report error
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public IMObjectReport createReport() {
+        IArchetypeService service
+                = ArchetypeServiceHelper.getArchetypeService();
+        Entity entity = (Entity) IMObjectHelper.getObject(template);
+        if (entity == null) {
+            throw new DocumentException(NotFound);
+        }
+        Document doc = TemplateHelper.getDocumentFromTemplate(
+                entity, service);
+        if (doc == null) {
+            throw new DocumentException(NotFound);
+        }
+        return IMObjectReportFactory.create(doc, service);
+    }
+
+    /**
      * Generates a report.
      *
      * @param object    the object to generate the report for
@@ -116,20 +140,8 @@ public class ReportGenerator {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Document generate(IMObject object, String[] mimeTypes) {
-        IArchetypeService service
-                = ArchetypeServiceHelper.getArchetypeService();
-        Entity entity = (Entity) IMObjectHelper.getObject(_template);
-        if (entity == null) {
-            throw new DocumentException(NotFound);
-        }
-        Document doc = TemplateHelper.getDocumentFromTemplate(
-                entity, service);
-        if (doc == null) {
-            throw new DocumentException(NotFound);
-        }
-        IMObjectReport report = IMObjectReportFactory.create(
-                doc, mimeTypes, service);
-        return report.generate(Arrays.asList(object));
-
+        IMObjectReport report = createReport();
+        return report.generate(Arrays.asList(object), mimeTypes);
     }
+
 }
