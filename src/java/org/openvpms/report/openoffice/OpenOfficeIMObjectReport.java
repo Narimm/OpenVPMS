@@ -106,16 +106,9 @@ public class OpenOfficeIMObjectReport implements IMObjectReport {
      */
     public void print(Collection<IMObject> objects,
                       PrintProperties properties) {
-        OpenOfficeDocument doc = null;
-        try {
-            doc = create(objects);
-            PrintService service = OpenOfficeHelper.getPrintService();
-            service.print(doc, properties.getPrinterName());
-        } finally {
-            if (doc != null) {
-                doc.close();
-            }
-        }
+        PrintService service = OpenOfficeHelper.getPrintService();
+        OpenOfficeDocument doc = create(objects);
+        service.print(doc, properties.getPrinterName(), true);
     }
 
     /**
