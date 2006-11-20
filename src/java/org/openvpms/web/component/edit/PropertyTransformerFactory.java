@@ -31,6 +31,12 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 public class PropertyTransformerFactory {
 
     /**
+     * The default property transformer.
+     */
+    private static DefaultPropertyTransformer DEFAULT
+            = new DefaultPropertyTransformer();
+
+    /**
      * Creates a new property transformer.
      *
      * @param parent     the parent object
@@ -39,14 +45,16 @@ public class PropertyTransformerFactory {
     public static PropertyTransformer create(IMObject parent,
                                              NodeDescriptor descriptor) {
         PropertyTransformer result;
-        if (descriptor.isString()) {
+        if (descriptor.isLookup()) {
+            result = DEFAULT;
+        } else if (descriptor.isString()) {
             result = new StringPropertyTransformer(parent, descriptor);
         } else if (descriptor.isMoney()) {
             result = new MoneyPropertyTransformer(descriptor);
         } else if (descriptor.isNumeric()) {
             result = new NumericPropertyTransformer(descriptor);
         } else {
-            result = new DefaultPropertyTransformer();
+            result = DEFAULT;
         }
         return result;
     }
