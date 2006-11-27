@@ -122,8 +122,8 @@ public class AppointmentRules {
                 = ArchetypeServiceHelper.getArchetypeService();
         ArchetypeQuery query = new ArchetypeQuery(
                 null, "act", "customerAppointment", false, true);
-        query.setFirstRow(0);
-        query.setNumOfRows(1);
+        query.setFirstResult(0);
+        query.setMaxResults(1);
 
         // Create the query:
         //   act.uid != uid
@@ -149,7 +149,7 @@ public class AppointmentRules {
         or.add(overlapIn);
         query.add(or);
 
-        List<IMObject> overlaps = service.get(query).getRows();
+        List<IMObject> overlaps = service.get(query).getResults();
         return !overlaps.isEmpty();
     }
 

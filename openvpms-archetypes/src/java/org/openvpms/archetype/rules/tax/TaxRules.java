@@ -309,7 +309,7 @@ public class TaxRules {
         IPage<IMObject> page = ArchetypeQueryHelper.get(
                 service, new String[]{"party.organisationPractice"}, true, 0,
                 1);
-        List<IMObject> practices = page.getRows();
+        List<IMObject> practices = page.getResults();
         if (!practices.isEmpty()) {
             IMObjectBean bean = new IMObjectBean(practices.get(0), service);
             taxes = bean.getValues("taxes");

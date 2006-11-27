@@ -24,11 +24,16 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.LinkConstraint;
+import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
+import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -123,48 +128,74 @@ public class ReminderQuery {
     /**
      * Executes the query.
      *
-     * @param firstRow the first row to return
-     * @param maxRows  the maximum no. of row to return.
-     *                 Use {@link ArchetypeQuery#ALL_ROWS} to specify all rows
+     * @param firstResult the first row to return
+     * @param maxResults  the maximum no. of results to return.
+     *                    Use {@link ArchetypeQuery#ALL_RESULTS} to specify all
+     *                    results
      * @return the query result
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IPage<Act> query(int firstRow, int maxRows) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        String name = "act.patientReminder.IN_PROGRESS";
+    public IPage<Act> query(int firstResult, int maxResults) {
+        ShortNameConstraint act = new ShortNameConstraint("act",
+                                                          "act.patientReminder",
+                                                          true);
+        ShortNameConstraint participation = new ShortNameConstraint(
+                "participation", "participation.patient", true);
+        ShortNameConstraint owner = new ShortNameConstraint(
+                "owner", "entityRelationship.patientOwner", true);
+        ShortNameConstraint patient = new ShortNameConstraint(
+                "patient", "party.patientpet", true);
+        ShortNameConstraint customer = new ShortNameConstraint(
+                "customer", "party.customer*", true);
+        ShortNameConstraint reminder = new ShortNameConstraint(
+                "reminderType", "participation.reminderType", true);
+
+        ArchetypeQuery query = new ArchetypeQuery(act);
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
+        query.setCountResults(true);
+        query.setDistinct(true);
+
+        query.add(new NodeConstraint("status", ReminderStatus.IN_PROGRESS));
+        query.add(new CollectionNodeConstraint("patient", participation));
+        query.add(new LinkConstraint("act", "participation.act"));
+        query.add(owner);
+        query.add(patient);
+        query.add(customer);
+        query.add(new LinkConstraint("participation.entity", "patient"));
+        query.add(new LinkConstraint("patient", "owner.target"));
+        query.add(new LinkConstraint("customer", "owner.source"));
+        query.add(new NodeSortConstraint("customer", "name"));
+        query.add(new NodeSortConstraint("patient", "name"));
+
         if (reminderType != null) {
-            name += "+reminderType";
-            params.put("linkId", reminderType.getLinkId());
+            query.add(
+                    new CollectionNodeConstraint("reminderType", reminder).add(
+                            new ObjectRefNodeConstraint("entity",
+                                                        reminderType.getObjectReference())));
         }
         if (dueFrom != null && dueTo != null) {
-            name += "+dueDateRange";
-            params.put("dueFrom", dueFrom);
-            params.put("dueTo", dueTo);
+            query.add(new NodeConstraint("endTime", RelationalOp.BTW,
+                                         dueFrom, dueTo));
         }
         if (customerFrom != null && customerTo != null) {
-            name += "+customerRange";
-            params.put("nameFrom", customerFrom);
-            params.put("nameTo", customerTo);
+            query.add(new NodeConstraint("customer.name", RelationalOp.BTW,
+                                         customerFrom, customerTo));
         }
-        return query(name, params, firstRow, maxRows);
-
+        return query(query);
     }
 
     /**
      * Executes a query.
      *
-     * @param queryName the query name
-     * @param params    the query parameters
-     * @param firstRow  the first row to return
-     * @param maxRows   the maximum no. of row to return
+     * @param query the query
      * @return the query result
      */
     @SuppressWarnings("unchecked")
-    private IPage<Act> query(String queryName, Map<String, Object> params,
-                             int firstRow, int maxRows) {
-        IPage result = service.getByNamedQuery(queryName, params, firstRow,
-                                               maxRows);
-        return (IPage<Act>) result;
+    private IPage<Act> query(ArchetypeQuery query) {
+        IPage result;
+        result = service.get(query);
+        return result;
     }
 
 }

@@ -123,8 +123,8 @@ public class ReminderRules {
                     "patient", "participation.patient", false, true)
                     .add(new ObjectRefNodeConstraint("entity", ref));
             query.add(participations);
-            query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-            List acts = service.get(query).getRows();
+            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+            List acts = service.get(query).getResults();
             for (Act act : (List<Act>) acts) {
                 if (hasMatchingGroup(groups, act)) {
                     markCompleted(act);

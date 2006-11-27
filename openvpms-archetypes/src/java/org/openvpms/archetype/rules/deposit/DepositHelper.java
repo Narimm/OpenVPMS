@@ -54,8 +54,8 @@ public class DepositHelper {
         ArchetypeQuery query = new ArchetypeQuery(DepositRules.BANK_DEPOSIT,
                                                   false,
                                                   true);
-        query.setFirstRow(0);
-        query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
+        query.setFirstResult(0);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         query.add(new NodeConstraint("status", RelationalOp.EQ,
                                      DepositStatus.UNDEPOSITED));
         CollectionNodeConstraint participations
@@ -65,7 +65,7 @@ public class DepositHelper {
         participations.add(new ObjectRefNodeConstraint(
                 "entity", account.getObjectReference()));
         query.add(participations);
-        List<IMObject> matches = service.get(query).getRows();
+        List<IMObject> matches = service.get(query).getResults();
         return (!matches.isEmpty()) ? (FinancialAct) matches.get(0) : null;
     }
 

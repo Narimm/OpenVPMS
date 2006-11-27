@@ -19,15 +19,14 @@
 package org.openvpms.archetype.rules.patient.reminder;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -53,10 +52,9 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
     public void testQuery() {
         int initialCount = countReminders(null, null);
         ReminderQuery query = new ReminderQuery();
-        query.query(0, 1);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
-        assertEquals(initialCount, reminders.getTotalNumOfRows());
-        for (Act act : reminders.getRows()) {
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(initialCount, reminders.getTotalResults());
+        for (Act act : reminders.getResults()) {
             assertEquals("act.patientReminder",
                          act.getArchetypeId().getShortName());
             assertEquals(ActStatus.IN_PROGRESS, act.getStatus());
@@ -80,8 +78,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
-        assertEquals(count, reminders.getTotalNumOfRows());
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(count, reminders.getTotalResults());
     }
 
     /**
@@ -111,8 +109,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         // now verify that the query gives the same count
         ReminderQuery query = new ReminderQuery();
         query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
-        assertEquals(rangeCount, reminders.getTotalNumOfRows());
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(rangeCount, reminders.getTotalResults());
     }
 
     /**
@@ -148,8 +146,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         ReminderQuery query = new ReminderQuery();
 
         query.setCustomerRange(names[0], names[customers.length - 1]);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
-        assertEquals(count * customers.length, reminders.getTotalNumOfRows());
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(count * customers.length, reminders.getTotalResults());
     }
 
     /**
@@ -178,9 +176,9 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType);
         query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
 
-        assertEquals(5, reminders.getTotalNumOfRows());
+        assertEquals(5, reminders.getTotalResults());
     }
 
     /**
@@ -222,10 +220,10 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         ReminderQuery query = new ReminderQuery();
         query.setReminderType(reminderType1);
         query.setCustomerRange(names[0], names[customers.length - 1]);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
 
         assertEquals((count / 2) * customers.length,
-                     reminders.getTotalNumOfRows());
+                     reminders.getTotalResults());
     }
 
     /**
@@ -272,8 +270,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
 
         query.setCustomerRange(names[0], names[customers.length - 1]);
         query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
-        assertEquals(5 * customers.length, reminders.getTotalNumOfRows());
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(5 * customers.length, reminders.getTotalResults());
     }
 
     /**
@@ -324,8 +322,8 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         query.setReminderType(reminderType1);
         query.setCustomerRange(names[0], names[customers.length - 1]);
         query.setDueDateRange(dueFrom, dueTo);
-        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_ROWS);
-        assertEquals(9, reminders.getTotalNumOfRows());
+        IPage<Act> reminders = query.query(0, ArchetypeQuery.ALL_RESULTS);
+        assertEquals(9, reminders.getTotalResults());
     }
 
 
@@ -337,6 +335,7 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
      * @return a count of reminders in the specified date range
      */
     private int countReminders(Date dueFrom, Date dueTo) {
+        PatientRules rules = new PatientRules();
         int result = 0;
         ArchetypeQuery query = new ArchetypeQuery("act.patientReminder", false,
                                                   true);
@@ -347,26 +346,22 @@ public class ReminderQueryTestCase extends ArchetypeServiceTest {
         }
         int pageIndex = 0;
         int rowsPerPage = 100;
-        query.setFirstRow(0);
-        query.setNumOfRows(rowsPerPage);
+        query.setFirstResult(0);
+        query.setMaxResults(rowsPerPage);
         IPage<IMObject> page = getArchetypeService().get(query);
-        while (!page.getRows().isEmpty()) {
-            for (IMObject object : page.getRows()) {
+        while (!page.getResults().isEmpty()) {
+            for (IMObject object : page.getResults()) {
                 ActBean bean = new ActBean((Act) object);
                 Party patient = (Party) bean.getParticipant(
                         "participation.patient");
                 if (patient != null) {
-                    for (EntityRelationship relationship
-                            : patient.getEntityRelationships()) {
-                        if (TypeHelper.isA(relationship,
-                                           "entityRelationship.patientOwner")) {
-                            result++;
-                        }
+                    if (rules.getOwner(patient) != null) {
+                        result++;
                     }
                 }
             }
             pageIndex++;
-            query.setFirstRow(pageIndex * rowsPerPage);
+            query.setFirstResult(pageIndex * rowsPerPage);
             page = getArchetypeService().get(query);
         }
         return result;
