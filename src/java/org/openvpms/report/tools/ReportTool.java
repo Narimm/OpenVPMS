@@ -74,10 +74,10 @@ public class ReportTool {
      */
     public void list(String shortName) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
-                .setFirstRow(0)
-                .setNumOfRows(ArchetypeQuery.ALL_ROWS);
+                .setFirstResult(0)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         IPage<IMObject> rows = _service.get(query);
-        for (IMObject object : rows.getRows()) {
+        for (IMObject object : rows.getResults()) {
             System.out.println(object.getArchetypeId().getShortName()
                     + " " + object.getUid() + " " + object.getName());
         }
@@ -92,11 +92,11 @@ public class ReportTool {
      */
     public IMObject get(String shortName, String name) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
-                .setFirstRow(0)
-                .setNumOfRows(ArchetypeQuery.ALL_ROWS);
+                .setFirstResult(0)
+                .setMaxResults(ArchetypeQuery.ALL_RESULTS);
         query.add(new NodeConstraint("name", name));
         IPage<IMObject> rows = _service.get(query);
-        List<IMObject> objects = rows.getRows();
+        List<IMObject> objects = rows.getResults();
         return (!objects.isEmpty()) ? objects.get(0) : null;
     }
 

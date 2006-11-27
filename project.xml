@@ -478,13 +478,13 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-framework</artifactId>
-            <version>1.0-alpha-1</version>
+            <version>1.0-beta-1-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-archetypes</artifactId>
-            <version>1.0-alpha-1</version>
+            <version>1.0-beta-1-SNAPSHOT</version>
             <url>http://www.openvpms.org</url>
         </dependency>
         <dependency>

@@ -55,9 +55,9 @@ public class TemplateHelper {
         ArchetypeQuery query = new ArchetypeQuery("act.documentTemplate",
                                                   false, true);
         query.add(new NodeConstraint("name", name));
-        query.setFirstRow(0);
-        query.setNumOfRows(1);
-        List<IMObject> rows = service.get(query).getRows();
+        query.setFirstResult(0);
+        query.setMaxResults(1);
+        List<IMObject> rows = service.get(query).getResults();
         if (!rows.isEmpty()) {
             DocumentAct act = (DocumentAct) rows.get(0);
             return (Document) get(act.getDocReference(), service);
@@ -79,9 +79,9 @@ public class TemplateHelper {
         Document document = null;
         ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
                                                   false, true);
-        query.setFirstRow(0);
-        query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
-        List<IMObject> rows = service.get(query).getRows();
+        query.setFirstResult(0);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> rows = service.get(query).getResults();
         for (IMObject object : rows) {
             EntityBean bean = new EntityBean((Entity) object);
             String archetype = bean.getString("archetype");
@@ -149,9 +149,9 @@ public class TemplateHelper {
                                                   true, true);
         query.add(new ObjectRefNodeConstraint("entity",
                                               template.getObjectReference()));
-        query.setFirstRow(0);
-        query.setNumOfRows(1);
-        List<IMObject> rows = service.get(query).getRows();
+        query.setFirstResult(0);
+        query.setMaxResults(1);
+        List<IMObject> rows = service.get(query).getResults();
         return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
     }
 
