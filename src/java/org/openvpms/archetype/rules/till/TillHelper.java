@@ -55,8 +55,8 @@ public class TillHelper {
         ArchetypeQuery query = new ArchetypeQuery(TillRules.TILL_BALANCE,
                                                   false,
                                                   true);
-        query.setFirstRow(0);
-        query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
+        query.setFirstResult(0);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         query.add(new NodeConstraint("status", RelationalOp.EQ,
                                      TillBalanceStatus.UNCLEARED));
         CollectionNodeConstraint participations
@@ -65,7 +65,7 @@ public class TillHelper {
                                                false, true);
         participations.add(new ObjectRefNodeConstraint("entity", till));
         query.add(participations);
-        List<IMObject> matches = service.get(query).getRows();
+        List<IMObject> matches = service.get(query).getResults();
         if (!matches.isEmpty()) {
             act = (FinancialAct) matches.get(0);
         }

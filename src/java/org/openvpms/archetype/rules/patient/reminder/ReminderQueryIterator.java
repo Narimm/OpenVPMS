@@ -74,7 +74,7 @@ public class ReminderQueryIterator implements Iterator<Act> {
         final int maxRows = 25;
         if (reminders == null || !iterator.hasNext()) {
             reminders = query.query(page * maxRows, maxRows);
-            iterator = reminders.getRows().iterator();
+            iterator = reminders.getResults().iterator();
             page++;
         }
         return iterator.hasNext();

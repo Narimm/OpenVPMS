@@ -253,7 +253,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
         List rows = ArchetypeQueryHelper.getActs(
                 getArchetypeService(), "act", "customerAppointment",
                 startDay, endDay, null, null, null, true, 0,
-                ArchetypeQuery.ALL_ROWS).getRows();
+                ArchetypeQuery.ALL_RESULTS).getResults();
         for (Object object : rows) {
             Act act = (Act) object;
             remove(act);
