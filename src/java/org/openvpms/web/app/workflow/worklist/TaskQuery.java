@@ -73,7 +73,7 @@ public class TaskQuery extends WorkflowQuery {
 
         return new ActResultSet(participants, getArchetypes(), or,
                                 getStatuses(), excludeStatuses(),
-                                getConstraints(), ArchetypeQuery.ALL_ROWS,
+                                getConstraints(), ArchetypeQuery.ALL_RESULTS,
                                 sort);
     }
 

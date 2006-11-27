@@ -57,7 +57,7 @@ public abstract class ContextApplicationInstance
                     = ArchetypeServiceHelper.getArchetypeService();
             List<IMObject> rows = ArchetypeQueryHelper.get(
                     service, "system", "security", "user", auth.getName(),
-                    true, 0, 1).getRows();
+                    true, 0, 1).getResults();
             if (!rows.isEmpty()) {
                 User user = (User) rows.get(0);
                 _context.setUser(user);

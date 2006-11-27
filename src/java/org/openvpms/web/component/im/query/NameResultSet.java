@@ -28,13 +28,13 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.LongNameConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.spring.ServiceHelper;
 
@@ -90,18 +90,18 @@ public abstract class NameResultSet<T extends IMObject>
     /**
      * Returns the specified page.
      *
-     * @param firstRow the first row of the page to retrieve
-     * @param maxRows  the maximun no of rows in the page
-     * @return the page corresponding to <code>firstRow</code>, or
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return the page corresponding to <code>firstResult</code>, or
      *         <code>null</code> if none exists
      */
-    protected IPage<T> getPage(int firstRow, int maxRows) {
+    protected IPage<T> getPage(int firstResult, int maxResults) {
         IPage<IMObject> result = null;
         try {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             ArchetypeQuery query = getQuery(_archetypes, _instanceName);
-            query.setFirstRow(firstRow);
-            query.setNumOfRows(maxRows);
+            query.setFirstResult(firstResult);
+            query.setMaxResults(maxResults);
             query.setDistinct(isDistinct());
             for (SortConstraint sort : getSortConstraints()) {
                 query.add(sort);
@@ -124,6 +124,7 @@ public abstract class NameResultSet<T extends IMObject>
                                       String name) {
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         query.setDistinct(isDistinct());
+        query.setCountResults(true);
         if (!StringUtils.isEmpty(name)) {
             query.add(new NodeConstraint("name", name));
         }
@@ -146,15 +147,13 @@ public abstract class NameResultSet<T extends IMObject>
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
         String[] shortNames;
-        if (archetypes instanceof ArchetypeLongNameConstraint) {
-            ArchetypeLongNameConstraint constraint
-                    = (ArchetypeLongNameConstraint) archetypes;
+        if (archetypes instanceof LongNameConstraint) {
+            LongNameConstraint constraint = (LongNameConstraint) archetypes;
             shortNames = DescriptorHelper.getShortNames(
                     constraint.getRmName(), constraint.getEntityName(),
                     constraint.getConceptName());
-        } else if (archetypes instanceof ArchetypeShortNameConstraint) {
-            ArchetypeShortNameConstraint constraint
-                    = (ArchetypeShortNameConstraint) archetypes;
+        } else if (archetypes instanceof ShortNameConstraint) {
+            ShortNameConstraint constraint = (ShortNameConstraint) archetypes;
             shortNames = DescriptorHelper.getShortNames(
                     constraint.getShortNames());
         } else {

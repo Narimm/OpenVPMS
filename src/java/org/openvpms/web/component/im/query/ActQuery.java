@@ -25,9 +25,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
+import org.openvpms.component.system.common.query.LongNameConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.util.CollectionHelper;
@@ -269,21 +269,18 @@ public abstract class ActQuery extends AbstractQuery<Act> {
         } else {
             // need to add the required short names
             String[] shortNames;
-            if (archetype instanceof ArchetypeLongNameConstraint) {
-                ArchetypeLongNameConstraint lnc
-                        = (ArchetypeLongNameConstraint) archetype;
+            if (archetype instanceof LongNameConstraint) {
+                LongNameConstraint lnc = (LongNameConstraint) archetype;
                 shortNames = DescriptorHelper.getShortNames(
                         lnc.getRmName(), lnc.getEntityName(),
                         lnc.getConceptName());
             } else {
-                ArchetypeShortNameConstraint snc
-                        = (ArchetypeShortNameConstraint) archetype;
+                ShortNameConstraint snc = (ShortNameConstraint) archetype;
                 shortNames = snc.getShortNames();
             }
             shortNames = CollectionHelper.concat(shortNames,
                                                  _requiredShortNames);
-            result = new ArchetypeShortNameConstraint(
-                    shortNames, true, true);
+            result = new ShortNameConstraint(shortNames, true, true);
         }
         return result;
     }
@@ -337,13 +334,12 @@ public abstract class ActQuery extends AbstractQuery<Act> {
             ArchetypeDescriptor archetype
                     = DescriptorHelper.getArchetypeDescriptor(shortName);
             ArchetypeId id = new ArchetypeId(archetype.getName());
-            result = new ArchetypeLongNameConstraint(
+            result = new LongNameConstraint(
                     null, id.getEntityName(), id.getConcept(), true, true);
         } else {
             String[] shortNames = CollectionHelper.concat(_requiredShortNames,
                                                           shortName);
-            result = new ArchetypeShortNameConstraint(
-                    shortNames, true, true);
+            result = new ShortNameConstraint(shortNames, true, true);
         }
         return result;
     }

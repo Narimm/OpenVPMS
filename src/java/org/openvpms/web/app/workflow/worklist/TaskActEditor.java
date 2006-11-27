@@ -306,10 +306,11 @@ public class TaskActEditor extends AbstractActEditor {
             query.add(new NodeConstraint("uid", RelationalOp.NE, act.getUid()));
             query.add(
                     new NodeConstraint("status", RelationalOp.NE, CANCELLED));
-            query.setFirstRow(0);
-            query.setNumOfRows(1);
+            query.setFirstResult(0);
+            query.setMaxResults(1);
+            query.setCountResults(true);
             IPage<IMObject> page = service.get(query);
-            if (page.getTotalNumOfRows() >= maxSlots) {
+            if (page.getTotalResults() >= maxSlots) {
                 result = true;
             }
         }

@@ -25,13 +25,13 @@ import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.OrConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.dialog.PopupDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -70,7 +70,7 @@ public class PatientSummary {
         Component result = null;
         if (patient != null) {
             Label alertTitle = LabelFactory.create("patient.alerts");
-            int alerts = getRows(getAlerts(patient));
+            int alerts = getTotalResults(getAlerts(patient));
             Component alertCount;
             if (alerts == 0) {
                 alertCount = LabelFactory.create("patient.noreminders");
@@ -84,7 +84,7 @@ public class PatientSummary {
             }
 
             Label reminderTitle = LabelFactory.create("patient.reminders");
-            int reminders = getRows(getReminders(patient));
+            int reminders = getTotalResults(getReminders(patient));
             Component reminderCount;
             if (reminders == 0) {
                 reminderCount = LabelFactory.create("patient.noreminders");
@@ -129,14 +129,14 @@ public class PatientSummary {
     }
 
     /**
-     * Helper to return the no. of rows in a result set.
+     * Helper to return the total no. of results in a result set.
      *
      * @param set the result set
-     * @return the no. of rows in the set
+     * @return the total no. of results in the set
      */
-    private static int getRows(ResultSet<Act> set) {
+    private static int getTotalResults(ResultSet<Act> set) {
         IPage<Act> page = set.getPage(0);
-        return (page != null) ? page.getTotalNumOfRows() : 0;
+        return (page != null) ? page.getTotalResults() : 0;
     }
 
     /**
@@ -148,7 +148,7 @@ public class PatientSummary {
     private static ActResultSet getAlerts(Party patient) {
         String[] shortNames = {"act.patientAlert"};
         String[] statuses = {ActStatus.IN_PROGRESS};
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {
                 new ParticipantConstraint("patient", "participation.patient",
@@ -172,7 +172,7 @@ public class PatientSummary {
     private static ResultSet<Act> getReminders(Party patient) {
         String[] shortNames = {"act.patientReminder"};
         String[] statuses = {ActStatus.IN_PROGRESS};
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint[] participants = {
                 new ParticipantConstraint("patient", "participation.patient",

@@ -14,9 +14,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -149,8 +149,7 @@ public class ReportQuery extends AbstractQuery<Entity> {
             archetypes = getArchetypeConstraint();
             archetypes.setActiveOnly(activeOnly);
         } else {
-            archetypes = new ArchetypeShortNameConstraint(type, true,
-                                                          activeOnly);
+            archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
         templates = new EntityResultSet(archetypes, name, getConstraints(),
                                         sort,
@@ -159,7 +158,7 @@ public class ReportQuery extends AbstractQuery<Entity> {
         // Now filter for Reports, user Level and selected type
         while (templates.hasNext()) {
             IPage<Entity> page = templates.next();
-            for (Entity object : page.getRows()) {
+            for (Entity object : page.getResults()) {
                 EntityBean template = new EntityBean(object);
                 String templateArchetype = template.getString("archetype", "");
                 templateUserLevel = template.getInt("userLevel", 9);

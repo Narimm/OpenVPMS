@@ -62,20 +62,20 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     int getPages();
 
     /**
-     * Returns the number of rows returned per page.
+     * Returns the number of results returned per page.
      *
-     * @return the maximum no. of rows returned in each page, or {@link
-     *         PagingCriteria#ALL_ROWS} for all rows.
+     * @return the maximum no. of results returned in each page, or {@link
+     *         ArchetypeQuery#ALL_RESULTS} for all results.
      */
-    int getRowsPerPage();
+    int getPageSize();
 
     /**
-     * Returns the number of rows.
+     * Returns the total number of results matching the query criteria.
      *
-     * @return the number of rows
+     * @return the total number of results
      * @throws IllegalStateException if there is no current page
      */
-    int getRows();
+    int getResults();
 
     /**
      * Determines if the node is sorted ascending or descending.
@@ -94,16 +94,16 @@ public interface ResultSet<T> extends ListIterator<IPage<T>> {
     SortConstraint[] getSortConstraints();
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      *
-     * @param distinct if true, remove duplicate rows
+     * @param distinct if true, remove duplicate results
      */
     void setDistinct(boolean distinct);
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate rows should be removed;
+     * @return <code>true</code> if duplicate results should be removed;
      *         otherwise <code>false</code>
      */
     boolean isDistinct();

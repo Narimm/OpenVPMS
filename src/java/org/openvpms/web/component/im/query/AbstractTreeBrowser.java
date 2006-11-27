@@ -191,7 +191,7 @@ public abstract class AbstractTreeBrowser<T extends IMObject>
         _builder.create(set.getSortConstraints());
         while (set.hasNext()) {
             IPage<T> page = set.next();
-            for (T object : page.getRows()) {
+            for (T object : page.getResults()) {
                 _builder.add(object);
             }
         }

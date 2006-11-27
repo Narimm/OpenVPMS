@@ -168,8 +168,8 @@ public class StatementWorkspace extends AbstractWorkspace {
         IPage<IMObject> page = ArchetypeQueryHelper.get(
                 ArchetypeServiceHelper.getArchetypeService(),
                 new String[]{"classification.customerAccountType"}, true, 0,
-                ArchetypeQuery.ALL_ROWS);
-        List<IMObject> rows = page.getRows();
+                ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> rows = page.getResults();
         ListModel model = new IMObjectListModel(rows, true, false);
         ListBox accountType = ListBoxFactory.create(model);
         accountType.setCellRenderer(new IMObjectListCellRenderer());

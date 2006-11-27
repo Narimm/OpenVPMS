@@ -18,13 +18,12 @@
 
 package org.openvpms.web.component.im.query;
 
-import org.openvpms.web.component.im.util.IMObjectSorter;
-
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.util.IMObjectSorter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,28 +41,28 @@ public class PreloadedResultSet<T extends IMObject>
     /**
      * The query objects.
      */
-    private final List<T> _objects;
+    private final List<T> objects;
 
     /**
      * The sort criteria.
      */
-    private SortConstraint[] _sort = new SortConstraint[0];
+    private SortConstraint[] sort = new SortConstraint[0];
 
     /**
      * Determines if the set is sorted ascending or descending.
      */
-    private boolean _sortAscending = true;
+    private boolean sortAscending = true;
 
 
     /**
      * Construct a new <code>PreloadedResultSet</code>.
      *
-     * @param objects the objects
-     * @param rows    the maximum no. of rows per page
+     * @param objects  the objects
+     * @param pageSize the maximum no. of results per page
      */
-    public PreloadedResultSet(List<T> objects, int rows) {
-        super(rows);
-        _objects = objects;
+    public PreloadedResultSet(List<T> objects, int pageSize) {
+        super(pageSize);
+        this.objects = objects;
 
         reset();
     }
@@ -74,10 +73,10 @@ public class PreloadedResultSet<T extends IMObject>
      * @param sort the sort criteria. May be <code>null</code>
      */
     public void sort(SortConstraint[] sort) {
-        if (sort != null && !_objects.isEmpty()) {
-            IMObjectSorter.sort(_objects, sort);
-            _sortAscending = sort[0].isAscending();
-            _sort = sort;
+        if (sort != null && !objects.isEmpty()) {
+            IMObjectSorter.sort(objects, sort);
+            sortAscending = sort[0].isAscending();
+            this.sort = sort;
         }
         reset();
     }
@@ -90,7 +89,7 @@ public class PreloadedResultSet<T extends IMObject>
      *         descending
      */
     public boolean isSortedAscending() {
-        return _sortAscending;
+        return sortAscending;
     }
 
     /**
@@ -99,22 +98,22 @@ public class PreloadedResultSet<T extends IMObject>
      * @return the sort criteria. Never null
      */
     public SortConstraint[] getSortConstraints() {
-        return _sort;
+        return sort;
     }
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      *
-     * @param distinct if true, remove duplicate rows
+     * @param distinct if true, remove duplicate results
      */
     public void setDistinct(boolean distinct) {
         // no-op
     }
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate rows should be removed;
+     * @return <code>true</code> if duplicate results should be removed;
      *         otherwise <code>false</code>
      */
     public boolean isDistinct() {
@@ -124,21 +123,21 @@ public class PreloadedResultSet<T extends IMObject>
     /**
      * Returns the specified page.
      *
-     * @param firstRow
-     * @param maxRows
-     * @return the page corresponding to <code>page</code>, or <code>null</code>
-     *         if none exists
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return the page corresponding to <code>firstResult</code>, or
+     *         <code>null</code> if none exists
      */
-    protected IPage<T> getPage(int firstRow, int maxRows) {
+    protected IPage<T> getPage(int firstResult, int maxResults) {
         int to;
-        if (maxRows == ArchetypeQuery.ALL_ROWS
-                || ((firstRow + maxRows) >= _objects.size())) {
-            to = _objects.size();
+        if (maxResults == ArchetypeQuery.ALL_RESULTS
+                || ((firstResult + maxResults) >= objects.size())) {
+            to = objects.size();
         } else {
-            to = firstRow + maxRows;
+            to = firstResult + maxResults;
         }
-        List<T> rows = new ArrayList<T>(_objects.subList(firstRow, to));
-        return new Page<T>(rows, firstRow, maxRows, _objects.size());
+        List<T> rows = new ArrayList<T>(objects.subList(firstResult, to));
+        return new Page<T>(rows, firstResult, maxResults, objects.size());
     }
 
 }

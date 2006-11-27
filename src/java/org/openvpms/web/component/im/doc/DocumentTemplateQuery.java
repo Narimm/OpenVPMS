@@ -94,11 +94,11 @@ public class DocumentTemplateQuery extends AbstractQuery<Entity> {
         } else {
             ArchetypeQuery query = new ArchetypeQuery("entity.documentTemplate",
                                                       false, true);
-            query.setFirstRow(0);
-            query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
+            query.setFirstResult(0);
+            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
             IArchetypeService service
                     = ArchetypeServiceHelper.getArchetypeService();
-            List<IMObject> rows = service.get(query).getRows();
+            List<IMObject> rows = service.get(query).getResults();
             List<Entity> objects = new ArrayList<Entity>();
             for (IMObject object : rows) {
                 EntityBean bean = new EntityBean((Entity) object);

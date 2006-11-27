@@ -85,9 +85,9 @@ public class PagedIMObjectTableModel<T extends IMObject>
         List<T> objects = Collections.emptyList();
         IPage<T> result = _set.getPage(page);
         if (result != null) {
-            int rows = result.getTotalNumOfRows();
+            int rows = result.getTotalResults();
             if (rows > 0) {
-                objects = result.getRows();
+                objects = result.getResults();
             }
         }
         _page = page;
@@ -121,7 +121,7 @@ public class PagedIMObjectTableModel<T extends IMObject>
      * @return the number. of rows per page
      */
     public int getRowsPerPage() {
-        return _set.getRowsPerPage();
+        return _set.getPageSize();
     }
 
     /**
@@ -130,9 +130,9 @@ public class PagedIMObjectTableModel<T extends IMObject>
      *
      * @return the total number of rows
      */
-    public int getRows() {
+    public int getResults() {
         if (_set.getPage(_page) != null) {
-            return _set.getRows();
+            return _set.getResults();
         }
         return 0;
     }

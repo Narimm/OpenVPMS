@@ -95,6 +95,7 @@ public class EntityResultSet extends NameResultSet<Entity> {
         ArchetypeQuery query;
         if (_hasIdentities && name.matches(".*\\d+.*")) {
             query = new ArchetypeQuery(archetypes);
+            query.setCountResults(true);
             CollectionNodeConstraint constraint
                     = new CollectionNodeConstraint("identities");
             constraint.setJoinType(LeftOuterJoin);

@@ -118,11 +118,11 @@ public class IMObjectHelper {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
                 ArchetypeQuery query = new ArchetypeQuery(reference);
-                query.setCountTotalRows(false);
+                query.setCountResults(false);
                 IPage<NodeSet> page = service.getNodes(query,
                                                        Arrays.asList(nodes));
-                if (page.getRows().size() == 1) {
-                    result = page.getRows().get(0);
+                if (page.getResults().size() == 1) {
+                    result = page.getResults().get(0);
                 }
             } catch (OpenVPMSException error) {
                 log.error(error, error);

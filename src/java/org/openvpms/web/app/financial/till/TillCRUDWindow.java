@@ -234,8 +234,8 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
                 = ArchetypeServiceHelper.getArchetypeService();
         String[] shortNames = {"party.organisationTill"};
         IPage<IMObject> page = ArchetypeQueryHelper.get(
-                service, shortNames, true, 0, ArchetypeQuery.ALL_ROWS);
-        List<IMObject> accounts = page.getRows();
+                service, shortNames, true, 0, ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> accounts = page.getResults();
         String title = Messages.get("till.transfer.title");
         String message = Messages.get("till.transfer.message");
         ListBox list = new ListBox(accounts.toArray());

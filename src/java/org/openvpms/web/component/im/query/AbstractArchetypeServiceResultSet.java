@@ -38,40 +38,42 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * Additional constraints to associate with the query. May be
      * <code>null</code>
      */
-    private final IConstraint _constraints;
+    private final IConstraint constraints;
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      */
-    private boolean _distinct;
+    private boolean distinct;
 
     /**
      * The sort criteria. May be <code>null</code>.
      */
-    private SortConstraint[] _sort;
+    private SortConstraint[] sort;
 
 
     /**
      * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
      *
-     * @param rows the maximum no. of rows per page
-     * @param sort the sort criteria. May be <code>null</code>
+     * @param pageSize the maximum no. of results per page
+     * @param sort     the sort criteria. May be <code>null</code>
      */
-    public AbstractArchetypeServiceResultSet(int rows, SortConstraint[] sort) {
-        this(null, rows, sort);
+    public AbstractArchetypeServiceResultSet(int pageSize,
+                                             SortConstraint[] sort) {
+        this(null, pageSize, sort);
     }
 
     /**
      * Construct a new <code>AbstractArchetypeServiceResultSet</code>.
      *
      * @param constraints query constraints. May be <code>null</code>
-     * @param rows        the maximum no. of rows per page
+     * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <code>null</code>
      */
     public AbstractArchetypeServiceResultSet(IConstraint constraints,
-                                             int rows, SortConstraint[] sort) {
-        super(rows);
-        _constraints = constraints;
+                                             int pageSize,
+                                             SortConstraint[] sort) {
+        super(pageSize);
+        this.constraints = constraints;
         setSortConstraint(sort);
     }
 
@@ -93,7 +95,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      *         descending
      */
     public boolean isSortedAscending() {
-        return (_sort.length == 0 || _sort[0].isAscending());
+        return (sort.length == 0 || sort[0].isAscending());
     }
 
     /**
@@ -102,26 +104,26 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @return the sort criteria. Never null
      */
     public SortConstraint[] getSortConstraints() {
-        return _sort;
+        return sort;
     }
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      *
-     * @param distinct if true, remove duplicate rows
+     * @param distinct if true, remove duplicate results
      */
     public void setDistinct(boolean distinct) {
-        _distinct = distinct;
+        this.distinct = distinct;
     }
 
     /**
-     * Determines if duplicate rows should be filtered.
+     * Determines if duplicate results should be filtered.
      *
-     * @return <code>true</code> if duplicate rows should be removed;
+     * @return <code>true</code> if duplicate results should be removed;
      *         otherwise <code>false</code>
      */
     public boolean isDistinct() {
-        return _distinct;
+        return distinct;
     }
 
     /**
@@ -130,7 +132,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @param sort the sort criteria. May be <code>null</code>
      */
     protected void setSortConstraint(SortConstraint[] sort) {
-        _sort = (sort != null) ? sort : new SortConstraint[0];
+        this.sort = (sort != null) ? sort : new SortConstraint[0];
     }
 
     /**
@@ -139,7 +141,7 @@ public abstract class AbstractArchetypeServiceResultSet<T>
      * @return the query constraints
      */
     protected IConstraint getConstraints() {
-        return _constraints;
+        return constraints;
     }
 
     /**

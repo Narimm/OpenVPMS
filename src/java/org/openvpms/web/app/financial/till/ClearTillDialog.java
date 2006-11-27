@@ -71,8 +71,8 @@ public class ClearTillDialog extends PopupDialog {
 
         String[] shortNames = {"party.organisationDeposit"};
         IPage<IMObject> page = ArchetypeQueryHelper.get(
-                service, shortNames, true, 0, ArchetypeQuery.ALL_ROWS);
-        List<IMObject> accounts = page.getRows();
+                service, shortNames, true, 0, ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> accounts = page.getResults();
         _account = SelectFieldFactory.create(accounts);
         _account.setCellRenderer(new IMObjectListCellRenderer());
         if (!accounts.isEmpty()) {

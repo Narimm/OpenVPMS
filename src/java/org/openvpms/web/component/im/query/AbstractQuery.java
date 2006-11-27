@@ -29,11 +29,11 @@ import nextapp.echo2.app.event.ActionListener;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeLongNameConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
+import org.openvpms.component.system.common.query.LongNameConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.list.ArchetypeShortNameListModel;
 import org.openvpms.web.component.util.LabelFactory;
@@ -161,7 +161,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
      */
     public AbstractQuery(String[] shortNames) {
         _shortNames = DescriptorHelper.getShortNames(shortNames);
-        _archetypes = new ArchetypeShortNameConstraint(shortNames, true, true);
+        _archetypes = new ShortNameConstraint(shortNames, true, true);
         _refModelName = null;
         _entityName = null;
         _conceptName = null;
@@ -179,7 +179,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
                          String conceptName) {
         _shortNames = DescriptorHelper.getShortNames(refModelName, entityName,
                                                      conceptName);
-        _archetypes = new ArchetypeLongNameConstraint(
+        _archetypes = new LongNameConstraint(
                 refModelName, entityName, conceptName, true, true);
         _refModelName = refModelName;
         _entityName = entityName;
@@ -233,8 +233,7 @@ public abstract class AbstractQuery<T extends IMObject> implements Query<T> {
             archetypes = _archetypes;
             archetypes.setActiveOnly(activeOnly);
         } else {
-            archetypes = new ArchetypeShortNameConstraint(type, true,
-                                                          activeOnly);
+            archetypes = new ShortNameConstraint(type, true, activeOnly);
         }
         return new DefaultResultSet<T>(archetypes, name, _constraints, sort,
                                        _maxRows, _distinct);

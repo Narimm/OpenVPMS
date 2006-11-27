@@ -105,12 +105,12 @@ public class TitlePane extends ContentPane {
             ArchetypeQuery query = new ArchetypeQuery("security.user", true,
                                                       true);
             query.add(new NodeConstraint("username", auth.getName()));
-            query.setNumOfRows(1);
+            query.setMaxResults(1);
 
             try {
                 IArchetypeService service
                         = ArchetypeServiceHelper.getArchetypeService();
-                List<IMObject> rows = service.get(query).getRows();
+                List<IMObject> rows = service.get(query).getResults();
                 if (!rows.isEmpty()) {
                     User user = (User) rows.get(0);
                     result = user.getName();
