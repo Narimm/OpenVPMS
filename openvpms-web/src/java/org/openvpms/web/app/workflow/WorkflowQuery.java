@@ -287,7 +287,7 @@ public abstract class WorkflowQuery extends ActQuery {
         ParticipantConstraint[] participants = getParticipantConstraints();
         return new ActResultSet(participants, getArchetypes(), getStartFrom(),
                                 getStartTo(), getStatuses(), excludeStatuses(),
-                                getConstraints(), ArchetypeQuery.ALL_ROWS,
+                                getConstraints(), ArchetypeQuery.ALL_RESULTS,
                                 sort);
     }
 
@@ -350,7 +350,7 @@ public abstract class WorkflowQuery extends ActQuery {
                 IPage<IMObject> page = ArchetypeQueryHelper.get(
                         service, "system", "security", "user", name, true, 0,
                         2);
-                List<IMObject> rows = page.getRows();
+                List<IMObject> rows = page.getResults();
                 if (rows.size() != 1) {
                     // no matches or multiple matches
                     _clinician = INVALID_CLINICIAN;

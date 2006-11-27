@@ -141,8 +141,8 @@ class PrintDocumentsTask extends AbstractTask {
                                             String node,
                                             String participation) {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
-        query.setFirstRow(0);
-        query.setNumOfRows(ArchetypeQuery.ALL_ROWS);
+        query.setFirstResult(0);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         CollectionNodeConstraint participations
                 = new CollectionNodeConstraint(node, participation,
@@ -155,7 +155,7 @@ class PrintDocumentsTask extends AbstractTask {
 
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        return service.get(query).getRows();
+        return service.get(query).getResults();
 
     }
 

@@ -64,8 +64,8 @@ class PatientClinicalEventTask extends CreateIMObjectTask {
     public void start(final TaskContext context) {
         ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
                                                   true);
-        query.setFirstRow(0);
-        query.setNumOfRows(1);
+        query.setFirstResult(0);
+        query.setMaxResults(1);
 
         Party patient = context.getPatient();
         CollectionNodeConstraint participations
@@ -83,7 +83,7 @@ class PatientClinicalEventTask extends CreateIMObjectTask {
 
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        List<IMObject> result = service.get(query).getRows();
+        List<IMObject> result = service.get(query).getResults();
         if (result.isEmpty()) {
             super.start(context);
         } else {

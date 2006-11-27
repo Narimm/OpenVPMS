@@ -93,8 +93,8 @@ public class InvoiceTask extends CreateIMObjectTask {
     private Act getInvoice(TaskContext context, String status) {
         ArchetypeQuery query = new ArchetypeQuery(getShortNames(), false,
                                                   true);
-        query.setFirstRow(0);
-        query.setNumOfRows(1);
+        query.setFirstResult(0);
+        query.setMaxResults(1);
 
         Party customer = context.getCustomer();
         CollectionNodeConstraint participations
@@ -110,7 +110,7 @@ public class InvoiceTask extends CreateIMObjectTask {
 
         IArchetypeService service
                 = ArchetypeServiceHelper.getArchetypeService();
-        List<IMObject> invoices = service.get(query).getRows();
+        List<IMObject> invoices = service.get(query).getResults();
 
         Act result = null;
         if (!invoices.isEmpty()) {

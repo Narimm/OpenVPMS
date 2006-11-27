@@ -64,5 +64,5 @@ public interface PageableTableModel extends TableModel {
      *
      * @return the total number of rows
      */
-    int getRows();
+    int getResults();
 }

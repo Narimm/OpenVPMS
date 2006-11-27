@@ -33,9 +33,9 @@ import java.util.NoSuchElementException;
 public abstract class AbstractResultSet<T> implements ResultSet<T> {
 
     /**
-     * The no. of rows per page.
+     * The no. of results per page.
      */
-    private final int _rowsPerPage;
+    private final int pageSize;
 
     /**
      * The last retrieved page.
@@ -56,10 +56,10 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Construct a new <code>AbstractResultSet</code>.
      *
-     * @param rows the maximum no. of rows per page
+     * @param pageSize the maximum no. of results per page
      */
-    public AbstractResultSet(int rows) {
-        _rowsPerPage = rows;
+    public AbstractResultSet(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     /**
@@ -98,26 +98,26 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     }
 
     /**
-     * Returns the number of rows returned per page.
+     * Returns the number of results returned per page.
      *
-     * @return the maximum no. of rows returned in each page, or {@link
-     *         PagingCriteria#ALL_ROWS} for all rows.
+     * @return the maximum no. of results returned in each page, or {@link
+     *         ArchetypeQuery#ALL_RESULTS} for all results.
      */
-    public int getRowsPerPage() {
-        return _rowsPerPage;
+    public int getPageSize() {
+        return pageSize;
     }
 
     /**
-     * Returns the number of rows.
+     * Returns the total number of results matching the query criteria.
      *
-     * @return the number of rows
+     * @return the total number of results
      * @throws IllegalStateException if there is no current page
      */
-    public int getRows() {
+    public int getResults() {
         if (_page == null) {
             throw new IllegalStateException("No current page");
         }
-        return _page.getTotalNumOfRows();
+        return _page.getTotalResults();
     }
 
     /**
@@ -265,12 +265,12 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
     /**
      * Returns the specified page.
      *
-     * @param firstRow the first row of the page to retrieve
-     * @param maxRows  the maximun no of rows in the page
-     * @return the page corresponding to <code>firstRow</code>, or
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return the page corresponding to <code>firstResult</code>, or
      *         <code>null</code> if none exists
      */
-    protected abstract IPage<T> getPage(int firstRow, int maxRows);
+    protected abstract IPage<T> getPage(int firstResult, int maxResults);
 
     /**
      * Returns the current page.
@@ -289,11 +289,11 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * @return the index of the current page
      */
     protected int getIndex(IPage<T> page) {
-        int first = getFirstRow(page);
-        if (_rowsPerPage == ArchetypeQuery.ALL_ROWS) {
+        int first = getFirstResult(page);
+        if (pageSize == ArchetypeQuery.ALL_RESULTS) {
             return 0;
         }
-        return page.getTotalNumOfRows() / first;
+        return page.getTotalResults() / first;
     }
 
     /**
@@ -303,48 +303,48 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * @return the total no. of pages
      */
     protected int getPages(IPage<T> page) {
-        if (_rowsPerPage == ArchetypeQuery.ALL_ROWS) {
+        if (pageSize == ArchetypeQuery.ALL_RESULTS) {
             return 1;
         }
-        int pages = (page.getTotalNumOfRows() / _rowsPerPage);
-        if (page.getTotalNumOfRows() % _rowsPerPage > 0) {
+        int pages = (page.getTotalResults() / pageSize);
+        if (page.getTotalResults() % pageSize > 0) {
             ++pages;
         }
         return pages;
     }
 
     /**
-     * Helper to return the index of the first row of the current page.
+     * Helper to return the index of the first result of the current page.
      *
      * @param page the current page
-     * @return the index of the first row
+     * @return the index of the first result
      */
-    protected int getFirstRow(IPage<T> page) {
-        return page.getFirstRow();
+    protected int getFirstResult(IPage<T> page) {
+        return page.getFirstResult();
     }
 
     /**
-     * Helper to return the index of the first row of the next page.
+     * Helper to return the index of the first result of the next page.
      *
      * @param page the current page
-     * @return the index of the first row in the next page. If
+     * @return the index of the first result in the next page. If
      *         <code>&gt;objects.size()</code> indicates at end of set
      */
     protected int getNextRow(IPage<T> page) {
-        return getFirstRow(page) + page.getRows().size();
+        return getFirstResult(page) + page.getResults().size();
     }
 
     /**
-     * Helper to return the index of the first row of the previous page.
+     * Helper to return the index of the first result of the previous page.
      *
-     * @return the index of the first row of the previous page. If
+     * @return the index of the first result of the previous page. If
      *         <code>&lt;0</code> indicates at beginning of set
      */
     protected int getPreviousRow(IPage<T> page) {
-        if (_rowsPerPage == ArchetypeQuery.ALL_ROWS) {
+        if (pageSize == ArchetypeQuery.ALL_RESULTS) {
             return -1;
         }
-        return getFirstRow(page) - _rowsPerPage;
+        return getFirstResult(page) - pageSize;
     }
 
     /**
@@ -354,10 +354,10 @@ public abstract class AbstractResultSet<T> implements ResultSet<T> {
      * @return the page, or <code>null</code> if there is no such page
      */
     protected IPage<T> get(int page) {
-        int row = page * _rowsPerPage;
-        if (_page == null || _page.getFirstRow() != row) {
-            _page = getPage(row, _rowsPerPage);
-            if (_page != null && _page.getRows().isEmpty()) {
+        int row = page * pageSize;
+        if (_page == null || _page.getFirstResult() != row) {
+            _page = getPage(row, pageSize);
+            if (_page != null && _page.getResults().isEmpty()) {
                 _page = null;
             }
         }

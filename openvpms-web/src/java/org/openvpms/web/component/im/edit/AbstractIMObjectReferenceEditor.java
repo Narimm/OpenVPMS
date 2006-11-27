@@ -401,7 +401,7 @@ public abstract class AbstractIMObjectReferenceEditor
                     ResultSet<IMObject> set = query.query(null);
                     if (set != null && set.hasNext()) {
                         IPage<IMObject> page = set.next();
-                        List<IMObject> rows = page.getRows();
+                        List<IMObject> rows = page.getResults();
                         int size = rows.size();
                         if (size == 0) {
                             setObject(null);

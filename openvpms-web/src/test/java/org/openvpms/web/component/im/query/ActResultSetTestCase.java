@@ -25,9 +25,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.test.AbstractAppTest;
@@ -62,7 +62,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         Party party = TestHelper.createCustomer();
         SaveHelper.save(party);
 
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
         Date from = null;       // query all dates
         Date to = null;
@@ -84,11 +84,11 @@ public class ActResultSetTestCase extends AbstractAppTest {
         }
         assertNull(set.getPage(0));
         assertNull(set.getPage(1));
-        assertEquals(rowsPerPage, set.getRowsPerPage());
+        assertEquals(rowsPerPage, set.getPageSize());
 
         try {
-            set.getRows();
-            fail("Expected getRows() to throw IllegalStateException");
+            set.getResults();
+            fail("Expected getResults() to throw IllegalStateException");
         } catch (IllegalStateException expected) {
             // no-op
         }
@@ -109,7 +109,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
             ++expectedPages;
         }
 
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
         Date from = null;       // query all dates
         Date to = null;
@@ -145,7 +145,7 @@ public class ActResultSetTestCase extends AbstractAppTest {
         final int total = _acts.length;
         int expectedPages = getPages(rowsPerPage, total);
 
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 "act.customerEstimation", true, true);
         Date from = null;       // query all dates
         Date to = null;
@@ -201,13 +201,13 @@ public class ActResultSetTestCase extends AbstractAppTest {
     protected void checkPage(ActResultSet set, IPage<Act> page,
                              int pageIndex, int rowsPerPage, int total) {
         assertNotNull(page);
-        assertNotNull(page.getRows());
+        assertNotNull(page.getResults());
         int expected = getRows(pageIndex, rowsPerPage, total);
-        assertEquals(expected, page.getRows().size());
+        assertEquals(expected, page.getResults().size());
 
         int pages = getPages(rowsPerPage, total);
         assertEquals(pages, set.getPages());
-        assertEquals(total, set.getRows());
+        assertEquals(total, set.getResults());
     }
 
     /**

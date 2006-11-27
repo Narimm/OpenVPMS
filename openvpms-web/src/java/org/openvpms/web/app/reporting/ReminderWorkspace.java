@@ -186,8 +186,8 @@ public class ReminderWorkspace extends AbstractWorkspace {
         IPage<IMObject> page = ArchetypeQueryHelper.get(
                 ArchetypeServiceHelper.getArchetypeService(),
                 new String[]{"entity.reminderType"}, true, 0,
-                ArchetypeQuery.ALL_ROWS);
-        List<IMObject> rows = page.getRows();
+                ArchetypeQuery.ALL_RESULTS);
+        List<IMObject> rows = page.getResults();
         ListModel model = new IMObjectListModel(rows, true, false);
         reminderType = ListBoxFactory.create(model);
         reminderType.setCellRenderer(new IMObjectListCellRenderer());

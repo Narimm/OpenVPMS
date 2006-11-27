@@ -18,11 +18,6 @@
 
 package org.openvpms.web.component.im.edit.act;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -32,13 +27,18 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.query.ArchetypeShortNameConstraint;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -59,7 +59,8 @@ public class ActHelper {
         String[] shortNames = DescriptorHelper.getShortNames(
                 "act.customerAccount*");
         return getAccountBalance(customer.getObjectReference(), "customer",
-                                 "participation.customer", shortNames, "act.customerAccountOpeningBalance");
+                                 "participation.customer", shortNames,
+                                 "act.customerAccountOpeningBalance");
     }
 
     /**
@@ -72,24 +73,26 @@ public class ActHelper {
         String[] shortNames = {"act.supplierAccountCharges*",
                                "act.supplierAccountPayment"};
         return getAccountBalance(supplier.getObjectReference(), "supplier",
-                                 "participation.supplier", shortNames, "act.supplierAccountOpeningbalance");
+                                 "participation.supplier", shortNames,
+                                 "act.supplierAccountOpeningbalance");
     }
 
     /**
      * Returns an account balance for any entity.
      *
-     * @param entity        the entity
-     * @param participant   the participant node name
-     * @param participation the participation short name
-     * @param shortNames    the act short names
+     * @param entity             the entity
+     * @param participant        the participant node name
+     * @param participation      the participation short name
+     * @param shortNames         the act short names
      * @param openingBalanceName the opening blance shortname
      */
     public static BigDecimal getAccountBalance(IMObjectReference entity,
                                                String participant,
                                                String participation,
-                                               String[] shortNames, String openingBalanceName) {
+                                               String[] shortNames,
+                                               String openingBalanceName) {
         String[] statuses = {FinancialActStatus.POSTED};
-        BaseArchetypeConstraint archetypes = new ArchetypeShortNameConstraint(
+        BaseArchetypeConstraint archetypes = new ShortNameConstraint(
                 shortNames, true, true);
         ParticipantConstraint constraint = new ParticipantConstraint(
                 participant, participation, entity);
@@ -102,19 +105,21 @@ public class ActHelper {
         boolean finished = false;
         while (set.hasNext()) {
             IPage<Act> acts = set.next();
-            for (Act act : acts.getRows()) {
-            	//Ignore first closing balance
-            	if(act.getArchetypeId().getShortName().equalsIgnoreCase("act.customerAccountClosingBalance"))
-            		continue;
+            for (Act act : acts.getResults()) {
+                //Ignore first closing balance
+                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
+                        "act.customerAccountClosingBalance"))
+                    continue;
                 BigDecimal amount = getAmount(act, "amount");
                 balance = balance.add(amount);
-            	if(act.getArchetypeId().getShortName().equalsIgnoreCase("act.customerAccountOpeningBalance")) {
-            		finished = true;
-            		break;
-            	}
+                if (act.getArchetypeId().getShortName().equalsIgnoreCase(
+                        "act.customerAccountOpeningBalance")) {
+                    finished = true;
+                    break;
+                }
             }
             if (finished)
-            	break;
+                break;
         }
         return balance;
     }

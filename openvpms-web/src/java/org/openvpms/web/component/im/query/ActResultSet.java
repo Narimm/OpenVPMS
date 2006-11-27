@@ -51,27 +51,27 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     /**
      * The act archetype criteria.
      */
-    private final BaseArchetypeConstraint _archetypes;
+    private final BaseArchetypeConstraint archetypes;
 
     /**
      * The participant constraints.
      */
-    private ParticipantConstraint[] _participants;
+    private ParticipantConstraint[] participants;
 
     /**
      * The status criteria. May be <code>null</code>.
      */
-    private final IConstraint _statuses;
+    private final IConstraint statuses;
 
     /**
      * The time criteria. May be <code>null</code>.
      */
-    private final IConstraint _times;
+    private final IConstraint times;
 
     /**
      * The logger.
      */
-    private static final Log _log = LogFactory.getLog(ActResultSet.class);
+    private static final Log log = LogFactory.getLog(ActResultSet.class);
 
 
     /**
@@ -82,13 +82,14 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      * @param from        the act start-from date. May be <code>null</code>
      * @param to          the act start-to date. May be <code>null</code>
      * @param statuses    the act statuses. If empty, indicates all acts
-     * @param rows        the maximum no. of rows per page
+     * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <code>null</code>
      */
     public ActResultSet(ParticipantConstraint participant,
                         BaseArchetypeConstraint archetypes, Date from, Date to,
-                        String[] statuses, int rows, SortConstraint[] sort) {
-        this(participant, archetypes, from, to, statuses, false, null, rows,
+                        String[] statuses, int pageSize,
+                        SortConstraint[] sort) {
+        this(participant, archetypes, from, to, statuses, false, null, pageSize,
              sort);
     }
 
@@ -104,16 +105,16 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      *                    <code>statuses</code>; otherwise include them.
      * @param constraints additional query constraints. May be
      *                    <code<null</code>
-     * @param rows        the maximum no. of rows per page
+     * @param pageSize    the maximum no. of results per page
      * @param sort        the sort criteria. May be <code>null</code>
      */
     public ActResultSet(ParticipantConstraint participant,
                         BaseArchetypeConstraint archetypes, Date from, Date to,
                         String[] statuses, boolean exclude,
-                        IConstraint constraints, int rows,
+                        IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
         this(new ParticipantConstraint[]{participant}, archetypes, from, to,
-             statuses, exclude, constraints, rows, sort);
+             statuses, exclude, constraints, pageSize, sort);
     }
 
     /**
@@ -128,16 +129,16 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      *                     <code>statuses</code>; otherwise include them.
      * @param constraints  additional query constraints. May be
      *                     <code<null</code>
-     * @param rows         the maximum no. of rows per page
+     * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <code>null</code>
      */
     public ActResultSet(ParticipantConstraint[] participants,
                         BaseArchetypeConstraint archetypes, Date from, Date to,
                         String[] statuses, boolean exclude,
-                        IConstraint constraints, int rows,
+                        IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
         this(participants, archetypes, createTimeConstraint(from, to),
-             statuses, exclude, constraints, rows, sort);
+             statuses, exclude, constraints, pageSize, sort);
     }
 
     /**
@@ -151,17 +152,17 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
      *                     <code>statuses</code>; otherwise include them.
      * @param constraints  additional query constraints. May be
      *                     <code<null</code>
-     * @param rows         the maximum no. of rows per page
+     * @param pageSize     the maximum no. of results per page
      * @param sort         the sort criteria. May be <code>null</code>
      */
     public ActResultSet(ParticipantConstraint[] participants,
                         BaseArchetypeConstraint archetypes,
                         IConstraint times, String[] statuses, boolean exclude,
-                        IConstraint constraints, int rows,
+                        IConstraint constraints, int pageSize,
                         SortConstraint[] sort) {
-        super(constraints, rows, sort);
-        _participants = participants;
-        _archetypes = archetypes;
+        super(constraints, pageSize, sort);
+        this.participants = participants;
+        this.archetypes = archetypes;
 
         if (statuses.length > 1) {
             IConstraintContainer constraint;
@@ -176,31 +177,31 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             for (String status : statuses) {
                 constraint.add(new NodeConstraint("status", op, status));
             }
-            _statuses = constraint;
+            this.statuses = constraint;
         } else if (statuses.length == 1) {
             RelationalOp op = RelationalOp.EQ;
             if (exclude) {
                 op = RelationalOp.NE;
             }
-            _statuses = new NodeConstraint("status", op, statuses[0]);
+            this.statuses = new NodeConstraint("status", op, statuses[0]);
         } else {
-            _statuses = null;
+            this.statuses = null;
         }
-        _times = times;
+        this.times = times;
     }
 
     /**
      * Returns the specified page.
      *
-     * @param firstRow the first row of the page to retrieve
-     * @param maxRows  the maximun no of rows in the page
-     * @return the page corresponding to <code>firstRow</code>, or
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
+     * @return the page corresponding to <code>firstResult</code>, or
      *         <code>null</code> if none exists
      */
-    protected IPage<Act> getPage(int firstRow, int maxRows) {
+    protected IPage<Act> getPage(int firstResult, int maxResults) {
         IPage<Act> result = null;
         try {
-            ArchetypeQuery query = getQuery(firstRow, maxRows);
+            ArchetypeQuery query = getQuery(firstResult, maxResults);
             for (SortConstraint sort : getSortConstraints()) {
                 query.add(sort);
             }
@@ -216,7 +217,7 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
             }
             result = convert(page);
         } catch (OpenVPMSException exception) {
-            _log.error(exception, exception);
+            log.error(exception, exception);
         }
         return result;
     }
@@ -224,24 +225,25 @@ public class ActResultSet extends AbstractArchetypeServiceResultSet<Act> {
     /**
      * Returns the query.
      *
-     * @param firstRow the first row of the page to retrieve
-     * @param maxRows  the maximun no of rows in the page
+     * @param firstResult the first result of the page to retrieve
+     * @param maxResults  the maximun no of results in the page
      * @return the query
      */
-    protected ArchetypeQuery getQuery(int firstRow, int maxRows) {
-        ArchetypeQuery query = new ArchetypeQuery(_archetypes);
-        query.setFirstRow(firstRow);
-        query.setNumOfRows(maxRows);
+    protected ArchetypeQuery getQuery(int firstResult, int maxResults) {
+        ArchetypeQuery query = new ArchetypeQuery(archetypes);
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
         query.setDistinct(isDistinct());
+        query.setCountResults(true);
 
-        if (_statuses != null) {
-            query.add(_statuses);
+        if (statuses != null) {
+            query.add(statuses);
         }
-        if (_times != null) {
-            query.add(_times);
+        if (times != null) {
+            query.add(times);
         }
 
-        for (ParticipantConstraint participant : _participants) {
+        for (ParticipantConstraint participant : participants) {
             query.add(participant);
         }
 
